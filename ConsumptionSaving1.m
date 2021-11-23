@@ -1,23 +1,28 @@
 % Infinite Horizon Stochastic Dynamic Programming: 
-% Cake Eating with IID Shocks
-clc; clear all;close all;
+% Consumption Saving with Markovian Income Shocks
+clc; close all;
 
-% x: Cake
-% z: Endowment Shock
-% V(x, z) = max u(x + z - x') + b * E[V(x', z')]
-% s.t. 0 <= x' <= x + z
+% x: Asset / Saving
+% z: Income Shock
+% V(x, z) = max u(x(1+r) + z - x') + b * E[V(x', z')|z]
+% s.t. 0 <= x' <= x(1+r) + z
 
 % Params
 beta = 0.9;
+r = 0.05;
 u = @(c) log(c);
-P = [0.4 0.3 0.2 0.1];
-Z = [0.1, 0.2, 0.3, 0.4];
+
+% NZ-state Markovian Income 
+Z = [1, 2, 3, 4, 5, 6, 7, 8]/25;
+NZ = length(Z); 
+mc = mcmix(NZ); 
+P = mc.P ;
+zSim = simulate(mc, T+1)/25;
 
 % State and Control Space
 NX = 100;
 NY = 100;
-NZ = 4; 
-NJ = 100;
+NJ = 200;
 lambda = 1; % sampling parameter
 MAX = 1.0;
 MIN = 0.01;
@@ -34,9 +39,9 @@ Y = zeros(NX, NZ, NJ);
 for ix = 1:NX
     for iz = 1:NZ
         for iy = 1:NY 
-        if control(iy) < Xstate(ix)+Zstate(iz)
+        if control(iy) < Xstate(ix)*(1+r)+Zstate(iz)
             % Feasible Controls
-            U(ix, iz, iy) = u(Xstate(ix)+Zstate(iz)-control(iy));
+            U(ix, iz, iy) = u(Xstate(ix)*(1+r)+Zstate(iz)-control(iy));
         else
             % Infeasible Controls
             U(ix, iz, iy) = -1000000000;
@@ -49,20 +54,12 @@ end
 for ij = NJ-1:-1:1  
     for ix = 1:NX 
         for iz = 1:NZ
-            
-            %for ixp = 1:NX 
-            % V(x, z) = max u(x + z - x') + b * E[V(x', z')]
-            %Vtemp = U(ix, iz, ixp) + beta * dot(P,V(ixp, :, ij+1))
-            %end
-        
-         [V(ix, iz, ij), iymax] = max(squeeze(U(ix, iz, :)) + beta*(0.4*V(:, 1, ij+1)+0.3*V(:, 2, ij+1)+0.2*V(:, 3, ij+1)+0.1*V(:, 4, ij+1)));    
-
-        %[V(ix, iz, ij), iymax] = max(reshape(U(ix, iz, :),[1,NY]) + beta*reshape(dot(repmat(P,NX,1),V(:, :, ij+1),2), [1,NY]));    
+        [V(ix, iz, ij), iymax] = max(squeeze(U(ix, iz, :)) + beta*(dot(repmat(P(iz,:), NY, 1) , V(:, :, ij+1),2)));    
         Y(ix, iz, ij) = control(iymax);
         end 
     end
 end
-
+    
 % Value Functions
 figure(1);
 hold on;
@@ -70,7 +67,6 @@ for i = 1:NZ
     plot(Xstate, V(:, i, 1), '-x');
 end
 title('Value Functions')
-legend('z=0.1', 'z=0.2', 'z=0.3', 'z=0.4')
 hold off; 
 
 % Policy Functions
@@ -80,31 +76,34 @@ for i = 1:NZ
     plot(Xstate, Y(:, i, 1), '-x');
 end
 title('Policy Functions')
-legend('z=0.1', 'z=0.2', 'z=0.3', 'z=0.4')
 hold off; 
 
 % Simulations
 x0 = 0.5;
-T = 10;
-zSim = [0.1 0.1 0.1 0.2 0.2 0.2 0.3 0.3 0.3 0.4 0.4 0.4 0.3 0.3 0.3 0.2 0.2 0.2 0.1 0.1 0.1]
-xSim = Simulate(zSim, x0, control, Zstate, Y)
+T = 100;
+rng(1); 
+zSim = simulate(mc, T)/25;
+xSim, cSim = Simulate(zSim, x0, control, Zstate, Y, r)
 
 figure(3);
 hold on;
-plot(zSim, '-o');
-plot(xSim, '-x');
-legend('Endowment', 'Cake');
+plot(zSim(2:T+1), '-o');
+plot(xSim(2:T+1), '-x');
+plot(cSim, '-');
+legend('Income', 'Asset/Saving', 'Consumption');
 title('Simulation');
 hold off;
 
-function xSim = Simulate(zSim, x0, control, Zstate, Y)
-T = length(zSim)
-xSim = zeros(1, T);
+function [xSim, cSim] = Simulate(zSim, x0, control, Zstate, Y, r)
+T = length(zSim);
+xSim = zeros(1, T+1);
+cSim = zeros(1, T);
 [val,idx] = min(abs(control-x0));
 xSim(1) = control(idx);
 for t = 1:T
     [val,idz] = min(abs(Zstate-zSim(t)));
     [val,idx] = min(abs(control-xSim(t)));
     xSim(t+1) = Y(idx,idz,1);
+    cSim(t+1) = xSim(t)*(1+r)+zSim(t)-xSim(t+1);
 end
 end
