@@ -1,40 +1,42 @@
-% Infinite Horizon Dynamic Programming: 
-% Cake Eating
+% Infinite Horizon Deterministic Dynamic Programming: 
+% Optimal Growth
 clc; clear all;close all;
 
-% x: cake left at period t
-% V(x) = max u(x - x') + b * V(x')
-% s.t. 0 <= x' <= x
+% k: capital at period t
+% V(k) = max u(F(k) - k')+ b * V(k')
+% s.t. 0 <= k' <= F(k')
 
 % Params
+alpha = 0.3;
+A = 18.5;
 beta = 0.9;
 u = @(c) log(c);
+f = @(k) A*k.^alpha;
 
 % State and Control Space
 NX = 1000;
 NY = 1000;
-NJ = 500;
-lambda = 10; % sampling parameter
-MAX = 1.0;
-MIN = 0.01;
+NJ = 100;
+lambda = 2; % sampling parameter
+MAX = 20
+MIN = MAX/NX
 state = linspace(MIN^(1/lambda), MAX^(1/lambda), NX).^lambda;
 control = linspace(MIN^(1/lambda), MAX^(1/lambda), NY).^lambda;
 
 % Utility, Policy and Value Functions
 U = zeros(NX, NY);
 V = zeros(NX, NJ);
-V(:, NJ) = u(state);
 Y = zeros(NX, NJ);
 
 % Utility
 for ix = 1:NX
     for iy = 1:NY 
-        if control(iy) < state(ix)
+        if control(iy) < f(state(ix))
             % Feasible Controls
-            U(ix, iy) = u(state(ix) - control(iy));
+            U(ix, iy) = u(f(state(ix)) - control(iy));
         else
             % Infeasible Controls
-            U(ix, iy) = log(1e-30);
+            U(ix, iy) = -10000;
         end
     end
 end
@@ -48,8 +50,10 @@ for ij = NJ-1:-1:1
 end
 
 % Analytical Solution
-V_true = @(x) (1/(1-beta))*log((1-beta).*x) + beta*log(beta)/((1-beta)^2);
-Y_true = @(x) beta.*x;
+E = (1/(1-beta))*(log(A*(1-alpha*beta))+beta*alpha*log(A*alpha*beta)/(1-alpha*beta));
+F = alpha/(1-alpha*beta);
+V_true = @(k) E + F*log(k);
+Y_true = @(k) alpha*beta*A*k.^alpha;
 
 hold on;
 figure(1);
@@ -65,7 +69,7 @@ title('Policy Function')
 hold off;
 
 % Simulation
-x0 = 0.5;
+x0 = 1;
 T = 10;
 xSim = zeros(1, T);
 [val,idx] = min(abs(control-x0));
@@ -77,5 +81,6 @@ end
 figure(3)
 plot(xSim, '-x');
 title('Cake over time')
+
 
 
