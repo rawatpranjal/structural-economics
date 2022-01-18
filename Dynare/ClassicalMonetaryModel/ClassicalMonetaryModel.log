@@ -1,0 +1,136 @@
+Starting preprocessing of the model file ...
+WARNING: in the 'steady_state_model' block, variable 'V' is not assigned a value
+Found 12 equation(s).
+Evaluating expressions...done
+Computing static model derivatives (order 1).
+Computing dynamic model derivatives (order 1).
+Processing outputs ...
+done
+Preprocessing completed.
+
+
+
+
+Residuals of the static equations:
+
+Equation number 1 : 0 : W
+Equation number 2 : 0 : Q
+Equation number 3 : 0 : i
+Equation number 4 : 0 : Y
+Equation number 5 : 0 : 5
+Equation number 6 : 0 : 6
+Equation number 7 : 0 : R
+Equation number 8 : 0 : C
+Equation number 9 : 0 : 9
+Equation number 10 : 0 : 10
+Equation number 11 : 0 : V
+Equation number 12 : 0 : dM
+
+
+
+STEADY-STATE RESULTS:
+
+C  		 0.964679
+W  		 0.759044
+Pi 		 1
+A  		 1
+N  		 0.953184
+i  		 1.0101
+R  		 1.0101
+Y  		 0.964679
+V  		 0
+dM 		 0
+Q  		 0.99
+Z  		 1
+
+EIGENVALUES:
+         Modulus             Real        Imaginary
+
+               0                0                0
+               0               -0                0
+             0.5              0.5                0
+             0.5              0.5                0
+             0.9              0.9                0
+       2.138e+16        2.138e+16                0
+       2.427e+16        2.427e+16                0
+       1.438e+17       -1.438e+17                0
+
+
+There are 3 eigenvalue(s) larger than 1 in modulus 
+for 3 forward-looking variable(s)
+
+The rank condition is verified.
+
+
+MODEL SUMMARY
+
+  Number of variables:         12
+  Number of stochastic shocks: 3
+  Number of state variables:   5
+  Number of jumpers:           3
+  Number of static variables:  6
+
+
+MATRIX OF COVARIANCE OF EXOGENOUS SHOCKS
+Variables       eps_a     eps_z     eps_v
+eps_a        1.000000  0.000000  0.000000
+eps_z        0.000000  1.000000  0.000000
+eps_v        0.000000  0.000000  1.000000
+
+POLICY AND TRANSITION FUNCTIONS
+                                   Y               C              Pi               i               R              dM
+Constant                    0.964679        0.964679        1.000000        1.010101        1.010101               0
+A(-1)                       0.868211        0.868211       -0.060000       -0.145455       -0.090909        5.531520
+i(-1)                              0               0               0               0               0       14.929200
+V(-1)                              0               0       -0.333333       -0.168350               0        1.180000
+C(-1)                              0               0               0               0               0       -4.146459
+Z(-1)                              0               0        0.166667        0.336700        0.252525       -4.360000
+eps_a                       0.964679        0.964679       -0.066667       -0.161616       -0.101010        6.146133
+eps_z                              0               0        0.333333        0.673401        0.505051       -8.720000
+eps_v                              0               0       -0.666667       -0.336700               0        2.360000
+
+
+THEORETICAL MOMENTS
+VARIABLE         MEAN  STD. DEV.   VARIANCE
+Y              0.9647     2.2131     4.8979
+C              0.9647     2.2131     4.8979
+Pi             1.0000     0.8741     0.7641
+i              1.0101     0.9451     0.8933
+R              1.0101     0.6275     0.3938
+dM             0.0000    13.6535   186.4185
+
+
+
+VARIANCE DECOMPOSITION (in percent)
+       eps_a   eps_z   eps_v
+Y     100.00    0.00    0.00
+C     100.00    0.00    0.00
+Pi      3.06   19.39   77.55
+i      15.39   67.69   16.92
+R      13.64   86.36    0.00
+dM     22.46   63.97   13.57
+
+
+
+MATRIX OF CORRELATIONS
+Variables         Y       C      Pi       i       R      dM
+Y            1.0000  1.0000 -0.1750 -0.3923 -0.3693  0.0629
+C            1.0000  1.0000 -0.1750 -0.3923 -0.3693  0.0629
+Pi          -0.1750 -0.1750  1.0000  0.7932  0.4738 -0.1371
+i           -0.3923 -0.3923  0.7932  1.0000  0.9094 -0.2763
+R           -0.3693 -0.3693  0.4738  0.9094  1.0000 -0.3135
+dM           0.0629  0.0629 -0.1371 -0.2763 -0.3135  1.0000
+
+
+
+COEFFICIENTS OF AUTOCORRELATION
+Order          1       2       3       4       5
+Y         0.9000  0.8100  0.7290  0.6561  0.5905
+C         0.9000  0.8100  0.7290  0.6561  0.5905
+Pi        0.5122  0.2671  0.1435  0.0807  0.0484
+i         0.5616  0.3362  0.2180  0.1539  0.1173
+R         0.5545  0.3264  0.2074  0.1434  0.1075
+dM       -0.1555 -0.0815 -0.0441 -0.0251 -0.0153
+Total computing time : 0h00m08s
+Note: 1 warning(s) encountered in the preprocessor
+Note: warning(s) encountered in MATLAB/Octave code
