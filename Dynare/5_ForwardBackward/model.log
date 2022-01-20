@@ -1,0 +1,74 @@
+Starting preprocessing of the model file ...
+Found 2 equation(s).
+Evaluating expressions...done
+Computing static model derivatives (order 1).
+Computing dynamic model derivatives (order 2).
+Processing outputs ...
+done
+Preprocessing completed.
+
+STEADY-STATE RESULTS:
+
+y 		 0
+x 		 0
+
+EIGENVALUES:
+         Modulus             Real        Imaginary
+
+          0.7574           0.7574                0
+             0.9              0.9                0
+           9.243            9.243                0
+
+
+There are 1 eigenvalue(s) larger than 1 in modulus 
+for 1 forward-looking variable(s)
+
+The rank condition is verified.
+
+warning: stoch_simul: using order = 1 because Hessian is equal to zero
+warning: called from
+    stoch_simul at line 43 column 5
+    driver at line 166 column 27
+    dynare at line 293 column 1
+
+
+MODEL SUMMARY
+
+  Number of variables:         2
+  Number of stochastic shocks: 1
+  Number of state variables:   2
+  Number of jumpers:           1
+  Number of static variables:  0
+
+
+MATRIX OF COVARIANCE OF EXOGENOUS SHOCKS
+Variables           e
+e            0.000400
+
+POLICY AND TRANSITION FUNCTIONS
+                                   y               x
+x(-1)                       1.078795        0.900000
+y(-1)                       0.757359               0
+e                           1.198661        1.000000
+
+
+THEORETICAL MOMENTS
+VARIABLE         MEAN  STD. DEV.   VARIANCE
+y              0.0000     0.1936     0.0375
+x              0.0000     0.0459     0.0021
+
+
+
+MATRIX OF CORRELATIONS
+Variables         y       x
+y            1.0000  0.8924
+x            0.8924  1.0000
+
+
+
+COEFFICIENTS OF AUTOCORRELATION
+Order          1       2       3       4       5
+y         0.9856  0.9518  0.9057  0.8523  0.7952
+x         0.9000  0.8100  0.7290  0.6561  0.5905
+Total computing time : 0h00m01s
+Note: warning(s) encountered in MATLAB/Octave code

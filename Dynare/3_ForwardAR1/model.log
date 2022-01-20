@@ -1,0 +1,96 @@
+Starting preprocessing of the model file ...
+Found 1 equation(s).
+Evaluating expressions...done
+Computing static model derivatives (order 1).
+Computing dynamic model derivatives (order 1).
+Processing outputs ...
+done
+Preprocessing completed.
+
+STEADY-STATE RESULTS:
+
+y 		 1
+
+EIGENVALUES:
+         Modulus             Real        Imaginary
+
+               1                1                0
+
+
+There are 0 eigenvalue(s) larger than 1 in modulus 
+for 1 forward-looking variable(s)
+
+The rank condition ISN'T verified!
+
+error: Blanchard & Kahn conditions are not satisfied: indeterminacy.
+error: called from
+    print_info at line 32 column 5
+    stoch_simul at line 103 column 5
+    driver at line 144 column 27
+    dynare at line 293 column 1
+>> dynare model.mod
+warning: X13 binary is not available.
+If you are under Debian or Ubuntu, you can install it through your package manager, with 'apt install x13as'.
+If you are under Windows or macOS, this probably means that you did not install the dseries toolbox through an official package.
+Using 64-bit preprocessor
+Starting Dynare (version 4.6.3).
+Calling Dynare with arguments: none
+Starting preprocessing of the model file ...
+Found 1 equation(s).
+Evaluating expressions...done
+Computing static model derivatives (order 1).
+Computing dynamic model derivatives (order 1).
+Processing outputs ...
+done
+Preprocessing completed.
+
+
+STEADY-STATE RESULTS:
+
+y 		 0
+
+EIGENVALUES:
+         Modulus             Real        Imaginary
+
+           1.111            1.111                0
+
+
+There are 1 eigenvalue(s) larger than 1 in modulus 
+for 1 forward-looking variable(s)
+
+The rank condition is verified.
+
+
+MODEL SUMMARY
+
+  Number of variables:         1
+  Number of stochastic shocks: 1
+  Number of state variables:   0
+  Number of jumpers:           1
+  Number of static variables:  0
+
+
+MATRIX OF COVARIANCE OF EXOGENOUS SHOCKS
+Variables           e
+e            0.000100
+
+POLICY AND TRANSITION FUNCTIONS
+                                   y
+e                           1.000000
+
+
+MOMENTS OF SIMULATED VARIABLES
+VARIABLE              MEAN       STD. DEV.        VARIANCE        SKEWNESS        KURTOSIS
+y                 0.000606        0.005816        0.000034       -0.762855        0.051224
+
+
+CORRELATION OF SIMULATED VARIABLES
+VARIABLE         y
+y           1.0000
+
+
+AUTOCORRELATION OF SIMULATED VARIABLES
+VARIABLE         1       2       3       4       5
+y          -0.5717  0.1125 -0.2408  0.1799 -0.1442
+Total computing time : 0h00m03s
+Note: warning(s) encountered in MATLAB/Octave code
