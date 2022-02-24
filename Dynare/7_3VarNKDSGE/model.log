@@ -1,0 +1,69 @@
+Starting preprocessing of the model file ...
+Found 5 equation(s).
+Evaluating expressions...done
+Computing static model derivatives (order 1).
+Computing dynamic model derivatives (order 1).
+Processing outputs ...
+done
+Preprocessing completed.
+warning: Some of the parameters have no value (gamma) when using steady. If these parameters are not initialized in a steadystate file or a steady_state_model-block, Dynare may not be able to solve the model...
+
+STEADY-STATE RESULTS:
+
+y 		 1.10371
+i 		 -0.344308
+c 		 0.835782
+k 		 3.34457
+a 		 0
+warning: Some of the parameters have no value (gamma) when using stoch_simul. If these parameters are not initialized in a steadystate file or a steady_state_model-block, Dynare may not be able to solve the model...
+
+MODEL SUMMARY
+
+  Number of variables:         5
+  Number of stochastic shocks: 1
+  Number of state variables:   2
+  Number of jumpers:           2
+  Number of static variables:  2
+
+
+MATRIX OF COVARIANCE OF EXOGENOUS SHOCKS
+Variables           e
+e            0.000100
+
+POLICY AND TRANSITION FUNCTIONS
+                                   y               i               c               k               a
+Constant                    1.103709       -0.344308        0.835782        3.344571               0
+k(-1)                       0.330000       -0.517541        0.590408        0.962061               0
+a(-1)                       0.950000        3.043702        0.306708        0.076093        0.950000
+e                           1.000000        3.203897        0.322850        0.080097        1.000000
+
+
+THEORETICAL MOMENTS (HP filter, lambda = 1600)
+VARIABLE         MEAN  STD. DEV.   VARIANCE
+y              1.1037     0.0131     0.0002
+i             -0.3443     0.0418     0.0017
+c              0.8358     0.0047     0.0000
+k              3.3446     0.0037     0.0000
+a              0.0000     0.0130     0.0002
+
+
+
+MATRIX OF CORRELATIONS (HP filter, lambda = 1600)
+Variables         y       i       c       k       a
+y            1.0000  0.9903  0.9256  0.3618  0.9956
+i            0.9903  1.0000  0.8640  0.2285  0.9989
+c            0.9256  0.8640  1.0000  0.6877  0.8862
+k            0.3618  0.2285  0.6877  1.0000  0.2730
+a            0.9956  0.9989  0.8862  0.2730  1.0000
+
+
+
+COEFFICIENTS OF AUTOCORRELATION (HP filter, lambda = 1600)
+Order          1       2       3       4       5
+y         0.7217  0.4846  0.2868  0.1257 -0.0018
+i         0.7107  0.4670  0.2663  0.1050 -0.0208
+c         0.7941  0.5994  0.4206  0.2610  0.1222
+k         0.9596  0.8619  0.7268  0.5704  0.4058
+a         0.7133  0.4711  0.2711  0.1098 -0.0163
+Total computing time : 0h00m06s
+Note: warning(s) encountered in MATLAB/Octave code
