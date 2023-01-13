@@ -1,0 +1,18 @@
+What I Enjoyed: 
+1. Macro for insights into "ECONOMICS"
+(Ufuk Paper- Growth/Patents), HANK Monetary stuff.
+2. Causal Effects Estimation in Econometrics (term paper), DML, Graphs; Chernosukohov Paper. Very very applicable - in Econ and Outside. 
+3. RL stuff - Not as applicable outside. But super interesting. 
+
+What are you interested in? 
+- models that incorporate high dimensionality, causal effects
+- macroeconomics that yeilds good policy advice (e.g. Ufuk Growth, HANK models)
+
+What pays? 
+- 1. consulting
+- 2. data science/finance
+- 3. economist/govt job
+
+Which package do you like? 
+- EconML
+- CausalNex
