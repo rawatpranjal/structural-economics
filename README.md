@@ -1,7 +1,6 @@
 # Structural Economic Models
-1. Examples of Simple Dynamic Prog Models (Cake eating, job search, optimal growth, RBC, etc.)
-2. Dynare Codes for DSGE Simulations (New Keynesian Models)
-3. Heterogenous Agent Macro Models - Aiyagari, Krussel Smith
-4. Industrial Organisation - Demand estimation, Discrete choice, Dynamic discrete choice, BLP
-5. Revealed Preference - Afriat inequalities, Floyd-Warshall for GARP
-6. Other tools - root finding, projection, etc.
+1. Examples of Dynamic Programming Models (Cake eating, job search, optimal growth, RBC, etc.)
+2. Dynare Codes for DSGE Simulations (RBC, New Keynesian Models)
+3. Non-Linear Heterogenous Agent Models - Aiyagari, Krussel Smith
+4. Industrial Organisation - Logit Demand, BLP, Dynamic Discrete Choice
+5. Misc - Revealed Preference, Continuous Time
