@@ -6,8 +6,7 @@
 rm(list = ls())
 
 #Set working directory
-path <- "/Users/pranjal/Desktop/Structural-Economics/industrial-organisation/bertrand-with-logit-demand" #CHANGED
-
+path <- "/Users/pranjal/Desktop/Structural-Economics/3-industrial-organisation/bertrand-with-logit-demand" #CHANGED
 setwd(path)
 
 
@@ -50,25 +49,21 @@ f.foc_logit(p=rawdata$prices,c=calres$c,alpha=calres$alpha,
             xsi=calres$xsi,fNum=fNum2)
 
 #Compute post-merger equilibrium prices
-#simres = nleqslv(rawdata$prices,fn=f.foc_logit, #CHANGED
-#                 c=calres$c,fNum=fNum2,
-#                 alpha=calres$alpha,xsi=calres$xsi)
+simres = nleqslv(rawdata$prices,fn=f.foc_logit, #CHANGED
+                 c=calres$c,fNum=fNum2,
+                 alpha=calres$alpha,xsi=calres$xsi)
 
 #simres = nleqslv(rawdata$prices,fn=f.foc_logit, #CHANGED
 #                 c=calres$c*c(0.9,0.9,1,1),fNum=fNum2,
 #                 alpha=calres$alpha,xsi=calres$xsi)
 
-#simres = nleqslv(rawdata$prices,fn=f.foc_logit, #CHANGED
-#                 c=calres$c,fNum=c(1,1,1,1),
-#                 alpha=calres$alpha,xsi=calres$xsi)
-
-#simres = nleqslv(rawdata$prices,fn=f.foc_logit, #CHANGED
-#                 c=calres$c,fNum=fNum2,
-#                 alpha=calres$alpha,xsi=calres$xsi*c(1.1,1.1,1,1))
-
 simres = nleqslv(rawdata$prices,fn=f.foc_logit, #CHANGED
-                 c=calres$c*c(1,5,1,1),fNum=fNum2,
-                 alpha=calres$alpha,xsi=calres$xsi)
+                 c=calres$c,fNum=c(1,1,1,1),
+                alpha=calres$alpha,xsi=calres$xsi)
+
+#simres = nleqslv(rawdata$prices,fn=f.foc_logit, #CHANGED
+#                 c=calres$c*c(1,5,1,1),fNum=fNum2,
+#                 alpha=calres$alpha,xsi=calres$xsi)
 
 #Storing results
 simres$prices <- simres$x
