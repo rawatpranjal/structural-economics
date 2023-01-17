@@ -1,3 +1,5 @@
+Starting Dynare (version 5.3).
+Calling Dynare with arguments: none
 Starting preprocessing of the model file ...
 Found 4 equation(s).
 Evaluating expressions...done
@@ -6,6 +8,7 @@ Computing dynamic model derivatives (order 1).
 Processing outputs ...
 done
 Preprocessing completed.
+
 
 STEADY-STATE RESULTS:
 
@@ -52,25 +55,24 @@ e                                  0        1.000000               0        1.00
 
 MOMENTS OF SIMULATED VARIABLES
 VARIABLE              MEAN       STD. DEV.        VARIANCE        SKEWNESS        KURTOSIS
-C                 4.001664        0.009210        0.000085       -0.762469       -0.703462
-Y                 5.002247        0.011506        0.000132       -0.807263       -0.652039
-I                 0.000059        0.001428        0.000002       -0.072957        0.206807
-G                 1.000524        0.005271        0.000028       -0.657088        0.000738
+C                 4.059076        0.089975        0.008096        1.083224       -0.270622
+Y                 5.073781        0.112513        0.012659        1.082863       -0.271679
+I                 0.000076        0.004633        0.000021       -0.117630        1.174931
+G                 1.014629        0.026078        0.000680        0.773563       -0.566534
 
 
 CORRELATION OF SIMULATED VARIABLES
 VARIABLE         C       Y       I       G
-C           1.0000  0.8657  0.2604  0.0718
-Y           0.8657  1.0000  0.4516  0.5478
-I           0.2604  0.4516  1.0000  0.2600
-G           0.0718  0.5478  0.2600  1.0000
+C           1.0000  0.9847  0.0774  0.7845
+Y           0.9847  1.0000  0.2145  0.8789
+I           0.0774  0.2145  1.0000  0.4806
+G           0.7845  0.8789  0.4806  1.0000
 
 
 AUTOCORRELATION OF SIMULATED VARIABLES
 VARIABLE         1       2       3       4       5
-C           1.0379  0.7019  0.3939  0.1682 -0.1144
-Y           1.4498  0.7431  0.3152  0.0454 -0.1703
-I           0.4037  0.0479 -0.2898 -0.3969 -0.3884
-G           0.0621  0.0992 -0.2685 -0.0355 -0.3247
-Total computing time : 0h00m05s
-Note: warning(s) encountered in MATLAB/Octave code
+C           0.9756  0.9384  0.8873  0.8283  0.7664
+Y           0.9750  0.9370  0.8848  0.8263  0.7651
+I           0.7823  0.5018  0.2640  0.0986  0.0751
+G           0.8940  0.7995  0.7023  0.6160  0.5800
+Total computing time : 0h00m08s

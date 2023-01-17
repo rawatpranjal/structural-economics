@@ -1,3 +1,6 @@
+% AR(1) Model
+% x(t)=rho*x(t-1)+e(t)
+
 var x;
 varexo e; 
 parameters rho sigma;
@@ -22,6 +25,6 @@ var e;
 stderr sigma;
 end;
 
-stoch_simul(periods = 20, drop = 0, order =1);
+stoch_simul(periods = 100, drop = 0, order =1);
 rplot x;
 rplot e;
