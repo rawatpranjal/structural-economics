@@ -63,8 +63,8 @@ cal.standard = function(m,s,p,fNum) {
   
   #Obtains price coefficient via FOC of 1st firm
   if (1==length(fNum[fNum==1])){
-    #alpha = -1/((1-s[1])*(p[1]-c1))
-    alpha = as.vector(-solve(temp[fNum==1,fNum==1])[1,]%*%s[fNum==1]/(p[1]-c1))
+    alpha = -1/((1-s[1])*(p[1]-c1))
+    #alpha = as.vector(-solve(temp[fNum==1,fNum==1])[1,]%*%s[fNum==1]/(p[1]-c1))
   } else {
     alpha = as.vector(-solve(temp[fNum==1,fNum==1])[1,]%*%s[fNum==1]/(p[1]-c1))    
   }
