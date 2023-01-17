@@ -1,3 +1,6 @@
+% AR(2) Model
+% Y(t) = beta0+beta1*Y(t-1)+beta2*Y(t-2)+e  
+
 var C Y I G; 
 varexo e;
 parameters alpha beta rho sigma Gbar;
@@ -30,7 +33,8 @@ var e;
 stderr sigma;
 end;
 
-stoch_simul(periods=20, drop=0, order=1);
+stoch_simul(periods=100, drop=0, order=1);
+figure;
 rplot e;
 rplot G;
 rplot Y;

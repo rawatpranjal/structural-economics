@@ -15,15 +15,13 @@ tic0 = tic;
 global M_ options_ oo_ estim_params_ bayestopt_ dataset_ dataset_info estimation_info ys0_ ex0_
 options_ = [];
 M_.fname = 'model';
-M_.dynare_version = '4.6.3';
-oo_.dynare_version = '4.6.3';
-options_.dynare_version = '4.6.3';
+M_.dynare_version = '5.3';
+oo_.dynare_version = '5.3';
+options_.dynare_version = '5.3';
 %
 % Some global variables initialization
 %
 global_initialization;
-diary off;
-diary('model.log');
 M_.exo_names = cell(1,1);
 M_.exo_names_tex = cell(1,1);
 M_.exo_names_long = cell(1,1);
@@ -71,17 +69,20 @@ M_.endo_nbr = 4;
 M_.param_nbr = 5;
 M_.orig_endo_nbr = 4;
 M_.aux_vars = [];
+M_ = setup_solvers(M_);
 M_.Sigma_e = zeros(1, 1);
 M_.Correlation_matrix = eye(1, 1);
 M_.H = 0;
 M_.Correlation_matrix_ME = 1;
 M_.sigma_e_is_diagonal = true;
 M_.det_shocks = [];
+M_.surprise_shocks = [];
+M_.heteroskedastic_shocks.Qvalue_orig = [];
+M_.heteroskedastic_shocks.Qscale_orig = [];
 options_.linear = false;
 options_.block = false;
 options_.bytecode = false;
 options_.use_dll = false;
-options_.linear_decomposition = false;
 M_.orig_eq_nbr = 4;
 M_.eq_nbr = 4;
 M_.ramsey_eq_nbr = 0;
@@ -175,9 +176,10 @@ M_.exo_det_length = 0;
 M_.Sigma_e(1, 1) = (M_.params(4))^2;
 options_.drop = 0;
 options_.order = 1;
-options_.periods = 20;
+options_.periods = 100;
 var_list_ = {};
 [info, oo_, options_, M_] = stoch_simul(M_, options_, oo_, var_list_);
+figure;
 var_list_ = {'e'};
 rplot(var_list_);
 var_list_ = {'G'};
@@ -188,29 +190,32 @@ var_list_ = {'C'};
 rplot(var_list_);
 var_list_ = {'I'};
 rplot(var_list_);
-save('model_results.mat', 'oo_', 'M_', 'options_');
+
+
+oo_.time = toc(tic0);
+disp(['Total computing time : ' dynsec2hms(oo_.time) ]);
+if ~exist([M_.dname filesep 'Output'],'dir')
+    mkdir(M_.dname,'Output');
+end
+save([M_.dname filesep 'Output' filesep 'model_results.mat'], 'oo_', 'M_', 'options_');
 if exist('estim_params_', 'var') == 1
-  save('model_results.mat', 'estim_params_', '-append');
+  save([M_.dname filesep 'Output' filesep 'model_results.mat'], 'estim_params_', '-append');
 end
 if exist('bayestopt_', 'var') == 1
-  save('model_results.mat', 'bayestopt_', '-append');
+  save([M_.dname filesep 'Output' filesep 'model_results.mat'], 'bayestopt_', '-append');
 end
 if exist('dataset_', 'var') == 1
-  save('model_results.mat', 'dataset_', '-append');
+  save([M_.dname filesep 'Output' filesep 'model_results.mat'], 'dataset_', '-append');
 end
 if exist('estimation_info', 'var') == 1
-  save('model_results.mat', 'estimation_info', '-append');
+  save([M_.dname filesep 'Output' filesep 'model_results.mat'], 'estimation_info', '-append');
 end
 if exist('dataset_info', 'var') == 1
-  save('model_results.mat', 'dataset_info', '-append');
+  save([M_.dname filesep 'Output' filesep 'model_results.mat'], 'dataset_info', '-append');
 end
 if exist('oo_recursive_', 'var') == 1
-  save('model_results.mat', 'oo_recursive_', '-append');
+  save([M_.dname filesep 'Output' filesep 'model_results.mat'], 'oo_recursive_', '-append');
 end
-
-
-disp(['Total computing time : ' dynsec2hms(toc(tic0)) ]);
 if ~isempty(lastwarn)
   disp('Note: warning(s) encountered in MATLAB/Octave code')
 end
-diary off

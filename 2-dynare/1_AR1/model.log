@@ -1,3 +1,5 @@
+Starting Dynare (version 5.3).
+Calling Dynare with arguments: none
 Starting preprocessing of the model file ...
 Found 1 equation(s).
 Evaluating expressions...done
@@ -6,6 +8,7 @@ Computing dynamic model derivatives (order 1).
 Processing outputs ...
 done
 Preprocessing completed.
+
 
 STEADY-STATE RESULTS:
 
@@ -44,7 +47,7 @@ e                           1.000000
 
 MOMENTS OF SIMULATED VARIABLES
 VARIABLE              MEAN       STD. DEV.        VARIANCE        SKEWNESS        KURTOSIS
-x                 0.000524        0.005271        0.000028       -0.657088        0.000738
+x                 0.014629        0.026078        0.000680        0.773563       -0.566534
 
 
 CORRELATION OF SIMULATED VARIABLES
@@ -54,6 +57,5 @@ x           1.0000
 
 AUTOCORRELATION OF SIMULATED VARIABLES
 VARIABLE         1       2       3       4       5
-x           0.0621  0.0992 -0.2685 -0.0355 -0.3247
-Total computing time : 0h00m03s
-Note: warning(s) encountered in MATLAB/Octave code
+x           0.8940  0.7995  0.7023  0.6160  0.5800
+Total computing time : 0h00m04s
