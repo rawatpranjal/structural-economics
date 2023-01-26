@@ -10,6 +10,8 @@ clc; clear all;close all;
 alpha = 0.3;
 A = 18.5;
 beta = 0.9;
+kss = 1/(alpha*beta*A)^(1/(alpha-1));
+
 u = @(c) log(c);
 f = @(k) A*k.^alpha;
 
