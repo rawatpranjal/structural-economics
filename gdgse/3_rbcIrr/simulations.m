@@ -3,8 +3,11 @@ result=iter_model;
 % Policy Rules
 plot(result.var_state.K, result.var_policy.K_next);
 plot(result.var_state.K, result.var_policy.c);
+legend('low','high')
 plot(result.var_state.K, result.var_policy.mu);
-plot(result.var_state.K, result.var_policy.K_next-(1-0.025)*result.var_state.K);
+legend('low','high')
+
+plot(result.var_state.K, result.var_policy.K_next-(1-delta)*result.var_state.K);
 
 % Simulations
 
