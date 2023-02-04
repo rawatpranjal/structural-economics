@@ -47,11 +47,18 @@ f.mu <- function(pipars,demos,xlin){
 #####################################################################################
 
 f.rcl_indsh <- function(delta,mu,mktid){
-  
+	print(delta[1:5])
+	print(mu[1:5])
+  print(size(delta+mu))
   eg <- exp(delta+mu)
+  print(eg[1:5])
+  #print(eg)
   temp <- aggregate(eg,by=list(Category=mktid),FUN=sum)
+  #print(temp)
   temp2 <- 1+data.matrix(temp[,-1])
+  #print(temp2)
   denoms <- matrix(temp2[mktid,],dim(mu))
+  #print(denoms)
   sharei <- eg / denoms
   
   return(sharei)

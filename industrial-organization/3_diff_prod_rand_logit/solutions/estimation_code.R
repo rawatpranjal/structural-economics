@@ -186,6 +186,7 @@ SEs <- diag(var_cov)^0.5
 # Elasticities
 alpha_hat <- theta1_hat[1]
 pcoefi_hat <- alpha_hat + t(draws%*%pipars_hat)[1,]
+source("rcl_functions.R")
 sharei_hat <- f.rcl_indsh(delta_hat$delta,mu_hat,indata$mktid)
 
 mkt1_rcl_dqdp <- f.rcl_dqdp(pcoefi_hat,indata$price[indata$mktid==1],sharei_hat[indata$mktid==1,],indata$prodid[indata$mktid==1])
