@@ -1,0 +1,78 @@
+Starting Dynare (version 5.3).
+Calling Dynare with arguments: none
+Starting preprocessing of the model file ...
+Found 2 equation(s).
+Evaluating expressions...done
+Computing static model derivatives (order 1).
+Computing dynamic model derivatives (order 1).
+Processing outputs ...
+done
+Preprocessing completed.
+
+
+
+
+
+Residuals of the static equations:
+
+Equation number 1 : 0 : y
+Equation number 2 : 0 : 2
+
+
+
+STEADY-STATE RESULTS:
+
+p 		 9
+y 		 1
+
+EIGENVALUES:
+         Modulus             Real        Imaginary
+
+             0.9              0.9                0
+           1.111            1.111                0
+       6.944e+16        6.944e+16                0
+
+
+There are 2 eigenvalue(s) larger than 1 in modulus 
+for 2 forward-looking variable(s)
+
+The rank condition is verified.
+
+
+MODEL SUMMARY
+
+  Number of variables:         2
+  Number of stochastic shocks: 1
+  Number of state variables:   1
+  Number of jumpers:           2
+  Number of static variables:  0
+
+
+MATRIX OF COVARIANCE OF EXOGENOUS SHOCKS
+Variables           z
+z            1.000000
+
+POLICY AND TRANSITION FUNCTIONS
+                                   y               p
+Constant                    1.000000        9.000000
+y(-1)                       0.900000       12.363158
+z                           0.100000        1.373684
+
+
+MOMENTS OF SIMULATED VARIABLES
+VARIABLE              MEAN       STD. DEV.        VARIANCE        SKEWNESS        KURTOSIS
+y                 0.945882        0.227591        0.051798       -0.035279        0.186763
+p                 8.256588        3.126385        9.774285       -0.035279        0.186763
+
+
+CORRELATION OF SIMULATED VARIABLES
+VARIABLE         y       p
+y           1.0000  1.0000
+p           1.0000  1.0000
+
+
+AUTOCORRELATION OF SIMULATED VARIABLES
+VARIABLE         1       2       3       4       5
+y           0.9020  0.8072  0.7136  0.6358  0.5713
+p           0.9020  0.8072  0.7136  0.6358  0.5713
+Total computing time : 0h00m03s
