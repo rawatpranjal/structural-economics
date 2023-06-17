@@ -1,0 +1,133 @@
+Starting Dynare (version 5.3).
+Calling Dynare with arguments: none
+Starting preprocessing of the model file ...
+Substitution of exo lags: added 8 auxiliary variables and equations.
+Found 16 equation(s).
+Evaluating expressions...done
+Computing static model derivatives (order 1).
+Computing dynamic model derivatives (order 1).
+Processing outputs ...
+done
+Preprocessing completed.
+
+[Warning: Some of the parameters have no value (beta, psi, delta, gammax) when using steady. If these parameters are not
+initialized in a steadystate file or a steady_state_model-block, Dynare may not be able to solve the model. Note that simul,
+perfect_foresight_setup, and perfect_foresight_solver do not automatically call the steady state file.] 
+
+STEADY-STATE RESULTS:
+
+y               		 0.0447641
+c               		 -0.242918
+k               		 2.38657
+l               		 -1.10866
+z               		 0
+r               		 0.126923
+w               		 0.752949
+invest          		 -1.34153
+
+EIGENVALUES:
+         Modulus             Real        Imaginary
+
+       1.547e-19       -1.547e-19                0
+       1.118e-18       -1.118e-18                0
+       2.254e-18       -2.254e-18                0
+       2.447e-18       -2.447e-18                0
+       2.571e-18       -2.571e-18                0
+       3.345e-18        3.345e-18                0
+       3.821e-18        3.821e-18                0
+       4.192e-18        4.192e-18                0
+          0.9534           0.9534                0
+            0.97             0.97                0
+           1.057            1.057                0
+       1.416e+17        1.416e+17                0
+       7.432e+34       -7.432e+34                0
+
+
+There are 3 eigenvalue(s) larger than 1 in modulus 
+for 3 forward-looking variable(s)
+
+The rank condition is verified.
+
+
+MODEL SUMMARY
+
+  Number of variables:         16
+  Number of stochastic shocks: 2
+  Number of state variables:   10
+  Number of jumpers:           3
+  Number of static variables:  4
+
+
+MATRIX OF COVARIANCE OF EXOGENOUS SHOCKS
+Variables             eps_z_news  eps_z_surprise
+eps_z_news              1.000000        0.000000
+eps_z_surprise          0.000000        1.000000
+
+POLICY AND TRANSITION FUNCTIONS
+                                   y               c               k               l               z               r               w          invest
+Constant                    0.044764       -0.242918        2.386570       -1.108663               0        0.126923        0.752949       -1.341530
+k(-1)                       0.162911        0.535130        0.953418       -0.249387               0       -0.106246        0.412298       -0.953748
+eps_z_news(-1)             -0.231201        0.283838       -0.042352       -0.345076               0       -0.029345        0.113875       -1.776318
+eps_z_news(-2)             -0.244347        0.299977       -0.044760       -0.364697               0       -0.031013        0.120350       -1.877321
+eps_z_news(-3)             -0.258241        0.317034       -0.047305       -0.385434               0       -0.032777        0.127193       -1.984066
+eps_z_news(-4)             -0.272925        0.335061       -0.049995       -0.407350               0       -0.034640        0.134426       -2.096882
+eps_z_news(-5)             -0.288444        0.354113       -0.052838       -0.430513               0       -0.036610        0.142069       -2.216112
+eps_z_news(-6)             -0.304845        0.374248       -0.055842       -0.454992               0       -0.038692        0.150147       -2.342122
+eps_z_news(-7)             -0.322178        0.395528       -0.059018       -0.480863               0       -0.040892        0.158685       -2.475297
+eps_z_news(-8)              1.429035        0.473287        0.102434        0.640351        1.000000        0.181378        0.788684        4.296279
+z(-1)                       1.386164        0.459089        0.099361        0.621140        0.970000        0.175936        0.765024        4.167390
+eps_z_news                 -0.218762        0.268567       -0.040073       -0.326510               0       -0.027766        0.107748       -1.680749
+eps_z_surprise              1.429035        0.473287        0.102434        0.640351        1.000000        0.181378        0.788684        4.296279
+
+
+THEORETICAL MOMENTS
+VARIABLE         MEAN  STD. DEV.   VARIANCE
+y              0.0448     9.5374    90.9611
+c             -0.2429     7.3934    54.6621
+k              2.3866     9.5780    91.7374
+l             -1.1087     2.7899     7.7835
+z              0.0000     5.8173    33.8409
+r              0.1269     0.7740     0.5990
+w              0.7529     7.9251    62.8071
+invest        -1.3415    20.1972   407.9279
+
+
+
+VARIANCE DECOMPOSITION (in percent)
+              eps_z_news  eps_z_surprise
+y                  49.11           50.89
+c                  46.18           53.82
+k                  45.55           54.45
+l                  62.71           37.29
+z                  50.00           50.00
+r                  56.82           43.18
+w                  46.57           53.43
+invest             57.22           42.78
+
+
+
+MATRIX OF CORRELATIONS
+Variables          y        c        k        l        z        r        w   invest
+y             1.0000   0.9096   0.8222   0.6753   0.9897   0.3130   0.9657   0.8899
+c             0.9096   1.0000   0.9646   0.3079   0.8728  -0.0793   0.9863   0.6200
+k             0.8222   0.9646   1.0000   0.1705   0.7505  -0.2831   0.9295   0.4937
+l             0.6753   0.3079   0.1705   1.0000   0.7172   0.8577   0.4607   0.9374
+z             0.9897   0.8728   0.7505   0.7172   1.0000   0.4141   0.9386   0.9109
+r             0.3130  -0.0793  -0.2831   0.8577   0.4141   1.0000   0.0747   0.6783
+w             0.9657   0.9863   0.9295   0.4607   0.9386   0.0747   1.0000   0.7409
+invest        0.8899   0.6200   0.4937   0.9374   0.9109   0.6783   0.7409   1.0000
+
+
+
+COEFFICIENTS OF AUTOCORRELATION
+Order          1       2       3       4       5
+y         0.9715  0.9438  0.9169  0.8907  0.8653
+c         0.9970  0.9931  0.9883  0.9828  0.9766
+k         0.9990  0.9962  0.9918  0.9861  0.9791
+l         0.8819  0.7716  0.6686  0.5721  0.4818
+z         0.9700  0.9409  0.9127  0.8853  0.8587
+r         0.9248  0.8531  0.7847  0.7194  0.6571
+w         0.9918  0.9831  0.9737  0.9639  0.9536
+invest    0.9156  0.8362  0.7615  0.6912  0.6249
+Total computing time : 0h00m10s
+Note: warning(s) encountered in MATLAB/Octave code
