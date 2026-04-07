@@ -6,7 +6,7 @@
 
 This model studies how firms' entry and exit decisions determine market structure over time. Each period, incumbent firms decide whether to continue operating (paying a fixed cost $f$) or exit permanently. Simultaneously, potential entrants decide whether to pay a sunk cost $K$ to enter the market. Firms compete as Cournot oligopolists, so profits depend on the number of active firms.
 
-The model generates a stationary equilibrium with persistent heterogeneity in market structure: even in steady state, there is simultaneous entry and exit ("churning"). This captures a key empirical regularity in industrial organization — markets exhibit substantial firm turnover despite relatively stable aggregate concentration.
+The model generates a stationary equilibrium with persistent heterogeneity in market structure: even in steady state, there is simultaneous entry and exit ("churning"). This captures a key empirical regularity in industrial organization -- markets exhibit substantial firm turnover despite relatively stable aggregate concentration.
 
 ## Equations
 
@@ -14,25 +14,26 @@ The model generates a stationary equilibrium with persistent heterogeneity in ma
 
 $$\pi(N) = \frac{(a - c)^2}{b \cdot (N+1)^2}$$
 
-**Incumbent's value function:**
+**Incumbent's value function (with logistic idiosyncratic shock $\varepsilon$):**
 
-$$V_I(N) = \max\left\{ \pi(N) - f + \beta \, \mathbb{E}[V_I(N')], \quad 0 \right\}$$
+$$V_I(N) = \sigma_\varepsilon \cdot \log\!\left(1 + \exp\!\left(\frac{\pi(N) - f + \beta \, \mathbb{E}[V_I(N')]}{\sigma_\varepsilon}\right)\right)$$
 
-The first term is the value of staying (flow profit minus fixed cost, plus discounted
-continuation value). The second term (zero) is the value of exiting.
+This is the log-sum (inclusive value) from the logit model. An incumbent stays iff
+$\pi(N) - f + \varepsilon + \beta \, \mathbb{E}[V(N')] \geq 0$; the logistic shock
+generates a smooth exit probability:
+
+$$p_{\text{exit}}(N) = \frac{1}{1 + \exp\!\big((\pi(N) - f + \beta \, \mathbb{E}[V(N')]) / \sigma_\varepsilon\big)}$$
 
 **Free entry condition:**
 
-$$\mathbb{E}[V_I(N')] \leq K$$
+$$V_I(N') \leq K$$
 
-with equality if entry is positive. Potential entrants enter until the expected value
-of being an incumbent (post-entry) equals the sunk cost $K$.
+Potential entrants enter until the expected value of incumbency (in the post-entry market)
+falls below the sunk cost $K$.
 
 **Transition:**
 
-$$N' = \text{Survivors}(N, p_{\text{exit}}) + \text{Entrants}(N)$$
-
-where survivors follow a Binomial distribution and entry is determined by free entry.
+$$N' = \text{Binomial survivors}(N, 1 - p_{\text{exit}}) + \text{Entrants}$$
 
 ## Model Setup
 
@@ -44,19 +45,20 @@ where survivors follow a Binomial distribution and entry is determined by free e
 | $f$       | 0.5  | Fixed operating cost (per period) |
 | $K$       | 5.0  | Sunk entry cost |
 | $\beta$  | 0.95 | Discount factor |
+| $\sigma_\varepsilon$ | 1.0 | Logistic shock scale |
 | $N_{\max}$ | 30 | Maximum number of firms |
 
 ## Solution Method
 
-**Value Function Iteration (VFI)** with simultaneous computation of exit and entry policies:
+**Dampened Value Function Iteration (VFI)** with log-sum inclusive values:
 
 1. Initialize $V(N)$ for all states $N = 1, \ldots, N_{\max}$.
-2. For each state $N$, compute the continuation value by integrating over possible transitions (binomial survival of other incumbents).
-3. Determine exit probability via a smoothed (logistic) best response: firms exit when $V_{\text{stay}} < 0$.
-4. Determine entry via free entry: entrants enter until the marginal entrant's value falls below $K$.
+2. For each state, compute the exit probability from the logistic choice model using the current $V$.
+3. Compute $\mathbb{E}[V(N')]$ by integrating over the binomial distribution of survivors (other $N-1$ incumbents), with free entry determining entrants at each realization.
+4. Update $V(N)$ using the log-sum formula with dampening factor 0.3.
 5. Iterate until $\|V_{n+1} - V_n\|_\infty < 10^{-8}$.
 
-Converged in **2000 iterations** (error = 2.43e+00).
+Converged in **718 iterations** (error = 9.84e-09).
 
 The stationary distribution is computed by constructing the Markov transition matrix $P(N' | N)$ and finding its invariant distribution via power iteration.
 
@@ -76,42 +78,43 @@ The stationary distribution is computed by constructing the Markov transition ma
 
 **Equilibrium Statistics**
 
-| Statistic                     |    Value |
-|:------------------------------|---------:|
-| Expected number of firms E[N] |   13.25  |
-| Std. deviation of N           |    6.77  |
-| Modal number of firms         |    9     |
-| Per-firm profit at E[N]       |    0.327 |
-| Net profit (pi - f) at E[N]   |   -0.173 |
-| HHI at E[N]                   |  769     |
-| Expected exit rate            |    0     |
-| Expected entry (firms/period) |    0     |
-| VFI iterations                | 2000     |
+| Statistic                     |     Value |
+|:------------------------------|----------:|
+| Expected number of firms E[N] |    7.98   |
+| Std. deviation of N           |    0.15   |
+| Modal number of firms         |    8      |
+| Zero-profit N (static)        |   10.3    |
+| Per-firm profit at E[N]       |    0.79   |
+| Net profit (pi - f) at E[N]   |    0.29   |
+| HHI at E[N]                   | 1250      |
+| Expected exit rate            |    0.0028 |
+| Expected entry (firms/period) |    0.02   |
+| VFI iterations                |  718      |
 
 **Value Function and Policies at Selected Market Structures**
 
-|   N |   Profit pi(N) |   Net profit pi-f |   V(N) |   Exit prob |   Entry rate |
-|----:|---------------:|------------------:|-------:|------------:|-------------:|
-|   1 |         16     |            15.5   | 21.012 |      0      |            7 |
-|   2 |          7.111 |             6.611 | 12.123 |      0      |            6 |
-|   3 |          4     |             3.5   |  9.012 |      0      |            5 |
-|   5 |          1.778 |             1.278 |  6.79  |      0      |            3 |
-|   7 |          1     |             0.5   |  6.012 |      0      |            1 |
-|  10 |          0.529 |             0.029 |  0.758 |      0.0005 |            0 |
-|  15 |          0.25  |            -0.25  |  0.574 |      0.0032 |            0 |
-|  20 |          0.145 |            -0.355 |  0.021 |      0.4478 |            0 |
-|  25 |          0.095 |            -0.405 |  1.117 |      0      |            0 |
-|  30 |          0.067 |            -0.433 |  2.427 |      0      |            0 |
+|   N |   Profit pi(N) |   Net profit pi-f |   V(N) |   Exit prob |   Entry |
+|----:|---------------:|------------------:|-------:|------------:|--------:|
+|   1 |         16     |            15.5   | 21.067 |      0      |       7 |
+|   2 |          7.111 |             6.611 | 12.178 |      0      |       6 |
+|   3 |          4     |             3.5   |  9.067 |      0      |       5 |
+|   5 |          1.778 |             1.278 |  6.845 |      0.0004 |       3 |
+|   7 |          1     |             0.5   |  6.069 |      0.0019 |       1 |
+|  10 |          0.529 |             0.029 |  3.945 |      0.0224 |       0 |
+|  15 |          0.25  |            -0.25  |  2.477 |      0.1088 |       0 |
+|  20 |          0.145 |            -0.355 |  1.98  |      0.1785 |       0 |
+|  25 |          0.095 |            -0.405 |  1.722 |      0.2261 |       0 |
+|  30 |          0.067 |            -0.433 |  1.561 |      0.2593 |       0 |
 
 ## Economic Takeaway
 
 Dynamic entry/exit models explain why markets have persistent differences in concentration. Entry costs create barriers that sustain above-competitive profits, while exit occurs when negative shocks or increased competition erode incumbents' continuation values.
 
 **Key insights:**
-- The value of incumbency declines sharply with $N$: more competitors erode Cournot rents. Beyond a threshold, $V(N) = 0$ and all firms prefer to exit.
-- The sunk cost $K$ creates hysteresis: firms that are already in the market stay (since they only face $f$), while potential entrants need $V > K$ to justify entry. This wedge between entry and exit thresholds is the source of inertia in market structure.
-- The model generates "churning" — simultaneous entry and exit even in steady state — because stochastic transitions create states where some firms find it unprofitable to continue while others find it attractive to enter.
-- The stationary distribution shows the long-run probability of each market structure. Markets spend most of their time near the modal $N$, but occasionally visit very concentrated or very competitive states.
+- The value of incumbency declines sharply with $N$: more competitors erode Cournot rents. Beyond a threshold, $V(N) \approx 0$ and firms prefer to exit.
+- The sunk cost $K$ creates hysteresis: incumbents only face the per-period cost $f$ to stay, while entrants must pay $K$ up front. This wedge between entry and exit thresholds is the source of persistence in market structure.
+- The model generates "churning" -- simultaneous entry and exit even in steady state -- because idiosyncratic shocks push some incumbents below the exit threshold while the market remains attractive enough for new entrants.
+- The stationary distribution concentrates near the free-entry equilibrium $N$, but stochastic turnover generates a non-degenerate spread around this point.
 
 ## Reproduce
 

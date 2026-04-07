@@ -41,10 +41,10 @@ def main():
     # Income process: log(z') = rho * log(z) + eps, eps ~ N(0, sigma_eps^2)
     rho = 0.9            # Income persistence
     sigma_eps = 0.2      # Std dev of income innovation
-    n_income = 5         # Income states (Rouwenhorst)
+    n_income = 7         # Income states (Rouwenhorst)
 
     # Asset grid
-    n_asset = 100        # Asset grid points
+    n_asset = 200        # Asset grid points
     a_min = 0.0          # Natural borrowing limit
     a_max = 50.0         # Maximum asset level
 
