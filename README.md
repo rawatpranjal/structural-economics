@@ -53,7 +53,10 @@ python run.py
 | <img src="industrial-organization/nash-in-nash/figures/thumb.png" width="120"> | [**Nash-in-Nash**](industrial-organization/nash-in-nash/) | Bilateral bargaining | Incremental value = leverage in vertical markets |
 | <img src="industrial-organization/merger-simulation/figures/thumb.png" width="120"> | [**Merger Simulation**](industrial-organization/merger-simulation/) | Multi-demand | Demand model choice drives policy conclusions |
 
-## Choice Models
+## Choice & Demand
+
+*A progression from nonparametric revealed preference to structural demand estimation:*
+*GARP → Logit → Nested Logit → BLP, with supply-side markup recovery at each stage.*
 
 | | Model | Method | Key Insight |
 |:---:|---|---|---|
@@ -62,6 +65,8 @@ python run.py
 | <img src="choice/preference-recoverability/figures/thumb.png" width="120"> | [**Preference Recoverability**](choice/preference-recoverability/) | Afriat numbers | Bound indifference curves without functional form |
 | <img src="choice/logit-discrete-choice/figures/thumb.png" width="120"> | [**Logit Discrete Choice**](choice/logit-discrete-choice/) | MLE | IIA property: cross-elasticities proportional to shares |
 | <img src="choice/bayesian-learning/figures/thumb.png" width="120"> | [**Bayesian Learning**](choice/bayesian-learning/) | Bayes' rule | Optimal classifier; ML converges to Bayes |
+| <img src="choice/logit-supply-side/figures/thumb.png" width="120"> | [**Logit + Supply Side**](choice/logit-supply-side/) | IV/2SLS + FOC | Recover marginal costs from demand estimates alone |
+| <img src="choice/nested-logit/figures/thumb.png" width="120"> | [**Nested Logit**](choice/nested-logit/) | Berry inversion | Same-nest substitution 14x higher than cross-nest |
 
 ## Optimal Control
 
