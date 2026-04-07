@@ -50,14 +50,16 @@ python run.py
 | <img src="industrial-organization/static-games/figures/thumb.png" width="120"> | [**Static Games**](industrial-organization/static-games/) | Nash equilibrium | Cournot output between monopoly and competition |
 | <img src="industrial-organization/collusion-detection/figures/thumb.png" width="120"> | [**Collusion Detection**](industrial-organization/collusion-detection/) | Repeated games | $\delta^* = 9/17$ for duopoly; more firms = harder to collude |
 | <img src="industrial-organization/dynamic-entry-exit/figures/thumb.png" width="120"> | [**Dynamic Entry/Exit**](industrial-organization/dynamic-entry-exit/) | Dynamic programming | Entry costs sustain above-competitive profits |
+| <img src="industrial-organization/nash-in-nash/figures/thumb.png" width="120"> | [**Nash-in-Nash**](industrial-organization/nash-in-nash/) | Bilateral bargaining | Incremental value = leverage in vertical markets |
 
 ## Choice Models
 
 | | Model | Method | Key Insight |
 |:---:|---|---|---|
 | <img src="choice/revealed-preference-afriat/figures/thumb.png" width="120"> | [**Revealed Preference**](choice/revealed-preference-afriat/) | Afriat + Warshall | GARP: testable implication of utility maximization |
-| <img src="choice/logit-discrete-choice/figures/thumb.png" width="120"> | [**Logit Discrete Choice**](choice/logit-discrete-choice/) | MLE | IIA property: cross-elasticities proportional to shares |
 | <img src="choice/garp-warshall/figures/thumb.png" width="120"> | [**GARP & Warshall**](choice/garp-warshall/) | Transitive closure | Bronars power increases with observations |
+| <img src="choice/preference-recoverability/figures/thumb.png" width="120"> | [**Preference Recoverability**](choice/preference-recoverability/) | Afriat numbers | Bound indifference curves without functional form |
+| <img src="choice/logit-discrete-choice/figures/thumb.png" width="120"> | [**Logit Discrete Choice**](choice/logit-discrete-choice/) | MLE | IIA property: cross-elasticities proportional to shares |
 | <img src="choice/bayesian-learning/figures/thumb.png" width="120"> | [**Bayesian Learning**](choice/bayesian-learning/) | Bayes' rule | Optimal classifier; ML converges to Bayes |
 
 ## Optimal Control
@@ -74,6 +76,13 @@ python run.py
 | | Model | Method | Key Insight |
 |:---:|---|---|---|
 | <img src="continuous-time/huggett-incomplete-markets/figures/thumb.png" width="120"> | [**Huggett (1993)**](continuous-time/huggett-incomplete-markets/) | HJB + KFE | Precautionary savings push $r < \rho$ in equilibrium |
+| <img src="continuous-time/hjb-growth/figures/thumb.png" width="120"> | [**HJB Growth**](continuous-time/hjb-growth/) | Upwind FD | Continuous-time growth via finite differences |
+
+## Time Series
+
+| | Model | Method | Key Insight |
+|:---:|---|---|---|
+| <img src="time-series/fred-macro-data/figures/thumb.png" width="120"> | [**FRED Macro Data**](time-series/fred-macro-data/) | HP filter | Okun's law, Phillips curve in cyclical components |
 
 ---
 

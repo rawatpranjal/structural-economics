@@ -1,0 +1,5 @@
+Variable,Volatility (%),Rel. Volatility,Corr. with GDP,Autocorrelation
+GDP_growth,2.896,1.0,1.0,0.282
+CPI_inflation,1.159,0.4,0.174,0.483
+Unemployment,0.975,0.337,-0.423,0.649
+FedFunds,2.007,0.693,0.187,0.599
