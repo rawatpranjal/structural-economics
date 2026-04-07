@@ -67,6 +67,7 @@ python run.py
 | <img src="choice/bayesian-learning/figures/thumb.png" width="120"> | [**Bayesian Learning**](choice/bayesian-learning/) | Bayes' rule | Optimal classifier; ML converges to Bayes |
 | <img src="choice/logit-supply-side/figures/thumb.png" width="120"> | [**Logit + Supply Side**](choice/logit-supply-side/) | IV/2SLS + FOC | Recover marginal costs from demand estimates alone |
 | <img src="choice/nested-logit/figures/thumb.png" width="120"> | [**Nested Logit**](choice/nested-logit/) | Berry inversion | Same-nest substitution 14x higher than cross-nest |
+| <img src="choice/blp-full-pipeline/figures/thumb.png" width="120"> | [**BLP Full Pipeline**](choice/blp-full-pipeline/) | Contraction + GMM | Random coefficients: rich substitution patterns |
 
 ## Optimal Control
 
