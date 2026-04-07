@@ -83,6 +83,7 @@ python run.py
 | | Model | Method | Key Insight |
 |:---:|---|---|---|
 | <img src="time-series/fred-macro-data/figures/thumb.png" width="120"> | [**FRED Macro Data**](time-series/fred-macro-data/) | HP filter | Okun's law, Phillips curve in cyclical components |
+| <img src="time-series/stock-watson/figures/thumb.png" width="120"> | [**Stock-Watson Factors**](time-series/stock-watson/) | PCA | One factor explains 57% of variance; 28% forecast gain |
 
 ---
 
