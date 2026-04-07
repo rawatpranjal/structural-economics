@@ -15,3 +15,7 @@ dynamic entry/exit, market concentration, and game theory.
 - GUPPI (Gross Upward Pricing Pressure Index) for merger analysis
 - Herfindahl-Hirschman Index for market concentration
 - Dynamic discrete choice for entry/exit
+- Nash-in-Nash bilateral bargaining in vertical markets
+- Collusion stability via repeated games (Folk theorem)
+- Demand estimation progression: logit -> nested logit -> BLP
+- Supply side: markup recovery without accounting data

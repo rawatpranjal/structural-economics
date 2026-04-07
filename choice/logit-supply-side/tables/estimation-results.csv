@@ -1,0 +1,5 @@
+Parameter,True,OLS,IV/2SLS,IV s.e.
+alpha,1.500,1.427,1.500,0.013
+beta_sugar,0.300,0.961,1.041,0.024
+beta_fiber,0.500,1.212,1.317,0.028
+beta_const,1.000,-6.005,-6.731,0.241
