@@ -84,6 +84,8 @@ python run.py
 | | Model | Method | Key Insight |
 |:---:|---|---|---|
 | <img src="global-dsge/rbc-nonlinear/figures/thumb.png" width="120"> | [**RBC Nonlinear**](global-dsge/rbc-nonlinear/) | Global VFI | Asymmetric responses: recessions are sharper than expansions |
+| <img src="global-dsge/rbc-capital-tax/figures/thumb.png" width="120"> | [**RBC Capital Tax**](global-dsge/rbc-capital-tax/) | Global VFI | Laffer curve: revenue peaks then falls with tax rate |
+| <img src="global-dsge/rbc-irreversible-investment/figures/thumb.png" width="120"> | [**Irreversible Investment**](global-dsge/rbc-irreversible-investment/) | VFI + constraint | Occasionally binding constraint amplifies downturns |
 
 ## Time Series
 
