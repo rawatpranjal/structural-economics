@@ -1,0 +1,3 @@
+Model,std(Y) %,std(C)/std(Y),std(I)/std(Y),"corr(C,Y)",mean(K),mean(I/Y)
+Irreversible,3.804,1.340,0.207,0.999,37.6138,0.2548
+Standard RBC,3.804,1.340,0.207,0.999,37.6138,0.2548
