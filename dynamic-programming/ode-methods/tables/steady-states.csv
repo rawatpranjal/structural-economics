@@ -1,0 +1,9 @@
+Model,Variable,Value,Formula
+Solow Growth,k*,7.9963,(s/(n+delta))^(1/(1-alpha))
+Solow Growth,y*,1.8658,f(k*) = k*^alpha
+Solow Growth,c*,1.3061,(1-s)*y*
+Ramsey Optimal Growth,k*,5.5843,(alpha/(delta+rho))^(1/(1-alpha))
+Ramsey Optimal Growth,y*,1.6753,f(k*) = k*^alpha
+Ramsey Optimal Growth,c*,1.3961,f(k*) - delta*k*
+Lotka-Volterra,x* (prey),4.0000,gamma/delta
+Lotka-Volterra,y* (predator),2.7500,alpha/beta

@@ -1,0 +1,6 @@
+Variable,Std Dev (%),Relative Std,Corr with Y,Autocorr(1)
+Output (Y),4.55,1.00,1.00,0.71
+Consumption (C),1.54,0.34,0.48,0.74
+Investment (I),18.75,4.12,0.96,0.69
+Capital (K),1.32,0.29,0.07,0.95
+Labor (L),2.75,0.60,0.94,0.70

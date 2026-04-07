@@ -1,0 +1,10 @@
+Statistic,EEI,VFI,EGP
+Iterations to converge,149,203,151
+Wall-clock time (s),8.07,0.30,0.15
+Mean assets (rel. to income),0.4118,---,---
+Fraction constrained (%),3.1,---,---
+Mean MPC,0.2184,---,---
+Theoretical MPC limit,0.0413,---,---
+10th percentile wealth,0.074,---,---
+50th percentile wealth,0.376,---,---
+90th percentile wealth,0.793,---,---

@@ -1,0 +1,8 @@
+Variable,Value
+Equilibrium interest rate r*,0.03192
+Mean wealth E[a],-0.00000
+Mean income E[z],0.1500
+Mean consumption E[c],0.1500
+Prob(z = z_low),0.5000
+Prob(z = z_high),0.5000
+HJB iterations,8

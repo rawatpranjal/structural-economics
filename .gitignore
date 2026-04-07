@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.venv/
+env/
+venv/
+
+# MATLAB
+*.asv
+*.mex*
+*.mat
+
+# Dynare generated output
+dynare/**/+model/
+dynare/**/*.log
+dynare/**/*_dynamic.m
+dynare/**/*_static.m
+dynare/**/*_results.mat
+
+# Large files (keep in _legacy/)
+*.pdf
+!_legacy/**/*.pdf
