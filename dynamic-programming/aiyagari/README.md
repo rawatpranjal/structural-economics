@@ -55,9 +55,9 @@ For each candidate $r$:
 4. Compute aggregate capital supply $K^s = \int a \, d\mu$.
 5. If $K^s > K^d$, lower $r$; if $K^s < K^d$, raise $r$.
 
-Bisection converged in **50 iterations** with tolerance 1e-05.
+Bisection converged in **15 iterations** with tolerance 5e-04.
 
-Equilibrium interest rate: $r^* = 0.025960$ (vs. $1/\beta - 1 = 0.041667$).
+Equilibrium interest rate: $r^* = 0.025959$ (vs. $1/\beta - 1 = 0.041667$).
 
 ## Results
 
@@ -77,14 +77,14 @@ Equilibrium interest rate: $r^* = 0.025960$ (vs. $1/\beta - 1 = 0.041667$).
 
 | Variable                   | Value               |
 |:---------------------------|:--------------------|
-| Interest rate $r$          | 0.025960            |
+| Interest rate $r$          | 0.025959            |
 | Wage $w$                   | 1.2734              |
 | Capital $K$                | 6.7514              |
 | Output $Y$                 | 1.9888              |
 | Capital-output ratio $K/Y$ | 3.3948              |
 | Gini coefficient           | 0.5271              |
 | Fraction at constraint     | 0.0241              |
-| $r$ vs $1/\beta - 1$       | 0.025960 < 0.041667 |
+| $r$ vs $1/\beta - 1$       | 0.025959 < 0.041667 |
 
 ## Economic Takeaway
 
