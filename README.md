@@ -78,6 +78,15 @@ python run.py
 | <img src="optimal-control/continuous-cake-eating/figures/thumb.png" width="120"> | [**Continuous Cake Eating**](optimal-control/continuous-cake-eating/) | Pontryagin | Shadow price rises at rate $\rho$ in current value |
 | <img src="optimal-control/ramsey-growth/figures/thumb.png" width="120"> | [**Ramsey Growth**](optimal-control/ramsey-growth/) | Shooting method | Saddle path found by bisection on initial consumption |
 
+## Dynare (DSGE)
+
+| | Model | Method | Key Insight |
+|:---:|---|---|---|
+| <img src="dynare/rbc/figures/thumb.png" width="120"> | [**RBC**](dynare/rbc/) | Log-linearization | TFP shock: output peaks on impact, capital builds slowly |
+| <img src="dynare/nkdsge/figures/thumb.png" width="120"> | [**New Keynesian**](dynare/nkdsge/) | Undetermined coefficients | Taylor principle: $\phi_\pi > 1$ for determinacy |
+| <img src="dynare/ar-processes/figures/thumb.png" width="120"> | [**AR Processes**](dynare/ar-processes/) | Simulation | Persistence drives business cycle propagation |
+| <img src="dynare/assetNews/figures/thumb.png" width="120"> | [**Asset Pricing + News**](dynare/assetNews/) | Present-value pricing | News shocks: prices lead dividends |
+
 ## Continuous Time
 
 | | Model | Method | Key Insight |
