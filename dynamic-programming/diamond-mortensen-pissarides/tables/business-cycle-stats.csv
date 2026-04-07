@@ -1,0 +1,6 @@
+Variable,Mean,Std Dev,"Corr(x, z)"
+Productivity z,1.0008,0.0210,1.0000
+Unemployment u,0.0649,0.0014,-0.9393
+Vacancies v,0.0649,0.0009,0.8649
+Tightness theta,1.0014,0.0327,1.0000
+v/u ratio,1.0014,0.0327,1.0000

@@ -1,0 +1,9 @@
+Variable,Value
+Interest rate $r$,0.025959
+Wage $w$,1.2734
+Capital $K$,6.7514
+Output $Y$,1.9888
+Capital-output ratio $K/Y$,3.3948
+Gini coefficient,0.5271
+Fraction at constraint,0.0241
+$r$ vs $1/\beta - 1$,0.025959 < 0.041667

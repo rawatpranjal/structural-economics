@@ -1,0 +1,62 @@
+---
+title: "HW1_PRANJAL"
+output:
+  pdf_document: default
+  html_document: default
+date: "2023-01-14"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Q1
+
+Issues:
+
+1. Installation of nleqslv with "install.packages(nleqslv)"
+2. Wrong formula for alpha -> corrected with -1 to the first segment. 
+3. Wrong formula for "temp" and "diag(temp)" for dqdp; added -1 before both. Same issue in dqdp_logit. 
+4. Wrong formula for quant_logit -> corrected with +1 in denominator and + instead of - before alpha*p. 
+
+After these changes foc_logit gives 0 vector and post-merger prices and UPP matches desired result. 
+
+## Q2 
+
+```
+simres = nleqslv(rawdata$prices,fn=f.foc_logit, #CHANGED
+                 c=calres$c*c(0.9,0.9,1,1),fNum=fNum2,
+                 alpha=calres$alpha,xsi=calres$xsi)
+```
+
+New merger prices under new marginal costs are:
+
+1.042042 1.042042 1.006144 1.006144
+
+## Q3
+
+```
+simres = nleqslv(rawdata$prices,fn=f.foc_logit, #CHANGED
+                 c=calres$c,fNum=c(1,1,1,1),
+                 alpha=calres$alpha,xsi=calres$xsi)
+```
+
+New merger prices under collusion in the post-merger scene are:
+1.734383 1.734383 1.627240 1.627240
+
+## Q4
+
+* Improvement in Unobserved Quality
+
+Post Merger we see an increase in the unobserved quality of the merged products due to workforce and IP sharing. The unobserved quality of merging products rises by 10%.  
+
+```
+simres = nleqslv(rawdata$prices,fn=f.foc_logit, #CHANGED
+                 c=calres$c,fNum=fNum2,
+                 alpha=calres$alpha,xsi=calres$xsi*c(1.1,1.1,1,1))
+```
+
+New merger prices:
+1.1099058 1.1099058 0.9989174 0.9989174
+
+

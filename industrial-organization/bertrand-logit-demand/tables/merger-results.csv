@@ -1,0 +1,5 @@
+Scenario,Avg Price,Price Change (%),Consumer Surplus,HHI
+Pre-merger,1.0000,0.00,0.3318,2778
+Merger 1+2,1.0456,4.56,0.3098,3351
+Merger 1+2 (cost savings),1.0241,2.41,0.3197,3338
+Full collusion,1.6808,68.08,-0.1788,10000

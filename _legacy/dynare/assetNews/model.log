@@ -1,0 +1,57 @@
+Starting Dynare (version 5.3).
+Calling Dynare with arguments: none
+Starting preprocessing of the model file ...
+Substitution of exo lags: added 1 auxiliary variables and equations.
+Found 3 equation(s).
+Evaluating expressions...done
+Computing static model derivatives (order 1).
+Computing dynamic model derivatives (order 3).
+Processing outputs ...
+done
+Preprocessing completed.
+
+
+
+
+
+Residuals of the static equations:
+
+Equation number 1 : 0 : d
+Equation number 2 : 0 : 2
+
+
+
+STEADY-STATE RESULTS:
+
+p               		 99
+d               		 1
+
+EIGENVALUES:
+         Modulus             Real        Imaginary
+
+       1.578e-17        1.578e-17                0
+             0.9              0.9                0
+            1.01             1.01                0
+             Inf              Inf                0
+
+
+There are 2 eigenvalue(s) larger than 1 in modulus 
+for 2 forward-looking variable(s)
+
+The rank condition is verified.
+
+
+MODEL SUMMARY
+
+  Number of variables:         3
+  Number of stochastic shocks: 2
+  Number of state variables:   2
+  Number of jumpers:           2
+  Number of static variables:  0
+
+
+MATRIX OF COVARIANCE OF EXOGENOUS SHOCKS
+Variables           z         n
+z            1.000000  0.000000
+n            0.000000  1.000000
+

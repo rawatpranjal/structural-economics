@@ -1,0 +1,64 @@
+Starting preprocessing of the model file ...
+Found 2 equation(s).
+Evaluating expressions...done
+Computing static model derivatives (order 1).
+Computing dynamic model derivatives (order 1).
+Processing outputs ...
+done
+Preprocessing completed.
+
+STEADY-STATE RESULTS:
+
+y 		 0
+x 		 0
+
+EIGENVALUES:
+         Modulus             Real        Imaginary
+
+             0.9              0.9                0
+              10               10                0
+
+
+There are 1 eigenvalue(s) larger than 1 in modulus 
+for 1 forward-looking variable(s)
+
+The rank condition is verified.
+
+
+MODEL SUMMARY
+
+  Number of variables:         2
+  Number of stochastic shocks: 1
+  Number of state variables:   1
+  Number of jumpers:           1
+  Number of static variables:  0
+
+
+MATRIX OF COVARIANCE OF EXOGENOUS SHOCKS
+Variables           e
+e            0.000400
+
+POLICY AND TRANSITION FUNCTIONS
+                                   y               x
+x(-1)                       0.989011        0.900000
+e                           1.098901        1.000000
+
+
+MOMENTS OF SIMULATED VARIABLES
+VARIABLE              MEAN       STD. DEV.        VARIANCE        SKEWNESS        KURTOSIS
+y                 0.001152        0.011584        0.000134       -0.657088        0.000738
+x                 0.001049        0.010542        0.000111       -0.657088        0.000738
+
+
+CORRELATION OF SIMULATED VARIABLES
+VARIABLE         y       x
+y           1.0000  1.0000
+x           1.0000  1.0000
+
+
+AUTOCORRELATION OF SIMULATED VARIABLES
+VARIABLE         1       2       3       4       5
+y           0.0621  0.0992 -0.2685 -0.0355 -0.3247
+x           0.0621  0.0992 -0.2685 -0.0355 -0.3247
+Total computing time : 0h00m03s
+Note: warning(s) encountered in MATLAB/Octave code

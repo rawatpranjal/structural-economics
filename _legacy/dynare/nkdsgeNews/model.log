@@ -1,0 +1,5 @@
+Starting Dynare (version 5.3).
+Calling Dynare with arguments: none
+Starting preprocessing of the model file ...
+ERROR: model.mod: line 22, cols 1-12: k is neither endogenous or exogenous.
+

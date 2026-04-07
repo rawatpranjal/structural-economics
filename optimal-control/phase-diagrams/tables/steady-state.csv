@@ -1,0 +1,7 @@
+Quantity,Value,Description
+$k^*$,5.5843,Steady-state capital
+$c^*$,1.3961,Steady-state consumption
+$y^*$,1.6753,Steady-state output
+$r^*$,0.0400,Net interest rate (= rho at ss)
+$\lambda_1$,-0.0710,Stable eigenvalue
+$\lambda_2$,0.1110,Unstable eigenvalue

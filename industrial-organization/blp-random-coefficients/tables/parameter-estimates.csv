@@ -1,0 +1,6 @@
+Parameter,True,Estimated
+$\beta_0$ (intercept),2.000,1.969
+$\beta_x$ (characteristic),1.500,1.576
+$\alpha$ (price),-0.800,-0.835
+$\sigma_x$ (RC on $x$),0.800,0.951
+$\sigma_p$ (RC on price),0.300,0.196

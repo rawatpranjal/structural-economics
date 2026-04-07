@@ -1,0 +1,11 @@
+,Obs 1,Obs 2,Obs 3,Obs 4,Obs 5,Obs 6,Obs 7,Obs 8,Obs 9,Obs 10
+Obs 1,--,R,R,,,,,R,R,R
+Obs 2,,--,R,,,,,R,,
+Obs 3,,,--,,,,,,,
+Obs 4,,R,R,--,R,R,,R,R,R
+Obs 5,,R,R,,--,R,,R,R,R
+Obs 6,,,R,,,--,,,,
+Obs 7,R,R,R,,R,R,--,R,R,R
+Obs 8,,,R,,,,,--,,
+Obs 9,,R,R,,,,,R,--,R
+Obs 10,,,R,,,,,,,--

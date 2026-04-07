@@ -1,0 +1,9 @@
+Starting Dynare (version 5.3).
+Calling Dynare with arguments: none
+Starting preprocessing of the model file ...
+
+Macro-processing error: backtrace...
+- @#includepath: model.mod:24.1-32 Could not open NK_linear_common.inc. The following directories were searched:
+   * /Users/pranjal/Desktop/Structural-Economics/dynare/nkpcNews
+
+

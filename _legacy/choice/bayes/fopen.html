@@ -1,0 +1,1441 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>Open file, or obtain information about open files - MATLAB fopen</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<link rel="canonical" href="https://www.mathworks.com/help/matlab/ref/fopen.html" />
+<script src="/etc.clientlibs/mathworks/clientlibs/customer-ui/components/webvitals.min.20220801024749208.js"></script><link rel="stylesheet" href="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/common.min.20220801024749208.css" type="text/css">
+<link rel="stylesheet" href="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/common/footer.min.20220801024749208.css" type="text/css">
+<link href="/includes_content/responsive/css/site6_offcanvas_v2.css?20220914170000" rel="stylesheet" type="text/css">
+<!-- CRUX 2.0 -->
+<link href="/includes_content/responsive/css/site7_crux.css?20220914170000" rel="stylesheet" type="text/css">
+<script src="/includes_content/responsive/scripts/jquery/jquery-1.12.4.min.js?20220914170000"></script>
+<script src="/includes_content/responsive/scripts/bootstrap/bootstrap.min.js?20220914170000"></script>
+<script src="/includes_content/responsive/scripts/global.js?20220914170000"></script>
+<script src="/etc.clientlibs/mathworks/clientlibs/customer-ui/components/webvitals.min.20220801024749208.js"></script>
+<!-- BEGIN Adobe DTM -->
+<script>(function(g,b,d,f){(function(a,c,d){if(a){var e=b.createElement("style");e.id=c;e.innerHTML=d;a.appendChild(e)}})(b.getElementsByTagName("head")[0],"at-body-style",d);setTimeout(function(){var a=b.getElementsByTagName("head")[0];if(a){var c=b.getElementById("at-body-style");c&&a.removeChild(c)}},f)})(window,document,"[class*='personalization-container']:not([id^='web-application']) {opacity: 0 !important}",2E3);</script>
+<script src="//assets.adobedtm.com/d0cc0600946eb3957f703b9fe43c3590597a8c2c/satelliteLib-e8d23c2e444abadc572df06537e2def59c01db09.js" async></script>
+<!-- END Adobe DTM -->
+<link href="/includes_content/releases/R2022b/css/doc_center.css?20220914170000" rel="stylesheet" type="text/css">
+<link href="/includes_content/releases/R2022b/css/doc_center_print.css?20220914170000" rel="stylesheet" type="text/css" media="print">
+<script src="/includes_content/releases/R2022b/scripts/matlab_dialog.js?20220914170000"></script>
+<script src="/help/releases/R2022b/includes/web/scripts/livecontrolpopoverhandler.js?20220914170000"></script>
+<script src="/help/releases/R2022b/includes/web/scripts/livetaskpopoverhandler.js?20220914170000"></script>
+<script src="https://openwith.mathworks.com/openwith.js?202002"></script>
+<style>
+.examples_short_list a.btn {display: none;}
+</style>
+<script src="https://www.mathworks.com/help/includes/web/scripts//openInBrowser.js"></script>
+<script src="/etc.clientlibs/mathworks/clientlibs/customer-ui/components/webvitals.min.20220801024749208.js"></script> <link href="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/common/resources/fonts/roboto/roboto-latin-italic-400.20220801024749208.woff2" rel="preload" as="font" type="font/woff2" crossorigin/>
+<link href="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/common/resources/fonts/roboto/roboto-latin-italic-500.20220801024749208.woff2" rel="preload" as="font" type="font/woff2" crossorigin/>
+<link href="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/common/resources/fonts/roboto/roboto-latin-italic-700.20220801024749208.woff2" rel="preload" as="font" type="font/woff2" crossorigin/>
+<link href="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/common/resources/fonts/roboto/roboto-latin-normal-400.20220801024749208.woff2" rel="preload" as="font" type="font/woff2" crossorigin/>
+<link href="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/common/resources/fonts/roboto/roboto-latin-normal-500.20220801024749208.woff2" rel="preload" as="font" type="font/woff2" crossorigin/>
+<link href="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/common/resources/fonts/roboto/roboto-latin-normal-700.20220801024749208.woff2" rel="preload" as="font" type="font/woff2" crossorigin/>
+<link href="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/common/resources/fonts/mathworks.20220801024749208.woff" rel="preload" as="font" type="font/woff" crossorigin/>
+<script xmlns="http://www.w3.org/1999/xhtml" type="application/ld+json">
+{
+"@context": "http://schema.org",
+"@type": "BreadcrumbList",
+"itemListElement":
+[{
+"@type": "ListItem",
+"position": 1,
+"item": {
+"@id": "../index.html",
+"name": "MATLAB"
+}
+}
+,
+{
+"@type": "ListItem",
+"position": 2,
+"item": {
+"@id": "../data-import-and-analysis.html",
+"name": "Data Import and Analysis"
+}
+}
+,
+{
+"@type": "ListItem",
+"position": 3,
+"item": {
+"@id": "../data-import-and-export.html",
+"name": "Data Import and Export"
+}
+}
+,
+{
+"@type": "ListItem",
+"position": 4,
+"item": {
+"@id": "../low-level-file-i-o.html",
+"name": "Low-Level File I/O"
+}
+}]
+}</script><script xmlns="http://www.w3.org/1999/xhtml" type="application/ld+json">
+{
+"@context": "http://schema.org",
+"@type": "ItemList",
+"name": "VisibleBreadcrumbs",
+"itemListElement":
+[
+"low-level-file-i-o"
+],
+"itemListOrder": "http://schema.org/ItemListOrderAscending"
+}
+</script><script xmlns="http://www.w3.org/1999/xhtml" type="application/ld+json">
+{
+"@context": "http://schema.org",
+"@type": "ItemList",
+"name": "ExtendedCapabilities",
+"itemListElement":
+[
+{
+"@type": "ListItem",
+"position": 1,
+"item":
+{
+"@context": "http://schema.org",
+"@type": "PropertyValue",
+"name": "codegen",
+"value": "limited"
+}
+},
+{
+"@type": "ListItem",
+"position": 2,
+"item":
+{
+"@context": "http://schema.org",
+"@type": "PropertyValue",
+"name": "threadsupport",
+"value": "full"
+}
+}
+]
+}
+</script>
+<meta xmlns="http://www.w3.org/1999/xhtml" name="chunktype" content="refpage"><meta xmlns="http://www.w3.org/1999/xhtml" name="refentity" itemprop="refentity" content="function:fopen">
+<meta xmlns="http://www.w3.org/1999/xhtml" http-equiv="Content-Script-Type" content="text/javascript">
+<meta xmlns="http://www.w3.org/1999/xhtml" name="toctype" itemprop="pagetype" content="fcn">
+<meta xmlns="http://www.w3.org/1999/xhtml" name="infotype" itemprop="infotype" content="ref/function">
+<meta xmlns="http://www.w3.org/1999/xhtml" name="description" itemprop="description" content="This MATLAB function opens the file, filename, for binary read access, and returns an integer file identifier equal to or greater than 3."><script xmlns="http://www.w3.org/1999/xhtml" src="/help/releases/R2022b/includes/shared/scripts/l10n.js?202212121419"></script>
+<script xmlns="http://www.w3.org/1999/xhtml" src="/help/releases/R2022b/includes/shared/scripts/docscripts.js?202212121419"></script>
+<script xmlns="http://www.w3.org/1999/xhtml" src="/help/releases/R2022b/includes/shared/scripts/f1help.js?202212121419"></script>
+<script xmlns="http://www.w3.org/1999/xhtml" src="/help/releases/R2022b/includes/shared/scripts/mw.toc_2.js?202212121419"></script>
+<script xmlns="http://www.w3.org/1999/xhtml" src="/help/releases/R2022b/includes/shared/scripts/mw.imagescaling.js?202212121419"></script>
+<script xmlns="http://www.w3.org/1999/xhtml" src="/help/releases/R2022b/includes/shared/scripts/mw.imageanimation.js?202212121419"></script>
+<script xmlns="http://www.w3.org/1999/xhtml" src="/help/releases/R2022b/includes/shared/scripts/mw.breadcrumb.js?202212121419"></script>
+<script xmlns="http://www.w3.org/1999/xhtml" src="/help/releases/R2022b/includes/shared/scripts/jquery.highlight.js?202212121419"></script>
+<script xmlns="http://www.w3.org/1999/xhtml" src="/help/releases/R2022b/includes/product/scripts/underscore-min.js?202212121419"></script>
+<script xmlns="http://www.w3.org/1999/xhtml" src="/help/releases/R2022b/includes/web/scripts/doc_omniture.js?202212121419"></script>
+<script xmlns="http://www.w3.org/1999/xhtml" src="/help/releases/R2022b/includes/shared/scripts/overload.js?202212121419"></script>
+<script xmlns="http://www.w3.org/1999/xhtml" src="/help/releases/R2022b/includes/shared/scripts/helpservices.js?202212121419"></script>
+<script xmlns="http://www.w3.org/1999/xhtml" src="/help/releases/R2022b/includes/product/scripts/productfilter.js?202212121419"></script>
+<script xmlns="http://www.w3.org/1999/xhtml" src="/help/releases/R2022b/includes/shared/scripts/product_group.js?202212121419"></script>
+<script xmlns="http://www.w3.org/1999/xhtml" src="/help/releases/R2022b/includes/shared/scripts/saxonjs/SaxonJS2.rt.js?202212121419"></script>
+<script xmlns="http://www.w3.org/1999/xhtml">
+window.history.replaceState(window.location.href, null, ""); // Initialize
+window.onload = function() {
+mystylesheetLocation = "/help/releases/R2022b/includes/shared/scripts/product_group-sef.json";
+mysourceLocation = "/help/releases/R2022b/docset.xml";
+product_help_location = "matlab";
+pagetype = "refentry";
+doccentertype = "web";
+langcode = "";
+getProductFilteredList(mystylesheetLocation, mysourceLocation, product_help_location, pagetype, doccentertype, langcode);
+}
+</script>
+<!-- Additions/overrides from the doc side -->
+<style>
+.typeahead_container.typeahead_type_grouped { margin-left:0; }
+@media (min-width:768px) {
+#suggestions { margin-left:-100px }
+}
+</style>
+<script type="text/javascript" src="/help/search/R2022b/helpcenter_docsearch.js?20200128"></script>
+<script type="text/javascript" src="/includes_content/nextgen/scripts/jquery/jquery.toggleval.js?201409291140"></script>
+<script xmlns="http://www.w3.org/1999/xhtml" src="/help/releases/R2022b/includes/shared/equationrenderer/release/MathRenderer.js"></script>
+<script type="text/javascript" src="/includes_content/nextgen/scripts/jquery/jquery.cookie.js"></script>
+<script type="text/javascript" src="/includes_content/domainSelect/akamai-country-code.js"></script>
+<script type="text/javascript">
+var domainCountryCodeMap = new Map();
+var countryCodeToDomainMap = new Map();
+domainCountryCodeMap.set('www.mathworks.com', 'www');
+countryCodeToDomainMap.set('www','www.mathworks.com')
+domainCountryCodeMap.set('www.mathworks.com', 'www');
+countryCodeToDomainMap.set('www','www.mathworks.com')
+domainCountryCodeMap.set('la.mathworks.com', 'la');
+countryCodeToDomainMap.set('la','la.mathworks.com')
+domainCountryCodeMap.set('au.mathworks.com', 'au');
+countryCodeToDomainMap.set('au','au.mathworks.com')
+domainCountryCodeMap.set('de.mathworks.com', 'de');
+countryCodeToDomainMap.set('de','de.mathworks.com')
+domainCountryCodeMap.set('nl.mathworks.com', 'nl');
+countryCodeToDomainMap.set('nl','nl.mathworks.com')
+domainCountryCodeMap.set('ww2.mathworks.cn', 'ww2');
+countryCodeToDomainMap.set('ww2','ww2.mathworks.cn')
+domainCountryCodeMap.set('se.mathworks.com', 'se');
+countryCodeToDomainMap.set('se','se.mathworks.com')
+domainCountryCodeMap.set('se.mathworks.com', 'se');
+countryCodeToDomainMap.set('se','se.mathworks.com')
+domainCountryCodeMap.set('fr.mathworks.com', 'fr');
+countryCodeToDomainMap.set('fr','fr.mathworks.com')
+domainCountryCodeMap.set('de.mathworks.com', 'de');
+countryCodeToDomainMap.set('de','de.mathworks.com')
+domainCountryCodeMap.set('in.mathworks.com', 'in');
+countryCodeToDomainMap.set('in','in.mathworks.com')
+domainCountryCodeMap.set('uk.mathworks.com', 'uk');
+countryCodeToDomainMap.set('uk','uk.mathworks.com')
+domainCountryCodeMap.set('it.mathworks.com', 'it');
+countryCodeToDomainMap.set('it','it.mathworks.com')
+domainCountryCodeMap.set('jp.mathworks.com', 'jp');
+countryCodeToDomainMap.set('jp','jp.mathworks.com')
+domainCountryCodeMap.set('kr.mathworks.com', 'kr');
+countryCodeToDomainMap.set('kr','kr.mathworks.com')
+domainCountryCodeMap.set('nl.mathworks.com', 'nl');
+countryCodeToDomainMap.set('nl','nl.mathworks.com')
+domainCountryCodeMap.set('nl.mathworks.com', 'nl');
+countryCodeToDomainMap.set('nl','nl.mathworks.com')
+domainCountryCodeMap.set('au.mathworks.com', 'au');
+countryCodeToDomainMap.set('au','au.mathworks.com')
+domainCountryCodeMap.set('se.mathworks.com', 'se');
+countryCodeToDomainMap.set('se','se.mathworks.com')
+domainCountryCodeMap.set('www.mathworks.com', 'www');
+countryCodeToDomainMap.set('www','www.mathworks.com')
+domainCountryCodeMap.set('es.mathworks.com', 'es');
+countryCodeToDomainMap.set('es','es.mathworks.com')
+domainCountryCodeMap.set('se.mathworks.com', 'se');
+countryCodeToDomainMap.set('se','se.mathworks.com')
+domainCountryCodeMap.set('ch.mathworks.com', 'ch');
+countryCodeToDomainMap.set('ch','ch.mathworks.com')
+domainCountryCodeMap.set('uk.mathworks.com', 'uk');
+countryCodeToDomainMap.set('uk','uk.mathworks.com')
+var countrySubdomains = {
+US: {name: 'United States', subdomain: 'www'},
+AD: {name: 'Andorra', subdomain: 'es'},
+AR: {name: 'Argentina', subdomain: 'la'},
+AU: {name: 'Australia', subdomain: 'au'},
+AT: {name: 'Austria', subdomain: 'de'},
+BE: {name: 'Belgium', subdomain: 'nl'},
+BO: {name: 'Bolivia', subdomain: 'la'},
+BV: {name: 'Bouvet Islands', subdomain: 'se'},
+CA: {name: 'Canada', subdomain: 'www'},
+CL: {name: 'Chile', subdomain: 'la'},
+CN: {name: 'China', subdomain: 'cn'},
+CX: {name: 'Christmas Island', subdomain: 'au'},
+CC: {name: 'Cocos-Keeling Islands', subdomain: 'au'},
+CO: {name: 'Colombia', subdomain: 'la'},
+CR: {name: 'Costa Rica', subdomain: 'la'},
+DK: {name: 'Denmark', subdomain: 'se'},
+DO: {name: 'Dominican Republic', subdomain: 'la'},
+EC: {name: 'Ecuador', subdomain: 'la'},
+SV: {name: 'El Salvador', subdomain: 'la'},
+EE: {name: 'Estonia', subdomain: 'se'},
+FO: {name: 'Faroe Islands', subdomain: 'se'},
+FJ: {name: 'Fiji', subdomain: 'au'},
+FI: {name: 'Finland', subdomain: 'se'},
+FR: {name: 'France', subdomain: 'fr'},
+GF: {name: 'French Guiana', subdomain: 'fr'},
+PF: {name: 'French Polynesia', subdomain: 'fr'},
+DE: {name: 'Germany', subdomain: 'de'},
+GL: {name: 'Greenland', subdomain: 'se'},
+GP: {name: 'Guadalupe', subdomain: 'fr'},
+GT: {name: 'Guatemala', subdomain: 'la'},
+HN: {name: 'Honduras', subdomain: 'la'},
+HK: {name: 'Hong Kong', subdomain: 'cn'},
+IS: {name: 'Iceland', subdomain: 'se'},
+IN: {name: 'India', subdomain: 'in'},
+IE: {name: 'Ireland', subdomain: 'uk'},
+IT: {name: 'Italy', subdomain: 'it'},
+JP: {name: 'Japan', subdomain: 'jp'},
+KR: {name: 'Korea', subdomain: 'kr'},
+LV: {name: 'Latvia', subdomain: 'se'},
+LI: {name: 'Liechtenstein', subdomain: 'ch'},
+LT: {name: 'Lithuania', subdomain: 'se'},
+LU: {name: 'Luxembourg', subdomain: 'nl'},
+MO: {name: 'Macau', subdomain: 'cn'},
+MQ: {name: 'Martinique', subdomain: 'fr'},
+YT: {name: 'Mayotte Island', subdomain: 'fr'},
+MX: {name: 'Mexico', subdomain: 'la'},
+MC: {name: 'Monaco', subdomain: 'fr'},
+NL: {name: 'Netherlands', subdomain: 'nl'},
+NC: {name: 'New Caledonia', subdomain: 'fr'},
+NZ: {name: 'New Zealand', subdomain: 'au'},
+NI: {name: 'Nicaragua', subdomain: 'la'},
+NO: {name: 'Norway', subdomain: 'se'},
+PA: {name: 'Panama', subdomain: 'la'},
+PG: {name: 'Papua New Guinea', subdomain: 'au'},
+PY: {name: 'Paraguay', subdomain: 'la'},
+PE: {name: 'Peru', subdomain: 'la'},
+PT: {name: 'Portugal', subdomain: 'www'},
+PR: {name: 'Puerto Rico', subdomain: 'la'},
+RE: {name: 'Reunion Island', subdomain: 'fr'},
+ES: {name: 'Spain', subdomain: 'es'},
+LK: {name: 'Sri Lanka', subdomain: 'in'},
+SE: {name: 'Sweden', subdomain: 'se'},
+CH: {name: 'Switzerland', subdomain: 'ch'},
+GB: {name: 'United Kingdom', subdomain: 'uk'},
+UY: {name: 'Uruguay', subdomain: 'la'},
+VA: {name: 'Vatican City', subdomain: 'it'},
+VE: {name: 'Venezuela', subdomain: 'la'},
+};
+var domainUtils = {
+isExemptUrl: function (url) {
+if(window.overrideDomainSelector){
+return true;
+}
+var exemptions = [
+'/api/parts/',
+'nocookie=true',
+'client=addons',
+'requestedDomain'
+];
+return exemptions.some(function (exemption) {
+return url.indexOf(exemption) != -1;
+});
+},
+endsWith: function( str, suffix ) {
+return str.substring( str.length - suffix.length, str.length ) === suffix;
+},
+getDomain: function (url) {
+var segments = url.split('/');
+return segments[2];
+},
+getSubdomain: function (domain) {
+return domainCountryCodeMap.get(domain);
+},
+setCookies: function (domain, lang) {
+var domainCookie = 'mathworks.com';
+if (this.endsWith(location.host, 'mathworks.cn')) {
+domainCookie = 'mathworks.cn';
+}
+var selectedSubdomain = this.getSubdomain(domain);
+if (this.endsWith(domain, 'mathworks.cn')) {
+selectedSubdomain = 'cn';
+}
+if (selectedSubdomain === 'www') {
+// This is what ePS did in EQUUS and Ruby, so...
+// we're just following suit.
+selectedSubdomain = 'us';
+}
+if (selectedSubdomain !== 'cn' && selectedSubdomain !== 'ch') {
+lang = '';
+}
+var cookieNames = this.getCookieNames(domain);
+var expires = new Date();
+expires.setFullYear(expires.getFullYear() + 68);
+var myJSON = JSON.stringify({
+domain: selectedSubdomain,
+lang: lang,
+v: 2
+});
+$.cookie(cookieNames.mwaPrefsCookieName, myJSON, {path: '/', expires: 20*365, domain: domainCookie});
+},
+getCookieNames: function (domain) {
+var mwaLoginCookieName = 'mwa';
+var mwaPrefsCookieName = 'mwa_prefs';
+var subdomainSuffix = '';
+if (subdomainSuffix != "") {
+mwaLoginCookieName = mwaLoginCookieName + subdomainSuffix;
+mwaPrefsCookieName = mwaPrefsCookieName + subdomainSuffix;
+}
+return {
+mwaLoginCookieName: mwaLoginCookieName,
+mwaPrefsCookieName: mwaPrefsCookieName,
+};
+},
+switchDomain: function (targetDomain, targetLang) {
+var targetUri = location.pathname;
+targetLang = this.getValidLang(this.getSubdomain(targetDomain), targetLang);
+var url = '//' + targetDomain;
+url += targetUri + location.search;
+url = url.replace(/requestedDomain=[a-z]?[a-z]?&?/, '');
+url = url.replace(/\&$/, '');
+url = url.replace(/\?$/, '');
+var requestedDomainParam = 'requestedDomain=' + targetLang;
+if (url.indexOf('?') > -1) {
+url = url + '&' + requestedDomainParam;
+} else {
+url = url + '?' + requestedDomainParam;
+}
+window.location = url;
+},
+getPrefCookie: function(currentDomain) {
+var cookieNames = this.getCookieNames(currentDomain);
+// regex from: https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie
+var cookieRegex = new RegExp("(?:(?:^|.*;\\s*)"+cookieNames.mwaPrefsCookieName+"\\s*\\=\\s*([^;]*).*$)|^.*$");
+if (document.cookie) {
+var cookieValue = document.cookie.replace(cookieRegex, "$1");
+if (cookieValue) {
+return JSON.parse(decodeURIComponent(cookieValue));
+}
+}
+return "";
+},
+getPrefDomain: function (currentDomain) {
+var mwaPrefsCookieJsonObject = this.getPrefCookie(currentDomain);
+var visitorPrefDomain;
+if (!!mwaPrefsCookieJsonObject) {
+visitorPrefDomain = mwaPrefsCookieJsonObject.domain;
+if (visitorPrefDomain === 'us') {
+visitorPrefDomain = 'www';
+}else if (visitorPrefDomain === 'cn') {
+visitorPrefDomain = 'ww2';
+}
+}
+return countryCodeToDomainMap.get(visitorPrefDomain);
+},
+getPrefLang: function (currentDomain) {
+var mwaPrefsCookieJsonObject = this.getPrefCookie(currentDomain);
+var multilingualDomainLanguageSupport = {};
+multilingualDomainLanguageSupport['ch'] = ['en','de','fr'];
+multilingualDomainLanguageSupport['cn'] = ['zh','en'];
+var currentDomainLangOptions = multilingualDomainLanguageSupport[mwaPrefsCookieJsonObject.domain];
+if (currentDomainLangOptions) {
+var cookiePrefLang = mwaPrefsCookieJsonObject.lang;
+if (currentDomainLangOptions.indexOf(cookiePrefLang) >= 0) {
+return cookiePrefLang;
+} else {
+return currentDomainLangOptions[0];
+}
+}
+return '';
+},
+getCookieVersion: function (currentDomain) {
+var mwaPrefsCookieJsonObject = this.getPrefCookie(currentDomain);
+return mwaPrefsCookieJsonObject.v;
+},
+getTargetDomainForCookies: function() {
+var targetDomain = "";
+if (this.endsWith(location.host, 'mathworks.cn')) {
+targetDomain = window.location.protocol + "//" + countryCodeToDomainMap.get('www');
+}else{
+targetDomain = window.location.protocol + "//" + countryCodeToDomainMap.get('ww2');
+}
+return targetDomain;
+},
+getValidLang: function (subdomain, lang) {
+var multilingualDomainLanguageSupport = {};
+multilingualDomainLanguageSupport['ch'] = ['en','de','fr'];
+multilingualDomainLanguageSupport['cn'] = ['zh','en'];
+multilingualDomainLanguageSupport['ww2'] = ['zh','en'];
+var currentDomainLangOptions = multilingualDomainLanguageSupport[subdomain];
+if (currentDomainLangOptions) {
+if (currentDomainLangOptions.indexOf(lang) >= 0) {
+return lang;
+} else {
+return currentDomainLangOptions[0];
+}
+}
+return '';
+},
+isDefaultLang: function (subdomain, lang) {
+var multilingualDomainLanguageDefault = {};
+multilingualDomainLanguageDefault['ch'] = 'en';
+multilingualDomainLanguageDefault['cn'] = 'zh';
+multilingualDomainLanguageDefault['ww2'] = 'zh';
+var currentDomainLang = multilingualDomainLanguageDefault[subdomain];
+if (currentDomainLang) {
+if (currentDomainLang === lang) {
+return true;
+} else {
+return false;
+}
+} else if (lang) {
+return false;
+}
+return true;
+}
+};
+$(window).on('load', function() {
+var currentUrl = window.location.href;
+var currentDomain = domainUtils.getDomain(currentUrl);
+var currentSubdomain = domainUtils.getSubdomain(currentDomain);
+var requestedDomainLangRegEx = RegExp('[?&]requestedDomain=([^&]*)').exec(window.location.search);
+if (requestedDomainLangRegEx) {
+var setLang = domainUtils.getValidLang(currentSubdomain, requestedDomainLangRegEx[1])
+domainUtils.setCookies(currentDomain, setLang);
+var URLWithoutRequestedDomain = window.location.href.replace(/requestedDomain=[a-z]?[a-z]?&?/, '');
+URLWithoutRequestedDomain = URLWithoutRequestedDomain.replace(/\&$/, '');
+URLWithoutRequestedDomain = URLWithoutRequestedDomain.replace(/\?$/, '');
+history.replaceState({}, document.title, URLWithoutRequestedDomain);
+window.location = URLWithoutRequestedDomain;
+}
+$('body').on('click', '.domain_selector_link', function (e) {
+e.preventDefault();
+var selectedDomain = domainUtils.getDomain(this.href);
+var selectedLang = $(this).data('lang');
+domainUtils.setCookies(selectedDomain, selectedLang);
+domainUtils.switchDomain(selectedDomain, selectedLang);
+});
+var currentCountryText =
+$('a[data-subdomain=\'' + currentSubdomain + '\'][data-default-lang=\'true\'][data-selected-text]')
+.data('selected-text');
+$('#countrySelectorButtonText').text(currentCountryText);
+var visitorPrefDomain = domainUtils.getPrefDomain(currentDomain);
+var visitorPrefLang = domainUtils.getPrefLang(currentDomain);
+var akamaiCountryCode;
+var akamaiprofile = CQ_Analytics.ClientContextMgr.getRegisteredStore('akamaiprofile');
+if (akamaiprofile) {
+akamaiCountryCode = akamaiprofile.getProperty('countryCode');
+}
+var recommendedSubdomain;
+var recommendedLink;
+if (akamaiCountryCode) {
+if (countrySubdomains[akamaiCountryCode] !== undefined) {
+recommendedSubdomain = countrySubdomains[akamaiCountryCode].subdomain;
+} else {
+recommendedSubdomain = 'www';
+}
+if (recommendedSubdomain === 'us') {
+recommendedSubdomain = 'www';
+}else if (recommendedSubdomain === 'cn') {
+recommendedSubdomain = 'ww2';
+}
+recommendedLink = $('a[data-subdomain=\'' + recommendedSubdomain + '\'][data-recommended-text]');
+var countryButtons;
+if(recommendedSubdomain === 'ch') {
+countryButtons = $('.ch-recommendation .recommendation-button');
+$('.ch-recommendation').show();
+$('.zh-recommendation').hide();
+$('.default-recommendation').hide();
+} else if(recommendedSubdomain === 'ww2') {
+countryButtons = $('.zh-recommendation .recommendation-button');
+$('.zh-recommendation').show();
+$('.ch-recommendation').hide();
+$('.default-recommendation').hide();
+}
+} else if (visitorPrefDomain) {
+recommendedSubdomain = domainUtils.getSubdomain(visitorPrefDomain);
+recommendedLink = $('a[data-subdomain=\'' + recommendedSubdomain + '\'][data-recommended-text]');
+var countryButtons;
+if(recommendedSubdomain === 'ch') {
+countryButtons = $('.ch-recommendation .recommendation-button');
+$('.ch-recommendation').show();
+$('.zh-recommendation').hide();
+$('.default-recommendation').hide();
+} else if(recommendedSubdomain === 'ww2') {
+countryButtons = $('.zh-recommendation .recommendation-button');
+$('.zh-recommendation').show();
+$('.ch-recommendation').hide();
+$('.default-recommendation').hide();
+}
+}
+if (!recommendedLink) {
+recommendedSubdomain = 'www';
+recommendedLink = $('a[data-subdomain=\'' + recommendedSubdomain + '\'][data-recommended-text]');
+}
+$('.recommended-country').text(recommendedLink.data('recommended-text'));
+$('#recommended_domain_button').attr('href', recommendedLink.attr('href'));
+$('#recommended_domain_button').attr('data-lang', recommendedLink.attr('data-lang'));
+if(countryButtons !== undefined) {
+countryButtons.click(function(e) {
+e.preventDefault();
+var selectedDomain = domainUtils.getDomain(this.href);
+var selectedLang = $(this).data('lang');
+domainUtils.setCookies(selectedDomain, selectedLang);
+domainUtils.switchDomain(selectedDomain, selectedLang);
+});
+} else {
+var recommendedDomainButton = $('#recommended_domain_button');
+$('.recommended-country-button').text(recommendedLink.data('recommended-text'));
+recommendedDomainButton.attr('href', recommendedLink.attr('href'));
+recommendedDomainButton.data('lang', recommendedLink.data('lang'));
+recommendedDomainButton.click(function (e) {
+e.preventDefault();
+var selectedDomain = domainUtils.getDomain(this.href);
+var selectedLang = $(this).data('lang');
+domainUtils.setCookie(selectedDomain, selectedLang);
+domainUtils.switchDomain(selectedDomain, selectedLang);
+});
+}
+$('a.worldwide_link').attr('href', recommendedLink.attr('href'));
+$('a.worldwide_link').data('lang', recommendedLink.data('lang'));
+$('body').on('click', 'a.worldwide_link', function (e) {
+e.preventDefault();
+var selectedDomain = domainUtils.getDomain(this.href);
+var selectedLang = $(this).data('lang');
+domainUtils.setCookies(selectedDomain, selectedLang);
+var href = e.target.getAttribute('href');
+var worldwideLink = '/company/worldwide.html?s_tid=dmselect_cta&requestedDomain=';
+if(href) {
+location.href = href + worldwideLink;
+}
+});
+if (akamaiCountryCode === 'CN') {
+$('#china_performance_alert').show();
+}
+var crossDomain = "";
+if(domainUtils.endsWith(currentDomain, '.mathworks.cn')){
+crossDomain = countryCodeToDomainMap.get('www');
+}else{
+crossDomain = countryCodeToDomainMap.get('ww2');
+}
+if ((!domainUtils.endsWith(currentDomain, '.mathworks.com') && !domainUtils.endsWith(currentDomain, '.mathworks.cn')) || domainUtils.isExemptUrl(currentUrl)) {
+return;
+}
+if (!visitorPrefDomain) {
+if (akamaiCountryCode) {
+akamaiCountryCode = countrySubdomains[akamaiCountryCode].subdomain;
+var akamaiDeterminedSubdomain = $('a[data-country-code=\'' + akamaiCountryCode.toUpperCase() + '\']').data('subdomain');
+if ((akamaiCountryCode.toLowerCase() === currentSubdomain) || (akamaiDeterminedSubdomain === currentSubdomain)) {
+domainUtils.setCookies(currentDomain, "");
+} else {
+$('#country-unselected').modal('show');
+}
+return;
+}
+if (currentSubdomain === 'www') {
+domainUtils.setCookies(currentDomain, '');
+} else {
+$('#country-unselected').modal('show');
+}
+} else if (akamaiCountryCode === 'CN' && !(visitorPrefDomain === 'CN') && !domainUtils.getCookieVersion(currentDomain)) {
+$('#country-unselected').modal('show');
+}
+});
+</script> <script src="/includes_content/responsive/scripts/mwa/global_nav.js"></script>
+
+                              <script>!function(a){var e="https://s.go-mpulse.net/boomerang/",t="addEventListener";if("False"=="True")a.BOOMR_config=a.BOOMR_config||{},a.BOOMR_config.PageParams=a.BOOMR_config.PageParams||{},a.BOOMR_config.PageParams.pci=!0,e="https://s2.go-mpulse.net/boomerang/";if(window.BOOMR_API_key="LERXA-6VNES-W6PXS-U8C7F-BXSZH",function(){function n(e){a.BOOMR_onload=e&&e.timeStamp||(new Date).getTime()}if(!a.BOOMR||!a.BOOMR.version&&!a.BOOMR.snippetExecuted){a.BOOMR=a.BOOMR||{},a.BOOMR.snippetExecuted=!0;var i,_,o,r=document.createElement("iframe");if(a[t])a[t]("load",n,!1);else if(a.attachEvent)a.attachEvent("onload",n);r.src="javascript:void(0)",r.title="",r.role="presentation",(r.frameElement||r).style.cssText="width:0;height:0;border:0;display:none;",o=document.getElementsByTagName("script")[0],o.parentNode.insertBefore(r,o);try{_=r.contentWindow.document}catch(O){i=document.domain,r.src="javascript:var d=document.open();d.domain='"+i+"';void(0);",_=r.contentWindow.document}_.open()._l=function(){var a=this.createElement("script");if(i)this.domain=i;a.id="boomr-if-as",a.src=e+"LERXA-6VNES-W6PXS-U8C7F-BXSZH",BOOMR_lstart=(new Date).getTime(),this.body.appendChild(a)},_.write("<bo"+'dy onload="document._l();">'),_.close()}}(),"".length>0)if(a&&"performance"in a&&a.performance&&"function"==typeof a.performance.setResourceTimingBufferSize)a.performance.setResourceTimingBufferSize();!function(){if(BOOMR=a.BOOMR||{},BOOMR.plugins=BOOMR.plugins||{},!BOOMR.plugins.AK){var e=""=="true"?1:0,t="",n="iwgbsclikzifyy6xnraq-f-a438c8071-clientnsv4-s.akamaihd.net",i="false"=="true"?2:1,_={"ak.v":"34","ak.cp":"31027","ak.ai":parseInt("195948",10),"ak.ol":"0","ak.cr":19,"ak.ipv":4,"ak.proto":"h2","ak.rid":"26f566ad","ak.r":41489,"ak.a2":e,"ak.m":"x","ak.n":"essl","ak.bpcip":"69.140.25.0","ak.cport":51956,"ak.gh":"23.220.106.153","ak.quicv":"","ak.tlsv":"tls1.3","ak.0rtt":"","ak.csrc":"-","ak.acc":"","ak.t":"1675062337","ak.ak":"hOBiQwZUYzCg5VSAfCLimQ==knxVFnHafshDpUnJSQWQREcf8/aE37z0d4e+J9Fz3UvmSKMIcogJMe9Ezlz32VwSBk+lOUxzCbZo71JQMVbo4pTN4w+mfXg12U5C/V1+hVtv0VrxFa2eJfRxr9WLcjnMbdApfnIzut/RIizjnN5PnaaH1ifXa51moPTUAA2Nj1EMYJpgzxGfWVA84Qof0eUhU0g3OXOA+1vgbLyBJmTeE9uUT7yaZkc5wFNqgzVZzFM+hURxNwP5duwU/drDKz15C1jzWl5ebzpD0n1BdTo4eiV94kVP1eMCPKzjPDsdtE+JYdbYmIkr9r1TswkuBQpGODctlSXg7WPdy0GPRT6IlBG1Nfm3HckI/49EpYSTM5G7WzVv44TOHz4nyxHmKoVk25m6xCU34B2LGRV/4kOmWnZEqTbBhftVPCV8gOyYkZw=","ak.pv":"161","ak.dpoabenc":"","ak.tf":i};if(""!==t)_["ak.ruds"]=t;var o={i:!1,av:function(e){var t="http.initiator";if(e&&(!e[t]||"spa_hard"===e[t]))_["ak.feo"]=void 0!==a.aFeoApplied?1:0,BOOMR.addVar(_)},rv:function(){var a=["ak.bpcip","ak.cport","ak.cr","ak.csrc","ak.gh","ak.ipv","ak.m","ak.n","ak.ol","ak.proto","ak.quicv","ak.tlsv","ak.0rtt","ak.r","ak.acc","ak.t","ak.tf"];BOOMR.removeVar(a)}};BOOMR.plugins.AK={akVars:_,akDNSPreFetchDomain:n,init:function(){if(!o.i){var a=BOOMR.subscribe;a("before_beacon",o.av,null,null),a("onbeacon",o.rv,null,null),o.i=!0}return this},is_complete:function(){return!0}}}}()}(window);</script><script >bazadebezolkohpepadr="222682552"</script><script type="text/javascript" src="https://www.mathworks.com/akam/13/d45dc20"  defer></script></head>
+
+<body id="responsive_offcanvas">
+  <a class="skip_link sr-only" href="#skip_link_anchor">Skip to content</a>
+
+  <!-- Mobile TopNav: Start -->
+<div class="header visible-xs visible-sm" id="header_mobile" translate="no">
+<nav class="navbar navbar-default" role="navigation">
+<div class="navbar-header">
+<div class="container-fluid">
+<div class="row">
+<div class="col-xs-3">
+<button type="button" class="navbar-toggle topnav_toggle" data-toggle="collapse" data-target="#topnav_collapse">
+<span class="sr-only">Toggle Main Navigation</span>
+<span class="icon-menu"></span>
+</button>
+</div>
+<div class="col-xs-6">
+<div class="text-center">
+<a href="https://www.mathworks.com?s_tid=gn_logo" class="svg_link navbar-brand">
+<img src="/images/responsive/global/pic-header-mathworks-logo.svg" class="mw_logo" alt="MathWorks">
+</a>
+</div>
+</div>
+<div class="col-xs-3">
+<div class="matrix_affordance_container_mobile" id="matrix_affordance_container_mobile"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="container-fluid">
+<div class="row visible-xs visible-sm">
+<div class="col-xs-12">
+<div class="navbar-collapse collapse" id="topnav_collapse">
+<ul class="nav navbar-nav topnav" id="topnav_mobile">
+<li class="topnav_products "><a href="https://www.mathworks.com/products.html?s_tid=gn_ps" >Products</a></li>
+<li class="topnav_solutions "><a href="https://www.mathworks.com/solutions.html?s_tid=gn_sol">Solutions</a></li>
+<li class="topnav_academia "><a href="https://www.mathworks.com/academia.html?s_tid=gn_acad">Academia</a></li>
+<li class="topnav_support "><a href="https://www.mathworks.com/help/?s_tid=gn_supp">Support</a></li>
+<li class="topnav_community "><a href="https://www.mathworks.com/matlabcentral/?s_tid=gn_mlc">Community</a></li>
+<li class="topnav_events "><a href="https://www.mathworks.com/company/events.html?s_tid=gn_ev">Events</a></li>
+<li class="headernav_store"><a href="https://login.mathworks.com/embedded-login/landing.html?cid=getmatlab&s_tid=gn_getml">Get MATLAB</a></li>
+</ul>
+</div>
+<div class="navbar-collapse collapse" id="matrix_collapse">
+<div class="matrix_menu_container_mobile" id="matrix_menu_container_mobile"></div>
+</div>
+</div>
+</div>
+</div>
+</nav>
+</div>
+<!-- Mobile TopNav: End -->
+<!-- Desktop TopNav: Start -->
+<div class="header hidden-xs hidden-sm" id="header_desktop" translate="no">
+<nav class="navbar navbar-default" role="navigation">
+<div class="container-fluid">
+<div class="row">
+<div class="col-md-9">
+<div class="navbar-header">
+<div class="logo_container hidden-xs hidden-sm">
+<a href="https://www.mathworks.com?s_tid=gn_logo" class="svg_link pull-left">
+<img src="/images/responsive/global/pic-header-mathworks-logo.svg" class="mw_logo" alt="MathWorks">
+</a>
+</div>
+<div class="navbar-collapse collapse hidden-xs hidden-sm">
+<ul class="nav navbar-nav topnav" id="topnav_desktop">
+<li class="topnav_products "><a href="https://www.mathworks.com/products.html?s_tid=gn_ps" >Products</a></li>
+<li class="topnav_solutions "><a href="https://www.mathworks.com/solutions.html?s_tid=gn_sol">Solutions</a></li>
+<li class="topnav_academia "><a href="https://www.mathworks.com/academia.html?s_tid=gn_acad">Academia</a></li>
+<li class="topnav_support "><a href="https://www.mathworks.com/help/?s_tid=gn_supp">Support</a></li>
+<li class="topnav_community "><a href="https://www.mathworks.com/matlabcentral/?s_tid=gn_mlc">Community</a></li>
+<li class="topnav_events "><a href="https://www.mathworks.com/company/events.html?s_tid=gn_ev">Events</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="col-md-3">
+<div class="collapse navbar-collapse" id="headernav_collapse">
+<ul class="nav navbar-nav navbar-right" id="headernav">
+<li class="headernav_store"><a href="https://login.mathworks.com/embedded-login/landing.html?cid=getmatlab&s_tid=gn_getml" class="btn btn_color_blue companion_btn btn-xs">Get MATLAB</a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</nav>
+</div>
+<!-- Desktop TopNav: End -->
+<!-- Conjoined Header: Start -->
+<!-- Section Header: Start -->
+<div class="section_header level_3">
+<div class="container-fluid">
+<div class="row" id="mobile_search_row">
+<div class="col-sm-6 col-md-7 has_horizontal_local_nav" id="section_header_title">
+<div class="section_header_content">
+<div class="section_header_title">
+<p class="h1"><a xmlns="http://www.w3.org/1999/xhtml" href="../../index.html" class="coming_from_product">Help Center</a><a xmlns="http://www.w3.org/1999/xhtml" href="../../index.html" class="not_coming_from_product">Help Center</a></p>
+</div>
+</div>
+</div>
+<div class="col-xs-12 col-sm-6 col-md-5" id="mobile_search">
+<div class="search_nested_content_container">
+<div id="search_scope_support" class="collapse in"> <form id="docsearch_form" action="/support/search.html" method="get" accept-charset="utf-8" data-release="R2022b" data-language="en">
+<div class="input-group">
+<label class="sr-only">Search Help Center</label>
+<input id="suggestion" type="hidden" name="suggestion" value="">
+<span role="status" aria-live="polite" class="ui-helper-hidden-accessible"></span>
+<input id="docsearch" class="form-control conjoined_search" type="search" name="q" placeholder="Search Help Center" autocomplete="off">
+<div class="input-group-btn">
+<button type="button" class="btn btn_search_adjacent dropdown-toggle" data-toggle="dropdown"><span class="caret"></span><span class="search_scope_label">Help Center</span></button>
+<ul class="dropdown-menu list-unstyled dropdown-menu-right" role="menu">
+<!--<li data-toggle="collapse" data-target="#search_scope_support"><a href="#">Support</a></li>-->
+<li data-toggle="collapse" data-target="#search_scope_site" class="support_search_scope_trigger"><a href="#">MathWorks</a></li>
+</ul>
+<script>$(".support_search_scope_trigger").click(function() {$("#search_scope_support").removeClass("in");$("#query").val($("#search").val());});</script>
+<button type="submit" name="submitsearch" id="support_submitsearch" class="btn icon-search btn_search_adjacent btn_search icon_16"></button>
+</div>
+</div>
+</form>
+</div>
+<div id="search_scope_site" class="collapse"> <form name="search" id="site_search" class="site_search" action="/search/site_search.html" method="get">
+<div class="input-group">
+<label class="sr-only">Search MathWorks.com</label>
+<input type="hidden" name="c[]" value="entire_site">
+<input type="search" name="q" id="query" class="form-control conjoined_search" placeholder="Search MathWorks.com" autocomplete="off" \="">
+<div class="input-group-btn">
+<button type="button" class="btn btn_search_adjacent dropdown-toggle" data-toggle="dropdown"><span class="caret"></span><span class="search_scope_label">MathWorks</span></button>
+<ul class="dropdown-menu list-unstyled dropdown-menu-right" role="menu">
+<li data-toggle="collapse" data-target="#search_scope_support" class="site_search_scope_trigger"><a href="#">Support</a></li>
+</ul>
+<script>$(".site_search_scope_trigger").click(function() {$("#search_scope_site").removeClass("in");$("#search").val($("#query").val());});</script>
+<button type="submit" id="searchbutton" class="btn icon-search btn_search_adjacent btn_search icon_16"></button>
+</div>
+</div>
+</form>
+</div>
+</div>
+<button class="btn icon-remove btn_search pull-right icon_32 visible-xs" data-toggle="collapse" href="#mobile_search" aria-expanded="false" aria-controls="mobile_search"><span class="sr-only">Close Mobile Search</span></button>
+</div>
+<div class="visible-xs" id="search_actuator">
+<button class="btn icon-search btn_search pull-right icon_16" data-toggle="collapse" href="#mobile_search" aria-expanded="false" aria-controls="mobile_search"><span class="sr-only">Open Mobile Search</span></button>
+</div>
+</div>
+</div>
+</div>
+<!-- Section Header: End -->
+<!-- Conjoined Header: End -->
+
+  <div class="row-offcanvas row-offcanvas-left">
+  
+    <div class="sidebar-offcanvas" id="sidebar">
+      <nav class="offcanvas_nav" role="navigation"> 
+      
+        <div class="offcanvas_actuator" data-toggle="offcanvas" data-target="#sidebar" id="nav_toggle">
+          <button type="button" class="btn">
+            <span class="sr-only">Off-Canvas Navigation Menu Toggle</span>
+            <span class="icon-menu"></span>
+          </button>
+          <span class="offcanvas_actuator_label" id="translation_icon-menu" tabindex="-1" aria-hidden="true"></span>
+          <!-- <span class="offcanvas_actuator_close" tabindex="-1" aria-hidden="true"></span> -->
+        </div>
+
+          <div class="nav_list_wrapper" id="nav_list_wrapper">
+            <nav class="offcanvas_nav" role="navigation">
+                <ul xmlns="http://www.w3.org/1999/xhtml" class="nav_breadcrumb" id="ul_left_nav_ancestors"><li itemscope="" itemtype="http://www.data-vocabulary.org/Breadcrumb" itemprop="breadcrumb"><a href="../../index.html?s_tid=CRUX_lftnav" itemprop="url"><span itemprop="title">Documentation Home</span></a></li></ul>
+<ul xmlns="http://www.w3.org/1999/xhtml" class="nav_disambiguation"><li><a href="../index.html?s_tid=CRUX_lftnav">MATLAB</a>
+</li>
+<li itemscope="" itemtype="http://www.data-vocabulary.org/Breadcrumb" itemprop="breadcrumb"><a href="../data-import-and-analysis.html?s_tid=CRUX_lftnav" itemprop="url"><span itemprop="title">Data Import and Analysis</span></a></li><li itemscope="" itemtype="http://www.data-vocabulary.org/Breadcrumb" itemprop="breadcrumb"><a href="../data-import-and-export.html?s_tid=CRUX_lftnav" itemprop="url"><span itemprop="title">Data Import and Export</span></a></li><li itemscope="" itemtype="http://www.data-vocabulary.org/Breadcrumb" itemprop="breadcrumb"><a href="../low-level-file-i-o.html?s_tid=CRUX_lftnav" itemprop="url"><span itemprop="title">Low-Level File I/O</span></a></li></ul><ul xmlns="http://www.w3.org/1999/xhtml" class="nav_scrollspy nav">
+<li class="nav_scrollspy_function notranslate"><a href="#responsive_offcanvas"><span class="refname">fopen</span></a></li>
+<li class="nav_scrollspy_title" id="SSPY810-refentry">On this page</li>
+<!--ADD_REFENTRY_TITLE_HERE 11--><li><a href="#d124e487386" class="intrnllnk">Syntax</a></li><li><a href="#description" class="intrnllnk">Description</a></li><li><a href="#btrnibn-5" class="intrnllnk">Examples</a><ul class="nav"><li><a href="#btrnibo-2" class="intrnllnk">Open File and Pass Identifier to File I/O Function</a></li></ul><ul class="nav"><li><a href="#btrnoom-1" class="intrnllnk">Request Name of File to Open</a></li></ul><ul class="nav"><li><a href="#btrnoon-1" class="intrnllnk">Open File for Writing and Specify Access Type, Writing Order,
+Character Encoding</a></li></ul><ul class="nav"><li><a href="#btrnooo-1" class="intrnllnk">Get Information About Open Files</a></li></ul></li><li><a href="#btrnibn-3" class="intrnllnk">Input Arguments</a><ul class="nav"><li><a href="#btrnibn-1-filename" class="intrnllnk">filename</a></li><li><a href="#btrnibn-1-permission" class="intrnllnk">permission</a></li><li><a href="#btrnibn-1-machinefmt" class="intrnllnk">machinefmt</a></li><li><a href="#btrnibn-1-encodingIn" class="intrnllnk">encodingIn</a></li><li><a href="#btrnibn-1-fileID" class="intrnllnk">fileID</a></li></ul></li><li><a href="#btye4bu-4" class="intrnllnk">Tips</a></li><li><a href="#refsect-extended-capabilities" class="intrnllnk">Extended Capabilities</a></li><li><a href="#mw_4dd91e8f-b248-400c-9a68-0f97ffbfaa1f" class="intrnllnk">Version History</a><ul class="nav"><li><a href="#mw_b314c333-2ebc-4a1a-ba32-717d165b9c7c" class="intrnllnk">Use function in thread-based environments</a></li></ul></li><li><a href="#btrnibn-1_seealso" class="intrnllnk">See Also</a></li></ul>
+
+            </nav>
+          </div>
+        
+        <script src="/includes_content/responsive/scripts/offcanvas_v2.js?20150311"></script>
+        
+
+      </nav>       
+    </div>
+
+    <!-- MOBILE CTA - Begin -->
+    <!-- MOBILE CTA - End -->
+
+
+    <div class="offcanvas_content_container">
+
+      <div class="sticky_header_container">
+        <div class="horizontal_nav">
+          <div class="horizontal_nav_container">
+            <div class="offcanvas_horizontal_nav">
+              <div class="container-fluid">
+                <div class="row">
+                    <div class="col-sm-12 col-md-7 col-lg-8 hidden-xs">
+                    
+                    <script>
+                      var translateMore = translateMore || {};
+                      translateMore.locale = "More"; 
+                    </script>
+
+                    <nav class="navbar navbar-default" role="navigation" id="subnav">
+                      <div>
+                          <ul class="nav navbar-nav crux_browse">
+                        <li xmlns="http://www.w3.org/1999/xhtml" id="crux_nav_documentation" class="crux_resource active">Documentation</li><li xmlns="http://www.w3.org/1999/xhtml" id="crux_nav_example" class="crux_resource"><a href="../examples.html?category=low-level-file-i-o&amp;s_tid=CRUX_topnav">Examples</a></li><li xmlns="http://www.w3.org/1999/xhtml" id="crux_nav_function" class="crux_resource"><a href="../referencelist.html?type=function&amp;category=low-level-file-i-o&amp;s_tid=CRUX_topnav">Functions</a></li><li xmlns="http://www.w3.org/1999/xhtml" id="crux_nav_app" class="crux_resource"><a href="../referencelist.html?type=app&amp;category=low-level-file-i-o&amp;s_tid=CRUX_topnav">Apps</a></li><li xmlns="http://www.w3.org/1999/xhtml" id="crux_nav_videos" class="supplemental_crux_resource"><a href="/support/search.html?fq[]=asset_type_name:video%20category:matlab/low-level-file-i-o&amp;s_tid=CRUX_topnav" class="not_coming_from_product">Videos</a></li><li xmlns="http://www.w3.org/1999/xhtml" id="crux_nav_answers" class="supplemental_crux_resource"><a href="/support/search.html?fq[]=asset_type_name:answer%20category:matlab/low-level-file-i-o&amp;s_tid=CRUX_topnav" class="not_coming_from_product">Answers</a></li>
+                        </ul>
+                      </div>
+                    </nav>
+                  </div>
+                    <div class="col-md-5 col-lg-4 hidden-xs hidden-sm">
+                      <div class="cta_box">
+<ul class="list-inline">
+<li class="cta_item cta_item_general hidden-sm hidden-xs "><a href="/campaigns/products/trials.html?prodcode=ML&amp;s_iid=doc_trial_ML_tb" class="icon-download">Trial Software</a></li>
+<li class="hidden-lg hidden-md "><a href="/campaigns/products/trials.html?prodcode=ML&amp;s_iid=doc_trial_ML_tb" class="btn btn_color_blue btn-block"><span class="icon-download"></span> Trial Software</a></li>
+<li class="cta_item cta_item_general hidden-sm hidden-xs "><a href="/support/web_downloads_bounce.html?s_cid=1008_degr_docdn_270055" class="icon-download">Product Updates</a></li>
+<li class="hidden-lg hidden-md "><a href="/support/web_downloads_bounce.html?s_cid=1008_degr_docdn_270055" class="btn btn_color_blue btn-block"><span class="icon-download"></span> Product Updates</a></li>
+</ul>
+</div>
+                    </div>
+                  <!-- Mobile CRUX Nav: START -->
+                  <div class="visible-xs">
+                    <div class="container-fluid">
+                      <div class="row">
+                        <div class="col-xs-9"> 
+                          <div class="mobile_crux_nav_trigger">
+                            <!-- Single button -->
+                            <div class="btn-group">
+                              <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Resources <span class="icon-arrow-down icon_16"></span>  
+                              </button>
+                              <ul class="dropdown-menu">
+                                <li xmlns="http://www.w3.org/1999/xhtml" id="crux_nav_documentation" class="crux_resource active">Documentation</li><li xmlns="http://www.w3.org/1999/xhtml" id="crux_nav_example" class="crux_resource"><a href="../examples.html?category=low-level-file-i-o&amp;s_tid=CRUX_topnav">Examples</a></li><li xmlns="http://www.w3.org/1999/xhtml" id="crux_nav_function" class="crux_resource"><a href="../referencelist.html?type=function&amp;category=low-level-file-i-o&amp;s_tid=CRUX_topnav">Functions</a></li><li xmlns="http://www.w3.org/1999/xhtml" id="crux_nav_app" class="crux_resource"><a href="../referencelist.html?type=app&amp;category=low-level-file-i-o&amp;s_tid=CRUX_topnav">Apps</a></li><li xmlns="http://www.w3.org/1999/xhtml" id="crux_nav_videos" class="supplemental_crux_resource"><a href="/support/search.html?fq[]=asset_type_name:video%20category:matlab/low-level-file-i-o&amp;s_tid=CRUX_topnav" class="not_coming_from_product">Videos</a></li><li xmlns="http://www.w3.org/1999/xhtml" id="crux_nav_answers" class="supplemental_crux_resource"><a href="/support/search.html?fq[]=asset_type_name:answer%20category:matlab/low-level-file-i-o&amp;s_tid=CRUX_topnav" class="not_coming_from_product">Answers</a></li>
+                              </ul>
+                            </div>
+                            <!-- Single button -->                      
+                          </div>
+                        </div>
+                        <div class="col-xs-3">
+                          <div class="translate_placeholder"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Mobile CRUX Nav: END -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="content_container" id="content_container">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-xs-12">
+              <div id="offcanvas_focus_actuator" tabindex="0" class="visible-xs"><span class="sr-only">Main Content</span></div>
+              <main id="skip_link_anchor" tabindex="-1">
+                           
+
+
+
+
+
+                         
+    
+                                       
+<div xmlns="http://www.w3.org/1999/xhtml" id="product_info_alert"></div><section xmlns="http://www.w3.org/1999/xhtml" id="doc_center_content" itemprop="content" lang="en" data-language="en"><div id="pgtype-ref-function"><div class="function_ref">                
+
+       <span id="btrnibn-1" class="anchor_target"></span><h1 class="r2022b notranslate" itemprop="title"><span class="refname">fopen</span></h1><div class="doc_topic_desc"><div class="purpose_container"><p itemprop="purpose">Open file, or obtain information about open files</p><div class="switch"><a href="javascript:void(0);" id="expandAllPage" data-allexpanded="true1">collapse all in page</a></div></div></div>
+<div class="ref_sect"><h2 id="d124e487386">Syntax</h2><div class="syntax_signature"><div xmlns:mf="http://mathworks.com/namespace/tmwbook/function" class="syntax_signature_module"><div class="code_responsive"><code class="synopsis"><a href="#d124e487395" class="intrnllnk">fileID = fopen(filename)</a></code></div><div class="code_responsive"><code class="synopsis"><a href="#d124e487430" class="intrnllnk">fileID = fopen(filename,permission)</a></code></div><div class="code_responsive"><code class="synopsis"><a href="#d124e487446" class="intrnllnk">fileID = fopen(filename,permission,machinefmt,encodingIn)</a></code></div><div class="code_responsive"><code class="synopsis"><a href="#d124e487471" class="intrnllnk">[fileID,errmsg] = fopen(<span class="argument_placeholder">___</span>)</a></code></div></div><div xmlns:mf="http://mathworks.com/namespace/tmwbook/function" class="syntax_signature_module"><div class="code_responsive"><code class="synopsis"><a href="#d124e487491" class="intrnllnk">fIDs = fopen('all')</a></code></div></div><div xmlns:mf="http://mathworks.com/namespace/tmwbook/function" class="syntax_signature_module"><div class="code_responsive"><code class="synopsis"><a href="#d124e487505" class="intrnllnk">filename = fopen(fileID)</a></code></div><div class="code_responsive"><code class="synopsis"><a href="#d124e487523" class="intrnllnk">[filename,permission,machinefmt,encodingOut] = fopen(fileID)</a></code></div></div></div></div><div class="clear"></div><span id="btrnibn-2" class="anchor_target"></span><h2 id="description">Description</h2><div class="descriptions"><div xmlns:mf="http://mathworks.com/namespace/tmwbook/function" class="description_module"><span id="btrnib8" class="anchor_target"></span>
+<div class="description_element"><p class="syntax_example"><a href="fopen.html#btrnibo-2" class="intrnllnk">example</a></p><div class="code_responsive"><p><span id="d124e487395" itemprop="syntax"><code class="synopsis">fileID = fopen(<a href="#btrnibn-1-filename" class="intrnllnk"><code class="argument">filename</code></a>)</code></span> opens
+the file, <code class="literal">filename</code>,  for binary read access, and
+returns an integer file identifier equal to or greater than 3. MATLAB<sup>&#x00AE;</sup> reserves
+file identifiers <code class="literal">0</code>, <code class="literal">1</code>, and <code class="literal">2</code> for
+standard input, standard output (the screen), and standard error,
+respectively.</p><p>If <code class="function">fopen</code> cannot open the file, then <code class="literal">fileID</code> is <code class="literal remove_text_wrapping">-1</code>. </p></div></div>
+<div class="description_element"><div class="code_responsive"><p><span id="d124e487430" itemprop="syntax"><code class="synopsis">fileID = fopen(<a href="#btrnibn-1-filename" class="intrnllnk"><code class="argument">filename</code></a>,<a href="#btrnibn-1-permission" class="intrnllnk"><code class="argument">permission</code></a>)</code></span> opens
+the file with the type of access specified by <code class="literal">permission</code>.</p></div></div>
+<div class="description_element"><p class="syntax_example"><a href="fopen.html#btrnoon-1" class="intrnllnk">example</a></p><div class="code_responsive"><p><span id="d124e487446" itemprop="syntax"><code class="synopsis">fileID = fopen(<a href="#btrnibn-1-filename" class="intrnllnk"><code class="argument">filename</code></a>,<a href="#btrnibn-1-permission" class="intrnllnk"><code class="argument">permission</code></a>,<a href="#btrnibn-1-machinefmt" class="intrnllnk"><code class="argument">machinefmt</code></a>,<a href="#btrnibn-1-encodingIn" class="intrnllnk"><code class="argument">encodingIn</code></a>)</code></span> additionally
+specifies the order for reading or writing bytes or bits in the file
+using the <code class="literal">machinefmt</code> argument. The optional <code class="literal">encodingIn</code> argument
+specifies the character encoding scheme associated with the file.</p></div></div>
+<div class="description_element"><p class="syntax_example"><a href="fopen.html#btrnoom-1" class="intrnllnk">example</a></p><div class="code_responsive"><p><span id="d124e487471" itemprop="syntax"><code class="synopsis">[fileID,errmsg] = fopen(<span class="argument_placeholder">___</span>)</code></span> additionally
+returns a system-dependent error message if <code class="literal">fopen</code> fails
+to open the file. Otherwise, <code class="literal">errmsg</code> is an empty
+character vector. You can use this syntax with any of the input arguments
+of the previous syntaxes.</p></div></div>
+</div><div xmlns:mf="http://mathworks.com/namespace/tmwbook/function" class="description_module"><span id="btrnicd" class="anchor_target"></span>
+<div class="description_element"><p class="syntax_example"><a href="fopen.html#btrnooo-1" class="intrnllnk">example</a></p><div class="code_responsive"><p><span id="d124e487491" itemprop="syntax"><code class="synopsis">fIDs = fopen('all')</code></span>  returns a row vector
+containing the file identifiers of all open files. The identifiers
+reserved for standard input, output, and error are not included. The
+number of elements in the vector is equal to the number of open files.</p></div></div>
+</div><div xmlns:mf="http://mathworks.com/namespace/tmwbook/function" class="description_module"><span id="btrnica" class="anchor_target"></span>
+<div class="description_element"><div class="code_responsive"><p><span id="d124e487505" itemprop="syntax"><code class="synopsis">filename = fopen(<a href="#btrnibn-1-fileID" class="intrnllnk"><code class="argument">fileID</code></a>)</code></span> returns
+the file name that a previous call to <code class="literal">fopen</code> used
+when it opened the file specified by <code class="literal">fileID</code>. The
+output filename is resolved to the full path. The <code class="literal">fopen</code> function
+does not read information from the file to determine the output value. </p></div></div>
+<div class="description_element"><p class="syntax_example"><a href="fopen.html#btrnooo-1" class="intrnllnk">example</a></p><div class="code_responsive"><p><span id="d124e487523" itemprop="syntax"><code class="synopsis">[filename,permission,machinefmt,encodingOut] = fopen(<a href="#btrnibn-1-fileID" class="intrnllnk"><code class="argument">fileID</code></a>)</code></span> additionally
+returns the permission, machine format, and encoding that a previous
+call to <code class="literal">fopen</code> used when it opened the specified
+file. If the file was opened in binary mode, <code class="literal">permission</code> includes
+the letter <code class="literal">'b'</code>. The <code class="literal">encodingOut</code> output
+is a standard encoding scheme name. <code class="literal">fopen</code> does
+not read information from the file to determine these output values.
+An invalid <code class="literal">fileID</code> returns empty character vectors
+for all output arguments.</p></div></div>
+</div></div><div class="clear"></div><div class="examples"><h2 id="btrnibn-5">Examples</h2><div class="expandableContent" id="expandableExamples"><p class="switch"><a href="javascript:void(0);" class="expandAllLink" data-allexpanded="true3">collapse all</a></p><div class="panel-group" role="tablist" aria-multiselectable="true" id="expand_panel_heading_btrnibo-2"><div class="panel panel-default "><div role="tab" data-toggle="collapse" id="expand_panel_heading_btrnibo-2" data-target="#expand_panel_body_btrnibo-2" aria-controls="expand_panel_body_btrnibo-2" class="panel-heading add_cursor_pointer" aria-expanded="true"><h3 class="panel-title" id="btrnibo-2">Open File and Pass Identifier to File I/O Function<br/> </h3><span class="icon-arrow-open-down icon_24"></span><span class="icon-arrow-open-right icon_24"></span></div><div role="tabpanel" id="expand_panel_body_btrnibo-2" aria-labelledby="expand_panel_heading_btrnibo-2" class="panel-collapse collapse in"><div class="panel-body">
+<p class="shortdesc">Open a file and pass the file identifier to
+the <code class="literal">fgetl</code> function to read data.</p>
+<div class="procedure"><p>Open the file, <code class="literal">tsunamis.txt</code>, and obtain the file
+                  identifier.</p><div class="code_responsive"><div class="programlisting"><div class="codeinput"><pre>fileID = fopen(<span style="color:#A020F0">'tsunamis.txt'</span>);</pre></div></div></div><p>Pass the <code class="literal">fileID</code> to the <code class="literal">fgetl</code> function to
+                  read one line from the file. </p><div class="code_responsive"><div class="programlisting"><div class="codeinput"><pre>tline = fgetl(fileID)</pre></div></div></div><div class="code_responsive"><div class="programlisting"><div class="codeoutput"><pre>tline =
+
+  'A global tsunami data set in xlsx format, comprising the following file:'</pre></div></div></div><p>Close the file.</p><div class="code_responsive"><div class="programlisting"><div class="codeinput"><pre>fclose(fileID)</pre></div></div></div></div></div></div></div></div><div class="panel-group" role="tablist" aria-multiselectable="true" id="expand_panel_heading_btrnoom-1"><div class="panel panel-default "><div role="tab" data-toggle="collapse" id="expand_panel_heading_btrnoom-1" data-target="#expand_panel_body_btrnoom-1" aria-controls="expand_panel_body_btrnoom-1" class="panel-heading add_cursor_pointer" aria-expanded="true"><h3 class="panel-title" id="btrnoom-1">Request Name of File to Open<br/> </h3><span class="icon-arrow-open-down icon_24"></span><span class="icon-arrow-open-right icon_24"></span></div><div role="tabpanel" id="expand_panel_body_btrnoom-1" aria-labelledby="expand_panel_heading_btrnoom-1" class="panel-collapse collapse in"><div class="panel-body"><div class="procedure"><p>Create a prompt to request the name of a file to open.
+If <code class="literal">fopen</code> cannot open the file, display the relevant
+error message.</p><div class="code_responsive"><div class="programlisting"><div class="codeinput"><pre>fileID = -1;
+errmsg = <span style="color:#A020F0">''</span>;
+<span style="color:#0000FF">while</span> fileID &lt; 0 
+   disp(errmsg);
+   filename = input(<span style="color:#A020F0">'Open file: '</span>, <span style="color:#A020F0">'s'</span>);
+   [fileID,errmsg] = fopen(filename);
+<span style="color:#0000FF">end</span></pre></div></div></div></div></div></div></div></div><div class="panel-group" role="tablist" aria-multiselectable="true" id="expand_panel_heading_btrnoon-1"><div class="panel panel-default "><div role="tab" data-toggle="collapse" id="expand_panel_heading_btrnoon-1" data-target="#expand_panel_body_btrnoon-1" aria-controls="expand_panel_body_btrnoon-1" class="panel-heading add_cursor_pointer" aria-expanded="true"><h3 class="panel-title" id="btrnoon-1">Open File for Writing and Specify Access Type, Writing Order, Character Encoding<br/>
+</h3><span class="icon-arrow-open-down icon_24"></span><span class="icon-arrow-open-right icon_24"></span></div><div role="tabpanel" id="expand_panel_body_btrnoon-1" aria-labelledby="expand_panel_heading_btrnoon-1" class="panel-collapse collapse in"><div class="panel-body">
+<p class="shortdesc">Open a file to write to a file using the Shift-JIS
+character encoding.</p>
+<div class="procedure"><div class="code_responsive"><div class="programlisting"><div class="codeinput"><pre>fileID = fopen(<span style="color:#A020F0">'japanese_out.txt'</span>,<span style="color:#A020F0">'w'</span>,<span style="color:#A020F0">'n'</span>,<span style="color:#A020F0">'Shift_JIS'</span>);</pre></div></div></div><p>The <code class="literal">'w'</code> input specifies write access, the <code class="literal">'n'</code> input
+specifies native byte ordering, and <code class="literal">'Shift_JIS'</code> specifies
+the character encoding scheme.</p></div></div></div></div></div><div class="panel-group" role="tablist" aria-multiselectable="true" id="expand_panel_heading_btrnooo-1"><div class="panel panel-default "><div role="tab" data-toggle="collapse" id="expand_panel_heading_btrnooo-1" data-target="#expand_panel_body_btrnooo-1" aria-controls="expand_panel_body_btrnooo-1" class="panel-heading add_cursor_pointer" aria-expanded="true"><h3 class="panel-title" id="btrnooo-1">Get Information About Open Files<br/> </h3><span class="icon-arrow-open-down icon_24"></span><span class="icon-arrow-open-right icon_24"></span></div><div role="tabpanel" id="expand_panel_body_btrnooo-1" aria-labelledby="expand_panel_heading_btrnooo-1" class="panel-collapse collapse in"><div class="panel-body"><div class="procedure"><p>Suppose you previously opened a file using <code class="literal">fopen</code>.</p><div class="code_responsive"><div class="programlisting"><div class="codeinput"><pre>fileID = fopen(<span style="color:#A020F0">'tsunamis.txt'</span>);</pre></div></div></div><p>Get the file identifiers of all open files.</p><div class="code_responsive"><div class="programlisting"><div class="codeinput"><pre>fIDs = fopen(<span style="color:#A020F0">'all'</span>)</pre></div></div></div><div class="code_responsive"><div class="programlisting"><div class="codeoutput"><pre>fIDs =
+
+     3</pre></div></div></div><p>Get the file name and character encoding for the open
+file. Use <code class="literal">~</code> in place of output arguments you want
+to omit.</p><div class="code_responsive"><div class="programlisting"><div class="codeinput"><pre>[filename,~,~,encoding] = fopen(fileID)</pre></div></div></div><div class="code_responsive"><div class="programlisting"><div class="codeoutput"><pre>
+filename =
+
+    '<em class="replaceable">matlabroot</em>\toolbox\matlab\demos\tsunamis.txt'
+
+
+encoding =
+
+    'windows-1252'
+</pre></div></div></div><p>The output shown here is representative. Your results might
+differ.</p></div></div></div></div></div></div></div><div class="ref_sect"><h2 id="btrnibn-3">Input Arguments</h2><div class="expandableContent"><p class="switch "><a href="javascript:void(0);" class="expandAllLink" data-allexpanded="true">collapse all</a></p><div class="panel-group" id="btrnibn-3_panel-group" role="tablist" aria-multiselectable="true"><div class="panel-group" role="tablist" aria-multiselectable="true"><div class="panel panel-default "><div itemscope="" itemprop="inputargument" itemtype="http://www.mathworks.com/help/schema/MathWorksDocPage/NamedInputArgument" itemid="btrnibn-1-filename"><div role="tab" data-toggle="collapse" id="expand_panel_heading_btrnibn-1-filename" data-target="#expand_panel_body_btrnibn-1-filename" aria-controls="expand_panel_body_btrnibn-1-filename" class="panel-heading add_cursor_pointer" aria-expanded="true"><span id="inputarg_filename" class="anchor_target"></span><h3 class="panel-title" id="btrnibn-1-filename"><code itemprop="name">filename</code> &#8212; <span itemprop="purpose">Name of file to open</span><br/> <span class="add_font_color_general remove_bold"><span class="example_desc"><span itemprop="inputvalue">character vector or string scalar</span></span></span></h3><span class="icon-arrow-open-down icon_24"></span><span class="icon-arrow-open-right icon_24"></span></div><div role="tabpanel" id="expand_panel_body_btrnibn-1-filename" aria-labelledby="expand_panel_heading_btrnibn-1-filename" class="panel-collapse collapse in"><div class="panel-body">
+
+               <p>Name of file to open, specified as a character vector or string scalar that
+                  includes the file extension.</p>
+               <p>On UNIX<sup>&#x00AE;</sup> systems, if <code class="literal">filename</code> begins with
+                     <code class="literal">'~/'</code> or
+                     <code class="literal">'~<em class="replaceable"><code>username</code></em>/'</code>, the
+                     <code class="function">fopen</code> function expands the path to the current or
+                  specified user's home directory, respectively.</p>
+               <p>Depending on the location of your file, <code class="literal">filename</code> can take on
+                  one of these forms.</p>
+               <div class="table-responsive"><table class="table table-condensed"><colgroup><col class="tcol1" width="50%"><col class="tcol2" width="50%"></colgroup><tbody><tr><td>Current folder or folder on the MATLAB path</td><td><p>Specify the name of the file in
+                                 <code class="literal">filename</code>.</p>
+                              <p>If you open a file with read access and the file is not in the
+                                 current folder, then <code class="function">fopen</code> searches along the
+                                    MATLAB search path.</p><p>If you open a file with
+                                 write or append access and the file is not in the current folder,
+                                 then <code class="function">fopen</code> creates a file in the current
+                                 directory.</p><p><strong class="emphasis bold">Example:</strong>
+                                 <code class="literal">'sample_file.txt'</code></p></td></tr><tr><td><p>Other folders</p></td><td><p>If the file is not in the current folder or in a folder on
+                                 the MATLAB path, then specify the full or relative path name in
+                                    <code class="literal">filename</code>.</p><p><strong class="emphasis bold">Example:</strong>
+                                 <code class="literal">'C:\myFolder\myFile.sample_file.txt'</code></p><p><strong class="emphasis bold">Example:</strong>
+                                 <code class="literal">'myFolder\sample_file.txt'</code></p></td></tr><tr><td><p>Remote Location</p></td><td><p>If the file is stored at a remote location, then
+                                    <code class="literal">filename</code> must contain the full path of the
+                                 file specified as a uniform resource locator (URL) of the
+                                 form:</p><p><code class="literal"><em class="replaceable"><code>scheme_name</code></em>://<em class="replaceable"><code>path_to_file</code></em>/<em class="replaceable"><code>my_file.ext</code></em></code></p><p>Based on your remote location,
+                                    <em class="replaceable"><code>scheme_name</code></em> can be one of the values
+                                 in this table.</p>
+<div><table class="table table-condensed"><colgroup><col class="tcol1" width="50%"><col class="tcol2" width="50%"></colgroup><thead><tr><th>Remote Location</th><th><code class="literal">scheme_name</code></th></tr></thead><tbody><tr><td>Amazon S3&#x2122;</td><td><code class="literal">s3</code></td></tr><tr><td>Windows Azure<sup>&#x00AE;</sup> Blob Storage</td><td><code class="literal">wasb</code>,
+                                                  <code class="literal">wasbs</code></td></tr><tr><td>HDFS&#x2122;</td><td><code class="literal">hdfs</code></td></tr></tbody></table></div><p>
+If you are using a cloud file system, set
+                                 environment variables to communicate with the remote file system.
+                                 For more information, see <a href="../import_export/work-with-remote-data.html" class="a">Work with Remote Data</a>.</p><p>Files in a Hadoop Distributed File System (HDFS)
+                                 volume cannot be opened in read-write mode.</p><p><strong class="emphasis bold">Example:</strong>
+                                 <code class="literal">'s3://bucketname/path_to_file/sample_file.txt'</code></p></td></tr></tbody></table></div>
+<p class="description_valueexample"><strong>Example: </strong><code class="literal">'myFile.txt'</code></p>
+<p class="datatypelist"><strong>Data Types: </strong><code itemprop="datatype">char</code> | <code itemprop="datatype">string</code></p></div></div></div></div></div><div class="panel-group" role="tablist" aria-multiselectable="true"><div class="panel panel-default "><div itemscope="" itemprop="inputargument" itemtype="http://www.mathworks.com/help/schema/MathWorksDocPage/NamedInputArgument" itemid="btrnibn-1-permission"><div role="tab" data-toggle="collapse" id="expand_panel_heading_btrnibn-1-permission" data-target="#expand_panel_body_btrnibn-1-permission" aria-controls="expand_panel_body_btrnibn-1-permission" class="panel-heading add_cursor_pointer" aria-expanded="true"><span id="inputarg_permission" class="anchor_target"></span><h3 class="panel-title" id="btrnibn-1-permission"><code itemprop="name">permission</code> &#8212; <span itemprop="purpose">File access type</span><br/> <span class="add_font_color_general remove_bold"><span class="example_desc"><span itemprop="inputvalue defaultvalue"><code class="literal">'r'</code></span> (default) | <span itemprop="inputvalue"><code class="literal">'w'</code></span> | <span itemprop="inputvalue"><code class="literal">'a'</code></span> | <span itemprop="inputvalue"><code class="literal">'r+'</code></span> | <span itemprop="inputvalue"><code class="literal">'w+'</code></span> | <span itemprop="inputvalue"><code class="literal">'a+'</code></span> | <span itemprop="inputvalue"><code class="literal">'A'</code></span> | <span itemprop="inputvalue"><code class="literal">'W'</code></span> | ...</span></span></h3><span class="icon-arrow-open-down icon_24"></span><span class="icon-arrow-open-right icon_24"></span></div><div role="tabpanel" id="expand_panel_body_btrnibn-1-permission" aria-labelledby="expand_panel_heading_btrnibn-1-permission" class="panel-collapse collapse in"><div class="panel-body">
+<p>File access type, specified as a character vector or a string
+scalar. You can open a file in binary mode or in text mode.  On UNIX systems,
+both translation modes have the same effect. To open a file in binary
+mode, specify one of the following.</p>
+<div class="table-responsive"><table class="table table-condensed"><colgroup><col class="tcol1" width="21%"><col class="tcol2" width="79%"></colgroup><tbody><tr><td><p id="btrnpqy-1"><code class="literal">'r'</code></p></td><td><p>Open file for reading.</p></td></tr><tr><td><p id="btrnpqy-2"><code class="literal">'w'</code></p></td><td><p>Open or create new file for writing. Discard existing
+contents, if any.</p></td></tr><tr><td><p id="btrnpqy-3"><code class="literal">'a'</code></p></td><td><p>Open or create new file for writing. Append data to the
+end of the file.</p></td></tr><tr><td><p id="btrnpqy-4"><code class="literal">'r+'</code></p></td><td><p>Open file for reading and writing.</p></td></tr><tr><td><p id="btrnpqy-5"><code class="literal">'w+'</code></p></td><td><p>Open or create new file for reading and writing. Discard
+existing contents, if any.</p></td></tr><tr><td><p id="btrnpqy-6"><code class="literal">'a+'</code></p></td><td><p>Open or create new file for reading and writing. Append
+data to the end of the file. </p></td></tr><tr><td><p id="btrnpqy-7"><code class="literal">'A'</code></p></td><td><p>Open file for appending without automatic flushing of
+the current output buffer.</p></td></tr><tr><td><p id="btrnpqy-8"><code class="literal">'W'</code></p></td><td><p>Open file for writing without automatic flushing of the
+current output buffer.</p></td></tr></tbody></table></div>
+<p>To open files in text mode, attach the letter <code class="literal">'t'</code> to
+the <code class="literal">permission</code> argument, such as <code class="literal">'rt'</code> or <code class="literal">'wt+'</code>. </p>
+<p>On Windows<sup>&#x00AE;</sup> systems, in text mode:</p>
+<div class="itemizedlist"><ul><li><p>Read operations that encounter a carriage return followed
+by a newline character (<code class="literal">'\r\n'</code>) remove the carriage
+return from the input.</p></li><li><p>Write operations insert a carriage return before any
+newline character in the output.</p></li></ul></div>
+<p>Open or create a new file in text mode if you want to write
+to it in MATLAB and then open it in <span class="entity">Microsoft<sup>&#x00AE;</sup> Notepad</span>, or
+any text editor that does not recognize <code class="literal">'\n'</code> as
+a newline sequence.  When writing to the file, end each line with <code class="literal">'\r\n'</code>.
+For an example, see <a href="fprintf.html"><code class="function">fprintf</code></a>.
+Otherwise, open files in binary mode for better performance. </p>
+<p>To read and write to the same file:</p>
+<div class="itemizedlist"><ul><li><p>Open the file with a value for <code class="literal">permission</code> that
+includes a plus sign, <code class="literal">'+'</code>.</p></li><li><p>Call <code class="literal">fseek</code> or <code class="literal">frewind</code> between
+read and write operations. For example, do not call <code class="literal">fread</code> followed
+by <code class="literal">fwrite</code>, or <code class="literal">fwrite</code> followed
+by <code class="literal">fread</code>, unless you call <code class="literal">fseek</code> or <code class="literal">frewind</code> between
+them.</p></li></ul></div>
+<p class="datatypelist"><strong>Data Types: </strong><code itemprop="datatype">char</code> | <code itemprop="datatype">string</code></p></div></div></div></div></div><div class="panel-group" role="tablist" aria-multiselectable="true"><div class="panel panel-default "><div itemscope="" itemprop="inputargument" itemtype="http://www.mathworks.com/help/schema/MathWorksDocPage/NamedInputArgument" itemid="btrnibn-1-machinefmt"><div role="tab" data-toggle="collapse" id="expand_panel_heading_btrnibn-1-machinefmt" data-target="#expand_panel_body_btrnibn-1-machinefmt" aria-controls="expand_panel_body_btrnibn-1-machinefmt" class="panel-heading add_cursor_pointer" aria-expanded="true"><span id="inputarg_machinefmt" class="anchor_target"></span><h3 class="panel-title" id="btrnibn-1-machinefmt"><code itemprop="name">machinefmt</code> &#8212; <span itemprop="purpose">Order for reading or writing bytes or bits</span><br/> <span class="add_font_color_general remove_bold"><span class="example_desc"><span itemprop="inputvalue defaultvalue"><code class="literal">'n'</code></span> (default) | <span itemprop="inputvalue"><code class="literal">'b'</code></span> | <span itemprop="inputvalue"><code class="literal">'l'</code></span> | <span itemprop="inputvalue"><code class="literal">'s'</code></span> | <span itemprop="inputvalue"><code class="literal">'a'</code></span> | ...</span></span></h3><span class="icon-arrow-open-down icon_24"></span><span class="icon-arrow-open-right icon_24"></span></div><div role="tabpanel" id="expand_panel_body_btrnibn-1-machinefmt" aria-labelledby="expand_panel_heading_btrnibn-1-machinefmt" class="panel-collapse collapse in"><div class="panel-body">
+<p>Order for reading or writing bytes or bits in the file, specified
+as one of the following character vectors or string scalars.</p>
+<p></p>
+<div class="table-responsive"><table class="table table-condensed"><colgroup><col class="tcol1" width="41%"><col class="tcol2" width="59%"></colgroup><tbody><tr><td><p id="btrnibn-1.br46j5e-4"><code class="literal">'n'</code> or <code class="literal">'native'</code></p></td><td><p>Your system byte ordering (default)</p></td></tr><tr><td><p id="btrnibn-1.br46j5e-5"> <code class="literal">'b'</code> or <code class="literal">'ieee-be'</code></p></td><td><p>Big-endian ordering</p></td></tr><tr><td><p id="btrnibn-1.br46j5e-6"><code class="literal">'l'</code> or <code class="literal">'ieee-le'</code></p></td><td><p>Little-endian ordering</p></td></tr><tr><td><p id="btrnibn-1.br46j5e-7"> <code class="literal">'s'</code> or <code class="literal">'ieee-be.l64'</code></p></td><td><p>Big-endian ordering, 64-bit long data type</p></td></tr><tr><td><p id="btrnibn-1.br46j5e-8"> <code class="literal">'a'</code> or <code class="literal">'ieee-le.l64'</code></p></td><td><p>Little-endian ordering, 64-bit long data type</p></td></tr></tbody></table></div><p>
+By default, all currently supported
+platforms use little-endian ordering for new files. Existing binary
+files can use either big-endian or little-endian ordering.</p>
+<p class="datatypelist"><strong>Data Types: </strong><code itemprop="datatype">char</code> | <code itemprop="datatype">string</code></p></div></div></div></div></div><div class="panel-group" role="tablist" aria-multiselectable="true"><div class="panel panel-default "><div itemscope="" itemprop="inputargument" itemtype="http://www.mathworks.com/help/schema/MathWorksDocPage/NamedInputArgument" itemid="btrnibn-1-encodingIn"><div role="tab" data-toggle="collapse" id="expand_panel_heading_btrnibn-1-encodingIn" data-target="#expand_panel_body_btrnibn-1-encodingIn" aria-controls="expand_panel_body_btrnibn-1-encodingIn" class="panel-heading add_cursor_pointer" aria-expanded="true"><span id="inputarg_encodingIn" class="anchor_target"></span><h3 class="panel-title" id="btrnibn-1-encodingIn"><code itemprop="name">encodingIn</code> &#8212; <span itemprop="purpose">Character encoding</span><br/> <span class="add_font_color_general remove_bold"><span class="example_desc"><span itemprop="inputvalue"><code class="literal">'UTF-8'</code></span> | <span itemprop="inputvalue"><code class="literal">'ISO-8859-1'</code></span> | <span itemprop="inputvalue"><code class="literal">'windows-1251'</code></span> | <span itemprop="inputvalue"><code class="literal">'windows-1252'</code></span> | ...</span></span></h3><span class="icon-arrow-open-down icon_24"></span><span class="icon-arrow-open-right icon_24"></span></div><div role="tabpanel" id="expand_panel_body_btrnibn-1-encodingIn" aria-labelledby="expand_panel_heading_btrnibn-1-encodingIn" class="panel-collapse collapse in"><div class="panel-body">
+               <p>Character encoding to use for subsequent read and write operations, including
+                     <code class="function">fscanf</code>, <code class="function">fprintf</code>,
+                     <code class="function">fgetl</code>, <code class="function">fgets</code>,
+                     <code class="function">fread</code>, and <code class="function">fwrite</code>, specified as a
+                  character vector or a string scalar. The character vector or string scalar must
+                  contain a standard character encoding scheme name such as the following.</p>
+               <div class="table-responsive"><table class="table table-condensed"><colgroup><col class="tcol1" width="33%"><col class="tcol2" width="33%"><col class="tcol3" width="33%"></colgroup><tbody><tr><td><p><code class="literal">"Big5"</code></p></td><td><p><code class="literal">"ISO-8859-1"</code></p></td><td><p><code class="literal">"windows-874"</code></p></td></tr><tr><td><p><code class="literal">"Big5-HKSCS"</code></p></td><td><p><code class="literal">"ISO-8859-2"</code></p></td><td><p><code class="literal">"windows-949"</code></p></td></tr><tr><td><p><code class="literal">"CP949"</code></p></td><td><p><code class="literal">"ISO-8859-3"</code></p></td><td><p><code class="literal">"windows-1250"</code></p></td></tr><tr><td><p><code class="literal">"EUC-KR"</code></p></td><td><p><code class="literal">"ISO-8859-4"</code></p></td><td><p><code class="literal">"windows-1251"</code></p></td></tr><tr><td><p><code class="literal">"EUC-JP"</code></p></td><td><p><code class="literal">"ISO-8859-5"</code></p></td><td><p><code class="literal">"windows-1252"</code></p></td></tr><tr><td><p><code class="literal">"EUC-TW"</code></p></td><td><p><code class="literal">"ISO-8859-6"</code></p></td><td><p><code class="literal">"windows-1253"</code></p></td></tr><tr><td><p><code class="literal">"GB18030"</code></p></td><td><p><code class="literal">"ISO-8859-7"</code></p></td><td><p><code class="literal">"windows-1254"</code></p></td></tr><tr><td><p><code class="literal">"GB2312"</code></p></td><td><p><code class="literal">"ISO-8859-8"</code></p></td><td><p><code class="literal">"windows-1255"</code></p></td></tr><tr><td><p><code class="literal">"GBK"</code></p></td><td><p><code class="literal">"ISO-8859-9"</code></p></td><td><p><code class="literal">"windows-1256"</code></p></td></tr><tr><td><p><code class="literal">"IBM866"</code></p></td><td><p><code class="literal">"ISO-8859-11"</code></p></td><td><p><code class="literal">"windows-1257"</code></p></td></tr><tr><td><p><code class="literal">"KOI8-R"</code></p></td><td><p><code class="literal">"ISO-8859-13"</code></p></td><td><p><code class="literal">"windows-1258"</code></p></td></tr><tr><td><p><code class="literal">"KOI8-U"</code></p></td><td><p><code class="literal">"ISO-8859-15"</code></p></td><td><p><code class="literal">"US-ASCII"</code></p></td></tr><tr><td>&nbsp;</td><td><p><code class="literal">"Macintosh"</code></p></td><td><p><code class="literal">"UTF-8"</code></p></td></tr><tr><td>&nbsp;</td><td><p><code class="literal">"Shift_JIS"</code></p></td><td>&nbsp;</td></tr></tbody></table></div>
+               <p>If you do not specify an encoding scheme when opening a file for reading,
+                     <code class="literal">fopen</code> uses auto character-set detection to determine the
+                  encoding. If you do not specify an encoding scheme when opening a file for
+                  writing, <code class="literal">fopen</code> defaults to using UTF-8 in order to provide
+                  interoperability between all platforms and locales without data loss or
+                  corruption. For more information, see <a href="../import_export/import-text-data-files-with-low-level-io.html" class="a">Import Text Data Files with Low-Level I/O</a>.</p>
+               <p>If you specify a value for encoding that is not in the list of supported
+                  values, MATLAB issues a warning. Specifying other encoding names sometimes (but not
+                  always) produces correct results.</p>
+            <p class="datatypelist"><strong>Data Types: </strong><code itemprop="datatype">char</code> | <code itemprop="datatype">string</code></p></div></div></div></div></div><div class="panel-group" role="tablist" aria-multiselectable="true"><div class="panel panel-default "><div itemscope="" itemprop="inputargument" itemtype="http://www.mathworks.com/help/schema/MathWorksDocPage/NamedInputArgument" itemid="btrnibn-1-fileID"><div role="tab" data-toggle="collapse" id="expand_panel_heading_btrnibn-1-fileID" data-target="#expand_panel_body_btrnibn-1-fileID" aria-controls="expand_panel_body_btrnibn-1-fileID" class="panel-heading add_cursor_pointer" aria-expanded="true"><span id="inputarg_fileID" class="anchor_target"></span><h3 class="panel-title" id="btrnibn-1-fileID"><code itemprop="name">fileID</code> &#8212; <span itemprop="purpose">File identifier of an open file</span><br/> <span class="add_font_color_general remove_bold"><span class="example_desc"><span itemprop="inputvalue">integer</span></span></span></h3><span class="icon-arrow-open-down icon_24"></span><span class="icon-arrow-open-right icon_24"></span></div><div role="tabpanel" id="expand_panel_body_btrnibn-1-fileID" aria-labelledby="expand_panel_heading_btrnibn-1-fileID" class="panel-collapse collapse in"><div class="panel-body">
+<p>File identifier of an open file, specified as an integer.</p>
+<p class="datatypelist"><strong>Data Types: </strong><code itemprop="datatype">double</code></p></div></div></div></div></div></div></div></div><div class="ref_sect"><h2 id="btye4bu-4">Tips</h2><div class="itemizedlist"><ul><li><p>In most cases, it is not necessary to open a file
+in text mode. MATLAB import functions, all UNIX applications,
+and <span class="entity">Microsoft Word</span> and WordPad recognize <code class="literal">'\n'</code> as
+a newline indicator.</p></li></ul></div></div><div class="ref_sect"><h2 id="refsect-extended-capabilities">Extended Capabilities</h2><div class="expand_collapse" id="accordion_refsect-extended-capabilities" role="tablist" aria-multiselectable="true"><span id="bvlc5pc-2" class="anchor_target"></span><span id="btrnibn-1" class="anchor_target"></span><h3 class="expand_trigger collapsed" id="btrnibn-1_codegen" aria-expanded="false" data-toggle="collapse" data-target="#expand_body_btrnibn-1_codegen" aria-controls="expand_body_btrnibn-1_codegen"><span class="icon-arrow-open-down"></span><span class="icon-arrow-open-right"></span>C/C++ Code Generation<br/> <span class=" remove_bold add_font_color_general">Generate C and C++ code using MATLAB&#174; Coder&#8482;.</span></h3><div id="expand_body_btrnibn-1_codegen" class="collapsible_content collapse" aria-expanded="false"><p><span>Usage notes and limitations:</span></p><p></p>
+<div class="itemizedlist"><ul><li><p>Code generation does not support:</p><div class="itemizedlist"><ul><li><p>The input arguments <code class="literal">machinefmt</code>, <code class="literal">encodingIn</code>,
+or <code class="literal">fileID</code>.</p></li><li><p>The output argument <code class="literal">errmsg</code>.</p></li><li><p>The syntax <code class="literal">fopen('all')</code>.</p></li><li><p>Opening a file in text mode. That is the <code class="literal">permission</code> argument
+must not contain the letter <code class="literal">t</code>. For example, the
+value cannot be <code class="literal">'rt'</code>.</p></li></ul></div></li><li><p>The <code class="literal">permission</code> argument can contain
+three characters at most. The characters must be unique.</p></li><li><p>If you disable extrinsic calls, then you cannot return
+file identifiers created with <code class="literal">fopen</code> to MATLAB functions
+or extrinsic functions. Use these file identifiers only internally.</p></li><li><p>When generating C/C++ executables, static libraries,
+or dynamic libraries, you can open up to 20 files.</p></li><li><p>The generated code does not report errors from invalid
+file identifiers. Write your own file open error handling in your MATLAB code.
+Test whether <code class="function">fopen</code> returns <code class="literal remove_text_wrapping">-1</code>,
+which indicates that the file open failed. For example:<div class="code_responsive"><div class="programlisting"><div class="codeinput"><pre><span style="color:#0000FF">...</span>
+fid = fopen(filename, <span style="color:#A020F0">'r'</span>);
+<span style="color:#0000FF">if</span> fid == -1
+		<span style="color:#228B22">% fopen failed</span>
+
+<span style="color:#0000FF">else</span>
+<span style="color:#228B22">% fopen successful, okay to call fread</span>
+A = fread(fid);
+<span style="color:#0000FF">...</span></pre></div></div></div></p></li><li><p>The behavior of the generated code for <code class="literal">fread</code> is
+compiler-dependent when you:</p>
+<div class="orderedlist"><ol style="list-style: decimal;"><li><p>Open a file using <code class="function">fopen</code> with
+a <code class="literal">permission</code> of <code class="literal">a+</code>.</p></li><li><p>Read the file using <code class="literal">fread</code> before
+calling an I/O function, such as <code class="function">fseek</code> or <code class="function">frewind</code>,
+that sets the file position indicator.</p></li></ol></div><p>
+</p></li></ul></div><p>
+</p></div><span id="mw_c0fe5b2b-ef6e-40e9-9d28-be4b8f02f02a" class="anchor_target"></span><span id="btrnibn-1" class="anchor_target"></span><h3 class="expand_trigger collapsed" id="btrnibn-1_threadsupport" aria-expanded="false" data-toggle="collapse" data-target="#expand_body_btrnibn-1_threadsupport" aria-controls="expand_body_btrnibn-1_threadsupport"><span class="icon-arrow-open-down"></span><span class="icon-arrow-open-right"></span>Thread-Based Environment<br/> <span class=" remove_bold add_font_color_general">Run code in the background using MATLAB&#174; <code class="function">backgroundPool</code> or accelerate code with Parallel Computing Toolbox&#8482; <code class="function">ThreadPool</code>.</span></h3><div id="expand_body_btrnibn-1_threadsupport" class="collapsible_content collapse" aria-expanded="false"><p>Usage notes and limitations:</p><div class="itemizedlist"><ul><li><p>The <code class="literal">fopen('all')</code> syntax is not supported in thread-based
+                  environments.</p></li></ul></div></div></div></div><div class="ref_sect"><h2 id="mw_4dd91e8f-b248-400c-9a68-0f97ffbfaa1f">Version History</h2><strong>Introduced before R2006a</strong><div class="expandableContent"><p class="switch"><a href="javascript:void(0);" class="expandAllLink">expand all</a></p><div class="expand_collapse"><h3 class="expand_trigger collapsed" id="mw_b314c333-2ebc-4a1a-ba32-717d165b9c7c" aria-expanded="false" data-toggle="collapse" data-target="#expand_body_mw_b314c333-2ebc-4a1a-ba32-717d165b9c7c" aria-controls="expand_body_mw_b314c333-2ebc-4a1a-ba32-717d165b9c7c"><span class="icon-arrow-open-down"></span><span class="icon-arrow-open-right"></span>R2022b: <span class="remove_bold">Use function in thread-based environments</span></h3><div id="expand_body_mw_b314c333-2ebc-4a1a-ba32-717d165b9c7c" class="collapsible_content collapse" aria-expanded="false"><p>This function supports thread-based environments.</p></div></div></div></div><div class="ref_sect"><h2 id="btrnibn-1_seealso">See Also</h2><p><span itemscope="" itemtype="http://www.mathworks.com/help/schema/MathWorksDocPage/SeeAlso" itemprop="seealso"><a itemprop="url" href="fclose.html"><span itemprop="name"><code class="function">fclose</code></span></a></span> | <span itemscope="" itemtype="http://www.mathworks.com/help/schema/MathWorksDocPage/SeeAlso" itemprop="seealso"><a itemprop="url" href="ferror.html"><span itemprop="name"><code class="function">ferror</code></span></a></span> | <span itemscope="" itemtype="http://www.mathworks.com/help/schema/MathWorksDocPage/SeeAlso" itemprop="seealso"><a itemprop="url" href="fseek.html"><span itemprop="name"><code class="function">fseek</code></span></a></span> | <span itemscope="" itemtype="http://www.mathworks.com/help/schema/MathWorksDocPage/SeeAlso" itemprop="seealso"><a itemprop="url" href="ftell.html"><span itemprop="name"><code class="function">ftell</code></span></a></span> | <span itemscope="" itemtype="http://www.mathworks.com/help/schema/MathWorksDocPage/SeeAlso" itemprop="seealso"><a itemprop="url" href="feof.html"><span itemprop="name"><code class="function">feof</code></span></a></span> | <span itemscope="" itemtype="http://www.mathworks.com/help/schema/MathWorksDocPage/SeeAlso" itemprop="seealso"><a itemprop="url" href="fscanf.html"><span itemprop="name"><code class="function">fscanf</code></span></a></span> | <span itemscope="" itemtype="http://www.mathworks.com/help/schema/MathWorksDocPage/SeeAlso" itemprop="seealso"><a itemprop="url" href="fprintf.html"><span itemprop="name"><code class="function">fprintf</code></span></a></span> | <span itemscope="" itemtype="http://www.mathworks.com/help/schema/MathWorksDocPage/SeeAlso" itemprop="seealso"><a itemprop="url" href="fread.html"><span itemprop="name"><code class="function">fread</code></span></a></span> | <span itemscope="" itemtype="http://www.mathworks.com/help/schema/MathWorksDocPage/SeeAlso" itemprop="seealso"><a itemprop="url" href="fwrite.html"><span itemprop="name"><code class="function">fwrite</code></span></a></span> | <span itemscope="" itemtype="http://www.mathworks.com/help/schema/MathWorksDocPage/SeeAlso" itemprop="seealso"><a itemprop="url" href="frewind.html"><span itemprop="name"><code class="function">frewind</code></span></a></span></p></div>
+    </div></div><div class="clearfix"></div>
+<div align="center" class="feedbackblock" id="mw_docsurvey"><script src="/help/docsurvey/docfeedback.js?202212121419"></script>
+<script>loadSurveyHidden();</script>
+<link rel="stylesheet" href="/help/docsurvey/release/index-css.css" type="text/css">
+<script src="/help/docsurvey/release/bundle.index.js?202212121419"></script>
+
+<script>initDocSurvey();</script></div></section>
+<div class="modal fade" id="matlab-command-dialog" tabindex="-1" role="dialog" aria-labelledby="matlabCommandDialogLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h2 class="modal-title">MATLAB Command</h2>
+      </div>
+      <div class="modal-body" id="dialog-body">
+        <p>You clicked a link that corresponds to this MATLAB command: </p>
+        <pre id="dialog-matlab-command"></pre>
+        <p>Run the command by entering it in the MATLAB Command Window.
+        Web browsers do not support MATLAB commands.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn_secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+<div id="location_content" style="display:none;"></div>
+
+
+<div class="modal fade" id="country-unselected" tabindex="-1" role="dialog" aria-labelledby="country-unselected-title" translate="no">
+<div id="country-select-container">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <img alt="MathWorks" src="/images/responsive/global/pic-header-mathworks-logo2.svg" style="width:167px; height:auto;">
+      </div>
+      <div class="modal-body">
+        <div class="row add_margin_40">
+          <div class="col-xs-12">
+            <h1 class="icon-globe icon_color_secondary" id="country-unselected-title">Select a Web Site</h1>
+            <p>Choose a web site to get translated content where available and see local events and offers. Based on your location, we recommend that you select: <strong class="recommended-country"></strong>.</p>
+						<div class="default-recommendation">
+							<a href="#" id="recommended_domain_button"
+								class="btn btn_color_blue containsResourceName resourceClass-button"><span
+								class="recommended-country"></span></a>
+						</div>
+						<div class="ch-recommendation" style="display:none;">
+							<ul class="list-inline">
+								<li class="add_display_block_xs add_margin_10_xs"><a href="https://ch.mathworks.com" class="recommendation-button btn btn_color_blue btn-md add_display_block_xs" data-subdomain="ch" data-lang="en" data-recommended-text="Switzerland" data-default-lang="true" data-do-not-rewrite="true" x-cq-linkchecker="skip">Switzerland (English)</a></li>
+								<li class="add_display_block_xs add_margin_10_xs"><a href="https://ch.mathworks.com" class="recommendation-button btn companion_btn btn-md add_display_block_xs" data-subdomain="ch" data-lang="de" data-recommended-text="Schweiz" data-do-not-rewrite="true" x-cq-linkchecker="skip">Switzerland (Deutsch)</a></li>
+								<li class="add_display_block_xs"><a href="https://ch.mathworks.com" class="recommendation-button btn companion_btn btn-md add_display_block_xs" data-subdomain="ch" data-lang="fr" data-recommended-text="Suisse" data-do-not-rewrite="true" x-cq-linkchecker="skip">Switzerland (Français)</a></li>
+							</ul>
+						</div>
+						<div class="zh-recommendation" style="display:none;">
+							<ul class="list-inline">
+								<li class="add_display_block_xs add_margin_10_xs"><a href="https://ww2.mathworks.cn" class="recommendation-button btn btn_color_blue btn-md add_display_block_xs" data-subdomain="ww2" data-lang="zh" data-recommended-text="中国" data-default-lang="true" data-do-not-rewrite="true" x-cq-linkchecker="skip">中国 (简体中文)</a></li>
+								<li class="add_display_block_xs"><a href="https://ww2.mathworks.cn" class="recommendation-button btn companion_btn btn-md add_display_block_xs" data-subdomain="ww2" data-lang="en" data-recommended-text="China" data-do-not-rewrite="true" x-cq-linkchecker="skip">中国 (English)</a></li>
+							</ul>
+						</div>
+          </div>
+        </div>
+        <p>You can also select a web site from the following list:</p>
+				<div class="alert alert-warning" id="china_performance_alert" style="display:none;"> <span class="alert_icon icon-alert-warning"></span>
+					<h2>How to Get Best Site Performance</h2>
+					<p>Select the China site (in Chinese or English) for best site performance. Other MathWorks country sites are not optimized for visits from your location.</p>
+				</div>
+        <div class="row add_margin_30">
+          <div class="col-sm-4 col-md-3">
+            <h3 class="add_bottom_rule">Americas</h3>
+            <ul class="list-unstyled">
+              <li><a href="https://la.mathworks.com" class="domain_selector_link" data-country-code="LA" data-subdomain="la" data-lang="es" data-default-lang="true" data-selected-text="América Latina" data-recommended-text="América Latina" data-do-not-rewrite="true">Am&eacute;rica Latina</a> (Español)</li>
+              <li><a href="https://www.mathworks.com" class="domain_selector_link" data-country-code="CA" data-subdomain="www" data-lang="en" data-do-not-rewrite="true">Canada</a> (English)</li>
+              <li><a href="https://www.mathworks.com" class="domain_selector_link" data-country-code="US" data-subdomain="www" data-lang="en" data-default-lang="true" data-selected-text="United States" data-recommended-text="United States" data-do-not-rewrite="true">United States</a> (English)</li>
+            </ul>
+          </div>
+          <div class="col-sm-4 col-md-6">
+            <h3 class="add_bottom_rule">Europe</h3>
+            <div class="row">
+              <div class="col-xs-6 col-sm-12 col-md-6">
+                <ul class="list-unstyled add_margin_0_sm">
+                  <li><a href="https://nl.mathworks.com" class="domain_selector_link" data-country-code="BE" data-subdomain="nl" data-lang="en" data-do-not-rewrite="true">Belgium</a> (English)</li>
+                  <li><a href="https://se.mathworks.com" class="domain_selector_link" data-country-code="DK" data-subdomain="se" data-lang="en" data-do-not-rewrite="true">Denmark</a> (English)</li>
+                  <li><a href="https://de.mathworks.com" class="domain_selector_link" data-country-code="DE" data-subdomain="de" data-lang="de" data-default-lang="true" data-selected-text="Deutschland" data-recommended-text="Deutschland" data-do-not-rewrite="true">Deutschland</a> (Deutsch)</li>
+                  <li><a href="https://es.mathworks.com" class="domain_selector_link" data-country-code="ES" data-subdomain="es" data-lang="es" data-default-lang="true" data-selected-text="España" data-recommended-text="España" data-do-not-rewrite="true">España</a> (Español)</li>
+                  <li><a href="https://se.mathworks.com"  class="domain_selector_link" data-country-code="FI" data-subdomain="se" data-lang="en" data-do-not-rewrite="true">Finland</a> (English)</li>
+                  <li><a href="https://fr.mathworks.com" class="domain_selector_link" data-country-code="FR" data-subdomain="fr" data-lang="fr" data-default-lang="true" data-selected-text="France" data-recommended-text="France" data-do-not-rewrite="true">France</a> (Français)</li>
+                  <li><a href="https://uk.mathworks.com" class="domain_selector_link" data-country-code="IE" data-subdomain="uk" data-lang="en" data-do-not-rewrite="true">Ireland</a> (English)</li>
+                  <li><a href="https://it.mathworks.com" class="domain_selector_link" data-country-code="IT" data-subdomain="it" data-lang="it" data-default-lang="true" data-selected-text="Italia" data-recommended-text="Italia" data-do-not-rewrite="true">Italia</a> (Italiano)</li>
+                  <li><a href="https://nl.mathworks.com" class="domain_selector_link" data-country-code="LU" data-subdomain="nl" data-lang="en" data-do-not-rewrite="true">Luxembourg</a> (English)</li>
+                </ul>
+              </div>
+              <div class="col-xs-6 col-sm-12 col-md-6">
+                <ul class="list-unstyled">
+                  <li><a href="https://nl.mathworks.com" class="domain_selector_link" data-country-code="NL" data-subdomain="nl" data-lang="en" data-default-lang="true" data-selected-text="Benelux" data-recommended-text="Netherlands" data-do-not-rewrite="true">Netherlands</a> (English)</li>
+                  <li><a href="https://se.mathworks.com" class="domain_selector_link" data-country-code="NO" data-subdomain="se" data-lang="en" data-do-not-rewrite="true">Norway</a> (English)</li>
+                  <li><a href="https://de.mathworks.com" class="domain_selector_link" data-country-code="AT" data-subdomain="de" data-lang="de" data-do-not-rewrite="true">Österreich</a> (Deutsch)</li>
+                  <li><a href="https://www.mathworks.com" class="domain_selector_link" data-country-code="PT" data-subdomain="www" data-lang="en" data-do-not-rewrite="true">Portugal</a> (English)</li>
+                  <li><a href="https://se.mathworks.com" class="domain_selector_link" data-country-code="Sweden" data-subdomain="se" data-lang="en" data-default-lang="true" data-selected-text="Nordic" data-recommended-text="Sweden" data-do-not-rewrite="true">Sweden</a> (English)</li>
+                  <li>Switzerland
+                    <ul class="list-unstyled add_indent_20">
+                      <li><a href="https://ch.mathworks.com" class="domain_selector_link" data-country-code="CH" data-subdomain="ch" data-lang="de" data-selected-text="Schweiz" data-recommended-text="Schweiz" data-do-not-rewrite="true">Deutsch</a></li>
+                      <li><a href="https://ch.mathworks.com" id="swiss_english" class="domain_selector_link" data-country-code="CH" data-subdomain="ch" data-lang="en" data-default-lang="true" data-selected-text="Switzerland" data-recommended-text="Switzerland" data-do-not-rewrite="true">English</a></li>
+                      <li><a href="https://ch.mathworks.com" class="domain_selector_link" data-country-code="CH" data-subdomain="ch" data-lang="fr" data-selected-text="Suisse" data-recommended-text="Suisse" data-do-not-rewrite="true">Français</a></li>
+                    </ul>
+                  </li>
+                  <li><a href="https://uk.mathworks.com" class="domain_selector_link" data-country-code="GB" data-subdomain="uk" data-lang="en" data-default-lang="true" data-selected-text="United Kingdom" data-recommended-text="United Kingdom" data-do-not-rewrite="true">United Kingdom</a> (English)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-4 col-md-3">
+            <h3 class="add_bottom_rule">Asia Pacific</h3>
+            <ul class="list-unstyled">
+              <li><a href="https://au.mathworks.com" class="domain_selector_link" data-country-code="AU" data-subdomain="au" data-lang="en" data-default-lang="true" data-selected-text="Australia" data-recommended-text="Australia" data-do-not-rewrite="true">Australia</a> (English)</li>
+              <li><a href="https://in.mathworks.com" class="domain_selector_link" data-country-code="IN" data-subdomain="in" data-lang="en" data-default-lang="true" data-selected-text="India" data-recommended-text="India" data-do-not-rewrite="true">India</a> (English)</li>
+              <li><a href="https://au.mathworks.com" class="domain_selector_link" data-country-code="NZ" data-subdomain="au" data-lang="en" data-do-not-rewrite="true">New Zealand</a> (English)</li>
+              <li>中国
+                    <ul class="list-unstyled add_indent_20">
+                      <li><a href="https://ww2.mathworks.cn" class="domain_selector_link" data-country-code="CN" data-subdomain="ww2" data-lang="zh" data-default-lang="true" data-selected-text="中国" data-recommended-text="中国" data-do-not-rewrite="true">简体中文</a></li>
+                      <li><a href="https://ww2.mathworks.cn" class="domain_selector_link" data-country-code="CN" data-subdomain="ww2" data-lang="en" data-default-lang="true" data-selected-text="China" data-recommended-text="China" data-do-not-rewrite="true">English</a></li>
+                    </ul>
+               </li>
+              <li><a href="https://jp.mathworks.com" class="domain_selector_link" data-country-code="JP" data-subdomain="jp" data-lang="ja" data-default-lang="true" data-selected-text="日本" data-recommended-text="日本" data-do-not-rewrite="true">日本</a> (日本語)</li>
+              <li><a href="https://kr.mathworks.com" class="domain_selector_link" data-country-code="KR" data-subdomain="kr" data-lang="ko" data-default-lang="true" data-selected-text="한국" data-recommended-text="한국" data-do-not-rewrite="true">한국</a> (한국어)</li>
+            </ul>
+          </div>
+        </div>
+        <p class="text-center"><a href="#" class="worldwide_link">Contact your local office</a></p>
+      </div>
+    </div>
+  </div>
+  </div>
+</div>
+  
+
+              </main>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MOBILE CTA - Begin -->
+      <div class="cta_container_mobile visible-sm visible-xs">
+        <div class="container-fluid">      
+          <div class="row">
+            <div class="col-xs-12">
+              <div class="cta_box">
+<ul class="list-inline">
+<li class="cta_item cta_item_general hidden-sm hidden-xs "><a href="/campaigns/products/trials.html?prodcode=ML&amp;s_iid=doc_trial_ML_tb" class="icon-download">Trial Software</a></li>
+<li class="hidden-lg hidden-md "><a href="/campaigns/products/trials.html?prodcode=ML&amp;s_iid=doc_trial_ML_tb" class="btn btn_color_blue btn-block"><span class="icon-download"></span> Trial Software</a></li>
+<li class="cta_item cta_item_general hidden-sm hidden-xs "><a href="/support/web_downloads_bounce.html?s_cid=1008_degr_docdn_270055" class="icon-download">Product Updates</a></li>
+<li class="hidden-lg hidden-md "><a href="/support/web_downloads_bounce.html?s_cid=1008_degr_docdn_270055" class="btn btn_color_blue btn-block"><span class="icon-download"></span> Product Updates</a></li>
+</ul>
+</div> 
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- MOBILE CTA - End -->
+
+
+      <footer id="footer" class="bs-footer">
+          <!-- FAT FOOTER - Begin --> 
+          <div class="container-fluid">
+            <div class="fat_footer_container">
+              <div class="fat_footer">
+<div class="execmatlabweb"> <!--Requried for Doc Test -->
+<div class="row">
+<div class="col-xs-12 col-md-12 col-lg-3 add_margin_20">
+<p class="h4 add_margin_0"><span translate="no">MathWorks</span></p>
+<p><em>Accelerating the pace of engineering and science</em></p>
+<p class="hidden-xs"><span translate="no">MathWorks</span> is the leading developer of mathematical computing software for engineers and scientists.</p>
+<p class="hidden-xs"><a href="/discovery.html?s_tid=all_disc_mw_ff">Discover...</a></p>
+</div>
+<div class="col-xs-12 col-md-12 col-lg-9">
+<div class="row">
+<div class="col-xs-12 col-sm-2">
+<p class="ff_section_title"><a href="#fatfooter_products" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="fatfooter_products">Explore Products <span class="caret"></span></a></p>
+<div class="collapse" id="fatfooter_products">
+<ul class="list-unstyled">
+<li><a href="/products/matlab.html?s_tid=hp_ff_p_matlab">MATLAB</a></li>
+<li><a href="/products/simulink.html?s_tid=hp_ff_p_simulink">Simulink</a></li>
+<li><a href="/products/matlab/student.html?s_tid=hp_ff_p_student">Student Software</a></li>
+<li><a href="/hardware-support/home.html?s_tid=hp_ff_p_hwsupport">Hardware Support</a></li>
+<li><a href="/matlabcentral/fileexchange/?s_tid=hp_ff_p_fx">File Exchange</a></li>
+</ul>
+</div>
+</div>
+<div class="col-xs-12 col-sm-2">
+<p class="ff_section_title"><a href="#fatfooter_buy" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="fatfooter_buy">Try or Buy <span class="caret"></span></a></p>
+<div class="collapse" id="fatfooter_buy">
+<ul class="list-unstyled">
+<li><a href="/downloads/web_downloads/?s_iid=hp_ff_t_downloads">Downloads</a></li>
+<li><a href="/campaigns/products/trials.html?s_iid=hp_ff_p_trial">Trial Software</a></li>
+<li><a href="/company/aboutus/contact_us/contact_sales.html?s_iid=hp_ff_t_sales">Contact Sales</a></li>
+<li><a href="/pricing-licensing.html?s_iid=hp_ff_t_pricing">Pricing and Licensing</a></li>
+<li><a href="/store/?s_tid=hp_ff_t_buy">How to Buy</a></li>
+</ul>
+</div>
+</div>
+<div class="col-xs-12 col-sm-2">
+<p class="ff_section_title"><a role="button" data-toggle="collapse" href="#fatfooter_use" aria-expanded="false" aria-controls="fatfooter_use">Learn to Use <span class="caret"></span></a></p>
+<div class="collapse" id="fatfooter_use">
+<ul class="list-unstyled">
+<li><a href="/help/?s_tid=hp_ff_l_doc">Documentation</a></li>
+<li><a href="/support/learn-with-matlab-tutorials.html?s_tid=hp_ff_l_tutorials">Tutorials</a></li>
+<li><a href="/help/examples.html?s_tid=hp_ff_l_examples">Examples</a></li>
+<li><a href="/videos.html?s_tid=hp_ff_l_videos">Videos and Webinars</a></li>
+<li><a href="/learn/training.html?s_tid=hp_ff_l_training">Training</a></li>
+</ul>
+</div>
+</div>
+<div class="clearfix" id="offcanvas_clearfix" style="display:none"></div>
+<div class="col-xs-12 col-sm-2">
+<p class="ff_section_title"><a href="#fatfooter_support" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="fatfooter_support">Get Support <span class="caret"></span></a></p>
+<div class="collapse" id="fatfooter_support">
+<ul class="list-unstyled">
+<li><a href="/help/install/?s_tid=hp_ff_s_install">Installation Help</a></li>
+<li><a href="/matlabcentral/answers/index?s_tid=hp_ff_s_answers">Answers</a></li>
+<li><a href="/services/consulting.html?s_tid=hp_ff_s_consulting">Consulting</a></li>
+<li><a href="/licensecenter/?s_tid=hp_ff_s_license">License Center</a></li>
+<li><a href="/support/contact_us.html?s_tid=hp_ff_s_support">Contact Support</a></li>
+</ul>
+</div>
+</div>
+<div class="col-xs-12 col-sm-2">
+<p class="ff_section_title"><a role="button" data-toggle="collapse" href="#fatfooter_about" aria-expanded="false" aria-controls="fatfooter_about">About <span translate="no">MathWorks</span> <span class="caret"></span></a></p>
+<div class="collapse" id="fatfooter_about">
+<ul class="list-unstyled">
+<li><a href="/company/jobs/opportunities.html?s_tid=hp_ff_a_careers">Careers</a></li>
+<li><a href="/company/newsroom.html?s_tid=hp_ff_a_newsroom">Newsroom</a></li>
+<li><a href="/company/aboutus/soc_mission.html?s_tid=hp_ff_a_socialmission">Social Mission</a></li>
+<li><a href="/company/customer-stories.html?s_tid=hp_ff_a_customerstories">Customer Stories</a></li>
+<li><a href="/company.html?s_tid=hp_ff_a_company">About <span translate="no">MathWorks</span></a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+            </div>
+          </div>
+          <!-- FAT FOOTER - End -->
+        <div class="container-fluid">
+         <div class="footer" translate="no">
+<div class="row">
+<div class="col-xs-12 col-md-9">
+<ul class="countrynav" id="countrynav">
+<li class="footernav_country">
+<a href="#" data-toggle="modal" data-target="#country-unselected">
+<span class="icon-globe icon_color_quinary icon_16"></span>United States
+</a>
+</li>
+</ul>
+<div class="clearfix"></div>
+<ul class="footernav">
+<li class="footernav_patents"><a href="https://www.mathworks.com/company/aboutus/policies_statements/trust-center.html?s_tid=gf_tc">Trust Center</a></li>
+<li class="footernav_trademarks"><a href="https://www.mathworks.com/company/aboutus/policies_statements/trademarks.html?s_tid=gf_trd">Trademarks</a></li>
+<li class="footernav_privacy"><a href="https://www.mathworks.com/company/aboutus/policies_statements.html?s_tid=gf_priv">Privacy Policy</a></li>
+<li class="footernav_piracy"><a href="https://www.mathworks.com/company/aboutus/policies_statements/piracy.html?s_tid=gf_pir">Preventing Piracy</a></li>
+<li class="footernav_status"><a href="https://status.mathworks.com/?s_tid=gf_application">Application Status</a></li>
+</ul>
+<div class="clearfix"></div>
+<div class="clearfix"></div>
+<p class="copyright" translate="no">&copy; 1994-2023 The MathWorks, Inc.</p>
+</div>
+<div class="clearfix visible-sm add_margin_10"></div>
+<div class="col-xs-12 col-md-3">
+<div class="social_media">
+<ul class="social_media_icons">
+<li>
+<a href="https://www.facebook.com/MATLAB" target="_blank" rel="nofollow noopener noreferrer" class="svg_link">
+<img src="/images/responsive/global/ico-facebook.svg" alt="Facebook" class="ico_facebook">
+</a>
+</li>
+<li>
+<a href="https://twitter.com/MATLAB" target="_blank" rel="nofollow noopener noreferrer" class="svg_link">
+<img src="/images/responsive/global/ico-twitter.svg" alt="Twitter" class="ico_twitter">
+</a>
+</li>
+<li>
+<a href="https://www.instagram.com/matlab/" class="svg_link" target="_blank" rel="nofollow noopener noreferrer">
+<img class="ico_instagram" alt="Instagram" src="/etc.clientlibs/mathworks/clientlibs/customer-ui/templates/common/resources/images/ico-instagram.svg">
+</a>
+</li>
+<li>
+<a href="https://www.youtube.com/user/MATLAB" class="svg_link" target="_blank" rel="nofollow noopener noreferrer">
+<img class="ico_youtube" alt="YouTube" src="/images/responsive/global/ico-youtube.svg">
+</a>
+</li>
+<li>
+<a href="https://www.linkedin.com/company/the-mathworks_2" target="_blank" rel="nofollow noopener noreferrer" class="svg_link">
+<img src="/images/responsive/global/ico-linkedin.svg" alt="LinkedIn" class="ico_linkedin">
+</a>
+</li>
+<li>
+<a href="https://www.mathworks.com/company/rss.html" class="svg_link">
+<img src="/images/responsive/global/ico-rss.svg" alt="RSS" class="ico_rss">
+</a>
+</li>
+</ul>
+<div class="clearfix"></div>
+<p><em>Join the conversation</em></p>
+</div>
+</div>
+</div>
+</div>
+        </div>
+      </footer>
+
+    </div>
+  
+  </div>
+
+
+<!-- CRUX 2.0 -->
+<script src="/includes_content/responsive/scripts/crux_nav_truncate.js?20220914170000"></script>
+
+<!-- Mirror Search Queries on Scope Change : g2611494 -->
+<script>
+$('#search_scope_support').on('show.bs.collapse', function () {
+  if ($('#search_scope_site #query').val()) {
+    var site_search_value = $('#search_scope_site #query').val();
+    $('#search_scope_support #docsearch').val(site_search_value); 
+  }
+})
+$('#search_scope_site').on('show.bs.collapse', function () {
+  if ($('#search_scope_support #docsearch').val()) {
+    var support_search_value = $('#search_scope_support #docsearch').val();
+    $('#search_scope_site #query').val(support_search_value); 
+  }  
+})
+</script>
+<noscript><img src="https://www.mathworks.com/akam/13/pixel_d45dc20?a=dD0xYzA2OWMzMzUxYTQyNTBlODM2OTA1MTQ3NDJmNTlkN2JiNWY4NjFhJmpzPW9mZg==" style="visibility: hidden; position: absolute; left: -999px; top: -999px;" /></noscript><script type="text/javascript"  src="/7SkCcv/FI/dn/kFTg/1MF_d8NDyrc90/3k9u8SS6G7/HV9rWxMtAg/Mnt/wMlYhImc"></script></body>
+</html>

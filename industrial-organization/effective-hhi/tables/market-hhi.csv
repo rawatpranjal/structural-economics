@@ -1,0 +1,9 @@
+Market Structure,N Firms,Top Share (%),HHI,Classification
+Perfect competition (100 firms),100,1,100,Unconcentrated
+10 equal firms,10,10,1000,Unconcentrated
+5 equal firms,5,20,2000,Moderately Concentrated
+Asymmetric (40-30-20-10),4,40,3000,Highly Concentrated
+Duopoly (50-50),2,50,5000,Highly Concentrated
+Dominant firm (70-10-10-10),4,70,5200,Highly Concentrated
+Near-monopoly (90-5-5),3,90,8150,Highly Concentrated
+Monopoly,1,100,10000,Highly Concentrated

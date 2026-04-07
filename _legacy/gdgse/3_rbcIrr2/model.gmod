@@ -1,0 +1,83 @@
+% Parameters
+parameters beta sigma alpha delta phi Iss;
+beta  = 0.95;		% discount factor
+sigma = 2.0;		% CRRA coefficient
+alpha = 0.36;		% capital share
+delta = 0.025;		% depreciation rate
+phi   = 0.975;       % Investment irreversibility
+
+% Exogenous States
+% beta = yN, z = yT
+var_shock yT yN;
+yPts = 4;
+shock_num=16;
+yTEpsilonVar = 0.00002;
+yNEpsilonVar = 0.00007;
+rhoYT = 0.901;
+rhoYN = 0.901;
+[yTTrans,yT] = markovappr(rhoYT,yTEpsilonVar^0.5,1,yPts);
+[yNTrans,yN] = markovappr(rhoYN,yNEpsilonVar^0.5,1,yPts);
+shock_trans = kron(yNTrans,yTTrans);
+[yT,yN] = ndgrid(yT,yN);
+yT = exp(yT(:)')
+yN = exp(yN(:)'-0.04)
+
+% Endogenous States
+var_state K;
+Kss  = (alpha/(1/beta - 1 + delta))^(1/(1-alpha));
+Iss = Kss*delta;
+KPts = 101;
+KMin = Kss*0.5;
+KMax = Kss*1.5;
+K    = linspace(KMin,KMax,KPts);
+
+% Interp
+var_interp c_interp mu_interp;
+initial c_interp yT.*K.^alpha+(1-delta)*K;
+initial mu_interp 0;
+% Time iterations update
+c_interp = c;
+mu_interp = mu;
+
+% Endogenous variables as unknowns of equations
+var_policy c K_next mu;
+inbound c       0 yT.*K.^alpha+(1-delta)*K;
+inbound K_next  (1-delta)*K+phi*Iss yT.*K.^alpha+(1-delta)*K;
+inbound mu      0 1.0;
+
+% Other endogenous variables
+var_aux w Inv;
+
+model;
+  % Budget constraints
+  u_prime = c^(-sigma);
+  kret_next' = yT'*alpha*K_next^(alpha-1) + 1-delta;
+  
+  % Evaluate the interpolation object to get future consumption
+  c_future' = c_interp'(K_next);
+  mu_future' = mu_interp'(K_next); 
+  u_prime_future' = c_future'^(-sigma);
+  
+  % Calculate residual of the equation
+  euler_residual = 1 -GDSGE_EXPECT{yN*u_prime_future'*(kret_next'-(1-delta)*mu_future')}/(u_prime*(1-mu));
+  market_clear = yT*K^alpha + (1-delta)*K - c - K_next;
+  
+  % Calcualte other endogenous variables
+  w = yT*(1-alpha)*K^alpha;
+  Inv = K_next - (1-delta)*K;
+  
+  equations;
+    euler_residual;
+    mu*(Inv - phi*Iss);
+    market_clear;
+  end;
+end;
+
+simulate;
+  num_periods = 10000;
+  num_samples = 100;
+  initial K Kss;
+  initial shock 1;
+  var_simu c K w Inv;
+  K' = K_next;
+end;

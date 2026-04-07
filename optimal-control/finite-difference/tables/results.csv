@@ -1,0 +1,7 @@
+Quantity,Value
+$a^*$ (steady state),-1.0000
+$c^*$ (steady state),0.9650
+$V(a^*)$,-20.7254
+Grid points,500
+Iterations,533
+Final error,1.07e-07

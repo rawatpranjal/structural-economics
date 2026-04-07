@@ -1,0 +1,135 @@
+Starting Dynare (version 5.3).
+Calling Dynare with arguments: none
+Starting preprocessing of the model file ...
+Substitution of exo lags: added 8 auxiliary variables and equations.
+Found 20 equation(s).
+Evaluating expressions...done
+Computing static model derivatives (order 1).
+Computing dynamic model derivatives (order 2).
+Processing outputs ...
+done
+Preprocessing completed.
+
+
+STEADY-STATE RESULTS:
+
+a                		 0
+z                		 0
+c                		 0
+y                		 0
+y_nat            		 0
+y_gap            		 0
+r_nat            		 0
+r_real           		 0
+ii               		 0
+pie              		 0
+n                		 0
+w                		 0
+
+EIGENVALUES:
+         Modulus             Real        Imaginary
+
+       8.177e-35       -8.177e-35                0
+       1.172e-34       -1.172e-34                0
+        1.68e-34        -1.68e-34                0
+       2.409e-34       -2.409e-34                0
+       3.453e-34       -3.453e-34                0
+       4.949e-34       -4.949e-34                0
+       7.095e-34       -7.095e-34                0
+       1.274e-33        1.274e-33                0
+             0.5              0.5                0
+             0.9              0.9                0
+           1.182            1.154           0.2533
+           1.182            1.154          -0.2533
+
+
+There are 2 eigenvalue(s) larger than 1 in modulus 
+for 2 forward-looking variable(s)
+
+The rank condition is verified.
+
+
+MODEL SUMMARY
+
+  Number of variables:         20
+  Number of stochastic shocks: 3
+  Number of state variables:   10
+  Number of jumpers:           2
+  Number of static variables:  8
+
+
+MATRIX OF COVARIANCE OF EXOGENOUS SHOCKS
+Variables          eps_a  eps_a_news       eps_z
+eps_a           1.000000    0.000000    0.000000
+eps_a_news      0.000000    1.000000    0.000000
+eps_z           0.000000    0.000000    1.000000
+
+POLICY AND TRANSITION FUNCTIONS
+                                   a               z               c               y           y_nat           y_gap           r_nat          r_real              ii             pie               n               w
+a(-1)                       0.900000               0        0.900000        0.900000        0.900000               0       -0.090000       -0.090000       -0.090000               0               0        0.900000
+z(-1)                              0        0.500000               0               0               0               0        0.250000        0.250000        0.250000               0               0               0
+eps_a_news(-8)              1.000000               0        1.000000        1.000000        1.000000               0       -0.100000       -0.100000       -0.100000               0               0        1.000000
+eps_a                       1.000000               0        1.000000        1.000000        1.000000               0       -0.100000       -0.100000       -0.100000               0               0        1.000000
+eps_z                              0        1.000000               0               0               0               0        0.500000        0.500000        0.500000               0               0               0
+
+
+THEORETICAL MOMENTS
+VARIABLE         MEAN  STD. DEV.   VARIANCE
+a              0.0000     3.2444    10.5263
+z              0.0000     1.1547     1.3333
+c              0.0000     3.2444    10.5263
+y              0.0000     3.2444    10.5263
+y_nat          0.0000     3.2444    10.5263
+y_gap          0.0000     0.0000     0.0000
+r_nat          0.0000     0.6623     0.4386
+r_real         0.0000     0.6623     0.4386
+ii             0.0000     0.6623     0.4386
+pie            0.0000     0.0000     0.0000
+n              0.0000     0.0000     0.0000
+w              0.0000     3.2444    10.5263
+
+
+
+VARIANCE DECOMPOSITION (in percent)
+               eps_a  eps_a_news       eps_z
+a              50.00       50.00        0.00
+z               0.00        0.00      100.00
+c              50.00       50.00        0.00
+y              50.00       50.00        0.00
+y_nat          50.00       50.00        0.00
+y_gap           0.55       39.74       59.71
+r_nat          12.00       12.00       76.00
+r_real         12.00       12.00       76.00
+ii             12.00       12.00       76.00
+pie             1.07       54.51       44.43
+n               2.65       37.13       60.22
+w              50.00       50.00        0.00
+
+
+
+MATRIX OF CORRELATIONS
+Variables          a        z        c        y    y_nat    r_nat   r_real       ii        w
+a             1.0000   0.0000   1.0000   1.0000   1.0000  -0.4899  -0.4899  -0.4899   1.0000
+z             0.0000   1.0000   0.0000   0.0000   0.0000   0.8718   0.8718   0.8718   0.0000
+c             1.0000   0.0000   1.0000   1.0000   1.0000  -0.4899  -0.4899  -0.4899   1.0000
+y             1.0000   0.0000   1.0000   1.0000   1.0000  -0.4899  -0.4899  -0.4899   1.0000
+y_nat         1.0000   0.0000   1.0000   1.0000   1.0000  -0.4899  -0.4899  -0.4899   1.0000
+r_nat        -0.4899   0.8718  -0.4899  -0.4899  -0.4899   1.0000   1.0000   1.0000  -0.4899
+r_real       -0.4899   0.8718  -0.4899  -0.4899  -0.4899   1.0000   1.0000   1.0000  -0.4899
+ii           -0.4899   0.8718  -0.4899  -0.4899  -0.4899   1.0000   1.0000   1.0000  -0.4899
+w             1.0000   0.0000   1.0000   1.0000   1.0000  -0.4899  -0.4899  -0.4899   1.0000
+
+
+
+COEFFICIENTS OF AUTOCORRELATION
+Order          1       2       3       4       5
+a         0.9000  0.8100  0.7290  0.6561  0.5905
+z         0.5000  0.2500  0.1250  0.0625  0.0313
+c         0.9000  0.8100  0.7290  0.6561  0.5905
+y         0.9000  0.8100  0.7290  0.6561  0.5905
+y_nat     0.9000  0.8100  0.7290  0.6561  0.5905
+r_nat     0.5960  0.3844  0.2700  0.2050  0.1655
+r_real    0.5960  0.3844  0.2700  0.2050  0.1655
+ii        0.5960  0.3844  0.2700  0.2050  0.1655
+w         0.9000  0.8100  0.7290  0.6561  0.5905
+Total computing time : 0h00m05s
