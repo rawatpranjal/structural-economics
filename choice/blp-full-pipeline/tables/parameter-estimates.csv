@@ -1,0 +1,6 @@
+Parameter,True,Estimated,Std Error
+alpha,2.000,0.587,0.044
+beta_const,1.500,3378.683,8.229
+beta_sugar,0.000,1.121,0.018
+sigma_alpha,1.500,1.000,0.000
+sigma_sugar,2.000,1.000,0.000
