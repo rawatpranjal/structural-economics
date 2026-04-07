@@ -42,13 +42,14 @@ $$V'(k_i) \approx \begin{cases} \frac{V_{i+1} - V_i}{\Delta k} & \text{if } \dot
 
 ## Solution Method
 
-**Upwind finite difference iteration** (Moll 2022, Achdou et al. 2022): At each iteration, $V'(k)$ is approximated by forward or backward differences depending on the sign of the drift $\dot{k} = f(k) - \delta k - c$. The FOC $c = (V')^{-1/\sigma}$ yields consumption without a grid search.
+**Implicit upwind finite difference method** (Achdou et al. 2022, Moll 2022): At each iteration, $V'(k)$ is approximated by forward or backward differences depending on the sign of the drift $\dot{k} = f(k) - \delta k - c$. The FOC $c = (V')^{-1/\sigma}$ yields consumption without a grid search.
 
-The value function is updated explicitly:
-$$V^{n+1} = V^n + \Delta \cdot \left[ u(c^n) + (V^n)' \cdot (f(k) - \delta k - c^n) - \rho V^n \right]$$
-where $\Delta$ satisfies the CFL stability condition $\Delta \leq 0.9 \cdot \Delta k / \max(f(k) - \delta k)$.
+The upwind scheme constructs a tridiagonal transition matrix $A$, and the implicit time step solves:
+$$\left(\frac{1}{\Delta} + \rho - A^n\right) V^{n+1} = u(c^n) + \frac{1}{\Delta} V^n$$
 
-Continuous-time HJB converged in **16620 iterations** (residual = 1.00e-06).
+The implicit scheme is unconditionally stable, allowing a large pseudo-time step ($\Delta = 1000$) for rapid convergence — in contrast to the explicit scheme in Moll's growth.m which requires a small CFL-constrained step.
+
+Continuous-time HJB converged in **16 iterations** (change = 5.34e-07).
 
 Discrete-time VFI (on 200-point grid) converged in **243 iterations** (error = 9.87e-07).
 
@@ -70,15 +71,15 @@ Discrete-time VFI (on 200-point grid) converged in **243 iterations** (error = 9
 
 | Variable                              | Analytical   |   Numerical |
 |:--------------------------------------|:-------------|------------:|
-| $k_{ss}$ (capital)                    | 7.3998       |      7.4057 |
-| $c_{ss}$ (consumption)                | 1.6855       |      1.6858 |
-| $y_{ss}$ (output)                     | 2.0555       |      2.0561 |
-| $i_{ss} = \delta k_{ss}$ (investment) | 0.3700       |      0.3703 |
-| $s = i/y$ (saving rate)               | 0.1800       |      0.1801 |
-| $f'(k_{ss})$ (MPK)                    | 0.1000       |      0.0999 |
-| HJB iterations                        | --           |  16620      |
-| HJB residual                          | --           |      1e-06  |
-| VFI iterations                        | --           |    243      |
+| $k_{ss}$ (capital)                    | 7.3998       |    7.4057   |
+| $c_{ss}$ (consumption)                | 1.6855       |    1.6858   |
+| $y_{ss}$ (output)                     | 2.0555       |    2.0561   |
+| $i_{ss} = \delta k_{ss}$ (investment) | 0.3700       |    0.3703   |
+| $s = i/y$ (saving rate)               | 0.1800       |    0.1801   |
+| $f'(k_{ss})$ (MPK)                    | 0.1000       |    0.0999   |
+| HJB iterations                        | --           |   16        |
+| HJB residual                          | --           |    5.34e-07 |
+| VFI iterations                        | --           |  243        |
 
 ## Economic Takeaway
 
@@ -87,7 +88,7 @@ The continuous-time approach to the neoclassical growth model offers significant
 **Key insights:**
 - **No max operator:** With CRRA utility, the FOC $u'(c) = V'(k)$ gives $c = (V')^{-1/\sigma}$ in closed form. The costly grid search over consumption choices in discrete-time VFI is replaced by a simple algebraic formula. This is the core advantage of the continuous-time formulation.
 - **Upwind scheme is essential:** The finite difference direction must match the drift direction. Below steady state ($k < k_{ss}$), capital is accumulating ($\dot{k} > 0$), so the forward difference is used. Above steady state, the backward difference is used. Using the wrong direction creates numerical instability.
-- **CFL condition:** The explicit time step $\Delta$ must satisfy $\Delta \leq \Delta k / \max |\dot{k}|$ for stability. This is a well-known constraint from the PDE literature.
+- **Implicit scheme:** The implicit time-stepping method solves a sparse tridiagonal system at each iteration but is unconditionally stable, allowing very large pseudo-time steps ($\Delta = 1000$). This yields convergence in tens of iterations, vs. thousands for the explicit CFL-constrained scheme.
 - **Saddle-path stability:** All initial conditions converge monotonically to the unique steady state $k_{ss}$. The speed of convergence depends on the curvature of the production function and the discount rate.
 - **Scalability:** The method extends naturally to heterogeneous-agent models (Achdou et al. 2022) where the state space includes both individual capital and the cross-sectional distribution.
 

@@ -6,10 +6,10 @@ finite difference method of Achdou et al. (2022). The HJB equation
 
     rho*V(k) = max_c { u(c) + V'(k)*(f(k) - delta*k - c) }
 
-is discretized on a capital grid and solved via forward iteration with an
-explicit CFL-stable time step (following Moll's MATLAB code). Optimal
-consumption is recovered from the FOC u'(c) = V'(k). Results are compared
-with a discrete-time VFI solution.
+is discretized on a capital grid and solved via an implicit upwind finite
+difference scheme (following Achdou et al. 2022 and Moll's MATLAB code).
+Optimal consumption is recovered from the FOC u'(c) = V'(k). Results are
+compared with a discrete-time VFI solution.
 
 References:
     Achdou, Y., Han, J., Lasry, J.-M., Lions, P.-L., and Moll, B. (2022).
@@ -332,7 +332,7 @@ def main():
 
     params = {
         "rho": rho, "sigma": sigma, "alpha": alpha, "delta": delta, "A": A,
-        "k": k_grid, "max_iter": 20000, "tol": 1e-6,
+        "k": k_grid, "max_iter": 500, "tol": 1e-6,
     }
 
     # =========================================================================
@@ -420,17 +420,18 @@ $$V'(k_i) \approx \begin{cases} \frac{V_{i+1} - V_i}{\Delta k} & \text{if } \dot
     )
 
     report.add_solution_method(
-        "**Upwind finite difference iteration** (Moll 2022, Achdou et al. 2022): "
+        "**Implicit upwind finite difference method** (Achdou et al. 2022, Moll 2022): "
         "At each iteration, $V'(k)$ is approximated by forward or backward "
         "differences depending on the sign of the drift $\\dot{k} = f(k) - \\delta k - c$. "
         "The FOC $c = (V')^{-1/\\sigma}$ yields consumption without a grid search.\n\n"
-        "The value function is updated explicitly:\n"
-        "$$V^{n+1} = V^n + \\Delta \\cdot \\left[ u(c^n) + (V^n)' \\cdot (f(k) - \\delta k - c^n) "
-        "- \\rho V^n \\right]$$\n"
-        "where $\\Delta$ satisfies the CFL stability condition "
-        "$\\Delta \\leq 0.9 \\cdot \\Delta k / \\max(f(k) - \\delta k)$.\n\n"
+        "The upwind scheme constructs a tridiagonal transition matrix $A$, and the "
+        "implicit time step solves:\n"
+        "$$\\left(\\frac{1}{\\Delta} + \\rho - A^n\\right) V^{n+1} = u(c^n) + \\frac{1}{\\Delta} V^n$$\n\n"
+        "The implicit scheme is unconditionally stable, allowing a large pseudo-time step "
+        "($\\Delta = 1000$) for rapid convergence — in contrast to the explicit scheme in "
+        "Moll's growth.m which requires a small CFL-constrained step.\n\n"
         f"Continuous-time HJB converged in **{info_ct['iterations']} iterations** "
-        f"(residual = {info_ct['error']:.2e}).\n\n"
+        f"(change = {info_ct['error']:.2e}).\n\n"
         f"Discrete-time VFI (on {n_k_dt}-point grid) converged in "
         f"**{info_dt['iterations']} iterations** (error = {info_dt['error']:.2e})."
     )
@@ -571,9 +572,10 @@ $$V'(k_i) \approx \begin{cases} \frac{V_{i+1} - V_i}{\Delta k} & \text{if } \dot
         "($\\dot{k} > 0$), so the forward difference is used. Above steady state, the "
         "backward difference is used. Using the wrong direction creates numerical "
         "instability.\n"
-        "- **CFL condition:** The explicit time step $\\Delta$ must satisfy "
-        "$\\Delta \\leq \\Delta k / \\max |\\dot{k}|$ for stability. This is a well-known "
-        "constraint from the PDE literature.\n"
+        "- **Implicit scheme:** The implicit time-stepping method solves a sparse "
+        "tridiagonal system at each iteration but is unconditionally stable, allowing "
+        "very large pseudo-time steps ($\\Delta = 1000$). This yields convergence in "
+        "tens of iterations, vs. thousands for the explicit CFL-constrained scheme.\n"
         "- **Saddle-path stability:** All initial conditions converge monotonically to the "
         "unique steady state $k_{ss}$. The speed of convergence depends on the curvature "
         "of the production function and the discount rate.\n"
