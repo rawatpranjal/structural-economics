@@ -51,6 +51,7 @@ python run.py
 | <img src="industrial-organization/collusion-detection/figures/thumb.png" width="120"> | [**Collusion Detection**](industrial-organization/collusion-detection/) | Repeated games | $\delta^* = 9/17$ for duopoly; more firms = harder to collude |
 | <img src="industrial-organization/dynamic-entry-exit/figures/thumb.png" width="120"> | [**Dynamic Entry/Exit**](industrial-organization/dynamic-entry-exit/) | Dynamic programming | Entry costs sustain above-competitive profits |
 | <img src="industrial-organization/nash-in-nash/figures/thumb.png" width="120"> | [**Nash-in-Nash**](industrial-organization/nash-in-nash/) | Bilateral bargaining | Incremental value = leverage in vertical markets |
+| <img src="industrial-organization/merger-simulation/figures/thumb.png" width="120"> | [**Merger Simulation**](industrial-organization/merger-simulation/) | Multi-demand | Demand model choice drives policy conclusions |
 
 ## Choice Models
 
@@ -77,6 +78,12 @@ python run.py
 |:---:|---|---|---|
 | <img src="continuous-time/huggett-incomplete-markets/figures/thumb.png" width="120"> | [**Huggett (1993)**](continuous-time/huggett-incomplete-markets/) | HJB + KFE | Precautionary savings push $r < \rho$ in equilibrium |
 | <img src="continuous-time/hjb-growth/figures/thumb.png" width="120"> | [**HJB Growth**](continuous-time/hjb-growth/) | Upwind FD | Continuous-time growth via finite differences |
+
+## Global DSGE
+
+| | Model | Method | Key Insight |
+|:---:|---|---|---|
+| <img src="global-dsge/rbc-nonlinear/figures/thumb.png" width="120"> | [**RBC Nonlinear**](global-dsge/rbc-nonlinear/) | Global VFI | Asymmetric responses: recessions are sharper than expansions |
 
 ## Time Series
 
