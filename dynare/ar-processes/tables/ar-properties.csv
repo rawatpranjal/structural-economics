@@ -1,0 +1,5 @@
+Property,"AR(1), $\rho=0.5$","AR(1), $\rho=0.9$","AR(1), $\rho=0.99$"
+Persistence ($\rho$),0.5,0.9,0.99
+Unconditional variance,0.000133,0.000526,0.005025
+Half-life (periods),1.0,6.6,69.0
+Spectral peak,Frequency 0 (low-pass),Frequency 0 (low-pass),Frequency 0 (low-pass)
