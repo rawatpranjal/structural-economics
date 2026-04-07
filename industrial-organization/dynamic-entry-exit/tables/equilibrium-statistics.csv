@@ -1,10 +1,11 @@
 Statistic,Value
-Expected number of firms E[N],13.25
-Std. deviation of N,6.77
-Modal number of firms,9
-Per-firm profit at E[N],0.327
-Net profit (pi - f) at E[N],-0.173
-HHI at E[N],769
-Expected exit rate,0.0000
-Expected entry (firms/period),0.00
-VFI iterations,2000
+Expected number of firms E[N],7.98
+Std. deviation of N,0.15
+Modal number of firms,8
+Zero-profit N (static),10.3
+Per-firm profit at E[N],0.790
+Net profit (pi - f) at E[N],0.290
+HHI at E[N],1250
+Expected exit rate,0.0028
+Expected entry (firms/period),0.02
+VFI iterations,718

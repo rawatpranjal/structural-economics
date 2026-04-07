@@ -5,7 +5,7 @@ Solves a dynamic discrete choice model of firm entry and exit in the spirit of
 Rust (1987) and Ericson-Pakes (1995). Firms make binary stay/exit decisions each
 period; potential entrants decide whether to pay a sunk cost to enter. The model
 generates a stationary equilibrium distribution of market structure (number of
-active firms) with simultaneous entry and exit — "churning" — even in steady state.
+active firms) with simultaneous entry and exit -- "churning" -- even in steady state.
 
 Reference: Ericson and Pakes (1995), Hopenhayn (1992).
 """
@@ -23,6 +23,10 @@ from lib.plotting import setup_style, save_figure
 from lib.output import ModelReport
 
 
+# =============================================================================
+# Model primitives
+# =============================================================================
+
 def cournot_profit(N, a, b, c):
     """Per-firm Cournot profit with N symmetric firms.
 
@@ -31,196 +35,189 @@ def cournot_profit(N, a, b, c):
     return (a - c) ** 2 / (b * (N + 1) ** 2)
 
 
-def solve_value_function(N_max, a, b, c, f, K, beta, tol=1e-8, max_iter=2000):
-    """Solve the incumbent's value function via VFI.
+def solve_model(N_max, a, b, c, f, K, beta, sigma_eps=1.0, tol=1e-8, max_iter=5000):
+    """Solve for the Markov-perfect equilibrium of the entry/exit game.
 
-    The state is the number of active firms N. Each incumbent observes N and
-    decides whether to stay (earning pi(N) - f + beta * E[V(N')]) or exit (0).
+    Each period:
+      1. N incumbents observe the state and draw idiosyncratic cost shocks
+         epsilon_i ~ Logistic(0, sigma_eps). An incumbent stays iff:
+             pi(N) - f + epsilon_i + beta * E[V(N')] >= 0
+         This gives a smooth (logistic) exit probability at each N.
+      2. Potential entrants enter until the free-entry condition binds:
+         E[V(N_post)] <= K, where N_post includes survivors + new entrants.
 
-    Transition: N' = survivors + entrants, where each of the other (N-1)
-    incumbents survives with the equilibrium probability, and entry is
-    determined by a free-entry condition.
-
-    We iterate jointly on V and the exit/entry probabilities until convergence.
+    We iterate on the value function V(N) using dampened VFI. The value function
+    here is the "pre-shock" expected value (integrating over the logistic shock):
+        V(N) = sigma_eps * log(1 + exp((pi(N) - f + beta*EV(N)) / sigma_eps))
+    This is the log-sum formula from the logit discrete choice model.
     """
-    N_grid = np.arange(1, N_max + 1)  # N = 1, ..., N_max
-    n_states = len(N_grid)
+    N_grid = np.arange(1, N_max + 1)
+    n_states = N_max
 
-    # Initialize value function
-    V = np.zeros(n_states)
-    for i, N in enumerate(N_grid):
-        V[i] = max(cournot_profit(N, a, b, c) - f, 0.0) / (1 - beta)
+    # Flow profits at each N
+    profits = np.array([cournot_profit(N, a, b, c) for N in N_grid])
 
-    # Storage for policies
-    exit_prob = np.zeros(n_states)     # probability an incumbent exits at state N
-    entry_rate = np.zeros(n_states)    # expected number of entrants at state N
+    # Initialize value function: myopic value
+    V = np.maximum(profits - f, 0.0) / (1.0 - beta)
+
+    # Dampening factor for stability
+    dampen = 0.3
 
     for iteration in range(1, max_iter + 1):
         V_new = np.zeros(n_states)
-        exit_prob_new = np.zeros(n_states)
-        entry_rate_new = np.zeros(n_states)
 
-        for i, N in enumerate(N_grid):
-            # --- Flow profit ---
-            pi_N = cournot_profit(N, a, b, c)
+        for i in range(n_states):
+            N = N_grid[i]
+            pi_N = profits[i]
 
-            # --- Exit decision ---
-            # Each incumbent compares continuation value to zero.
-            # The continuation value depends on the expected future state.
-            # For tractability, we compute E[V(N')] given current policies,
-            # then check whether staying is optimal.
+            # --- Compute exit probability from current V ---
+            # Continuation utility (net of shock) for an incumbent:
+            #   u_stay(N) = pi(N) - f + beta * EV(N)
+            # Exit probability (logistic shock):
+            #   p_exit(N) = 1 / (1 + exp(u_stay / sigma_eps))
+            # But EV(N) itself depends on the transition, which depends on p_exit.
+            # We use the PREVIOUS iteration's V to compute EV, breaking the circularity.
 
-            # Expected value of staying given current V (using current state as
-            # rough proxy for expected future state):
-            # We need E[V(N')]. N' depends on how many of the OTHER incumbents
-            # stay and how many entrants arrive.
+            # For EV(N): integrate over survivors. Each of the other N-1 incumbents
+            # stays with probability p_stay (from previous iteration). Then free
+            # entry adds entrants. We condition on this firm staying.
+            p_exit_i = _exit_prob(N, profits, f, beta, V, sigma_eps)
+            p_stay_others = 1.0 - p_exit_i
 
-            # Step 1: Compute exit probability from indifference condition.
-            # In a symmetric MPE, if V_stay > 0, all incumbents stay; if < 0, exit.
-            # With heterogeneous exit costs (or idiosyncratic shocks), we get
-            # interior exit probabilities. We model this with a logistic smoothing
-            # to get an interior equilibrium.
-
-            # Expected continuation value (weighted average over possible N'):
+            # E[V(N')] integrating over binomial survivors of the OTHER N-1 firms
             EV = 0.0
-            # The other N-1 incumbents each stay with prob (1 - exit_prob[i])
-            p_stay_others = 1.0 - exit_prob[i]
-
-            # Expected survivors (besides this firm): Binomial(N-1, p_stay_others)
-            # Plus this firm (if it stays) = survivors + 1
-            # Plus entrants
-
-            # Compute E[V] by averaging over possible survivor counts
-            for s in range(N):
-                # s = number of other incumbents who survive (0 to N-1)
-                prob_s = binom.pmf(s, N - 1, p_stay_others)
-                if prob_s < 1e-12:
+            for s in range(N):  # s = survivors among other N-1 firms
+                prob_s = binom.pmf(s, N - 1, p_stay_others) if N > 1 else (1.0 if s == 0 else 0.0)
+                if prob_s < 1e-15:
                     continue
 
-                # If this firm stays, next period has (s + 1 + entrants) firms
-                N_survivors = s + 1  # including this firm
+                # This firm stays => N_survivors = s + 1
+                N_surv = s + 1
 
-                # Free entry: entrants enter until E[V(N' + 1)] <= K
-                # Determine number of entrants given survivors
-                n_enter = 0
-                while N_survivors + n_enter + 1 <= N_max:
-                    N_test = N_survivors + n_enter + 1
-                    idx_test = N_test - 1  # index into V
-                    if idx_test < n_states:
-                        entry_value = pi_N_at(N_test, a, b, c) - f + beta * V[idx_test]
-                        if entry_value >= K:
-                            n_enter += 1
-                        else:
-                            break
-                    else:
-                        break
+                # Free entry: entrants enter until marginal entrant's value < K
+                n_enter = _free_entry_count(N_surv, profits, f, beta, V, K, N_max, sigma_eps)
+                N_next = min(N_surv + n_enter, N_max)
 
-                N_next = min(N_survivors + n_enter, N_max)
-                idx_next = N_next - 1
-                EV += prob_s * V[idx_next]
+                EV += prob_s * V[N_next - 1]
 
-            # Value of staying
-            V_stay = pi_N - f + beta * EV
+            # Value of staying (deterministic component)
+            u_stay = pi_N - f + beta * EV
 
-            # Exit decision: stay if V_stay > 0 (with smooth logistic for stability)
-            # Use a "smoothed" exit probability: sigma(-V_stay / temperature)
-            temperature = 0.1
-            exit_prob_new[i] = 1.0 / (1.0 + np.exp(V_stay / temperature))
+            # Inclusive value (expected value integrating over logistic shock):
+            # V(N) = sigma * log(exp(u_stay/sigma) + exp(0/sigma))
+            #       = sigma * log(1 + exp(u_stay/sigma))
+            # This is the "log-sum" formula from McFadden (1978)
+            V_new[i] = sigma_eps * np.logaddexp(u_stay / sigma_eps, 0.0)
 
-            V_new[i] = max(V_stay, 0.0)
+        # Dampened update
+        V_update = dampen * V_new + (1.0 - dampen) * V
+        error = np.max(np.abs(V_update - V))
 
-            # Record entry rate for this state
-            entry_rate_new[i] = compute_entry_rate(N, exit_prob_new[i], V, a, b, c, f, K, beta, N_max)
-
-        # Check convergence
-        error = np.max(np.abs(V_new - V))
-        if iteration % 50 == 0:
+        if iteration % 100 == 0:
             print(f"  VFI iteration {iteration:4d}, error = {error:.2e}")
 
-        V = V_new
-        exit_prob = exit_prob_new
-        entry_rate = entry_rate_new
+        V = V_update
 
         if error < tol:
             print(f"  VFI converged in {iteration} iterations (error = {error:.2e})")
             break
 
-    return V, exit_prob, entry_rate, N_grid, {"iterations": iteration, "converged": error < tol, "error": error}
+    # --- Extract equilibrium policies ---
+    exit_prob = np.zeros(n_states)
+    entry_count = np.zeros(n_states)
+
+    for i in range(n_states):
+        N = N_grid[i]
+        exit_prob[i] = _exit_prob(N, profits, f, beta, V, sigma_eps)
+
+        # Average entry (using expected survivors)
+        p_stay = 1.0 - exit_prob[i]
+        expected_surv = max(1, int(np.round(N * p_stay)))
+        entry_count[i] = _free_entry_count(expected_surv, profits, f, beta, V, K, N_max, sigma_eps)
+
+    info = {"iterations": iteration, "converged": error < tol, "error": error}
+    return V, exit_prob, entry_count, N_grid, info
 
 
-def pi_N_at(N, a, b, c):
-    """Cournot profit helper for integer N."""
-    return (a - c) ** 2 / (b * (N + 1) ** 2)
+def _exit_prob(N, profits, f, beta, V, sigma_eps):
+    """Compute equilibrium exit probability at state N.
 
-
-def compute_entry_rate(N, exit_p, V, a, b, c, f, K, beta, N_max):
-    """Compute expected number of entrants given state N and exit probability.
-
-    Free entry: firms enter until the expected value of entry (post-entry V minus
-    sunk cost K) is non-positive.
+    With logistic idiosyncratic shocks, P(exit) = 1/(1 + exp(u_stay/sigma)).
+    Here u_stay uses a rough E[V(N')] based on current V at the expected next state.
     """
-    # Expected survivors
-    p_stay = 1.0 - exit_p
-    expected_survivors = max(1, int(np.round(N * p_stay)))
+    pi_N = profits[N - 1]
 
+    # Rough continuation: assume N stays roughly the same (self-consistent approx)
+    # This is used only for computing the exit probability
+    EV_approx = V[N - 1]
+    u_stay = pi_N - f + beta * EV_approx
+    return 1.0 / (1.0 + np.exp(u_stay / sigma_eps))
+
+
+def _free_entry_count(N_surv, profits, f, beta, V, K, N_max, sigma_eps):
+    """Compute number of entrants given N_surv survivors.
+
+    Entrants enter until the value of being in a market with (N_surv + n_enter)
+    firms is less than the sunk cost K.
+    """
     n_enter = 0
-    while expected_survivors + n_enter + 1 <= N_max:
-        N_post = expected_survivors + n_enter + 1
-        idx = N_post - 1
-        if idx < len(V):
-            # An entrant becomes an incumbent next period in a market with N_post firms
-            entry_value = cournot_profit(N_post, a, b, c) - f + beta * V[idx] - K
-            if entry_value >= 0:
-                n_enter += 1
-            else:
-                break
+    while N_surv + n_enter < N_max:
+        N_post = N_surv + n_enter + 1
+        # An entrant would become an incumbent in a market with N_post firms
+        # Their value is V(N_post) (the inclusive value)
+        if V[N_post - 1] >= K:
+            n_enter += 1
         else:
             break
-
     return n_enter
 
 
-def compute_stationary_distribution(N_max, exit_prob, entry_rate, a, b, c, f, K, beta):
-    """Compute the stationary distribution of N via transition matrix iteration.
+def compute_transition_matrix(N_max, exit_prob, entry_count):
+    """Build the Markov transition matrix P[N, N'].
 
-    Build the Markov transition matrix P[N, N'] and find its stationary distribution.
+    At state N: each incumbent exits with prob exit_prob[N], survivors are binomial.
+    Then entry_count[N] entrants arrive (deterministic, based on free entry).
     """
-    n_states = N_max
-    P = np.zeros((n_states, n_states))
+    P = np.zeros((N_max, N_max))
 
-    for i in range(n_states):
-        N = i + 1  # current number of firms
+    for i in range(N_max):
+        N = i + 1
         p_stay = 1.0 - exit_prob[i]
-        n_enter = int(np.round(entry_rate[i]))
+        n_enter = int(np.round(entry_count[i]))
 
-        # Transition: each of N incumbents stays with prob p_stay (binomial)
-        for s in range(N + 1):
+        for s in range(N + 1):  # s = number of survivors out of N
             prob_s = binom.pmf(s, N, p_stay)
-            if prob_s < 1e-12:
+            if prob_s < 1e-15:
                 continue
 
             N_next = s + n_enter
-            N_next = max(1, min(N_next, N_max))  # clamp to [1, N_max]
-            j = N_next - 1
-            P[i, j] += prob_s
+            N_next = max(1, min(N_next, N_max))
+            P[i, N_next - 1] += prob_s
 
-    # Normalize rows (should already sum to 1, but ensure numerical stability)
+    # Normalize for numerical safety
     row_sums = P.sum(axis=1, keepdims=True)
     row_sums[row_sums == 0] = 1.0
     P = P / row_sums
 
-    # Find stationary distribution by iterating pi = pi @ P
-    pi = np.ones(n_states) / n_states
-    for _ in range(10000):
+    return P
+
+
+def compute_stationary_distribution(P, tol=1e-14, max_iter=50000):
+    """Find stationary distribution pi such that pi = pi @ P."""
+    n = P.shape[0]
+    pi = np.ones(n) / n
+
+    for it in range(max_iter):
         pi_new = pi @ P
-        if np.max(np.abs(pi_new - pi)) < 1e-12:
+        pi_new = pi_new / pi_new.sum()  # normalize
+        if np.max(np.abs(pi_new - pi)) < tol:
             break
         pi = pi_new
 
-    return pi, P
+    return pi_new
 
 
-def simulate_market(T, N_init, exit_prob, entry_rate, N_max, rng=None):
+def simulate_market(T, N_init, exit_prob, entry_count, N_max, rng=None):
     """Simulate market evolution for T periods."""
     if rng is None:
         rng = np.random.default_rng(42)
@@ -235,14 +232,13 @@ def simulate_market(T, N_init, exit_prob, entry_rate, N_max, rng=None):
         idx = min(N - 1, len(exit_prob) - 1)
         p_exit = exit_prob[idx]
 
-        # Each incumbent exits independently with probability p_exit
+        # Each incumbent exits independently
         n_exits = rng.binomial(N, p_exit)
         survivors = N - n_exits
 
-        # Entrants
-        n_enter = int(np.round(entry_rate[idx]))
-        # Add some randomness to entry (Poisson around expected)
-        n_enter = rng.poisson(max(n_enter, 0))
+        # Entrants: Poisson noise around the expected entry count
+        expected_enter = entry_count[idx]
+        n_enter = rng.poisson(max(expected_enter, 0.0))
 
         N_next = max(1, min(survivors + n_enter, N_max))
         N_path[t + 1] = N_next
@@ -251,6 +247,10 @@ def simulate_market(T, N_init, exit_prob, entry_rate, N_max, rng=None):
 
     return N_path, entry_path, exit_path
 
+
+# =============================================================================
+# Main
+# =============================================================================
 
 def main():
     # =========================================================================
@@ -263,23 +263,23 @@ def main():
     K = 5.0       # Sunk entry cost
     beta = 0.95   # Discount factor
     N_max = 30    # Maximum number of firms
+    sigma_eps = 1.0  # Scale of idiosyncratic logistic shock
     tol = 1e-8    # Convergence tolerance
 
     # =========================================================================
     # Solve the model
     # =========================================================================
     print("Solving dynamic entry/exit model...")
-    V, exit_prob, entry_rate, N_grid, info = solve_value_function(
-        N_max, a, b, c, f, K, beta, tol=tol
+    V, exit_prob, entry_count, N_grid, info = solve_model(
+        N_max, a, b, c, f, K, beta, sigma_eps=sigma_eps, tol=tol
     )
 
     # =========================================================================
-    # Compute stationary distribution
+    # Transition matrix and stationary distribution
     # =========================================================================
     print("Computing stationary distribution...")
-    stat_dist, P = compute_stationary_distribution(
-        N_max, exit_prob, entry_rate, a, b, c, f, K, beta
-    )
+    P = compute_transition_matrix(N_max, exit_prob, entry_count)
+    stat_dist = compute_stationary_distribution(P)
 
     # =========================================================================
     # Simulate market evolution
@@ -288,25 +288,30 @@ def main():
     T_sim = 200
     N_init = 5
     N_path, entry_path, exit_path = simulate_market(
-        T_sim, N_init, exit_prob, entry_rate, N_max
+        T_sim, N_init, exit_prob, entry_count, N_max
     )
 
     # =========================================================================
-    # Compute equilibrium statistics
+    # Equilibrium statistics
     # =========================================================================
     expected_N = np.sum(N_grid * stat_dist)
     std_N = np.sqrt(np.sum((N_grid - expected_N) ** 2 * stat_dist))
     mode_N = N_grid[np.argmax(stat_dist)]
     profits_at_mean = cournot_profit(int(np.round(expected_N)), a, b, c)
     expected_exit_rate = np.sum(exit_prob * stat_dist)
-    expected_entry = np.sum(entry_rate * stat_dist)
+    expected_entry = np.sum(entry_count * stat_dist)
 
-    # Per-firm profit at each N
+    # Per-firm profits
     profits = np.array([cournot_profit(N, a, b, c) for N in N_grid])
-    net_profits = profits - f
 
-    # HHI at expected N
-    hhi_at_mean = 10000 / int(np.round(expected_N))  # Symmetric firms
+    # HHI at expected N (symmetric firms: HHI = 10000/N)
+    hhi_at_mean = 10000.0 / max(1, int(np.round(expected_N)))
+
+    # Zero-profit N: where pi(N) = f
+    # (a-c)^2 / (b*(N+1)^2) = f  =>  N+1 = (a-c)/sqrt(b*f)  =>  N = (a-c)/sqrt(b*f) - 1
+    N_zero_profit = (a - c) / np.sqrt(b * f) - 1
+
+    print(f"\n  E[N] = {expected_N:.2f}, mode = {mode_N}, zero-profit N = {N_zero_profit:.1f}")
 
     # =========================================================================
     # Generate Report
@@ -326,7 +331,7 @@ def main():
         "oligopolists, so profits depend on the number of active firms.\n\n"
         "The model generates a stationary equilibrium with persistent heterogeneity in market "
         "structure: even in steady state, there is simultaneous entry and exit (\"churning\"). "
-        "This captures a key empirical regularity in industrial organization — markets exhibit "
+        "This captures a key empirical regularity in industrial organization -- markets exhibit "
         "substantial firm turnover despite relatively stable aggregate concentration."
     )
 
@@ -336,25 +341,26 @@ def main():
 
 $$\pi(N) = \frac{(a - c)^2}{b \cdot (N+1)^2}$$
 
-**Incumbent's value function:**
+**Incumbent's value function (with logistic idiosyncratic shock $\varepsilon$):**
 
-$$V_I(N) = \max\left\{ \pi(N) - f + \beta \, \mathbb{E}[V_I(N')], \quad 0 \right\}$$
+$$V_I(N) = \sigma_\varepsilon \cdot \log\!\left(1 + \exp\!\left(\frac{\pi(N) - f + \beta \, \mathbb{E}[V_I(N')]}{\sigma_\varepsilon}\right)\right)$$
 
-The first term is the value of staying (flow profit minus fixed cost, plus discounted
-continuation value). The second term (zero) is the value of exiting.
+This is the log-sum (inclusive value) from the logit model. An incumbent stays iff
+$\pi(N) - f + \varepsilon + \beta \, \mathbb{E}[V(N')] \geq 0$; the logistic shock
+generates a smooth exit probability:
+
+$$p_{\text{exit}}(N) = \frac{1}{1 + \exp\!\big((\pi(N) - f + \beta \, \mathbb{E}[V(N')]) / \sigma_\varepsilon\big)}$$
 
 **Free entry condition:**
 
-$$\mathbb{E}[V_I(N')] \leq K$$
+$$V_I(N') \leq K$$
 
-with equality if entry is positive. Potential entrants enter until the expected value
-of being an incumbent (post-entry) equals the sunk cost $K$.
+Potential entrants enter until the expected value of incumbency (in the post-entry market)
+falls below the sunk cost $K$.
 
 **Transition:**
 
-$$N' = \text{Survivors}(N, p_{\text{exit}}) + \text{Entrants}(N)$$
-
-where survivors follow a Binomial distribution and entry is determined by free entry.
+$$N' = \text{Binomial survivors}(N, 1 - p_{\text{exit}}) + \text{Entrants}$$
 """
     )
 
@@ -367,19 +373,19 @@ where survivors follow a Binomial distribution and entry is determined by free e
         f"| $f$       | {f}  | Fixed operating cost (per period) |\n"
         f"| $K$       | {K}  | Sunk entry cost |\n"
         f"| $\\beta$  | {beta} | Discount factor |\n"
+        f"| $\\sigma_\\varepsilon$ | {sigma_eps} | Logistic shock scale |\n"
         f"| $N_{{\\max}}$ | {N_max} | Maximum number of firms |"
     )
 
     report.add_solution_method(
-        "**Value Function Iteration (VFI)** with simultaneous computation of exit and "
-        "entry policies:\n\n"
+        "**Dampened Value Function Iteration (VFI)** with log-sum inclusive values:\n\n"
         "1. Initialize $V(N)$ for all states $N = 1, \\ldots, N_{\\max}$.\n"
-        "2. For each state $N$, compute the continuation value by integrating over "
-        "possible transitions (binomial survival of other incumbents).\n"
-        "3. Determine exit probability via a smoothed (logistic) best response: "
-        "firms exit when $V_{\\text{stay}} < 0$.\n"
-        "4. Determine entry via free entry: entrants enter until the marginal entrant's "
-        "value falls below $K$.\n"
+        "2. For each state, compute the exit probability from the logistic choice model "
+        "using the current $V$.\n"
+        "3. Compute $\\mathbb{E}[V(N')]$ by integrating over the binomial distribution "
+        "of survivors (other $N-1$ incumbents), with free entry determining entrants "
+        "at each realization.\n"
+        "4. Update $V(N)$ using the log-sum formula with dampening factor 0.3.\n"
         "5. Iterate until $\\|V_{n+1} - V_n\\|_\\infty < 10^{-8}$.\n\n"
         f"Converged in **{info['iterations']} iterations** (error = {info['error']:.2e}).\n\n"
         "The stationary distribution is computed by constructing the Markov transition "
@@ -388,11 +394,13 @@ where survivors follow a Binomial distribution and entry is determined by free e
 
     # --- Figure 1: Value Function ---
     fig1, ax1 = plt.subplots()
-    ax1.plot(N_grid, V, "b-o", markersize=4, linewidth=2, label="$V_I(N)$")
+    ax1.plot(N_grid, V, "b-o", markersize=4, linewidth=2, label="$V(N)$")
     ax1.axhline(y=0, color="k", linewidth=0.5, linestyle="--")
     ax1.axhline(y=K, color="r", linewidth=1, linestyle="--", alpha=0.7, label=f"Sunk cost $K = {K}$")
+    ax1.axvline(x=N_zero_profit, color="gray", linewidth=1, linestyle=":", alpha=0.7,
+                label=f"Zero-profit $N = {N_zero_profit:.1f}$")
     ax1.set_xlabel("Number of firms $N$")
-    ax1.set_ylabel("Value $V_I(N)$")
+    ax1.set_ylabel("Value $V(N)$")
     ax1.set_title("Incumbent Value Function")
     ax1.legend()
     report.add_figure(
@@ -410,9 +418,10 @@ where survivors follow a Binomial distribution and entry is determined by free e
     ax2a.set_xlabel("Number of firms $N$")
     ax2a.set_ylabel("Exit probability", color=color_exit)
     ax2a.tick_params(axis="y", labelcolor=color_exit)
+    ax2a.set_ylim(bottom=0)
 
     ax2b = ax2a.twinx()
-    ax2b.plot(N_grid, entry_rate, "s-", color=color_entry, markersize=4, linewidth=2, label="Expected entrants")
+    ax2b.plot(N_grid, entry_count, "s-", color=color_entry, markersize=4, linewidth=2, label="Expected entrants")
     ax2b.set_ylabel("Expected entrants", color=color_entry)
     ax2b.tick_params(axis="y", labelcolor=color_entry)
 
@@ -429,7 +438,8 @@ where survivors follow a Binomial distribution and entry is determined by free e
     # --- Figure 3: Stationary Distribution ---
     fig3, ax3 = plt.subplots()
     ax3.bar(N_grid, stat_dist, color="steelblue", alpha=0.8, edgecolor="navy", linewidth=0.5)
-    ax3.axvline(x=expected_N, color="red", linewidth=1.5, linestyle="--", label=f"$E[N] = {expected_N:.1f}$")
+    ax3.axvline(x=expected_N, color="red", linewidth=1.5, linestyle="--",
+                label=f"$E[N] = {expected_N:.1f}$")
     ax3.set_xlabel("Number of firms $N$")
     ax3.set_ylabel("Probability")
     ax3.set_title("Stationary Distribution of Market Structure")
@@ -445,7 +455,8 @@ where survivors follow a Binomial distribution and entry is determined by free e
     periods = np.arange(T_sim)
 
     ax4a.plot(periods, N_path, "b-", linewidth=1.2, alpha=0.8)
-    ax4a.axhline(y=expected_N, color="red", linewidth=1, linestyle="--", alpha=0.7, label=f"$E[N] = {expected_N:.1f}$")
+    ax4a.axhline(y=expected_N, color="red", linewidth=1, linestyle="--", alpha=0.7,
+                 label=f"$E[N] = {expected_N:.1f}$")
     ax4a.set_ylabel("Number of firms $N_t$")
     ax4a.set_title("Simulated Market Evolution")
     ax4a.legend()
@@ -457,7 +468,6 @@ where survivors follow a Binomial distribution and entry is determined by free e
     ax4b.set_ylabel("Firms entering / exiting")
     ax4b.set_title("Entry and Exit Over Time")
     ax4b.legend()
-
     fig4.tight_layout()
     report.add_figure(
         "figures/simulated-market.png",
@@ -465,12 +475,13 @@ where survivors follow a Binomial distribution and entry is determined by free e
         fig4,
     )
 
-    # --- Table: Equilibrium Statistics ---
+    # --- Table 1: Equilibrium Statistics ---
     stats_data = {
         "Statistic": [
             "Expected number of firms E[N]",
             "Std. deviation of N",
             "Modal number of firms",
+            "Zero-profit N (static)",
             "Per-firm profit at E[N]",
             "Net profit (pi - f) at E[N]",
             "HHI at E[N]",
@@ -482,6 +493,7 @@ where survivors follow a Binomial distribution and entry is determined by free e
             f"{expected_N:.2f}",
             f"{std_N:.2f}",
             f"{mode_N}",
+            f"{N_zero_profit:.1f}",
             f"{profits_at_mean:.3f}",
             f"{profits_at_mean - f:.3f}",
             f"{hhi_at_mean:.0f}",
@@ -493,19 +505,23 @@ where survivors follow a Binomial distribution and entry is determined by free e
     df_stats = pd.DataFrame(stats_data)
     report.add_table("tables/equilibrium-statistics.csv", "Equilibrium Statistics", df_stats)
 
-    # --- Table: Profit and Value by N ---
+    # --- Table 2: Value and Policies by N ---
     sample_N = np.array([1, 2, 3, 5, 7, 10, 15, 20, 25, 30])
     sample_N = sample_N[sample_N <= N_max]
     detail_data = {
         "N": [str(n) for n in sample_N],
         "Profit pi(N)": [f"{cournot_profit(n, a, b, c):.3f}" for n in sample_N],
         "Net profit pi-f": [f"{cournot_profit(n, a, b, c) - f:.3f}" for n in sample_N],
-        "V(N)": [f"{V[n-1]:.3f}" for n in sample_N],
-        "Exit prob": [f"{exit_prob[n-1]:.4f}" for n in sample_N],
-        "Entry rate": [f"{entry_rate[n-1]:.1f}" for n in sample_N],
+        "V(N)": [f"{V[n - 1]:.3f}" for n in sample_N],
+        "Exit prob": [f"{exit_prob[n - 1]:.4f}" for n in sample_N],
+        "Entry": [f"{entry_count[n - 1]:.0f}" for n in sample_N],
     }
     df_detail = pd.DataFrame(detail_data)
-    report.add_table("tables/value-by-N.csv", "Value Function and Policies at Selected Market Structures", df_detail)
+    report.add_table(
+        "tables/value-by-N.csv",
+        "Value Function and Policies at Selected Market Structures",
+        df_detail,
+    )
 
     report.add_takeaway(
         "Dynamic entry/exit models explain why markets have persistent differences in "
@@ -514,17 +530,15 @@ where survivors follow a Binomial distribution and entry is determined by free e
         "continuation values.\n\n"
         "**Key insights:**\n"
         "- The value of incumbency declines sharply with $N$: more competitors erode Cournot "
-        "rents. Beyond a threshold, $V(N) = 0$ and all firms prefer to exit.\n"
-        "- The sunk cost $K$ creates hysteresis: firms that are already in the market stay "
-        "(since they only face $f$), while potential entrants need $V > K$ to justify entry. "
-        "This wedge between entry and exit thresholds is the source of inertia in market "
-        "structure.\n"
-        "- The model generates \"churning\" — simultaneous entry and exit even in steady state — "
-        "because stochastic transitions create states where some firms find it unprofitable to "
-        "continue while others find it attractive to enter.\n"
-        "- The stationary distribution shows the long-run probability of each market structure. "
-        "Markets spend most of their time near the modal $N$, but occasionally visit very "
-        "concentrated or very competitive states."
+        "rents. Beyond a threshold, $V(N) \\approx 0$ and firms prefer to exit.\n"
+        "- The sunk cost $K$ creates hysteresis: incumbents only face the per-period cost $f$ "
+        "to stay, while entrants must pay $K$ up front. This wedge between entry and exit "
+        "thresholds is the source of persistence in market structure.\n"
+        "- The model generates \"churning\" -- simultaneous entry and exit even in steady state -- "
+        "because idiosyncratic shocks push some incumbents below the exit threshold while "
+        "the market remains attractive enough for new entrants.\n"
+        "- The stationary distribution concentrates near the free-entry equilibrium $N$, but "
+        "stochastic turnover generates a non-degenerate spread around this point."
     )
 
     report.add_references([
