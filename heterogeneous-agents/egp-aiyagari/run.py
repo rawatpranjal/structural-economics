@@ -424,7 +424,10 @@ $$\int a \, d\mu(a, y) = K$$
     ax1.legend(fontsize=8)
     report.add_figure("figures/consumption-policy.png",
                       "Consumption policy functions at equilibrium for each income state",
-                      fig1)
+                      fig1,
+        description="At the equilibrium interest rate, low-income agents consume less and "
+        "save more aggressively as a precaution. The spread across income states reflects "
+        "the degree of consumption insurance: wider gaps mean less smoothing.")
 
     # --- Figure 2: Capital supply vs demand ---
     fig2, ax2 = plt.subplots()
@@ -440,7 +443,11 @@ $$\int a \, d\mu(a, y) = K$$
     ax2.legend()
     report.add_figure("figures/capital-supply-demand.png",
                       "Capital supply (household savings) and demand (firm FOC) as functions of r",
-                      fig2)
+                      fig2,
+        description="The intersection determines the general equilibrium. Capital supply slopes "
+        "upward because higher interest rates reward saving, while capital demand slopes "
+        "downward from the firm's diminishing marginal product. The equilibrium r* lies "
+        "below 1/beta - 1 due to precautionary savings demand.")
 
     # --- Figure 3: Wealth distribution ---
     fig3, ax3 = plt.subplots()
@@ -457,7 +464,10 @@ $$\int a \, d\mu(a, y) = K$$
     ax3.set_xlim(0, min(np.percentile(wealth_eq, 99.5), amax))
     report.add_figure("figures/wealth-distribution.png",
                       "Stationary wealth distribution in equilibrium",
-                      fig3)
+                      fig3,
+        description="The distribution emerges endogenously from the interaction of idiosyncratic "
+        "risk and the equilibrium interest rate. The gap between mean and median wealth "
+        "reflects concentration at the top, a robust feature of Aiyagari-type models.")
 
     # --- Figure 4: Lorenz curve ---
     fig4, ax4 = plt.subplots()
@@ -472,7 +482,11 @@ $$\int a \, d\mu(a, y) = K$$
     ax4.set_ylim(0, 1)
     report.add_figure("figures/lorenz-curve.png",
                       f"Lorenz curve for wealth distribution (Gini = {gini_w:.3f})",
-                      fig4)
+                      fig4,
+        description="The area between the Lorenz curve and the 45-degree line measures wealth "
+        "inequality. The Gini coefficient from this IID income model is moderate; persistent "
+        "income shocks (AR(1)) would generate substantially more inequality and a more bowed "
+        "Lorenz curve.")
 
     # --- Table: Equilibrium statistics ---
     table_data = {
@@ -506,7 +520,10 @@ $$\int a \, d\mu(a, y) = K$$
         ],
     }
     df = pd.DataFrame(table_data)
-    report.add_table("tables/equilibrium.csv", "Equilibrium Statistics", df)
+    report.add_table("tables/equilibrium.csv", "Equilibrium Statistics", df,
+        description="The equilibrium interest rate below 1/beta - 1 is the signature result of "
+        "Aiyagari (1994): precautionary savings motives push aggregate capital above the "
+        "representative-agent level, depressing the return on capital.")
 
     report.add_takeaway(
         "The Aiyagari model demonstrates how precautionary savings demand from "

@@ -274,6 +274,10 @@ interest rate, $r^n$ is the natural rate, and $v_t$ is a monetary policy shock.
         "figures/irf-monetary-shock.png",
         "Impulse responses to a contractionary monetary policy shock (1% increase in the policy rate)",
         fig1,
+        description="With sticky prices, a positive shock to the nominal rate translates into a higher "
+        "real rate, which depresses demand through the IS curve. Both output and inflation fall together, "
+        "illustrating why monetary policy has real effects in the New Keynesian framework. The speed of "
+        "decay is governed by the shock persistence rho_v.",
     )
 
     # --- Figure 2: IRFs to demand shock ---
@@ -301,6 +305,10 @@ interest rate, $r^n$ is the natural rate, and $v_t$ is a monetary policy shock.
         "figures/irf-demand-shock.png",
         "Impulse responses to a positive demand shock (1% increase in natural rate)",
         fig2,
+        description="Unlike the monetary shock, a demand shock raises output and inflation simultaneously. "
+        "The central bank responds by increasing the nominal rate (via the Taylor rule), which partially "
+        "offsets the demand stimulus. The more aggressively the Taylor rule reacts (higher phi_pi), the "
+        "smaller the output and inflation responses.",
     )
 
     # --- Figure 3: Model equations display ---
@@ -337,6 +345,10 @@ interest rate, $r^n$ is the natural rate, and $v_t$ is a monetary policy shock.
         "figures/model-equations.png",
         "The three core equations of the New Keynesian model",
         fig3,
+        description="These three equations fully determine the dynamics of the output gap, inflation, "
+        "and the nominal interest rate. The IS curve captures intertemporal demand, the Phillips curve "
+        "links inflation to real activity, and the Taylor rule closes the system by specifying how "
+        "monetary policy responds to deviations from target.",
     )
 
     # --- Table ---
@@ -354,7 +366,11 @@ interest rate, $r^n$ is the natural rate, and $v_t$ is a monetary policy shock.
         ],
     }
     df = pd.DataFrame(mp_summary)
-    report.add_table("tables/impact-responses.csv", "Impact Responses to Unit Shocks", df)
+    report.add_table("tables/impact-responses.csv", "Impact Responses to Unit Shocks", df,
+        description="Compare signs across the two shocks: a contractionary monetary shock reduces both "
+        "output and inflation (no trade-off), while a demand shock raises both (also no trade-off). "
+        "The trade-off between output and inflation stabilization arises only with supply (cost-push) "
+        "shocks, which are not included in this baseline specification.")
 
     report.add_takeaway(
         "The New Keynesian model illustrates how nominal rigidities give monetary policy "

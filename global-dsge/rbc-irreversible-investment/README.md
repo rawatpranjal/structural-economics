@@ -47,7 +47,7 @@ When $\mu > 0$, the constraint binds: the agent would like to disinvest but cann
 
 Both the constrained and unconstrained models are solved on the same grid for comparison.
 
-Irreversible model converged in **600** iterations. Standard model converged in **600** iterations.
+Irreversible model converged in **49** iterations. Standard model converged in **49** iterations.
 
 ## Results
 

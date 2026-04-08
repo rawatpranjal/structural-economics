@@ -43,16 +43,16 @@ In matrix form: $\mathbf{q} + (\Omega \circ \mathbf{J}') (\mathbf{p} - \mathbf{c
 | Prices | [np.float64(1.0), np.float64(1.2), np.float64(0.9), np.float64(1.1), np.float64(1.3), np.float64(1.4)] | Pre-merger prices |
 | Margins | [np.float64(0.4), np.float64(0.35), np.float64(0.45), np.float64(0.4), np.float64(0.3), np.float64(0.28)] | Price-cost margins |
 | Outside share | 0.35 | Logit outside good |
-| $\alpha$ (logit) | -3.2258 | Calibrated price coefficient |
+| $\alpha$ (logit) | -3.1611 | Calibrated price coefficient |
 | Cross-price ratio (linear) | 0.10 | Cross-slope / geometric mean of own-slopes |
-| Cross elasticity (log-linear) | 0.30 | Symmetric cross-price elasticities |
+| Cross elasticity (log-linear) | 0.15 | Symmetric cross-price elasticities |
 | Merger | Firm 1 + Firm 2 | Products 1-4 under common ownership |
 
 ## Solution Method
 
 **Step 1: Calibrate** each demand system from the same observed data (shares, prices, margins). The FOC is inverted to recover marginal costs, and demand parameters are chosen to match observed equilibrium.
 
-**Step 2: Verify** FOC residuals at pre-merger prices (logit: 1.1e-02, linear: 2.8e-17, log-linear: 1.4e-17).
+**Step 2: Verify** FOC residuals at pre-merger prices (logit: 1.4e-17, linear: 2.8e-17, log-linear: 2.8e-17).
 
 **Step 3: Screen** using UPP, GUPPI, and CMCR --- first-order approximations to merger harm that do not require solving the full post-merger equilibrium.
 
@@ -78,9 +78,9 @@ In matrix form: $\mathbf{q} + (\Omega \circ \mathbf{J}') (\mathbf{p} - \mathbf{c
 
 | Demand Model   |   Avg Price Change (%) |   Max Price Change (%) |   Delta CS |   Delta PS |   Delta W |   Avg GUPPI (%) |   Avg CMCR (%) |
 |:---------------|-----------------------:|-----------------------:|-----------:|-----------:|----------:|----------------:|---------------:|
-| Logit          |                  10.62 |                  13.38 |    -0.0476 |     0.0178 |   -0.0299 |           11.37 |          19.05 |
+| Logit          |                  11.15 |                  13.34 |    -0.0537 |     0.0204 |   -0.0333 |           11.59 |          19.76 |
 | Linear         |                   5.13 |                   5.59 |    -0.0272 |     0.0078 |   -0.0193 |            7.27 |          12.15 |
-| Log-linear     |                  27.75 |                  38.51 |    -0.1171 |     0.0344 |   -0.0827 |            8.64 |          14.41 |
+| Log-linear     |                  10.27 |                  13.57 |    -0.0489 |     0.0065 |   -0.0425 |            4.56 |           7.61 |
 
 ## Economic Takeaway
 

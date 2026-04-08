@@ -210,7 +210,11 @@ $$\dot{c} = \frac{1}{\sigma} \left( f'(k) - \delta - \rho \right) c$$
     ax1.set_ylim(0, c_ss * 2.2)
     ax1.legend(loc="upper right")
     report.add_figure("figures/phase-diagram.png",
-                      "Phase diagram with nullclines, vector field, and saddle path", fig1)
+                      "Phase diagram with nullclines, vector field, and saddle path", fig1,
+        description="The phase diagram reveals the saddle-point structure of the Ramsey model. "
+        "Only one consumption level for each initial capital stock places the economy on the "
+        "stable arm. The vector field shows that off the saddle path, trajectories diverge "
+        "toward either zero capital or infinite over-accumulation.")
 
     # --- Figure 2: Time paths ---
     fig2, (ax2a, ax2b) = plt.subplots(1, 2, figsize=(12, 5))
@@ -231,7 +235,11 @@ $$\dot{c} = \frac{1}{\sigma} \left( f'(k) - \delta - \rho \right) c$$
     ax2b.legend()
     fig2.tight_layout()
     report.add_figure("figures/time-paths.png",
-                      "Capital and consumption converge to steady state along the saddle path", fig2)
+                      "Capital and consumption converge to steady state along the saddle path", fig2,
+        description="Starting from below steady-state capital, the economy invests heavily "
+        "early on (low consumption) and gradually increases consumption as capital "
+        "approaches k*. The speed of convergence is governed by the stable eigenvalue "
+        "of the linearized system.")
 
     # --- Figure 3: Four quadrant dynamics ---
     fig3, axes = plt.subplots(2, 2, figsize=(10, 8))
@@ -256,7 +264,11 @@ $$\dot{c} = \frac{1}{\sigma} \left( f'(k) - \delta - \rho \right) c$$
     fig3.suptitle("Trajectories from Different Starting Regions", fontsize=13)
     fig3.tight_layout()
     report.add_figure("figures/four-regions.png",
-                      "Only trajectories starting on the saddle path converge to steady state", fig3)
+                      "Only trajectories starting on the saddle path converge to steady state", fig3,
+        description="Each panel shows a trajectory starting in one of the four quadrants defined "
+        "by the nullclines. In three of the four regions the path diverges, violating either "
+        "feasibility or the transversality condition. Only the saddle-path quadrant produces "
+        "a convergent, economically valid solution.")
 
     # --- Table ---
     df = pd.DataFrame({
@@ -267,7 +279,10 @@ $$\dot{c} = \frac{1}{\sigma} \left( f'(k) - \delta - \rho \right) c$$
                         "Steady-state output", "Net interest rate (= rho at ss)",
                         "Stable eigenvalue", "Unstable eigenvalue"],
     })
-    report.add_table("tables/steady-state.csv", "Steady-State Values and Eigenvalues", df)
+    report.add_table("tables/steady-state.csv", "Steady-State Values and Eigenvalues", df,
+        description="The eigenvalue pair (one negative, one positive) confirms the saddle-point "
+        "classification. The magnitude of the stable eigenvalue determines the speed of "
+        "convergence to steady state.")
 
     report.add_takeaway(
         "Phase diagrams reveal the qualitative dynamics of the Ramsey model:\n\n"

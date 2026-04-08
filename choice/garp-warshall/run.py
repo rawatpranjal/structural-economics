@@ -463,7 +463,10 @@ $$R^{(k)}[i,j] = R^{(k-1)}[i,j] \;\lor\; \bigl(R^{(k-1)}[i,k] \;\land\; R^{(k-1)
     fig1.tight_layout()
     report.add_figure("figures/warshall-steps.png",
                       "Warshall algorithm: progressive construction of the transitive closure from direct preferences",
-                      fig1)
+                      fig1,
+                      description="Each panel shows the preference matrix after using a new observation as a pivot node. "
+                      "Watch the matrix fill in as indirect preferences are discovered: if $i$ prefers $k$ and $k$ prefers $j$, "
+                      "then $i$ indirectly prefers $j$. The final matrix encodes all transitive preference chains needed for GARP testing.")
 
     # --- Figure 2: GARP violation detection ---
     fig2, (ax2a, ax2b) = plt.subplots(1, 2, figsize=(13, 5.5))
@@ -515,7 +518,10 @@ $$R^{(k)}[i,j] = R^{(k-1)}[i,j] \;\lor\; \bigl(R^{(k-1)}[i,k] \;\land\; R^{(k-1)
     fig2.tight_layout()
     report.add_figure("figures/garp-violations.png",
                       "GARP violation detection: Cobb-Douglas data (left, no violations) vs random data (right, violations in red)",
-                      fig2)
+                      fig2,
+                      description="The clean green matrix for Cobb-Douglas data confirms that utility-maximizing behavior never produces GARP violations -- "
+                      "a direct consequence of Afriat's theorem. Red cells in the random data matrix pinpoint the exact observation pairs where the consumer's choices "
+                      "are mutually contradictory, making rationalization by any utility function impossible.")
 
     # --- Figure 3: Bronars power as function of T ---
     fig3, ax3 = plt.subplots(figsize=(8, 5))
@@ -528,7 +534,9 @@ $$R^{(k)}[i,j] = R^{(k-1)}[i,j] \;\lor\; \bigl(R^{(k-1)}[i,k] \;\land\; R^{(k-1)
     ax3.fill_between(T_values, powers, alpha=0.15, color="blue")
     report.add_figure("figures/bronars-power.png",
                       "Bronars power: fraction of random datasets violating GARP, increasing with T",
-                      fig3)
+                      fig3,
+                      description="Bronars power answers the question: if the consumer were choosing randomly instead of optimizing, how often would we catch them? "
+                      "The rapid rise to near 100% means that GARP has strong discriminating power -- passing the test with many observations is strong evidence of purposeful behavior.")
 
     # --- Figure 4: Afriat efficiency index distribution ---
     fig4, ax4 = plt.subplots(figsize=(8, 5))
@@ -544,7 +552,10 @@ $$R^{(k)}[i,j] = R^{(k-1)}[i,j] \;\lor\; \bigl(R^{(k-1)}[i,k] \;\land\; R^{(k-1)
     ax4.set_xlim(0.4, 1.05)
     report.add_figure("figures/afriat-distribution.png",
                       "Afriat efficiency index distribution for random data: distance from rationalizability",
-                      fig4)
+                      fig4,
+                      description="The Afriat efficiency index $e^*$ measures how close data is to being rationalizable: $e^*=1$ means fully rational, "
+                      "and lower values indicate greater departure from utility maximization. Even random data often achieves $e^*$ close to 1, "
+                      "highlighting that small datasets may lack the power to distinguish optimization from noise.")
 
     # --- Table: Direct preference R and transitive closure R* ---
     n_tab = min(10, T)
@@ -558,7 +569,9 @@ $$R^{(k)}[i,j] = R^{(k-1)}[i,j] \;\lor\; \bigl(R^{(k-1)}[i,k] \;\land\; R^{(k-1)
     df = pd.DataFrame(rows)
     report.add_table("tables/preference-matrices.csv",
                      "Direct Revealed Preference R and Transitive Closure R* (random data, first 10 obs)",
-                     df)
+                     df,
+                     description="The 'New edges' column shows how many indirect preferences Warshall's algorithm discovers beyond the direct relation. "
+                     "Observations with many new edges are central nodes in the preference graph -- they participate in long transitive chains.")
 
     report.add_takeaway(
         "GARP is the testable implication of utility maximization. Warshall's algorithm "

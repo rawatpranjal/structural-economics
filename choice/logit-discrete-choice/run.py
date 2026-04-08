@@ -292,7 +292,9 @@ $$\eta_{jk} = -\beta_{\text{price}} \, p_k \, s_k$$
     ax1.legend(loc="lower left")
     report.add_figure("figures/log-likelihood-surface.png",
                        "Log-likelihood surface: the logit likelihood is globally concave, with the MLE close to the true parameters",
-                       fig1)
+                       fig1,
+                       description="The single peak confirms global concavity of the logit likelihood -- any gradient-based optimizer will find the same maximum. "
+                       "Notice how tightly the MLE estimate clusters near the true parameters, illustrating the statistical precision achievable with N=5000 observations.")
 
     # --- Figure 2: Predicted vs Actual Market Shares ---
     fig2, ax2 = plt.subplots(figsize=(8, 5))
@@ -309,7 +311,9 @@ $$\eta_{jk} = -\beta_{\text{price}} \, p_k \, s_k$$
     ax2.legend()
     report.add_figure("figures/market-shares.png",
                        "Predicted vs actual market shares: the estimated model closely recovers observed choice frequencies",
-                       fig2)
+                       fig2,
+                       description="Close agreement between predicted and observed shares validates the model specification. "
+                       "Any systematic gap would signal omitted product characteristics or misspecification of the utility function.")
 
     # --- Figure 3: Own-Price Elasticities ---
     fig3, ax3 = plt.subplots(figsize=(8, 5))
@@ -328,7 +332,10 @@ $$\eta_{jk} = -\beta_{\text{price}} \, p_k \, s_k$$
                  f"{val:.2f}", ha="center", va="top", fontsize=9, fontweight="bold")
     report.add_figure("figures/own-price-elasticities.png",
                        "Own-price elasticities: higher-priced products have more elastic demand in the logit model",
-                       fig3)
+                       fig3,
+                       description="In the logit, own-price elasticity is driven by both the price level and market share through the formula "
+                       "$\\eta_{jj} = \\beta_p \\, p_j (1 - s_j)$. Higher-priced products lose a larger fraction of their customers for a given percentage price increase, "
+                       "which has direct implications for optimal pricing and merger simulation.")
 
     # --- Figure 4: IIA Illustration ---
     fig4, (ax4a, ax4b) = plt.subplots(1, 2, figsize=(13, 5))
@@ -368,7 +375,9 @@ $$\eta_{jk} = -\beta_{\text{price}} \, p_k \, s_k$$
     fig4.tight_layout()
     report.add_figure("figures/iia-illustration.png",
                        "IIA property: removing an alternative does not change the ratio of choice probabilities between remaining alternatives",
-                       fig4)
+                       fig4,
+                       description="The left panel shows that removing a product reallocates its share proportionally to all remaining products, regardless of similarity. "
+                       "The right panel confirms that pairwise share ratios are exactly preserved -- this is the IIA property, and it is the main limitation motivating the nested logit and BLP models.")
 
     # --- Table: Estimation Results ---
     table_data = {
@@ -383,7 +392,9 @@ $$\eta_{jk} = -\beta_{\text{price}} \, p_k \, s_k$$
     df_results = pd.DataFrame(table_data)
     report.add_table("tables/estimation-results.csv",
                       "MLE Estimation Results: Estimated vs True Parameters",
-                      df_results)
+                      df_results,
+                      description="Both coefficients are estimated with high precision and are statistically significant. "
+                      "The negative price coefficient and positive quality coefficient confirm that consumers trade off price against quality as expected.")
 
     # --- Table: Elasticity Matrix ---
     elas_data = {"Product": product_names}
@@ -392,7 +403,9 @@ $$\eta_{jk} = -\beta_{\text{price}} \, p_k \, s_k$$
     df_elas = pd.DataFrame(elas_data)
     report.add_table("tables/elasticity-matrix.csv",
                       "Price Elasticity Matrix (row = product whose share changes, column = product whose price changes)",
-                      df_elas)
+                      df_elas,
+                      description="The IIA property is visible in the cross-elasticity columns: all off-diagonal entries in a given column are identical, meaning every rival product "
+                      "gains the same share when one product raises its price. This unrealistic substitution pattern is the key motivation for richer models like nested logit and BLP.")
 
     report.add_takeaway(
         "The multinomial logit is the workhorse of discrete choice demand estimation, "

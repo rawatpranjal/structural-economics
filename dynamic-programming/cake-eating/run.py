@@ -182,7 +182,9 @@ $$c^*(W) = (1-\beta) W, \qquad W' = \beta W$$
     ax1.set_ylabel("$V(W)$")
     ax1.set_title("Value Function")
     ax1.legend()
-    report.add_figure("figures/value-function.png", "Value function: numerical VFI vs analytical solution", fig1)
+    report.add_figure("figures/value-function.png", "Value function: numerical VFI vs analytical solution", fig1,
+        description="The near-perfect overlap between numerical and analytical curves validates the VFI implementation. "
+        "The concavity of V(W) reflects diminishing marginal utility: additional cake is worth less when you already have a lot.")
 
     # --- Figure 2: Policy Function ---
     fig2, ax2 = plt.subplots()
@@ -193,7 +195,9 @@ $$c^*(W) = (1-\beta) W, \qquad W' = \beta W$$
     ax2.set_ylabel("Consumption $c$")
     ax2.set_title("Consumption Policy Function")
     ax2.legend()
-    report.add_figure("figures/policy-function.png", "Consumption policy: numerical vs analytical", fig2)
+    report.add_figure("figures/policy-function.png", "Consumption policy: numerical vs analytical", fig2,
+        description="The optimal policy is linear in cake size: the agent always eats fraction (1-beta) of the remaining cake. "
+        "The policy lies well below the 45-degree line, confirming the agent never consumes everything in a single period.")
 
     # --- Figure 3: Simulation ---
     fig3, (ax3a, ax3b) = plt.subplots(1, 2, figsize=(12, 5))
@@ -208,7 +212,9 @@ $$c^*(W) = (1-\beta) W, \qquad W' = \beta W$$
     ax3b.set_ylabel("Consumption $c_t$")
     ax3b.set_title("Consumption Over Time")
     fig3.tight_layout()
-    report.add_figure("figures/simulation.png", "Simulation: cake depletion and consumption paths starting from W=1", fig3)
+    report.add_figure("figures/simulation.png", "Simulation: cake depletion and consumption paths starting from W=1", fig3,
+        description="Both paths decay geometrically at rate beta, illustrating the constant-fraction rule. "
+        "The cake is never fully exhausted but asymptotically approaches zero -- the patient agent always preserves a sliver for the future.")
 
     # --- Table: Numerical vs Analytical (skip poorly-approximated bottom) ---
     valid_start = max(1, n_grid // 10)  # Skip bottom 10% of grid
@@ -221,7 +227,9 @@ $$c^*(W) = (1-\beta) W, \qquad W' = \beta W$$
         "c* analytical": [f"{float(consumption_analytical[i]):.4f}" for i in sample_idx],
     }
     df = pd.DataFrame(table_data)
-    report.add_table("tables/comparison.csv", "Numerical vs Analytical Solution at Selected Grid Points", df)
+    report.add_table("tables/comparison.csv", "Numerical vs Analytical Solution at Selected Grid Points", df,
+        description="The close agreement between numerical and analytical values across the grid confirms "
+        "that VFI has converged to the true solution, providing a reliability benchmark for more complex models.")
 
     report.add_takeaway(
         "The cake-eating problem reveals the fundamental trade-off in intertemporal "

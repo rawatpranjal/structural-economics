@@ -564,6 +564,9 @@ $$\delta^{(r+1)}_{jt} = \delta^{(r)}_{jt} + \log s^{\text{obs}}_{jt} - \log s^{\
         "figures/observed-vs-predicted-shares.png",
         "Observed vs predicted market shares at estimated parameters. Points near the 45-degree line indicate good model fit.",
         fig1,
+        description="Tight clustering along the 45-degree line indicates that the estimated "
+        "random coefficients model fits the observed market shares well. Outliers would suggest "
+        "model misspecification or products with unusual unobserved characteristics.",
     )
 
     # --- Figure 2: Own-Price Elasticities ---
@@ -582,6 +585,10 @@ $$\delta^{(r+1)}_{jt} = \delta^{(r)}_{jt} + \log s^{\text{obs}}_{jt} - \log s^{\
         "figures/own-price-elasticities.png",
         "Own-price elasticities in market 1. BLP produces heterogeneous elasticities across products; plain logit elasticities are driven almost entirely by price level.",
         fig2,
+        description="In plain logit, own-price elasticities are mechanically tied to "
+        "price and share levels. BLP allows elasticities to vary with the composition of "
+        "consumers who choose each product, producing richer variation that reflects genuine "
+        "differences in price sensitivity across market segments.",
     )
 
     # --- Figure 3: Contraction Mapping Convergence ---
@@ -596,6 +603,9 @@ $$\delta^{(r+1)}_{jt} = \delta^{(r)}_{jt} + \log s^{\text{obs}}_{jt} - \log s^{\
         "figures/contraction-convergence.png",
         "Convergence of the BLP contraction mapping. The log-linear decline confirms the contraction property proved by Berry (1994).",
         fig3,
+        description="The log-linear convergence rate confirms that the BLP mapping is indeed "
+        "a contraction, as Berry (1994) proved. Each iteration reduces the error by a constant "
+        "factor, making convergence reliable and predictable across different starting values.",
     )
 
     # --- Figure 4: Cross-Price Elasticity Matrix ---
@@ -635,6 +645,10 @@ $$\delta^{(r+1)}_{jt} = \delta^{(r)}_{jt} + \log s^{\text{obs}}_{jt} - \log s^{\
         "figures/cross-price-elasticity-matrix.png",
         "Cross-price elasticity matrices. BLP produces asymmetric off-diagonal entries reflecting heterogeneous substitution; plain logit cross-elasticities depend only on the column product (IIA).",
         fig4,
+        description="The side-by-side comparison reveals the IIA limitation most clearly. In the "
+        "logit panel (right), each column has identical off-diagonal entries because cross-elasticities "
+        "depend only on the column product's price and share. In the BLP panel (left), cross-elasticities "
+        "vary by row, capturing the fact that similar products compete more intensely.",
     )
 
     # --- Table: Parameter Estimates ---
@@ -654,6 +668,9 @@ $$\delta^{(r+1)}_{jt} = \delta^{(r)}_{jt} + \log s^{\text{obs}}_{jt} - \log s^{\
         "tables/parameter-estimates.csv",
         "Estimated vs True Parameters",
         df,
+        description="The GMM estimator recovers the true parameters with reasonable accuracy. "
+        "The nonlinear parameters (sigma_x, sigma_p) govern the degree of consumer heterogeneity "
+        "and are identified by the variation in substitution patterns across markets.",
     )
 
     report.add_takeaway(

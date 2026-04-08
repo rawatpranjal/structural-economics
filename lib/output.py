@@ -20,12 +20,20 @@ class ModelReport:
         self._equations: str = ""
         self._model_setup: str = ""
         self._solution_method: str = ""
-        self._results_text: str = ""
-        self._figures: list[tuple[str, str]] = []  # (path, caption)
-        self._tables: list[tuple[str, str, str]] = []  # (path, caption, markdown)
+        self._results_items: list[tuple] = []  # mixed content: text, figures, tables in order
         self._takeaway: str = ""
         self._references: list[str] = []
         self._first_figure_path: Optional[str] = None
+
+    @property
+    def _figures(self) -> list[tuple[str, str]]:
+        """Backward-compat: list of (path, caption) for figure items."""
+        return [(i[1], i[2]) for i in self._results_items if i[0] == "figure"]
+
+    @property
+    def _tables(self) -> list[tuple[str, str, str]]:
+        """Backward-compat: list of (path, caption, md) for table items."""
+        return [(i[1], i[2], i[3]) for i in self._results_items if i[0] == "table"]
 
     def add_overview(self, text: str) -> None:
         self._overview = text.strip()
@@ -43,23 +51,29 @@ class ModelReport:
     def add_solution_method(self, text: str) -> None:
         self._solution_method = text.strip()
 
-    def add_figure(self, path: str, caption: str, fig: Figure, dpi: int = 150) -> None:
+    def add_figure(
+        self, path: str, caption: str, fig: Figure,
+        dpi: int = 150, description: str = "",
+    ) -> None:
         """Save a matplotlib figure and register it for the report."""
         save_figure(fig, path, dpi=dpi)
-        self._figures.append((path, caption))
+        self._results_items.append(("figure", path, caption, description.strip()))
         if self._first_figure_path is None:
             self._first_figure_path = path
 
-    def add_table(self, path: str, caption: str, df: pd.DataFrame) -> None:
+    def add_table(
+        self, path: str, caption: str, df: pd.DataFrame, description: str = "",
+    ) -> None:
         """Save a DataFrame as CSV and register it as a markdown table."""
         p = Path(path)
         p.parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(p, index=False)
         md_table = df.to_markdown(index=False)
-        self._tables.append((path, caption, md_table))
+        self._results_items.append(("table", path, caption, md_table, description.strip()))
 
     def add_results(self, text: str) -> None:
-        self._results_text = text.strip()
+        """Add a text block to the results section. Can be called multiple times."""
+        self._results_items.append(("text", text.strip()))
 
     def add_takeaway(self, text: str) -> None:
         self._takeaway = text.strip()
@@ -112,25 +126,31 @@ class ModelReport:
             lines.append("")
 
         # Results
-        has_results = self._results_text or self._figures or self._tables
-        if has_results:
+        if self._results_items:
             lines.append("## Results")
             lines.append("")
 
-            if self._results_text:
-                lines.append(self._results_text)
-                lines.append("")
-
-            for fig_path, caption in self._figures:
-                lines.append(f"![{caption}]({fig_path})")
-                lines.append(f"*{caption}*")
-                lines.append("")
-
-            for _, caption, md_table in self._tables:
-                lines.append(f"**{caption}**")
-                lines.append("")
-                lines.append(md_table)
-                lines.append("")
+            for item in self._results_items:
+                if item[0] == "text":
+                    lines.append(item[1])
+                    lines.append("")
+                elif item[0] == "figure":
+                    _, fig_path, caption, desc = item
+                    if desc:
+                        lines.append(desc)
+                        lines.append("")
+                    lines.append(f"![{caption}]({fig_path})")
+                    lines.append(f"*{caption}*")
+                    lines.append("")
+                elif item[0] == "table":
+                    _, _, caption, md_table, desc = item
+                    if desc:
+                        lines.append(desc)
+                        lines.append("")
+                    lines.append(f"**{caption}**")
+                    lines.append("")
+                    lines.append(md_table)
+                    lines.append("")
 
         # Economic Takeaway
         if self._takeaway:

@@ -49,17 +49,27 @@ Converged in **9 iterations** (log-likelihood = -7493.95).
 
 ## Results
 
+The single peak confirms global concavity of the logit likelihood -- any gradient-based optimizer will find the same maximum. Notice how tightly the MLE estimate clusters near the true parameters, illustrating the statistical precision achievable with N=5000 observations.
+
 ![Log-likelihood surface: the logit likelihood is globally concave, with the MLE close to the true parameters](figures/log-likelihood-surface.png)
 *Log-likelihood surface: the logit likelihood is globally concave, with the MLE close to the true parameters*
+
+Close agreement between predicted and observed shares validates the model specification. Any systematic gap would signal omitted product characteristics or misspecification of the utility function.
 
 ![Predicted vs actual market shares: the estimated model closely recovers observed choice frequencies](figures/market-shares.png)
 *Predicted vs actual market shares: the estimated model closely recovers observed choice frequencies*
 
+In the logit, own-price elasticity is driven by both the price level and market share through the formula $\eta_{jj} = \beta_p \, p_j (1 - s_j)$. Higher-priced products lose a larger fraction of their customers for a given percentage price increase, which has direct implications for optimal pricing and merger simulation.
+
 ![Own-price elasticities: higher-priced products have more elastic demand in the logit model](figures/own-price-elasticities.png)
 *Own-price elasticities: higher-priced products have more elastic demand in the logit model*
 
+The left panel shows that removing a product reallocates its share proportionally to all remaining products, regardless of similarity. The right panel confirms that pairwise share ratios are exactly preserved -- this is the IIA property, and it is the main limitation motivating the nested logit and BLP models.
+
 ![IIA property: removing an alternative does not change the ratio of choice probabilities between remaining alternatives](figures/iia-illustration.png)
 *IIA property: removing an alternative does not change the ratio of choice probabilities between remaining alternatives*
+
+Both coefficients are estimated with high precision and are statistically significant. The negative price coefficient and positive quality coefficient confirm that consumers trade off price against quality as expected.
 
 **MLE Estimation Results: Estimated vs True Parameters**
 
@@ -67,6 +77,8 @@ Converged in **9 iterations** (log-likelihood = -7493.95).
 |:-------------|-------:|-----------:|------------:|---------:|----------:|
 | beta_price   |   -0.5 |    -0.4913 |      0.0174 |   -28.21 |         0 |
 | beta_quality |    1.2 |     1.1559 |      0.0362 |    31.94 |         0 |
+
+The IIA property is visible in the cross-elasticity columns: all off-diagonal entries in a given column are identical, meaning every rival product gains the same share when one product raises its price. This unrealistic substitution pattern is the key motivation for richer models like nested logit and BLP.
 
 **Price Elasticity Matrix (row = product whose share changes, column = product whose price changes)**
 

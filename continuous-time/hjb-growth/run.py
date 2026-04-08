@@ -450,6 +450,9 @@ $$V'(k_i) \approx \begin{cases} \frac{V_{i+1} - V_i}{\Delta k} & \text{if } \dot
         "figures/value-function.png",
         "Value function from continuous-time HJB vs discrete-time VFI",
         fig1,
+        description="The two methods produce nearly identical value functions, validating the "
+        "continuous-time approximation. The slight differences arise from the discrete-time "
+        "VFI using a coarser grid and the inherent discretization of time periods.",
     )
 
     # --- Figure 2: Consumption Policy ---
@@ -467,6 +470,9 @@ $$V'(k_i) \approx \begin{cases} \frac{V_{i+1} - V_i}{\Delta k} & \text{if } \dot
         "figures/consumption-policy.png",
         "Consumption policy c(k) with analytical steady state marked",
         fig2,
+        description="The consumption function is derived directly from the FOC c = (V')^{-1/sigma} "
+        "without any grid search, which is the core computational advantage of the continuous-time "
+        "approach. Both methods agree closely, with the continuous-time solution being smoother.",
     )
 
     # --- Figure 3: Savings / Investment Policy ---
@@ -487,6 +493,10 @@ $$V'(k_i) \approx \begin{cases} \frac{V_{i+1} - V_i}{\Delta k} & \text{if } \dot
         "figures/savings-policy.png",
         "Savings policy s(k) = f(k) - delta*k - c(k); zero crossing at steady state",
         fig3,
+        description="The green region (positive drift) shows capital accumulation below steady "
+        "state, while the red region shows decumulation above it. The upwind scheme uses "
+        "forward differences in the green region and backward differences in the red region, "
+        "matching the direction of information flow.",
     )
 
     # --- Figure 4: Transition Dynamics ---
@@ -506,6 +516,10 @@ $$V'(k_i) \approx \begin{cases} \frac{V_{i+1} - V_i}{\Delta k} & \text{if } \dot
         "figures/transition-dynamics.png",
         "Transition dynamics k(t) from different initial conditions converging to steady state",
         fig4,
+        description="All paths converge monotonically to the unique steady state, confirming "
+        "saddle-path stability. Capital-poor economies grow faster because the marginal "
+        "product of capital is higher, generating the convergence dynamics central to "
+        "neoclassical growth theory.",
     )
 
     # --- Table: Steady-State Values ---
@@ -557,6 +571,10 @@ $$V'(k_i) \approx \begin{cases} \frac{V_{i+1} - V_i}{\Delta k} & \text{if } \dot
         "tables/steady-state.csv",
         "Steady-State Values: Analytical vs Numerical",
         df,
+        description="Close agreement between analytical and numerical steady-state values "
+        "validates the finite-difference scheme. The continuous-time HJB converges in far "
+        "fewer iterations than discrete-time VFI because the implicit scheme permits large "
+        "pseudo-time steps.",
     )
 
     report.add_takeaway(

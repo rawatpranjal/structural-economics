@@ -264,7 +264,9 @@ $$V(a, z) = \max_{c \ge 0} \left\{ u(c) + \beta \, \mathbb{E}\left[V(a', z') \mi
     ax1.set_title("Value Functions by Income State")
     ax1.legend(fontsize=9)
     report.add_figure("figures/value-functions.png",
-                       "Value functions for each income state", fig1)
+                       "Value functions for each income state", fig1,
+        description="Higher income states shift the value function upward, reflecting greater lifetime utility. "
+        "The curves fan out at low asset levels where the borrowing constraint binds, making current income more consequential.")
 
     # --- Figure 2: Consumption Policy Functions ---
     fig2, ax2 = plt.subplots()
@@ -278,7 +280,10 @@ $$V(a, z) = \max_{c \ge 0} \left\{ u(c) + \beta \, \mathbb{E}\left[V(a', z') \mi
     ax2.set_title("Consumption Policy Functions")
     ax2.legend(fontsize=9)
     report.add_figure("figures/consumption-policy.png",
-                       "Consumption policy functions by income state", fig2)
+                       "Consumption policy functions by income state", fig2,
+        description="The concavity of the consumption function is the hallmark of precautionary savings: "
+        "the marginal propensity to consume is highest near the borrowing constraint and declines with wealth, "
+        "meaning windfall gains matter most for liquidity-constrained households.")
 
     # --- Figure 3: Savings Policy Functions ---
     fig3, ax3 = plt.subplots()
@@ -291,7 +296,10 @@ $$V(a, z) = \max_{c \ge 0} \left\{ u(c) + \beta \, \mathbb{E}\left[V(a', z') \mi
     ax3.set_title("Savings Policy Functions")
     ax3.legend(fontsize=9)
     report.add_figure("figures/savings-policy.png",
-                       "Net savings (a' - a) by income state", fig3)
+                       "Net savings (a' - a) by income state", fig3,
+        description="The zero-crossing of each curve identifies the target asset level for that income state. "
+        "Low-income agents dissave (negative net savings) while high-income agents accumulate wealth, "
+        "driving the mean-reverting asset dynamics that produce a stationary wealth distribution.")
 
     # --- Figure 4: Simulated Asset Paths ---
     fig4, ax4 = plt.subplots(figsize=(10, 5))
@@ -304,7 +312,10 @@ $$V(a, z) = \max_{c \ge 0} \left\{ u(c) + \beta \, \mathbb{E}\left[V(a', z') \mi
     ax4.set_title(f"Simulated Asset Paths ({n_agents} agents, {T_sim} periods)")
     ax4.legend(fontsize=9)
     report.add_figure("figures/simulated-paths.png",
-                       f"Simulated asset paths for {n_agents} agents over {T_sim} periods", fig4)
+                       f"Simulated asset paths for {n_agents} agents over {T_sim} periods", fig4,
+        description="Despite identical preferences and the same income process, agents accumulate very different "
+        "wealth levels over time due to idiosyncratic income realizations. This ex-post heterogeneity from ex-ante "
+        "identical agents is the mechanism that generates the wealth distribution in the Aiyagari model.")
 
     # --- Table: Policy function at selected grid points ---
     # Sample at a few asset levels for the lowest, median, and highest income
@@ -320,7 +331,9 @@ $$V(a, z) = \max_{c \ge 0} \left\{ u(c) + \beta \, \mathbb{E}\left[V(a', z') \mi
         f"$a'^*(a, z_{{high}})$": [f"{policy_a[i, iz_high]:.4f}" for i in sample_a_idx],
     }
     df = pd.DataFrame(table_data)
-    report.add_table("tables/policy-functions.csv", "Policy Functions at Selected Grid Points", df)
+    report.add_table("tables/policy-functions.csv", "Policy Functions at Selected Grid Points", df,
+        description="Comparing consumption and savings across income states reveals the precautionary motive: "
+        "at any asset level, low-income agents save more relative to their resources than the certainty-equivalent benchmark would predict.")
 
     report.add_takeaway(
         "The income fluctuation problem reveals the **precautionary savings motive**: "

@@ -214,7 +214,9 @@ This is a piecewise-linear, concave function that passes through all observed po
     ax1.set_ylabel("Good 2")
     ax1.set_title("Budget Lines and Chosen Bundles")
     ax1.legend()
-    report.add_figure("figures/budget-lines.png", "Budget constraints and optimal choices from Cobb-Douglas consumer", fig1)
+    report.add_figure("figures/budget-lines.png", "Budget constraints and optimal choices from Cobb-Douglas consumer", fig1,
+                       description="Each point is the utility-maximizing choice for a given budget constraint. "
+                       "The variation in prices and income across observations traces out the demand function, providing the raw material for nonparametric preference recovery.")
 
     # --- Figure 2: Recovered indifference curve ---
     fig2, ax2 = plt.subplots(figsize=(8, 6))
@@ -228,7 +230,10 @@ This is a piecewise-linear, concave function that passes through all observed po
     ax2.set_title("Recovered vs True Indifference Curve")
     ax2.legend()
     ax2.set_ylim(0, max(x[:, 1]) * 2)
-    report.add_figure("figures/indifference-curve.png", "Nonparametric bounds on indifference curve vs true Cobb-Douglas", fig2)
+    report.add_figure("figures/indifference-curve.png", "Nonparametric bounds on indifference curve vs true Cobb-Douglas", fig2,
+                       description="The recovered bound (blue) is constructed purely from Afriat inequalities without assuming any functional form. "
+                       "Its proximity to the true Cobb-Douglas indifference curve (red) demonstrates the identifying power of revealed preference data -- "
+                       "more observations with diverse prices would tighten the bound further.")
 
     # --- Figure 3: Afriat numbers ---
     fig3, (ax3a, ax3b) = plt.subplots(1, 2, figsize=(12, 5))
@@ -242,7 +247,10 @@ This is a piecewise-linear, concave function that passes through all observed po
     ax3b.set_ylabel("$\\lambda_t$")
     ax3b.set_title("Afriat Marginal Utility Numbers")
     fig3.tight_layout()
-    report.add_figure("figures/afriat-numbers.png", "Afriat numbers (u_t, lambda_t) that rationalize the data", fig3)
+    report.add_figure("figures/afriat-numbers.png", "Afriat numbers (u_t, lambda_t) that rationalize the data", fig3,
+                       description="The utility numbers $u_t$ represent ordinal utility levels at each observed bundle, while "
+                       "$\\lambda_t$ captures the marginal utility of income at observation $t$. Together, these construct a piecewise-linear concave utility "
+                       "function that exactly rationalizes all observed choices -- the constructive proof behind Afriat's theorem.")
 
     # --- Table ---
     df = pd.DataFrame({
@@ -253,7 +261,9 @@ This is a piecewise-linear, concave function that passes through all observed po
         "lambda_t": [f"{lam[t]:.4f}" for t in range(T)],
         "CV bound": [f"{cv_bounds[t]:.4f}" for t in range(T)],
     })
-    report.add_table("tables/afriat-numbers.csv", "Afriat Numbers and Welfare Bounds", df)
+    report.add_table("tables/afriat-numbers.csv", "Afriat Numbers and Welfare Bounds", df,
+                      description="The CV bound column shows the compensating variation for a 30% price increase in good 1. "
+                      "These welfare bounds are computed without assuming a functional form -- they follow directly from the Afriat numbers and the observed consumption patterns.")
 
     report.add_takeaway(
         "Preference recoverability shows how much we can learn without functional form assumptions:\n\n"

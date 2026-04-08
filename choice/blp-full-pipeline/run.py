@@ -851,25 +851,41 @@ where $\xi = \delta - X\beta + \alpha p$ is the structural error and $Z$ are ins
     # --- Figure 1: Contraction convergence ---
     fig1 = plot_contraction_convergence(norm_hist)
     report.add_figure("figures/contraction-convergence.png",
-                      "BLP contraction mapping convergence (linear rate in log scale)", fig1)
+                      "BLP contraction mapping convergence (linear rate in log scale)", fig1,
+        description="The linear convergence rate on a log scale confirms the contraction "
+        "property. Each iteration multiplies the error by a constant factor less than 1, "
+        "guaranteeing that the share inversion produces a unique set of mean utilities for "
+        "any candidate nonlinear parameters.")
 
     # --- Figure 2: Elasticity comparison ---
     fig2 = plot_elasticity_heatmaps(logit_eta, blp_eta, product_names)
     report.add_figure("figures/elasticity-comparison.png",
-                      "Elasticity matrices: simple logit (IIA) vs BLP (realistic substitution)", fig2)
+                      "Elasticity matrices: simple logit (IIA) vs BLP (realistic substitution)", fig2,
+        description="Under logit, each column of cross-elasticities is identical (IIA). "
+        "BLP breaks this by allowing consumers to differ in how much they value sugar and "
+        "price, so that similar products (e.g., two sugary cereals) compete more intensely "
+        "than dissimilar ones.")
 
     # --- Figure 3: Diversion ratios ---
     fig3 = plot_diversion_comparison(logit_div, blp_div, product_names, ref_product=0)
     report.add_figure("figures/diversion-ratios.png",
                       "Diversion ratios from Choco-Bombs: logit diverts by market share, "
-                      "BLP diverts to similar products", fig3)
+                      "BLP diverts to similar products", fig3,
+        description="When Choco-Bombs loses customers, BLP correctly predicts they switch "
+        "mainly to Store-Frosted (also sugary) rather than Fiber-Bran. Logit's diversion "
+        "is proportional to market share, missing this product-similarity channel entirely. "
+        "This difference is critical for merger analysis between close substitutes.")
 
     # --- Figure 4: Merger simulation ---
     fig4 = plot_merger_prices(product_names, prices0, logit_post_prices,
                               merger_res["post_prices"], merging_idx=[0, 2])
     report.add_figure("figures/merger-simulation.png",
                       "Merger price effects: BLP predicts larger increases for close substitutes "
-                      "because it captures product similarity", fig4)
+                      "because it captures product similarity", fig4,
+        description="A merger between Choco-Bombs and Store-Frosted combines two sugary "
+        "cereals with high diversion between them. BLP predicts a larger price increase "
+        "than logit because it recognizes the high substitutability between the merging "
+        "products. Antitrust authorities using logit would underestimate the harm.")
 
     # --- Table: Parameter estimates ---
     table_data = {
@@ -887,7 +903,11 @@ where $\xi = \delta - X\beta + \alpha p$ is the structural error and $Z$ are ins
     for col in ["True", "Estimated", "Std Error"]:
         table_df[col] = table_df[col].map(lambda v: f"{v:.3f}")
     report.add_table("tables/parameter-estimates.csv",
-                     "BLP Parameter Estimates with Bootstrap Standard Errors", table_df)
+                     "BLP Parameter Estimates with Bootstrap Standard Errors", table_df,
+        description="The nonlinear parameters (sigma_alpha, sigma_sugar) are the key BLP "
+        "innovation: they measure how much consumer preferences vary across the population. "
+        "Larger sigma values produce more heterogeneous substitution patterns and stronger "
+        "departures from the logit IIA baseline.")
 
     report.add_takeaway(
         "BLP is the gold standard for demand estimation in IO because random coefficients "

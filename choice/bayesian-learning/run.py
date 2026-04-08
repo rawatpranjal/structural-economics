@@ -411,6 +411,9 @@ The value of continuing to observe signals must exceed the value of acting now.
         "Posterior belief P(H) over time for both true states. "
         "Beliefs converge to the truth as signals accumulate.",
         fig1,
+        description="The martingale convergence theorem guarantees that beliefs converge to the truth almost surely. "
+        "Individual paths (light traces) show considerable uncertainty early on, but the ensemble mean (bold line) converges smoothly. "
+        "The spread of paths reflects the inherent difficulty of learning from noisy signals.",
     )
 
     # --- Figure 2: Speed of learning vs signal informativeness ---
@@ -425,6 +428,9 @@ The value of continuing to observe signals must exceed the value of acting now.
         "figures/learning-speed.png",
         "More informative signals (further from 0.5) lead to faster learning.",
         fig2,
+        description="The convex decline shows that learning speed is highly nonlinear in signal quality. "
+        "Signals near $p = 0.5$ are almost uninformative and require dozens of draws, while highly informative signals ($p > 0.8$) resolve uncertainty in just a few observations. "
+        "This has practical implications for experiment design: slightly more precise instruments can dramatically reduce sample requirements.",
     )
 
     # --- Figure 3: ROC curve comparison ---
@@ -445,6 +451,9 @@ The value of continuing to observe signals must exceed the value of acting now.
         "ROC curves for Bayesian and ML classifiers. "
         "Bayes achieves the theoretical optimum; ML approaches it asymptotically.",
         fig3,
+        description="When the data-generating process matches the structural model, Bayes' rule achieves the irreducible minimum error rate. "
+        "The near-overlap of the two ROC curves shows that logistic regression, trained on enough data, effectively learns the same decision boundary -- "
+        "but it requires training data to do so, whereas Bayes' rule uses the known model directly.",
     )
 
     # --- Figure 4: Optimal stopping boundary ---
@@ -473,6 +482,9 @@ The value of continuing to observe signals must exceed the value of acting now.
         "Optimal stopping regions: the agent invests when beliefs are high enough, "
         "abstains when low enough, and continues observing in between.",
         fig4,
+        description="The narrowing continuation region as the deadline approaches reflects the diminishing option value of information. "
+        "Early on, the agent is willing to wait because more signals can substantially refine beliefs; near the terminal period, "
+        "the agent must act even with moderate uncertainty. Sample belief paths (black traces) show typical trajectories through the decision space.",
     )
 
     # --- Table: Classification accuracy comparison ---
@@ -487,6 +499,9 @@ The value of continuing to observe signals must exceed the value of acting now.
         "tables/accuracy-comparison.csv",
         "Classification Accuracy: Bayesian vs ML at Different Horizons",
         df,
+        description="Bayes consistently matches or beats the ML classifier at every horizon. "
+        "The advantage is largest with few signals, where the structural model's knowledge of the DGP compensates for limited data. "
+        "As the horizon grows, both approaches converge because the log-likelihood ratio becomes the dominant feature.",
     )
 
     report.add_takeaway(

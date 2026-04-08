@@ -224,6 +224,8 @@ This is a contraction mapping in $f$, solved by iteration. The asset price is re
         "figures/asset-price-function.png",
         "Equilibrium asset price as a function of endowment",
         fig1,
+        description="The price function is increasing because higher endowment means higher future dividends and a wealthier agent who is willing to pay more. "
+        "The curvature reflects the interaction of the wealth effect and the discount rate implied by marginal utility.",
     )
 
     # --- Figure 2: Simulated Price and Income Paths (dual y-axis) ---
@@ -255,6 +257,8 @@ This is a contraction mapping in $f$, solved by iteration. The asset price is re
         "figures/simulation-paths.png",
         "Simulated endowment and asset price over 100 periods (dual y-axis)",
         fig2,
+        description="Prices track endowment closely, confirming the procyclical nature of asset valuations in equilibrium. "
+        "The price series is smoother because the persistent endowment process (rho=0.9) makes current high dividends predict future high dividends, amplifying the price response.",
     )
 
     # --- Figure 3: Comparative Statics (gamma) ---
@@ -270,6 +274,8 @@ This is a contraction mapping in $f$, solved by iteration. The asset price is re
         "figures/comparative-statics-gamma.png",
         "Asset price function for different levels of risk aversion gamma",
         fig3,
+        description="Higher risk aversion compresses asset prices because the agent demands a larger risk premium for holding the risky tree. "
+        "With low gamma, the agent is nearly risk-neutral and prices approach the present-discounted value of expected dividends.",
     )
 
     # --- Table: Price-Dividend Ratio at Selected Endowment Levels ---
@@ -290,6 +296,8 @@ This is a contraction mapping in $f$, solved by iteration. The asset price is re
         "tables/price-dividend-ratio.csv",
         "Price-Dividend Ratio at Selected Endowment Levels",
         df,
+        description="The price-dividend ratio varies across endowment levels and risk aversion. "
+        "Under high risk aversion, P/D ratios are compressed and less variable, reflecting the agent's reluctance to hold risky assets at any endowment level.",
     )
 
     report.add_takeaway(

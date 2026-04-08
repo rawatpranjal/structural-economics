@@ -432,6 +432,8 @@ $$u_i - u_j \leq \lambda_j \, p_j \cdot (x_i - x_j) \quad \forall \, i, j$$
         "Budget lines and chosen bundles (2D projection) for consistent data generated "
         "from a Cobb-Douglas utility maximizer. All choices lie on their respective budget lines.",
         fig1,
+        description="Each chosen bundle sits on its budget line, and no bundle is inside another observation's budget set in a way that creates a cycle. "
+        "This is exactly what GARP requires: a consumer who always picks the best affordable bundle.",
     )
 
     fig1b = plot_budget_lines_and_bundles(
@@ -444,6 +446,8 @@ $$u_i - u_j \leq \lambda_j \, p_j \cdot (x_i - x_j) \quad \forall \, i, j$$
         "Budget lines and chosen bundles for inconsistent data. Swapped bundles create "
         "revealed preference cycles that cannot be rationalized by any utility function.",
         fig1b,
+        description="Swapping bundles between observations creates situations where observation $i$ could have afforded $j$'s bundle and vice versa, "
+        "yet each chose differently. No utility function can simultaneously rationalize both choices -- this is a GARP violation.",
     )
 
     # --- Figure 2: Revealed preference graph ---
@@ -456,6 +460,8 @@ $$u_i - u_j \leq \lambda_j \, p_j \cdot (x_i - x_j) \quad \forall \, i, j$$
         "Directed graph of the revealed preference relation for consistent data. "
         "Red edges indicate mutual relations. No GARP-violating cycles exist.",
         fig2,
+        description="The graph representation makes the acyclic structure of rational preferences visible. "
+        "Warshall's algorithm fills in the transitive closure (right panel), and the absence of GARP-violating mutual edges confirms rationalizability.",
     )
 
     fig2b = plot_revealed_preference_graph(
@@ -465,8 +471,10 @@ $$u_i - u_j \leq \lambda_j \, p_j \cdot (x_i - x_j) \quad \forall \, i, j$$
     report.add_figure(
         "figures/rp-graph-inconsistent.png",
         "Directed graph for inconsistent data. Mutual red edges in the transitive closure "
-        "reveal GARP-violating cycles — these observations cannot be rationalized.",
+        "reveal GARP-violating cycles -- these observations cannot be rationalized.",
         fig2b,
+        description="Red mutual edges in the transitive closure reveal preference cycles: $i$ is revealed preferred to $j$ and $j$ is revealed preferred to $i$. "
+        "This is logically impossible under any utility function -- the consumer is behaving inconsistently.",
     )
 
     # --- Figure 3: Power of the GARP test ---
@@ -475,8 +483,10 @@ $$u_i - u_j \leq \lambda_j \, p_j \cdot (x_i - x_j) \quad \forall \, i, j$$
         "figures/garp-power.png",
         "Power of the GARP test: fraction of random datasets that violate GARP as a "
         "function of the number of observations T. With more data, random choices are "
-        "increasingly likely to produce violations — GARP has real empirical bite.",
+        "increasingly likely to produce violations -- GARP has real empirical bite.",
         fig3,
+        description="This curve answers a critical methodological question: is GARP vacuous? The rapid rise to near 100% shows that random behavior almost always "
+        "violates GARP with enough observations, meaning that passing GARP is a genuinely restrictive test of economic rationality.",
     )
 
     # --- Table: Revealed preference matrix (consistent example) ---
@@ -499,6 +509,8 @@ $$u_i - u_j \leq \lambda_j \, p_j \cdot (x_i - x_j) \quad \forall \, i, j$$
         "Pairwise Revealed Preference Relation (Example 1: Consistent). "
         "R = directly revealed preferred, R* = indirectly (via transitive closure)",
         df_rp,
+        description="Entries marked R* (but not R) are indirect preferences discovered by Warshall's transitive closure -- "
+        "they represent chains of revealed preference that are not directly observable from a single budget set comparison.",
     )
 
     report.add_takeaway(

@@ -349,7 +349,10 @@ $$y_{t+h} = \alpha + \sum_{j=1}^{p} \beta_j y_{t-j+1} + \gamma' \hat{F}_t + \var
     ax1.legend()
     report.add_figure("figures/factor-comparison.png",
                        f"True common factor vs PCA estimate (correlation = {factor_corr:.4f}). "
-                       "PCA recovers the latent factor up to a scale normalization.", fig1)
+                       "PCA recovers the latent factor up to a scale normalization.", fig1,
+                       description="Because factor models are identified only up to a rotation, the estimated factor is rescaled for visual comparison. "
+                       "The near-perfect tracking demonstrates the Bai-Ng consistency result: with enough series ($N$) and time periods ($T$), "
+                       "PCA recovers the true latent factor driving co-movement across the panel.")
 
     # --- Figure 2: Scree plot ---
     fig2, (ax2a, ax2b) = plt.subplots(1, 2, figsize=(12, 5))
@@ -372,7 +375,10 @@ $$y_{t+h} = \alpha + \sum_{j=1}^{p} \beta_j y_{t-j+1} + \gamma' \hat{F}_t + \var
     fig2.tight_layout()
     report.add_figure("figures/scree-plot.png",
                        "Scree plot and cumulative variance explained. The sharp drop after the "
-                       "first eigenvalue correctly indicates one dominant factor.", fig2)
+                       "first eigenvalue correctly indicates one dominant factor.", fig2,
+                       description="The scree plot is the primary diagnostic for choosing the number of factors. "
+                       "A large gap between the first and second eigenvalue signals that one factor dominates the common variation, while the remaining eigenvalues reflect idiosyncratic noise. "
+                       "The Kaiser criterion (eigenvalue > 1) and the 90% cumulative variance threshold offer complementary decision rules.")
 
     # --- Figure 3: Factor loadings ---
     fig3, ax3 = plt.subplots(figsize=(10, 5))
@@ -388,7 +394,10 @@ $$y_{t+h} = \alpha + \sum_{j=1}^{p} \beta_j y_{t-j+1} + \gamma' \hat{F}_t + \var
     ax3.legend()
     report.add_figure("figures/factor-loadings.png",
                        "Factor loadings sorted by true value. PCA estimates track the cross-sectional "
-                       "pattern of true loadings.", fig3)
+                       "pattern of true loadings.", fig3,
+                       description="Factor loadings capture how strongly each series responds to the common factor. "
+                       "Series with high loadings are more informative about the latent state of the economy, while low-loading series are dominated by idiosyncratic variation. "
+                       "In macroeconomic applications, these loadings reveal which sectors are most cyclically sensitive.")
 
     # --- Figure 4: Forecast comparison ---
     fig4, (ax4a, ax4b) = plt.subplots(1, 2, figsize=(14, 5))
@@ -418,7 +427,10 @@ $$y_{t+h} = \alpha + \sum_{j=1}^{p} \beta_j y_{t-j+1} + \gamma' \hat{F}_t + \var
     fig4.tight_layout()
     report.add_figure("figures/forecast-comparison.png",
                        f"Forecast comparison: FAAR reduces RMSE by {improvement:.1f}% "
-                       f"relative to AR({p_ar}). Right panel shows cumulative squared errors.", fig4)
+                       f"relative to AR({p_ar}). Right panel shows cumulative squared errors.", fig4,
+                       description="The left panel overlays actual values with out-of-sample predictions from both models. "
+                       "The FAAR model's advantage comes from the estimated factor capturing common movements that predict the target series beyond what own lags provide. "
+                       "The cumulative squared error plot (right) shows the FAAR advantage accumulating steadily over the evaluation window, confirming consistent rather than episodic gains.")
 
     # --- Tables ---
     # Eigenvalue table
@@ -429,7 +441,9 @@ $$y_{t+h} = \alpha + \sum_{j=1}^{p} \beta_j y_{t-j+1} + \gamma' \hat{F}_t + \var
         "Cumulative (%)": (np.cumsum(eigenvalues[:5]) / eigenvalues.sum() * 100).round(2),
     })
     report.add_table("tables/eigenvalues.csv",
-                      "Top 5 Eigenvalues and Variance Explained", eig_table)
+                      "Top 5 Eigenvalues and Variance Explained", eig_table,
+                      description="The sharp drop from PC1 to PC2 confirms the single-factor structure of the data-generating process. "
+                      "In empirical macro panels (e.g., FRED-MD with 100+ series), the first 2-3 factors typically explain 30-50% of total variation.")
 
     # Forecast comparison table
     forecast_table = pd.DataFrame({
@@ -438,7 +452,9 @@ $$y_{t+h} = \alpha + \sum_{j=1}^{p} \beta_j y_{t-j+1} + \gamma' \hat{F}_t + \var
         "Relative RMSE": [1.0, forecast_results["rmse_faar"] / forecast_results["rmse_ar"]],
     }).round(4)
     report.add_table("tables/forecast-comparison.csv",
-                      "Out-of-Sample Forecast Comparison", forecast_table)
+                      "Out-of-Sample Forecast Comparison", forecast_table,
+                      description="The relative RMSE below 1.0 confirms that the factor-augmented model outperforms the pure autoregressive benchmark. "
+                      "This gain comes from exploiting information in the full cross-section of series, which the AR model ignores entirely.")
 
     report.add_takeaway(
         "The Stock-Watson diffusion index approach demonstrates a powerful principle: "

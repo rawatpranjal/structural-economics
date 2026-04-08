@@ -329,6 +329,10 @@ $(s_i + s_j)^2 - s_i^2 - s_j^2 = 2 s_i s_j$.
         "figures/hhi-vs-nfirms.png",
         "HHI declines as 10000/N for equal-sized firms, with DOJ/FTC threshold regions shaded",
         fig1,
+        description="HHI falls as 1/N for symmetric firms, so concentration drops rapidly with "
+        "the first few entrants but the marginal effect of additional firms diminishes. A market "
+        "needs at least 7 equal-sized firms to fall below the DOJ's 'moderately concentrated' "
+        "threshold of 1,500.",
     )
 
     # --- Figure 2: Merger bar chart (before/after HHI) ---
@@ -376,6 +380,9 @@ $(s_i + s_j)^2 - s_i^2 - s_j^2 = 2 s_i s_j$.
         "figures/merger-delta-hhi.png",
         "HHI before and after merger of the two largest firms across market structures",
         fig2,
+        description="The delta-HHI labels above each bar show the mechanical increase in "
+        "concentration from the merger. Mergers between large firms (high-share pairs) "
+        "generate disproportionately larger jumps because delta-HHI equals 2*s1*s2*10,000.",
     )
 
     # --- Figure 3: Lorenz curves ---
@@ -396,6 +403,10 @@ $(s_i + s_j)^2 - s_i^2 - s_j^2 = 2 s_i s_j$.
         "figures/lorenz-curves.png",
         "Lorenz curves: more bowed curves indicate greater concentration and higher HHI",
         fig3,
+        description="The Lorenz curve complements HHI by visualizing the full distribution of "
+        "market shares. Equal-sized firms produce a straight line; a dominant firm pushes the "
+        "curve away from the diagonal. The area between the curve and the equality line is the "
+        "Gini coefficient of market concentration.",
     )
 
     # --- Table 1: Example markets ---
@@ -403,6 +414,9 @@ $(s_i + s_j)^2 - s_i^2 - s_j^2 = 2 s_i s_j$.
         "tables/market-hhi.csv",
         "HHI for Example Market Structures",
         df_markets,
+        description="The classification column maps HHI to DOJ/FTC merger guideline categories. "
+        "Note how asymmetry amplifies concentration: a dominant firm with 70% share produces "
+        "higher HHI than a symmetric 5-firm market, even though both have similar firm counts.",
     )
 
     # --- Results: segmented vs differentiated comparison ---

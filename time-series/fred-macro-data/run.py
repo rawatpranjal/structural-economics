@@ -248,7 +248,10 @@ for quarterly data (Hodrick and Prescott, 1997).
     fig1.tight_layout()
     report.add_figure("figures/time-series.png",
                        "Synthetic macroeconomic time series mimicking FRED data. "
-                       "Dashed lines show sample means.", fig1)
+                       "Dashed lines show sample means.", fig1,
+                       description="These four series capture the core of macroeconomic monitoring. "
+                       "Notice the high persistence of unemployment compared to the more volatile GDP growth -- this reflects the sluggish adjustment of labor markets "
+                       "and is a key calibration target for DSGE models.")
 
     # --- Figure 2: HP-filtered cyclical components ---
     fig2, axes2 = plt.subplots(2, 2, figsize=(14, 8))
@@ -262,7 +265,10 @@ for quarterly data (Hodrick and Prescott, 1997).
     fig2.suptitle("HP-Filtered Cyclical Components ($\\lambda=1600$)", fontsize=14, y=1.01)
     fig2.tight_layout()
     report.add_figure("figures/hp-cycles.png",
-                       "HP-filtered cyclical components. Shaded areas indicate below-trend periods.", fig2)
+                       "HP-filtered cyclical components. Shaded areas indicate below-trend periods.", fig2,
+                       description="The HP filter separates each series into a smooth trend and a stationary cyclical component. "
+                       "Shaded below-trend periods correspond to contractionary phases of the business cycle. "
+                       "These cyclical components are the inputs to standard business cycle accounting -- their volatilities, correlations, and persistence define the stylized facts that structural models must match.")
 
     # --- Figure 3: Okun's law scatter ---
     fig3, ax3 = plt.subplots(figsize=(7, 5))
@@ -279,7 +285,10 @@ for quarterly data (Hodrick and Prescott, 1997).
     ax3.legend()
     report.add_figure("figures/okuns-law.png",
                        f"Okun's law: negative relationship between cyclical GDP growth and "
-                       f"unemployment (correlation = {corr_ou:.3f}).", fig3)
+                       f"unemployment (correlation = {corr_ou:.3f}).", fig3,
+                       description="Okun's law is one of the most robust empirical regularities in macroeconomics: output above trend is associated with unemployment below trend. "
+                       "The slope of approximately $-0.5$ means that a 1 percentage point increase in GDP growth is associated with a 0.5 percentage point decline in unemployment -- "
+                       "a relationship that has held remarkably stable across decades and countries.")
 
     # --- Figure 4: Cross-correlation heatmap ---
     fig4, ax4 = plt.subplots(figsize=(7, 6))
@@ -300,13 +309,19 @@ for quarterly data (Hodrick and Prescott, 1997).
     ax4.set_title("Cross-Correlation of Cyclical Components")
     fig4.tight_layout()
     report.add_figure("figures/cross-correlation.png",
-                       "Cross-correlation structure of HP-filtered cyclical components.", fig4)
+                       "Cross-correlation structure of HP-filtered cyclical components.", fig4,
+                       description="The correlation matrix encodes the key macroeconomic relationships: the negative GDP-unemployment entry is Okun's law, "
+                       "the negative inflation-unemployment entry is the Phillips curve, and the positive inflation-Fed funds entry reflects the Taylor rule. "
+                       "These co-movement patterns are the empirical targets that DSGE and VAR models aim to replicate.")
 
     # --- Table: Business cycle statistics ---
     stats_display = stats.reset_index().rename(columns={"index": "Variable"})
     report.add_table("tables/business-cycle-stats.csv",
                       "Business Cycle Statistics (HP-filtered, quarterly)",
-                      stats_display)
+                      stats_display,
+                      description="These statistics are the standard output of business cycle accounting. "
+                      "Relative volatility shows how variable each series is compared to GDP, while autocorrelation measures persistence. "
+                      "Any structural model (RBC, New Keynesian) should be evaluated against these empirical moments.")
 
     report.add_takeaway(
         "The synthetic data successfully reproduces the key stylized facts of U.S. "

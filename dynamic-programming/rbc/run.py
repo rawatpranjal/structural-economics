@@ -362,7 +362,9 @@ $$P = \begin{pmatrix} 0.95 & 0.05 \\ 0.05 & 0.95 \end{pmatrix}$$
     ax1.set_ylabel("$V(k, z)$")
     ax1.set_title("Value Function")
     ax1.legend()
-    report.add_figure("figures/value-function.png", "Value function V(k,z) for both TFP states", fig1)
+    report.add_figure("figures/value-function.png", "Value function V(k,z) for both TFP states", fig1,
+        description="The gap between the high- and low-TFP value functions measures the welfare cost of being in a recession. "
+        "Both curves are concave, reflecting the agent's desire to smooth consumption across states and over time.")
 
     # --- Figure 2: Capital Policy Function ---
     fig2, ax2 = plt.subplots()
@@ -373,7 +375,9 @@ $$P = \begin{pmatrix} 0.95 & 0.05 \\ 0.05 & 0.95 \end{pmatrix}$$
     ax2.set_ylabel("Next-period capital $k'$")
     ax2.set_title("Capital Policy Function")
     ax2.legend()
-    report.add_figure("figures/capital-policy.png", "Capital policy k'(k,z): investment is higher in the high-TFP state", fig2)
+    report.add_figure("figures/capital-policy.png", "Capital policy k'(k,z): investment is higher in the high-TFP state", fig2,
+        description="In the high-TFP state, the agent invests more because the marginal product of capital is higher. "
+        "The crossing of the 45-degree line identifies the state-dependent steady states; the economy oscillates between them as TFP switches.")
 
     # --- Figure 3: Simulated Output Path ---
     fig3, axes3 = plt.subplots(2, 1, figsize=(10, 7), sharex=True)
@@ -391,7 +395,9 @@ $$P = \begin{pmatrix} 0.95 & 0.05 \\ 0.05 & 0.95 \end{pmatrix}$$
     axes3[1].set_ylabel("TFP $z_t$")
     axes3[1].set_title("Productivity Shocks")
     fig3.tight_layout()
-    report.add_figure("figures/simulation.png", "Simulated output, consumption, and TFP paths", fig3)
+    report.add_figure("figures/simulation.png", "Simulated output, consumption, and TFP paths", fig3,
+        description="Output responds immediately to TFP shocks but consumption is visibly smoother, reflecting the agent's optimal smoothing behavior. "
+        "The gap between output and consumption is investment, which absorbs most of the volatility.")
 
     # --- Figure 4: Business Cycle Comovements ---
     fig4, axes4 = plt.subplots(2, 2, figsize=(12, 8))
@@ -424,7 +430,9 @@ $$P = \begin{pmatrix} 0.95 & 0.05 \\ 0.05 & 0.95 \end{pmatrix}$$
     axes4[1, 1].legend()
 
     fig4.tight_layout()
-    report.add_figure("figures/comovements.png", "Business cycle comovements: cyclical components from HP filter", fig4)
+    report.add_figure("figures/comovements.png", "Business cycle comovements: cyclical components from HP filter", fig4,
+        description="These panels reproduce the core stylized facts that motivated the RBC literature: consumption is less volatile than output, "
+        "investment is more volatile, and labor is procyclical. Capital moves sluggishly because it is a stock that adjusts only through the flow of investment.")
 
     # --- Table: Business Cycle Statistics ---
     bc_data = {
@@ -439,6 +447,8 @@ $$P = \begin{pmatrix} 0.95 & 0.05 \\ 0.05 & 0.95 \end{pmatrix}$$
         "tables/business-cycle-stats.csv",
         "Business Cycle Statistics (HP-filtered, simulated 5000 periods)",
         df,
+        description="These statistics are the standard diagnostic for RBC models. The relative standard deviations and correlations "
+        "should be compared against U.S. quarterly data: consumption smoother than output, investment 2-3x more volatile, and all variables procyclical.",
     )
 
     report.add_takeaway(

@@ -238,7 +238,11 @@ where $\Omega$ is the ownership matrix and $\Delta = \partial \mathbf{s} / \part
     ax1.set_xticks(x + 1.5 * width)
     ax1.set_xticklabels(product_names)
     ax1.legend()
-    report.add_figure("figures/price-comparison.png", "Equilibrium prices across merger scenarios", fig1)
+    report.add_figure("figures/price-comparison.png", "Equilibrium prices across merger scenarios", fig1,
+        description="Merging firms internalize the diversion between their products and raise prices. "
+        "Cost efficiencies partially offset this, but full collusion produces the largest increases. "
+        "Non-merging firms also raise prices because prices are strategic complements in Bertrand competition.")
+
 
     # --- Figure 2: Market shares comparison ---
     fig2, ax2 = plt.subplots(figsize=(9, 5))
@@ -250,7 +254,11 @@ where $\Omega$ is the ownership matrix and $\Delta = \partial \mathbf{s} / \part
     ax2.set_xticks(x + 1.5 * width)
     ax2.set_xticklabels(product_names)
     ax2.legend()
-    report.add_figure("figures/share-comparison.png", "Market shares shift as prices rise post-merger", fig2)
+    report.add_figure("figures/share-comparison.png", "Market shares shift as prices rise post-merger", fig2,
+        description="As merged products raise prices, consumers substitute toward cheaper alternatives "
+        "and the outside good. The magnitude of share loss depends on the logit price coefficient "
+        "and the size of the outside option.")
+
 
     # --- Figure 3: Diversion ratios heatmap ---
     fig3, ax3 = plt.subplots(figsize=(6, 5))
@@ -266,7 +274,12 @@ where $\Omega$ is the ownership matrix and $\Delta = \partial \mathbf{s} / \part
         for j in range(n_products):
             ax3.text(j, i, f"{cal['diversion'][i,j]:.2f}", ha="center", va="center", fontsize=10)
     plt.colorbar(im, ax=ax3)
-    report.add_figure("figures/diversion-ratios.png", "Diversion ratios: where do lost sales go?", fig3)
+    report.add_figure("figures/diversion-ratios.png", "Diversion ratios: where do lost sales go?", fig3,
+        description="Diversion ratios determine the competitive harm of a merger. Under logit, "
+        "diversion is proportional to market share (the IIA property), so larger products absorb "
+        "more diverted sales regardless of product similarity. This is the key limitation that "
+        "BLP random coefficients address.")
+
 
     # --- Table: Merger results ---
     table_data = {
@@ -290,7 +303,12 @@ where $\Omega$ is the ownership matrix and $\Delta = \partial \mathbf{s} / \part
         table_data["HHI"].append(f"{hhi:.0f}")
 
     df = pd.DataFrame(table_data)
-    report.add_table("tables/merger-results.csv", "Merger Simulation Results", df)
+    report.add_table("tables/merger-results.csv", "Merger Simulation Results", df,
+        description="Each row shows a merger scenario's equilibrium outcomes. The price change "
+        "column quantifies unilateral effects, while the HHI column reflects the structural "
+        "shift in concentration. Cost savings can make an otherwise harmful merger neutral or "
+        "even beneficial for consumers.")
+
 
     report.add_takeaway(
         "Merger simulation reveals the tension between market power and efficiency:\n\n"

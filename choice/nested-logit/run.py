@@ -586,6 +586,9 @@ rival characteristics, number of products in nest, and same-nest rival character
         "Same-nest cross-elasticities (inside gold boxes) are higher than "
         "cross-nest elasticities.",
         fig1,
+        description="The gold-outlined blocks mark within-nest product pairs. Cross-elasticities inside these blocks are visibly larger than those outside, "
+        "reflecting the intuition that consumers substitute more readily among similar products. This asymmetric substitution pattern is exactly what IIA forbids "
+        "and what the nested logit is designed to capture.",
     )
 
     # --- Figure 2: Cross-elasticity comparison ---
@@ -595,6 +598,9 @@ rival characteristics, number of products in nest, and same-nest rival character
         "Logit vs nested logit cross-elasticities when Choco-Bombs raises its price. "
         "Nested logit sends more customers to Store-Frosted (same nest).",
         fig2,
+        description="Under IIA (blue bars), all rivals gain equally from Choco-Bombs' price increase regardless of product similarity. "
+        "The nested logit (green/red bars) correctly predicts that Store-Frosted -- another sugary cereal -- absorbs the lion's share of switching customers. "
+        "This distinction matters enormously for merger analysis: if two sugary cereals merge, the nested logit predicts a much larger price increase.",
     )
 
     # --- Figure 3: Diversion ratios ---
@@ -604,6 +610,8 @@ rival characteristics, number of products in nest, and same-nest rival character
         "Diversion ratios: fraction of Choco-Bombs' lost sales captured by each rival. "
         "Nested logit predicts much higher diversion to same-nest products.",
         fig3,
+        description="Diversion ratios are the key input to merger simulation: they determine the upward pricing pressure (UPP) when two products merge. "
+        "The nested logit concentrates diversion within the sugary nest, producing a more realistic prediction of post-merger pricing than the flat diversion pattern implied by plain logit.",
     )
 
     # --- Figure 4: Sigma effect ---
@@ -614,6 +622,9 @@ rival characteristics, number of products in nest, and same-nest rival character
         "As sigma increases, within-nest substitution intensifies while "
         "cross-nest substitution stays flat.",
         fig4,
+        description="At $\\sigma \\approx 0$ the model collapses to plain logit with symmetric cross-elasticities. As $\\sigma$ rises toward 1, "
+        "within-nest products become near-perfect substitutes while cross-nest substitution barely changes. "
+        "The structural role of $\\sigma$ is clear: it controls the degree to which product groupings shape consumer switching behavior.",
     )
 
     # --- Table: Parameter estimates ---
@@ -628,7 +639,9 @@ rival characteristics, number of products in nest, and same-nest rival character
     }
     tdf = pd.DataFrame(table_data)
     report.add_table("tables/parameter-estimates.csv",
-                     "Parameter estimates: true values vs plain logit vs nested logit", tdf)
+                     "Parameter estimates: true values vs plain logit vs nested logit", tdf,
+                     description="The plain logit omits $\\sigma$ entirely, which biases the price sensitivity estimate because within-nest correlation is absorbed into the price coefficient. "
+                     "The nested logit recovers all four structural parameters, including the nesting parameter that governs substitution patterns.")
 
     report.add_takeaway(
         "The nested logit is the simplest departure from the IIA assumption. By "

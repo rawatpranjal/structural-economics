@@ -42,14 +42,22 @@ Converged in **68 iterations** (error = 4.23e-07).
 
 ## Results
 
+The near-perfect overlap between numerical and analytical curves validates the VFI implementation. The concavity of V(W) reflects diminishing marginal utility: additional cake is worth less when you already have a lot.
+
 ![Value function: numerical VFI vs analytical solution](figures/value-function.png)
 *Value function: numerical VFI vs analytical solution*
+
+The optimal policy is linear in cake size: the agent always eats fraction (1-beta) of the remaining cake. The policy lies well below the 45-degree line, confirming the agent never consumes everything in a single period.
 
 ![Consumption policy: numerical vs analytical](figures/policy-function.png)
 *Consumption policy: numerical vs analytical*
 
+Both paths decay geometrically at rate beta, illustrating the constant-fraction rule. The cake is never fully exhausted but asymptotically approaches zero -- the patient agent always preserves a sliver for the future.
+
 ![Simulation: cake depletion and consumption paths starting from W=1](figures/simulation.png)
 *Simulation: cake depletion and consumption paths starting from W=1*
+
+The close agreement between numerical and analytical values across the grid confirms that VFI has converged to the true solution, providing a reliability benchmark for more complex models.
 
 **Numerical vs Analytical Solution at Selected Grid Points**
 

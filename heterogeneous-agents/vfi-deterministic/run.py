@@ -199,7 +199,11 @@ of relative risk aversion.
     ax1.set_ylabel("$V(a)$")
     ax1.set_title("Value Function")
     ax1.set_xlim(0, amax)
-    report.add_figure("figures/value-function.png", "Value function V(a) over the asset grid", fig1)
+    report.add_figure("figures/value-function.png", "Value function V(a) over the asset grid", fig1,
+        description="The value function is concave and increasing in assets, reflecting diminishing "
+        "marginal value of wealth. The curvature is driven by CRRA preferences: an extra dollar "
+        "matters much more to a poor agent than a rich one.")
+
 
     # --- Figure 2: Consumption Policy ---
     fig2, ax2 = plt.subplots()
@@ -210,7 +214,11 @@ of relative risk aversion.
     ax2.set_title("Consumption Policy Function")
     ax2.set_xlim(0, amax)
     ax2.legend()
-    report.add_figure("figures/consumption-policy.png", "Consumption policy function c(a)", fig2)
+    report.add_figure("figures/consumption-policy.png", "Consumption policy function c(a)", fig2,
+        description="At low wealth the borrowing constraint binds and the agent consumes all "
+        "cash-on-hand (the policy tracks the 45-degree line). As wealth increases, the agent "
+        "saves a growing fraction of resources, and the consumption function flattens.")
+
 
     # --- Figure 3: Savings Policy ---
     fig3, ax3 = plt.subplots()
@@ -221,7 +229,11 @@ of relative risk aversion.
     ax3.set_title("Savings Policy Function")
     ax3.set_xlim(0, amax)
     ax3.legend()
-    report.add_figure("figures/savings-policy.png", "Savings policy: net change in assets a'-a as a function of current assets", fig3)
+    report.add_figure("figures/savings-policy.png", "Savings policy: net change in assets a'-a as a function of current assets", fig3,
+        description="The zero crossing identifies the steady-state asset level: agents below it "
+        "accumulate wealth, agents above it decumulate. With beta*R < 1 (impatience dominates), "
+        "the steady state is interior and all agents converge to it monotonically.")
+
 
     # --- Figure 4: Simulated Asset Dynamics ---
     fig4, ax4 = plt.subplots(figsize=(10, 5))
@@ -233,7 +245,11 @@ of relative risk aversion.
     ax4.set_title("Simulated Asset Dynamics (20 agents)")
     ax4.set_xlim(0, Tsim)
     ax4.legend()
-    report.add_figure("figures/asset-dynamics.png", "Simulated asset paths converging to steady state", fig4)
+    report.add_figure("figures/asset-dynamics.png", "Simulated asset paths converging to steady state", fig4,
+        description="Regardless of initial wealth, every agent converges to the same steady state. "
+        "This degenerate long-run distribution is the hallmark of the deterministic model and "
+        "motivates the introduction of income risk to generate a non-trivial wealth distribution.")
+
 
     # --- Table: Policy Function at Selected Grid Points ---
     sample_idx = np.linspace(0, na - 1, 10, dtype=int)
@@ -245,7 +261,11 @@ of relative risk aversion.
         "V(a)": [f"{V[i]:.4f}" for i in sample_idx],
     }
     df = pd.DataFrame(table_data)
-    report.add_table("tables/policy-function.csv", "Policy Function at Selected Grid Points", df)
+    report.add_table("tables/policy-function.csv", "Policy Function at Selected Grid Points", df,
+        description="At low asset levels, consumption nearly equals cash-on-hand and net savings "
+        "are near zero (the constraint region). As assets grow, net savings become negative, "
+        "confirming the agent dissaves toward the steady state from above.")
+
 
     report.add_takeaway(
         "The deterministic consumption-savings model illustrates how a borrowing-constrained "

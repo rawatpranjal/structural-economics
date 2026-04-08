@@ -192,7 +192,11 @@ where $A$ is the tridiagonal transition matrix from the upwind scheme.
     ax1.set_ylabel("$V(a)$")
     ax1.set_title("Value Function")
     ax1.legend()
-    report.add_figure("figures/value-function.png", "Value function solved via upwind finite differences", fig1)
+    report.add_figure("figures/value-function.png", "Value function solved via upwind finite differences", fig1,
+        description="The value function is concave and increasing, with steeper slope near the "
+        "borrowing limit where an extra dollar of wealth has the highest marginal value. "
+        "The upwind scheme preserves this concavity, which is crucial for economic "
+        "interpretability.")
 
     # --- Figure 2: Consumption and savings policy ---
     fig2, (ax2a, ax2b) = plt.subplots(1, 2, figsize=(12, 5))
@@ -212,7 +216,11 @@ where $A$ is the tridiagonal transition matrix from the upwind scheme.
     ax2b.set_title("Savings Policy")
     ax2b.legend()
     fig2.tight_layout()
-    report.add_figure("figures/policy-functions.png", "Consumption and savings policies with steady-state asset level", fig2)
+    report.add_figure("figures/policy-functions.png", "Consumption and savings policies with steady-state asset level", fig2,
+        description="With r < rho the agent is impatient relative to the market return, so the "
+        "savings function crosses zero from above: assets are run down toward the steady "
+        "state. The consumption policy tracks income at high wealth (where savings drift "
+        "is near zero) and drops below income near the borrowing limit.")
 
     # --- Figure 3: Convergence ---
     fig3, ax3 = plt.subplots()
@@ -220,7 +228,10 @@ where $A$ is the tridiagonal transition matrix from the upwind scheme.
     ax3.set_xlabel("Iteration")
     ax3.set_ylabel("Max $|V^{n+1} - V^n|$")
     ax3.set_title("HJB Convergence")
-    report.add_figure("figures/convergence.png", "Convergence of the implicit upwind scheme", fig3)
+    report.add_figure("figures/convergence.png", "Convergence of the implicit upwind scheme", fig3,
+        description="The log-linear decline in the error shows geometric convergence, typical of "
+        "value function iteration. The implicit scheme allows large effective time steps "
+        "without stability issues, so each iteration makes substantial progress.")
 
     # --- Table ---
     df = pd.DataFrame({
@@ -229,7 +240,10 @@ where $A$ is the tridiagonal transition matrix from the upwind scheme.
         "Value": [f"{a_ss:.4f}", f"{c_ss:.4f}", f"{v[a_ss_idx]:.4f}",
                   str(n_a), str(len(convergence)), f"{convergence[-1]:.2e}"],
     })
-    report.add_table("tables/results.csv", "Solution Summary", df)
+    report.add_table("tables/results.csv", "Solution Summary", df,
+        description="The steady-state asset level a* is where savings drift equals zero. "
+        "With r < rho, the agent decumulates toward a finite a* rather than accumulating "
+        "without bound.")
 
     report.add_takeaway(
         "Finite difference methods are the standard numerical approach for continuous-time "

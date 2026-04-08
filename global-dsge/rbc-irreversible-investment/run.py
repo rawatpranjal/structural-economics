@@ -92,6 +92,20 @@ def main():
     # Also solve unconstrained version for comparison
     print("Solving RBC with irreversible investment via VFI...")
 
+    # Precompute base utility matrices and constraint masks
+    resources_all = np.zeros((n_z, n_k))
+    u_mats_base = np.zeros((n_z, n_k, n_k))
+    for iz in range(n_z):
+        resources_all[iz] = z_grid[iz] * K_grid ** alpha + (1.0 - delta) * K_grid
+        c_mat = resources_all[iz][:, None] - K_grid[None, :]
+        u_mats_base[iz] = u(c_mat)
+
+    # Precompute irreversibility mask: for each ik, which ik' are feasible?
+    irr_mask = np.zeros((n_k, n_k), dtype=bool)
+    for ik in range(n_k):
+        k_min_irr = (1.0 - delta) * K_grid[ik]
+        irr_mask[ik, :] = K_grid >= k_min_irr - 1e-10
+
     results = {}
     for model_name, constrained in [("irreversible", True), ("standard", False)]:
         print(f"\n  Solving {model_name} model...")
@@ -103,47 +117,51 @@ def main():
 
         policy_k = np.zeros((n_z, n_k))
         policy_c = np.zeros((n_z, n_k))
+        policy_idx = np.zeros((n_z, n_k), dtype=int)
         constraint_binding = np.zeros((n_z, n_k), dtype=bool)
         tol = 1e-6
-        max_iter = 600
+        max_iter = 500
+        howard_steps = 25
+
+        # Build u_mats with constraint applied
+        u_mats = u_mats_base.copy()
+        if constrained:
+            for iz in range(n_z):
+                for ik in range(n_k):
+                    u_mats[iz, ik, ~irr_mask[ik, :]] = -1e10
 
         for iteration in range(1, max_iter + 1):
             V_new = np.zeros_like(V)
 
             for iz in range(n_z):
-                z_val = z_grid[iz]
-                y_vec = z_val * K_grid ** alpha
-                resources = y_vec + (1.0 - delta) * K_grid  # (n_k,)
-
-                # Consumption matrix: c[ik, ik'] = resources[ik] - K_grid[ik']
-                c_mat = resources[:, None] - K_grid[None, :]  # (n_k, n_k)
-                u_mat = u(c_mat)  # (n_k, n_k)
-
-                # Apply irreversibility: for each ik, K_grid[ik'] must >= (1-delta)*K_grid[ik]
-                if constrained:
-                    for ik in range(n_k):
-                        k_min_irr = (1.0 - delta) * K_grid[ik]
-                        invalid = K_grid < k_min_irr - 1e-10
-                        u_mat[ik, invalid] = -1e10
-
-                EV_kprime = trans_z[iz, :] @ V  # (n_k,)
-                val_mat = u_mat + beta * EV_kprime[None, :]
-
+                EV_kprime = trans_z[iz, :] @ V
+                val_mat = u_mats[iz] + beta * EV_kprime[None, :]
                 best_idx = np.argmax(val_mat, axis=1)
                 V_new[iz, :] = val_mat[np.arange(n_k), best_idx]
+                policy_idx[iz, :] = best_idx
                 policy_k[iz, :] = K_grid[best_idx]
-                policy_c[iz, :] = resources - K_grid[best_idx]
+                policy_c[iz, :] = resources_all[iz] - K_grid[best_idx]
 
-                # Check which states have binding constraint
                 if constrained:
                     for ik in range(n_k):
                         investment = policy_k[iz, ik] - (1.0 - delta) * K_grid[ik]
                         constraint_binding[iz, ik] = investment < 1e-6
 
             error = np.max(np.abs(V_new - V))
-            if iteration % 50 == 0:
-                print(f"    {model_name} VFI iter {iteration:3d}, error = {error:.2e}")
             V = V_new.copy()
+
+            # Howard policy iteration acceleration
+            for _ in range(howard_steps):
+                V_howard = np.zeros_like(V)
+                for iz in range(n_z):
+                    EV_kprime = trans_z[iz, :] @ V
+                    for ik in range(n_k):
+                        ik_prime = policy_idx[iz, ik]
+                        V_howard[iz, ik] = u_mats[iz][ik, ik_prime] + beta * EV_kprime[ik_prime]
+                V = V_howard
+
+            if iteration % 10 == 0:
+                print(f"    {model_name} VFI iter {iteration:3d}, error = {error:.2e}")
             if error < tol:
                 print(f"    {model_name} converged in {iteration} iters (error = {error:.2e})")
                 break
@@ -383,7 +401,11 @@ When $\mu > 0$, the constraint binds: the agent would like to disinvest but cann
     ax1b.set_title("Consumption Policy: Irreversible vs Standard")
     ax1b.legend(fontsize=7, ncol=2)
     fig1.tight_layout()
-    report.add_figure("figures/policy-functions.png", "Investment and consumption policies: irreversible (solid) vs standard (dashed). Red line marks the I=0 constraint.", fig1)
+    report.add_figure("figures/policy-functions.png", "Investment and consumption policies: irreversible (solid) vs standard (dashed). Red line marks the I=0 constraint.", fig1,
+        description="Look for the kink where the irreversible investment policy meets the I=0 line: "
+        "to the right of this kink (high K, low z), the constraint binds and investment is pinned at "
+        "zero. The standard model's dashed lines pass freely below zero, showing the disinvestment "
+        "that irreversibility prevents.")
 
     # --- Figure 2: Constraint binding region ---
     fig2, ax2 = plt.subplots(figsize=(8, 5))
@@ -402,7 +424,10 @@ When $\mu > 0$, the constraint binds: the agent would like to disinvest but cann
         Patch(facecolor="#f8d7da", edgecolor="k", label="Constraint binds (I=0)"),
     ]
     ax2.legend(handles=legend_elements, loc="upper right")
-    report.add_figure("figures/binding-region.png", "Region where the irreversibility constraint binds (red). High K + low z = binding.", fig2)
+    report.add_figure("figures/binding-region.png", "Region where the irreversibility constraint binds (red). High K + low z = binding.", fig2,
+        description="The constraint binds in the upper-left region where capital is high relative to "
+        "productivity. In these states the agent would prefer to sell capital but cannot, creating a "
+        "capital overhang that depresses returns and prolongs recessions.")
 
     # --- Figure 3: Simulation comparison ---
     fig3, axes3 = plt.subplots(2, 2, figsize=(13, 9))
@@ -439,7 +464,10 @@ When $\mu > 0$, the constraint binds: the agent would like to disinvest but cann
     for ax in axes3.flat:
         ax.set_xlabel("Period")
     fig3.tight_layout()
-    report.add_figure("figures/simulation.png", "Simulated paths comparing irreversible (blue) vs standard (red) RBC. Shaded regions mark binding constraint.", fig3)
+    report.add_figure("figures/simulation.png", "Simulated paths comparing irreversible (blue) vs standard (red) RBC. Shaded regions mark binding constraint.", fig3,
+        description="The shaded periods in the investment panel show when the constraint binds. During "
+        "these episodes, capital cannot adjust downward, so consumption must absorb all of the output "
+        "decline, making consumption more volatile in contractions than the standard model predicts.")
 
     # --- Figure 4: Asymmetric distributions ---
     fig4, (ax4a, ax4b) = plt.subplots(1, 2, figsize=(13, 5))
@@ -464,7 +492,11 @@ When $\mu > 0$, the constraint binds: the agent would like to disinvest but cann
     ax4b.set_title(f"Output Growth (skew: irr={skew(dY_irr):.3f}, std={skew(dY_std):.3f})")
     ax4b.legend()
     fig4.tight_layout()
-    report.add_figure("figures/asymmetric-distributions.png", "Investment truncated at zero (left). Output growth shows negative skewness under irreversibility (right).", fig4)
+    report.add_figure("figures/asymmetric-distributions.png", "Investment truncated at zero (left). Output growth shows negative skewness under irreversibility (right).", fig4,
+        description="The left panel shows the mass point at I=0 created by the constraint, which is "
+        "absent in the symmetric standard-model distribution. The right panel's negative skewness in "
+        "output growth under irreversibility formalizes the intuition that recessions are sharper than "
+        "expansions when capital adjustment is one-sided.")
 
     # --- Figure 5: Value function difference ---
     fig5, ax5 = plt.subplots(figsize=(8, 5))
@@ -475,14 +507,23 @@ When $\mu > 0$, the constraint binds: the agent would like to disinvest but cann
     ax5.set_xlabel("Capital $K$")
     ax5.set_ylabel("TFP $z$")
     ax5.set_title("Welfare Cost of Irreversibility (Value Function Difference)")
-    report.add_figure("figures/value-difference.png", "Welfare cost: V_irr - V_std everywhere non-positive. Dashed line marks binding region boundary.", fig5)
+    report.add_figure("figures/value-difference.png", "Welfare cost: V_irr - V_std everywhere non-positive. Dashed line marks binding region boundary.", fig5,
+        description="The value difference is zero where the constraint never binds (lower-right) and "
+        "most negative where it binds tightly (upper-left). This surface maps the welfare cost of "
+        "irreversibility across the state space, showing that the cost is concentrated in high-capital, "
+        "low-productivity states.")
 
     # --- Tables ---
     df_bc = pd.DataFrame([stats_irr, stats_std])
-    report.add_table("tables/bc-statistics.csv", "Business Cycle Statistics (5000 periods, burn-in 500)", df_bc)
+    report.add_table("tables/bc-statistics.csv", "Business Cycle Statistics (5000 periods, burn-in 500)", df_bc,
+        description="Compare std(I)/std(Y) across models: irreversibility truncates the investment "
+        "distribution, altering relative volatilities and the consumption-output correlation.")
 
     df_asym = pd.DataFrame(asym_data)
-    report.add_table("tables/asymmetry.csv", "Asymmetric Responses to Positive vs Negative TFP Changes", df_asym)
+    report.add_table("tables/asymmetry.csv", "Asymmetric Responses to Positive vs Negative TFP Changes", df_asym,
+        description="The ratio |neg/pos| exceeding 1.0 for the irreversible model confirms that output "
+        "growth is more volatile in downturns than in expansions. The standard model shows a ratio "
+        "near 1.0, as expected for a symmetric linear system.")
 
     report.add_results(
         f"**Constraint binding frequency:** The irreversibility constraint binds in "

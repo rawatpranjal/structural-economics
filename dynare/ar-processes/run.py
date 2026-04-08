@@ -250,6 +250,10 @@ $$Y_t = C_t + I_t + G_t$$
         "figures/ar1-irfs.png",
         "AR(1) impulse responses for different persistence parameters",
         fig1,
+        description="Higher persistence (darker blue) means shocks decay more slowly and have longer-lasting "
+        "effects. At rho=0.99 the process is near a unit root and shocks are almost permanent, while "
+        "at rho=0.5 the half-life is just one period. This tradeoff between persistence and mean-reversion "
+        "is central to calibrating TFP processes in DSGE models.",
     )
 
     # --- Figure 2: Multiplier-Accelerator IRFs ---
@@ -271,6 +275,10 @@ $$Y_t = C_t + I_t + G_t$$
         "figures/multiplier-accelerator-irfs.png",
         "Multiplier-accelerator impulse responses to a unit government spending shock",
         fig2,
+        description="The output response exceeds the initial government spending impulse because the "
+        "consumption multiplier (beta) feeds back into income, and the investment accelerator (alpha) "
+        "amplifies changes in consumption. Notice how investment can overshoot and oscillate, a signature "
+        "of the accelerator mechanism responding to the derivative of consumption.",
     )
 
     # --- Figure 3: Simulated paths ---
@@ -296,6 +304,9 @@ $$Y_t = C_t + I_t + G_t$$
         "figures/simulated-paths.png",
         "Simulated time series for AR(1) and multiplier-accelerator models",
         fig3,
+        description="The AR(1) path (top) shows the characteristic smooth, mean-reverting fluctuations "
+        "of a highly persistent process. The multiplier-accelerator paths (bottom) display richer dynamics: "
+        "consumption closely tracks output with a lag, while government spending is the exogenous driver.",
     )
 
     # --- Figure 4: Autocorrelation functions ---
@@ -325,6 +336,10 @@ $$Y_t = C_t + I_t + G_t$$
         "figures/autocorrelation.png",
         "Autocorrelation functions: AR(1) sample vs theoretical, and multiplier-accelerator output",
         fig4,
+        description="The AR(1) sample ACF (left) closely matches the theoretical rho^k decay, validating "
+        "the simulation. The multiplier-accelerator ACF (right) can exhibit a non-monotone pattern due to "
+        "the interaction of the multiplier and accelerator channels, which can produce damped oscillations "
+        "in the autocorrelation structure.",
     )
 
     # --- Figure 5: Spectral density ---
@@ -341,6 +356,10 @@ $$Y_t = C_t + I_t + G_t$$
         "figures/spectral-density.png",
         "Spectral density of AR(1) for different persistence levels (log scale)",
         fig5,
+        description="Higher persistence concentrates spectral power at low frequencies (long cycles) and "
+        "suppresses high-frequency variation. At rho=0.99 the spectrum is almost flat at high frequencies "
+        "but explodes near zero, showing that near-unit-root processes look like slow-moving trends. "
+        "This frequency-domain view explains why persistent TFP shocks generate smooth business cycles.",
     )
 
     # --- Table ---
@@ -371,7 +390,10 @@ $$Y_t = C_t + I_t + G_t$$
         ],
     }
     df = pd.DataFrame(ar_summary)
-    report.add_table("tables/ar-properties.csv", "AR(1) Process Properties", df)
+    report.add_table("tables/ar-properties.csv", "AR(1) Process Properties", df,
+        description="The unconditional variance rises sharply with persistence because shocks accumulate "
+        "rather than dissipating. The half-life jumps from 1 period at rho=0.5 to 69 periods at rho=0.99, "
+        "illustrating why the choice of persistence parameter is so consequential for DSGE calibration.")
 
     report.add_takeaway(
         "Autoregressive dynamics are the foundation of time series econometrics and "
