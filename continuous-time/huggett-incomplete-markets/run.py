@@ -380,6 +380,10 @@ $$\int a \left[ g_1(a) + g_2(a) \right] da = 0$$
         "figures/value-function.png",
         "Value function V(a) for each income state at the equilibrium interest rate",
         fig1,
+        description="The high-income value function lies above the low-income one at every "
+        "asset level. Both curves steepen near the borrowing constraint, reflecting the "
+        "high marginal value of an additional unit of wealth when the agent is nearly "
+        "constrained.",
     )
 
     # --- Figure 2: Savings Policy ---
@@ -397,6 +401,10 @@ $$\int a \left[ g_1(a) + g_2(a) \right] da = 0$$
         "figures/savings-policy.png",
         "Savings policy s(a,z) = z + r*a - c(a,z) at equilibrium; zero crossings are steady states",
         fig2,
+        description="The zero crossings mark the target asset levels for each income state. "
+        "Low-income agents save when wealthy (positive drift) but dissave when poor (negative "
+        "drift), creating the flow toward the borrowing constraint that generates the mass "
+        "point in the wealth distribution.",
     )
 
     # --- Figure 3: Stationary Wealth Distribution ---
@@ -413,6 +421,10 @@ $$\int a \left[ g_1(a) + g_2(a) \right] da = 0$$
         "figures/wealth-distribution.png",
         "Stationary wealth distribution g(a) by income state; mass piles up near borrowing constraint",
         fig3,
+        description="The KFE solution reveals where agents spend most of their time. The density "
+        "peaks near the borrowing limit because low-income agents drift toward it and linger "
+        "there until switching to the high-income state. The smooth tail reflects agents who "
+        "have accumulated savings during high-income spells.",
     )
 
     # --- Figure 4: Bond Market Clearing ---
@@ -431,6 +443,10 @@ $$\int a \left[ g_1(a) + g_2(a) \right] da = 0$$
         "figures/bond-market.png",
         "Bond market: excess demand S(r) vs interest rate; equilibrium where S(r*)=0",
         fig4,
+        description="The upward-sloping supply curve shows that higher interest rates induce "
+        "more aggregate saving. The equilibrium r* falls below the discount rate rho because "
+        "precautionary demand pushes agents to hold positive net assets, and the market must "
+        "clear at zero net supply of bonds.",
     )
 
     # --- Table: Equilibrium Values ---
@@ -459,6 +475,9 @@ $$\int a \left[ g_1(a) + g_2(a) \right] da = 0$$
         "tables/equilibrium.csv",
         "Equilibrium Values",
         df,
+        description="The equilibrium interest rate r* < rho confirms the Huggett (1993) result: "
+        "incomplete markets and precautionary motives depress the risk-free rate below the "
+        "rate of time preference.",
     )
 
     report.add_takeaway(

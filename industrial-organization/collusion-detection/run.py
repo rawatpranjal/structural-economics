@@ -344,6 +344,10 @@ For the symmetric Cournot case: $\delta^* = \frac{(n+1)^2}{n^2 + 6n + 1}$ (incre
         "figures/profits-by-regime.png",
         "Per-firm profits under Nash competition, collusion, and one-shot deviation as a function of the number of firms",
         fig1,
+        description="The gap between deviation profit and collusion profit is the one-period "
+        "temptation to cheat; the gap between collusion and Nash profit is the per-period "
+        "reward for cooperation. As the number of firms grows, collusion profits fall faster "
+        "than deviation profits, making cartels harder to sustain.",
     )
 
     # --- Figure 2: Critical discount factor vs number of firms ---
@@ -364,6 +368,10 @@ For the symmetric Cournot case: $\delta^* = \frac{(n+1)^2}{n^2 + 6n + 1}$ (incre
         "figures/critical-discount-factor.png",
         "Critical discount factor as a function of the number of firms -- more firms make collusion harder to sustain",
         fig2,
+        description="Collusion is sustainable only in the green region above the curve. For a "
+        "given discount factor (e.g., 0.9), read across horizontally to find the maximum "
+        "number of firms that can sustain a cartel. This formalizes Stigler's insight that "
+        "cartels become unstable as membership grows.",
     )
 
     # --- Figure 3: Simulated price series with structural break ---
@@ -386,6 +394,10 @@ For the symmetric Cournot case: $\delta^* = \frac{(n+1)^2}{n^2 + 6n + 1}$ (incre
         "figures/price-series-structural-break.png",
         "Simulated price series showing competition, collusion, and post-detection regimes",
         fig3,
+        description="The structural break is visible as a level shift in prices when the cartel "
+        "forms. During collusion, prices hover near the monopoly level (red dotted line) rather "
+        "than the Nash level (blue dotted line). Econometric detection methods look for exactly "
+        "these regime changes in real market data.",
     )
 
     # --- Figure 4: Price-cost margin over time ---
@@ -418,6 +430,10 @@ For the symmetric Cournot case: $\delta^* = \frac{(n+1)^2}{n^2 + 6n + 1}$ (incre
         "figures/price-cost-margin.png",
         "Price-cost margin over time showing elevated margins during collusion",
         fig4,
+        description="The price-cost margin is a more informative diagnostic than raw prices "
+        "because it controls for cost fluctuations. Elevated margins during the cartel period "
+        "indicate that prices rose beyond what cost changes can explain -- the hallmark of "
+        "coordinated behavior.",
     )
 
     # --- Table: Cartel stability conditions for different market structures ---
@@ -438,6 +454,9 @@ For the symmetric Cournot case: $\delta^* = \frac{(n+1)^2}{n^2 + 6n + 1}$ (incre
         "tables/cartel-stability.csv",
         "Cartel Stability Conditions for Different Market Structures (a=100, c=40)",
         df_table,
+        description="The critical discount factor rises monotonically with the number of firms. "
+        "At n=2, collusion is easily sustained (delta* < 0.6), but by n=10, firms must be "
+        "extremely patient (delta* close to 1) for the cartel to hold together.",
     )
 
     # --- Economic takeaway ---

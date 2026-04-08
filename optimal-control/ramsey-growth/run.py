@@ -278,6 +278,11 @@ $$c^* = f(k^*) - \delta k^*$$
         "figures/phase-diagram.png",
         "Phase diagram showing saddle paths converging to the steady state from different initial capital stocks",
         fig1,
+        description="Each colored trajectory starts at a different initial capital stock and "
+        "follows the saddle path toward the steady state. The shooting method finds the "
+        "unique c(0) for each k(0) that satisfies the transversality condition. Paths "
+        "starting below k* accumulate capital with rising consumption, while paths above "
+        "k* decumulate.",
     )
 
     # --- Figure 2: Time Paths k(t) and c(t) ---
@@ -306,6 +311,10 @@ $$c^* = f(k^*) - \delta k^*$$
         "figures/time-paths.png",
         "Time paths of capital and consumption from different initial conditions, all converging to steady state",
         fig2,
+        description="Capital-poor economies grow faster (visible from the steeper slope at early "
+        "times for lower k(0) values), consistent with the neoclassical convergence prediction. "
+        "Consumption rises along the transition because the Euler equation drives consumption "
+        "growth when the marginal product exceeds the discount rate.",
     )
 
     # --- Figure 3: Convergence Speed ---
@@ -331,6 +340,10 @@ $$c^* = f(k^*) - \delta k^*$$
         "figures/convergence-speed.png",
         "Log-scale convergence of capital to steady state, compared with linearized prediction",
         fig3,
+        description="The approximately linear decline on the log scale confirms exponential "
+        "convergence at the rate predicted by the stable eigenvalue. Deviations from the "
+        "linearized prediction at early times reflect nonlinear dynamics far from steady "
+        "state, where the linearization is less accurate.",
     )
 
     # --- Table ---
@@ -346,6 +359,10 @@ $$c^* = f(k^*) - \delta k^*$$
         "tables/shooting-results.csv",
         "Shooting Method Results for Different Initial Capital Stocks",
         df,
+        description="The initial consumption c(0) found by shooting is lower for capital-poor "
+        "economies, reflecting the optimality of front-loading investment when capital is "
+        "scarce. By t = 50, all trajectories are close to the steady state, confirming "
+        "convergence.",
     )
 
     report.add_takeaway(

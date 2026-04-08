@@ -339,6 +339,10 @@ by the stochastic discount factor $\beta (d_{t+1}/d_t)^{-\gamma}$.
         "figures/irf-surprise-vs-news.png",
         "Comparison of impulse responses to surprise (unanticipated) vs news (anticipated) dividend shocks",
         fig1,
+        description="The key difference is timing: under a surprise shock (blue), dividends and prices jump "
+        "simultaneously at t=0. Under a news shock (red dashed), the price jumps at t=0 when the signal "
+        "arrives but dividends remain flat until t=1. This one-period lead of prices over fundamentals is "
+        "the hallmark of forward-looking asset pricing with anticipated shocks.",
     )
 
     # --- Figure 2: Asset price dynamics detail ---
@@ -381,6 +385,11 @@ by the stochastic discount factor $\beta (d_{t+1}/d_t)^{-\gamma}$.
         "figures/price-dynamics.png",
         "Detailed view: surprise shocks move prices and dividends together; news shocks cause prices to lead dividends",
         fig2,
+        description="In the left panel, the price and dividend shaded areas overlap, showing that prices "
+        "are driven by concurrent fundamentals. In the right panel, the price (red) leads the dividend "
+        "(blue) by exactly one period. This disconnect between current cash flows and asset valuations "
+        "is what makes news shocks a compelling explanation for observed price-fundamental puzzles in "
+        "financial markets.",
     )
 
     # --- Figure 3: Simulated paths ---
@@ -402,6 +411,10 @@ by the stochastic discount factor $\beta (d_{t+1}/d_t)^{-\gamma}$.
         "figures/simulated-paths.png",
         "Simulated dividend and asset price paths with both surprise and news shocks",
         fig3,
+        description="With both shock types active simultaneously, the price series is smoother and more "
+        "persistent than dividends because prices aggregate information about future cash flows. Price "
+        "movements that precede dividend changes reflect the news component, while co-movements reflect "
+        "the surprise component.",
     )
 
     # --- Table: Impact responses ---
@@ -424,7 +437,11 @@ by the stochastic discount factor $\beta (d_{t+1}/d_t)^{-\gamma}$.
         ],
     }
     df = pd.DataFrame(impact_data)
-    report.add_table("tables/impact-responses.csv", "Impact Responses: Surprise vs News Shocks", df)
+    report.add_table("tables/impact-responses.csv", "Impact Responses: Surprise vs News Shocks", df,
+        description="The critical row is the dividend at t=0: it is nonzero for the surprise shock but "
+        "exactly zero for the news shock, confirming that news moves prices without any change in current "
+        "fundamentals. The t=1 column for the news shock shows when the anticipated dividend change "
+        "finally materializes.")
 
     report.add_takeaway(
         "News shocks create a fundamental distinction in asset pricing dynamics that "

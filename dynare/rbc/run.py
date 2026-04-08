@@ -313,6 +313,10 @@ $$\log A_t = \rho \log A_{t-1} + \varepsilon_t, \quad \varepsilon_t \sim N(0, \s
         "figures/irf-tfp-shock.png",
         "Impulse responses of output, consumption, investment, and capital to a 1% TFP shock",
         fig1,
+        description="Investment overshoots on impact because the temporarily high marginal product of "
+        "capital makes accumulation attractive. Consumption rises smoothly, consistent with the permanent "
+        "income hypothesis. Capital inherits the persistence of TFP but adjusts even more slowly due to "
+        "the large capital stock relative to the flow of investment.",
     )
 
     # --- Figure 2: Model equations display ---
@@ -361,6 +365,9 @@ $$\log A_t = \rho \log A_{t-1} + \varepsilon_t, \quad \varepsilon_t \sim N(0, \s
         "figures/model-equations.png",
         "Model equations and calibration for the standard RBC",
         fig2,
+        description="These five equations fully characterize the competitive equilibrium. The Euler "
+        "equation pins down the intertemporal consumption-savings trade-off, while the resource "
+        "constraint forces output to be split between consumption and investment.",
     )
 
     # --- Table: IRF peaks ---
@@ -385,7 +392,10 @@ $$\log A_t = \rho \log A_{t-1} + \varepsilon_t, \quad \varepsilon_t \sim N(0, \s
             peak_data["Half-life (quarters)"].append(">40")
 
     df = pd.DataFrame(peak_data)
-    report.add_table("tables/irf-summary.csv", "IRF Summary Statistics", df)
+    report.add_table("tables/irf-summary.csv", "IRF Summary Statistics", df,
+        description="The peak responses and half-lives quantify how each variable adjusts to the shock. "
+        "Investment has the largest peak response but the shortest half-life, reflecting its role as the "
+        "adjustment margin. Capital's long half-life mirrors the slow depreciation-driven dynamics.")
 
     report.add_takeaway(
         "The standard RBC model produces business cycle dynamics driven entirely by "

@@ -184,7 +184,9 @@ $$u_{t+1} = \sigma (1 - u_t) + (1 - f(\theta_t)) u_t$$
     ax1b.set_title("Vacancy Dynamics")
     ax1b.legend()
     fig1.tight_layout()
-    report.add_figure("figures/unemployment-vacancies.png", "Unemployment and vacancy dynamics over 1000 periods", fig1)
+    report.add_figure("figures/unemployment-vacancies.png", "Unemployment and vacancy dynamics over 1000 periods", fig1,
+        description="Unemployment and vacancies move in opposite directions: when firms post more vacancies in booms, "
+        "the job finding rate rises and unemployment falls. The relative amplitudes reveal how much the labor market amplifies small productivity shocks.")
 
     # --- Figure 2: Beveridge Curve ---
     fig2, ax2 = plt.subplots()
@@ -192,7 +194,9 @@ $$u_{t+1} = \sigma (1 - u_t) + (1 - f(\theta_t)) u_t$$
     ax2.set_xlabel("Unemployment rate $u$")
     ax2.set_ylabel("Vacancy rate $v$")
     ax2.set_title("Beveridge Curve")
-    report.add_figure("figures/beveridge-curve.png", "Beveridge curve: negative correlation between unemployment and vacancies", fig2)
+    report.add_figure("figures/beveridge-curve.png", "Beveridge curve: negative correlation between unemployment and vacancies", fig2,
+        description="The downward-sloping scatter is the Beveridge curve, one of the most robust empirical regularities in labor economics. "
+        "The tightness of the cloud reflects the strength of the matching function; shifts of the entire curve would indicate changes in matching efficiency.")
 
     # --- Figure 3: Productivity and Tightness ---
     fig3, ax3 = plt.subplots()
@@ -206,11 +210,15 @@ $$u_{t+1} = \sigma (1 - u_t) + (1 - f(\theta_t)) u_t$$
     lines1, labels1 = ax3.get_legend_handles_labels()
     lines2, labels2 = ax3_twin.get_legend_handles_labels()
     ax3.legend(lines1 + lines2, labels1 + labels2, loc="upper left")
-    report.add_figure("figures/productivity-tightness.png", "Productivity shocks drive labor market tightness (amplification factor C)", fig3)
+    report.add_figure("figures/productivity-tightness.png", "Productivity shocks drive labor market tightness (amplification factor C)", fig3,
+        description="Tightness responds proportionally to productivity via the elasticity C, but with the standard calibration (b=0.4) "
+        "the amplification is modest. This is the Shimer puzzle: the model needs a much higher b (closer to z) to match the observed volatility of labor market tightness.")
 
     # --- Table ---
     df = pd.DataFrame(stats)
-    report.add_table("tables/business-cycle-stats.csv", "Business Cycle Statistics (simulated)", df)
+    report.add_table("tables/business-cycle-stats.csv", "Business Cycle Statistics (simulated)", df,
+        description="The key diagnostic is the standard deviation of unemployment relative to productivity: "
+        "in U.S. data this ratio is roughly 20, but the baseline DMP calibration generates far less amplification.")
 
     report.add_takeaway(
         "The DMP model captures the key qualitative features of labor market dynamics:\n\n"

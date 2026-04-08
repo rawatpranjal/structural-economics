@@ -189,7 +189,11 @@ $$q_i^*(q_j) = \frac{a - c - bq_j}{2b}, \qquad q^{NE} = \frac{a-c}{3b}$$
     ax1.legend()
     ax1.set_xlim(0, 8)
     ax1.set_ylim(0, 8)
-    report.add_figure("figures/cournot-best-response.png", "Cournot best responses intersect at Nash equilibrium", fig1)
+    report.add_figure("figures/cournot-best-response.png", "Cournot best responses intersect at Nash equilibrium", fig1,
+        description="The Nash equilibrium lies at the intersection of the two best-response "
+        "functions. The joint monopoly point lies inside both curves -- firms could do better "
+        "by colluding, but neither has a unilateral incentive to move there.")
+
 
     # --- Figure 2: Best response correspondence for Matching Pennies ---
     q_grid = np.linspace(0, 1, 200)
@@ -207,7 +211,11 @@ $$q_i^*(q_j) = \frac{a - c - bq_j}{2b}, \qquad q^{NE} = \frac{a-c}{3b}$$
     ax2.set_ylabel("$p$ (Player 1: prob of Heads)")
     ax2.set_title("Matching Pennies: Best Response Correspondences")
     ax2.legend()
-    report.add_figure("figures/matching-pennies-br.png", "Matching Pennies: only equilibrium is mixed (0.5, 0.5)", fig2)
+    report.add_figure("figures/matching-pennies-br.png", "Matching Pennies: only equilibrium is mixed (0.5, 0.5)", fig2,
+        description="The step-function best responses never intersect at a corner, so no pure "
+        "strategy Nash equilibrium exists. The unique equilibrium is the mixed strategy where "
+        "both players randomize 50-50, making the opponent indifferent.")
+
 
     # --- Figure 3: Cournot output and welfare ---
     fig3, ax3 = plt.subplots()
@@ -225,11 +233,20 @@ $$q_i^*(q_j) = \frac{a - c - bq_j}{2b}, \qquad q^{NE} = \frac{a-c}{3b}$$
     ax3.set_ylabel("Surplus")
     ax3.set_title("Welfare Analysis: Monopoly vs Cournot vs Competition")
     ax3.legend(fontsize=8)
-    report.add_figure("figures/welfare-analysis.png", "Cournot output lies between monopoly and competitive levels", fig3)
+    report.add_figure("figures/welfare-analysis.png", "Cournot output lies between monopoly and competitive levels", fig3,
+        description="Cournot duopoly produces more output than monopoly but less than perfect "
+        "competition. The deadweight loss triangle between Cournot and competitive output is the "
+        "quantitative basis for antitrust concern about market concentration.")
+
 
     # --- Tables ---
     df_games = pd.DataFrame(results)
-    report.add_table("tables/classic-games.csv", "Nash Equilibria in Classic 2x2 Games", df_games)
+    report.add_table("tables/classic-games.csv", "Nash Equilibria in Classic 2x2 Games", df_games,
+        description="The Prisoner's Dilemma has a unique dominant-strategy equilibrium; "
+        "Battle of the Sexes has two pure and one mixed equilibrium; Matching Pennies "
+        "has only a mixed equilibrium. These three games illustrate the fundamental taxonomy "
+        "of strategic interaction.")
+
 
     cournot_table = pd.DataFrame({
         "Market Structure": ["Monopoly", "Cournot Duopoly", "Perfect Competition"],
@@ -241,7 +258,11 @@ $$q_i^*(q_j) = \frac{a - c - bq_j}{2b}, \qquad q^{NE} = \frac{a-c}{3b}$$
             "0.00",
         ],
     })
-    report.add_table("tables/cournot-comparison.csv", "Cournot vs Monopoly vs Competition", cournot_table)
+    report.add_table("tables/cournot-comparison.csv", "Cournot vs Monopoly vs Competition", cournot_table,
+        description="Cournot duopoly is the intermediate case: output, price, and profit all "
+        "fall between the monopoly and competitive extremes. As the number of firms grows, "
+        "the Cournot outcome converges to perfect competition.")
+
 
     report.add_takeaway(
         "Static games provide the micro-foundations for industrial organization:\n\n"

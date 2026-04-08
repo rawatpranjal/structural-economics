@@ -407,6 +407,10 @@ $$N' = \text{Binomial survivors}(N, 1 - p_{\text{exit}}) + \text{Entrants}$$
         "figures/value-function.png",
         "Incumbent value function V(N): value of being an active firm as a function of market structure",
         fig1,
+        description="The value function declines monotonically with the number of competitors "
+        "as Cournot rents erode. The sunk cost K determines the entry threshold: potential "
+        "entrants enter only when V(N) exceeds K. The zero-profit line marks where per-period "
+        "profits equal the fixed cost -- the static break-even point.",
     )
 
     # --- Figure 2: Entry and Exit Probabilities ---
@@ -433,6 +437,9 @@ $$N' = \text{Binomial survivors}(N, 1 - p_{\text{exit}}) + \text{Entrants}$$
         "figures/entry-exit-probabilities.png",
         "Exit probability and expected entry as functions of the number of active firms",
         fig2,
+        description="Exit probability rises with N as profits fall, while entry declines as "
+        "the market becomes less attractive. The crossing region -- where both entry and exit "
+        "are positive -- is the source of the 'churning' phenomenon observed in real industries.",
     )
 
     # --- Figure 3: Stationary Distribution ---
@@ -448,6 +455,10 @@ $$N' = \text{Binomial survivors}(N, 1 - p_{\text{exit}}) + \text{Entrants}$$
         "figures/stationary-distribution.png",
         "Stationary distribution of the number of active firms",
         fig3,
+        description="The stationary distribution concentrates around the free-entry equilibrium "
+        "but has non-trivial spread due to stochastic entry and exit. This distribution is the "
+        "long-run prediction of the model -- the probability of observing each level of market "
+        "concentration in a cross-section of similar markets.",
     )
 
     # --- Figure 4: Simulated Market Evolution ---
@@ -473,6 +484,10 @@ $$N' = \text{Binomial survivors}(N, 1 - p_{\text{exit}}) + \text{Entrants}$$
         "figures/simulated-market.png",
         "Simulated market: number of firms and entry/exit flows over 200 periods",
         fig4,
+        description="The simulation shows how market structure fluctuates around its long-run "
+        "mean. The bottom panel reveals simultaneous entry and exit in many periods -- 'churning' "
+        "that matches the empirical regularity of substantial firm turnover despite stable "
+        "aggregate concentration.",
     )
 
     # --- Table 1: Equilibrium Statistics ---
@@ -503,7 +518,10 @@ $$N' = \text{Binomial survivors}(N, 1 - p_{\text{exit}}) + \text{Entrants}$$
         ],
     }
     df_stats = pd.DataFrame(stats_data)
-    report.add_table("tables/equilibrium-statistics.csv", "Equilibrium Statistics", df_stats)
+    report.add_table("tables/equilibrium-statistics.csv", "Equilibrium Statistics", df_stats,
+        description="The expected number of firms exceeds the static zero-profit threshold "
+        "because option value from staying in the market (avoiding the sunk re-entry cost) "
+        "makes incumbents willing to operate at temporarily negative flow profits.")
 
     # --- Table 2: Value and Policies by N ---
     sample_N = np.array([1, 2, 3, 5, 7, 10, 15, 20, 25, 30])
@@ -521,6 +539,10 @@ $$N' = \text{Binomial survivors}(N, 1 - p_{\text{exit}}) + \text{Entrants}$$
         "tables/value-by-N.csv",
         "Value Function and Policies at Selected Market Structures",
         df_detail,
+        description="At low N, the market is attractive (high V, low exit probability, positive "
+        "entry) while at high N, profits are negative and exit dominates. The asymmetry between "
+        "entry cost K and fixed cost f creates the hysteresis band between the entry and exit "
+        "thresholds.",
     )
 
     report.add_takeaway(

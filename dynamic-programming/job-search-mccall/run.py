@@ -263,7 +263,9 @@ The optimal policy is a threshold rule: accept if $w \ge w^*$, reject otherwise.
     report.add_figure("figures/accept-vs-reject.png",
                       "Value of accepting vs rejecting each wage offer. "
                       "The reservation wage is where the two curves intersect.",
-                      fig1)
+                      fig1,
+        description="The accept value rises linearly in the wage offer while the reject value is flat (it depends only on the distribution of future offers). "
+        "Their intersection defines w*: below it the option value of continued search exceeds the offered wage, above it accepting dominates.")
 
     # --- Figure 2: Reservation wage vs beta ---
     fig2, ax2 = plt.subplots()
@@ -279,7 +281,9 @@ The optimal policy is a threshold rule: accept if $w \ge w^*$, reject otherwise.
     report.add_figure("figures/wstar-vs-beta.png",
                       "More patient workers (higher beta) are more selective, "
                       "demanding higher wages before accepting.",
-                      fig2)
+                      fig2,
+        description="The reservation wage rises steeply as beta approaches 1, because patient workers weight future opportunities almost as heavily as the present. "
+        "The reference lines show that w* always lies between the unemployment benefit b and the expected wage E[w].")
 
     # --- Figure 3: Reservation wage vs b ---
     fig3, ax3 = plt.subplots()
@@ -294,13 +298,17 @@ The optimal policy is a threshold rule: accept if $w \ge w^*$, reject otherwise.
     report.add_figure("figures/wstar-vs-benefits.png",
                       "Higher unemployment benefits raise the reservation wage: "
                       "workers can afford to be more selective when the safety net is generous.",
-                      fig3)
+                      fig3,
+        description="This is the central policy trade-off in unemployment insurance design: generous benefits improve match quality "
+        "(workers hold out for better jobs) but extend unemployment duration. The slope of the curve quantifies this moral hazard effect.")
 
     # --- Table ---
     report.add_table("tables/reservation-wages.csv",
                      "Reservation wage and acceptance probability for different "
                      "parameter combinations",
-                     df_table)
+                     df_table,
+        description="The interaction between patience (beta) and the safety net (b) shapes search behavior: "
+        "a patient worker with generous benefits accepts fewer than half of offers, while an impatient worker with low benefits accepts nearly all.")
 
     report.add_takeaway(
         "The McCall model provides the cleanest illustration of the **search-theoretic "

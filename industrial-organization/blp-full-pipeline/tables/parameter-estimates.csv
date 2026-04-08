@@ -1,0 +1,6 @@
+Parameter,True,Estimated,SE (bootstrap)
+alpha,3.0,1.627,--
+beta_const,2.0,-1.134,--
+beta_sugar,0.5,0.748,--
+sigma_alpha,0.8,0.629,1.896
+sigma_sugar,1.0,0.095,0.064

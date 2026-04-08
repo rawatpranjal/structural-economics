@@ -95,42 +95,48 @@ def main():
 
     policy_k = np.zeros((n_z, n_k))
     policy_c = np.zeros((n_z, n_k))
+    policy_idx = np.zeros((n_z, n_k), dtype=int)
     tol = 1e-6
     max_iter = 500
+    howard_steps = 25  # Howard policy iteration acceleration
 
-    print("Solving RBC nonlinear model via VFI...")
+    # Precompute utility matrices for all z states (vectorized)
+    u_mats = np.zeros((n_z, n_k, n_k))
+    resources_all = np.zeros((n_z, n_k))
+    for iz in range(n_z):
+        z_val = z_grid[iz]
+        resources_all[iz] = z_val * K_grid ** alpha + (1.0 - delta) * K_grid
+        c_mat = resources_all[iz][:, None] - K_grid[None, :]
+        u_mats[iz] = u(c_mat)
+
+    print("Solving RBC nonlinear model via VFI with Howard acceleration...")
     for iteration in range(1, max_iter + 1):
         V_new = np.zeros_like(V)
 
-        # For each (z, K), available resources
         for iz in range(n_z):
-            z_val = z_grid[iz]
-            y_vec = z_val * K_grid ** alpha  # production for each K
-            resources = y_vec + (1.0 - delta) * K_grid  # shape (n_k,)
-
-            # For all K states at once, evaluate all possible k' choices
-            # consumption: c[ik, ik'] = resources[ik] - K_grid[ik']
-            c_mat = resources[:, None] - K_grid[None, :]  # (n_k, n_k)
-
-            # Utility from consumption
-            u_mat = u(c_mat)  # (n_k, n_k)
-
-            # Expected continuation value: E[V(z', k')] for each k'
-            EV_kprime = trans_z[iz, :] @ V  # (n_k,) -- expected V for each k'
-
-            # Total value: u(c) + beta * EV(k')
-            val_mat = u_mat + beta * EV_kprime[None, :]  # (n_k, n_k)
-
-            # Optimal k' for each K
+            EV_kprime = trans_z[iz, :] @ V  # (n_k,)
+            val_mat = u_mats[iz] + beta * EV_kprime[None, :]
             best_idx = np.argmax(val_mat, axis=1)
             V_new[iz, :] = val_mat[np.arange(n_k), best_idx]
+            policy_idx[iz, :] = best_idx
             policy_k[iz, :] = K_grid[best_idx]
-            policy_c[iz, :] = resources - K_grid[best_idx]
+            policy_c[iz, :] = resources_all[iz] - K_grid[best_idx]
 
         error = np.max(np.abs(V_new - V))
-        if iteration % 25 == 0:
-            print(f"  VFI iteration {iteration:3d}, error = {error:.2e}")
         V = V_new.copy()
+
+        # Howard policy iteration: evaluate current policy without re-optimizing
+        for _ in range(howard_steps):
+            V_howard = np.zeros_like(V)
+            for iz in range(n_z):
+                EV_kprime = trans_z[iz, :] @ V  # (n_k,)
+                for ik in range(n_k):
+                    ik_prime = policy_idx[iz, ik]
+                    V_howard[iz, ik] = u_mats[iz][ik, ik_prime] + beta * EV_kprime[ik_prime]
+            V = V_howard
+
+        if iteration % 10 == 0:
+            print(f"  VFI iteration {iteration:3d}, error = {error:.2e}")
         if error < tol:
             print(f"  VFI converged in {iteration} iterations (error = {error:.2e})")
             break
@@ -415,7 +421,10 @@ $$c^{-\sigma} = \beta \, \mathbb{E}\left[ c'^{-\sigma} \left(\alpha z' K'^{\alph
     ax1b.set_title("Consumption Policy Function")
     ax1b.legend(fontsize=7, ncol=2)
     fig1.tight_layout()
-    report.add_figure("figures/policy-functions.png", "Policy functions: nonlinear VFI (solid) vs log-linear (dashed) at low, median, and high TFP", fig1)
+    report.add_figure("figures/policy-functions.png", "Policy functions: nonlinear VFI (solid) vs log-linear (dashed) at low, median, and high TFP", fig1,
+        description="The gap between solid and dashed lines reveals where log-linearization breaks down. "
+        "At extreme capital levels the nonlinear solution saves more (higher K') and consumes less, "
+        "reflecting precautionary behavior that the linear approximation cannot capture.")
 
     # --- Figure 2: Value function surface ---
     fig2, ax2 = plt.subplots(figsize=(8, 5))
@@ -425,7 +434,10 @@ $$c^{-\sigma} = \beta \, \mathbb{E}\left[ c'^{-\sigma} \left(\alpha z' K'^{\alph
     ax2.set_xlabel("Capital $K$")
     ax2.set_ylabel("TFP $z$")
     ax2.set_title("Value Function")
-    report.add_figure("figures/value-function.png", "Value function over the (K, z) state space", fig2)
+    report.add_figure("figures/value-function.png", "Value function over the (K, z) state space", fig2,
+        description="The value function is concave in capital for each TFP level, with higher TFP states "
+        "shifting the entire surface upward. The curvature encodes risk aversion: the more concave the "
+        "surface, the stronger the motive for precautionary savings.")
 
     # --- Figure 3: Nonlinear - Linear difference (precautionary savings) ---
     fig3, (ax3a, ax3b) = plt.subplots(1, 2, figsize=(13, 5))
@@ -447,7 +459,11 @@ $$c^{-\sigma} = \beta \, \mathbb{E}\left[ c'^{-\sigma} \left(\alpha z' K'^{\alph
     ax3b.set_ylabel("$c_{NL} - c_{Lin}$")
     ax3b.set_title("Consumption Difference (NL - Linear)")
     fig3.tight_layout()
-    report.add_figure("figures/nonlinear-difference.png", "Nonlinear minus linearized policy: positive K' difference shows precautionary savings", fig3)
+    report.add_figure("figures/nonlinear-difference.png", "Nonlinear minus linearized policy: positive K' difference shows precautionary savings", fig3,
+        description="Positive values in the left panel confirm that the nonlinear agent saves more than "
+        "the certainty-equivalent prediction at almost every state. This excess saving is the hallmark "
+        "of precautionary behavior under convex marginal utility (sigma > 1) and is entirely absent "
+        "from the log-linear solution.")
 
     # --- Figure 4: Asymmetric IRFs ---
     fig4, (ax4a, ax4b) = plt.subplots(1, 2, figsize=(13, 5))
@@ -470,7 +486,11 @@ $$c^{-\sigma} = \beta \, \mathbb{E}\left[ c'^{-\sigma} \left(\alpha z' K'^{\alph
     ax4b.set_title("Consumption IRF")
     ax4b.legend(fontsize=8)
     fig4.tight_layout()
-    report.add_figure("figures/asymmetric-irf.png", "Asymmetric impulse responses to positive vs negative TFP shocks (nonlinear effects)", fig4)
+    report.add_figure("figures/asymmetric-irf.png", "Asymmetric impulse responses to positive vs negative TFP shocks (nonlinear effects)", fig4,
+        description="Compare the negative shock (dashed) to the mirror of the positive shock (dotted gray). "
+        "If the model were linear, these would overlap exactly. The visible gap shows that recessions are "
+        "deeper and more persistent than expansions, driven by the concavity of the production function "
+        "and the convexity of marginal utility.")
 
     # --- Figure 5: Simulation paths ---
     fig5, axes5 = plt.subplots(2, 2, figsize=(13, 9))
@@ -497,11 +517,17 @@ $$c^{-\sigma} = \beta \, \mathbb{E}\left[ c'^{-\sigma} \left(\alpha z' K'^{\alph
     for ax in axes5.flat:
         ax.set_xlabel("Period")
     fig5.tight_layout()
-    report.add_figure("figures/simulation.png", "Simulated paths: nonlinear (blue) vs linearized (red dashed)", fig5)
+    report.add_figure("figures/simulation.png", "Simulated paths: nonlinear (blue) vs linearized (red dashed)", fig5,
+        description="Over a 200-period window the two solutions track closely near steady state, but "
+        "diverge during large swings. The nonlinear capital path drifts slightly above the linear one "
+        "on average, reflecting the precautionary savings motive accumulating over time.")
 
     # --- Table: Business cycle statistics ---
     df_stats = pd.DataFrame([stats_nl, stats_lin])
-    report.add_table("tables/bc-statistics.csv", "Business Cycle Statistics (5000 periods, burn-in 500)", df_stats)
+    report.add_table("tables/bc-statistics.csv", "Business Cycle Statistics (5000 periods, burn-in 500)", df_stats,
+        description="Compare the mean capital level across methods: the nonlinear solution's higher mean(K) "
+        "directly measures precautionary savings. Relative volatilities and correlations show that "
+        "the two methods agree on most business cycle moments but differ on levels.")
 
     report.add_results(
         f"**Precautionary savings:** The nonlinear solution predicts mean capital "

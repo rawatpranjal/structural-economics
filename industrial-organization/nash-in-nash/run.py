@@ -211,7 +211,12 @@ where $\Delta_d(u) = (P_d - c_d)(q_d^{\text{agree}} - q_d^{\text{disagree}})$ is
     ax1.set_xticks(x + width / 2)
     ax1.set_xticklabels([f"Insurer {d+1}" for d in range(n_downstream)])
     ax1.legend()
-    report.add_figure("figures/negotiated-prices.png", "Negotiated prices: higher-cost hospital commands higher price", fig1)
+    report.add_figure("figures/negotiated-prices.png", "Negotiated prices: higher-cost hospital commands higher price", fig1,
+        description="Negotiated prices reflect both the hospital's marginal cost and its "
+        "incremental value to the insurer's network. Hospital 2 commands a higher price "
+        "partly because of higher costs and partly because its outside option (what the "
+        "insurer loses from exclusion) determines bargaining leverage.")
+
 
     # --- Figure 2: Profits vs bargaining power ---
     fig2, (ax2a, ax2b) = plt.subplots(1, 2, figsize=(12, 5))
@@ -229,7 +234,12 @@ where $\Delta_d(u) = (P_d - c_d)(q_d^{\text{agree}} - q_d^{\text{disagree}})$ is
     ax2b.set_title("Downstream (Insurer) Profits")
     ax2b.legend()
     fig2.tight_layout()
-    report.add_figure("figures/profits-vs-bargaining.png", "Profits shift from downstream to upstream as bargaining power increases", fig2)
+    report.add_figure("figures/profits-vs-bargaining.png", "Profits shift from downstream to upstream as bargaining power increases", fig2,
+        description="Bargaining power tau governs the division of surplus between hospitals "
+        "and insurers. As tau rises from 0 to 1, the entire surplus wedge shifts upstream. "
+        "Downstream profits can turn negative when hospitals extract more than the insurer's "
+        "margin can sustain.")
+
 
     # --- Figure 3: Pre vs post-merger prices ---
     fig3, ax3 = plt.subplots(figsize=(8, 5))
@@ -245,7 +255,12 @@ where $\Delta_d(u) = (P_d - c_d)(q_d^{\text{agree}} - q_d^{\text{disagree}})$ is
     ax3.set_xticks(x3)
     ax3.set_xticklabels(labels)
     ax3.legend()
-    report.add_figure("figures/merger-prices.png", "Hospital merger raises all negotiated prices by increasing outside option", fig3)
+    report.add_figure("figures/merger-prices.png", "Hospital merger raises all negotiated prices by increasing outside option", fig3,
+        description="After the merger, losing one hospital means losing access to the entire "
+        "merged system. This worsens the insurer's disagreement payoff and strengthens the "
+        "merged entity's bargaining position, resulting in higher negotiated prices for all "
+        "bilateral pairs.")
+
 
     # --- Table ---
     table_rows = []
@@ -260,7 +275,12 @@ where $\Delta_d(u) = (P_d - c_d)(q_d^{\text{agree}} - q_d^{\text{disagree}})$ is
                 "Demand (disagree)": f"{disagreement_demands[u,d]:.1f}",
             })
     df = pd.DataFrame(table_rows)
-    report.add_table("tables/nash-in-nash-results.csv", "Nash-in-Nash Negotiation Results", df)
+    report.add_table("tables/nash-in-nash-results.csv", "Nash-in-Nash Negotiation Results", df,
+        description="The demand columns show each insurer's enrollment with and without "
+        "a given hospital. The gap between these numbers determines the hospital's "
+        "incremental value -- the key driver of negotiated prices in the Nash-in-Nash "
+        "framework.")
+
 
     report.add_takeaway(
         "Nash-in-Nash bargaining reveals how vertical market structure affects prices:\n\n"

@@ -221,6 +221,8 @@ $$r_t = \alpha \, k_t^{\alpha - 1}, \qquad w_t = (1-\alpha) \, k_t^{\alpha}$$
         "figures/output-per-effective-worker.png",
         "Output per effective worker converges to the analytically computed steady state",
         fig1,
+        description="Convergence is fast initially and slows as the economy approaches steady state, reflecting "
+        "diminishing returns to capital. The gap between the curve and the dashed line measures remaining transition dynamics.",
     )
 
     # --- Figure 2: Capital per effective worker ---
@@ -236,6 +238,8 @@ $$r_t = \alpha \, k_t^{\alpha - 1}, \qquad w_t = (1-\alpha) \, k_t^{\alpha}$$
         "figures/capital-per-effective-worker.png",
         "Capital per effective worker converges to the steady state determined by savings and effective depreciation",
         fig2,
+        description="The steady-state capital intensity is entirely determined by the savings rate and effective depreciation (n+g+delta). "
+        "Economies with higher savings rates or lower depreciation converge to higher k*, but the growth rate on the balanced path is always g.",
     )
 
     # --- Figure 3: Factor prices ---
@@ -262,6 +266,8 @@ $$r_t = \alpha \, k_t^{\alpha - 1}, \qquad w_t = (1-\alpha) \, k_t^{\alpha}$$
         "figures/factor-prices.png",
         "Factor prices (rental rate and wage per effective worker) converge to steady-state values",
         fig3,
+        description="As capital accumulates, the rental rate falls (diminishing marginal product) while wages rise. "
+        "This captures the core Solow prediction: capital-scarce economies have high returns to capital and low wages, driving cross-country convergence.",
     )
 
     # --- Table: Analytical vs Simulated steady state ---
@@ -320,6 +326,8 @@ $$r_t = \alpha \, k_t^{\alpha - 1}, \qquad w_t = (1-\alpha) \, k_t^{\alpha}$$
         "tables/steady-state-comparison.csv",
         "Steady-State Comparison: Analytical vs Simulated",
         df,
+        description="The vanishing gap between analytical and simulated values confirms the economy has effectively "
+        "reached its balanced growth path by the end of the simulation horizon.",
     )
 
     report.add_takeaway(

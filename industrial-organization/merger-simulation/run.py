@@ -130,6 +130,13 @@ def foc_loglinear(p: np.ndarray, mc: np.ndarray, a_ll: np.ndarray,
     return q + (omega * dqdp.T) @ (p - mc)
 
 
+def foc_loglinear_logp(log_p: np.ndarray, mc: np.ndarray, a_ll: np.ndarray,
+                       E: np.ndarray, omega: np.ndarray) -> np.ndarray:
+    """FOC in log-price space (ensures prices stay positive during solver iterations)."""
+    p = np.exp(log_p)
+    return foc_loglinear(p, mc, a_ll, E, omega)
+
+
 def cs_loglinear(p: np.ndarray, p_high: np.ndarray, a_ll: np.ndarray,
                  E: np.ndarray, n_steps: int = 200) -> float:
     """Consumer surplus for log-linear demand via numerical integration.
@@ -154,31 +161,29 @@ def cs_loglinear(p: np.ndarray, p_high: np.ndarray, a_ll: np.ndarray,
 
 def calibrate_logit(shares_obs: np.ndarray, prices_obs: np.ndarray,
                     margins_obs: np.ndarray, p2f: np.ndarray) -> dict:
-    """Calibrate logit demand from observed shares, prices, and margins."""
-    mc = prices_obs * (1.0 - margins_obs)
+    """Calibrate logit demand from observed shares, prices, and margins.
+
+    Strategy: use the average margin to pin down alpha, then invert the full
+    multi-product FOC system to recover marginal costs exactly.
+    """
     omega = ownership_matrix(p2f)
-
-    # Recover alpha from FOC for product 0:
-    # s_0 + alpha * s_0 * (1-s_0) * (p_0 - mc_0) - alpha * sum_{k in F_0} s_0*s_k*(p_k-mc_k) = 0
-    # For single-product firms: s_0 + alpha * s_0 * (1-s_0) * (p_0-mc_0) = 0
-    # alpha = -1 / ((1-s_0) * (p_0-mc_0))
-    # For multi-product firms, use the full FOC.
-    s0 = shares_obs[0]
-    markup0 = prices_obs[0] - mc[0]
-
-    # Products owned by firm of product 0
-    firm0 = p2f[0]
-    same_firm = (p2f == firm0)
-    # alpha from margin of product 0 (accounting for portfolio)
-    denom = s0 * (1.0 - s0) * markup0
-    for k in range(len(p2f)):
-        if k != 0 and same_firm[k]:
-            denom -= s0 * shares_obs[k] * (prices_obs[k] - mc[k])
-    alpha = -s0 / denom
-
-    # Mean valuations xi
+    J = len(shares_obs)
     s0_total = np.sum(shares_obs)
+
+    # Use the average margin across all products to pin down alpha.
+    # For a single-product firm j: margin_j = -1 / (alpha * (1 - s_j))
+    # => alpha = -1 / (margin_j * (1 - s_j))
+    # Average across products for robustness:
+    alpha_estimates = -1.0 / (margins_obs * (1.0 - shares_obs))
+    alpha = np.mean(alpha_estimates)
+
+    # Mean valuations xi (from share inversion)
     xi = np.log(shares_obs / (1.0 - s0_total)) - alpha * prices_obs
+
+    # Recover marginal costs by inverting the full FOC system:
+    # s + (Omega * dsdp') (p - mc) = 0  =>  mc = p + inv(Omega * dsdp') s
+    dsdp = jacobian_logit(prices_obs, alpha, xi)
+    mc = prices_obs + np.linalg.solve(omega * dsdp.T, shares_obs)
 
     return {"alpha": alpha, "xi": xi, "mc": mc}
 
@@ -369,7 +374,7 @@ def main():
     # =====================================================================
     cal_logit = calibrate_logit(shares_obs, prices_obs, margins_obs, p2f_pre)
     cal_linear = calibrate_linear(shares_obs, prices_obs, margins_obs, p2f_pre, cross_ratio=0.1)
-    cal_loglinear = calibrate_loglinear(shares_obs, prices_obs, margins_obs, p2f_pre, cross_elas=0.3)
+    cal_loglinear = calibrate_loglinear(shares_obs, prices_obs, margins_obs, p2f_pre, cross_elas=0.15)
 
     print("--- Logit calibration ---")
     print(f"  alpha = {cal_logit['alpha']:.4f}")
@@ -415,21 +420,23 @@ def main():
     div_loglinear = diversion_ratios_from_jacobian(jac_loglinear)
 
     # =====================================================================
-    # Screening metrics: UPP, GUPPI, CMCR
+    # Screening metrics: UPP, GUPPI, CMCR (each model uses its own mc)
     # =====================================================================
-    mc = cal_logit['mc']  # Same mc across all models
+    mc_logit = cal_logit['mc']
+    mc_linear = cal_linear['mc']
+    mc_loglinear = cal_loglinear['mc']
 
-    upp_logit = compute_upp(div_logit, prices_obs, mc, p2f_pre, p2f_post)
-    upp_linear = compute_upp(div_linear, prices_obs, mc, p2f_pre, p2f_post)
-    upp_loglinear = compute_upp(div_loglinear, prices_obs, mc, p2f_pre, p2f_post)
+    upp_logit = compute_upp(div_logit, prices_obs, mc_logit, p2f_pre, p2f_post)
+    upp_linear = compute_upp(div_linear, prices_obs, mc_linear, p2f_pre, p2f_post)
+    upp_loglinear = compute_upp(div_loglinear, prices_obs, mc_loglinear, p2f_pre, p2f_post)
 
-    guppi_logit = compute_guppi(div_logit, prices_obs, mc, p2f_pre, p2f_post)
-    guppi_linear = compute_guppi(div_linear, prices_obs, mc, p2f_pre, p2f_post)
-    guppi_loglinear = compute_guppi(div_loglinear, prices_obs, mc, p2f_pre, p2f_post)
+    guppi_logit = compute_guppi(div_logit, prices_obs, mc_logit, p2f_pre, p2f_post)
+    guppi_linear = compute_guppi(div_linear, prices_obs, mc_linear, p2f_pre, p2f_post)
+    guppi_loglinear = compute_guppi(div_loglinear, prices_obs, mc_loglinear, p2f_pre, p2f_post)
 
-    cmcr_logit = compute_cmcr(div_logit, prices_obs, mc, p2f_pre, p2f_post)
-    cmcr_linear = compute_cmcr(div_linear, prices_obs, mc, p2f_pre, p2f_post)
-    cmcr_loglinear = compute_cmcr(div_loglinear, prices_obs, mc, p2f_pre, p2f_post)
+    cmcr_logit = compute_cmcr(div_logit, prices_obs, mc_logit, p2f_pre, p2f_post)
+    cmcr_linear = compute_cmcr(div_linear, prices_obs, mc_linear, p2f_pre, p2f_post)
+    cmcr_loglinear = compute_cmcr(div_loglinear, prices_obs, mc_loglinear, p2f_pre, p2f_post)
 
     print("--- Screening Metrics (merging products 0-3) ---")
     for j in range(4):
@@ -458,12 +465,13 @@ def main():
     )
     q_post_linear = shares_linear(p_post_linear, cal_linear['a'], cal_linear['B'])
 
-    # Log-linear
-    p_post_loglinear = scipy.optimize.fsolve(
-        foc_loglinear, x0=prices_obs * 1.05,
+    # Log-linear (solve in log-price space to keep prices positive)
+    logp_post_loglinear = scipy.optimize.fsolve(
+        foc_loglinear_logp, x0=np.log(prices_obs * 1.05),
         args=(cal_loglinear['mc'], cal_loglinear['a_ll'], cal_loglinear['E'], omega_post),
         full_output=False
     )
+    p_post_loglinear = np.exp(logp_post_loglinear)
     q_post_loglinear = shares_loglinear(p_post_loglinear, cal_loglinear['a_ll'], cal_loglinear['E'])
 
     print(f"  Logit post-merger prices:      {p_post_logit}")
@@ -487,28 +495,28 @@ def main():
     # =====================================================================
     # Pre-merger welfare
     cs_pre_logit = cs_logit(prices_obs, cal_logit['alpha'], cal_logit['xi'], M)
-    ps_pre_logit = producer_surplus(prices_obs, shares_obs * M, mc)
+    ps_pre_logit = producer_surplus(prices_obs, shares_obs * M, mc_logit)
 
     q_pre_linear = shares_linear(prices_obs, cal_linear['a'], cal_linear['B'])
     cs_pre_linear = cs_linear(prices_obs, cal_linear['a'], cal_linear['B'],
                               np.linalg.solve(cal_linear['B'], cal_linear['a']))
-    ps_pre_linear = producer_surplus(prices_obs, q_pre_linear, mc)
+    ps_pre_linear = producer_surplus(prices_obs, q_pre_linear, mc_linear)
 
     q_pre_loglinear = shares_loglinear(prices_obs, cal_loglinear['a_ll'], cal_loglinear['E'])
     p_high_ll = prices_obs * 5.0  # High price for integration bound
     cs_pre_loglinear = cs_loglinear(prices_obs, p_high_ll, cal_loglinear['a_ll'], cal_loglinear['E'])
-    ps_pre_loglinear = producer_surplus(prices_obs, q_pre_loglinear, mc)
+    ps_pre_loglinear = producer_surplus(prices_obs, q_pre_loglinear, mc_loglinear)
 
     # Post-merger welfare
     cs_post_logit = cs_logit(p_post_logit, cal_logit['alpha'], cal_logit['xi'], M)
-    ps_post_logit = producer_surplus(p_post_logit, s_post_logit * M, mc)
+    ps_post_logit = producer_surplus(p_post_logit, s_post_logit * M, mc_logit)
 
     cs_post_linear = cs_linear(p_post_linear, cal_linear['a'], cal_linear['B'],
                                np.linalg.solve(cal_linear['B'], cal_linear['a']))
-    ps_post_linear = producer_surplus(p_post_linear, q_post_linear, mc)
+    ps_post_linear = producer_surplus(p_post_linear, q_post_linear, mc_linear)
 
     cs_post_loglinear = cs_loglinear(p_post_loglinear, p_high_ll, cal_loglinear['a_ll'], cal_loglinear['E'])
-    ps_post_loglinear = producer_surplus(p_post_loglinear, q_post_loglinear, mc)
+    ps_post_loglinear = producer_surplus(p_post_loglinear, q_post_loglinear, mc_loglinear)
 
     # Changes
     dCS = {
@@ -590,7 +598,7 @@ In matrix form: $\mathbf{q} + (\Omega \circ \mathbf{J}') (\mathbf{p} - \mathbf{c
         f"| Outside share | {1-np.sum(shares_obs):.2f} | Logit outside good |\n"
         f"| $\\alpha$ (logit) | {cal_logit['alpha']:.4f} | Calibrated price coefficient |\n"
         "| Cross-price ratio (linear) | 0.10 | Cross-slope / geometric mean of own-slopes |\n"
-        "| Cross elasticity (log-linear) | 0.30 | Symmetric cross-price elasticities |\n"
+        "| Cross elasticity (log-linear) | 0.15 | Symmetric cross-price elasticities |\n"
         "| Merger | Firm 1 + Firm 2 | Products 1-4 under common ownership |"
     )
 
@@ -641,6 +649,11 @@ In matrix form: $\mathbf{q} + (\Omega \circ \mathbf{J}') (\mathbf{p} - \mathbf{c
         "Pre- vs post-merger prices across three demand systems. Merging products (1-4) "
         "see larger price increases; the magnitude depends heavily on the demand model.",
         fig1,
+        description="The same merger produces very different price predictions depending on "
+        "the demand functional form. Logit's IIA property channels substitution to the outside "
+        "good, dampening price increases. Log-linear (constant elasticity) demand typically "
+        "predicts the largest effects because margins are highly sensitive to the elasticity "
+        "parameter.",
     )
 
     # -----------------------------------------------------------------
@@ -669,6 +682,10 @@ In matrix form: $\mathbf{q} + (\Omega \circ \mathbf{J}') (\mathbf{p} - \mathbf{c
         "Welfare decomposition across demand systems: consumers lose, producers may gain, "
         "and the net effect depends on the demand model.",
         fig2,
+        description="Consumer surplus always falls after a price-increasing merger, but "
+        "producer surplus may rise as merged firms capture higher margins. Whether total "
+        "welfare falls depends on the curvature of demand -- another reason why functional "
+        "form choice is the most consequential modeling decision in merger analysis.",
     )
 
     # -----------------------------------------------------------------
@@ -709,6 +726,10 @@ In matrix form: $\mathbf{q} + (\Omega \circ \mathbf{J}') (\mathbf{p} - \mathbf{c
         "UPP and GUPPI by product and demand model. Only merging products (1-4) have "
         "positive values; non-merging products have zero UPP by construction.",
         fig3,
+        description="UPP and GUPPI are screening metrics that approximate merger price effects "
+        "without solving for a new equilibrium. They measure the pricing pressure from "
+        "internalizing diversion between merging products. The variation across demand models "
+        "shows that even these simplified screens are sensitive to demand assumptions.",
     )
 
     # -----------------------------------------------------------------
@@ -717,30 +738,36 @@ In matrix form: $\mathbf{q} + (\Omega \circ \mathbf{J}') (\mathbf{p} - \mathbf{c
     fig4, ax4 = plt.subplots(figsize=(9, 6))
     efficiency_levels = np.linspace(0.0, 0.25, 15)  # 0% to 25% cost reduction
 
+    mc_by_model = {"Logit": mc_logit, "Linear": mc_linear, "Log-linear": mc_loglinear}
+    post_price_by_model = {"Logit": p_post_logit, "Linear": p_post_linear, "Log-linear": p_post_loglinear}
     for idx, (label, color) in enumerate(zip(demand_labels, model_colors)):
         avg_price_changes = []
+        mc_base = mc_by_model[label]
+        p_warm = post_price_by_model[label].copy()  # Warmstart from post-merger solution
         for eff in efficiency_levels:
-            mc_eff = mc.copy()
-            mc_eff[:4] = mc[:4] * (1.0 - eff)  # Cost reduction only for merging firms
+            mc_eff = mc_base.copy()
+            mc_eff[:4] = mc_base[:4] * (1.0 - eff)  # Cost reduction only for merging firms
 
             if label == "Logit":
                 p_eff = scipy.optimize.fsolve(
-                    foc_logit, x0=prices_obs * 1.02,
+                    foc_logit, x0=p_warm,
                     args=(mc_eff, cal_logit['alpha'], cal_logit['xi'], omega_post),
                     full_output=False
                 )
             elif label == "Linear":
                 p_eff = scipy.optimize.fsolve(
-                    foc_linear, x0=prices_obs * 1.02,
+                    foc_linear, x0=p_warm,
                     args=(mc_eff, cal_linear['a'], cal_linear['B'], omega_post),
                     full_output=False
                 )
             else:
-                p_eff = scipy.optimize.fsolve(
-                    foc_loglinear, x0=prices_obs * 1.02,
+                logp_eff = scipy.optimize.fsolve(
+                    foc_loglinear_logp, x0=np.log(np.maximum(p_warm, 0.01)),
                     args=(mc_eff, cal_loglinear['a_ll'], cal_loglinear['E'], omega_post),
                     full_output=False
                 )
+                p_eff = np.exp(logp_eff)
+            p_warm = p_eff.copy()  # Use this solution as warmstart for next level
             avg_dp = np.mean((p_eff[:4] - prices_obs[:4]) / prices_obs[:4]) * 100
             avg_price_changes.append(avg_dp)
 
@@ -761,6 +788,10 @@ In matrix form: $\mathbf{q} + (\Omega \circ \mathbf{J}') (\mathbf{p} - \mathbf{c
         "How much marginal cost reduction is needed to offset the merger price increase? "
         "The break-even point differs substantially across demand models.",
         fig4,
+        description="The zero-crossing on each curve is the minimum efficiency gain needed "
+        "to make the merger consumer-neutral. Below this threshold, the merger raises prices "
+        "on net. The fact that break-even efficiencies differ across demand models underscores "
+        "how sensitive policy conclusions are to functional form assumptions.",
     )
 
     # -----------------------------------------------------------------
@@ -793,7 +824,10 @@ In matrix form: $\mathbf{q} + (\Omega \circ \mathbf{J}') (\mathbf{p} - \mathbf{c
         table_data["Avg CMCR (%)"].append(f"{np.mean(cmcr_vals[:4]) * 100:.2f}")
 
     df = pd.DataFrame(table_data)
-    report.add_table("tables/merger-effects.csv", "Merger Effects Comparison Across Demand Models", df)
+    report.add_table("tables/merger-effects.csv", "Merger Effects Comparison Across Demand Models", df,
+        description="The table quantifies how the same merger yields different conclusions "
+        "depending on the demand model. GUPPI and CMCR provide screening thresholds: a CMCR "
+        "above the expected efficiency gains suggests the merger will raise prices.")
 
     # -----------------------------------------------------------------
     # Takeaway

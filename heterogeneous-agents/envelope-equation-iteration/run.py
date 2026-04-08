@@ -519,7 +519,11 @@ with complementary slackness at the borrowing constraint $a' \ge \underline{a}$.
     ax1.legend()
     ax1.set_xlim(0, min(amax, 20))
     report.add_figure("figures/consumption-policy.png",
-                       "Consumption policy function c(a,y) from EEI for different income states", fig1)
+                       "Consumption policy function c(a,y) from EEI for different income states", fig1,
+        description="The consumption policies are identical to those obtained by VFI and EGP, "
+        "confirming that all three methods converge to the same economic solution. The spread "
+        "across income states reflects the incomplete-markets friction: agents cannot insure "
+        "against income variation.")
 
     # --- Figure 2: Value Function Derivative V'(a) ---
     fig2, ax2 = plt.subplots()
@@ -537,7 +541,11 @@ with complementary slackness at the borrowing constraint $a' \ge \underline{a}$.
     ax2.set_xlim(0, min(amax, 20))
     ax2.set_ylim(0, min(float(dV[0, 0]) * 1.5, float(np.max(dV) * 1.2)))
     report.add_figure("figures/value-derivative.png",
-                       "Value function derivative V'(a) from the envelope condition, with R*u'(c) for extreme income states", fig2)
+                       "Value function derivative V'(a) from the envelope condition, with R*u'(c) for extreme income states", fig2,
+        description="The envelope condition V'(a) = R * E[u'(c)] is the object EEI iterates on "
+        "directly. It lies between the marginal-utility curves for the lowest and highest "
+        "income states because it is an expectation across income. The steep decline at low "
+        "assets reflects the high marginal value of wealth near the borrowing constraint.")
 
     # --- Figure 3: Simulated Wealth Distribution ---
     fig3, ax3 = plt.subplots()
@@ -554,7 +562,11 @@ with complementary slackness at the borrowing constraint $a' \ge \underline{a}$.
     ax3.legend()
     ax3.set_xlim(0, np.percentile(final_assets, 99) * 1.1)
     report.add_figure("figures/wealth-distribution.png",
-                       "Simulated stationary wealth distribution from 50,000 agents over 500 periods", fig3)
+                       "Simulated stationary wealth distribution from 50,000 agents over 500 periods", fig3,
+        description="The gap between mean and median wealth reveals the right skew: a few agents "
+        "hold large buffer stocks while many cluster near the borrowing constraint. This "
+        "distribution is the same regardless of which solution method (EEI, EGP, or VFI) "
+        "generated the policy functions.")
 
     # --- Figure 4: Convergence Comparison ---
     fig4, ax4 = plt.subplots()
@@ -571,7 +583,11 @@ with complementary slackness at the borrowing constraint $a' \ge \underline{a}$.
     ax4.legend()
     ax4.set_xlim(0, max(len(eei_errors), len(egp_errors), min(len(vfi_errors), 500)))
     report.add_figure("figures/convergence-comparison.png",
-                       "Convergence comparison across three solution methods for the same problem", fig4)
+                       "Convergence comparison across three solution methods for the same problem", fig4,
+        description="VFI converges slowly because the contraction rate is beta, requiring many "
+        "iterations to shrink errors. EGP and EEI both iterate on the Euler equation and "
+        "converge in far fewer iterations. Per-iteration cost also differs: EGP avoids "
+        "nonlinear solves entirely, while EEI uses bisection at each grid point.")
 
     # --- Table: Solution Statistics ---
     table_data = {
@@ -621,7 +637,10 @@ with complementary slackness at the borrowing constraint $a' \ge \underline{a}$.
         ],
     }
     df = pd.DataFrame(table_data)
-    report.add_table("tables/solution-statistics.csv", "Solution Statistics: EEI vs VFI vs EGP", df)
+    report.add_table("tables/solution-statistics.csv", "Solution Statistics: EEI vs VFI vs EGP", df,
+        description="The iteration counts and wall-clock times reveal the computational tradeoffs "
+        "between methods. All three solve the same economic problem and yield identical policy "
+        "functions, so the choice is purely about computational efficiency.")
 
     report.add_takeaway(
         "The envelope equation iteration method demonstrates that the same economic "

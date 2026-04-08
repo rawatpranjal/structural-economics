@@ -73,76 +73,66 @@ def solve_rbc_tax(tau_k, beta=0.99, alpha=0.36, sigma=2.0, delta=0.025,
 
     policy_k = np.zeros((n_z, n_k))
     policy_c = np.zeros((n_z, n_k))
+    policy_idx = np.zeros((n_z, n_k), dtype=int)
+    howard_steps = 25
+
+    # Precompute utility matrices
+    u_mats = np.zeros((n_z, n_k, n_k))
+    resources_all = np.zeros((n_z, n_k))
+    for iz in range(n_z):
+        resources_all[iz] = z_grid[iz] * K_grid ** alpha + (1.0 - delta) * K_grid
+        c_mat = resources_all[iz][:, None] - K_grid[None, :]
+        u_mats[iz] = u(c_mat)
 
     for iteration in range(1, max_iter + 1):
         V_new = np.zeros_like(V)
 
         for iz in range(n_z):
-            z_val = z_grid[iz]
-            y_vec = z_val * K_grid ** alpha
-            # Budget: c + K' = (1 - tau_k) * z * K^alpha + tau_k * z * K^alpha + (1-delta)*K
-            # The government collects tau_k * r * K = tau_k * alpha * z * K^alpha
-            # and returns it lump-sum, so total resources = z * K^alpha + (1-delta)*K
-            # But the EULER equation uses after-tax return:
-            # c^(-sigma) = beta * E[c'^(-sigma) * ((1-tau_k)*alpha*z'*K'^(alpha-1) + 1 - delta)]
-            # Budget constraint is still: c + K' = z*K^alpha + (1-delta)*K
-            # (lump-sum transfer = tau_k * alpha * z * K^alpha, included in resources)
-            resources = y_vec + (1.0 - delta) * K_grid
-
-            c_mat = resources[:, None] - K_grid[None, :]
-            u_mat = u(c_mat)
-
-            # Expected continuation: use after-tax return in the Euler equation
-            # For VFI, V already embeds the equilibrium, so we just do standard VFI
-            # The key is that the Euler uses after-tax MPK, which affects the optimal K'
-            # We embed this by including the correct continuation value
-            EV_kprime = trans_z[iz, :] @ V  # (n_k,)
-
-            val_mat = u_mat + beta * EV_kprime[None, :]
+            EV_kprime = trans_z[iz, :] @ V
+            val_mat = u_mats[iz] + beta * EV_kprime[None, :]
             best_idx = np.argmax(val_mat, axis=1)
             V_new[iz, :] = val_mat[np.arange(n_k), best_idx]
+            policy_idx[iz, :] = best_idx
             policy_k[iz, :] = K_grid[best_idx]
-            policy_c[iz, :] = resources - K_grid[best_idx]
+            policy_c[iz, :] = resources_all[iz] - K_grid[best_idx]
 
         error = np.max(np.abs(V_new - V))
-        if verbose and iteration % 50 == 0:
-            print(f"    tau={tau_k:.2f} VFI iter {iteration:3d}, error = {error:.2e}")
         V = V_new.copy()
+
+        # Howard policy iteration acceleration
+        for _ in range(howard_steps):
+            V_howard = np.zeros_like(V)
+            for iz in range(n_z):
+                EV_kprime = trans_z[iz, :] @ V
+                for ik in range(n_k):
+                    ik_prime = policy_idx[iz, ik]
+                    V_howard[iz, ik] = u_mats[iz][ik, ik_prime] + beta * EV_kprime[ik_prime]
+            V = V_howard
+
+        if verbose and iteration % 10 == 0:
+            print(f"    tau={tau_k:.2f} VFI iter {iteration:3d}, error = {error:.2e}")
         if error < tol:
             if verbose:
                 print(f"    tau={tau_k:.2f} converged in {iteration} iters (error = {error:.2e})")
             break
 
-    # The above VFI does not directly incorporate the tax wedge because in a
-    # representative-agent competitive equilibrium with lump-sum rebate, the
-    # planner's problem is affected by the tax through the Euler equation.
-    # To properly handle this, we solve the Euler equation version with the
-    # after-tax return. Let's do this via iterating on the Euler equation
-    # using the consumption policy function.
-
-    # Euler-based refinement: update consumption policy using Euler residuals
-    for euler_iter in range(200):
+    # Euler-based refinement: incorporate the tax wedge into the consumption
+    # policy via iteration on the after-tax Euler equation.
+    for euler_iter in range(300):
         policy_c_new = np.zeros_like(policy_c)
         for iz in range(n_z):
-            z_val = z_grid[iz]
-            resources = z_val * K_grid ** alpha + (1.0 - delta) * K_grid
+            resources = resources_all[iz]
             for ik in range(n_k):
                 kp = policy_k[iz, ik]
-                # Expected marginal utility * after-tax return
                 Ec = 0.0
                 for jz in range(n_z):
                     z_next = z_grid[jz]
-                    # Interpolate future consumption at (z', k')
                     c_next = np.interp(kp, K_grid, policy_c[jz, :])
                     mpk_next = (1.0 - tau_k) * alpha * z_next * kp ** (alpha - 1.0) + 1.0 - delta
                     Ec += trans_z[iz, jz] * c_next ** (-sigma) * mpk_next
-
-                # Euler equation: c^(-sigma) = beta * Ec
                 c_euler = (beta * Ec) ** (-1.0 / sigma)
                 c_euler = np.clip(c_euler, 1e-10, resources[ik] - K_min)
                 policy_c_new[iz, ik] = c_euler
-
-            # Update K' from budget
             policy_k[iz, :] = np.clip(resources - policy_c_new[iz, :], K_min, K_max)
 
         err_euler = np.max(np.abs(policy_c_new - policy_c))
@@ -348,7 +338,11 @@ $$K_{ss}(\tau_k) = \left(\frac{(1-\tau_k)\alpha}{1/\beta - 1 + \delta}\right)^{\
     ax1b.set_title("Welfare Cost of Capital Taxation")
     ax1b.legend()
     fig1.tight_layout()
-    report.add_figure("figures/steady-state-tax.png", "Steady-state levels and percentage losses as a function of the capital tax rate", fig1)
+    report.add_figure("figures/steady-state-tax.png", "Steady-state levels and percentage losses as a function of the capital tax rate", fig1,
+        description="The left panel shows how the steady-state capital stock falls steeply with the tax "
+        "rate, dragging output down with it. The right panel reveals that capital losses are roughly "
+        "twice the output losses due to the capital-share amplification: K falls as (1-tau)^{1/(1-alpha)}, "
+        "a highly nonlinear relationship.")
 
     # --- Figure 2: Policy functions across tax rates ---
     fig2, (ax2a, ax2b) = plt.subplots(1, 2, figsize=(13, 5))
@@ -372,7 +366,11 @@ $$K_{ss}(\tau_k) = \left(\frac{(1-\tau_k)\alpha}{1/\beta - 1 + \delta}\right)^{\
     ax2b.set_title("Consumption Policy (median TFP)")
     ax2b.legend(fontsize=8)
     fig2.tight_layout()
-    report.add_figure("figures/policy-by-tax.png", "Policy functions at median TFP for different capital tax rates", fig2)
+    report.add_figure("figures/policy-by-tax.png", "Policy functions at median TFP for different capital tax rates", fig2,
+        description="Each curve shows the optimal decision rule for a different tax regime. Higher taxes "
+        "shift the capital policy downward (less saving) and the consumption policy upward (more current "
+        "consumption), because the after-tax return on capital no longer justifies the same level of "
+        "investment.")
 
     # --- Figure 3: Simulated capital paths ---
     fig3, (ax3a, ax3b) = plt.subplots(1, 2, figsize=(13, 5))
@@ -394,7 +392,10 @@ $$K_{ss}(\tau_k) = \left(\frac{(1-\tau_k)\alpha}{1/\beta - 1 + \delta}\right)^{\
     ax3b.set_title("Simulated Output Paths")
     ax3b.legend(fontsize=7)
     fig3.tight_layout()
-    report.add_figure("figures/simulation-paths.png", "Simulated capital and output paths under different tax rates", fig3)
+    report.add_figure("figures/simulation-paths.png", "Simulated capital and output paths under different tax rates", fig3,
+        description="The simulations share identical TFP shock sequences, so differences across colors are "
+        "purely due to the tax distortion. Notice how higher-tax economies (warmer colors) operate at "
+        "permanently lower capital and output levels, illustrating the long-run cost of capital taxation.")
 
     # --- Figure 4: Investment response to TFP shock ---
     fig4, (ax4a, ax4b) = plt.subplots(1, 2, figsize=(13, 5))
@@ -426,11 +427,18 @@ $$K_{ss}(\tau_k) = \left(\frac{(1-\tau_k)\alpha}{1/\beta - 1 + \delta}\right)^{\
     ax4b.set_title("Distribution of Capital-Output Ratio")
     ax4b.legend(fontsize=7)
     fig4.tight_layout()
-    report.add_figure("figures/investment-distributions.png", "Distribution of investment rate and capital-output ratio across tax regimes", fig4)
+    report.add_figure("figures/investment-distributions.png", "Distribution of investment rate and capital-output ratio across tax regimes", fig4,
+        description="Higher taxes compress the investment-rate distribution toward lower values (left) "
+        "and reduce the capital-output ratio (right). The shift in these ratios is the core mechanism "
+        "through which capital taxes affect growth: a persistently lower investment share erodes the "
+        "economy's productive capacity.")
 
     # --- Table ---
     df_ss = pd.DataFrame(ss_data)
-    report.add_table("tables/steady-state.csv", "Steady State and Simulation Statistics by Tax Rate", df_ss)
+    report.add_table("tables/steady-state.csv", "Steady State and Simulation Statistics by Tax Rate", df_ss,
+        description="The K_ss/K_ss(0) column shows how each tax rate erodes the capital stock relative to "
+        "the zero-tax benchmark. Compare the analytical steady-state K_ss to the simulated mean K: the "
+        "gap reflects precautionary savings, which partly offsets the tax distortion.")
 
     report.add_results(
         f"A 30% capital tax reduces steady-state capital by "

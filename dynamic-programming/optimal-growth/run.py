@@ -225,7 +225,9 @@ $$V(k) = E + F \ln(k), \qquad E = \frac{\ln(A(1-\alpha\beta)) + \frac{\beta\alph
     ax1.set_ylabel("$V(k)$")
     ax1.set_title("Value Function")
     ax1.legend()
-    report.add_figure("figures/value-function.png", "Value function: numerical VFI vs analytical solution", fig1)
+    report.add_figure("figures/value-function.png", "Value function: numerical VFI vs analytical solution", fig1,
+        description="The value function is concave and increasing in capital, reflecting the productive nature of savings. "
+        "The vertical line at the steady state marks where the marginal value of additional capital equals the marginal cost of foregone consumption.")
 
     # --- Figure 2: Policy Function ---
     fig2, ax2 = plt.subplots()
@@ -237,7 +239,9 @@ $$V(k) = E + F \ln(k), \qquad E = \frac{\ln(A(1-\alpha\beta)) + \frac{\beta\alph
     ax2.set_ylabel("Next-period capital $k'$")
     ax2.set_title("Capital Policy Function")
     ax2.legend()
-    report.add_figure("figures/policy-function.png", "Capital policy function: numerical vs analytical", fig2)
+    report.add_figure("figures/policy-function.png", "Capital policy function: numerical vs analytical", fig2,
+        description="The policy function crosses the 45-degree line at the steady state: below it the agent accumulates capital, "
+        "above it capital decumulates. This crossing is the graphical signature of a stable steady state.")
 
     # --- Figure 3: Simulation ---
     fig3, (ax3a, ax3b) = plt.subplots(1, 2, figsize=(12, 5))
@@ -258,7 +262,9 @@ $$V(k) = E + F \ln(k), \qquad E = \frac{\ln(A(1-\alpha\beta)) + \frac{\beta\alph
     ax3b.set_title("Consumption Over Time")
     ax3b.legend()
     fig3.tight_layout()
-    report.add_figure("figures/simulation.png", f"Simulation: capital and consumption converging to steady state from k0={k0:.2f}", fig3)
+    report.add_figure("figures/simulation.png", f"Simulation: capital and consumption converging to steady state from k0={k0:.2f}", fig3,
+        description="Starting from well below steady state, the economy rapidly accumulates capital as high marginal returns incentivize saving. "
+        "Consumption rises monotonically along the transition path, since the Euler equation ensures consumption never jumps discontinuously.")
 
     # --- Table: Numerical vs Analytical ---
     valid_start = max(1, n_grid // 10)  # Skip bottom 10% of grid
@@ -271,7 +277,9 @@ $$V(k) = E + F \ln(k), \qquad E = \frac{\ln(A(1-\alpha\beta)) + \frac{\beta\alph
         "k' analytical": [f"{float(policy_kprime_analytical[i]):.4f}" for i in sample_idx],
     }
     df = pd.DataFrame(table_data)
-    report.add_table("tables/comparison.csv", "Numerical vs Analytical Solution at Selected Grid Points", df)
+    report.add_table("tables/comparison.csv", "Numerical vs Analytical Solution at Selected Grid Points", df,
+        description="The tight match between numerical and analytical solutions validates the VFI implementation. "
+        "Any discrepancies at the grid boundaries reflect interpolation limitations near the edges of the state space.")
 
     report.add_takeaway(
         "The neoclassical growth model reveals how productive capital creates a "

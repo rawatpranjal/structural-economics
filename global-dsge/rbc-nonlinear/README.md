@@ -37,7 +37,7 @@ $$c^{-\sigma} = \beta \, \mathbb{E}\left[ c'^{-\sigma} \left(\alpha z' K'^{\alph
 
 **Value Function Iteration (VFI)** on a tensor-product grid with discrete maximization over the capital grid. The TFP process is discretized using the Tauchen method. Continuation values are computed by taking expectations over the Markov transition matrix.
 
-Converged in **500 iterations** (error = 1.78e-03).
+Converged in **49 iterations** (error = 9.33e-07).
 
 For comparison, we also compute the log-linearized solution using the method of undetermined coefficients around the deterministic steady state.
 

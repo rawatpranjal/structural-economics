@@ -199,6 +199,10 @@ $$W(t) = W_0 \, e^{-\rho t / \sigma}$$
         "figures/consumption-path.png",
         "Optimal consumption path: continuous vs discrete time",
         fig1,
+        description="Consumption declines exponentially because the shadow price of cake is "
+        "constant in present value: an optimizing agent equates the marginal value across "
+        "all time periods after discounting. The discrete-time path closely tracks the "
+        "continuous solution, converging as the period length shrinks.",
     )
 
     # --- Figure 2: Cake Remaining ---
@@ -215,6 +219,9 @@ $$W(t) = W_0 \, e^{-\rho t / \sigma}$$
         "figures/cake-remaining.png",
         "Cake depletion: continuous exponential decay vs discrete geometric decay",
         fig2,
+        description="The cake is never fully consumed in finite time -- it decays asymptotically "
+        "to zero. Higher risk aversion (sigma) slows depletion because the agent values "
+        "consumption smoothing more and is reluctant to let future consumption fall too low.",
     )
 
     # --- Figure 3: Shadow Price ---
@@ -235,6 +242,10 @@ $$W(t) = W_0 \, e^{-\rho t / \sigma}$$
         "figures/shadow-price.png",
         "Shadow price of cake: present-value (constant) and current-value (rising as cake becomes scarce)",
         fig3,
+        description="The constant present-value costate is the key optimality result from "
+        "Pontryagin's principle: since cake does not appear in the Hamiltonian directly, "
+        "its shadow price is time-invariant. The rising current-value shadow price reflects "
+        "increasing scarcity as the resource is depleted.",
     )
 
     # --- Table ---
@@ -252,6 +263,9 @@ $$W(t) = W_0 \, e^{-\rho t / \sigma}$$
         "tables/comparison.csv",
         "Analytical vs Numerical Solution at Selected Time Points",
         df,
+        description="The near-zero difference between analytical and numerical columns validates "
+        "the ODE integration. This problem has a closed-form solution, making it an ideal "
+        "test case for verifying numerical methods before applying them to harder problems.",
     )
 
     report.add_takeaway(

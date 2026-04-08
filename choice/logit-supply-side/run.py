@@ -470,6 +470,10 @@ Multi-product firms internalise cannibalisation and charge higher markups.
         "Parameter estimates: True vs OLS (biased) vs IV/2SLS (consistent). "
         "OLS attenuates price sensitivity because high-xi products command higher prices.",
         fig1,
+        description="The gap between OLS (red) and the true value (green) for alpha is "
+        "the endogeneity bias: OLS understates price sensitivity because unobserved quality "
+        "raises both demand and price simultaneously. IV/2SLS (blue) recovers the correct "
+        "parameter by isolating exogenous cost-driven price variation.",
     )
 
     # --- Figure 2: Elasticity heatmap ---
@@ -495,6 +499,10 @@ Multi-product firms internalise cannibalisation and charge higher markups.
         "Elasticity matrix. Cross-elasticities in each column are identical -- "
         "the IIA limitation of the simple logit.",
         fig2,
+        description="Each column of cross-elasticities is identical because the logit model "
+        "forces all products to be equally substitutable. This means that when a sugary cereal "
+        "raises its price, the model predicts equal substitution to both a similar sugary cereal "
+        "and a dissimilar fiber cereal -- an unrealistic restriction.",
     )
 
     # --- Figure 3: Price decomposition (stacked bar: MC + markup) ---
@@ -527,6 +535,11 @@ Multi-product firms internalise cannibalisation and charge higher markups.
         "Price = marginal cost + markup. Estimated MC (green, from Bertrand-Nash FOC) "
         "compared with true MC (blue). No accounting data required.",
         fig3,
+        description="The close match between estimated and true marginal costs validates the "
+        "supply-side approach: demand estimates plus the Bertrand-Nash FOC are sufficient to "
+        "decompose observed prices into cost and markup components. Multi-product firms "
+        "charge higher markups because they internalize cannibalization between their own "
+        "products.",
     )
 
     # --- Figure 4: IIA demonstration (cross-elasticity bar charts) ---
@@ -558,6 +571,10 @@ Multi-product firms internalise cannibalisation and charge higher markups.
         "each rival is proportional to that rival's market share -- not to how "
         "similar the products are.",
         fig4,
+        description="Within each panel, notice that all bars have the same height -- every rival "
+        "gains the same cross-elasticity regardless of product similarity. This is the IIA "
+        "property in action. The BLP random coefficients model breaks this restriction by "
+        "allowing consumer heterogeneity.",
     )
 
     # --- Table: Estimation results ---
@@ -573,6 +590,10 @@ Multi-product firms internalise cannibalisation and charge higher markups.
         "tables/estimation-results.csv",
         "Estimation Results: True vs OLS vs IV/2SLS",
         df_table,
+        description="Compare the OLS and IV/2SLS columns: the bias is concentrated in alpha "
+        "(price sensitivity) because price is the endogenous variable. The characteristic "
+        "coefficients (sugar, fiber) are less affected because product attributes have weaker "
+        "correlation with the unobserved quality term.",
     )
 
     report.add_takeaway(

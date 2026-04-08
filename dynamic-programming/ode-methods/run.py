@@ -316,7 +316,10 @@ $$\frac{dx}{dt} = \alpha x - \beta x y, \qquad \frac{dy}{dt} = \delta x y - \gam
     fig1.tight_layout()
     report.add_figure("figures/solow-phase-diagram.png",
                       "Solow growth model: phase diagram (left) and convergence dynamics (right)",
-                      fig1)
+                      fig1,
+        description="The phase diagram shows dk/dt as a single hump-shaped curve crossing zero at k*: "
+        "to the left capital accumulates, to the right it decumulates. This immediately proves global stability -- "
+        "no matter the starting point, the economy is pulled toward steady state.")
 
     # --- Figure 2: Ramsey Phase Diagram with Saddle Path ---
     fig2, ax2 = plt.subplots(figsize=(9, 7))
@@ -351,7 +354,10 @@ $$\frac{dx}{dt} = \alpha x - \beta x y, \qquad \frac{dy}{dt} = \delta x y - \gam
 
     report.add_figure("figures/ramsey-phase-diagram.png",
                       "Ramsey optimal growth: phase diagram with nullclines, vector field, and saddle paths from multiple initial conditions",
-                      fig2)
+                      fig2,
+        description="The two nullclines divide the phase plane into four regions with distinct dynamics. "
+        "Only the saddle paths converge to the steady state; all other trajectories violate the transversality condition. "
+        "The vector field arrows reveal the unstable directions that make the shooting method necessary.")
 
     # --- Figure 3: Lotka-Volterra Cycles ---
     fig3, (ax3a, ax3b) = plt.subplots(1, 2, figsize=(14, 5))
@@ -388,7 +394,10 @@ $$\frac{dx}{dt} = \alpha x - \beta x y, \qquad \frac{dy}{dt} = \delta x y - \gam
     fig3.tight_layout()
     report.add_figure("figures/lotka-volterra-cycles.png",
                       "Lotka-Volterra predator-prey: time series (left) and phase portrait showing closed orbits (right)",
-                      fig3)
+                      fig3,
+        description="The closed orbit in the phase portrait confirms that the system has a conserved quantity -- populations cycle "
+        "indefinitely without converging or diverging. This contrasts sharply with the Solow and Ramsey models, illustrating how "
+        "qualitatively different ODE structures (stable node, saddle, center) produce fundamentally different economic dynamics.")
 
     # --- Figure 4: Ramsey Time Paths ---
     fig4, (ax4a, ax4b) = plt.subplots(1, 2, figsize=(14, 5))
@@ -418,7 +427,9 @@ $$\frac{dx}{dt} = \alpha x - \beta x y, \qquad \frac{dy}{dt} = \delta x y - \gam
     fig4.tight_layout()
     report.add_figure("figures/ramsey-time-paths.png",
                       "Ramsey model: time paths of capital k(t) and consumption c(t) along saddle paths",
-                      fig4)
+                      fig4,
+        description="All saddle paths converge to the same steady state regardless of initial capital. "
+        "Capital-poor economies grow faster (steeper slopes) due to higher marginal returns, while consumption adjusts smoothly along the Euler equation.")
 
     # --- Table: Steady-State Values ---
     table_data = {
@@ -444,7 +455,9 @@ $$\frac{dx}{dt} = \alpha x - \beta x y, \qquad \frac{dy}{dt} = \delta x y - \gam
     }
     df = pd.DataFrame(table_data)
     report.add_table("tables/steady-states.csv",
-                     "Steady-State Values for Each Model", df)
+                     "Steady-State Values for Each Model", df,
+        description="Comparing steady states across models highlights a key distinction: the Solow and Ramsey models share the same production "
+        "technology but reach different steady states because optimal savings (Ramsey) differs from exogenous savings (Solow).")
 
     report.add_takeaway(
         "These three examples illustrate the rich dynamics that arise from continuous-time "
