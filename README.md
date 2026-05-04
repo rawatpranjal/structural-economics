@@ -69,7 +69,7 @@ These examples show linearized macro models, impulse responses, and Dynare-style
 
 | | Tutorial | What it teaches | Method | Key Insight |
 |:---:|---|---|---|---|
-| <img src="dynare/ar-processes/figures/thumb.png" width="192"> | [**AR Processes and Shock Propagation**](dynare/ar-processes/) | Persistence, autocorrelation, spectra, and simulated paths | Simulation | Persistence controls business-cycle propagation |
+| <img src="dynare/ar-processes/figures/thumb.png" width="192"> | [**Persistent Shocks and Multiplier-Accelerator Dynamics**](dynare/ar-processes/) | How AR(1) persistence changes shock half-lives, spectra, and income dynamics | Analytic IRFs + simulation | Persistence is an economic timing assumption, not just a coefficient |
 | <img src="dynare/rbc/figures/thumb.png" width="192"> | [**Perturbation RBC in Dynare**](dynare/rbc/) | A standard log-linear RBC model and its impulse responses | First-order perturbation | TFP shocks move output immediately and capital gradually |
 | <img src="dynare/nkdsge/figures/thumb.png" width="192"> | [**New Keynesian DSGE and Taylor Rule**](dynare/nkdsge/) | IS curve, Phillips curve, monetary policy, and determinacy | Undetermined coefficients | The Taylor principle requires $\phi_\pi > 1$ |
 | <img src="dynare/assetNews/figures/thumb.png" width="192"> | [**Asset Pricing with News Shocks**](dynare/assetNews/) | Anticipated shocks in a present-value asset-pricing model | Dynare + simulation | Prices move before dividends when news arrives |

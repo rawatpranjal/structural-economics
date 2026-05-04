@@ -1,5 +1,6 @@
-Property,"AR(1), $\rho=0.5$","AR(1), $\rho=0.9$","AR(1), $\rho=0.99$"
-Persistence ($\rho$),0.5,0.9,0.99
+Object,$\rho=0.5$,$\rho=0.9$,$\rho=0.99$
+Persistence ($\rho$),0.50,0.90,0.99
 Unconditional variance,0.000133,0.000526,0.005025
 Half-life (periods),1.0,6.6,69.0
-Spectral peak,Frequency 0 (low-pass),Frequency 0 (low-pass),Frequency 0 (low-pass)
+First-order autocorrelation,0.50,0.90,0.99
+Spectral peak,Frequency 0,Frequency 0,Frequency 0
