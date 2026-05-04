@@ -13,9 +13,11 @@ This tutorial uses the bimodal mixture from the course homework. It is intention
 The target is the same two-component mixture used in the optimization tutorial:
 
 $$
-p(\theta) =
-\omega \phi(\theta; \mu_1, \Sigma)
-+ (1-\omega)\phi(\theta; \mu_2, \Sigma).
+\begin{aligned}
+p(\theta)
+&= \omega \phi(\theta; \mu_1, \Sigma) \\
+&\quad + (1-\omega)\phi(\theta; \mu_2, \Sigma).
+\end{aligned}
 $$
 
 Given current draw $\theta_t$, a random-walk proposal draws:
@@ -59,8 +61,8 @@ With proposal step 0.6, the chain explores both modes while still accepting 69.9
 
 Trace plots reveal whether the chain has left its starting point, whether it moves between modes, and whether the retained draws are still highly persistent.
 
-![Trace plots for the tuned random-walk chain](figures/trace-plots.png)
-*Trace plots for the tuned random-walk chain*
+![Trace plots for the middle-step random-walk chain](figures/trace-plots.png)
+*Trace plots for the middle-step random-walk chain*
 
 A tiny proposal can have a comfortable acceptance rate but still move too slowly. A large proposal can switch modes, but rejection creates persistence. The best choice is empirical and target-specific.
 
@@ -77,7 +79,7 @@ The true mixture mean is zero. The true marginal variance of each coordinate is 
 |            0.6  |             0.699 |             319 |        0.255 |          120 |          118 |
 |            2    |             0.304 |             689 |        0.048 |          467 |          494 |
 
-The middle proposal step, 0.6, gives acceptance 69.9% and visible movement between modes. The small proposal accepts more often but has more persistent draws. The largest proposal is useful for jumping across the low-density middle region, but many jumps are rejected.
+The middle proposal step, 0.6, is used in the path and trace plots; it gives acceptance 69.9% and visible movement between modes. The small proposal accepts more often but has more persistent draws. The largest proposal is useful for jumping across the low-density middle region, but many jumps are rejected.
 
 ## Economic Takeaway
 

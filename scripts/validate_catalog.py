@@ -8,6 +8,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+DISPLAY_MATH_BAD_PREFIX = re.compile(r"^\s*[+*-]\s+")
 
 
 def catalog_links() -> set[Path]:
@@ -60,6 +61,39 @@ def tutorial_dirs() -> set[Path]:
     return dirs
 
 
+def active_text_files() -> list[Path]:
+    """Return active Markdown and Python source files to lint lightly."""
+    files = []
+    for pattern in ("*.md", "*.py"):
+        for path in ROOT.rglob(pattern):
+            rel = path.relative_to(ROOT)
+            if ".git" in rel.parts or "_legacy" in rel.parts:
+                continue
+            files.append(path)
+    return sorted(files)
+
+
+def display_math_errors() -> list[str]:
+    """Find display-math blocks that are likely to be misparsed by Markdown."""
+    errors = []
+    for path in active_text_files():
+        rel = path.relative_to(ROOT)
+        in_math = False
+        start_line: int | None = None
+        for lineno, line in enumerate(path.read_text(errors="replace").splitlines(), start=1):
+            if line.strip() == "$$":
+                in_math = not in_math
+                start_line = lineno if in_math else None
+                continue
+            if in_math and DISPLAY_MATH_BAD_PREFIX.match(line):
+                errors.append(
+                    f"{rel}:{lineno} display math line starts with a Markdown list marker/operator"
+                )
+        if in_math and start_line is not None:
+            errors.append(f"{rel}:{start_line} unclosed display math block")
+    return errors
+
+
 def validate() -> int:
     errors = []
     links = catalog_links()
@@ -82,6 +116,8 @@ def validate() -> int:
 
     for rel in active_checkpoints():
         errors.append(f"Active checkpoint directory outside _legacy: {rel}")
+
+    errors.extend(display_math_errors())
 
     if errors:
         print("Catalog validation failed:")

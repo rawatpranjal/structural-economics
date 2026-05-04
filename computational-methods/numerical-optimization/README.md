@@ -13,9 +13,11 @@ The surface is the negative log density of a bimodal Gaussian mixture. It has tw
 The target density is a mixture of two bivariate normals:
 
 $$
-p(\theta) =
-\omega \phi(\theta; \mu_1, \Sigma)
-+ (1-\omega)\phi(\theta; \mu_2, \Sigma).
+\begin{aligned}
+p(\theta)
+&= \omega \phi(\theta; \mu_1, \Sigma) \\
+&\quad + (1-\omega)\phi(\theta; \mu_2, \Sigma).
+\end{aligned}
 $$
 
 The numerical problem is:
@@ -84,7 +86,7 @@ All local methods start at the same point; dual annealing searches over a box.
 | Nelder-Mead    | (3.00, -2.50) | (-1.49, -1.49) | lower-left  |     2.38467 |            0.01082 |           74 | True      |
 | Dual annealing | box [-5,5]^2  | (-1.49, -1.49) | lower-left  |     2.38467 |            0.01082 |           80 | True      |
 
-The best objective found is 2.38467. Because the two mixture weights are equal, both component means are valid global solutions up to numerical tolerance. The important comparison is not which side wins, but how much each method depends on local geometry and initialization.
+The best objective found is 2.38467. Because the two mixture weights are equal, the objective has two equally good modes near the two component means. The important comparison is not which side wins, but how much each method depends on local geometry and initialization.
 
 ## Economic Takeaway
 

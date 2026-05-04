@@ -180,9 +180,11 @@ def main() -> None:
 The target is the same two-component mixture used in the optimization tutorial:
 
 $$
-p(\theta) =
-\omega \phi(\theta; \mu_1, \Sigma)
-+ (1-\omega)\phi(\theta; \mu_2, \Sigma).
+\begin{aligned}
+p(\theta)
+&= \omega \phi(\theta; \mu_1, \Sigma) \\
+&\quad + (1-\omega)\phi(\theta; \mu_2, \Sigma).
+\end{aligned}
 $$
 
 Given current draw $\theta_t$, a random-walk proposal draws:
@@ -227,7 +229,14 @@ $$
     path = main_draws[burn : burn + 4_000 : 4]
     ax1.plot(path[:, 0], path[:, 1], color="tab:blue", alpha=0.45, linewidth=1.0)
     ax1.scatter(kept[::20, 0], kept[::20, 1], s=8, color="tab:orange", alpha=0.35, label="Kept draws")
-    ax1.scatter([MU1[0], MU2[0]], [MU1[1], MU2[1]], marker="*", s=180, color="black", label="Modes")
+    ax1.scatter(
+        [MU1[0], MU2[0]],
+        [MU1[1], MU2[1]],
+        marker="*",
+        s=180,
+        color="black",
+        label="Component means",
+    )
     ax1.set_xlim(-5.0, 5.0)
     ax1.set_ylim(-5.0, 5.0)
     ax1.set_xlabel(r"$\theta_1$")
@@ -255,7 +264,7 @@ $$
     axes2[0].set_title("Trace Plots")
     report.add_figure(
         "figures/trace-plots.png",
-        "Trace plots for the tuned random-walk chain",
+        "Trace plots for the middle-step random-walk chain",
         fig2,
         description=(
             "Trace plots reveal whether the chain has left its starting point, whether it moves "
@@ -303,10 +312,10 @@ $$
     )
 
     report.add_results(
-        f"The middle proposal step, {main_step}, gives acceptance {main_acceptance:.1%} and "
-        "visible movement between modes. The small proposal accepts more often but has more "
-        "persistent draws. The largest proposal is useful for jumping across the low-density "
-        "middle region, but many jumps are rejected."
+        f"The middle proposal step, {main_step}, is used in the path and trace plots; it gives "
+        f"acceptance {main_acceptance:.1%} and visible movement between modes. The small proposal "
+        "accepts more often but has more persistent draws. The largest proposal is useful for "
+        "jumping across the low-density middle region, but many jumps are rejected."
     )
 
     report.add_takeaway(

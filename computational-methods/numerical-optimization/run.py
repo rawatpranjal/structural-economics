@@ -316,9 +316,11 @@ def main() -> None:
 The target density is a mixture of two bivariate normals:
 
 $$
-p(\theta) =
-\omega \phi(\theta; \mu_1, \Sigma)
-+ (1-\omega)\phi(\theta; \mu_2, \Sigma).
+\begin{aligned}
+p(\theta)
+&= \omega \phi(\theta; \mu_1, \Sigma) \\
+&\quad + (1-\omega)\phi(\theta; \mu_2, \Sigma).
+\end{aligned}
 $$
 
 The numerical problem is:
@@ -374,7 +376,14 @@ derivatives, and simulated annealing accepts occasional uphill moves to search m
         path = run.path
         ax1.plot(path[:, 0], path[:, 1], marker="o", markersize=3.5, label=run.method, color=colors[run.method])
         ax1.scatter(path[0, 0], path[0, 1], marker="s", s=45, color=colors[run.method])
-    ax1.scatter([MU1[0], MU2[0]], [MU1[1], MU2[1]], marker="*", s=180, color="black", label="Modes")
+    ax1.scatter(
+        [MU1[0], MU2[0]],
+        [MU1[1], MU2[1]],
+        marker="*",
+        s=180,
+        color="black",
+        label="Component means",
+    )
     ax1.set_xlabel(r"$\theta_1$")
     ax1.set_ylabel(r"$\theta_2$")
     ax1.set_title("Optimizer Paths on a Bimodal Objective")
@@ -412,7 +421,14 @@ derivatives, and simulated annealing accepts occasional uphill moves to search m
     fig3, ax3 = plt.subplots(figsize=(6.2, 5.6))
     mode_colors = basin["mode"].map({1: "tab:blue", -1: "tab:orange"}).to_numpy()
     ax3.scatter(basin["x0"], basin["y0"], c=mode_colors, s=95, edgecolor="black", linewidth=0.6)
-    ax3.scatter([MU1[0], MU2[0]], [MU1[1], MU2[1]], marker="*", s=190, color="black")
+    ax3.scatter(
+        [MU1[0], MU2[0]],
+        [MU1[1], MU2[1]],
+        marker="*",
+        s=190,
+        color="black",
+        label="component means",
+    )
     ax3.scatter([], [], color="tab:blue", edgecolor="black", label="upper-right mode")
     ax3.scatter([], [], color="tab:orange", edgecolor="black", label="lower-left mode")
     ax3.axhline(0.0, color="black", linewidth=0.8, alpha=0.4)
@@ -440,9 +456,9 @@ derivatives, and simulated annealing accepts occasional uphill moves to search m
 
     report.add_results(
         f"The best objective found is {best_objective:.5f}. Because the two mixture weights are "
-        "equal, both component means are valid global solutions up to numerical tolerance. The "
-        "important comparison is not which side wins, but how much each method depends on local "
-        "geometry and initialization."
+        "equal, the objective has two equally good modes near the two component means. The "
+        "important comparison is not which side wins, but how much each method depends on "
+        "local geometry and initialization."
     )
 
     report.add_takeaway(
