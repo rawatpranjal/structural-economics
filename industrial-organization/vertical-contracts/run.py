@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Vertical contracts: vending assortments, rebates, and slotting fees."""
+"""Vertical contracts and capacity-constrained vending assortments."""
 import itertools
 import sys
 from pathlib import Path
@@ -14,6 +14,7 @@ from lib.plotting import setup_style
 
 
 def product_catalog() -> pd.DataFrame:
+    """Small product universe for the vending-machine assortment problem."""
     return pd.DataFrame({
         "Product": [
             "Choco Bar", "Caramel Cup", "Peanut Bites", "Mint Chew", "Nougat",
@@ -30,12 +31,14 @@ def product_catalog() -> pd.DataFrame:
 
 
 def retail_outcome(intercept: float, wholesale: float, slope: float = 4.0) -> tuple[float, float]:
+    """Interior monopoly price under linear demand, with a small margin floor."""
     price = max((intercept + slope * wholesale) / (2 * slope), wholesale + 0.05)
     quantity = max(intercept - slope * price, 0.0)
     return price, quantity
 
 
 def evaluate_subset(products: pd.DataFrame, subset: tuple[int, ...], contract: str, threshold: int = 4) -> dict[str, float]:
+    """Evaluate a retailer-selected assortment under one vertical contract."""
     mars_count = int((products.loc[list(subset), "Manufacturer"] == "Mars").sum())
     rows = []
     for idx in subset:
@@ -49,16 +52,16 @@ def evaluate_subset(products: pd.DataFrame, subset: tuple[int, ...], contract: s
             fixed_fee = 1.10 if is_mars else 0.35
         price, quantity = retail_outcome(row["Demand intercept"], wholesale)
         retailer_var = (price - wholesale) * quantity
-        manufacturer_var = (wholesale - row["Marginal cost"]) * quantity - fixed_fee
-        rows.append((idx, price, quantity, retailer_var, manufacturer_var, fixed_fee))
+        upstream_var = (wholesale - row["Marginal cost"]) * quantity - fixed_fee
+        rows.append((idx, price, quantity, retailer_var, upstream_var, fixed_fee))
     arr = pd.DataFrame(rows, columns=[
         "Index", "Price", "Quantity", "Retailer variable profit",
-        "Manufacturer profit", "Fixed fee",
+        "Upstream profit", "Fixed fee",
     ])
     return {
         "Retailer objective": float(arr["Retailer variable profit"].sum() + arr["Fixed fee"].sum()),
         "Retailer variable profit": float(arr["Retailer variable profit"].sum()),
-        "Manufacturer profit": float(arr["Manufacturer profit"].sum()),
+        "Upstream profit": float(arr["Upstream profit"].sum()),
         "Fixed fees": float(arr["Fixed fee"].sum()),
         "Average price": float(arr["Price"].mean()),
         "Total quantity": float(arr["Quantity"].sum()),
@@ -67,6 +70,7 @@ def evaluate_subset(products: pd.DataFrame, subset: tuple[int, ...], contract: s
 
 
 def choose_assortment(products: pd.DataFrame, capacity: int, contract: str, threshold: int = 4) -> tuple[tuple[int, ...], dict[str, float]]:
+    """Find the exact finite-set optimum by checking every feasible assortment."""
     best_subset: tuple[int, ...] | None = None
     best_values: dict[str, float] | None = None
     for subset in itertools.combinations(products.index, capacity):
@@ -101,60 +105,120 @@ def main() -> None:
             "Threshold": threshold,
             "Mars slots": values["Mars slots"],
             "Retailer objective": values["Retailer objective"],
-            "Manufacturer profit": values["Manufacturer profit"],
+            "Upstream profit": values["Upstream profit"],
             "Selected products": ", ".join(products.loc[list(subset), "Product"]),
         })
     threshold_df = pd.DataFrame(threshold_rows)
 
     print("Vertical contracts tutorial")
-    print(outcome_df[["Contract", "Mars slots", "Retailer objective", "Manufacturer profit"]].to_string(index=False))
+    print(outcome_df[["Contract", "Mars slots", "Retailer objective", "Upstream profit"]].to_string(index=False))
 
     report = ModelReport(
         "Vertical Contracts and Vending Assortments",
         "All-unit discounts, slotting fees, and assortment choice in a capacity-constrained vending channel.",
+        include_reproduce=False,
+        show_figure_captions=False,
     )
 
     report.add_overview(
-        "Vending and retail contracts often combine per-unit wholesale prices with fixed "
-        "payments, rebates, or slotting fees. Those terms matter because the downstream "
-        "firm chooses which products receive scarce shelf or machine space. A contract "
-        "can change assortment even when retail prices show little variation.\n\n"
-        "The tutorial builds a small vending-machine problem with seven confection slots. "
-        "The retailer chooses the assortment that maximizes its own payoff. The manufacturer "
-        "can use an all-unit discount or fixed payments to shift which products are stocked."
+        "Vertical-contract evidence often starts with availability, not only with prices. "
+        "A vending operator has a small number of slots, the upstream firms want their "
+        "products inside the machine, and contract terms decide how attractive each slot "
+        "is to the downstream firm.\n\n"
+        "This tutorial keeps the demand side deliberately small. Each product has linear "
+        "retail demand and a wholesale cost. The economic action is the retailer's "
+        "assortment choice: seven products must be selected from a larger catalog. "
+        "The benchmark in [Vertical Relationships and Double Marginalization](../vertical-relationships/) "
+        "shows how wholesale margins distort retail prices; here the same vertical "
+        "logic is pushed into product availability through rebates and slotting fees."
     )
 
     report.add_equations(r"""
-For product $j$, demand is:
-$$q_j(p_j) = a_j - bp_j$$
+Let $\mathcal J$ be the product catalog and let $K$ be the number of vending
+slots. Product $j$ has demand intercept $a_j$, marginal cost $c_j$, and
+manufacturer label $m(j)$. Retail demand is separable:
+$$
+q_j(p_j)=\max\{a_j-bp_j,0\}.
+$$
 
-Given wholesale price $w_j$, the retailer chooses:
-$$p_j^{*}(w_j) = \frac{a_j + bw_j}{2b}$$
+Given wholesale price $w_j$, the retailer sets the product price by
+$$
+p_j^{*}(w_j)
+=\arg\max_{p_j\geq w_j} (p_j-w_j)q_j(p_j).
+$$
+For an interior product, this gives
+$$
+p_j^{*}(w_j)=\frac{a_j+bw_j}{2b}.
+$$
 
-The retailer chooses an assortment $A$ with capacity $K$:
-$$A^{*} = \arg\max_{A: |A|=K} \sum_{j\in A}(p_j-w_j)q_j + F_j(A)$$
+Contract $C$ maps an assortment $A$ into a wholesale price
+$w_j^C(A)$ and a fixed transfer $F_j^C(A)$ paid by the upstream side to the
+retailer. The retailer chooses
+$$
+A_C^{*}
+=\arg\max_{A\subset\mathcal J:\ |A|=K}
+\sum_{j\in A}\left[(p_j^{*}-w_j^C(A))q_j(p_j^{*})+F_j^C(A)\right].
+$$
 
-All-unit discounts make $w_j$ depend on whether the manufacturer's shelf target is met.
-Slotting fees enter through fixed payments $F_j(A)$.
+The upstream-profit diagnostic is
+$$
+\Pi_C^U(A)=
+\sum_{j\in A}\left[(w_j^C(A)-c_j)q_j(p_j^{*})-F_j^C(A)\right].
+$$
+
+In the all-unit discount case, the retailer pays a lower wholesale price on
+Mars products only if the selected assortment contains at least $\tau$ Mars
+products:
+$$
+w_j^C(A)=c_j+\mu-d\,\mathbf 1\{m(j)=\text{Mars}\}\mathbf 1\{M(A)\geq\tau\},
+\quad
+M(A)=\sum_{j\in A}\mathbf 1\{m(j)=\text{Mars}\}.
+$$
+Slotting fees instead leave wholesale margins unchanged and work through
+$F_j^C(A)$.
 """)
 
     report.add_model_setup(
+        "The primitives are chosen so the finite assortment problem can be solved exactly. "
+        "The retailer optimizes its own payoff; upstream profit is reported only to show "
+        "which side bears the cost of the contract.\n\n"
         "| Object | Value |\n"
         "|--------|-------|\n"
         f"| Products | {len(products)} candy and snack alternatives |\n"
         f"| Machine capacity | {capacity} slots |\n"
-        "| Wholesale only | Linear wholesale prices, no fixed payments |\n"
-        "| All-unit discount | Mars wholesale price falls if enough Mars products are stocked |\n"
-        "| Slotting fees | Fixed payments reward placement, separate from per-unit margins |"
+        "| Demand | Product-specific intercepts with common slope $b=4$ |\n"
+        "| Wholesale-only contract | Per-unit margin $\mu=0.42$, no fixed transfers |\n"
+        "| All-unit discount | Mars margin falls by $d=0.18$ once the shelf target is met |\n"
+        "| Slotting-fee contract | Fixed payments of 1.10 for Mars products and 0.35 for rival products |"
     )
 
-    report.add_solution_method(
-        "The assortment problem is solved by enumerating all feasible seven-product "
-        "subsets. For each subset and contract, the script computes retail prices, "
-        "quantities, downstream variable profit, manufacturer profit, and fixed transfers. "
-        "Enumeration keeps the economics transparent and is fast because the capacity "
-        "problem is small."
-    )
+    report.add_solution_method(r"""
+The key computational object is the retailer's exact finite-choice optimum. There
+are only $\binom{12}{7}=792$ feasible assortments, so the script evaluates every
+candidate rather than using a local search heuristic. The plotted choices are
+therefore the finite-catalog optimum, not a simulation approximation.
+
+```text
+Inputs: product catalog J, capacity K, contract C, rebate threshold tau
+Output: optimal assortment A*_C and payoff diagnostics
+
+for each feasible assortment A with |A| = K:
+    count Mars products M(A)
+    for each product j in A:
+        set wholesale price w_j^C(A)
+        set fixed transfer F_j^C(A)
+        solve the retail pricing first-order condition for p_j*(w_j)
+        compute q_j, retailer payoff, and upstream payoff
+    add product-level payoffs to get Pi^D_C(A) and Pi^U_C(A)
+
+choose A*_C in argmax_A Pi^D_C(A)
+repeat over rebate thresholds tau to see where the all-unit discount binds
+```
+
+This is intentionally closer to an empirical counterfactual than to an abstract
+combinatorics exercise: the contract changes the retailer's objective, and the
+retailer responds by reallocating scarce shelf space.
+""")
 
     selection_matrix = pd.DataFrame(0, index=products["Product"], columns=contracts)
     for contract, subset in selected.items():
@@ -165,71 +229,96 @@ Slotting fees enter through fixed payments $F_j(A)$.
     ax1.set_xticks(np.arange(len(contracts)))
     ax1.set_xticklabels(contracts, rotation=20, ha="right")
     ax1.set_yticks(np.arange(len(products)))
-    ax1.set_yticklabels(products["Product"])
-    ax1.set_title("Selected Vending Assortments")
+    product_labels = products["Product"] + " (" + products["Manufacturer"].str[0] + ")"
+    ax1.set_yticklabels(product_labels)
+    ax1.set_title("Retailer-Selected Assortment")
     for i in range(selection_matrix.shape[0]):
         for j in range(selection_matrix.shape[1]):
-            ax1.text(j, i, "in" if selection_matrix.iloc[i, j] else "", ha="center", va="center")
+            label = "in" if selection_matrix.iloc[i, j] else ""
+            ax1.text(j, i, label, ha="center", va="center", color="white")
     fig1.colorbar(im, ax=ax1, ticks=[0, 1], label="Selected")
     report.add_figure(
         "figures/assortment-selection.png",
         "Assortment selected under each vertical contract",
         fig1,
-        description="The all-unit discount and slotting-fee contracts shift scarce machine "
-        "slots toward the manufacturer's products. The contract changes product availability, "
-        "not just transfers between firms.",
+        description="The first figure reads the assortment problem directly. Wholesale-only "
+        "pricing leaves the retailer with four Mars products. The rebate and slotting-fee "
+        "contracts both move one more scarce slot toward Mars, even though retail prices "
+        "are still chosen product by product.",
     )
 
     fig2, ax2 = plt.subplots(figsize=(8, 5))
     x = np.arange(len(outcome_df))
     ax2.bar(x - 0.2, outcome_df["Retailer objective"], 0.4, label="Retailer objective", color="#4C78A8")
-    ax2.bar(x + 0.2, outcome_df["Manufacturer profit"], 0.4, label="Manufacturer profit", color="#F58518")
+    ax2.bar(x + 0.2, outcome_df["Upstream profit"], 0.4, label="Upstream profit", color="#F58518")
     ax2.set_xticks(x)
     ax2.set_xticklabels(outcome_df["Contract"], rotation=20, ha="right")
     ax2.set_ylabel("Profit")
-    ax2.set_title("Profit Incidence of Contract Terms")
+    ax2.set_title("Profit Incidence by Contract")
     ax2.legend()
     report.add_figure(
         "figures/profit-incidence.png",
-        "Retailer and manufacturer payoffs by contract",
+        "Retailer and upstream payoffs by contract",
         fig2,
-        description="Fixed payments can make the retailer willing to stock products that are "
-        "not selected under wholesale-only incentives. The manufacturer pays for placement "
-        "when the incremental product-level margin is worth it.",
+        description="The second figure separates the retailer's objective from total upstream "
+        "profit. Slotting fees raise the retailer's payoff mechanically because they are "
+        "transfers into the downstream objective. Upstream profit falls in this calibration, "
+        "which is the cost of buying placement.",
     )
 
     fig3, ax3 = plt.subplots(figsize=(8, 5))
     ax3.plot(threshold_df["Threshold"], threshold_df["Mars slots"], marker="o", label="Mars slots")
+    wholesale_mars_slots = float(outcome_df.loc[outcome_df["Contract"] == "Wholesale only", "Mars slots"].iloc[0])
+    wholesale_upstream_profit = float(outcome_df.loc[outcome_df["Contract"] == "Wholesale only", "Upstream profit"].iloc[0])
+    ax3.axhline(
+        wholesale_mars_slots, color="#4C78A8", linestyle="--", alpha=0.45,
+        label="Wholesale-only Mars slots",
+    )
     ax3.set_xlabel("All-unit discount threshold")
     ax3.set_ylabel("Mars slots selected")
     ax3.set_ylim(0, capacity + 0.5)
     ax3_t = ax3.twinx()
-    ax3_t.plot(threshold_df["Threshold"], threshold_df["Manufacturer profit"], color="#E45756", marker="s", label="Manufacturer profit")
-    ax3_t.set_ylabel("Manufacturer profit")
+    ax3_t.plot(threshold_df["Threshold"], threshold_df["Upstream profit"], color="#E45756", marker="s", label="Upstream profit")
+    ax3_t.axhline(
+        wholesale_upstream_profit, color="#E45756", linestyle=":", alpha=0.45,
+        label="Wholesale-only upstream profit",
+    )
+    ax3_t.set_ylabel("Upstream profit")
     ax3.set_title("Assortment Response to Rebate Thresholds")
     lines, labels = ax3.get_legend_handles_labels()
     lines2, labels2 = ax3_t.get_legend_handles_labels()
-    ax3.legend(lines + lines2, labels + labels2, loc="best")
+    ax3.legend(
+        lines + lines2, labels + labels2,
+        loc="upper center", bbox_to_anchor=(0.5, -0.18), ncol=2,
+    )
     report.add_figure(
         "figures/rebate-thresholds.png",
-        "Mars slots and manufacturer profit as the all-unit discount threshold changes",
+        "Mars slots and upstream profit as the all-unit discount threshold changes",
         fig3,
-        description="A target that is too low gives away margin without changing behavior. "
-        "A target that is too high may be unreachable. The interesting region is where the "
-        "threshold changes the retailer's assortment choice.",
+        description="The threshold exercise shows why rebate design is not monotone. A low "
+        "target gives away margin on products the retailer would have stocked anyway. A "
+        "high target may not move the assortment. The useful region is where the threshold "
+        "changes the exact assortment optimum relative to the wholesale-only benchmark.",
     )
 
     table = outcome_df.copy()
     for col in table.columns:
         if col != "Contract":
             table[col] = table[col].map(lambda v: f"{v:.2f}")
-    report.add_table("tables/contract-outcomes.csv", "Contract outcomes", table)
+    report.add_table(
+        "tables/contract-outcomes.csv",
+        "Contract outcomes",
+        table,
+        description="The table collects the same objects behind the figures. Average retail "
+        "prices move little compared with the change in availability, which is the point of "
+        "using an assortment model for these contracts.",
+    )
 
     report.add_takeaway(
-        "Vertical contracts are identification problems as much as pricing problems. "
-        "A fixed payment does not show up as product-level price variation, yet it can "
-        "explain why a product is present in the assortment. That is why vending and "
-        "slotting-fee papers model assortment and transfers together."
+        "A vertical contract can matter even when the observed retail-price effect is small. "
+        "All-unit discounts and slotting fees change the downstream firm's objective over "
+        "scarce product slots, so the main empirical object is often the joint distribution "
+        "of prices, availability, and transfers rather than prices alone."
     )
 
     report.add_references([
