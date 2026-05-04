@@ -3,7 +3,7 @@
 ## Models in this section
 Structural IO models: differentiated product pricing, merger simulations,
 vertical contracts, production functions, dynamic games, market concentration,
-and game theory.
+and bargaining.
 
 ## Common patterns
 - Ownership matrices for multi-product firms
@@ -11,6 +11,8 @@ and game theory.
 - Random-coefficients demand as one differentiated-products tool
 - JAX for vectorized market simulations
 - Dynamic programming for Markov-perfect industry states
+- Foundational static games belong in `game-theory/`; keep IO rows for
+  applications with IO primitives, data objects, or counterfactuals.
 
 ## Key economics
 - Incomplete contracts, asset specificity, and vertical integration

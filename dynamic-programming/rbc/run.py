@@ -317,8 +317,7 @@ def main():
         "investment the main margin that absorbs the shock.\n\n"
         "The example is intentionally global and nonlinear. Unlike the later "
         "[Dynare RBC](../../dynare/rbc/) tutorial, it does not log-linearize around the "
-        "steady state. Unlike the larger [nonlinear RBC](../../global-dsge/rbc-nonlinear/) "
-        "tutorial, it keeps productivity to two Markov states so the Bellman logic, "
+        "steady state. It keeps productivity to two Markov states so the Bellman logic, "
         "policy functions, and simulated business-cycle moments fit in one pass."
     )
 

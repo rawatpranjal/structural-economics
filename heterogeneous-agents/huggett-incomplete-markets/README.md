@@ -49,17 +49,27 @@ HJB converged in **8 iterations** (error = 1.56e-07). Equilibrium found at **$r^
 
 ## Results
 
+The high-income value function lies above the low-income one at every asset level. Both curves steepen near the borrowing constraint, reflecting the high marginal value of an additional unit of wealth when the agent is nearly constrained.
+
 <img src="figures/value-function.png" alt="Value function V(a) for each income state at the equilibrium interest rate" width="80%">
 *Value function V(a) for each income state at the equilibrium interest rate*
+
+The zero crossings mark the target asset levels for each income state. Low-income agents save when wealthy (positive drift) but dissave when poor (negative drift), creating the flow toward the borrowing constraint that generates the mass point in the wealth distribution.
 
 <img src="figures/savings-policy.png" alt="Savings policy s(a,z) = z + r*a - c(a,z) at equilibrium; zero crossings are steady states" width="80%">
 *Savings policy s(a,z) = z + r*a - c(a,z) at equilibrium; zero crossings are steady states*
 
+The KFE solution reveals where agents spend most of their time. The density peaks near the borrowing limit because low-income agents drift toward it and linger there until switching to the high-income state. The smooth tail reflects agents who have accumulated savings during high-income spells.
+
 <img src="figures/wealth-distribution.png" alt="Stationary wealth distribution g(a) by income state; mass piles up near borrowing constraint" width="80%">
 *Stationary wealth distribution g(a) by income state; mass piles up near borrowing constraint*
 
+The upward-sloping supply curve shows that higher interest rates induce more aggregate saving. The equilibrium r* falls below the discount rate rho because precautionary demand pushes agents to hold positive net assets, and the market must clear at zero net supply of bonds.
+
 <img src="figures/bond-market.png" alt="Bond market: excess demand S(r) vs interest rate; equilibrium where S(r*)=0" width="80%">
 *Bond market: excess demand S(r) vs interest rate; equilibrium where S(r*)=0*
+
+The equilibrium interest rate r* < rho confirms the Huggett (1993) result: incomplete markets and precautionary motives depress the risk-free rate below the rate of time preference.
 
 **Equilibrium Values**
 

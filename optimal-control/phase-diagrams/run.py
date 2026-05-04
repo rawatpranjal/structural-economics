@@ -180,8 +180,8 @@ $$\dot{c} = \frac{1}{\sigma} \left( f'(k) - \delta - \rho \right) c$$
         f"| $\\delta$ | {delta} | Depreciation rate |\n"
         f"| $\\rho$ | {rho} | Discount rate |\n"
         f"| $\\sigma$ | {sigma} | CRRA coefficient |\n"
-        f"| $k^{*}$ | {k_ss:.4f} | Steady-state capital |\n"
-        f"| $c^{*}$ | {c_ss:.4f} | Steady-state consumption |"
+        f"| $k^{{*}}$ | {k_ss:.4f} | Steady-state capital |\n"
+        f"| $c^{{*}}$ | {c_ss:.4f} | Steady-state consumption |"
     )
 
     report.add_solution_method(
@@ -201,7 +201,7 @@ $$\dot{c} = \frac{1}{\sigma} \left( f'(k) - \delta - \rho \right) c$$
     ax1.plot(k_saddle_left, c_saddle_left, "k-", linewidth=3, label="Saddle path")
     ax1.plot(k_saddle_right, c_saddle_right, "k-", linewidth=3)
     ax1.plot(k_ss, c_ss, "ko", markersize=12, zorder=5)
-    ax1.annotate(f"$k^{*}={k_ss:.2f}, c^{*}={c_ss:.2f}$", (k_ss, c_ss),
+    ax1.annotate(f"$k^{{*}}={k_ss:.2f}, c^{{*}}={c_ss:.2f}$", (k_ss, c_ss),
                  textcoords="offset points", xytext=(15, -20), fontsize=10)
     ax1.set_xlabel("Capital $k$")
     ax1.set_ylabel("Consumption $c$")
@@ -221,14 +221,14 @@ $$\dot{c} = \frac{1}{\sigma} \left( f'(k) - \delta - \rho \right) c$$
     valid = (y_eval[0] > 0) & (y_eval[1] > 0)
     t_valid = t_eval[valid]
     ax2a.plot(t_valid, y_eval[0][valid], "b-", linewidth=2)
-    ax2a.axhline(k_ss, color="k", linestyle="--", alpha=0.5, label=f"$k^{*}={k_ss:.2f}$")
+    ax2a.axhline(k_ss, color="k", linestyle="--", alpha=0.5, label=f"$k^{{*}}={k_ss:.2f}$")
     ax2a.set_xlabel("Time")
     ax2a.set_ylabel("Capital $k(t)$")
     ax2a.set_title("Capital Transition to Steady State")
     ax2a.legend()
 
     ax2b.plot(t_valid, y_eval[1][valid], "r-", linewidth=2)
-    ax2b.axhline(c_ss, color="k", linestyle="--", alpha=0.5, label=f"$c^{*}={c_ss:.2f}$")
+    ax2b.axhline(c_ss, color="k", linestyle="--", alpha=0.5, label=f"$c^{{*}}={c_ss:.2f}$")
     ax2b.set_xlabel("Time")
     ax2b.set_ylabel("Consumption $c(t)$")
     ax2b.set_title("Consumption Transition to Steady State")

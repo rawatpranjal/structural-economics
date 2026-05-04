@@ -45,23 +45,31 @@ $$\dot{c} = \frac{1}{\sigma} \left( f'(k) - \delta - \rho \right) c$$
 
 ## Results
 
+The phase diagram reveals the saddle-point structure of the Ramsey model. Only one consumption level for each initial capital stock places the economy on the stable arm. The vector field shows that off the saddle path, trajectories diverge toward either zero capital or infinite over-accumulation.
+
 <img src="figures/phase-diagram.png" alt="Phase diagram with nullclines, vector field, and saddle path" width="80%">
 *Phase diagram with nullclines, vector field, and saddle path*
+
+Starting from below steady-state capital, the economy invests heavily early on (low consumption) and gradually increases consumption as capital approaches k*. The speed of convergence is governed by the stable eigenvalue of the linearized system.
 
 <img src="figures/time-paths.png" alt="Capital and consumption converge to steady state along the saddle path" width="80%">
 *Capital and consumption converge to steady state along the saddle path*
 
+Each panel shows a trajectory starting in one of the four quadrants defined by the nullclines. In three of the four regions the path diverges, violating either feasibility or the transversality condition. Only the saddle-path quadrant produces a convergent, economically valid solution.
+
 <img src="figures/four-regions.png" alt="Only trajectories starting on the saddle path converge to steady state" width="80%">
 *Only trajectories starting on the saddle path converge to steady state*
+
+The eigenvalue pair (one negative, one positive) confirms the saddle-point classification. The magnitude of the stable eigenvalue determines the speed of convergence to steady state.
 
 **Steady-State Values and Eigenvalues**
 
 | Quantity    |   Value | Description                     |
 |:------------|--------:|:--------------------------------|
-| $k^{*}$       |  5.5843 | Steady-state capital            |
-| $c^{*}$       |  1.3961 | Steady-state consumption        |
-| $y^{*}$       |  1.6753 | Steady-state output             |
-| $r^{*}$       |  0.04   | Net interest rate (= rho at ss) |
+| $k^{*}$     |  5.5843 | Steady-state capital            |
+| $c^{*}$     |  1.3961 | Steady-state consumption        |
+| $y^{*}$     |  1.6753 | Steady-state output             |
+| $r^{*}$     |  0.04   | Net interest rate (= rho at ss) |
 | $\lambda_1$ | -0.071  | Stable eigenvalue               |
 | $\lambda_2$ |  0.111  | Unstable eigenvalue             |
 

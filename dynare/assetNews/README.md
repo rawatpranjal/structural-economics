@@ -57,14 +57,22 @@ For log-linearized dividends following an AR(1) with both surprise and news comp
 
 ## Results
 
+The key difference is timing: under a surprise shock (blue), dividends and prices jump simultaneously at t=0. Under a news shock (red dashed), the price jumps at t=0 when the signal arrives but dividends remain flat until t=1. This one-period lead of prices over fundamentals is the hallmark of forward-looking asset pricing with anticipated shocks.
+
 <img src="figures/irf-surprise-vs-news.png" alt="Comparison of impulse responses to surprise (unanticipated) vs news (anticipated) dividend shocks" width="80%">
 *Comparison of impulse responses to surprise (unanticipated) vs news (anticipated) dividend shocks*
+
+In the left panel, the price and dividend shaded areas overlap, showing that prices are driven by concurrent fundamentals. In the right panel, the price (red) leads the dividend (blue) by exactly one period. This disconnect between current cash flows and asset valuations is what makes news shocks a compelling explanation for observed price-fundamental puzzles in financial markets.
 
 <img src="figures/price-dynamics.png" alt="Detailed view: surprise shocks move prices and dividends together; news shocks cause prices to lead dividends" width="80%">
 *Detailed view: surprise shocks move prices and dividends together; news shocks cause prices to lead dividends*
 
+With both shock types active simultaneously, the price series is smoother and more persistent than dividends because prices aggregate information about future cash flows. Price movements that precede dividend changes reflect the news component, while co-movements reflect the surprise component.
+
 <img src="figures/simulated-paths.png" alt="Simulated dividend and asset price paths with both surprise and news shocks" width="80%">
 *Simulated dividend and asset price paths with both surprise and news shocks*
+
+The critical row is the dividend at t=0: it is nonzero for the surprise shock but exactly zero for the news shock, confirming that news moves prices without any change in current fundamentals. The t=1 column for the news shock shows when the anticipated dividend change finally materializes.
 
 **Impact Responses: Surprise vs News Shocks**
 

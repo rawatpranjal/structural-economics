@@ -6,7 +6,7 @@
 
 This tutorial puts the standard real-business-cycle mechanism on a finite state space. A representative household owns the capital stock, supplies labor, and chooses investment after observing aggregate productivity. Good technology states raise the return to working and accumulating capital; bad states make investment the main margin that absorbs the shock.
 
-The example is intentionally global and nonlinear. Unlike the later [Dynare RBC](../../dynare/rbc/) tutorial, it does not log-linearize around the steady state. Unlike the larger [nonlinear RBC](../../global-dsge/rbc-nonlinear/) tutorial, it keeps productivity to two Markov states so the Bellman logic, policy functions, and simulated business-cycle moments fit in one pass.
+The example is intentionally global and nonlinear. Unlike the later [Dynare RBC](../../dynare/rbc/) tutorial, it does not log-linearize around the steady state. It keeps productivity to two Markov states so the Bellman logic, policy functions, and simulated business-cycle moments fit in one pass.
 
 ## Equations
 

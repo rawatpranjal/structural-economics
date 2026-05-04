@@ -9,7 +9,9 @@ the model, shows calibration, and generates README + IRF figures.
 - Present them as DSGE and shock-propagation tutorials, not as a tooling-first
   Dynare section.
 - Keep titles tied to the economic model or shock mechanism: RBC, New
-  Keynesian determinacy, AR persistence, and news shocks.
+  Keynesian determinacy, and news shocks.
+- Pure stochastic-process tutorials belong in `time-series/`; AR persistence
+  is no longer part of the active Dynare section.
 
 ## Common patterns
 - `.mod` files contain model equations in Dynare syntax (kept as-is)

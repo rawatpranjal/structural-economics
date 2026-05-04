@@ -2,16 +2,15 @@
 
 ## Models in this section
 Nonlinear, global solutions for DSGE models using two approaches:
-1. **VFI-based**: Value function iteration on grids (rbc-nonlinear, rbc-capital-tax, rbc-irreversible-investment)
-2. **STPFI-based**: Simultaneous Transition and Policy Function Iterations from Cao, Luo, Nie (2023)
+1. **VFI-based**: Value function iteration on grids (rbc-capital-tax, rbc-irreversible-investment)
+2. **STPFI-based**: Simultaneous Transition and Policy Function Iterations from Cao, Luo, Nie (2023), currently represented by Heaton-Lucas
 
 ## Catalog role
 - Treat this as the nonlinear/global-solution part of the Macroeconomics block.
 - In the root README, place these after simpler DSGE and heterogeneous-agent
   tutorials so readers see why global methods are needed.
 - Titles should foreground the economic friction or payoff from global solution:
-  nonlinear RBC, taxation, irreversibility, incomplete markets, constraints, or
-  risk premia.
+  taxation, irreversibility, incomplete markets, constraints, or risk premia.
 
 ## STPFI Algorithm
 The key innovation: solve for policy P and transition T functions simultaneously using

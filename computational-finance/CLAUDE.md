@@ -40,8 +40,9 @@ finance references.
 ## Candidate extensions
 - Integrate return measurement into `efficient-market-tests` if needed; do not
   make a separate returns-only tutorial.
-- Integrate MA/ARMA mechanics into `ar1-rate-forecasting` only as a compact
-  extension; do not create separate MA or ARMA tutorials in this compact chapter.
+- Integrate AR(1), MA, or ARMA mechanics into `efficient-market-tests` only as
+  compact benchmarks; do not create separate short-horizon forecasting pages in
+  this compact chapter.
 - Route Bayesian rare-event screening to `choice/bayesian-learning` or a general
   diagnostics tutorial, not computational finance.
 - Keep geometric Brownian motion as the only standalone Macro_Finance-derived

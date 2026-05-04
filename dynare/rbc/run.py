@@ -508,11 +508,11 @@ The calibration implies $K/Y={ss["K_Y"]:.2f}$ and $C/Y={ss["C_Y"]:.2f}$.
         "accumulates only gradually. That is the core propagation mechanism a "
         "first-order Dynare-style RBC exercise is meant to isolate.\n\n"
         "This tutorial is the equilibrium counterpart to the "
-        "[persistent-shock tutorial](../ar-processes/): the AR(1) process supplies "
+        "[persistent-shock tutorial](../../time-series/ar-processes/): the AR(1) process supplies "
         "the shock's timing, while the Euler equation and capital law of motion decide "
-        "how that timing shows up in macro quantities. For larger shocks or binding "
-        "constraints, compare this local solution with the "
-        "[global nonlinear RBC tutorial](../../global-dsge/rbc-nonlinear/)."
+        "how that timing shows up in macro quantities. For a global Bellman version of "
+        "the same RBC mechanism, compare this local solution with the "
+        "[dynamic-programming RBC tutorial](../../dynamic-programming/rbc/)."
     )
 
     report.add_references(

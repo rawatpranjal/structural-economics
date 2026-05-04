@@ -231,8 +231,8 @@ $$c^{*} = f(k^{*}) - \delta k^{*}$$
         f"| $\\rho$    | {rho} | Discount rate |\n"
         f"| $\\sigma$  | {sigma} | CRRA coefficient |\n"
         f"| $A$       | {A} | TFP |\n"
-        f"| $k^{*}$     | {k_star:.4f} | Steady-state capital |\n"
-        f"| $c^{*}$     | {c_star:.4f} | Steady-state consumption |"
+        f"| $k^{{*}}$     | {k_star:.4f} | Steady-state capital |\n"
+        f"| $c^{{*}}$     | {c_star:.4f} | Steady-state consumption |"
     )
 
     report.add_solution_method(

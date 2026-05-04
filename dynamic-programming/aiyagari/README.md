@@ -6,7 +6,7 @@
 
 Aiyagari (1994) closes the income-risk savings problem in general equilibrium. Individual households still use assets as self-insurance, as in the [buffer-stock savings tutorial](../consumption-savings/), but the risk-free return is no longer imposed from outside the model. It is the price that makes aggregate household assets equal the firm's demand for productive capital.
 
-That feedback is the economic object of the tutorial. Persistent idiosyncratic risk makes households want precautionary buffers; the representative firm wants capital only up to the point where its marginal product justifies the rental rate. The stationary equilibrium is where those two schedules meet. The later [EGP Aiyagari tutorial](../../heterogeneous-agents/egp-aiyagari/) keeps this fixed point but replaces the brute-force household solver with a faster Euler-equation method.
+That feedback is the economic object of the tutorial. Persistent idiosyncratic risk makes households want precautionary buffers; the representative firm wants capital only up to the point where its marginal product justifies the rental rate. The stationary equilibrium is where those two schedules meet. If the household solve is the bottleneck, the [EGP tutorial](../../heterogeneous-agents/endogenous-grid-points/) shows the Euler-equation inversion behind faster incomplete-market solvers; this page keeps the general-equilibrium fixed point explicit.
 
 ## Equations
 

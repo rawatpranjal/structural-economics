@@ -126,7 +126,7 @@ The summary statistics separate impact effects from delayed peaks. Capital and c
 
 In this RBC model, a productivity shock is both a level effect and an intertemporal price signal. Output rises on impact because firms are more productive. Investment responds strongly because the marginal product of capital is temporarily high. Consumption moves more smoothly, and capital accumulates only gradually. That is the core propagation mechanism a first-order Dynare-style RBC exercise is meant to isolate.
 
-This tutorial is the equilibrium counterpart to the [persistent-shock tutorial](../ar-processes/): the AR(1) process supplies the shock's timing, while the Euler equation and capital law of motion decide how that timing shows up in macro quantities. For larger shocks or binding constraints, compare this local solution with the [global nonlinear RBC tutorial](../../global-dsge/rbc-nonlinear/).
+This tutorial is the equilibrium counterpart to the [persistent-shock tutorial](../../time-series/ar-processes/): the AR(1) process supplies the shock's timing, while the Euler equation and capital law of motion decide how that timing shows up in macro quantities. For a global Bellman version of the same RBC mechanism, compare this local solution with the [dynamic-programming RBC tutorial](../../dynamic-programming/rbc/).
 
 ## References
 

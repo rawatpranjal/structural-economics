@@ -368,10 +368,10 @@ def main():
         "That feedback is the economic object of the tutorial. Persistent idiosyncratic "
         "risk makes households want precautionary buffers; the representative firm wants "
         "capital only up to the point where its marginal product justifies the rental rate. "
-        "The stationary equilibrium is where those two schedules meet. The later "
-        "[EGP Aiyagari tutorial](../../heterogeneous-agents/egp-aiyagari/) keeps this fixed "
-        "point but replaces the brute-force household solver with a faster Euler-equation "
-        "method."
+        "The stationary equilibrium is where those two schedules meet. If the household "
+        "solve is the bottleneck, the [EGP tutorial](../../heterogeneous-agents/endogenous-grid-points/) "
+        "shows the Euler-equation inversion behind faster incomplete-market solvers; this "
+        "page keeps the general-equilibrium fixed point explicit."
     )
 
     report.add_equations(

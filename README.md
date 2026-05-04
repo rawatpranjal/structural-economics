@@ -45,58 +45,51 @@ Dynamic programming is both a method and a language for many structural models. 
 | <img src="dynamic-programming/rbc/figures/thumb.png" width="192"> | [**RBC Capital, Labor, and Business-Cycle Moments**](dynamic-programming/rbc/) | How persistent TFP shocks move consumption, investment, hours, and capital | Global VFI + simulation | Investment absorbs most cyclical adjustment while capital moves slowly |
 | <img src="dynamic-programming/diamond-mortensen-pissarides/figures/thumb.png" width="192"> | [**DMP Search, Vacancies, and Unemployment**](dynamic-programming/diamond-mortensen-pissarides/) | How match surplus drives vacancy posting, job finding, and the Beveridge curve | Free-entry fixed point + log-linearization | The standard surplus calibration gets the signs right but leaves too little amplification |
 | <img src="dynamic-programming/aiyagari/figures/thumb.png" width="192"> | [**Aiyagari Saving and Capital-Market Clearing**](dynamic-programming/aiyagari/) | How uninsurable income risk turns household buffer stocks into aggregate capital supply | VFI + stationary distribution + bisection | Self-insurance lowers $r$ below $1/\beta-1$ and creates skewed wealth |
-| <img src="dynamic-programming/ode-methods/figures/thumb.png" width="192"> | [**Continuous-Time Growth and Phase Diagrams**](dynamic-programming/ode-methods/) | Reading convergence, saddle paths, and cycles in continuous-time economic models | ODE integration + shooting | Solow is globally stable, Ramsey needs the stable arm, and nonlinear systems can cycle |
 
 ## Macroeconomics
 
-This section collects the heavier macro material: heterogeneous households, incomplete markets, DSGE perturbation, global nonlinear solution, continuous-time equilibrium, and optimal-control tools.
+This section collects the heavier macro material: heterogeneous households, incomplete markets, DSGE perturbation, global nonlinear solution, and continuous-time optimal-control tools.
 
 ### Heterogeneous Agents
 
-These tutorials focus on household heterogeneity, wealth distributions, and faster solvers for incomplete-market economies.
+These tutorials are the incomplete-markets method library: Euler-equation inversion, marginal-value iteration, and continuous-time HJB/KFE equilibrium.
 
 | | Tutorial | What it teaches | Method | Key Insight |
 |:---:|---|---|---|---|
-| <img src="heterogeneous-agents/vfi-deterministic/figures/thumb.png" width="192"> | [**Deterministic Saving with a Borrowing Constraint**](heterogeneous-agents/vfi-deterministic/) | Why the no-risk household problem collapses to a transition back to the asset floor | Grid VFI + exact steady state | Without income risk, $\beta R<1$ makes initial wealth temporary rather than a buffer stock |
-| <img src="heterogeneous-agents/vfi-iid-income/figures/thumb.png" width="192"> | [**IID Income Risk and Buffer-Stock Saving**](heterogeneous-agents/vfi-iid-income/) | How nonpersistent income risk changes the no-risk saving benchmark | Grid VFI + refined-grid check | Even IID shocks make assets useful as self-insurance |
 | <img src="heterogeneous-agents/endogenous-grid-points/figures/thumb.png" width="192"> | [**Buffer-Stock Saving by Endogenous Grid Points**](heterogeneous-agents/endogenous-grid-points/) | How Euler-equation inversion computes the IID income-risk saving policy | EGP + fine-grid policy check | Choosing $a'$ first maps the Euler equation back to current assets without a VFI search |
-| <img src="heterogeneous-agents/egp-aiyagari/figures/thumb.png" width="192"> | [**Aiyagari Equilibrium with Endogenous Grid Points**](heterogeneous-agents/egp-aiyagari/) | How precautionary saving pins down aggregate capital when the household problem is solved by Euler inversion | EGP + damped market-clearing iteration | Uninsurable risk lowers $r$ below $1/\beta-1$ while EGP keeps repeated household solves cheap |
 | <img src="heterogeneous-agents/envelope-equation-iteration/figures/thumb.png" width="192"> | [**Envelope-Equation Iteration for Buffer-Stock Saving**](heterogeneous-agents/envelope-equation-iteration/) | How the envelope condition computes the IID income-risk saving policy from marginal continuation values | EEI + fine-grid policy check | Iterating on $W_a(a)$ keeps the self-insurance motive in marginal-value form |
+| <img src="heterogeneous-agents/huggett-incomplete-markets/figures/thumb.png" width="192"> | [**Continuous-Time Huggett Incomplete Markets**](heterogeneous-agents/huggett-incomplete-markets/) | Stationary incomplete-market equilibrium with HJB and KFE blocks | HJB + KFE + bond-market clearing | Precautionary saving pushes the equilibrium interest rate below the discount rate |
 
 ### DSGE and Dynare
 
-These examples show linearized macro models, impulse responses, and Dynare-style model files wrapped in the same Python report format.
+These examples show DSGE shock propagation and Dynare-style model files wrapped in the same Python report format.
 
 | | Tutorial | What it teaches | Method | Key Insight |
 |:---:|---|---|---|---|
-| <img src="dynare/ar-processes/figures/thumb.png" width="192"> | [**Persistent Shocks and Multiplier-Accelerator Dynamics**](dynare/ar-processes/) | How AR(1) persistence changes shock half-lives, spectra, and income dynamics | Analytic IRFs + simulation | Persistence is an economic timing assumption, not just a coefficient |
 | <img src="dynare/rbc/figures/thumb.png" width="192"> | [**RBC TFP Shocks and Capital Propagation**](dynare/rbc/) | How a persistent productivity shock is split across consumption, investment, and capital | First-order perturbation + nonlinear transition check | Investment jumps while consumption and capital adjust gradually |
 | <img src="dynare/nkdsge/figures/thumb.png" width="192"> | [**New Keynesian DSGE and Taylor Rule**](dynare/nkdsge/) | IS curve, Phillips curve, monetary policy, and determinacy | Undetermined coefficients | The Taylor principle requires $\phi_\pi > 1$ |
 | <img src="dynare/assetNews/figures/thumb.png" width="192"> | [**Asset Pricing with News Shocks**](dynare/assetNews/) | Anticipated shocks in a present-value asset-pricing model | Dynare + simulation | Prices move before dividends when news arrives |
 
 ### Global Nonlinear DSGE
 
-These tutorials solve macro models on grids to keep nonlinearities, constraints, and asymmetries visible.
+These tutorials solve macro models on grids to keep taxes, constraints, and nonlinear risk sharing visible.
 
 | | Tutorial | What it teaches | Method | Key Insight |
 |:---:|---|---|---|---|
-| <img src="global-dsge/rbc-nonlinear/figures/thumb.png" width="192"> | [**Nonlinear RBC by Global VFI**](global-dsge/rbc-nonlinear/) | A full-grid RBC solution compared with perturbation | Global VFI | Recessions and expansions need not be symmetric |
 | <img src="global-dsge/rbc-capital-tax/figures/thumb.png" width="192"> | [**RBC with Capital Taxation**](global-dsge/rbc-capital-tax/) | Capital-income taxation in a stochastic growth model | Global VFI | Tax revenue can peak and then fall |
 | <img src="global-dsge/rbc-irreversible-investment/figures/thumb.png" width="192"> | [**RBC with Irreversible Investment**](global-dsge/rbc-irreversible-investment/) | Occasionally binding investment constraints | VFI + constraint | Irreversibility amplifies downturns |
 | <img src="global-dsge/heaton-lucas/figures/thumb.png" width="192"> | [**Heaton-Lucas Incomplete Markets via STPFI**](global-dsge/heaton-lucas/) | Portfolio choice with heterogeneous agents and trading constraints | STPFI | Trading constraints create asset-pricing kinks and risk premia |
 
 ### Continuous-Time Macro and Optimal Control
 
-These examples cover Hamilton-Jacobi-Bellman equations, Kolmogorov Forward Equations, phase diagrams, shooting methods, and Pontryagin problems.
+These examples cover Hamilton-Jacobi-Bellman equations, phase diagrams, shooting methods, and Pontryagin problems.
 
 | | Tutorial | What it teaches | Method | Key Insight |
 |:---:|---|---|---|---|
-| <img src="continuous-time/hjb-growth/figures/thumb.png" width="192"> | [**Continuous-Time Growth by HJB**](continuous-time/hjb-growth/) | Neoclassical growth as a Hamilton-Jacobi-Bellman equation | Upwind finite differences | Continuous-time growth can be solved as an HJB |
-| <img src="continuous-time/huggett-incomplete-markets/figures/thumb.png" width="192"> | [**Continuous-Time Huggett Incomplete Markets**](continuous-time/huggett-incomplete-markets/) | Stationary equilibrium with HJB and KFE blocks | HJB + KFE | Precautionary savings push $r < \rho$ |
+| <img src="optimal-control/hjb-growth/figures/thumb.png" width="192"> | [**Continuous-Time Growth by HJB**](optimal-control/hjb-growth/) | Neoclassical growth as a Hamilton-Jacobi-Bellman equation | Upwind finite differences | Continuous-time growth can be solved as an HJB |
 | <img src="optimal-control/phase-diagrams/figures/thumb.png" width="192"> | [**Ramsey Phase Diagrams and Saddle Paths**](optimal-control/phase-diagrams/) | Reading capital-consumption dynamics in the phase plane | Linearization | The Ramsey steady state is a saddle point |
 | <img src="optimal-control/ramsey-growth/figures/thumb.png" width="192"> | [**Ramsey Growth by Shooting**](optimal-control/ramsey-growth/) | Finding the stable path by choosing initial consumption | Shooting method | Bisection recovers the saddle path |
 | <img src="optimal-control/continuous-cake-eating/figures/thumb.png" width="192"> | [**Continuous-Time Cake Eating by Pontryagin**](optimal-control/continuous-cake-eating/) | Resource depletion with costates and shadow prices | Pontryagin | The shadow price rises at rate $\rho$ |
-| <img src="optimal-control/finite-difference/figures/thumb.png" width="192"> | [**Finite-Difference HJB Methods**](optimal-control/finite-difference/) | Upwind schemes for continuous-time value functions | Upwind FD | Implicit schemes stabilize HJB computation |
 
 ## Industrial Organization
 
@@ -112,7 +105,6 @@ The IO section covers firm boundaries, vertical relationships, differentiated-pr
 | <img src="industrial-organization/blp-random-coefficients/figures/thumb.png" width="192"> | [**BLP Random Coefficients Demand**](industrial-organization/blp-random-coefficients/) | Heterogeneous preferences in differentiated-product demand | Contraction mapping | Random coefficients relax IIA |
 | <img src="industrial-organization/production-functions-markups/figures/thumb.png" width="192"> | [**Production Functions and Markup Measurement**](industrial-organization/production-functions-markups/) | Proxy-control production estimation and markups | Control function | Markup estimates depend on output elasticities and input shares |
 | <img src="industrial-organization/effective-hhi/figures/thumb.png" width="192"> | [**Effective HHI for Merger Screening**](industrial-organization/effective-hhi/) | Concentration indices and merger screens | Index computation | $\Delta \text{HHI} = 2 s_1 s_2 \times 10000$ |
-| <img src="industrial-organization/static-games/figures/thumb.png" width="192"> | [**Static Oligopoly Games and Nash Equilibrium**](industrial-organization/static-games/) | Cournot and normal-form equilibrium logic | Nash equilibrium | Cournot output sits between monopoly and competition |
 | <img src="industrial-organization/collusion-detection/figures/thumb.png" width="192"> | [**Repeated-Game Collusion Detection**](industrial-organization/collusion-detection/) | Cartel stability and structural breaks | Repeated games | More firms make collusion harder to sustain |
 | <img src="industrial-organization/dynamic-games/figures/thumb.png" width="192"> | [**Dynamic Games and Markov-Perfect Investment**](industrial-organization/dynamic-games/) | Ericson-Pakes style quality investment | MPE value iteration | Current investment changes tomorrow's competitive state |
 | <img src="industrial-organization/dynamic-entry-exit/figures/thumb.png" width="192"> | [**Dynamic Entry and Exit in Oligopoly**](industrial-organization/dynamic-entry-exit/) | Sunk entry costs and endogenous market structure | Dynamic programming | Entry costs sustain above-competitive profits |
@@ -128,7 +120,6 @@ Choice and demand stays focused on choice theory, revealed preference, Bayesian 
 | | Tutorial | What it teaches | Method | Key Insight |
 |:---:|---|---|---|---|
 | <img src="choice/revealed-preference-afriat/figures/thumb.png" width="192"> | [**Revealed Preference via Afriat**](choice/revealed-preference-afriat/) | Testing whether choices can come from utility maximization | Afriat inequalities | GARP is a testable implication of utility maximization |
-| <img src="choice/garp-warshall/figures/thumb.png" width="192"> | [**GARP Testing with Warshall Closure**](choice/garp-warshall/) | Fast revealed-preference closure and power analysis | Warshall algorithm | Bronars power rises with more observations |
 | <img src="choice/preference-recoverability/figures/thumb.png" width="192"> | [**Recovering Preferences from Finite Data**](choice/preference-recoverability/) | Bounding indifference curves without a full functional form | Afriat numbers | Data can bound preferences even without point identification |
 | <img src="choice/money-pump-index/figures/thumb.png" width="192"> | [**Money Pump Index for Revealed Preference**](choice/money-pump-index/) | Measuring how costly a revealed-preference cycle is | Maximum mean cycle | GARP failures differ in welfare severity |
 | <img src="choice/houtman-maks-rational-subsets/figures/thumb.png" width="192"> | [**Houtman-Maks Rational Subsets**](choice/houtman-maks-rational-subsets/) | Finding the largest rationalizable core of a dataset | Exact subset search + SCC heuristic | Some violations are driven by a small set of observations |
@@ -139,22 +130,23 @@ Choice and demand stays focused on choice theory, revealed preference, Bayesian 
 
 ## Computational Game Theory
 
-This section covers equilibrium concepts directly, before they are embedded in IO or macro models. It starts with small normal-form games, then moves to dynamics, auctions, and noisy equilibrium.
+This section covers equilibrium concepts directly, before they are embedded in IO or macro models. It starts with small normal-form games and Cournot oligopoly, then moves to auctions and noisy equilibrium.
 
 | | Tutorial | What it teaches | Method | Key Insight |
 |:---:|---|---|---|---|
 | <img src="game-theory/normal-form-games/figures/thumb.png" width="192"> | [**Normal-Form Games and Mixed Equilibrium**](game-theory/normal-form-games/) | Pure and mixed Nash equilibria in small games | Enumeration + indifference | Small games are equilibrium checks, not black-box solver problems |
-| <img src="game-theory/best-response-dynamics/figures/thumb.png" width="192"> | [**Cournot Best-Response Dynamics**](game-theory/best-response-dynamics/) | Iterating strategic responses toward equilibrium | Fixed-point iteration | Nash equilibrium is a fixed point of best responses |
+| <img src="game-theory/static-games/figures/thumb.png" width="192"> | [**Cournot Oligopoly and Best-Response Dynamics**](game-theory/static-games/) | How Nash conditions and best-response iteration solve a static quantity game | Closed-form Cournot + damped iteration | Equilibrium is where best responses cross and residuals vanish |
 | <img src="game-theory/first-price-auctions/figures/thumb.png" width="192"> | [**First-Price Auctions and Bid Shading**](game-theory/first-price-auctions/) | Bayesian Nash bidding in private-value auctions | Bayesian Nash | Bidders trade off surplus against win probability |
 | <img src="game-theory/quantal-response-equilibrium/figures/thumb.png" width="192"> | [**Quantal Response Equilibrium**](game-theory/quantal-response-equilibrium/) | Noisy best responses and stochastic choice | Logit fixed point | QRE bridges finite games and probabilistic choice |
 
 ## Time Series and Data
 
-These tutorials are for macro data handling and reduced-form forecasting tools that support structural work.
+These tutorials are for stochastic processes, macro data handling, and reduced-form forecasting tools that support structural work.
 
 | | Tutorial | What it teaches | Method | Key Insight |
 |:---:|---|---|---|---|
 | <img src="time-series/fred-macro-data/figures/thumb.png" width="192"> | [**FRED-Style Business Cycle Facts**](time-series/fred-macro-data/) | Business-cycle moments from macro time series | HP filter | Cyclical components reveal Okun and Phillips patterns |
+| <img src="time-series/ar-processes/figures/thumb.png" width="192"> | [**Persistent Shocks and Multiplier-Accelerator Dynamics**](time-series/ar-processes/) | How AR(1) persistence changes shock half-lives, spectra, and income dynamics | Analytic IRFs + simulation | Persistence is an economic timing assumption, not just a coefficient |
 | <img src="time-series/stock-watson/figures/thumb.png" width="192"> | [**Stock-Watson Factor Forecasting**](time-series/stock-watson/) | Extracting common factors from large panels | PCA | A small number of factors can improve forecasts |
 
 ## Computational Finance
@@ -166,7 +158,6 @@ These tutorials convert the old computational-finance notebooks into short, repr
 | <img src="computational-finance/bond-yield-to-maturity/figures/thumb.png" width="192"> | [**Bond Prices and Yield to Maturity**](computational-finance/bond-yield-to-maturity/) | Pricing promised cash flows and solving for implied yields | Root finding | YTM is an implied discount rate, not a guaranteed realized return |
 | <img src="computational-finance/treasury-yield-curve/figures/thumb.png" width="192"> | [**Treasury Yield Curve Snapshots**](computational-finance/treasury-yield-curve/) | Reading curve levels, slopes, and maturity patterns | Static data analysis | CMT rates summarize an interpolated par-yield curve |
 | <img src="computational-finance/fama-bliss-forward-regression/figures/thumb.png" width="192"> | [**Fama-Bliss-Style Forward Regressions**](computational-finance/fama-bliss-forward-regression/) | Testing whether forward spreads predict future yield changes | OLS regression | Forward-rate predictability needs careful data and horizon choices |
-| <img src="computational-finance/ar1-rate-forecasting/figures/thumb.png" width="192"> | [**AR(1) Forecasting for Treasury Yields**](computational-finance/ar1-rate-forecasting/) | Forecasting persistent interest rates against a no-change benchmark | AR(1) regression | Simple persistence benchmarks are hard to beat at short horizons |
 | <img src="computational-finance/efficient-market-tests/figures/thumb.png" width="192"> | [**Weak-Form Efficient-Market Diagnostics**](computational-finance/efficient-market-tests/) | Autocorrelation, variance-ratio, and predictability checks | Random-walk diagnostics | Rejections test both market efficiency and the expected-return model |
 | <img src="computational-finance/mean-variance-frontier/figures/thumb.png" width="192"> | [**Mean-Variance Portfolio Frontier**](computational-finance/mean-variance-frontier/) | Diversification, covariance, and efficient portfolios | Markowitz frontier | Covariance drives risk, and frontiers are input-sensitive |
 

@@ -2,16 +2,15 @@
 
 ## Models in this section
 Continuous-time optimization: Hamiltonian mechanics, phase diagrams,
-finite difference methods for PDEs, and Pontryagin's maximum principle.
+HJB finite differences for growth, and Pontryagin's maximum principle.
 
 ## Catalog role
 - Treat optimal-control tutorials as the continuous-time methods wing of the
   Macroeconomics block unless a future tutorial is clearly non-macro.
-- Order examples from phase-diagram intuition to shooting, Pontryagin, and HJB
-  discretization.
+- Order examples from HJB growth and phase-diagram intuition to shooting and
+  Pontryagin.
 - Titles should name the economic object and the control idea together, such as
-  Ramsey saddle paths, shooting, Pontryagin cake eating, or finite-difference
-  HJB methods.
+  HJB growth, Ramsey saddle paths, shooting, or Pontryagin cake eating.
 
 ## Common patterns
 - ODE integration via `scipy.integrate.solve_ivp`
