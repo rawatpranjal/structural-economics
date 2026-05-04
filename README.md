@@ -78,7 +78,7 @@ These tutorials solve macro models on grids to keep taxes, constraints, and nonl
 |:---:|---|---|---|---|
 | <img src="global-dsge/rbc-capital-tax/figures/thumb.png" width="192"> | [**Capital Tax Wedges in an RBC Model**](global-dsge/rbc-capital-tax/) | How a revenue-neutral capital tax lowers after-tax returns, saving, and the capital base | Global VFI + Euler refinement | Lump-sum rebates leave resources intact but do not undo the Euler wedge |
 | <img src="global-dsge/rbc-irreversible-investment/figures/thumb.png" width="192"> | [**Irreversible Investment and Capital Overhang in RBC**](global-dsge/rbc-irreversible-investment/) | How an $I_t \geq 0$ constraint changes policy only when low productivity meets high installed capital | Global VFI + fine-grid check | The steady state is unchanged, but recession states have a real policy kink |
-| <img src="global-dsge/heaton-lucas/figures/thumb.png" width="192"> | [**Heaton-Lucas Incomplete Markets via STPFI**](global-dsge/heaton-lucas/) | Portfolio choice with heterogeneous agents and trading constraints | STPFI | Trading constraints create asset-pricing kinks and risk premia |
+| <img src="global-dsge/heaton-lucas/figures/thumb.png" width="192"> | [**Heaton-Lucas Risk Sharing and Asset Prices**](global-dsge/heaton-lucas/) | How constrained equity and bond trade makes the wealth distribution price aggregate risk | STPFI + Euler residual check | Risk premia move with the wealth share because constrained households carry high marginal utility |
 
 ### Continuous-Time Macro and Optimal Control
 
