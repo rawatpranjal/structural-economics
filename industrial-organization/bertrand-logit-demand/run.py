@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.plotting import setup_style, save_figure
+from lib.plotting import setup_style
 from lib.output import ModelReport
 
 
@@ -84,17 +84,42 @@ def calibrate(margin: float, shares: np.ndarray, prices: np.ndarray,
     div = np.multiply(shares, 1 / (1 - shares).reshape(-1, 1))
     np.fill_diagonal(div, -1)
 
-    # GUPPI (Gross Upward Pricing Pressure Index)
+    # GUPPI-style dollar pressure from products owned by the same firm.
     guppi = np.zeros(J)
     for j in range(J):
         for k in range(J):
             if j != k and p2f[j] == p2f[k]:
-                guppi[j] += div[k, j] * (prices[k] - mc[k])
+                guppi[j] += div[j, k] * (prices[k] - mc[k])
 
     return {
         "alpha": alpha, "xi": xi, "mc": mc, "dqdp": dqdp,
         "diversion": div, "guppi": guppi,
     }
+
+
+def outside_share(shares: np.ndarray) -> float:
+    """Return the no-purchase share implied by inside shares."""
+    return float(1.0 - np.sum(shares))
+
+
+def logit_consumer_surplus(p: np.ndarray, alpha: float, xi: np.ndarray) -> float:
+    """Representative logit consumer surplus, up to an income constant."""
+    inclusive_value = np.log1p(np.sum(np.exp(alpha * p + xi)))
+    return float(inclusive_value / (-alpha))
+
+
+def inside_hhi(shares: np.ndarray, p2f: np.ndarray) -> float:
+    """HHI computed on inside-good firm shares, scaled by 10,000."""
+    inside_total = np.sum(shares)
+    return float(sum(
+        (100 * np.sum(shares[p2f == f]) / inside_total) ** 2
+        for f in np.unique(p2f)
+    ))
+
+
+def fmt_vector(values: np.ndarray, digits: int = 2) -> str:
+    """Format a short numeric vector for a Markdown table."""
+    return "[" + ", ".join(f"{float(v):.{digits}f}" for v in values) + "]"
 
 
 def main():
@@ -159,13 +184,24 @@ def main():
     s_collusion = shares_logit(p_collusion, alpha, xi)
 
     # =========================================================================
-    # Comparative statics: price effects across different mergers
+    # Comparative statics: price effects across different ownership structures
     # =========================================================================
     merger_scenarios = {
-        "Pre-merger": (prices, shares, p2f),
-        "Merger 1+2": (p_merger1, s_merger1, p2f_merger1),
-        "Merger 1+2 (cost savings)": (p_merger2, s_merger2, p2f_merger1),
-        "Full collusion": (p_collusion, s_collusion, p2f_collusion),
+        "Pre-merger": {
+            "prices": prices, "shares": shares, "ownership": p2f, "costs": mc,
+        },
+        "Merger 1+2": {
+            "prices": p_merger1, "shares": s_merger1,
+            "ownership": p2f_merger1, "costs": mc,
+        },
+        "Merger 1+2, lower costs": {
+            "prices": p_merger2, "shares": s_merger2,
+            "ownership": p2f_merger1, "costs": mc_reduced,
+        },
+        "Common ownership": {
+            "prices": p_collusion, "shares": s_collusion,
+            "ownership": p2f_collusion, "costs": mc,
+        },
     }
 
     # =========================================================================
@@ -175,110 +211,208 @@ def main():
 
     report = ModelReport(
         "Bertrand Pricing with Logit Demand",
-        "Differentiated product oligopoly pricing, calibration, and merger simulation.",
+        "Ownership changes, diversion, and unilateral merger effects in a four-product market.",
+        include_reproduce=False,
+        show_figure_captions=False,
     )
 
     report.add_overview(
-        "This model implements the standard toolkit for antitrust merger analysis in "
-        "differentiated product markets. Firms compete in prices (Bertrand-Nash), consumers "
-        "choose products according to a logit discrete choice model, and the analyst calibrates "
-        "the structural parameters (price sensitivity, product quality, marginal costs) from "
-        "observed market data.\n\n"
-        "The key application: given a proposed merger, predict the equilibrium price increase "
-        "by re-solving the pricing game under the new ownership structure."
+        "A differentiated-products merger is a question about where lost sales go. "
+        "Before a merger, Firm 1 does not care that a price increase on Product 1 sends some "
+        "consumers to Product 2. After common ownership, those diverted sales are partly "
+        "recaptured by the same firm, so the old price vector is no longer optimal.\n\n"
+        "This tutorial calibrates a small logit demand system from pre-merger prices, shares, "
+        "and one margin. It then changes the ownership matrix and solves the Bertrand-Nash "
+        "pricing equations again. The exercise is intentionally narrow: it shows how demand, "
+        "diversion, markups, and marginal-cost efficiencies combine in the basic unilateral "
+        "effects calculation. The later [BLP random coefficients](../blp-random-coefficients/) "
+        "tutorial relaxes the logit substitution pattern; [merger simulation across demand "
+        "systems](../merger-simulation/) compares the consequences of that modeling choice."
     )
 
     report.add_equations(r"""
-**Logit demand:** Consumer $i$ chooses product $j$ with probability:
-$$s_j = \frac{\exp(\alpha p_j + \xi_j)}{1 + \sum_{k=1}^{J} \exp(\alpha p_k + \xi_k)}$$
+There are $J$ inside products and an outside good. Product $j$ has price $p_j$,
+marginal cost $c_j$, and mean non-price utility $\xi_j$. With
+$\alpha<0$, mean utility is
+$$\delta_j(p)=\xi_j+\alpha p_j.$$
 
-where $\alpha < 0$ is the price coefficient and $\xi_j$ is product $j$'s quality.
+Logit demand gives inside share
+$$
+s_j(p)=
+\frac{\exp(\delta_j(p))}
+{1+\sum_{\ell=1}^J \exp(\delta_\ell(p))},
+\qquad
+s_0(p)=
+\frac{1}
+{1+\sum_{\ell=1}^J \exp(\delta_\ell(p))}.
+$$
 
-**Bertrand-Nash FOC:** Each multi-product firm $f$ sets prices to satisfy:
-$$s_j + \sum_{k \in \mathcal{F}_f} (p_k - c_k) \frac{\partial s_k}{\partial p_j} = 0 \quad \forall j \in \mathcal{F}_f$$
+The demand derivative used by the pricing equation is
+$$
+\frac{\partial s_k}{\partial p_j}
+=\alpha s_k(\mathbf 1\{j=k\}-s_j).
+$$
 
-In matrix form: $\mathbf{s} + (\Omega \circ \Delta') (\mathbf{p} - \mathbf{c}) = 0$
+Let $\Omega_{jk}=1$ when products $j$ and $k$ are controlled by the same firm
+and zero otherwise. Bertrand-Nash pricing satisfies, for each product $j$,
+$$
+0=s_j(p)+\sum_{k=1}^J
+\Omega_{jk}(p_k-c_k)\frac{\partial s_k(p)}{\partial p_j}.
+$$
+If $\Delta_{jk}=\partial s_j/\partial p_k$, the markup equation is
+$$
+p-c=-(\Omega\circ \Delta')^{-1}s.
+$$
 
-where $\Omega$ is the ownership matrix and $\Delta = \partial \mathbf{s} / \partial \mathbf{p}'$ is the demand Jacobian.
+The diversion ratio from product $j$ to product $k$ is
+$$
+D_{j\to k}=\frac{s_k}{1-s_j},\qquad j\neq k.
+$$
+Under simple logit this depends only on product $k$'s share and the outside
+option. That is the IIA restriction: substitution is not allowed to depend on
+which products are objectively closer substitutes.
 
-**Diversion ratio:** $D_{j \to k} = \frac{s_k}{1 - s_j}$ — fraction of product $j$'s lost sales captured by product $k$.
-
-**GUPPI:** $\text{GUPPI}_j = \sum_{k \in \mathcal{F}_f, k \neq j} D_{k \to j} (p_k - c_k)$ — upward pricing pressure from merger.
+For welfare comparisons, the logit consumer-surplus index is
+$$
+CS(p)=\frac{1}{-\alpha}
+\log\left(1+\sum_{j=1}^J \exp(\xi_j+\alpha p_j)\right),
+$$
+up to the usual income constant.
 """)
 
     report.add_model_setup(
-        "| Parameter | Value | Description |\n"
-        "|-----------|-------|-------------|\n"
-        f"| Products | {n_products} | 4 single-product firms + outside good |\n"
-        f"| Shares | {list(shares)} | Market shares (outside good: {1-sum(shares):.2f}) |\n"
-        f"| Prices | {list(prices)} | Pre-merger prices |\n"
-        f"| Margin | {margin} | Price-cost margin (firm 1) |\n"
-        f"| $\\alpha$ | {alpha:.4f} | Calibrated price coefficient |"
+        "The data are a transparent calibration rather than an estimated market. "
+        "Products 1 and 2 are the merging products; products 3 and 4 are outside "
+        "rivals within the market.\n\n"
+        "| Object | Value | Role |\n"
+        "|--------|-------|------|\n"
+        f"| Inside products | {n_products} | Four single-product firms before the merger |\n"
+        f"| Inside shares | {fmt_vector(shares)} | Observed product shares |\n"
+        f"| Outside share | {outside_share(shares):.2f} | No-purchase option |\n"
+        f"| Prices | {fmt_vector(prices)} | Pre-merger prices |\n"
+        f"| Product 1 margin | {margin:.2f} | Pins down the logit price coefficient |\n"
+        f"| $\\alpha$ | {alpha:.4f} | Calibrated price sensitivity |\n"
+        f"| Marginal costs | {fmt_vector(mc)} | Recovered from the pre-merger FOCs |\n"
+        "| Counterfactuals | merger 1+2, merger 1+2 with lower costs, common ownership | Ownership and cost experiments |"
     )
 
     report.add_solution_method(
-        "**Step 1: Calibrate** structural parameters ($\\alpha, \\xi, c$) by inverting the "
-        "Bertrand-Nash FOC from observed prices, shares, and margins.\n\n"
-        "**Step 2: Verify** that the calibrated model replicates observed equilibrium "
-        f"(FOC residuals: {np.max(np.abs(foc_check)):.2e}).\n\n"
-        "**Step 3: Simulate** mergers by changing the ownership matrix $\\Omega$ and "
-        "solving the new pricing game via `scipy.optimize.fsolve`."
+        "The computation has two distinct parts. Calibration makes the observed "
+        "pre-merger market exactly rationalized by logit demand and Bertrand pricing. "
+        "Counterfactual simulation then holds demand fixed, changes ownership and "
+        "possibly costs, and searches for the new price vector.\n\n"
+        "```text\n"
+        "Inputs: pre-merger prices p, shares s, firm labels f(j),\n"
+        "        one observed margin, and counterfactual ownership labels\n"
+        "Outputs: calibrated demand/costs and equilibrium outcomes by scenario\n\n"
+        "1. Set s0 = 1 - sum_j s_j.\n"
+        "2. Use Product 1's margin to infer alpha from its single-product FOC.\n"
+        "3. Recover mean utilities: xi_j = log(s_j / s0) - alpha p_j.\n"
+        "4. Build Delta(p), the logit demand Jacobian at observed prices.\n"
+        "5. Recover marginal costs from p - c = -[(Omega .* Delta')]^{-1}s.\n"
+        "6. For each counterfactual ownership/cost scenario:\n"
+        "       solve F_j(p) = s_j(p)\n"
+        "                    + sum_k Omega_jk (p_k-c_k) ds_k(p)/dp_j = 0\n"
+        "       compute shares, outside share, consumer surplus, HHI, and residuals.\n"
+        "```\n\n"
+        f"The pre-merger FOC residual after calibration is {np.max(np.abs(foc_check)):.2e}. "
+        "The post-merger solutions below use the same equations, not a reduced-form "
+        "pass-through rule."
     )
 
     # --- Figure 1: Price comparison across scenarios ---
     fig1, ax1 = plt.subplots(figsize=(9, 5))
     x = np.arange(n_products)
-    width = 0.2
+    scenario_names = list(merger_scenarios.keys())
+    offsets = (np.arange(len(scenario_names)) - (len(scenario_names) - 1) / 2) * 0.18
+    width = 0.18
     colors = ["steelblue", "coral", "seagreen", "mediumpurple"]
-    for i, (name, (p_s, s_s, _)) in enumerate(merger_scenarios.items()):
-        ax1.bar(x + i * width, p_s, width, label=name, color=colors[i])
+    for i, name in enumerate(scenario_names):
+        p_s = merger_scenarios[name]["prices"]
+        ax1.bar(x + offsets[i], p_s, width, label=name, color=colors[i])
+    ax1.axhline(np.mean(prices), color="black", linewidth=1, linestyle="--", alpha=0.6)
     ax1.set_xlabel("Product")
     ax1.set_ylabel("Price")
-    ax1.set_title("Equilibrium Prices Across Merger Scenarios")
-    ax1.set_xticks(x + 1.5 * width)
+    ax1.set_title("Equilibrium Prices Under Alternative Ownership")
+    ax1.set_xticks(x)
     ax1.set_xticklabels(product_names)
-    ax1.legend()
-    report.add_figure("figures/price-comparison.png", "Equilibrium prices across merger scenarios", fig1,
-        description="Merging firms internalize the diversion between their products and raise prices. "
-        "Cost efficiencies partially offset this, but full collusion produces the largest increases. "
-        "Non-merging firms also raise prices because prices are strategic complements in Bertrand competition.")
+    ax1.set_ylim(0, max(np.max(v["prices"]) for v in merger_scenarios.values()) * 1.12)
+    ax1.legend(frameon=False, ncol=2)
+    report.add_figure(
+        "figures/price-comparison.png",
+        "Equilibrium prices under alternative ownership",
+        fig1,
+        description=(
+            "The price comparison shows the unilateral effect directly. Common ownership of "
+            "Products 1 and 2 raises both of their prices because the merged firm now values "
+            "sales recaptured by its partner product. Products 3 and 4 also move up because "
+            "prices are strategic complements. The cost-saving scenario lowers the merged "
+            "products' marginal costs, but it does not mechanically restore the pre-merger "
+            "equilibrium."
+        ),
+    )
 
 
     # --- Figure 2: Market shares comparison ---
     fig2, ax2 = plt.subplots(figsize=(9, 5))
-    for i, (name, (p_s, s_s, _)) in enumerate(merger_scenarios.items()):
-        ax2.bar(x + i * width, s_s, width, label=name, color=colors[i])
-    ax2.set_xlabel("Product")
+    share_names = product_names + ["Outside"]
+    x_share = np.arange(n_products + 1)
+    for i, name in enumerate(scenario_names):
+        s_s = merger_scenarios[name]["shares"]
+        all_shares = np.append(s_s, outside_share(s_s))
+        ax2.bar(x_share + offsets[i], all_shares, width, label=name, color=colors[i])
+    ax2.set_xlabel("Alternative")
     ax2.set_ylabel("Market Share")
-    ax2.set_title("Market Shares Across Merger Scenarios")
-    ax2.set_xticks(x + 1.5 * width)
-    ax2.set_xticklabels(product_names)
-    ax2.legend()
-    report.add_figure("figures/share-comparison.png", "Market shares shift as prices rise post-merger", fig2,
-        description="As merged products raise prices, consumers substitute toward cheaper alternatives "
-        "and the outside good. The magnitude of share loss depends on the logit price coefficient "
-        "and the size of the outside option.")
+    ax2.set_title("Market Shares and the Outside Option")
+    ax2.set_xticks(x_share)
+    ax2.set_xticklabels(share_names)
+    ax2.legend(frameon=False, ncol=2)
+    report.add_figure(
+        "figures/share-comparison.png",
+        "Market shares and the outside option",
+        fig2,
+        description=(
+            "The share shifts explain where the price effect goes. The merged products lose "
+            "some volume after their prices rise. Part of that volume moves to rival inside "
+            "products, and part leaves the inside market altogether through the outside good. "
+            "That outside option matters because it limits how much price pressure can be "
+            "internalized by any set of firms."
+        ),
+    )
 
 
     # --- Figure 3: Diversion ratios heatmap ---
     fig3, ax3 = plt.subplots(figsize=(6, 5))
-    im = ax3.imshow(cal["diversion"], cmap="RdBu_r", vmin=-1, vmax=1)
+    diversion_plot = cal["diversion"].copy()
+    np.fill_diagonal(diversion_plot, np.nan)
+    cmap = plt.cm.Blues.copy()
+    cmap.set_bad("#f0f0f0")
+    im = ax3.imshow(diversion_plot, cmap=cmap, vmin=0, vmax=np.nanmax(diversion_plot))
     ax3.set_xticks(range(n_products))
     ax3.set_yticks(range(n_products))
     ax3.set_xticklabels(product_names, fontsize=9)
     ax3.set_yticklabels(product_names, fontsize=9)
-    ax3.set_title("Diversion Ratios $D_{j \\to k}$")
-    ax3.set_xlabel("To product $k$")
-    ax3.set_ylabel("From product $j$")
+    ax3.set_title("Diversion Ratios")
+    ax3.set_xlabel("Product gaining the sale")
+    ax3.set_ylabel("Product losing the sale")
     for i in range(n_products):
         for j in range(n_products):
-            ax3.text(j, i, f"{cal['diversion'][i,j]:.2f}", ha="center", va="center", fontsize=10)
-    plt.colorbar(im, ax=ax3)
-    report.add_figure("figures/diversion-ratios.png", "Diversion ratios: where do lost sales go?", fig3,
-        description="Diversion ratios determine the competitive harm of a merger. Under logit, "
-        "diversion is proportional to market share (the IIA property), so larger products absorb "
-        "more diverted sales regardless of product similarity. This is the key limitation that "
-        "BLP random coefficients address.")
+            label = "" if i == j else f"{cal['diversion'][i, j]:.2f}"
+            ax3.text(j, i, label, ha="center", va="center", fontsize=10)
+    cbar = plt.colorbar(im, ax=ax3)
+    cbar.set_label("Diversion share")
+    report.add_figure(
+        "figures/diversion-ratios.png",
+        "Diversion ratios between products",
+        fig3,
+        description=(
+            "Rows are products losing a marginal sale; columns are products that receive it. "
+            "The logit restriction is visible: the larger-share products absorb more diverted "
+            "sales from every other product. That is convenient for a first merger exercise, "
+            "but it is also exactly why richer demand systems are needed when closeness of "
+            "substitution is central."
+        ),
+    )
 
 
     # --- Table: Merger results ---
@@ -286,45 +420,52 @@ where $\Omega$ is the ownership matrix and $\Delta = \partial \mathbf{s} / \part
         "Scenario": [],
         "Avg Price": [],
         "Price Change (%)": [],
-        "Consumer Surplus": [],
+        "Inside Share": [],
+        "Outside Share": [],
+        "CS Change": [],
         "HHI": [],
+        "FOC Residual": [],
     }
-    s0_total = np.sum(shares)
-    for name, (p_s, s_s, p2f_s) in merger_scenarios.items():
-        hhi = sum(
-            (100 * np.sum(s_s[p2f_s == f]) / np.sum(s_s)) ** 2
-            for f in np.unique(p2f_s)
-        )
-        cs = np.sum(s_s * (xi + alpha * p_s)) / (-alpha)  # Approximate CS
+    baseline_cs = logit_consumer_surplus(prices, alpha, xi)
+    for name, outcome in merger_scenarios.items():
+        p_s = outcome["prices"]
+        s_s = outcome["shares"]
+        p2f_s = outcome["ownership"]
+        mc_s = outcome["costs"]
+        hhi = inside_hhi(s_s, p2f_s)
+        cs = logit_consumer_surplus(p_s, alpha, xi)
+        residual = np.max(np.abs(foc_logit(p_s, mc_s, alpha, xi, p2f_s)))
         table_data["Scenario"].append(name)
         table_data["Avg Price"].append(f"{np.mean(p_s):.4f}")
         table_data["Price Change (%)"].append(f"{100*(np.mean(p_s)/np.mean(prices)-1):.2f}")
-        table_data["Consumer Surplus"].append(f"{cs:.4f}")
+        table_data["Inside Share"].append(f"{np.sum(s_s):.4f}")
+        table_data["Outside Share"].append(f"{outside_share(s_s):.4f}")
+        table_data["CS Change"].append(f"{cs - baseline_cs:+.4f}")
         table_data["HHI"].append(f"{hhi:.0f}")
+        table_data["FOC Residual"].append(f"{residual:.1e}")
 
     df = pd.DataFrame(table_data)
-    report.add_table("tables/merger-results.csv", "Merger Simulation Results", df,
-        description="Each row shows a merger scenario's equilibrium outcomes. The price change "
-        "column quantifies unilateral effects, while the HHI column reflects the structural "
-        "shift in concentration. Cost savings can make an otherwise harmful merger neutral or "
-        "even beneficial for consumers.")
+    report.add_table(
+        "tables/merger-results.csv",
+        "Merger simulation outcomes",
+        df,
+        description=(
+            "The table keeps the equilibrium accounting in one place. HHI is computed using "
+            "inside-good firm shares, so it captures the ownership change rather than the "
+            "outside option. Consumer surplus is reported as a change from the pre-merger "
+            "calibration. The FOC residuals are included because a merger simulation is only "
+            "as credible as the solved post-merger pricing equations."
+        ),
+    )
 
 
     report.add_takeaway(
-        "Merger simulation reveals the tension between market power and efficiency:\n\n"
-        "**Key insights:**\n"
-        "- **Unilateral effects**: When Firm 1 merges with Firm 2, both products' prices rise "
-        "because the merged firm internalizes the diversion between them. Competing products' "
-        "prices also rise (strategic complements).\n"
-        "- **Diversion ratios** determine merger severity: if products 1 and 2 are close "
-        "substitutes (high diversion), the merger causes larger price increases.\n"
-        "- **Cost efficiencies** can offset market power: a 10% marginal cost reduction "
-        "partially or fully reverses the price increase from the merger.\n"
-        "- **Full collusion** (monopoly) produces the highest prices — this is the upper "
-        "bound on how harmful market concentration can be.\n"
-        "- The logit model's **IIA property** (Independence of Irrelevant Alternatives) means "
-        "diversion ratios are proportional to market shares — a strong assumption. The BLP "
-        "random coefficients model relaxes this."
+        "The basic merger calculation is not an HHI calculation with a price effect attached. "
+        "It is a pricing first-order condition with a different ownership matrix. A merger "
+        "raises prices when diverted sales are valuable enough to the common owner; marginal-cost "
+        "efficiencies push the other way. In simple logit, diversion is easy to compute but tightly "
+        "restricted by IIA, so the exercise is best read as the clean benchmark before richer "
+        "demand estimates and product-specific substitution patterns are introduced."
     )
 
     report.add_references([
