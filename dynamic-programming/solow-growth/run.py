@@ -182,7 +182,7 @@ $$k_{t+1}=
 
 The steady state in effective units solves
 
-$$s(k^*)^\alpha = \Delta k^*,$$
+$$s(k^{*})^\alpha = \Delta k^{*},$$
 
 with
 
@@ -190,8 +190,8 @@ $$\Delta=(1+g)(1+n)-1+\delta.$$
 
 Thus
 
-$$k^*=\left(\frac{s}{\Delta}\right)^{1/(1-\alpha)},\qquad
-y^*=(k^*)^\alpha,\qquad c^*=(1-s)y^*.$$
+$$k^{*}=\left(\frac{s}{\Delta}\right)^{1/(1-\alpha)},\qquad
+y^{*}=(k^{*})^\alpha,\qquad c^{*}=(1-s)y^{*}.$$
 
 Competitive factor prices are the marginal products
 
@@ -214,7 +214,7 @@ per raw worker grows with $A_t$ along the balanced-growth path.
         f"| $K_0,A_0,L_0$ | {K0:.1f}, {A0:.1f}, {L0:.1f} | Initial aggregate stocks, implying $k_0={k0:.1f}$ |\n"
         f"| Horizon | {periods} periods | Long enough for the transition gap to be visible |\n"
         f"| $\\Delta$ | {effective_depreciation:.4f} | Exact break-even investment term in effective units |\n"
-        f"| $k^*$ | {k_star:.4f} | Analytical steady-state capital per effective worker |"
+        f"| $k^{*}$ | {k_star:.4f} | Analytical steady-state capital per effective worker |"
     )
 
     report.add_solution_method(
@@ -239,7 +239,7 @@ per raw worker grows with $A_t$ along the balanced-growth path.
         "    k = ((1 - delta) k + s k^alpha) / ((1 + g)(1 + n))\n"
         "compare the terminal path to k_star, y_star, and c_star\n"
         "```\n\n"
-        f"With this calibration, the local convergence factor around $k^*$ is "
+        f"With this calibration, the local convergence factor around $k^{*}$ is "
         f"**{local_convergence_factor:.3f}**, implying a half-life of about "
         f"**{half_life:.1f} periods** for small deviations from the balanced-growth path."
     )
@@ -251,7 +251,7 @@ per raw worker grows with $A_t$ along the balanced-growth path.
     fig1, ax1 = plt.subplots(figsize=(8, 5))
     ax1.plot(k_grid, investment, linewidth=2.2, label="$s k^\\alpha$")
     ax1.plot(k_grid, break_even, linewidth=2.2, label="$\\Delta k$")
-    ax1.axvline(k_star, color="black", linestyle="--", linewidth=1.3, label="$k^*$")
+    ax1.axvline(k_star, color="black", linestyle="--", linewidth=1.3, label="$k^{*}$")
     ax1.scatter([k0], [savings_rate * output_per_effective_worker(k0, alpha)], color="tab:blue", zorder=4)
     ax1.set_xlabel("Capital per effective worker $k$")
     ax1.set_ylabel("Investment per effective worker")
@@ -262,7 +262,7 @@ per raw worker grows with $A_t$ along the balanced-growth path.
         "actual investment per effective worker, $s k^\\alpha$. The line is the "
         "investment required to offset depreciation, population growth, and "
         "technology growth, $\\Delta k$. Their intersection is not estimated from "
-        f"the simulation; it is the exact $k^*={k_star:.3f}$ implied by the primitives."
+        f"the simulation; it is the exact $k^{*}={k_star:.3f}$ implied by the primitives."
     )
     report.add_figure(
         "figures/solow-diagram.png",
@@ -273,9 +273,9 @@ per raw worker grows with $A_t$ along the balanced-growth path.
 
     periods_array = path["period"].to_numpy()
     fig2, ax2 = plt.subplots(figsize=(8, 5))
-    ax2.plot(periods_array, path["k"] / k_star, linewidth=2.1, label="$k_t/k^*$")
-    ax2.plot(periods_array, path["y"] / y_star, linewidth=2.1, label="$y_t/y^*$")
-    ax2.plot(periods_array, path["c"] / c_star, linewidth=2.1, label="$c_t/c^*$")
+    ax2.plot(periods_array, path["k"] / k_star, linewidth=2.1, label="$k_t/k^{*}$")
+    ax2.plot(periods_array, path["y"] / y_star, linewidth=2.1, label="$y_t/y^{*}$")
+    ax2.plot(periods_array, path["c"] / c_star, linewidth=2.1, label="$c_t/c^{*}$")
     ax2.axhline(1.0, color="black", linestyle="--", linewidth=1.2)
     ax2.set_xlabel("Period $t$")
     ax2.set_ylabel("Ratio to steady-state value")
@@ -286,7 +286,7 @@ per raw worker grows with $A_t$ along the balanced-growth path.
         "their effective-unit steady states. Capital moves more slowly than "
         "output because production is concave: as $k_t$ rises, the marginal "
         "product of the next unit of capital falls. By the terminal period, "
-        f"$|k_{{T-1}}-k^*|$ is **{abs(terminal['k'] - k_star):.2e}**."
+        f"$|k_{{T-1}}-k^{*}|$ is **{abs(terminal['k'] - k_star):.2e}**."
     )
     report.add_figure(
         "figures/transition-effective-units.png",
@@ -319,7 +319,7 @@ per raw worker grows with $A_t$ along the balanced-growth path.
         "figures/factor-prices.png",
         "Factor prices along the Solow transition",
         fig3,
-        description="The dashed lines are analytical steady-state values. The simulation approaches them because capital per effective worker approaches $k^*$.",
+        description="The dashed lines are analytical steady-state values. The simulation approaches them because capital per effective worker approaches $k^{*}$.",
     )
 
     table = pd.DataFrame(

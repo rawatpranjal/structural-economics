@@ -83,7 +83,7 @@ The inner EGP loop converged in **11 iterations**. The outer K/L iteration conve
 
 ## Takeaway
 
-The Aiyagari model demonstrates how precautionary savings demand from uninsurable income risk drives the equilibrium interest rate below the rate of time preference ($r^* < 1/\beta - 1$).
+The Aiyagari model demonstrates how precautionary savings demand from uninsurable income risk drives the equilibrium interest rate below the rate of time preference ($r^{*} < 1/\beta - 1$).
 
 **Key insights:**
 - Households over-accumulate assets as a buffer against bad income shocks. This *precautionary savings motive* pushes the capital stock above the representative-agent level and the interest rate below $1/\beta - 1$.

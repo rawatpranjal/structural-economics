@@ -124,13 +124,13 @@ State is the quality pair:
 $$\omega_t = (q_{1t}, q_{2t})$$
 
 Markov-perfect values satisfy:
-$$V_i(\omega) = \max_{a_i\in\{0,1\}} \pi_i(\omega) - \kappa a_i + \beta E[V_i(\omega')|\omega,a_i,a_{-i}^*(\omega)]$$
+$$V_i(\omega) = \max_{a_i\in\{0,1\}} \pi_i(\omega) - \kappa a_i + \beta E[V_i(\omega')|\omega,a_i,a_{-i}^{*}(\omega)]$$
 
 Investment changes transition probabilities:
 $$Pr(q_i'=q_i+1|a_i=1)=0.62$$
 
 The equilibrium policy maps each state into investment actions:
-$$a_i^*(\omega)\in\{0,1\}$$
+$$a_i^{*}(\omega)\in\{0,1\}$$
 """)
 
     report.add_model_setup(

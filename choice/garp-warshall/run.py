@@ -402,11 +402,11 @@ $$p_i \cdot x_i \ge p_i \cdot x_j$$
 
 i.e., bundle $j$ was affordable when $i$ was chosen.
 
-**Transitive Closure (Warshall):** $i \; R^* \; j$ iff there exists a chain $i \; R \; k_1 \; R \; k_2 \; R \cdots R \; j$.
+**Transitive Closure (Warshall):** $i \; R^{*} \; j$ iff there exists a chain $i \; R \; k_1 \; R \; k_2 \; R \cdots R \; j$.
 
 $$R^{(k)}[i,j] = R^{(k-1)}[i,j] \;\lor\; \bigl(R^{(k-1)}[i,k] \;\land\; R^{(k-1)}[k,j]\bigr)$$
 
-**GARP Violation:** The data violates GARP if there exist $i, j$ such that $i \; R^* \; j$ (revealed preferred through a chain) and $p_j \cdot x_j > p_j \cdot x_i$ (bundle $i$ was strictly cheaper at $j$'s prices).
+**GARP Violation:** The data violates GARP if there exist $i, j$ such that $i \; R^{*} \; j$ (revealed preferred through a chain) and $p_j \cdot x_j > p_j \cdot x_i$ (bundle $i$ was strictly cheaper at $j$'s prices).
 
 **Afriat Efficiency Index:** The largest $e \in [0,1]$ such that the $e$-adjusted data satisfies GARP, where the adjusted relation uses $e \cdot p_i \cdot x_i \ge p_i \cdot x_j$.
 """
@@ -426,7 +426,7 @@ $$R^{(k)}[i,j] = R^{(k-1)}[i,j] \;\lor\; \bigl(R^{(k-1)}[i,k] \;\land\; R^{(k-1)
         "**Warshall's Algorithm:** Starting from the direct revealed preference matrix $R$, "
         "we iterate over each observation $k$ as a potential intermediate node. For each pair "
         "$(i, j)$, if $i$ can reach $k$ and $k$ can reach $j$, then $i$ can reach $j$. After "
-        "$T$ pivots, the matrix $R^*$ encodes all transitive preference chains.\n\n"
+        "$T$ pivots, the matrix $R^{*}$ encodes all transitive preference chains.\n\n"
         "**Complexity:** $O(T^3)$ for the transitive closure, $O(T^2 K)$ for building the "
         "direct preference matrix.\n\n"
         f"**Results:** Cobb-Douglas data: {len(violations_cd)} GARP violations (as expected). "
@@ -440,7 +440,7 @@ $$R^{(k)}[i,j] = R^{(k-1)}[i,j] \;\lor\; \bigl(R^{(k-1)}[i,k] \;\land\; R^{(k-1)
 
     step_indices = [0, T // 3, 2 * T // 3, T]
     step_labels = ["Direct $R$ (step 0)", f"After pivot $k={T//3}$",
-                   f"After pivot $k={2*T//3}$", f"Transitive $R^*$ (step {T})"]
+                   f"After pivot $k={2*T//3}$", f"Transitive $R^{*}$ (step {T})"]
 
     # Use random data steps for more interesting visualization
     display_steps = steps_rand
@@ -510,7 +510,7 @@ $$R^{(k)}[i,j] = R^{(k-1)}[i,j] \;\lor\; \bigl(R^{(k-1)}[i,k] \;\land\; R^{(k-1)
     # Legend
     from matplotlib.patches import Patch
     legend_elements = [Patch(facecolor="white", edgecolor="black", label="No relation"),
-                       Patch(facecolor="#4a90d9", label="$R^*$ (revealed preferred)"),
+                       Patch(facecolor="#4a90d9", label="$R^{*}$ (revealed preferred)"),
                        Patch(facecolor="#e74c3c", label="GARP violation")]
     ax2b.legend(handles=legend_elements, loc="upper left", fontsize=8,
                 bbox_to_anchor=(0.0, -0.18), ncol=3)
@@ -544,8 +544,8 @@ $$R^{(k)}[i,j] = R^{(k-1)}[i,j] \;\lor\; \bigl(R^{(k-1)}[i,k] \;\land\; R^{(k-1)
     ax4.axvline(x=afriat_indices.mean(), color="red", linestyle="--", linewidth=2,
                 label=f"Mean = {afriat_indices.mean():.3f}")
     ax4.axvline(x=1.0, color="green", linestyle="-", linewidth=2, alpha=0.7,
-                label="Perfect rationality ($e^*=1$)")
-    ax4.set_xlabel("Afriat Efficiency Index $e^*$")
+                label="Perfect rationality ($e^{*}=1$)")
+    ax4.set_xlabel("Afriat Efficiency Index $e^{*}$")
     ax4.set_ylabel("Density")
     ax4.set_title(f"Distribution of Afriat Efficiency Index (T={T}, K={K})")
     ax4.legend()
@@ -553,8 +553,8 @@ $$R^{(k)}[i,j] = R^{(k-1)}[i,j] \;\lor\; \bigl(R^{(k-1)}[i,k] \;\land\; R^{(k-1)
     report.add_figure("figures/afriat-distribution.png",
                       "Afriat efficiency index distribution for random data: distance from rationalizability",
                       fig4,
-                      description="The Afriat efficiency index $e^*$ measures how close data is to being rationalizable: $e^*=1$ means fully rational, "
-                      "and lower values indicate greater departure from utility maximization. Even random data often achieves $e^*$ close to 1, "
+                      description="The Afriat efficiency index $e^{*}$ measures how close data is to being rationalizable: $e^{*}=1$ means fully rational, "
+                      "and lower values indicate greater departure from utility maximization. Even random data often achieves $e^{*}$ close to 1, "
                       "highlighting that small datasets may lack the power to distinguish optimization from noise.")
 
     # --- Table: Direct preference R and transitive closure R* ---
@@ -586,7 +586,7 @@ $$R^{(k)}[i,j] = R^{(k-1)}[i,j] \;\lor\; \bigl(R^{(k-1)}[i,k] \;\land\; R^{(k-1)
         "random behavior is increasingly likely to produce preference cycles, giving GARP "
         "more opportunities to reject.\n"
         "- The Afriat efficiency index provides a continuous measure of 'near-rationality'. "
-        "Even random data often has $e^*$ close to 1, reflecting the difficulty of detecting "
+        "Even random data often has $e^{*}$ close to 1, reflecting the difficulty of detecting "
         "irrationality from small samples.\n"
         "- Warshall's $O(T^3)$ complexity is far more efficient than checking all possible "
         "chains explicitly, making it the standard algorithm for empirical revealed preference "

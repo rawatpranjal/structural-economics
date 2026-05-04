@@ -18,8 +18,8 @@ subject to: $\dot{k} = f(k) - \delta k - c$, with $f(k) = A k^\alpha$.
 $$\frac{\dot{c}}{c} = \frac{1}{\sigma} \left( f'(k) - \delta - \rho \right)$$
 
 **Steady state:**
-$$f'(k^*) = \delta + \rho \implies k^* = \left(\frac{\alpha A}{\delta + \rho}\right)^{\frac{1}{1-\alpha}}$$
-$$c^* = f(k^*) - \delta k^*$$
+$$f'(k^{*}) = \delta + \rho \implies k^{*} = \left(\frac{\alpha A}{\delta + \rho}\right)^{\frac{1}{1-\alpha}}$$
+$$c^{*} = f(k^{*}) - \delta k^{*}$$
 
 **Modified golden rule:** The steady-state capital stock equates the net marginal product of capital to the discount rate.
 
@@ -32,8 +32,8 @@ $$c^* = f(k^*) - \delta k^*$$
 | $\rho$    | 0.03 | Discount rate |
 | $\sigma$  | 2.0 | CRRA coefficient |
 | $A$       | 1.0 | TFP |
-| $k^*$     | 8.2898 | Steady-state capital |
-| $c^*$     | 1.5952 | Steady-state consumption |
+| $k^{*}$     | 8.2898 | Steady-state capital |
+| $c^{*}$     | 1.5952 | Steady-state consumption |
 
 ## Solution Method
 
@@ -72,7 +72,7 @@ The ODE system is integrated using `scipy.integrate.solve_ivp` (RK45, adaptive s
 The Ramsey model reveals the deep structure of optimal saving and capital accumulation in the neoclassical framework.
 
 **Key insights:**
-- The steady-state capital stock satisfies the **modified golden rule**: $f'(k^*) = \delta + \rho$. Unlike the golden rule ($f'(k) = \delta$), optimizing households do not maximize steady-state consumption --- they discount the future.
+- The steady-state capital stock satisfies the **modified golden rule**: $f'(k^{*}) = \delta + \rho$. Unlike the golden rule ($f'(k) = \delta$), optimizing households do not maximize steady-state consumption --- they discount the future.
 - The economy exhibits **saddle-path stability**: only one consumption level is consistent with intertemporal optimization for each capital stock. All other paths violate either feasibility or the transversality condition.
 - **Convergence is slow**: the half-life is approximately 12 years. This is a well-known feature of the neoclassical model and partly explains persistent cross-country income differences.
 - Along the saddle path, capital-poor economies have *lower* consumption but *higher* saving rates, consistent with the empirical convergence literature.

@@ -23,11 +23,11 @@ Inverse demand: $P = a - Q$, where $Q = \sum_{i=1}^n q_i$.
 **Grim trigger strategy:** collude until any firm deviates, then revert to Nash forever.
 
 **Critical discount factor:**
-$$\delta^* = \frac{\pi^D - \pi^M}{\pi^D - \pi^N}$$
+$$\delta^{*} = \frac{\pi^D - \pi^M}{\pi^D - \pi^N}$$
 
-Collusion is sustainable if and only if $\delta \geq \delta^*$.
+Collusion is sustainable if and only if $\delta \geq \delta^{*}$.
 
-For the symmetric Cournot case: $\delta^* = \frac{(n+1)^2}{n^2 + 6n + 1}$ (increasing in $n$).
+For the symmetric Cournot case: $\delta^{*} = \frac{(n+1)^2}{n^2 + 6n + 1}$ (increasing in $n$).
 
 ## Model Setup
 
@@ -42,7 +42,7 @@ For the symmetric Cournot case: $\delta^* = \frac{(n+1)^2}{n^2 + 6n + 1}$ (incre
 
 **Analytical Cournot solution:** Profits under Nash, collusion, and deviation are computed in closed form for the linear demand model.
 
-**Trigger strategy analysis:** The critical discount factor $\delta^*$ is derived from the incentive compatibility constraint: the one-period gain from deviation must not exceed the present value of lost future collusion profits.
+**Trigger strategy analysis:** The critical discount factor $\delta^{*}$ is derived from the incentive compatibility constraint: the one-period gain from deviation must not exceed the present value of lost future collusion profits.
 
 **Structural break detection:** We simulate a price series with three regimes (competition, collusion, post-detection) and examine how prices and price-cost margins shift across regimes. The vitamins cartel data provides an empirical benchmark.
 
@@ -80,9 +80,9 @@ Cartels are inherently unstable because each member faces a prisoner's dilemma: 
 
 **Key insights:**
 - The deviation temptation ($\pi^D - \pi^M$) always exceeds zero: cheating on the cartel is always profitable in the short run.
-- Collusion is sustainable only if firms are sufficiently patient ($\delta \geq \delta^*$). The Folk Theorem guarantees that cooperation can be sustained in repeated games when the discount factor is high enough.
-- **More firms make collusion harder.** The critical discount factor $\delta^*$ is strictly increasing in $n$, approaching 1 as $n \to \infty$. This is Stigler's (1964) insight: cartels face greater coordination problems as membership grows.
-- For a duopoly, $\delta^* = 0.5294$; for $n=10$, $\delta^* = 0.7516$.
+- Collusion is sustainable only if firms are sufficiently patient ($\delta \geq \delta^{*}$). The Folk Theorem guarantees that cooperation can be sustained in repeated games when the discount factor is high enough.
+- **More firms make collusion harder.** The critical discount factor $\delta^{*}$ is strictly increasing in $n$, approaching 1 as $n \to \infty$. This is Stigler's (1964) insight: cartels face greater coordination problems as membership grows.
+- For a duopoly, $\delta^{*} = 0.5294$; for $n=10$, $\delta^{*} = 0.7516$.
 - Structural breaks in price series and price-cost margins provide empirical signatures of collusion. The vitamins cartel shows elevated margins during the cartel period (1991--1995), consistent with the model's predictions.
 - Porter (1983) and Harrington (2008) develop econometric methods to detect these regime changes from market data alone.
 

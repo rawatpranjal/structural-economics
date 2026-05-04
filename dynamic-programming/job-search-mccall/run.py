@@ -197,7 +197,7 @@ def main():
         "the current offer (and work at that wage forever) or reject it (receive unemployment "
         "benefit $b$ and draw a new offer next period).\n\n"
         "The key question: how selective should the worker be? The answer is a simple "
-        "**reservation wage** policy: accept any offer above a threshold $w^*$ and reject "
+        "**reservation wage** policy: accept any offer above a threshold $w^{*}$ and reject "
         "anything below it. This threshold balances the cost of continued search (foregone "
         "wages) against the option value of potentially finding a better match."
     )
@@ -210,10 +210,10 @@ where $w/(1-\beta)$ is the lifetime value of accepting wage $w$ forever, and
 $b + \beta \, \mathbb{E}[V(w')]$ is the value of rejecting (collecting benefit $b$
 today, then drawing a new offer $w'$ tomorrow).
 
-**Reservation wage** $w^*$ solves:
-$$\frac{w^*}{1-\beta} = b + \beta \, \mathbb{E}[V(w')]$$
+**Reservation wage** $w^{*}$ solves:
+$$\frac{w^{*}}{1-\beta} = b + \beta \, \mathbb{E}[V(w')]$$
 
-The optimal policy is a threshold rule: accept if $w \ge w^*$, reject otherwise.
+The optimal policy is a threshold rule: accept if $w \ge w^{*}$, reject otherwise.
 """
     )
 
@@ -236,7 +236,7 @@ The optimal policy is a threshold rule: accept if $w \ge w^*$, reject otherwise.
         "which makes the McCall model particularly clean: each iteration requires only a single "
         "dot product to compute the expected value, then an elementwise max.\n\n"
         f"Converged in **{info['iterations']} iterations** (error = {info['error']:.2e}).\n\n"
-        f"**Baseline reservation wage:** $w^* = {w_star:.4f}$"
+        f"**Baseline reservation wage:** $w^{*} = {w_star:.4f}$"
     )
 
     # --- Figure 1: Accept vs Reject Values ---
@@ -246,7 +246,7 @@ The optimal policy is a threshold rule: accept if $w \ge w^*$, reject otherwise.
     ax1.axhline(continuation, color="r", linestyle="--", linewidth=2,
                 label=f"Reject: $b + \\beta E[V(w')]$ = {continuation:.2f}")
     ax1.axvline(w_star, color="k", linestyle=":", linewidth=1.5, alpha=0.7,
-                label=f"$w^* = {w_star:.3f}$")
+                label=f"$w^{*} = {w_star:.3f}$")
     ax1.fill_between(wages, 0, ax1.get_ylim()[1] if ax1.get_ylim()[1] > 0 else 100,
                      where=wages >= w_star, alpha=0.08, color="green",
                      label="Accept region")
@@ -275,7 +275,7 @@ The optimal policy is a threshold rule: accept if $w \ge w^*$, reject otherwise.
     ax2.axhline(b, color="r", linestyle=":", alpha=0.5,
                 label=f"$b = {b:.1f}$")
     ax2.set_xlabel("Discount factor $\\beta$")
-    ax2.set_ylabel("Reservation wage $w^*$")
+    ax2.set_ylabel("Reservation wage $w^{*}$")
     ax2.set_title("Reservation Wage vs Patience")
     ax2.legend()
     report.add_figure("figures/wstar-vs-beta.png",
@@ -292,7 +292,7 @@ The optimal policy is a threshold rule: accept if $w \ge w^*$, reject otherwise.
     ax3.axhline(np.dot(probs, wages), color="gray", linestyle=":", alpha=0.5,
                 label=f"$E[w] = {np.dot(probs, wages):.2f}$")
     ax3.set_xlabel("Unemployment benefit $b$")
-    ax3.set_ylabel("Reservation wage $w^*$")
+    ax3.set_ylabel("Reservation wage $w^{*}$")
     ax3.set_title("Reservation Wage vs Unemployment Benefits")
     ax3.legend()
     report.add_figure("figures/wstar-vs-benefits.png",
@@ -315,14 +315,14 @@ The optimal policy is a threshold rule: accept if $w \ge w^*$, reject otherwise.
         "approach** to unemployment. Unemployment is not involuntary idleness but an "
         "investment in finding a better match.\n\n"
         "**Key insights:**\n"
-        "- The optimal policy is a simple **threshold rule**: accept any wage above $w^*$, "
+        "- The optimal policy is a simple **threshold rule**: accept any wage above $w^{*}$, "
         "reject below. No complicated history-dependence is needed.\n"
         "- **Higher unemployment benefits $\\Rightarrow$ higher reservation wage $\\Rightarrow$ "
         "longer unemployment spells** but better eventual matches. This is the core policy "
         "trade-off in unemployment insurance design.\n"
         "- **More patient workers (higher $\\beta$) are more selective.** A patient worker "
         "values the option of future draws more, so they hold out for better offers.\n"
-        "- The reservation wage $w^*$ is *always above* the unemployment benefit $b$ "
+        "- The reservation wage $w^{*}$ is *always above* the unemployment benefit $b$ "
         "(since the option value of search is positive) but *below* the expected wage "
         "$E[w]$ (since accepting a good offer now avoids the risk of worse draws later).\n"
         "- Despite its simplicity, this model is the building block for richer search models "

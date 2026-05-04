@@ -18,9 +18,9 @@ $$\dot{c} = \frac{1}{\sigma} \left( f'(k) - \delta - \rho \right) c$$
 
 **Nullclines:**
 - $\dot{k} = 0$: $c = f(k) - \delta k$ (hump-shaped in $k$)
-- $\dot{c} = 0$: $f'(k) = \delta + \rho$, i.e., $k = k^*$ (vertical line)
+- $\dot{c} = 0$: $f'(k) = \delta + \rho$, i.e., $k = k^{*}$ (vertical line)
 
-**Steady state:** $k^* = \left(\frac{\alpha A}{\rho + \delta}\right)^{1/(1-\alpha)}$, $c^* = f(k^*) - \delta k^*$
+**Steady state:** $k^{*} = \left(\frac{\alpha A}{\rho + \delta}\right)^{1/(1-\alpha)}$, $c^{*} = f(k^{*}) - \delta k^{*}$
 
 **Transversality condition** selects the saddle path as the unique optimal trajectory.
 
@@ -32,8 +32,8 @@ $$\dot{c} = \frac{1}{\sigma} \left( f'(k) - \delta - \rho \right) c$$
 | $\delta$ | 0.05 | Depreciation rate |
 | $\rho$ | 0.04 | Discount rate |
 | $\sigma$ | 2.0 | CRRA coefficient |
-| $k^*$ | 5.5843 | Steady-state capital |
-| $c^*$ | 1.3961 | Steady-state consumption |
+| $k^{*}$ | 5.5843 | Steady-state capital |
+| $c^{*}$ | 1.3961 | Steady-state consumption |
 
 ## Solution Method
 
@@ -58,10 +58,10 @@ $$\dot{c} = \frac{1}{\sigma} \left( f'(k) - \delta - \rho \right) c$$
 
 | Quantity    |   Value | Description                     |
 |:------------|--------:|:--------------------------------|
-| $k^*$       |  5.5843 | Steady-state capital            |
-| $c^*$       |  1.3961 | Steady-state consumption        |
-| $y^*$       |  1.6753 | Steady-state output             |
-| $r^*$       |  0.04   | Net interest rate (= rho at ss) |
+| $k^{*}$       |  5.5843 | Steady-state capital            |
+| $c^{*}$       |  1.3961 | Steady-state consumption        |
+| $y^{*}$       |  1.6753 | Steady-state output             |
+| $r^{*}$       |  0.04   | Net interest rate (= rho at ss) |
 | $\lambda_1$ | -0.071  | Stable eigenvalue               |
 | $\lambda_2$ |  0.111  | Unstable eigenvalue             |
 

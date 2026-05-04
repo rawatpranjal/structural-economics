@@ -16,11 +16,11 @@ $$p_i \cdot x_i \ge p_i \cdot x_j$$
 
 i.e., bundle $j$ was affordable when $i$ was chosen.
 
-**Transitive Closure (Warshall):** $i \; R^* \; j$ iff there exists a chain $i \; R \; k_1 \; R \; k_2 \; R \cdots R \; j$.
+**Transitive Closure (Warshall):** $i \; R^{*} \; j$ iff there exists a chain $i \; R \; k_1 \; R \; k_2 \; R \cdots R \; j$.
 
 $$R^{(k)}[i,j] = R^{(k-1)}[i,j] \;\lor\; \bigl(R^{(k-1)}[i,k] \;\land\; R^{(k-1)}[k,j]\bigr)$$
 
-**GARP Violation:** The data violates GARP if there exist $i, j$ such that $i \; R^* \; j$ (revealed preferred through a chain) and $p_j \cdot x_j > p_j \cdot x_i$ (bundle $i$ was strictly cheaper at $j$'s prices).
+**GARP Violation:** The data violates GARP if there exist $i, j$ such that $i \; R^{*} \; j$ (revealed preferred through a chain) and $p_j \cdot x_j > p_j \cdot x_i$ (bundle $i$ was strictly cheaper at $j$'s prices).
 
 **Afriat Efficiency Index:** The largest $e \in [0,1]$ such that the $e$-adjusted data satisfies GARP, where the adjusted relation uses $e \cdot p_i \cdot x_i \ge p_i \cdot x_j$.
 
@@ -36,7 +36,7 @@ $$R^{(k)}[i,j] = R^{(k-1)}[i,j] \;\lor\; \bigl(R^{(k-1)}[i,k] \;\land\; R^{(k-1)
 
 ## Solution Method
 
-**Warshall's Algorithm:** Starting from the direct revealed preference matrix $R$, we iterate over each observation $k$ as a potential intermediate node. For each pair $(i, j)$, if $i$ can reach $k$ and $k$ can reach $j$, then $i$ can reach $j$. After $T$ pivots, the matrix $R^*$ encodes all transitive preference chains.
+**Warshall's Algorithm:** Starting from the direct revealed preference matrix $R$, we iterate over each observation $k$ as a potential intermediate node. For each pair $(i, j)$, if $i$ can reach $k$ and $k$ can reach $j$, then $i$ can reach $j$. After $T$ pivots, the matrix $R^{*}$ encodes all transitive preference chains.
 
 **Complexity:** $O(T^3)$ for the transitive closure, $O(T^2 K)$ for building the direct preference matrix.
 
@@ -78,7 +78,7 @@ GARP is the testable implication of utility maximization. Warshall's algorithm e
 **Key insights:**
 - Cobb-Douglas data always satisfies GARP — this is a direct consequence of Afriat's theorem: any dataset rationalizable by a locally non-satiated utility function must satisfy GARP.
 - Bronars power increases with the number of observations $T$. With more data points, random behavior is increasingly likely to produce preference cycles, giving GARP more opportunities to reject.
-- The Afriat efficiency index provides a continuous measure of 'near-rationality'. Even random data often has $e^*$ close to 1, reflecting the difficulty of detecting irrationality from small samples.
+- The Afriat efficiency index provides a continuous measure of 'near-rationality'. Even random data often has $e^{*}$ close to 1, reflecting the difficulty of detecting irrationality from small samples.
 - Warshall's $O(T^3)$ complexity is far more efficient than checking all possible chains explicitly, making it the standard algorithm for empirical revealed preference analysis.
 
 ## Reproduce

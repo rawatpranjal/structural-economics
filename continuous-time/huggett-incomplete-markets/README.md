@@ -45,7 +45,7 @@ is unconditionally stable, allowing large time steps ($\Delta = 1000$) for fast 
 
 **General equilibrium:** Bisection on $r$ until $S(r) = \int a \, g(a)\, da = 0$.
 
-HJB converged in **8 iterations** (error = 1.56e-07). Equilibrium found at **$r^* = 0.03192$**.
+HJB converged in **8 iterations** (error = 1.56e-07). Equilibrium found at **$r^{*} = 0.03192$**.
 
 ## Results
 
@@ -78,7 +78,7 @@ HJB converged in **8 iterations** (error = 1.56e-07). Equilibrium found at **$r^
 The continuous-time approach to heterogeneous-agent models converts the problem into a coupled PDE system: the HJB equation characterizes optimal individual behavior, and the KFE describes the resulting cross-sectional distribution.
 
 **Key insights:**
-- The equilibrium interest rate $r^*$ is below the discount rate $\rho$. This is the hallmark result of Huggett (1993): precautionary savings motives push agents to accumulate bonds, driving down the interest rate.
+- The equilibrium interest rate $r^{*}$ is below the discount rate $\rho$. This is the hallmark result of Huggett (1993): precautionary savings motives push agents to accumulate bonds, driving down the interest rate.
 - The wealth distribution features a mass point near the borrowing constraint $\underline{a}$, reflecting agents hit by adverse income shocks who are unable to smooth consumption.
 - The savings function exhibits a square-root behavior near the constraint, reflecting the binding nature of the borrowing limit.
 - The upwind finite-difference scheme is essential: it selects forward or backward differences based on the direction of asset drift, ensuring stability and correctly capturing the state constraint at $\underline{a}$.

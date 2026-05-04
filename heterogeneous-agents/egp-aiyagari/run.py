@@ -436,7 +436,7 @@ $$\int a \, d\mu(a, y) = K$$
     ax2.plot(Kd_plot, r_plot_vals, 'r-s', linewidth=2, markersize=4,
              label='Capital demand (firm FOC)')
     ax2.axhline(r_eq, color='gray', linestyle='--', linewidth=1, alpha=0.7,
-                label=f'$r^* = {r_eq:.4f}$')
+                label=f'$r^{*} = {r_eq:.4f}$')
     ax2.set_xlabel("Capital $K$")
     ax2.set_ylabel("Interest rate $r$")
     ax2.set_title("Capital Market: Supply vs Demand")
@@ -528,7 +528,7 @@ $$\int a \, d\mu(a, y) = K$$
     report.add_takeaway(
         "The Aiyagari model demonstrates how precautionary savings demand from "
         "uninsurable income risk drives the equilibrium interest rate below the "
-        "rate of time preference ($r^* < 1/\\beta - 1$).\n\n"
+        "rate of time preference ($r^{*} < 1/\\beta - 1$).\n\n"
         "**Key insights:**\n"
         "- Households over-accumulate assets as a buffer against bad income shocks. "
         "This *precautionary savings motive* pushes the capital stock above the "

@@ -43,7 +43,7 @@ by the stochastic discount factor $\beta (d_{t+1}/d_t)^{-\gamma}$.
 | $\sigma_1$ | 0.1 | News shock std. dev. |
 | $\sigma_2$ | 0.1 | Surprise shock std. dev. |
 
-**Steady state:** $d^* = 1.0$, $p^* = 99.00$, $p/d = 99.00$, $R^* = 1.0101$
+**Steady state:** $d^{*} = 1.0$, $p^{*} = 99.00$, $p/d = 99.00$, $R^{*} = 1.0101$
 
 ## Solution Method
 

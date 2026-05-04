@@ -404,7 +404,7 @@ where $\mu$ is the stationary distribution over $(a, z)$.
         "4. Compute aggregate capital supply $K^s = \\int a \\, d\\mu$.\n"
         "5. If $K^s > K^d$, lower $r$; if $K^s < K^d$, raise $r$.\n\n"
         f"Bisection converged in **{ge_iter} iterations** with tolerance {tol_r:.0e}.\n\n"
-        f"Equilibrium interest rate: $r^* = {r_eq:.6f}$ (vs. $1/\\beta - 1 = {1/beta - 1:.6f}$)."
+        f"Equilibrium interest rate: $r^{*} = {r_eq:.6f}$ (vs. $1/\\beta - 1 = {1/beta - 1:.6f}$)."
     )
 
     # --- Figure 1: Value Functions ---
@@ -508,7 +508,7 @@ where $\mu$ is the stationary distribution over $(a, z)$.
         "The Aiyagari model demonstrates how **precautionary savings** and **market "
         "incompleteness** shape macroeconomic aggregates and the wealth distribution.\n\n"
         "**Key insights:**\n"
-        f"- The equilibrium interest rate $r^* = {r_eq:.4f}$ is below the rate of time "
+        f"- The equilibrium interest rate $r^{*} = {r_eq:.4f}$ is below the rate of time "
         f"preference $1/\\beta - 1 = {1/beta - 1:.4f}$. This wedge arises because agents "
         "over-save as a buffer against income risk, pushing down the return on capital.\n"
         f"- The wealth Gini coefficient is {gini:.3f}, reflecting the right-skewed distribution "

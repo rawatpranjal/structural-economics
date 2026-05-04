@@ -16,6 +16,8 @@ FRAGILE_MATH_DELIMITERS = (
     "\\right" + "}",
     "\\right" + "\\}",
 )
+UNBRACED_STAR_SCRIPT = re.compile(r"(?<!\\)(\^|_)\*")
+EMPTY_SCRIPT_TARGET = re.compile(r"(?<!\\)(\^|_)(?:\s|$|[,$.;:)\]}]|[\^_])")
 
 
 def catalog_links() -> set[Path]:
@@ -159,6 +161,33 @@ def fragile_math_delimiter_errors() -> list[str]:
     return errors
 
 
+def math_script_errors() -> list[str]:
+    """Reject math scripts that are fragile after Markdown preprocessing."""
+    errors = []
+    for path in active_text_files():
+        if path.suffix == ".py" and path.name != "run.py":
+            continue
+        rel = path.relative_to(ROOT)
+        in_display_math = False
+        for lineno, line in enumerate(path.read_text(errors="replace").splitlines(), start=1):
+            stripped = line.strip()
+            has_math_marker = "$" in line or in_display_math
+
+            if has_math_marker:
+                if UNBRACED_STAR_SCRIPT.search(line):
+                    errors.append(
+                        f"{rel}:{lineno} uses an unbraced star script in math; write ^{{*}} or _{{*}}"
+                    )
+                if EMPTY_SCRIPT_TARGET.search(line):
+                    errors.append(
+                        f"{rel}:{lineno} has a superscript/subscript marker with no target"
+                    )
+
+            if stripped.count("$$") % 2 == 1:
+                in_display_math = not in_display_math
+    return errors
+
+
 def validate() -> int:
     errors = []
     links = catalog_links()
@@ -185,6 +214,7 @@ def validate() -> int:
     errors.extend(display_math_errors())
     errors.extend(markdown_table_errors())
     errors.extend(fragile_math_delimiter_errors())
+    errors.extend(math_script_errors())
 
     if errors:
         print("Catalog validation failed:")

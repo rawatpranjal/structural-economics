@@ -365,7 +365,7 @@ $$\int a \left[ g_1(a) + g_2(a) \right] da = 0$$
         "computed via a sparse linear system.\n\n"
         "**General equilibrium:** Bisection on $r$ until $S(r) = \\int a \\, g(a)\\, da = 0$.\n\n"
         f"HJB converged in **{info['iterations']} iterations** (error = {info['error']:.2e}). "
-        f"Equilibrium found at **$r^* = {r_eq:.5f}$**."
+        f"Equilibrium found at **$r^{*} = {r_eq:.5f}$**."
     )
 
     # --- Figure 1: Value Function ---
@@ -433,7 +433,7 @@ $$\int a \left[ g_1(a) + g_2(a) \right] da = 0$$
     ax4.axvline(0, color="k", linestyle="--", linewidth=0.8)
     ax4.axhline(rho, color="gray", linestyle="--", linewidth=0.8, alpha=0.7)
     ax4.axvline(a_min, color="gray", linestyle="--", linewidth=0.8, alpha=0.5)
-    ax4.plot(0, r_eq, "ro", markersize=8, zorder=5, label=f"$r^* = {r_eq:.4f}$")
+    ax4.plot(0, r_eq, "ro", markersize=8, zorder=5, label=f"$r^{*} = {r_eq:.4f}$")
     ax4.set_xlabel("Bond supply $S(r) = \\int a \\, g(a) \\, da$")
     ax4.set_ylabel("Interest rate $r$")
     ax4.set_title("Bond Market Clearing")
@@ -485,7 +485,7 @@ $$\int a \left[ g_1(a) + g_2(a) \right] da = 0$$
         "into a coupled PDE system: the HJB equation characterizes optimal individual "
         "behavior, and the KFE describes the resulting cross-sectional distribution.\n\n"
         "**Key insights:**\n"
-        "- The equilibrium interest rate $r^*$ is below the discount rate $\\rho$. This is "
+        "- The equilibrium interest rate $r^{*}$ is below the discount rate $\\rho$. This is "
         "the hallmark result of Huggett (1993): precautionary savings motives push agents "
         "to accumulate bonds, driving down the interest rate.\n"
         "- The wealth distribution features a mass point near the borrowing constraint "

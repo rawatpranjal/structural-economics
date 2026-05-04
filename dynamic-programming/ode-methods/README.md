@@ -40,7 +40,7 @@ All ODE systems are solved using `scipy.integrate.solve_ivp` with the RK45 (Dorm
 
 **Solow model:** Direct forward integration from various initial conditions. The single ODE has a unique, globally stable steady state.
 
-**Ramsey model:** The steady state is a *saddle point* -- most initial conditions diverge. We use a **shooting method** (bisection on initial consumption $c_0$) to find the unique saddle path that converges to $(k^*, c^*)$. For each candidate $c_0$, we integrate forward and check whether the trajectory approaches or diverges from the steady state.
+**Ramsey model:** The steady state is a *saddle point* -- most initial conditions diverge. We use a **shooting method** (bisection on initial consumption $c_0$) to find the unique saddle path that converges to $(k^{*}, c^{*})$. For each candidate $c_0$, we integrate forward and check whether the trajectory approaches or diverges from the steady state.
 
 **Lotka-Volterra:** Direct forward integration reveals perpetual cycles (the system has a conserved quantity, so orbits are closed curves in the phase plane).
 
@@ -76,7 +76,7 @@ All ODE systems are solved using `scipy.integrate.solve_ivp` with the RK45 (Dorm
 These three examples illustrate the rich dynamics that arise from continuous-time economic models:
 
 **Key insights:**
-- **Solow model:** The steady state is *globally stable* -- regardless of initial capital, the economy converges to $k^*$. The phase diagram (a single curve crossing zero) makes this immediately transparent.
+- **Solow model:** The steady state is *globally stable* -- regardless of initial capital, the economy converges to $k^{*}$. The phase diagram (a single curve crossing zero) makes this immediately transparent.
 - **Ramsey model:** The steady state is a *saddle point*. Only one trajectory (the saddle path) converges; all others diverge. This reflects the forward-looking nature of optimal consumption: the agent must choose exactly the right initial consumption to satisfy the transversality condition.
 - **Shooting method:** Finding saddle paths numerically requires a shooting approach -- bisecting over initial conditions until convergence is achieved. This is a fundamental technique in computational economics.
 - **Lotka-Volterra:** The closed orbits (limit cycles) demonstrate that nonlinear ODE systems can exhibit qualitatively different behavior (cycles vs. convergence). Phase diagrams reveal this structure at a glance.

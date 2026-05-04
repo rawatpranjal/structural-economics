@@ -192,7 +192,7 @@ This is a piecewise-linear, concave function that passes through all observed po
 
     report.add_solution_method(
         "**Step 1:** Compute the direct revealed preference relation $R$ and its transitive "
-        "closure $R^*$ via Warshall's algorithm.\n\n"
+        "closure $R^{*}$ via Warshall's algorithm.\n\n"
         "**Step 2:** Construct Afriat numbers $(u_t, \\lambda_t)$ satisfying the Afriat "
         "inequalities using Varian's iterative tightening procedure.\n\n"
         "**Step 3:** Use the Afriat numbers to bound indifference curves and compute "

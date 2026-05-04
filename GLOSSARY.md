@@ -75,7 +75,7 @@ only for terms, notation, and shared catalog language.
 | $V(s)$ | Value function | Expected discounted value starting from state $s$. |
 | $V_n(s)$ | Iteration-$n$ value function | Use in VFI convergence descriptions. |
 | $g(s)$ or $g_a(a,y)$ | Policy function | Maps states into controls or next states. Name the chosen object in text. |
-| $c^*(s)$ | Optimal consumption policy | Use a star for an optimizer when it improves readability. |
+| $c^{*}(s)$ | Optimal consumption policy | Use a star for an optimizer when it improves readability. |
 | $P$ | Transition matrix, price, covariance, or bond price | Avoid bare $P$ when there is possible conflict; say "transition matrix" or "price" in prose. |
 | $P_{ij}$ | Markov transition probability | Probability of moving from current state $i$ to next state $j$. |
 | $\pi$ | Stationary or invariant distribution | Usually satisfies $\pi=\pi P$ and sums to one. |

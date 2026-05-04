@@ -6,7 +6,7 @@
 
 The McCall (1970) job search model is the foundational model of frictional unemployment. An unemployed worker sequentially draws wage offers from a known distribution. Each period, the worker must make an irreversible decision: accept the current offer (and work at that wage forever) or reject it (receive unemployment benefit $b$ and draw a new offer next period).
 
-The key question: how selective should the worker be? The answer is a simple **reservation wage** policy: accept any offer above a threshold $w^*$ and reject anything below it. This threshold balances the cost of continued search (foregone wages) against the option value of potentially finding a better match.
+The key question: how selective should the worker be? The answer is a simple **reservation wage** policy: accept any offer above a threshold $w^{*}$ and reject anything below it. This threshold balances the cost of continued search (foregone wages) against the option value of potentially finding a better match.
 
 ## Equations
 
@@ -16,10 +16,10 @@ where $w/(1-\beta)$ is the lifetime value of accepting wage $w$ forever, and
 $b + \beta \, \mathbb{E}[V(w')]$ is the value of rejecting (collecting benefit $b$
 today, then drawing a new offer $w'$ tomorrow).
 
-**Reservation wage** $w^*$ solves:
-$$\frac{w^*}{1-\beta} = b + \beta \, \mathbb{E}[V(w')]$$
+**Reservation wage** $w^{*}$ solves:
+$$\frac{w^{*}}{1-\beta} = b + \beta \, \mathbb{E}[V(w')]$$
 
-The optimal policy is a threshold rule: accept if $w \ge w^*$, reject otherwise.
+The optimal policy is a threshold rule: accept if $w \ge w^{*}$, reject otherwise.
 
 ## Model Setup
 
@@ -41,7 +41,7 @@ The continuation value $b + \beta \, \mathbb{E}[V(w')]$ is the same for all wage
 
 Converged in **149 iterations** (error = 9.11e-09).
 
-**Baseline reservation wage:** $w^* = 3.7923$
+**Baseline reservation wage:** $w^{*} = 3.7923$
 
 ## Results
 
@@ -73,10 +73,10 @@ Converged in **149 iterations** (error = 9.11e-09).
 The McCall model provides the cleanest illustration of the **search-theoretic approach** to unemployment. Unemployment is not involuntary idleness but an investment in finding a better match.
 
 **Key insights:**
-- The optimal policy is a simple **threshold rule**: accept any wage above $w^*$, reject below. No complicated history-dependence is needed.
+- The optimal policy is a simple **threshold rule**: accept any wage above $w^{*}$, reject below. No complicated history-dependence is needed.
 - **Higher unemployment benefits $\Rightarrow$ higher reservation wage $\Rightarrow$ longer unemployment spells** but better eventual matches. This is the core policy trade-off in unemployment insurance design.
 - **More patient workers (higher $\beta$) are more selective.** A patient worker values the option of future draws more, so they hold out for better offers.
-- The reservation wage $w^*$ is *always above* the unemployment benefit $b$ (since the option value of search is positive) but *below* the expected wage $E[w]$ (since accepting a good offer now avoids the risk of worse draws later).
+- The reservation wage $w^{*}$ is *always above* the unemployment benefit $b$ (since the option value of search is positive) but *below* the expected wage $E[w]$ (since accepting a good offer now avoids the risk of worse draws later).
 - Despite its simplicity, this model is the building block for richer search models with on-the-job search, matching functions, and equilibrium wage determination (Mortensen-Pissarides).
 
 ## Reproduce

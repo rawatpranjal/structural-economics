@@ -129,10 +129,10 @@ For product $j$, demand is:
 $$q_j(p_j) = a_j - bp_j$$
 
 Given wholesale price $w_j$, the retailer chooses:
-$$p_j^*(w_j) = \frac{a_j + bw_j}{2b}$$
+$$p_j^{*}(w_j) = \frac{a_j + bw_j}{2b}$$
 
 The retailer chooses an assortment $A$ with capacity $K$:
-$$A^* = \arg\max_{A: |A|=K} \sum_{j\in A}(p_j-w_j)q_j + F_j(A)$$
+$$A^{*} = \arg\max_{A: |A|=K} \sum_{j\in A}(p_j-w_j)q_j + F_j(A)$$
 
 All-unit discounts make $w_j$ depend on whether the manufacturer's shelf target is met.
 Slotting fees enter through fixed payments $F_j(A)$.

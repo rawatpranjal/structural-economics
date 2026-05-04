@@ -276,8 +276,8 @@ by the stochastic discount factor $\beta (d_{t+1}/d_t)^{-\gamma}$.
         f"| $\\rho$     | {rho} | Dividend persistence |\n"
         f"| $\\sigma_1$ | {sigma1} | News shock std. dev. |\n"
         f"| $\\sigma_2$ | {sigma2} | Surprise shock std. dev. |\n\n"
-        f"**Steady state:** $d^* = {ss['d_ss']}$, $p^* = {ss['p_ss']:.2f}$, "
-        f"$p/d = {ss['pd_ratio']:.2f}$, $R^* = {ss['R_ss']:.4f}$"
+        f"**Steady state:** $d^{*} = {ss['d_ss']}$, $p^{*} = {ss['p_ss']:.2f}$, "
+        f"$p/d = {ss['pd_ratio']:.2f}$, $R^{*} = {ss['R_ss']:.4f}$"
     )
 
     report.add_solution_method(

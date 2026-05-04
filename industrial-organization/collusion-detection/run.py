@@ -294,11 +294,11 @@ Inverse demand: $P = a - Q$, where $Q = \sum_{i=1}^n q_i$.
 **Grim trigger strategy:** collude until any firm deviates, then revert to Nash forever.
 
 **Critical discount factor:**
-$$\delta^* = \frac{\pi^D - \pi^M}{\pi^D - \pi^N}$$
+$$\delta^{*} = \frac{\pi^D - \pi^M}{\pi^D - \pi^N}$$
 
-Collusion is sustainable if and only if $\delta \geq \delta^*$.
+Collusion is sustainable if and only if $\delta \geq \delta^{*}$.
 
-For the symmetric Cournot case: $\delta^* = \frac{(n+1)^2}{n^2 + 6n + 1}$ (increasing in $n$).
+For the symmetric Cournot case: $\delta^{*} = \frac{(n+1)^2}{n^2 + 6n + 1}$ (increasing in $n$).
 """
     )
 
@@ -315,7 +315,7 @@ For the symmetric Cournot case: $\delta^* = \frac{(n+1)^2}{n^2 + 6n + 1}$ (incre
     report.add_solution_method(
         "**Analytical Cournot solution:** Profits under Nash, collusion, and "
         "deviation are computed in closed form for the linear demand model.\n\n"
-        "**Trigger strategy analysis:** The critical discount factor $\\delta^*$ is "
+        "**Trigger strategy analysis:** The critical discount factor $\\delta^{*}$ is "
         "derived from the incentive compatibility constraint: the one-period gain "
         "from deviation must not exceed the present value of lost future collusion "
         "profits.\n\n"
@@ -360,7 +360,7 @@ For the symmetric Cournot case: $\delta^* = \frac{(n+1)^2}{n^2 + 6n + 1}$ (incre
     ax2.fill_between(n_range, 0, delta_stars, alpha=0.10, color="red",
                      label="Collusion breaks down")
     ax2.set_xlabel("Number of firms $n$")
-    ax2.set_ylabel("Critical discount factor $\\delta^*$")
+    ax2.set_ylabel("Critical discount factor $\\delta^{*}$")
     ax2.set_title("Critical Discount Factor for Cartel Sustainability")
     ax2.legend(fontsize=9)
     ax2.set_ylim(0, 1.05)
@@ -468,13 +468,13 @@ For the symmetric Cournot case: $\delta^* = \frac{(n+1)^2}{n^2 + 6n + 1}$ (incre
         "- The deviation temptation ($\\pi^D - \\pi^M$) always exceeds zero: cheating on "
         "the cartel is always profitable in the short run.\n"
         "- Collusion is sustainable only if firms are sufficiently patient ($\\delta \\geq "
-        "\\delta^*$). The Folk Theorem guarantees that cooperation can be sustained in "
+        "\\delta^{*}$). The Folk Theorem guarantees that cooperation can be sustained in "
         "repeated games when the discount factor is high enough.\n"
-        "- **More firms make collusion harder.** The critical discount factor $\\delta^*$ "
+        "- **More firms make collusion harder.** The critical discount factor $\\delta^{*}$ "
         "is strictly increasing in $n$, approaching 1 as $n \\to \\infty$. This is Stigler's "
         "(1964) insight: cartels face greater coordination problems as membership grows.\n"
-        f"- For a duopoly, $\\delta^* = {delta_star_2:.4f}$; for $n=10$, "
-        f"$\\delta^* = {critical_discount_factor(10, a, c):.4f}$.\n"
+        f"- For a duopoly, $\\delta^{*} = {delta_star_2:.4f}$; for $n=10$, "
+        f"$\\delta^{*} = {critical_discount_factor(10, a, c):.4f}$.\n"
         "- Structural breaks in price series and price-cost margins provide empirical "
         "signatures of collusion. The vitamins cartel shows elevated margins during the "
         "cartel period (1991--1995), consistent with the model's predictions.\n"

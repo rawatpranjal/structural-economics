@@ -166,9 +166,9 @@ $$\dot{c} = \frac{1}{\sigma} \left( f'(k) - \delta - \rho \right) c$$
 
 **Nullclines:**
 - $\dot{k} = 0$: $c = f(k) - \delta k$ (hump-shaped in $k$)
-- $\dot{c} = 0$: $f'(k) = \delta + \rho$, i.e., $k = k^*$ (vertical line)
+- $\dot{c} = 0$: $f'(k) = \delta + \rho$, i.e., $k = k^{*}$ (vertical line)
 
-**Steady state:** $k^* = \left(\frac{\alpha A}{\rho + \delta}\right)^{1/(1-\alpha)}$, $c^* = f(k^*) - \delta k^*$
+**Steady state:** $k^{*} = \left(\frac{\alpha A}{\rho + \delta}\right)^{1/(1-\alpha)}$, $c^{*} = f(k^{*}) - \delta k^{*}$
 
 **Transversality condition** selects the saddle path as the unique optimal trajectory.
 """)
@@ -180,8 +180,8 @@ $$\dot{c} = \frac{1}{\sigma} \left( f'(k) - \delta - \rho \right) c$$
         f"| $\\delta$ | {delta} | Depreciation rate |\n"
         f"| $\\rho$ | {rho} | Discount rate |\n"
         f"| $\\sigma$ | {sigma} | CRRA coefficient |\n"
-        f"| $k^*$ | {k_ss:.4f} | Steady-state capital |\n"
-        f"| $c^*$ | {c_ss:.4f} | Steady-state consumption |"
+        f"| $k^{*}$ | {k_ss:.4f} | Steady-state capital |\n"
+        f"| $c^{*}$ | {c_ss:.4f} | Steady-state consumption |"
     )
 
     report.add_solution_method(
@@ -201,7 +201,7 @@ $$\dot{c} = \frac{1}{\sigma} \left( f'(k) - \delta - \rho \right) c$$
     ax1.plot(k_saddle_left, c_saddle_left, "k-", linewidth=3, label="Saddle path")
     ax1.plot(k_saddle_right, c_saddle_right, "k-", linewidth=3)
     ax1.plot(k_ss, c_ss, "ko", markersize=12, zorder=5)
-    ax1.annotate(f"$k^*={k_ss:.2f}, c^*={c_ss:.2f}$", (k_ss, c_ss),
+    ax1.annotate(f"$k^{*}={k_ss:.2f}, c^{*}={c_ss:.2f}$", (k_ss, c_ss),
                  textcoords="offset points", xytext=(15, -20), fontsize=10)
     ax1.set_xlabel("Capital $k$")
     ax1.set_ylabel("Consumption $c$")
@@ -221,14 +221,14 @@ $$\dot{c} = \frac{1}{\sigma} \left( f'(k) - \delta - \rho \right) c$$
     valid = (y_eval[0] > 0) & (y_eval[1] > 0)
     t_valid = t_eval[valid]
     ax2a.plot(t_valid, y_eval[0][valid], "b-", linewidth=2)
-    ax2a.axhline(k_ss, color="k", linestyle="--", alpha=0.5, label=f"$k^*={k_ss:.2f}$")
+    ax2a.axhline(k_ss, color="k", linestyle="--", alpha=0.5, label=f"$k^{*}={k_ss:.2f}$")
     ax2a.set_xlabel("Time")
     ax2a.set_ylabel("Capital $k(t)$")
     ax2a.set_title("Capital Transition to Steady State")
     ax2a.legend()
 
     ax2b.plot(t_valid, y_eval[1][valid], "r-", linewidth=2)
-    ax2b.axhline(c_ss, color="k", linestyle="--", alpha=0.5, label=f"$c^*={c_ss:.2f}$")
+    ax2b.axhline(c_ss, color="k", linestyle="--", alpha=0.5, label=f"$c^{*}={c_ss:.2f}$")
     ax2b.set_xlabel("Time")
     ax2b.set_ylabel("Consumption $c(t)$")
     ax2b.set_title("Consumption Transition to Steady State")
@@ -244,10 +244,10 @@ $$\dot{c} = \frac{1}{\sigma} \left( f'(k) - \delta - \rho \right) c$$
     # --- Figure 3: Four quadrant dynamics ---
     fig3, axes = plt.subplots(2, 2, figsize=(10, 8))
     regions = [
-        ("$k < k^*, c > c_{null}$\n(↙ diverge)", k_ss * 0.5, c_ss * 1.5),
-        ("$k > k^*, c > c_{null}$\n(↖ diverge)", k_ss * 1.5, c_ss * 1.5),
-        ("$k < k^*, c < c_{null}$\n(↗ converge)", k_ss * 0.5, c_ss * 0.5),
-        ("$k > k^*, c < c_{null}$\n(↘ diverge)", k_ss * 1.5, c_ss * 0.3),
+        ("$k < k^{*}, c > c_{null}$\n(↙ diverge)", k_ss * 0.5, c_ss * 1.5),
+        ("$k > k^{*}, c > c_{null}$\n(↖ diverge)", k_ss * 1.5, c_ss * 1.5),
+        ("$k < k^{*}, c < c_{null}$\n(↗ converge)", k_ss * 0.5, c_ss * 0.5),
+        ("$k > k^{*}, c < c_{null}$\n(↘ diverge)", k_ss * 1.5, c_ss * 0.3),
     ]
     for ax, (label, k0_r, c0_r) in zip(axes.flat, regions):
         sol_r = solve_ivp(dynamics, [0, 30], [k0_r, c0_r], max_step=0.1, dense_output=True)
@@ -272,7 +272,7 @@ $$\dot{c} = \frac{1}{\sigma} \left( f'(k) - \delta - \rho \right) c$$
 
     # --- Table ---
     df = pd.DataFrame({
-        "Quantity": ["$k^*$", "$c^*$", "$y^*$", "$r^*$", "$\\lambda_1$", "$\\lambda_2$"],
+        "Quantity": ["$k^{*}$", "$c^{*}$", "$y^{*}$", "$r^{*}$", "$\\lambda_1$", "$\\lambda_2$"],
         "Value": [f"{k_ss:.4f}", f"{c_ss:.4f}", f"{f(k_ss):.4f}",
                   f"{f_prime(k_ss)-delta:.4f}", f"{lambda1:.4f}", f"{lambda2:.4f}"],
         "Description": ["Steady-state capital", "Steady-state consumption",

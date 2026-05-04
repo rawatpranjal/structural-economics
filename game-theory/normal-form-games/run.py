@@ -139,11 +139,11 @@ def main() -> None:
     )
 
     report.add_equations(r"""
-**Pure Nash equilibrium:** action profile $(i^*, j^*)$ satisfies
+**Pure Nash equilibrium:** action profile $(i^{*}, j^{*})$ satisfies
 $$
-u_1(i^*, j^*) \geq u_1(i, j^*) \quad \forall i,
+u_1(i^{*}, j^{*}) \geq u_1(i, j^{*}) \quad \forall i,
 \qquad
-u_2(i^*, j^*) \geq u_2(i^*, j) \quad \forall j.
+u_2(i^{*}, j^{*}) \geq u_2(i^{*}, j) \quad \forall j.
 $$
 
 **2x2 mixed Nash equilibrium:** if the row player plays action 0 with probability $p$

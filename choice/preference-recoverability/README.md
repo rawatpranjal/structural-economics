@@ -33,7 +33,7 @@ This is a piecewise-linear, concave function that passes through all observed po
 
 ## Solution Method
 
-**Step 1:** Compute the direct revealed preference relation $R$ and its transitive closure $R^*$ via Warshall's algorithm.
+**Step 1:** Compute the direct revealed preference relation $R$ and its transitive closure $R^{*}$ via Warshall's algorithm.
 
 **Step 2:** Construct Afriat numbers $(u_t, \lambda_t)$ satisfying the Afriat inequalities using Varian's iterative tightening procedure.
 

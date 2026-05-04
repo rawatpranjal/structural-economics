@@ -279,7 +279,7 @@ $$\frac{dx}{dt} = \alpha x - \beta x y, \qquad \frac{dy}{dt} = \delta x y - \gam
         "single ODE has a unique, globally stable steady state.\n\n"
         "**Ramsey model:** The steady state is a *saddle point* -- most initial conditions "
         "diverge. We use a **shooting method** (bisection on initial consumption $c_0$) to "
-        "find the unique saddle path that converges to $(k^*, c^*)$. For each candidate "
+        "find the unique saddle path that converges to $(k^{*}, c^{*})$. For each candidate "
         "$c_0$, we integrate forward and check whether the trajectory approaches or diverges "
         "from the steady state.\n\n"
         "**Lotka-Volterra:** Direct forward integration reveals perpetual cycles (the system "
@@ -293,7 +293,7 @@ $$\frac{dx}{dt} = \alpha x - \beta x y, \qquad \frac{dy}{dt} = \delta x y - \gam
     ax1a.plot(k_phase, dkdt_phase, 'b-', linewidth=2, label=r'$\dot{k} = sf(k) - (n+\delta)k$')
     ax1a.axhline(y=0, color='k', linewidth=0.8, linestyle='-')
     ax1a.axvline(x=k_star_solow, color='r', linewidth=1.5, linestyle='--', alpha=0.7,
-                 label=f'$k^* = {k_star_solow:.2f}$')
+                 label=f'$k^{*} = {k_star_solow:.2f}$')
     ax1a.plot(k_star_solow, 0, 'ro', markersize=10, zorder=5)
     ax1a.set_xlabel('Capital per worker $k$')
     ax1a.set_ylabel(r'$\dot{k} = dk/dt$')
@@ -307,7 +307,7 @@ $$\frac{dx}{dt} = \alpha x - \beta x y, \qquad \frac{dy}{dt} = \delta x y - \gam
         ax1b.plot(sol.t, sol.y[0], color=colors[i], linewidth=1.5,
                   label=f'$k_0 = {k0:.1f}$')
     ax1b.axhline(y=k_star_solow, color='r', linewidth=1.5, linestyle='--', alpha=0.7,
-                 label=f'$k^* = {k_star_solow:.2f}$')
+                 label=f'$k^{*} = {k_star_solow:.2f}$')
     ax1b.set_xlabel('Time $t$')
     ax1b.set_ylabel('Capital per worker $k(t)$')
     ax1b.set_title('Solow Model: Convergence to Steady State')
@@ -332,7 +332,7 @@ $$\frac{dx}{dt} = \alpha x - \beta x y, \qquad \frac{dy}{dt} = \delta x y - \gam
     ax2.plot(k_null, c_kdot_null, 'b-', linewidth=2.5,
              label=r'$\dot{k}=0$: $c = f(k) - \delta k$')
     ax2.axvline(x=k_star_ramsey, color='g', linewidth=2.5, linestyle='--',
-                label=fr"$\dot{{c}}=0$: $k = k^* = {k_star_ramsey:.2f}$")
+                label=fr"$\dot{{c}}=0$: $k = k^{*} = {k_star_ramsey:.2f}$")
 
     # Saddle paths
     saddle_colors = ['#d62728', '#ff7f0e', '#9467bd', '#e377c2']
@@ -406,7 +406,7 @@ $$\frac{dx}{dt} = \alpha x - \beta x y, \qquad \frac{dy}{dt} = \delta x y - \gam
         ax4a.plot(sol.t, sol.y[0], color=saddle_colors[i], linewidth=2,
                   label=f'$k_0={k0:.0f}$')
     ax4a.axhline(y=k_star_ramsey, color='k', linewidth=1.5, linestyle='--', alpha=0.7,
-                 label=f'$k^* = {k_star_ramsey:.2f}$')
+                 label=f'$k^{*} = {k_star_ramsey:.2f}$')
     ax4a.set_xlabel('Time $t$')
     ax4a.set_ylabel('Capital $k(t)$')
     ax4a.set_title('Ramsey Model: Capital Time Paths')
@@ -417,7 +417,7 @@ $$\frac{dx}{dt} = \alpha x - \beta x y, \qquad \frac{dy}{dt} = \delta x y - \gam
         ax4b.plot(sol.t, sol.y[1], color=saddle_colors[i], linewidth=2,
                   label=f'$k_0={k0:.0f}$')
     ax4b.axhline(y=c_star_ramsey, color='k', linewidth=1.5, linestyle='--', alpha=0.7,
-                 label=f'$c^* = {c_star_ramsey:.2f}$')
+                 label=f'$c^{*} = {c_star_ramsey:.2f}$')
     ax4b.set_xlabel('Time $t$')
     ax4b.set_ylabel('Consumption $c(t)$')
     ax4b.set_title('Ramsey Model: Consumption Time Paths')
@@ -464,7 +464,7 @@ $$\frac{dx}{dt} = \alpha x - \beta x y, \qquad \frac{dy}{dt} = \delta x y - \gam
         "economic models:\n\n"
         "**Key insights:**\n"
         "- **Solow model:** The steady state is *globally stable* -- regardless of initial "
-        "capital, the economy converges to $k^*$. The phase diagram (a single curve crossing "
+        "capital, the economy converges to $k^{*}$. The phase diagram (a single curve crossing "
         "zero) makes this immediately transparent.\n"
         "- **Ramsey model:** The steady state is a *saddle point*. Only one trajectory (the "
         "saddle path) converges; all others diverge. This reflects the forward-looking nature "

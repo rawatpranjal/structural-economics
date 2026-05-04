@@ -22,9 +22,9 @@ $$
 BR_i(q_j) = \max\bigl[0, \frac{a-c-bq_j}{2b}\bigr].
 $$
 
-The symmetric Nash equilibrium solves $q^* = BR(q^*)$:
+The symmetric Nash equilibrium solves $q^{*} = BR(q^{*})$:
 $$
-q^* = \frac{a-c}{3b}.
+q^{*} = \frac{a-c}{3b}.
 $$
 
 ## Model Setup

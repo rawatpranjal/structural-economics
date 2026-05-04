@@ -47,7 +47,7 @@ The maximization is performed by evaluating all feasible savings choices on the 
 
 Converged in **70 iterations** (error = 0.00e+00).
 
-**Steady-state assets:** $a^* = 0.0000$, **steady-state consumption:** $c^* = 1.0000$.
+**Steady-state assets:** $a^{*} = 0.0000$, **steady-state consumption:** $c^{*} = 1.0000$.
 
 ## Results
 
@@ -83,7 +83,7 @@ Converged in **70 iterations** (error = 0.00e+00).
 The deterministic consumption-savings model illustrates how a borrowing-constrained agent accumulates assets toward a steady state.
 
 **Key insights:**
-- With $\beta R < 1$ (impatience dominates returns), the agent has a finite steady-state asset level $a^*$ where consumption equals income plus net interest: $c^* = ra^* + y$.
+- With $\beta R < 1$ (impatience dominates returns), the agent has a finite steady-state asset level $a^{*}$ where consumption equals income plus net interest: $c^{*} = ra^{*} + y$.
 - The borrowing constraint $a \ge 0$ binds for agents with very low wealth, creating a kink in the consumption policy where $c = Ra + y$ (consume everything).
 - All agents converge to the same steady state regardless of initial assets, since income is deterministic. This is why stochastic income (the next model) is needed to generate a non-degenerate wealth distribution.
 - The savings policy function $a' - a$ crosses zero exactly at the steady state: agents below save, agents above dissave.

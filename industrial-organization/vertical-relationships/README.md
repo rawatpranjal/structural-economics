@@ -17,7 +17,7 @@ Given wholesale price $w$, the retailer chooses:
 $$p_R(w) = \frac{a + b(w+c_R)}{2b}$$
 
 The manufacturer anticipates that response and chooses:
-$$w^* = \frac{a/b - c_R + c_M}{2}$$
+$$w^{*} = \frac{a/b - c_R + c_M}{2}$$
 
 The integrated channel sets:
 $$p^I = \frac{a + b(c_M+c_R)}{2b}$$

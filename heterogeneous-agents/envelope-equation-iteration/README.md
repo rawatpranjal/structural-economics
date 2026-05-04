@@ -6,7 +6,7 @@
 
 The envelope equation iteration (EEI) method solves the standard heterogeneous-agent consumption-savings problem by exploiting the **envelope theorem**. Rather than iterating on the value function $V(a)$ as in VFI, or inverting the Euler equation onto an endogenous grid as in EGP, EEI iterates directly on the derivative $V'(a)$ using the envelope condition.
 
-The key insight is that the envelope theorem links the value function derivative to the policy function: $V'(a) = R \cdot u'(c^*(a,y))$ averaged over income states. This, combined with the Euler equation, gives a complete characterization of the optimal policy without ever computing $V(a)$ itself. The method avoids both the costly inner maximization of VFI and the grid inversion of EGP.
+The key insight is that the envelope theorem links the value function derivative to the policy function: $V'(a) = R \cdot u'(c^{*}(a,y))$ averaged over income states. This, combined with the Euler equation, gives a complete characterization of the optimal policy without ever computing $V(a)$ itself. The method avoids both the costly inner maximization of VFI and the grid inversion of EGP.
 
 ## Equations
 
@@ -16,20 +16,20 @@ $$V(a) = \mathbb{E}_y \left[ \max_{a' \ge \underline{a}} \bigl[ u(Ra + y - a') +
 
 **Envelope condition (the key equation):**
 
-$$V'(a) = R \cdot \mathbb{E}_y\left[ u'(c^*(a, y)) \right]$$
+$$V'(a) = R \cdot \mathbb{E}_y\left[ u'(c^{*}(a, y)) \right]$$
 
 This follows from the envelope theorem applied to the Bellman equation: differentiating
 through the max, the optimal choice satisfies $V'(a) = \partial u / \partial a = R \cdot u'(c)$.
 
 **Euler equation (first-order condition):**
 
-$$u'(c^*(a, y)) = \beta \, V'(a'), \quad a' = Ra + y - c$$
+$$u'(c^{*}(a, y)) = \beta \, V'(a'), \quad a' = Ra + y - c$$
 
 with complementary slackness at the borrowing constraint $a' \ge \underline{a}$.
 
 **EEI algorithm:** Given a guess $V'_n(a)$:
 1. For each $(a, y)$: find $c$ satisfying $u'(c) = \beta \, V'_n(Ra + y - c)$ (or set $a' = \underline{a}$ if constrained)
-2. Update: $V'_{n+1}(a) = R \cdot \mathbb{E}_y[u'(c^*(a, y))]$
+2. Update: $V'_{n+1}(a) = R \cdot \mathbb{E}_y[u'(c^{*}(a, y))]$
 3. Repeat until $\|V'_{n+1} - V'_n\|_\infty < \varepsilon$
 
 **CRRA utility:** $u(c) = \frac{c^{1-\sigma}}{1-\sigma}$, $\quad u'(c) = c^{-\sigma}$
@@ -54,7 +54,7 @@ with complementary slackness at the borrowing constraint $a' \ge \underline{a}$.
 
 At each iteration:
 1. Given $V'_n(a)$ on the asset grid, for each state $(a, y)$ we solve the Euler equation $u'(c) = \beta \cdot V'_n(R a + y - c)$ for $c$, checking whether the borrowing constraint $a' \ge \underline{a}$ binds.
-2. Update the derivative using the envelope condition: $V'_{n+1}(a) = R \cdot \mathbb{E}_y[u'(c^*(a, y))]$.
+2. Update the derivative using the envelope condition: $V'_{n+1}(a) = R \cdot \mathbb{E}_y[u'(c^{*}(a, y))]$.
 3. Check convergence: $\|V'_{n+1} - V'_n\|_\infty < 10^{-6}$.
 
 **EEI** converged in **149 iterations** (8.07s).
@@ -99,7 +99,7 @@ The envelope equation iteration method demonstrates that the same economic probl
 
 **Key insights:**
 - **Three views of the same optimality condition:** VFI iterates on $V(a)$, EGP iterates on $c(a)$ via the inverted Euler equation on an endogenous grid, and EEI iterates on $V'(a)$ via the envelope theorem. All converge to the same policy function.
-- **The envelope theorem is powerful:** $V'(a) = R \cdot u'(c^*(a))$ links the value function derivative directly to the policy function, bypassing the need to compute $V$ itself. This is the same envelope theorem that underlies the Euler equation derivation, but used as a computational device.
+- **The envelope theorem is powerful:** $V'(a) = R \cdot u'(c^{*}(a))$ links the value function derivative directly to the policy function, bypassing the need to compute $V$ itself. This is the same envelope theorem that underlies the Euler equation derivation, but used as a computational device.
 - **Speed-accuracy tradeoffs:** EGP is typically fastest because it avoids nonlinear equation solving entirely. EEI requires solving the Euler equation at each grid point (like Euler equation iteration), but updates via the envelope condition. VFI with grid search is slowest per iteration and requires many more iterations due to the contraction rate $\beta$.
 - **Precautionary savings motive:** Mean assets are 0.41 times mean income, driven by the buffer-stock motive under IID income risk. About 3.1% of agents are at the borrowing constraint.
 - **MPCs are heterogeneous:** The mean MPC is 0.218, well above the theoretical lower bound of 0.041 for a patient unconstrained agent. Constrained and low-wealth agents have MPCs near 1, while wealthy agents approach the lower bound.

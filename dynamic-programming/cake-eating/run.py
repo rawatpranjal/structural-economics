@@ -172,14 +172,14 @@ The value function $V(W)$ solves
 
 $$V(W) = \max_{0 \le c \le W} \bigl[ u(c) + \beta V(W-c) \bigr].$$
 
-The consumption policy is $c^*(W)$ and the next-wealth policy is
-$g(W)=W-c^*(W)$. In the log-utility case, the closed-form solution is
+The consumption policy is $c^{*}(W)$ and the next-wealth policy is
+$g(W)=W-c^{*}(W)$. In the log-utility case, the closed-form solution is
 
 $$V(W) = \frac{\ln((1-\beta) W)}{1-\beta} + \frac{\beta \ln \beta}{(1-\beta)^2}$$
 
 and
 
-$$c^*(W) = (1-\beta) W, \qquad g(W)=\beta W.$$
+$$c^{*}(W) = (1-\beta) W, \qquad g(W)=\beta W.$$
 
 The marginal value of cake is the shadow value of an extra unit of wealth:
 $V'(W)=1/((1-\beta)W)$ under log utility.
@@ -250,7 +250,7 @@ $V'(W)=1/((1-\beta)W)$ under log utility.
 
     # --- Figure 2: Policy Function ---
     fig2, ax2 = plt.subplots()
-    ax2.plot(w_grid, consumption_policy, "b-", linewidth=2, label="Numerical $c^*(W)$")
+    ax2.plot(w_grid, consumption_policy, "b-", linewidth=2, label="Numerical $c^{*}(W)$")
     ax2.plot(w_grid, consumption_analytical, "r--", linewidth=1.5, label="Analytical $(1-\\beta)W$")
     ax2.plot(w_grid, w_grid, "k:", linewidth=0.8, alpha=0.5, label="45-degree line")
     ax2.set_xlabel("Cake size $W$")

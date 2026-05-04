@@ -150,14 +150,14 @@ def main():
     )
 
     report.add_equations(r"""
-**Nash Equilibrium:** A strategy profile $(s_1^*, s_2^*)$ is a NE if:
-$$u_1(s_1^*, s_2^*) \geq u_1(s_1, s_2^*) \quad \forall s_1, \qquad u_2(s_1^*, s_2^*) \geq u_2(s_1^*, s_2) \quad \forall s_2$$
+**Nash Equilibrium:** A strategy profile $(s_1^{*}, s_2^{*})$ is a NE if:
+$$u_1(s_1^{*}, s_2^{*}) \geq u_1(s_1, s_2^{*}) \quad \forall s_1, \qquad u_2(s_1^{*}, s_2^{*}) \geq u_2(s_1^{*}, s_2) \quad \forall s_2$$
 
 **Mixed Strategy NE (2x2):** Player 2 mixes with probability $q$ on action 0 to make Player 1 indifferent:
 $$q = \frac{A_{11} - A_{01}}{(A_{00} - A_{10}) - (A_{01} - A_{11})}$$
 
 **Cournot Best Response:** Given linear demand $P = a - bQ$ and constant MC $c$:
-$$q_i^*(q_j) = \frac{a - c - bq_j}{2b}, \qquad q^{NE} = \frac{a-c}{3b}$$
+$$q_i^{*}(q_j) = \frac{a - c - bq_j}{2b}, \qquad q^{NE} = \frac{a-c}{3b}$$
 """)
 
     report.add_model_setup(
@@ -179,9 +179,9 @@ $$q_i^*(q_j) = \frac{a - c - bq_j}{2b}, \qquad q^{NE} = \frac{a-c}{3b}$$
 
     # --- Figure 1: Cournot Best Responses ---
     fig1, ax1 = plt.subplots()
-    ax1.plot(q_range, br1, "b-", linewidth=2, label="Firm 1 BR: $q_1^*(q_2)$")
-    ax1.plot(br2, q_range, "r-", linewidth=2, label="Firm 2 BR: $q_2^*(q_1)$")
-    ax1.plot(q_nash, q_nash, "ko", markersize=10, label=f"Nash: $q^*={q_nash:.2f}$")
+    ax1.plot(q_range, br1, "b-", linewidth=2, label="Firm 1 BR: $q_1^{*}(q_2)$")
+    ax1.plot(br2, q_range, "r-", linewidth=2, label="Firm 2 BR: $q_2^{*}(q_1)$")
+    ax1.plot(q_nash, q_nash, "ko", markersize=10, label=f"Nash: $q^{*}={q_nash:.2f}$")
     ax1.plot(q_monopoly / 2, q_monopoly / 2, "gs", markersize=8, label=f"Joint monopoly: $q={q_monopoly/2:.2f}$")
     ax1.set_xlabel("$q_2$ (Firm 2 output)")
     ax1.set_ylabel("$q_1$ (Firm 1 output)")
@@ -203,9 +203,9 @@ $$q_i^*(q_j) = \frac{a - c - bq_j}{2b}, \qquad q^{NE} = \frac{a-c}{3b}$$
 
     fig2, ax2 = plt.subplots()
     # Player 1's best response
-    ax2.step(q_grid, p_br, "b-", linewidth=2, where="mid", label="P1 best response $p^*(q)$")
+    ax2.step(q_grid, p_br, "b-", linewidth=2, where="mid", label="P1 best response $p^{*}(q)$")
     # Player 2's best response (symmetric in matching pennies)
-    ax2.step(p_br, q_grid, "r-", linewidth=2, where="mid", label="P2 best response $q^*(p)$")
+    ax2.step(p_br, q_grid, "r-", linewidth=2, where="mid", label="P2 best response $q^{*}(p)$")
     ax2.plot(0.5, 0.5, "ko", markersize=10, label="Mixed NE: (0.5, 0.5)")
     ax2.set_xlabel("$q$ (Player 2: prob of Heads)")
     ax2.set_ylabel("$p$ (Player 1: prob of Heads)")

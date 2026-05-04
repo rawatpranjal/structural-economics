@@ -264,7 +264,7 @@ $$P_p[s,t] = 1\{p^s \cdot x^t < p^t \cdot x^t\}.$$
 
 GAPP fails when price $s$ is indirectly revealed preferred to price $t$, but $t$ is strictly directly revealed preferred to $s$:
 
-$$R_p^*[s,t] = 1 \quad \text{and} \quad P_p[t,s] = 1.$$
+$$R_p^{*}[s,t] = 1 \quad \text{and} \quad P_p[t,s] = 1.$$
 """
     )
 

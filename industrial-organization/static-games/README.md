@@ -10,14 +10,14 @@ This module covers: classic 2x2 games (Prisoner's Dilemma, Matching Pennies, Bat
 
 ## Equations
 
-**Nash Equilibrium:** A strategy profile $(s_1^*, s_2^*)$ is a NE if:
-$$u_1(s_1^*, s_2^*) \geq u_1(s_1, s_2^*) \quad \forall s_1, \qquad u_2(s_1^*, s_2^*) \geq u_2(s_1^*, s_2) \quad \forall s_2$$
+**Nash Equilibrium:** A strategy profile $(s_1^{*}, s_2^{*})$ is a NE if:
+$$u_1(s_1^{*}, s_2^{*}) \geq u_1(s_1, s_2^{*}) \quad \forall s_1, \qquad u_2(s_1^{*}, s_2^{*}) \geq u_2(s_1^{*}, s_2) \quad \forall s_2$$
 
 **Mixed Strategy NE (2x2):** Player 2 mixes with probability $q$ on action 0 to make Player 1 indifferent:
 $$q = \frac{A_{11} - A_{01}}{(A_{00} - A_{10}) - (A_{01} - A_{11})}$$
 
 **Cournot Best Response:** Given linear demand $P = a - bQ$ and constant MC $c$:
-$$q_i^*(q_j) = \frac{a - c - bq_j}{2b}, \qquad q^{NE} = \frac{a-c}{3b}$$
+$$q_i^{*}(q_j) = \frac{a - c - bq_j}{2b}, \qquad q^{NE} = \frac{a-c}{3b}$$
 
 ## Model Setup
 

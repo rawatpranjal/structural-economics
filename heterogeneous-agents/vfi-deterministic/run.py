@@ -189,7 +189,7 @@ of relative risk aversion.
         "asset grid (discrete search). Convergence is declared when "
         "$\\|V_{n+1} - V_n\\|_\\infty < 10^{-6}$.\n\n"
         f"Converged in **{iteration} iterations** (error = {Vdiff:.2e}).\n\n"
-        f"**Steady-state assets:** $a^* = {a_ss:.4f}$, **steady-state consumption:** $c^* = {c_ss:.4f}$."
+        f"**Steady-state assets:** $a^{*} = {a_ss:.4f}$, **steady-state consumption:** $c^{*} = {c_ss:.4f}$."
     )
 
     # --- Figure 1: Value Function ---
@@ -207,7 +207,7 @@ of relative risk aversion.
 
     # --- Figure 2: Consumption Policy ---
     fig2, ax2 = plt.subplots()
-    ax2.plot(agrid, con, "b-", linewidth=2, label="$c^*(a)$")
+    ax2.plot(agrid, con, "b-", linewidth=2, label="$c^{*}(a)$")
     ax2.plot(agrid, R * agrid + y, "k:", linewidth=0.8, alpha=0.5, label="Cash-on-hand $Ra + y$")
     ax2.set_xlabel("Assets $a$")
     ax2.set_ylabel("Consumption $c$")
@@ -239,7 +239,7 @@ of relative risk aversion.
     fig4, ax4 = plt.subplots(figsize=(10, 5))
     for i in range(min(Nsim, 20)):  # Plot a subset to avoid clutter
         ax4.plot(range(Tsim), asim[i, :], linewidth=0.5, alpha=0.6)
-    ax4.axhline(a_ss, color="r", linewidth=1.5, linestyle="--", label=f"Steady state $a^* = {a_ss:.2f}$")
+    ax4.axhline(a_ss, color="r", linewidth=1.5, linestyle="--", label=f"Steady state $a^{*} = {a_ss:.2f}$")
     ax4.set_xlabel("Period")
     ax4.set_ylabel("Assets $a_t$")
     ax4.set_title("Simulated Asset Dynamics (20 agents)")
@@ -272,7 +272,7 @@ of relative risk aversion.
         "agent accumulates assets toward a steady state.\n\n"
         "**Key insights:**\n"
         "- With $\\beta R < 1$ (impatience dominates returns), the agent has a finite steady-state "
-        "asset level $a^*$ where consumption equals income plus net interest: $c^* = ra^* + y$.\n"
+        "asset level $a^{*}$ where consumption equals income plus net interest: $c^{*} = ra^{*} + y$.\n"
         "- The borrowing constraint $a \\ge 0$ binds for agents with very low wealth, creating "
         "a kink in the consumption policy where $c = Ra + y$ (consume everything).\n"
         "- All agents converge to the same steady state regardless of initial assets, since "

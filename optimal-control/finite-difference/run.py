@@ -155,7 +155,7 @@ def main():
 **HJB equation:**
 $$\rho V(a) = \max_c \bigl[ u(c) + V'(a)(y + ra - c) \bigr]$$
 
-**FOC:** $u'(c) = V'(a)$, so $c^*(a) = (V'(a))^{-1/\sigma}$
+**FOC:** $u'(c) = V'(a)$, so $c^{*}(a) = (V'(a))^{-1/\sigma}$
 
 **Upwind finite difference:**
 $$V'_i \approx \begin{cases} \frac{V_{i+1} - V_i}{\Delta a} & \text{if } s_i > 0 \text{ (saving)} \\ \frac{V_i - V_{i-1}}{\Delta a} & \text{if } s_i < 0 \text{ (dissaving)} \end{cases}$$
@@ -173,7 +173,7 @@ where $A$ is the tridiagonal transition matrix from the upwind scheme.
         f"| $r$ | {r} | Interest rate |\n"
         f"| $y$ | {y} | Deterministic income |\n"
         f"| Grid | {n_a} points | $a \\in [{a_min}, {a_max}]$ |\n"
-        f"| $a^*$ | {a_ss:.4f} | Steady-state assets |"
+        f"| $a^{*}$ | {a_ss:.4f} | Steady-state assets |"
     )
 
     report.add_solution_method(
@@ -187,7 +187,7 @@ where $A$ is the tridiagonal transition matrix from the upwind scheme.
     # --- Figure 1: Value function ---
     fig1, ax1 = plt.subplots()
     ax1.plot(a_grid, v, "b-", linewidth=2)
-    ax1.axvline(a_ss, color="k", linestyle="--", alpha=0.5, label=f"$a^*={a_ss:.2f}$")
+    ax1.axvline(a_ss, color="k", linestyle="--", alpha=0.5, label=f"$a^{*}={a_ss:.2f}$")
     ax1.set_xlabel("Assets $a$")
     ax1.set_ylabel("$V(a)$")
     ax1.set_title("Value Function")
@@ -200,7 +200,7 @@ where $A$ is the tridiagonal transition matrix from the upwind scheme.
 
     # --- Figure 2: Consumption and savings policy ---
     fig2, (ax2a, ax2b) = plt.subplots(1, 2, figsize=(12, 5))
-    ax2a.plot(a_grid, c_star, "b-", linewidth=2, label="$c^*(a)$")
+    ax2a.plot(a_grid, c_star, "b-", linewidth=2, label="$c^{*}(a)$")
     ax2a.plot(a_grid, y + r * a_grid, "k--", linewidth=1, alpha=0.5, label="$y + ra$ (income)")
     ax2a.axvline(a_ss, color="gray", linestyle=":", alpha=0.5)
     ax2a.set_xlabel("Assets $a$")
@@ -210,7 +210,7 @@ where $A$ is the tridiagonal transition matrix from the upwind scheme.
 
     ax2b.plot(a_grid, s_star, "r-", linewidth=2, label="$s(a) = y + ra - c$")
     ax2b.axhline(0, color="k", linewidth=0.5)
-    ax2b.axvline(a_ss, color="gray", linestyle=":", alpha=0.5, label=f"$a^*={a_ss:.2f}$")
+    ax2b.axvline(a_ss, color="gray", linestyle=":", alpha=0.5, label=f"$a^{*}={a_ss:.2f}$")
     ax2b.set_xlabel("Assets $a$")
     ax2b.set_ylabel("Savings rate $s$")
     ax2b.set_title("Savings Policy")
@@ -235,7 +235,7 @@ where $A$ is the tridiagonal transition matrix from the upwind scheme.
 
     # --- Table ---
     df = pd.DataFrame({
-        "Quantity": ["$a^*$ (steady state)", "$c^*$ (steady state)", "$V(a^*)$",
+        "Quantity": ["$a^{*}$ (steady state)", "$c^{*}$ (steady state)", "$V(a^{*})$",
                      "Grid points", "Iterations", "Final error"],
         "Value": [f"{a_ss:.4f}", f"{c_ss:.4f}", f"{v[a_ss_idx]:.4f}",
                   str(n_a), str(len(convergence)), f"{convergence[-1]:.2e}"],
@@ -254,7 +254,7 @@ where $A$ is the tridiagonal transition matrix from the upwind scheme.
         "difference to use.\n"
         "- The **implicit method** allows arbitrarily large time steps, making it much faster "
         "than explicit methods which require tiny steps for stability.\n"
-        "- The agent's steady-state assets $a^*$ are where the savings function crosses zero. "
+        "- The agent's steady-state assets $a^{*}$ are where the savings function crosses zero. "
         f"With $r < \\rho$ ({r} < {rho}), the agent is *impatient* relative to the market "
         "return, so they run down assets.\n"
         "- This method scales to high dimensions: the Achdou et al. (2022) approach uses "

@@ -31,7 +31,7 @@ The policy function is $g(k)=k'$. For log utility and Cobb-Douglas production,
 the exact solution is
 
 $$g(k)=\alpha\beta A k^\alpha,\qquad
-c^*(k)=(1-\alpha\beta)A k^\alpha.$$
+c^{*}(k)=(1-\alpha\beta)A k^\alpha.$$
 
 The value function is affine in $\log k$:
 

@@ -170,10 +170,10 @@ def main():
 
     report.add_equations(r"""
 **Nash bargaining solution** for pair $(u, d)$:
-$$p_{ud}^* = \arg\max_{p} \left(\pi_u^{\text{agree}} - \pi_u^{\text{disagree}}\right)^\tau \left(\pi_d^{\text{agree}} - \pi_d^{\text{disagree}}\right)^{1-\tau}$$
+$$p_{ud}^{*} = \arg\max_{p} \left(\pi_u^{\text{agree}} - \pi_u^{\text{disagree}}\right)^\tau \left(\pi_d^{\text{agree}} - \pi_d^{\text{disagree}}\right)^{1-\tau}$$
 
 **Simplified form (linear surplus):**
-$$p_{ud}^* = \tau \cdot \frac{\Delta_d(u)}{q_d} + c_u$$
+$$p_{ud}^{*} = \tau \cdot \frac{\Delta_d(u)}{q_d} + c_u$$
 
 where $\Delta_d(u) = (P_d - c_d)(q_d^{\text{agree}} - q_d^{\text{disagree}})$ is hospital $u$'s incremental value to insurer $d$.
 

@@ -43,7 +43,7 @@ u(Ra+z_j-a')+
 $$
 
 The asset policy is $g_a(a,z)=a'$ and the consumption policy is
-$c^*(a,z)=Ra+z-g_a(a,z)$. At an interior choice the Euler condition is
+$c^{*}(a,z)=Ra+z-g_a(a,z)$. At an interior choice the Euler condition is
 
 $$u'(c_t)=\beta R\,\mathbb E_t[u'(c_{t+1})],$$
 

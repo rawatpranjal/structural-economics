@@ -298,7 +298,7 @@ u(Ra+z_j-a')+
 $$
 
 The asset policy is $g_a(a,z)=a'$ and the consumption policy is
-$c^*(a,z)=Ra+z-g_a(a,z)$. At an interior choice the Euler condition is
+$c^{*}(a,z)=Ra+z-g_a(a,z)$. At an interior choice the Euler condition is
 
 $$u'(c_t)=\beta R\,\mathbb E_t[u'(c_{t+1})],$$
 
@@ -388,7 +388,7 @@ with the usual inequality when the borrowing constraint binds.
         label="refined benchmark, median $z$",
     )
     ax2.set_xlabel("Assets $a$")
-    ax2.set_ylabel("Consumption $c^*(a,z)$")
+    ax2.set_ylabel("Consumption $c^{*}(a,z)$")
     ax2.set_title("Consumption Policy")
     ax2.legend(fontsize=8)
     report.add_results(

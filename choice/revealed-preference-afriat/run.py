@@ -382,7 +382,7 @@ def main():
 $$p_i \cdot x_i \geq p_i \cdot x_j$$
 i.e., bundle $x_j$ was affordable when $x_i$ was chosen.
 
-**GARP:** For all $i, j$: if $x_i \; R^* \; x_j$ (revealed preferred, possibly indirectly), then:
+**GARP:** For all $i, j$: if $x_i \; R^{*} \; x_j$ (revealed preferred, possibly indirectly), then:
 $$p_j \cdot x_j \leq p_j \cdot x_i$$
 i.e., $x_i$ must not lie strictly inside $j$'s budget set.
 
@@ -409,10 +409,10 @@ $$u_i - u_j \leq \lambda_j \, p_j \cdot (x_i - x_j) \quad \forall \, i, j$$
     report.add_solution_method(
         "**Step 1 — Direct Revealed Preference:** For each pair $(i, j)$, check if "
         "$p_i \\cdot x_i \\geq p_i \\cdot x_j$. This builds the direct preference matrix $R$.\n\n"
-        "**Step 2 — Transitive Closure (Warshall's Algorithm):** Compute $R^*$, the "
-        "transitive closure of $R$. If $i \\; R \\; k$ and $k \\; R \\; j$, then $i \\; R^* \\; j$. "
+        "**Step 2 — Transitive Closure (Warshall's Algorithm):** Compute $R^{*}$, the "
+        "transitive closure of $R$. If $i \\; R \\; k$ and $k \\; R \\; j$, then $i \\; R^{*} \\; j$. "
         "This runs in $O(T^3)$ time.\n\n"
-        "**Step 3 — GARP Check:** For all pairs where $i \\; R^* \\; j$, verify that "
+        "**Step 3 — GARP Check:** For all pairs where $i \\; R^{*} \\; j$, verify that "
         "$p_j \\cdot x_j \\leq p_j \\cdot x_i$. Any violation means the data cannot be "
         "rationalized by utility maximization.\n\n"
         f"**Example 1** (consistent): GARP satisfied = **{satisfies_con}**, "

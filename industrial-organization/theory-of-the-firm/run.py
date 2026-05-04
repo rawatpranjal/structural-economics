@@ -84,7 +84,7 @@ Investment $x$ raises relationship value:
 $$V(x) = \theta x - \frac{1}{2}x^2$$
 
 The efficient investment satisfies:
-$$x^* = \theta$$
+$$x^{*} = \theta$$
 
 Under regime $g$, the investor captures only share $b_g(s)$ of marginal returns:
 $$x_g(s) = b_g(s)\theta$$
@@ -100,7 +100,7 @@ $$W_g(s) = \theta x_g(s) - \frac{1}{2}x_g(s)^2 - F_g(s)$$
         "| Spot contract | Low governance cost, weak protection against hold-up |\n"
         "| Long-term contract | Better protection, moderate drafting and monitoring cost |\n"
         "| Vertical integration | Stronger control rights, higher bureaucracy cost |\n"
-        "| $\\theta=4$ | Efficient investment benchmark $x^*=4$ |"
+        "| $\\theta=4$ | Efficient investment benchmark $x^{*}=4$ |"
     )
 
     report.add_solution_method(

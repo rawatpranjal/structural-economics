@@ -205,7 +205,7 @@ for quarterly data (Hodrick and Prescott, 1997).
 
 **Okun's Law:** $\Delta u_t \approx -0.5 \cdot (\Delta Y_t / Y_t - 3\%)$
 
-**Phillips Curve:** $\pi_t = \pi_t^e - \alpha (u_t - u_t^*)$
+**Phillips Curve:** $\pi_t = \pi_t^e - \alpha (u_t - u_t^{*})$
 """
     )
 

@@ -216,8 +216,8 @@ subject to: $\dot{k} = f(k) - \delta k - c$, with $f(k) = A k^\alpha$.
 $$\frac{\dot{c}}{c} = \frac{1}{\sigma} \left( f'(k) - \delta - \rho \right)$$
 
 **Steady state:**
-$$f'(k^*) = \delta + \rho \implies k^* = \left(\frac{\alpha A}{\delta + \rho}\right)^{\frac{1}{1-\alpha}}$$
-$$c^* = f(k^*) - \delta k^*$$
+$$f'(k^{*}) = \delta + \rho \implies k^{*} = \left(\frac{\alpha A}{\delta + \rho}\right)^{\frac{1}{1-\alpha}}$$
+$$c^{*} = f(k^{*}) - \delta k^{*}$$
 
 **Modified golden rule:** The steady-state capital stock equates the net marginal product of capital to the discount rate.
 """
@@ -231,8 +231,8 @@ $$c^* = f(k^*) - \delta k^*$$
         f"| $\\rho$    | {rho} | Discount rate |\n"
         f"| $\\sigma$  | {sigma} | CRRA coefficient |\n"
         f"| $A$       | {A} | TFP |\n"
-        f"| $k^*$     | {k_star:.4f} | Steady-state capital |\n"
-        f"| $c^*$     | {c_star:.4f} | Steady-state consumption |"
+        f"| $k^{*}$     | {k_star:.4f} | Steady-state capital |\n"
+        f"| $c^{*}$     | {c_star:.4f} | Steady-state consumption |"
     )
 
     report.add_solution_method(
@@ -260,7 +260,7 @@ $$c^* = f(k^*) - \delta k^*$$
 
     # dc/dt = 0: f'(k) = delta + rho => k = k* (vertical line)
     ax1.plot(k_range, c_kdot_zero, "k--", linewidth=1.5, alpha=0.6, label="$\\dot{k}=0$")
-    ax1.axvline(k_star, color="gray", linestyle="--", linewidth=1.5, alpha=0.6, label="$\\dot{c}=0$ ($k=k^*$)")
+    ax1.axvline(k_star, color="gray", linestyle="--", linewidth=1.5, alpha=0.6, label="$\\dot{c}=0$ ($k=k^{*}$)")
 
     # Plot saddle paths
     for i, sol in enumerate(solutions):
@@ -332,7 +332,7 @@ $$c^* = f(k^*) - \delta k^*$$
                  label=f"Linearized ($\\mu={mu_negative:.3f}$)")
 
     ax3.set_xlabel("Time $t$")
-    ax3.set_ylabel("$|k(t) - k^*| / k^*$")
+    ax3.set_ylabel("$|k(t) - k^{*}| / k^{*}$")
     ax3.set_title("Convergence Speed to Steady State")
     ax3.legend(fontsize=9)
     ax3.set_xlim(0, 100)
@@ -369,7 +369,7 @@ $$c^* = f(k^*) - \delta k^*$$
         "The Ramsey model reveals the deep structure of optimal saving and capital accumulation "
         "in the neoclassical framework.\n\n"
         "**Key insights:**\n"
-        "- The steady-state capital stock satisfies the **modified golden rule**: $f'(k^*) = \\delta + \\rho$. "
+        "- The steady-state capital stock satisfies the **modified golden rule**: $f'(k^{*}) = \\delta + \\rho$. "
         "Unlike the golden rule ($f'(k) = \\delta$), optimizing households do not maximize "
         "steady-state consumption --- they discount the future.\n"
         "- The economy exhibits **saddle-path stability**: only one consumption level is consistent "
