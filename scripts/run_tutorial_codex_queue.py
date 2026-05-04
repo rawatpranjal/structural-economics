@@ -135,8 +135,6 @@ def run_codex(tutorial: Path, codex_bin: str) -> int:
         codex_bin,
         "exec",
         "--dangerously-bypass-approvals-and-sandbox",
-        "--ask-for-approval",
-        "never",
         "-C",
         str(ROOT),
         "-",
