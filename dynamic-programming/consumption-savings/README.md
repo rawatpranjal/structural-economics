@@ -1,93 +1,138 @@
-# Precautionary Saving with Income Risk
+# Income Risk and Buffer-Stock Saving
 
-> Optimal saving and consumption under Markovian income uncertainty (Bewley/Aiyagari).
+> A partial-equilibrium savings problem with persistent idiosyncratic income.
 
 ## Overview
 
-The income fluctuation problem (also known as the Bewley or Aiyagari model at the individual level) studies how a risk-averse agent optimally allocates between consumption and savings when facing stochastic, mean-reverting income. A borrowing constraint prevents the agent from perfectly smoothing consumption, generating a precautionary savings motive.
+This tutorial is the first dynamic-programming example here where uncertainty is central to the household problem. In [cake eating](../cake-eating/) and [optimal growth](../optimal-growth/), the state moves deterministically once the agent chooses how much to carry forward. Here the household also faces persistent income risk, so assets become self-insurance.
 
-This is a foundational building block for heterogeneous-agent macroeconomics: aggregate the individual decision rules to obtain wealth distributions, and embed them in general equilibrium (Aiyagari 1994).
+The exercise is deliberately partial equilibrium: the risk-free return $r$ is fixed. That keeps attention on the individual policy rules. In the [Aiyagari tutorial](../aiyagari/), these same household decisions are aggregated and $r$ is pinned down by capital-market clearing. The Rouwenhorst income chain used below is the same object studied in [shock discretization](../shock-discretization/): it enters the Bellman equation through expected continuation values, not merely through simulated histories.
 
 ## Equations
 
-$$V(a, z) = \max_{c \ge 0} \bigl[ u(c) + \beta \, \mathbb{E}\left[V(a', z') \mid z\right] \bigr]$$
+Let $a_t$ be beginning-of-period assets, $z_t$ labor income, and
+$R=1+r$ the gross risk-free return. The household chooses next-period assets
+$a_{t+1}=a'$ and consumes the residual
 
-**Budget constraint:** $c + a' = (1+r) \, a + z$
+$$c_t = R a_t + z_t - a_{t+1}.$$
 
-**Borrowing constraint:** $a' \ge \underline{a}$
+Assets are bounded below by the no-borrowing constraint
 
-**CRRA utility:** $u(c) = \frac{c^{1-\sigma}}{1-\sigma}$
+$$a_{t+1}\geq \underline a = 0,$$
 
-**Income process:** $\ln z' = \rho \, \ln z + \varepsilon$, $\quad \varepsilon \sim N(0, \sigma_\varepsilon^2)$
+and the numerical problem also uses an upper grid bound $\bar a$. Preferences are
+CRRA,
+
+$$u(c)=\frac{c^{1-\sigma}}{1-\sigma}, \qquad \sigma>0,\quad \sigma\neq 1.$$
+
+Log income follows
+
+$$\log z_{t+1}=\rho \log z_t+\varepsilon_{t+1},\qquad
+\varepsilon_{t+1}\sim N(0,\sigma_\varepsilon^2),$$
+
+and is approximated by income states $z_1,\ldots,z_J$ with transition matrix
+$P$, where $P_{jk}=\Pr(z_{t+1}=z_k\mid z_t=z_j)$. The Bellman equation is
+
+$$
+V(a,z_j)=
+\max_{\underline a\leq a'\leq \bar a,\ a'\leq R a+z_j}
+\left[
+u(Ra+z_j-a')+
+\beta\sum_{k=1}^J P_{jk}V(a',z_k)
+\right].
+$$
+
+The asset policy is $g_a(a,z)=a'$ and the consumption policy is
+$c^*(a,z)=Ra+z-g_a(a,z)$. At an interior choice the Euler condition is
+
+$$u'(c_t)=\beta R\,\mathbb E_t[u'(c_{t+1})],$$
+
+with the usual inequality when the borrowing constraint binds.
 
 ## Model Setup
 
 | Parameter | Value | Description |
 |-----------|-------|-------------|
-| $\beta$  | 0.95 | Discount factor |
-| $r$      | 0.03 | Risk-free interest rate |
+| $\beta$ | 0.95 | Discount factor |
+| $r$ | 0.03 | Exogenous risk-free interest rate |
+| $R$ | 1.03 | Gross return on assets |
+| $\beta R$ | 0.9785 | Impatience margin; below one here |
 | $\sigma$ | 2.0 | CRRA risk aversion |
-| $\rho$   | 0.9 | Income persistence |
-| $\sigma_\varepsilon$ | 0.1 | Income shock std dev |
-| $\underline{a}$ | 0.0 | Borrowing limit |
-| Asset grid | 200 points | Exponential spacing on $[0.0, 20.0]$ |
-| Income states | 5 | Rouwenhorst discretization |
+| $\rho$ | 0.9 | Persistence of log income |
+| $\sigma_\varepsilon$ | 0.1 | Innovation standard deviation |
+| $\underline{a}$ | 0.0 | No-borrowing lower bound |
+| $a \in$ | [0.0, 20.0] | Asset grid support |
+| Asset state grid | 300 points | Exponential spacing near $\underline{a}$ |
+| Next-asset choice grid | 900 points | Candidate $a'$ values in each Bellman update |
+| Refined diagnostic grid | 600 states, 1500 choices | Held-out check for the median income state |
+| Income states | 5 | Rouwenhorst approximation to log income |
+| Simulation panel | 3000 agents, 400 periods | Used only to illustrate the induced asset distribution |
 
 ## Solution Method
 
-**Value Function Iteration (VFI)** with discrete grid search over next-period assets $a'$. For each state $(a, z)$, the agent's cash-on-hand is $(1+r)a + z$, and we search over a grid of feasible $a'$ values to maximize current utility plus the discounted expected continuation value.
+The state is the pair $(a,z)$. For each income state, the transition matrix turns a guessed value function into an expected continuation-value schedule. The value function lives on the asset state grid, while the inner maximization searches over a denser grid of feasible next-period assets and interpolates continuation values between state points.
 
-The expected continuation value $\mathbb{E}[V(a', z') | z]$ is computed by weighting $V(a', z')$ across income states using the Markov transition matrix.
+```text
+Algorithm: grid VFI for the income fluctuation problem
+Input: asset state grid A, next-asset grid G, income grid Z, transition matrix P, beta, R, utility u, tolerance epsilon
+Output: value function V(a,z), asset policy g_a(a,z), consumption policy c*(a,z)
+Initialize V_0(a_i,z_j) = u(R*a_i + z_j) / (1 - beta)
+repeat for n = 0, 1, 2, ...:
+    for each income state z_j:
+        continuation on A: C(a_i) = sum_k P_jk * V_n(a_i, z_k)
+        interpolate C from A to each next-asset choice g in G
+        for each asset state a_i:
+            feasible choices are g in G with g <= R*a_i + z_j
+            choose g that maximizes u(R*a_i + z_j - g) + beta * C(g)
+            record V_{n+1}(a_i,z_j) and g_a(a_i,z_j)
+    error = max_{i,j} |V_{n+1}(a_i,z_j) - V_n(a_i,z_j)|
+until error < epsilon
+set c*(a_i,z_j) = R*a_i + z_j - g_a(a_i,z_j)
+```
 
-Converged in **260 iterations** (error = 9.91e-07).
+The main grid converged in **260 iterations** with sup-norm error **9.91e-07**. Because this model has no closed form, the report also solves the same Bellman equation on a refined state and choice grid and uses the median-income policy as a held-out approximation check.
 
 ## Results
 
-<img src="figures/value-functions.png" alt="Value functions for each income state" width="80%">
-*Value functions for each income state*
+Start with the value functions. Higher current income raises lifetime utility, but the income-state gap is largest near the borrowing constraint because low-asset households cannot borrow much against future mean reversion. Farther out on the asset grid, self-insurance makes the current income state less decisive.
 
-<img src="figures/consumption-policy.png" alt="Consumption policy functions by income state" width="80%">
-*Consumption policy functions by income state*
+<img src="figures/value-functions.png" alt="Value functions by income state" width="80%">
 
-<img src="figures/savings-policy.png" alt="Net savings (a' - a) by income state" width="80%">
-*Net savings (a' - a) by income state*
+The consumption rules are increasing and concave in assets. For the median income state, the average marginal propensity to consume is about **0.52** near the constraint and **0.04** near the top of the plotted grid. That decline is the buffer-stock mechanism: extra assets are most valuable when liquidity is scarce. The dashed median-income curve comes from the refined grid; its maximum gap from the main-grid policy is **2.55e-02**.
 
-<img src="figures/simulated-paths.png" alt="Simulated asset paths for 5 agents over 200 periods" width="80%">
-*Simulated asset paths for 5 agents over 200 periods*
+<img src="figures/consumption-policy.png" alt="Consumption policy functions with a refined-grid median-income check" width="80%">
 
-**Policy Functions at Selected Grid Points**
+Net saving separates the insurance motive from the level of consumption. A high income realization pushes the household toward asset accumulation, especially when assets are low. A low income realization does the opposite: the household draws down buffers, but the no-borrowing constraint prevents dissaving below zero. The horizontal line marks zero net saving, not an equilibrium condition.
 
-|   Assets $a$ |   $c^*(a, z_{low})$ |   $c^*(a, z_{mid})$ |   $c^*(a, z_{high})$ |   $a'^*(a, z_{low})$ |   $a'^*(a, z_{mid})$ |   $a'^*(a, z_{high})$ |
-|-------------:|--------------------:|--------------------:|---------------------:|---------------------:|---------------------:|----------------------:|
-|         0    |              0.632  |              0.993  |               1.3016 |               0      |               0.007  |                0.2807 |
-|         0.06 |              0.6769 |              1.0074 |               1.3224 |               0.0125 |               0.05   |                0.3172 |
-|         0.45 |              0.7925 |              1.0594 |               1.3443 |               0.2986 |               0.3996 |                0.697  |
-|         1.56 |              0.938  |              1.1542 |               1.3984 |               1.2994 |               1.4511 |                1.7891 |
-|         3.66 |              1.1172 |              1.3009 |               1.4942 |               3.2866 |               3.4709 |                3.8598 |
-|         7.27 |              1.3009 |              1.5207 |               1.6456 |               6.8158 |               6.9639 |                7.4213 |
-|        12.47 |              1.6546 |              1.809  |               1.9563 |              11.8201 |              12.0337 |               12.4686 |
-|        20    |              2.123  |              2.197  |               2.1822 |              19.109  |              19.403  |               20      |
+<img src="figures/savings-policy.png" alt="Net saving by asset and income state" width="80%">
+
+Simulated histories translate the policy into asset dynamics. Agents are ex ante identical, but persistent income realizations push them to different parts of the asset grid. In the 3,000-agent panel, median assets after 400 periods are **0.20**, the 90th percentile is **1.85**, and **20.5%** of agents sit essentially at the borrowing constraint.
+
+<img src="figures/simulated-paths.png" alt="Simulated asset paths and the induced asset distribution" width="80%">
+
+The table gives pointwise policy values rather than a separate result. At zero assets and low income, the household cannot borrow, so consumption is pinned down by current income. At the same asset level and high income, the household saves part of the temporary cash-on-hand increase.
+
+**Policy functions at selected asset states**
+
+|   Assets a |   c*(a,z_low) |   c*(a,z_mid) |   c*(a,z_high) |   g_a(a,z_low) |   g_a(a,z_mid) |   g_a(a,z_high) |
+|-----------:|--------------:|--------------:|---------------:|---------------:|---------------:|----------------:|
+|       0    |        0.632  |        0.9931 |         1.3087 |         0      |         0.0069 |          0.2736 |
+|       0.06 |        0.6761 |        1.0059 |         1.3131 |         0.0131 |         0.0512 |          0.3263 |
+|       0.46 |        0.7917 |        1.0635 |         1.3416 |         0.3135 |         0.4098 |          0.7139 |
+|       1.57 |        0.9424 |        1.1646 |         1.4101 |         1.3058 |         1.4516 |          1.7883 |
+|       3.68 |        1.1199 |        1.3039 |         1.5202 |         3.2983 |         3.4823 |          3.8482 |
+|       7.23 |        1.3589 |        1.4985 |         1.7116 |         6.7203 |         6.9487 |          7.3179 |
+|      12.55 |        1.6203 |        1.798  |         1.9447 |        11.9409 |        12.1312 |         12.5668 |
+|      20    |        1.9572 |        2.1292 |         2.3154 |        19.2748 |        19.4708 |         19.8668 |
 
 ## Takeaway
 
-The income fluctuation problem reveals the **precautionary savings motive**: risk-averse agents save more than they would under certainty, building a buffer stock against bad income shocks.
-
-**Key insights:**
-- The consumption function is **concave** in wealth: poorer agents have a higher marginal propensity to consume (MPC) than wealthier agents. This creates the characteristic kink near the borrowing constraint.
-- Agents in **low income states** dissave (run down assets), while agents in **high income states** accumulate wealth. The net savings function crosses zero at different asset levels for each income state.
-- Higher income **persistence** ($\rho$) amplifies wealth inequality: long runs of good or bad luck create large differences in accumulated assets.
-- The borrowing constraint binds for low-wealth, low-income agents, forcing them to consume less than they would under perfect markets. This is the key friction that drives precautionary behavior.
-- This individual problem is the building block of the Aiyagari (1994) general equilibrium model, where the interest rate $r$ adjusts to clear the capital market.
-
-## Reproduce
-
-```bash
-python run.py
-```
+The economic lesson is not that VFI can solve another Bellman equation; it is that uninsurable persistent income risk changes the shape of saving. Assets are valuable because they relax tomorrow's constraint after bad income draws. The policy therefore has high MPCs near zero assets, positive saving after favorable income shocks, and dissaving after unfavorable shocks. This partial-equilibrium object is the household block used in Aiyagari-style equilibrium models, where the same precautionary motive feeds into aggregate capital demand and the equilibrium interest rate.
 
 ## References
 
 - Aiyagari, S. R. (1994). Uninsured Idiosyncratic Risk and Aggregate Saving. *Quarterly Journal of Economics*, 109(3), 659-684.
+- Bewley, T. (1986). Stationary Monetary Equilibrium with a Continuum of Independently Fluctuating Consumers. In W. Hildenbrand and A. Mas-Colell (eds.), *Contributions to Mathematical Economics in Honor of Gerard Debreu*. North-Holland.
+- Carroll, C. D. (1997). Buffer-Stock Saving and the Life Cycle/Permanent Income Hypothesis. *Quarterly Journal of Economics*, 112(1), 1-55.
 - Deaton, A. (1991). Saving and Liquidity Constraints. *Econometrica*, 59(5), 1221-1248.
 - Ljungqvist, L. and Sargent, T. (2018). *Recursive Macroeconomic Theory*. MIT Press, 4th edition, Ch. 18.
-- Carroll, C. D. (1997). Buffer-Stock Saving and the Life Cycle/Permanent Income Hypothesis. *Quarterly Journal of Economics*, 112(1), 1-55.
