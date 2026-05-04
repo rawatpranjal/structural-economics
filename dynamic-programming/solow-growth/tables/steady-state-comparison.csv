@@ -1,6 +1,6 @@
-Variable,Analytical,Simulated (t=499),Gap
-Capital per eff. worker (k),2878.007613,2601.765169,2.76e+02
-Output per eff. worker (y),191.867174,179.505162,1.24e+01
-Consumption per eff. worker (c),134.307022,125.653614,8.65e+00
-Rental rate (r),0.044000,0.045536,1.54e-03
-Wage per eff. worker (w),65.234839,61.031755,4.20e+00
+Object,Analytical steady state,Simulated t=159,Absolute gap
+Capital per effective worker k,4.308592,4.308319,2.73e-04
+Output per effective worker y,1.619313,1.619279,3.38e-05
+Consumption per effective worker c,1.230678,1.230652,2.57e-05
+Marginal product of capital MPK,0.124025,0.124030,5.26e-06
+Effective wage w/A,1.084939,1.084917,2.27e-05

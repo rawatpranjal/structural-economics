@@ -1,93 +1,130 @@
-# Solow Growth with Exogenous Saving
+# Solow Growth and Conditional Convergence
 
-> Deterministic simulation of the neoclassical growth model with exogenous savings, technology growth, and population growth.
+> A deterministic growth economy where saving is exogenous and technology pins down balanced-growth dynamics.
 
 ## Overview
 
-The Solow (1956) growth model is the foundational framework for understanding long-run economic growth. Unlike dynamic programming models where agents optimize intertemporally, the Solow model assumes a constant, exogenous savings rate $s$. Output is produced via a Cobb-Douglas production function with constant returns to scale, and the economy converges to a balanced growth path (steady state) where all per-capita variables grow at the rate of technological progress.
+The Solow model is useful precisely because it removes the household Euler equation. A fixed saving rate turns growth into an accounting problem: output produces investment, investment raises the capital stock, and population growth, technology growth, and depreciation dilute capital measured per effective worker.
 
-This simulation traces the transition dynamics from an initial capital stock to the steady state, illustrating how savings, population growth, depreciation, and technology jointly determine long-run living standards.
+The economic object in this tutorial is the transition of $k_t=K_t/(A_tL_t)$. If an economy starts below its balanced-growth capital intensity, investment exceeds the amount needed to keep $k_t$ constant and the economy accumulates. If it starts above that level, effective depreciation dominates and capital intensity falls. This makes Solow a natural bridge between the finite-resource and optimal-growth examples: [cake eating](../cake-eating/) has no production, [optimal growth](../optimal-growth/) makes saving optimal, and Solow sits in between as an exogenous-saving transition map.
 
 ## Equations
 
-**Production function (Cobb-Douglas):**
-$$Y_t = K_t^{\alpha} (A_t L_t)^{1-\alpha}$$
+Let $K_t$ be aggregate capital, $A_t$ labor-augmenting technology, and $L_t$
+labor. Output is Cobb-Douglas:
 
-**Laws of motion:**
-$$K_{t+1} = (1-\delta) K_t + s Y_t$$
-$$A_{t+1} = (1+g) A_t, \qquad L_{t+1} = (1+n) L_t$$
+$$Y_t = K_t^\alpha (A_t L_t)^{1-\alpha}, \qquad \alpha\in(0,1).$$
 
-**Effective units:** Let $k_t = K_t / (A_t L_t)$ and $y_t = Y_t / (A_t L_t) = k_t^{\alpha}$.
+Capital, technology, and labor evolve according to
 
-**Steady state:** Setting $k_{t+1} = k_t = k^*$:
-$$k^* = \left( \frac{s}{n + g + \delta} \right)^{1/(1-\alpha)}$$
-$$y^* = (k^*)^{\alpha}, \qquad c^* = (1-s) \, y^*$$
+$$K_{t+1}=(1-\delta)K_t+sY_t,$$
 
-**Factor prices (competitive):**
-$$r_t = \alpha \, k_t^{\alpha - 1}, \qquad w_t = (1-\alpha) \, k_t^{\alpha}$$
+$$A_{t+1}=(1+g)A_t,\qquad L_{t+1}=(1+n)L_t,$$
+
+where $s$ is the exogenous saving rate, $\delta$ is depreciation, $g$ is
+technology growth, and $n$ is population growth. In effective-labor units,
+
+$$k_t=\frac{K_t}{A_tL_t},\qquad y_t=\frac{Y_t}{A_tL_t}=k_t^\alpha,$$
+
+so the exact discrete-time transition is
+
+$$k_{t+1}=
+\frac{(1-\delta)k_t+s k_t^\alpha}{(1+g)(1+n)}.$$
+
+The steady state in effective units solves
+
+$$s(k^*)^\alpha = \Delta k^*,$$
+
+with
+
+$$\Delta=(1+g)(1+n)-1+\delta.$$
+
+Thus
+
+$$k^*=\left(\frac{s}{\Delta}\right)^{1/(1-\alpha)},\qquad
+y^*=(k^*)^\alpha,\qquad c^*=(1-s)y^*.$$
+
+Competitive factor prices are the marginal products
+
+$$MPK_t=\alpha k_t^{\alpha-1},\qquad
+\frac{w_t}{A_t}=(1-\alpha)k_t^\alpha.$$
+
+The plotted wage is $w_t/A_t$, the wage per unit of effective labor. The wage
+per raw worker grows with $A_t$ along the balanced-growth path.
 
 ## Model Setup
 
-| Parameter | Value | Description |
-|-----------|-------|-------------|
-| $\alpha$  | 0.66 | Capital share (Cobb-Douglas exponent) |
-| $s$       | 0.3 | Savings rate (exogenous) |
-| $\delta$  | 0.0 | Depreciation rate |
-| $n$       | 0.0 | Population growth rate |
-| $g$       | 0.02 | Technology growth rate |
-| $K_0$     | 1.0 | Initial capital stock |
-| $A_0$     | 1.0 | Initial technology level |
-| $L_0$     | 1.0 | Initial labor force |
-| $T$       | 500 | Simulation periods |
+| Parameter | Value | Role |
+|-----------|------:|------|
+| $\alpha$ | 0.33 | Capital share in $K^\alpha(AL)^{1-\alpha}$ |
+| $s$ | 0.24 | Exogenous fraction of output invested |
+| $\delta$ | 0.06 | Physical depreciation of capital |
+| $n$ | 0.01 | Labor-force growth |
+| $g$ | 0.02 | Labor-augmenting technology growth |
+| $K_0,A_0,L_0$ | 1.0, 1.0, 1.0 | Initial aggregate stocks, implying $k_0=1.0$ |
+| Horizon | 160 periods | Long enough for the transition gap to be visible |
+| $\Delta$ | 0.0902 | Exact break-even investment term in effective units |
+| $k^*$ | 4.3086 | Analytical steady-state capital per effective worker |
 
 ## Solution Method
 
-**Deterministic simulation:** The Solow model requires no optimization — the savings rate is exogenous. We simply iterate the laws of motion forward for $T = 500$ periods starting from $(K_0, A_0, L_0) = (1.0, 1.0, 1.0)$.
+There is no Bellman equation here. Once $s$ is fixed, the whole model is the scalar map for $k_{t+1}$. The analytical steady state is used as ground truth; the simulation is only the transition path generated by repeatedly applying that map.
 
-In each period:
-1. Compute output: $Y_t = K_t^{\alpha} (A_t L_t)^{1-\alpha}$
-2. Update capital: $K_{t+1} = (1-\delta) K_t + s Y_t$
-3. Update technology and labor: $A_{t+1} = (1+g) A_t$, $L_{t+1} = (1+n) L_t$
+```text
+Algorithm: deterministic Solow transition in effective units
+Input: primitives alpha, s, delta, n, g; initial k0; horizon T
+Output: paths for k_t, y_t, c_t, MPK_t, and w_t/A_t
+Delta = (1 + g)(1 + n) - 1 + delta
+k_star = (s / Delta)^(1 / (1 - alpha))
+set k = k0
+for t = 0, 1, ..., T-1:
+    y_t = k^alpha
+    c_t = (1 - s) y_t
+    investment_t = s y_t
+    break_even_t = Delta k
+    MPK_t = alpha k^(alpha - 1)
+    w_t / A_t = (1 - alpha) k^alpha
+    k = ((1 - delta) k + s k^alpha) / ((1 + g)(1 + n))
+compare the terminal path to k_star, y_star, and c_star
+```
 
-We then convert to effective units $k_t = K_t / (A_t L_t)$ to analyze convergence to the steady state $k^*$.
+With this calibration, the local convergence factor around $k^*$ is **0.941**, implying a half-life of about **11.5 periods** for small deviations from the balanced-growth path.
 
 ## Results
 
-<img src="figures/output-per-effective-worker.png" alt="Output per effective worker converges to the analytically computed steady state" width="80%">
-*Output per effective worker converges to the analytically computed steady state*
+The first figure is the analytical Solow diagram. The curved schedule is actual investment per effective worker, $s k^\alpha$. The line is the investment required to offset depreciation, population growth, and technology growth, $\Delta k$. Their intersection is not estimated from the simulation; it is the exact $k^*=4.309$ implied by the primitives.
 
-<img src="figures/capital-per-effective-worker.png" alt="Capital per effective worker converges to the steady state determined by savings and effective depreciation" width="80%">
-*Capital per effective worker converges to the steady state determined by savings and effective depreciation*
+Because $k_0=1.000$ lies to the left of the intersection, the economy begins with investment above break-even investment. Capital per effective worker therefore rises.
 
-<img src="figures/factor-prices.png" alt="Factor prices (rental rate and wage per effective worker) converge to steady-state values" width="80%">
-*Factor prices (rental rate and wage per effective worker) converge to steady-state values*
+<img src="figures/solow-diagram.png" alt="Solow diagram with investment and break-even investment in effective-labor units" width="80%">
 
-**Steady-State Comparison: Analytical vs Simulated**
+The transition figure normalizes capital, output, and consumption by their effective-unit steady states. Capital moves more slowly than output because production is concave: as $k_t$ rises, the marginal product of the next unit of capital falls. By the terminal period, $|k_{T-1}-k^*|$ is **2.73e-04**.
 
-| Variable                        |   Analytical |   Simulated (t=499) |       Gap |
-|:--------------------------------|-------------:|--------------------:|----------:|
-| Capital per eff. worker (k)     |    2878.01   |         2601.77     | 276       |
-| Output per eff. worker (y)      |     191.867  |          179.505    |  12.4     |
-| Consumption per eff. worker (c) |     134.307  |          125.654    |   8.65    |
-| Rental rate (r)                 |       0.044  |            0.045536 |   0.00154 |
-| Wage per eff. worker (w)        |      65.2348 |           61.0318   |   4.2     |
+Consumption and output have the same normalized path because consumption is the fixed share $(1-s)$ of output. This is the mechanical implication of exogenous saving.
+
+<img src="figures/transition-effective-units.png" alt="Transition of capital, output, and consumption toward steady state" width="80%">
+
+Factor prices make the convergence mechanism observable. Starting from low capital, the marginal product of capital is high and the effective wage is low. As capital deepens, $MPK_t$ falls toward **0.124** while $w_t/A_t$ rises toward **1.085**. The same diminishing-returns force underlies conditional convergence.
+
+The dashed lines are analytical steady-state values. The simulation approaches them because capital per effective worker approaches $k^*$.
+
+<img src="figures/factor-prices.png" alt="Factor prices along the Solow transition" width="80%">
+
+The table is a check on the simulation, not a separate estimator. Since the transition map and steady state are both analytical, the remaining gap is just the finite horizon.
+
+**Analytical steady state versus terminal simulation**
+
+| Object                             |   Analytical steady state |   Simulated t=159 |   Absolute gap |
+|:-----------------------------------|--------------------------:|------------------:|---------------:|
+| Capital per effective worker k     |                  4.30859  |           4.30832 |       0.000273 |
+| Output per effective worker y      |                  1.61931  |           1.61928 |       3.38e-05 |
+| Consumption per effective worker c |                  1.23068  |           1.23065 |       2.57e-05 |
+| Marginal product of capital MPK    |                  0.124025 |           0.12403 |       5.26e-06 |
+| Effective wage w/A                 |                  1.08494  |           1.08492 |       2.27e-05 |
 
 ## Takeaway
 
-The Solow model illustrates how an economy's long-run prosperity is determined by a few fundamental parameters, even without any optimizing behavior by agents.
-
-**Key insights:**
-- **Higher savings rate** $\rightarrow$ higher steady-state capital and output per effective worker. But savings cannot drive *growth* in the long run — only the *level* of output.
-- **Population growth and depreciation** reduce steady-state capital intensity by diluting capital across more workers and wearing out existing stock.
-- **Technology growth** is the sole driver of long-run output per capita growth. On the balanced growth path, output per capita grows at rate $g$.
-- **No optimization:** The savings rate $s$ is exogenous. This is both the model's simplicity and its limitation — contrast with the Ramsey model where households choose savings optimally via an Euler equation.
-- **Convergence:** Economies below steady state grow faster (diminishing returns to capital), predicting conditional convergence across countries.
-
-## Reproduce
-
-```bash
-python run.py
-```
+Solow separates level effects from growth effects. A higher saving rate raises capital and output per effective worker, but it does not change the balanced-growth rate of output per worker. In this model, long-run per-capita growth comes from $g$; saving and depreciation determine the level around which the economy grows. That distinction is exactly what the Ramsey and RBC tutorials complicate by making saving an equilibrium choice rather than an imposed fraction of output.
 
 ## References
 
