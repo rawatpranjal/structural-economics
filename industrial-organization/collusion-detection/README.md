@@ -74,7 +74,7 @@ For the symmetric Cournot case: $\delta^* = \frac{(n+1)^2}{n^2 + 6n + 1}$ (incre
 |          15 |      14.1 |         60   |        256   |   0.8101 | Yes                       |
 |          20 |       8.2 |         45   |        248.1 |   0.8464 | Yes                       |
 
-## Economic Takeaway
+## Takeaway
 
 Cartels are inherently unstable because each member faces a prisoner's dilemma: the collective optimum requires restraint, but individual incentives push toward expansion.
 

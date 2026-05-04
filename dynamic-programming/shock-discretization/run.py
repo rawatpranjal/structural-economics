@@ -122,9 +122,8 @@ def main() -> None:
         "finite grid. This tutorial compares three workhorse approximations: Tauchen's "
         "normal grid for AR(1) processes, Rouwenhorst's highly persistent Markov chain, "
         "and a simple discrete-normal quadrature for one-period shocks.\n\n"
-        "The goal is not to pick one method forever. The goal is to understand what each "
-        "method preserves: unconditional variance, persistence, tail support, and transition "
-        "probabilities."
+        "The comparison tracks what each method preserves: unconditional variance, "
+        "persistence, tail support, and transition probabilities."
     )
 
     report.add_equations(

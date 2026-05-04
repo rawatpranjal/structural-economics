@@ -68,7 +68,7 @@ The ODE system $\dot{W} = -c$, $\dot{c} = -(\rho/\sigma)c$ is integrated numeric
 |  30 |          0.011768 |         0.011768 |          0.470713 |         0.470713 |
 |  50 |          0.007159 |         0.007159 |          0.286361 |         0.286361 |
 
-## Economic Takeaway
+## Takeaway
 
 The continuous-time cake-eating problem illustrates the power of Pontryagin's maximum principle as an alternative to dynamic programming.
 

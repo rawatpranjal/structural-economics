@@ -92,7 +92,7 @@ Converged in **204 iterations** (error = 9.76e-07).
 | 90th percentile                  | 0.700   |
 | 99th percentile                  | 0.844   |
 
-## Economic Takeaway
+## Takeaway
 
 IID income risk fundamentally changes savings behavior compared to the deterministic case.
 

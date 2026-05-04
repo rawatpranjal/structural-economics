@@ -71,7 +71,7 @@ $$R^{(k)}[i,j] = R^{(k-1)}[i,j] \;\lor\; \bigl(R^{(k-1)}[i,k] \;\land\; R^{(k-1)
 |     8 |   1111011111 |        1111011111 |           0 |
 |     9 |   0001001101 |        0101001101 |           1 |
 
-## Economic Takeaway
+## Takeaway
 
 GARP is the testable implication of utility maximization. Warshall's algorithm efficiently computes the transitive closure, making GARP testing practical even for large datasets. The Afriat efficiency index measures 'how close' data is to being rationalizable.
 

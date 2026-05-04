@@ -67,7 +67,7 @@ The fixed point is where the noisy best-response curve crosses the 45-degree lin
 |-------------------:|----------------:|-------------------:|-----------------------:|
 |                  8 |         0.64228 |            0.64228 |               9.18e-13 |
 
-## Economic Takeaway
+## Takeaway
 
 QRE is useful when exact best response is too sharp or behavior is noisy. Computationally, it is just another fixed-point problem: probabilities must equal the logit best responses to the probabilities chosen by opponents. This makes it a low-code bridge between finite games and stochastic choice models.
 

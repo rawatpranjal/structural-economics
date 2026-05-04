@@ -74,7 +74,7 @@ The value of continuing to observe signals must exceed the value of acting now.
 |                 30 |           0.9905 |        0.9865 |            0.004  |
 |                 50 |           0.9985 |        0.9985 |            0      |
 
-## Economic Takeaway
+## Takeaway
 
 Bayesian learning is the structural approach to information problems. Rather than fitting a black-box classifier, the agent uses a model of how signals are generated to update beliefs optimally.
 

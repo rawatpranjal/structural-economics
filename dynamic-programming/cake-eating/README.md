@@ -72,7 +72,7 @@ The close agreement between numerical and analytical values across the grid conf
 | 0.871 |         -33.8925 |          -33.8889 |         0.0874 |          0.0871 |
 | 1     |         -32.5114 |          -32.5083 |         0.1003 |          0.1    |
 
-## Economic Takeaway
+## Takeaway
 
 The cake-eating problem reveals the fundamental trade-off in intertemporal optimization: consuming today yields immediate utility, but saving preserves options for the future.
 

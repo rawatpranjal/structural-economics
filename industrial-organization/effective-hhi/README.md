@@ -81,7 +81,7 @@ In segmented markets ($\beta = 0$, no cross-price effects), a merger changes own
 | Near-monopoly (90-5-5)          |         3 |              90 |  8150 | Highly Concentrated     |
 | Monopoly                        |         1 |             100 | 10000 | Highly Concentrated     |
 
-## Economic Takeaway
+## Takeaway
 
 The HHI is the workhorse screening tool for antitrust enforcement. Its appeal lies in simplicity: it requires only market shares and has a clean algebraic relationship to merger-induced concentration changes.
 

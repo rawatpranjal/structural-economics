@@ -67,7 +67,7 @@ Higher taxes shift the entire capital policy function downward: for any given st
 | 30%        | 21.7584 | 3.0307 | 2.4868 |            0.573 |        22.3595 |      6.823 |
 | 40%        | 17.101  | 2.779  | 2.3515 |            0.45  |        17.5845 |      6.881 |
 
-## Economic Takeaway
+## Takeaway
 
 Capital taxation has powerful long-run effects through the accumulation channel:
 

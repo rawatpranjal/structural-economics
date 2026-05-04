@@ -93,7 +93,7 @@ All three methods converge to the same policy function, but differ in computatio
 | 50th percentile wealth       |   0.376  | ---   | ---   |
 | 90th percentile wealth       |   0.793  | ---   | ---   |
 
-## Economic Takeaway
+## Takeaway
 
 The envelope equation iteration method demonstrates that the same economic problem — a household choosing consumption and savings under income uncertainty and borrowing constraints — can be attacked from multiple computational angles.
 

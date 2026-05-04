@@ -69,7 +69,7 @@ Converged in **102 iterations** (error = 9.43e-07).
 | 21.64  |          33.2431 |           33.2431 |        12.5875 |         12.5636 |
 | 24.88  |          33.3004 |           33.3005 |        13.1255 |         13.1006 |
 
-## Economic Takeaway
+## Takeaway
 
 The neoclassical growth model reveals how productive capital creates a non-trivial steady state, unlike the cake-eating problem where the resource monotonically declines.
 

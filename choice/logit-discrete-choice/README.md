@@ -90,7 +90,7 @@ The IIA property is visible in the cross-elasticity columns: all off-diagonal en
 | Product 4 |       0.086 |        0.23 |       0.889 |      -2.609 |       0.863 |
 | Product 5 |       0.086 |        0.23 |       0.889 |       0.83  |      -4.051 |
 
-## Economic Takeaway
+## Takeaway
 
 The multinomial logit is the workhorse of discrete choice demand estimation, but its elegance comes at a cost: the **Independence of Irrelevant Alternatives (IIA)** property.
 

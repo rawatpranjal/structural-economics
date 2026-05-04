@@ -70,7 +70,7 @@ The residual is the largest absolute difference between the closed-form bid and 
 |         5 |           1.11e-16  |
 |        10 |           1.11e-16  |
 
-## Economic Takeaway
+## Takeaway
 
 The symmetric auction model is a compact example of Bayesian Nash equilibrium. A bidder trades off a lower payment conditional on winning against a lower probability of winning. The equilibrium bid rule solves that tradeoff, and the grid check verifies the strategic optimality without introducing a specialized auction package.
 

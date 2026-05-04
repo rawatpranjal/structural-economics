@@ -77,7 +77,7 @@ The table compares filtered state means to the simulated hidden states.
 
 The total log likelihood for the simulated sample is -25.73. The filter tracks both states well despite observing only one noisy scalar signal because the transition equation supplies dynamic discipline.
 
-## Economic Takeaway
+## Takeaway
 
 The Kalman filter is more than a smoother. It is a disciplined accounting system for uncertainty: prior state uncertainty, measurement noise, forecast surprises, posterior uncertainty, and likelihood all update together. That is why the same recursion is used for forecasting, nowcasting, state estimation, and maximum-likelihood estimation.
 

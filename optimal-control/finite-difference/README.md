@@ -61,7 +61,7 @@ The upwind scheme guarantees monotonicity of the numerical solution — crucial 
 | Iterations           | 533        |
 | Final error          |   1.07e-07 |
 
-## Economic Takeaway
+## Takeaway
 
 Finite difference methods are the standard numerical approach for continuous-time economics:
 

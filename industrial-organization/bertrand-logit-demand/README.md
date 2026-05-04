@@ -64,7 +64,7 @@ where $\Omega$ is the ownership matrix and $\Delta = \partial \mathbf{s} / \part
 | Merger 1+2 (cost savings) |      1.0241 |               2.41 |             0.3197 |  3338 |
 | Full collusion            |      1.6808 |              68.08 |            -0.1788 | 10000 |
 
-## Economic Takeaway
+## Takeaway
 
 Merger simulation reveals the tension between market power and efficiency:
 

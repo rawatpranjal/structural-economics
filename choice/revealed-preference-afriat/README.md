@@ -80,7 +80,7 @@ $$u_i - u_j \leq \lambda_j \, p_j \cdot (x_i - x_j) \quad \forall \, i, j$$
 | Obs 9  |         | R       | R       |         |         |         |         | R       | --      | R        |
 | Obs 10 |         |         | R       |         |         |         |         |         |         | --       |
 
-## Economic Takeaway
+## Takeaway
 
 Afriat's theorem provides the deepest link between observable behavior and economic theory. It says that the neoclassical model of consumer choice — utility maximization subject to a budget constraint — is *testable* with finite data, and the test is constructive.
 

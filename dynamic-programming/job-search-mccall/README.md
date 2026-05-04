@@ -68,7 +68,7 @@ Converged in **149 iterations** (error = 9.11e-09).
 |   0.99 | 1   | 5.642  |          4 |          415 |
 |   0.99 | 2   | 5.8733 |          2 |          644 |
 
-## Economic Takeaway
+## Takeaway
 
 The McCall model provides the cleanest illustration of the **search-theoretic approach** to unemployment. Unemployment is not involuntary idleness but an investment in finding a better match.
 

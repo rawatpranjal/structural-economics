@@ -88,7 +88,7 @@ All local methods start at the same point; dual annealing searches over a box.
 
 The best objective found is 2.38467. Because the two mixture weights are equal, the objective has two equally good modes near the two component means. The important comparison is not which side wins, but how much each method depends on local geometry and initialization.
 
-## Economic Takeaway
+## Takeaway
 
 Optimization is a modeling choice as well as a numerical routine. For smooth unimodal problems, derivative-based methods are usually efficient. For rough, flat, or multimodal surfaces, it is safer to combine local methods with multi-start runs, diagnostic plots, or a global search pass. The plots here are small enough to inspect, but the same logic applies when the objective has hundreds of parameters.
 

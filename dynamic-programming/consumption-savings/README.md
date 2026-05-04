@@ -68,7 +68,7 @@ Converged in **260 iterations** (error = 9.91e-07).
 |        12.47 |              1.6546 |              1.809  |               1.9563 |              11.8201 |              12.0337 |               12.4686 |
 |        20    |              2.123  |              2.197  |               2.1822 |              19.109  |              19.403  |               20      |
 
-## Economic Takeaway
+## Takeaway
 
 The income fluctuation problem reveals the **precautionary savings motive**: risk-averse agents save more than they would under certainty, building a buffer stock against bad income shocks.
 

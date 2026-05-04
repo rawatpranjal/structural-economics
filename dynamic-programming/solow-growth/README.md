@@ -72,7 +72,7 @@ We then convert to effective units $k_t = K_t / (A_t L_t)$ to analyze convergenc
 | Rental rate (r)                 |       0.044  |            0.045536 |   0.00154 |
 | Wage per eff. worker (w)        |      65.2348 |           61.0318   |   4.2     |
 
-## Economic Takeaway
+## Takeaway
 
 The Solow model illustrates how an economy's long-run prosperity is determined by a few fundamental parameters, even without any optimizing behavior by agents.
 

@@ -80,7 +80,7 @@ $$y_{t+h} = \alpha + \sum_{j=1}^{p} \beta_j y_{t-j+1} + \gamma' \hat{F}_t + \var
 | AR(2)   | 1.753  |            1    |
 | FAAR(2) | 1.2621 |            0.72 |
 
-## Economic Takeaway
+## Takeaway
 
 The Stock-Watson diffusion index approach demonstrates a powerful principle: when many correlated time series share a common source of variation, principal components can extract this latent factor even with unknown loadings.
 

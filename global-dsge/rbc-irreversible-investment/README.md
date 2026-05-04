@@ -87,7 +87,7 @@ Irreversible model converged in **49** iterations. Standard model converged in *
 | Negative dz     |               0 |               0 |
 | Ratio |neg/pos| |               0 |               0 |
 
-## Economic Takeaway
+## Takeaway
 
 Irreversible investment fundamentally alters business cycle dynamics:
 

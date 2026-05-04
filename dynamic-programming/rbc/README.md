@@ -72,7 +72,7 @@ Converged in **515 iterations** (error = 9.95e-06).
 | Capital (K)     |          1.32 |           0.29 |          0.07 |          0.95 |
 | Labor (L)       |          2.75 |           0.6  |          0.94 |          0.7  |
 
-## Economic Takeaway
+## Takeaway
 
 The RBC model replicates several key stylized facts of business cycles:
 

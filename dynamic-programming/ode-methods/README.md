@@ -71,7 +71,7 @@ All ODE systems are solved using `scipy.integrate.solve_ivp` with the RK45 (Dorm
 | Lotka-Volterra        | x* (prey)     |  4      | gamma/delta                       |
 | Lotka-Volterra        | y* (predator) |  2.75   | alpha/beta                        |
 
-## Economic Takeaway
+## Takeaway
 
 These three examples illustrate the rich dynamics that arise from continuous-time economic models:
 

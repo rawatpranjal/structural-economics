@@ -6,7 +6,7 @@
 
 Many dynamic economic models begin with a continuous shock process but solve on a finite grid. This tutorial compares three workhorse approximations: Tauchen's normal grid for AR(1) processes, Rouwenhorst's highly persistent Markov chain, and a simple discrete-normal quadrature for one-period shocks.
 
-The goal is not to pick one method forever. The goal is to understand what each method preserves: unconditional variance, persistence, tail support, and transition probabilities.
+The comparison tracks what each method preserves: unconditional variance, persistence, tail support, and transition probabilities.
 
 ## Equations
 
@@ -75,7 +75,7 @@ The table reports moments implied by the finite Markov chains.
 
 The 7-state Tauchen chain implies persistence 0.9622, while the 7-state Rouwenhorst chain implies persistence 0.9500. The discrete-normal standard-deviation error is 2.5132e-03.
 
-## Economic Takeaway
+## Takeaway
 
 Discretization is part of the model, not a harmless preprocessing step. Tauchen is transparent and often adequate for moderate persistence. Rouwenhorst is safer for persistent income or productivity shocks because it preserves autocorrelation on small grids. Discrete-normal grids are useful for independent quadrature but do not replace a Markov transition matrix when persistence matters.
 

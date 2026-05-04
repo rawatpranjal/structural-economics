@@ -152,9 +152,9 @@ class ModelReport:
                     lines.append(md_table)
                     lines.append("")
 
-        # Economic Takeaway
+        # Takeaway
         if self._takeaway:
-            lines.append("## Economic Takeaway")
+            lines.append("## Takeaway")
             lines.append("")
             lines.append(self._takeaway)
             lines.append("")

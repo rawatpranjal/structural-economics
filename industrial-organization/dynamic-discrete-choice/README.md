@@ -84,7 +84,7 @@ The simulated panel gives the estimators repeated choices at many mileage states
 | Full ML success |   1        |
 | CCP success     |   1        |
 
-## Economic Takeaway
+## Takeaway
 
 The hard part of dynamic discrete choice is the feedback between choices and future states. Full-solution likelihood is conceptually direct but expensive because each parameter guess requires solving the dynamic program. CCP methods trade some first-stage smoothing for speed by using observed choice probabilities to infer continuation values.
 

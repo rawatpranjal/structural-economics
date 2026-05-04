@@ -70,7 +70,7 @@ This is a piecewise-linear, concave function that passes through all observed po
 |            13 | 10.58 | 4.43 |     0 |     0.071  |       0.18 |
 |            14 |  3.28 | 5.33 |     0 |     0.1318 |       0.18 |
 
-## Economic Takeaway
+## Takeaway
 
 Preference recoverability shows how much we can learn without functional form assumptions:
 

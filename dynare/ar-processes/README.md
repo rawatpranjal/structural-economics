@@ -87,7 +87,7 @@ These models are **purely backward-looking**, so no expectations need to be solv
 | Half-life (periods)    | 1.0                    | 6.6                    | 69.0                   |
 | Spectral peak          | Frequency 0 (low-pass) | Frequency 0 (low-pass) | Frequency 0 (low-pass) |
 
-## Economic Takeaway
+## Takeaway
 
 Autoregressive dynamics are the foundation of time series econometrics and macroeconomic modeling.
 

@@ -67,7 +67,7 @@ Simulation: 5,000 periods of aggregate productivity shocks drawn from $\hat{z}_{
 | Tightness theta | 1.0014 |    0.0327 |       1      |
 | v/u ratio       | 1.0014 |    0.0327 |       1      |
 
-## Economic Takeaway
+## Takeaway
 
 The DMP model captures the key qualitative features of labor market dynamics:
 

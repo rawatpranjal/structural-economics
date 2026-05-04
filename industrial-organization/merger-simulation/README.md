@@ -82,7 +82,7 @@ In matrix form: $\mathbf{q} + (\Omega \circ \mathbf{J}') (\mathbf{p} - \mathbf{c
 | Linear         |                   5.13 |                   5.59 |    -0.0272 |     0.0078 |   -0.0193 |            7.27 |          12.15 |
 | Log-linear     |                  10.27 |                  13.57 |    -0.0489 |     0.0065 |   -0.0425 |            4.56 |           7.61 |
 
-## Economic Takeaway
+## Takeaway
 
 The choice of demand functional form is not innocuous --- it is arguably the most consequential modeling decision in structural merger simulation.
 

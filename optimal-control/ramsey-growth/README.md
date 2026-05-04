@@ -67,7 +67,7 @@ The ODE system is integrated using `scipy.integrate.solve_ivp` (RK45, adaptive s
 |     12.4347 |     1.5  |        1.68563  | 33.4255 |  0.7531 |
 |     16.5796 |     2    |        1.70717  | 40.5534 |  0.6226 |
 
-## Economic Takeaway
+## Takeaway
 
 The Ramsey model reveals the deep structure of optimal saving and capital accumulation in the neoclassical framework.
 

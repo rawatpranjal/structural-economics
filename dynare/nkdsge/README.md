@@ -73,7 +73,7 @@ This is valid when the Taylor principle ($\phi_\pi > 1$ in many calibrations, or
 | Inflation    |                -48.731 |              108.069 |
 | Nominal rate |                 16.65  |              171.47  |
 
-## Economic Takeaway
+## Takeaway
 
 The New Keynesian model illustrates how nominal rigidities give monetary policy real effects and create a fundamental policy trade-off.
 

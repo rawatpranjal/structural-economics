@@ -1,7 +1,7 @@
 [project]
-name = "structural-economics"
+name = "after-quant-econ"
 version = "1.0.0"
-description = "Computational examples in structural economics"
+description = "Executable structural and computational economics examples after Quant Econ"
 license = {text = "MIT"}
 requires-python = ">=3.11"
 dependencies = [

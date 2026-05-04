@@ -63,7 +63,7 @@ for quarterly data (Hodrick and Prescott, 1997).
 | Unemployment  |            0.975 |             0.337 |           -0.423 |             0.649 |
 | FedFunds      |            2.007 |             0.693 |            0.187 |             0.599 |
 
-## Economic Takeaway
+## Takeaway
 
 The synthetic data successfully reproduces the key stylized facts of U.S. business cycles:
 

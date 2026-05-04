@@ -74,7 +74,7 @@ Multi-product firms internalise cannibalisation and charge higher markups.
 | beta_fiber  |    0.5 |  0.519 |     0.63  |     0.027 |
 | beta_const  |    1   | -0.5   |    -0.1   |     0.23  |
 
-## Economic Takeaway
+## Takeaway
 
 **1. Endogeneity bias is real and large.** OLS underestimates price sensitivity because high unobserved quality ($\xi_j$) raises both demand and price. IV/2SLS using cost shifters corrects this.
 

@@ -106,7 +106,7 @@ The stationary distribution is computed by constructing the Markov transition ma
 |  25 |          0.095 |            -0.405 |  1.722 |      0.2261 |       0 |
 |  30 |          0.067 |            -0.433 |  1.561 |      0.2593 |       0 |
 
-## Economic Takeaway
+## Takeaway
 
 Dynamic entry/exit models explain why markets have persistent differences in concentration. Entry costs create barriers that sustain above-competitive profits, while exit occurs when negative shocks or increased competition erode incumbents' continuation values.
 

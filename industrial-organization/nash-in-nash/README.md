@@ -55,7 +55,7 @@ Each bilateral negotiated price is computed analytically from the Nash bargainin
 | Hospital 2 - Insurer 1 |             5.6923 |              4.6896 |       -17.62 |           478.3 |               110.4 |
 | Hospital 2 - Insurer 2 |             5.6923 |              4.6896 |       -17.62 |           478.3 |               110.4 |
 
-## Economic Takeaway
+## Takeaway
 
 Nash-in-Nash bargaining reveals how vertical market structure affects prices:
 

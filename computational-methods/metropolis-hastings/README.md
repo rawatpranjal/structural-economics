@@ -81,7 +81,7 @@ The true mixture mean is zero. The true marginal variance of each coordinate is 
 
 The middle proposal step, 0.6, is used in the path and trace plots; it gives acceptance 69.9% and visible movement between modes. The small proposal accepts more often but has more persistent draws. The largest proposal is useful for jumping across the low-density middle region, but many jumps are rejected.
 
-## Economic Takeaway
+## Takeaway
 
 Metropolis-Hastings is easy to implement, but not automatic. Acceptance rates, trace plots, cumulative means, mode switching, and autocorrelation diagnose different failure modes. The key lesson is general: a sampler can be correct in theory and still be weak for a finite computation if it explores the target too slowly.
 

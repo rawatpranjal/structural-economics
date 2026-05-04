@@ -66,7 +66,7 @@ Result: **80 iters** (Δ=2.06e-02, res=1.27e-03).
 
 Converged in **80 iterations**. Euler errors: equity mean=3.03e-03, max=2.40e-01. GDSGE C++ benchmark: mean 2.08E-05, max 3.40E-03.
 
-## Economic Takeaway
+## Takeaway
 
 1. Binding constraints generate equity premium with moderate $\gamma=1.5$.
 

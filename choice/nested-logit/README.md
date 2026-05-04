@@ -75,7 +75,7 @@ The nested logit introduces a second endogenous variable, $\ln s_{j|g}$, because
 | beta_const  |    1   | -0.198  |          1.568 |
 | sigma       |    0.7 | ---     |          0.913 |
 
-## Economic Takeaway
+## Takeaway
 
 The nested logit is the simplest departure from the IIA assumption. By grouping products into nests, it allows consumers who leave one product to disproportionately switch to similar products rather than spreading evenly across the market.
 

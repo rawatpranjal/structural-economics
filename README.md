@@ -1,6 +1,6 @@
-# Structural Economics: Computational Examples
+# After Quant Econ
 
-A library of executable models in computational and structural economics. Every model is self-contained, runs with `python run.py`, and produces a documented report with equations, solutions, visualizations, and economic takeaways.
+Executable examples for applied structural and computational economics after the Quant Econ foundations. Every model is self-contained, runs with `python run.py`, and produces a documented report with equations, solutions, visualizations, and takeaways.
 
 **Built with:** Python, JAX, NumPy, SciPy, Matplotlib | **License:** MIT
 
@@ -25,7 +25,7 @@ Each tutorial is meant to be small enough to read in one sitting. The folder con
 
 ## Dynamic Programming
 
-Dynamic programming gets its own first block because it is both a method and a language for many structural models. This section starts with grids and one-state problems, then moves into savings, search, asset pricing, business cycles, and general equilibrium. The goal is to make Bellman equations feel concrete before the reader reaches larger macro applications.
+Dynamic programming is both a method and a language for many structural models. This section starts with grids and one-state problems, then moves into savings, search, asset pricing, business cycles, and general equilibrium.
 
 | | Tutorial | What it teaches | Method | Key Insight |
 |:---:|---|---|---|---|
@@ -43,7 +43,7 @@ Dynamic programming gets its own first block because it is both a method and a l
 
 ## Macroeconomics
 
-This section collects the heavier macro material: heterogeneous households, incomplete markets, DSGE perturbation, global nonlinear solution, continuous-time equilibrium, and optimal-control tools. The ordering is still pedagogical: start from household savings problems, then move to equilibrium macro, then to more specialized solution technologies.
+This section collects the heavier macro material: heterogeneous households, incomplete markets, DSGE perturbation, global nonlinear solution, continuous-time equilibrium, and optimal-control tools.
 
 ### Heterogeneous Agents
 

@@ -70,7 +70,7 @@ where $\hat{x}_t = [\hat{k}_t, \hat{a}_t]'$. The stable eigenvalue for capital i
 | Capital     |               4.8   |             14 |                      0 |
 | TFP         |               1     |              0 |                     14 |
 
-## Economic Takeaway
+## Takeaway
 
 The standard RBC model produces business cycle dynamics driven entirely by real (technology) shocks.
 

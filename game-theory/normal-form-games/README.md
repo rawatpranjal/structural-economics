@@ -65,7 +65,7 @@ The residual column checks the mixed-equilibrium indifference equations.
 | Battle of the Sexes |        1.2   |           1.2   | 0.6   | 0.4   |
 | Stag Hunt           |        2.667 |           2.667 | 0.667 | 0.667 |
 
-## Economic Takeaway
+## Takeaway
 
 The computational lesson is simple: for small finite games, equilibrium is a set of inequality and indifference checks. Pure Nash equilibria are found by checking unilateral deviations cell by cell. Mixed equilibria are found by making the opponent indifferent. This gives a transparent baseline before using heavier fixed-point or dynamic-game methods.
 

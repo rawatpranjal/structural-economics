@@ -73,7 +73,7 @@ HJB converged in **8 iterations** (error = 1.56e-07). Equilibrium found at **$r^
 | Prob(z = z_high)             |  0.5     |
 | HJB iterations               |  8       |
 
-## Economic Takeaway
+## Takeaway
 
 The continuous-time approach to heterogeneous-agent models converts the problem into a coupled PDE system: the HJB equation characterizes optimal individual behavior, and the KFE describes the resulting cross-sectional distribution.
 

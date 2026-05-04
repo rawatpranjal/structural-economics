@@ -78,7 +78,7 @@ Converged in **70 iterations** (error = 0.00e+00).
 |       17.778 |             2.0338 |         17.2773 |            -0.5005 |  7.7716 |
 |       20     |             2.1205 |         19.4795 |            -0.5205 |  8.2999 |
 
-## Economic Takeaway
+## Takeaway
 
 The deterministic consumption-savings model illustrates how a borrowing-constrained agent accumulates assets toward a steady state.
 

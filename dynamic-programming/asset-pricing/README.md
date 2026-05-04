@@ -68,7 +68,7 @@ Converged in **271 iterations** (error = 9.81e-07).
 | 1.78  | 53.6349 |  30.1348 |           15.4128 |                19 |           30.1348 |          167.356  |
 | 1.99  | 65.2685 |  32.7945 |           14.835  |                19 |           32.7945 |          245.835  |
 
-## Economic Takeaway
+## Takeaway
 
 The Lucas tree model reveals how equilibrium asset prices emerge from the interaction of time preference, risk aversion, and the stochastic properties of dividends.
 

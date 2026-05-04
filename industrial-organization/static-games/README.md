@@ -67,7 +67,7 @@ $$q_i^*(q_j) = \frac{a - c - bq_j}{2b}, \qquad q^{NE} = \frac{a-c}{3b}$$
 | Cournot Duopoly     |             5.33 |    4.67 |              7.11 |
 | Perfect Competition |             8    |    2    |              0    |
 
-## Economic Takeaway
+## Takeaway
 
 Static games provide the micro-foundations for industrial organization:
 

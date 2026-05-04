@@ -69,7 +69,7 @@ The contraction converged in **128 iterations** for the demonstration market. GM
 | sigma_alpha |    0.8 |       0.629 | 1.896            |
 | sigma_sugar |    1   |       0.095 | 0.064            |
 
-## Economic Takeaway
+## Takeaway
 
 BLP is the gold standard for demand estimation in IO because random coefficients generate realistic substitution patterns. The key results from this pipeline:
 

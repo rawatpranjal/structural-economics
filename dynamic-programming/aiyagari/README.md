@@ -86,7 +86,7 @@ Equilibrium interest rate: $r^* = 0.025959$ (vs. $1/\beta - 1 = 0.041667$).
 | Fraction at constraint     | 0.0241              |
 | $r$ vs $1/\beta - 1$       | 0.025959 < 0.041667 |
 
-## Economic Takeaway
+## Takeaway
 
 The Aiyagari model demonstrates how **precautionary savings** and **market incompleteness** shape macroeconomic aggregates and the wealth distribution.
 

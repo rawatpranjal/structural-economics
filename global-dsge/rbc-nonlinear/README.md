@@ -69,7 +69,7 @@ For comparison, we also compute the log-linearized solution using the method of 
 | Nonlinear (VFI) |      4.463 |           1.145 |           2.246 |       0.856 |       0.493 |   37.903  |
 | Log-linear      |      8.511 |           4.271 |          86.333 |      -0.143 |       0.23  |   38.3186 |
 
-## Economic Takeaway
+## Takeaway
 
 Global nonlinear methods reveal features that log-linearization misses:
 

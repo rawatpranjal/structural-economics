@@ -117,7 +117,7 @@ The optimal proposal can often match bootstrap accuracy with fewer particles.
 
 With 500 particles, the bootstrap filter has RMSE 0.0273 relative to the Kalman filtered mean, while the conditionally optimal filter has RMSE 0.0100. The main difference is not the model; it is the proposal distribution used to place particles.
 
-## Economic Takeaway
+## Takeaway
 
 Particle filters are flexible because they replace analytic filtering distributions with weighted simulations. That flexibility has a cost: particle placement matters. When observations are very informative or contaminated by outliers, naive bootstrap particles can collapse onto a few high-weight draws. Better proposals, more particles, and outlier-robust measurement models are practical ways to respond.
 

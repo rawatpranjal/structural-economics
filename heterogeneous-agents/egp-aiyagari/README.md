@@ -81,7 +81,7 @@ The inner EGP loop converged in **11 iterations**. The outer K/L iteration conve
 | 90th percentile wealth   |  7.845    |
 | 99th percentile wealth   | 24.3085   |
 
-## Economic Takeaway
+## Takeaway
 
 The Aiyagari model demonstrates how precautionary savings demand from uninsurable income risk drives the equilibrium interest rate below the rate of time preference ($r^* < 1/\beta - 1$).
 

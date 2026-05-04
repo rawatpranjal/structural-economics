@@ -74,7 +74,7 @@ For log-linearized dividends following an AR(1) with both surprise and news comp
 | Asset price |                 0.8174 |             0.9083 |             0.8174 |
 | Return      |                 0.1    |             0.099  |             0.001  |
 
-## Economic Takeaway
+## Takeaway
 
 News shocks create a fundamental distinction in asset pricing dynamics that helps explain observed financial market behavior.
 

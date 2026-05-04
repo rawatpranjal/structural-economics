@@ -72,7 +72,7 @@ The residual measures the largest profitable correction implied by the best-resp
 |-------:|-------:|--------:|------------------:|
 | 2.6667 | 2.6667 |  4.6667 |            7.1111 |
 
-## Economic Takeaway
+## Takeaway
 
 Best-response iteration turns a Nash equilibrium problem into a fixed-point problem. For this Cournot game the map is well behaved, so low-code iteration is enough. The important habit is to report a residual: convergence of the plotted path is not the same thing as verifying that no player still wants to deviate.
 

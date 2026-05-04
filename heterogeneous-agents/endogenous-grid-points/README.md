@@ -77,7 +77,7 @@ Converged in **151 iterations** (tolerance = 1e-06).
 | Fraction constrained         | 3.1%    |
 | Theoretical MPC limit        | 0.0413  |
 
-## Economic Takeaway
+## Takeaway
 
 The EGP method demonstrates that clever reformulation of the optimality conditions can yield dramatic computational gains without any approximation error. By inverting the Euler equation, we avoid the costly inner maximization of standard VFI.
 

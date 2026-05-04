@@ -81,7 +81,7 @@ Discrete-time VFI (on 200-point grid) converged in **243 iterations** (error = 9
 | HJB residual                          | --           |    5.34e-07 |
 | VFI iterations                        | --           |  243        |
 
-## Economic Takeaway
+## Takeaway
 
 The continuous-time approach to the neoclassical growth model offers significant computational advantages over discrete-time VFI:
 

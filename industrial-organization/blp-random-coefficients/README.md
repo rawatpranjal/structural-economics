@@ -79,7 +79,7 @@ Contraction converged in **627 iterations** at true parameters. GMM optimization
 | $\sigma_x$ (RC on $x$)     |    0.8 |       0.951 |
 | $\sigma_p$ (RC on price)   |    0.3 |       0.196 |
 
-## Economic Takeaway
+## Takeaway
 
 The BLP random coefficients logit model fundamentally changes how we think about demand substitution in differentiated product markets.
 

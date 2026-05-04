@@ -65,7 +65,7 @@ $$\dot{c} = \frac{1}{\sigma} \left( f'(k) - \delta - \rho \right) c$$
 | $\lambda_1$ | -0.071  | Stable eigenvalue               |
 | $\lambda_2$ |  0.111  | Unstable eigenvalue             |
 
-## Economic Takeaway
+## Takeaway
 
 Phase diagrams reveal the qualitative dynamics of the Ramsey model:
 
