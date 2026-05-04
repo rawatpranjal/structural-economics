@@ -1,62 +1,115 @@
-# Economic ODEs and Phase Diagrams
+# Continuous-Time Growth and Phase Diagrams
 
-> Solving continuous-time economic models as systems of ordinary differential equations.
+> Reading convergence, saddle paths, and cycles from differential equations.
 
 ## Overview
 
-Many fundamental economic models are naturally formulated in continuous time, giving rise to systems of ordinary differential equations (ODEs). This module demonstrates three canonical examples:
+Continuous-time growth models are mainly about transition paths. Given an initial capital stock, does the economy move toward a steady state, away from it, or around it? Ordinary differential equations are the language for those motions.
 
-1. **Solow Growth Model** -- A single ODE with a globally stable steady state. The phase diagram immediately reveals the convergence dynamics.
-2. **Ramsey Optimal Growth Model** -- A two-dimensional ODE system with a saddle point equilibrium. Only the *saddle path* converges to the steady state; all other trajectories diverge. The shooting method finds this path numerically.
-3. **Lotka-Volterra Predator-Prey** -- A classic nonlinear ODE system exhibiting perpetual cycles, illustrating how phase diagrams reveal qualitative dynamics.
+The tutorial uses three small systems. The Solow model has one predetermined state, so the sign of $\dot{k}$ is enough to read convergence. Ramsey growth adds forward-looking consumption, which turns the steady state into a saddle: only one initial $c_0$ is consistent with optimal behavior from a given $k_0$. Lotka-Volterra is included as a clean nonlinear contrast. It is not a growth model, but it shows why a phase diagram is more than a plotting device: a two-state ODE can converge, diverge, or cycle depending on the economic law of motion.
 
 ## Equations
 
-**Solow Growth Model:**
-$$\frac{dk}{dt} = s \cdot f(k) - (n + \delta) \cdot k, \qquad f(k) = k^\alpha$$
+Let $t$ denote continuous time and let a dot denote a time derivative. Output is
+$f(k)=k^\alpha$ in the two growth examples.
 
-**Ramsey Optimal Growth (Euler Equation + Capital Accumulation):**
-$$\frac{dc}{dt} = \frac{1}{\sigma}\left(f'(k) - \delta - \rho\right) c$$
-$$\frac{dk}{dt} = f(k) - \delta k - c$$
+**Solow growth.** Capital per worker follows
+$$
+\dot{k}(t)=s f(k(t))-(n+\delta)k(t),
+$$
+where $s$ is the constant saving rate, $n$ is population growth, and $\delta$ is
+depreciation. The steady state solves $s f(k_S^{*})=(n+\delta)k_S^{*}$. With
+Cobb-Douglas production,
+$$
+k_S^{*}=\left(\frac{s}{n+\delta}\right)^{1/(1-\alpha)}.
+$$
+For the numerical check, transform $z(t)=k(t)^{1-\alpha}$. Then
+$$
+z(t)=z^{*}+(z_0-z^{*})\exp[-(1-\alpha)(n+\delta)t],
+\qquad z^{*}=(k_S^{*})^{1-\alpha}.
+$$
 
-**Lotka-Volterra Predator-Prey:**
-$$\frac{dx}{dt} = \alpha x - \beta x y, \qquad \frac{dy}{dt} = \delta x y - \gamma y$$
+**Ramsey optimal growth.** A representative household chooses consumption, so
+capital accumulation is paired with the Euler equation:
+$$
+\dot{k}(t)=f(k(t))-\delta k(t)-c(t),
+\qquad
+\dot{c}(t)=\frac{1}{\sigma}\left[f'(k(t))-\delta-\rho\right]c(t).
+$$
+Here $\rho$ is the continuous-time discount rate and $\sigma$ is CRRA risk
+aversion. The interior steady state satisfies
+$$
+f'(k_R^{*})=\delta+\rho,
+\qquad
+c_R^{*}=f(k_R^{*})-\delta k_R^{*}.
+$$
+
+**Lotka-Volterra cycles.** Let $x$ be prey and $y$ be predators:
+$$
+\dot{x}(t)=a x(t)-b x(t)y(t),
+\qquad
+\dot{y}(t)=d x(t)y(t)-g y(t).
+$$
+The interior steady state is $(x^{*},y^{*})=(g/d,a/b)$. The conserved quantity
+$$
+H(x,y)=d x-g\log x+b y-a\log y
+$$
+is constant along the exact orbit, which gives a useful diagnostic for the
+integrated path.
 
 ## Model Setup
 
-| Parameter | Value | Description |
-|-----------|-------|-------------|
-| $\alpha$ | 0.3 | Capital share (Cobb-Douglas) |
+The growth examples use the same Cobb-Douglas technology so the difference between Solow and Ramsey comes from behavior, not from production. Solow fixes the saving rate at $s$; Ramsey lets consumption jump to satisfy the Euler equation and the transversality condition.
+
+| Object | Value | Role |
+|---|---:|---|
+| $\alpha$ | 0.3 | Capital share in $f(k)=k^\alpha$ |
 | $\delta$ | 0.05 | Depreciation rate |
-| $s$ | 0.3 | Savings rate (Solow) |
-| $n$ | 0.02 | Population growth rate (Solow) |
-| $\rho$ | 0.04 | Discount rate (Ramsey) |
-| $\sigma$ | 2.0 | CRRA coefficient (Ramsey) |
-| Solver | `solve_ivp` (RK45) | Adaptive Runge-Kutta 4(5) |
+| $s$ | 0.3 | Exogenous Solow saving rate |
+| $n$ | 0.02 | Solow population growth rate |
+| $\rho$ | 0.04 | Ramsey discount rate |
+| $\sigma$ | 2.0 | Ramsey CRRA coefficient |
+| Solow horizon | 200 | Years of forward integration |
+| Ramsey horizon | 300 | Terminal horizon for shooting |
+| ODE solver | `RK45` | Adaptive Runge-Kutta through `solve_ivp` |
 
 ## Solution Method
 
-All ODE systems are solved using `scipy.integrate.solve_ivp` with the RK45 (Dormand-Prince) adaptive step-size method, using tight tolerances (`rtol=1e-10`, `atol=1e-12`).
+The numerical work is simple on purpose. The main economic object is the law of motion, and the solver is only the way we trace it. `solve_ivp` uses adaptive RK45 with `rtol=1e-10` and `atol=1e-12`. For Solow, the integrated path is checked against the closed-form transformation above; the largest absolute difference on the plotted grid is `2.26e-09`.
 
-**Solow model:** Direct forward integration from various initial conditions. The single ODE has a unique, globally stable steady state.
+For Ramsey, the issue is not local integration. It is choosing the initial jump variable. Starting from a given $k_0$, too much $c_0$ runs capital down; too little $c_0$ over-accumulates capital. Bisection turns that economic ordering into a shooting algorithm.
 
-**Ramsey model:** The steady state is a *saddle point* -- most initial conditions diverge. We use a **shooting method** (bisection on initial consumption $c_0$) to find the unique saddle path that converges to $(k^{*}, c^{*})$. For each candidate $c_0$, we integrate forward and check whether the trajectory approaches or diverges from the steady state.
+```text
+Inputs: k0, bounds [c_low, c_high], horizon T, steady state (k_R^{*}, c_R^{*})
+repeat until the terminal path is close to (k_R^{*}, c_R^{*}):
+    set c0 = (c_low + c_high) / 2
+    integrate (k_dot, c_dot) forward from (k0, c0) to T
+    if terminal capital is above k_R^{*}: raise consumption, so c_low = c0
+    if terminal capital is below k_R^{*}: lower consumption, so c_high = c0
+return c0 and the implied saddle path
+```
 
-**Lotka-Volterra:** Direct forward integration reveals perpetual cycles (the system has a conserved quantity, so orbits are closed curves in the phase plane).
+The Lotka-Volterra example uses the same forward integration idea but has a different qualitative object: a closed orbit around the interior steady state. The conserved quantity $H(x,y)$ drifts by only `1.34e-10` over the simulated path, which is a compact check that the numerical orbit is not spuriously damping out.
 
 ## Results
 
-<img src="figures/solow-phase-diagram.png" alt="Solow growth model: phase diagram (left) and convergence dynamics (right)" width="80%">
-*Solow growth model: phase diagram (left) and convergence dynamics (right)*
+In Solow, the phase diagram is already the economic argument. Below $k_S^{*}$, investment exceeds break-even investment and $\dot{k}>0$; above it, depreciation and dilution dominate and $\dot{k}<0$. The time paths on the right simply trace that sign logic forward. The dotted closed-form benchmark lies on top of the numerical path for the lowest initial capital stock, which is a direct check on the ODE integration rather than a separate calibration result.
 
-<img src="figures/ramsey-phase-diagram.png" alt="Ramsey optimal growth: phase diagram with nullclines, vector field, and saddle paths from multiple initial conditions" width="80%">
-*Ramsey optimal growth: phase diagram with nullclines, vector field, and saddle paths from multiple initial conditions*
+<img src="figures/solow-phase-diagram.png" alt="Solow phase diagram and capital paths" width="80%">
 
-<img src="figures/lotka-volterra-cycles.png" alt="Lotka-Volterra predator-prey: time series (left) and phase portrait showing closed orbits (right)" width="80%">
-*Lotka-Volterra predator-prey: time series (left) and phase portrait showing closed orbits (right)*
+Ramsey growth changes the problem because consumption is a jump variable. The blue curve is the $\dot{k}=0$ locus and the green line is the $\dot{c}=0$ locus. Their intersection is not globally attracting. For each plotted $k_0$, the shooting routine picks the one $c_0$ that puts the economy on the stable arm; nearby initial consumption choices would leave the phase plane in the wrong direction.
 
-<img src="figures/ramsey-time-paths.png" alt="Ramsey model: time paths of capital k(t) and consumption c(t) along saddle paths" width="80%">
-*Ramsey model: time paths of capital k(t) and consumption c(t) along saddle paths*
+<img src="figures/ramsey-phase-diagram.png" alt="Ramsey phase diagram with shooting paths" width="80%">
+
+The third system is here to keep the reader honest about phase diagrams. A two-equation ODE does not imply convergence. Here the state moves around the interior steady state because prey abundance raises predator growth, predators then reduce prey, and the cycle repeats. The conserved-quantity drift reported above is small, so the closed orbit is a property of the model rather than a plotting artifact.
+
+<img src="figures/lotka-volterra-cycles.png" alt="Lotka-Volterra time paths and phase portrait" width="80%">
+
+The Ramsey time paths make the phase diagram easier to read. Low-capital economies have high marginal products and accumulate quickly, but consumption cannot be chosen independently period by period. It moves smoothly according to the Euler equation, with the initial level pinned down by the saddle-path condition.
+
+<img src="figures/ramsey-time-paths.png" alt="Ramsey capital and consumption saddle paths" width="80%">
+
+The steady-state table is mostly a normalization check. Solow and Ramsey share the production technology but settle at different capital stocks because the saving rule is different. Ramsey capital is pinned down by the modified golden-rule condition $f'(k_R^{*})=\delta+\rho$, while Solow capital is pinned down by exogenous saving.
 
 **Steady-State Values for Each Model**
 
@@ -68,25 +121,12 @@ All ODE systems are solved using `scipy.integrate.solve_ivp` with the RK45 (Dorm
 | Ramsey Optimal Growth | k*            |  5.5843 | (alpha/(delta+rho))^(1/(1-alpha)) |
 | Ramsey Optimal Growth | y*            |  1.6753 | f(k*) = k*^alpha                  |
 | Ramsey Optimal Growth | c*            |  1.3961 | f(k*) - delta*k*                  |
-| Lotka-Volterra        | x* (prey)     |  4      | gamma/delta                       |
-| Lotka-Volterra        | y* (predator) |  2.75   | alpha/beta                        |
+| Lotka-Volterra        | x* (prey)     |  4      | g/d                               |
+| Lotka-Volterra        | y* (predator) |  2.75   | a/b                               |
 
 ## Takeaway
 
-These three examples illustrate the rich dynamics that arise from continuous-time economic models:
-
-**Key insights:**
-- **Solow model:** The steady state is *globally stable* -- regardless of initial capital, the economy converges to $k^{*}$. The phase diagram (a single curve crossing zero) makes this immediately transparent.
-- **Ramsey model:** The steady state is a *saddle point*. Only one trajectory (the saddle path) converges; all others diverge. This reflects the forward-looking nature of optimal consumption: the agent must choose exactly the right initial consumption to satisfy the transversality condition.
-- **Shooting method:** Finding saddle paths numerically requires a shooting approach -- bisecting over initial conditions until convergence is achieved. This is a fundamental technique in computational economics.
-- **Lotka-Volterra:** The closed orbits (limit cycles) demonstrate that nonlinear ODE systems can exhibit qualitatively different behavior (cycles vs. convergence). Phase diagrams reveal this structure at a glance.
-- **Phase diagrams as tools:** Nullclines partition the phase space into regions with qualitatively different dynamics. Combined with vector fields, they provide complete qualitative understanding before any numerical solution is computed.
-
-## Reproduce
-
-```bash
-python run.py
-```
+The useful lesson is not that continuous-time models require a special solver. It is that the law of motion already contains most of the economics. In Solow, one state and one sign condition give global convergence. In Ramsey, the same production side becomes a saddle-path problem once consumption is forward looking. In the nonlinear population system, the same phase-plane tools reveal cycles instead of convergence. A good ODE computation therefore starts by asking what motion the model implies, then uses numerical integration and diagnostics to trace that motion accurately.
 
 ## References
 
