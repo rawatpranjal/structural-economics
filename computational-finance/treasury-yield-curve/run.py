@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Treasury yield-curve snapshots from bundled static data."""
+"""Treasury yield-curve snapshots from static data."""
 from __future__ import annotations
 
 import sys
@@ -19,7 +19,7 @@ MATURITY_YEARS = np.array([0.25, 0.5, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 30.0])
 
 
 def load_treasury_data() -> pd.DataFrame:
-    """Load the static Treasury-rate snapshot bundled with this chapter."""
+    """Load the static Treasury-rate snapshot."""
     path = Path(__file__).resolve().parents[1] / "_data" / "daily-treasury-rates.csv"
     df = pd.read_csv(path)
     df["Date"] = pd.to_datetime(df["Date"], format="%m/%d/%Y")
@@ -67,26 +67,33 @@ def main() -> None:
     )
 
     report.add_overview(
-        "The source notebook plotted Treasury yields from online tickers and from a local CSV. "
-        "This chapter uses only the bundled CSV so the tutorial is reproducible without a "
-        "network call.\n\n"
-        "The data are a 1990 teaching snapshot of Treasury constant-maturity rates. Treasury "
-        "constant-maturity rates should be interpreted as par-yield-curve rates derived from "
-        "market quotes and interpolation, not as raw transaction yields for one traded bond."
+        "A yield curve records interest rates by maturity on a given date. Its level describes "
+        "the broad height of rates, its slope compares long and short maturities, and its "
+        "curvature captures how middle maturities sit relative to the ends of the curve.\n\n"
+        "The data are a static 1990 Treasury CMT snapshot. Treasury constant-maturity rates "
+        "should be interpreted as par-yield-curve rates derived from market quotes and "
+        "interpolation, not as raw transaction yields for one traded bond."
     )
 
     report.add_equations(
         r"""
+One compact level measure is the ten-year yield:
+
+$$
+\text{Level}_t = y_{10,t}.
+$$
+
 A simple slope measure compares a long maturity with a short maturity:
 
 $$
 \text{Slope}_t = y_{10,t} - y_{3m,t}.
 $$
 
-A simple long-end spread compares two longer maturities:
+A simple curvature measure compares the five-year yield with the line between
+two-year and ten-year yields:
 
 $$
-\text{LongSpread}_t = y_{30,t} - y_{10,t}.
+\text{Curvature}_t = 2 y_{5,t} - y_{2,t} - y_{10,t}.
 $$
 
 These are descriptive statistics. They summarize curve shape but do not by
@@ -97,17 +104,17 @@ themselves identify risk premia or expected future short rates.
     report.add_model_setup(
         f"| Object | Value |\n"
         f"|--------|-------|\n"
-        f"| Data source | Bundled source-repo Treasury CSV |\n"
+        f"| Data | Static 1990 Treasury CMT snapshot |\n"
         f"| Date range | {df['Date'].min().date()} to {df['Date'].max().date()} |\n"
         f"| Observations | {len(df)} daily rows |\n"
         f"| Maturities | {', '.join(MATURITY_COLUMNS)} |\n"
-        f"| Runtime data calls | None |"
+        f"| Measurement | Constant-maturity par-yield rates |"
     )
 
     report.add_solution_method(
-        "The script parses the CSV dates, orders the series from January to December 1990, "
-        "then treats each row as a cross-sectional curve. It reports selected curve snapshots "
-        "and computes simple term spreads over time."
+        "Dates are ordered from January to December 1990, and each daily row is treated as "
+        "a cross-sectional curve. Selected snapshots show curve shape on particular dates; "
+        "term spreads summarize how that shape moves over time."
     )
 
     fig1, ax1 = plt.subplots(figsize=(7.4, 5.2))

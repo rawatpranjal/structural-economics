@@ -6,6 +6,42 @@ used as topic provenance, not as authoritative empirical references. Two source
 notebooks are placeholders, and the Fama-Bliss notebook depends on an unavailable
 local CRSP file.
 
+## External Topic Scan: Macro_Finance
+
+Additional source scanned:
+`https://github.com/thallesqliduares/Macro_Finance`. The repository describes
+itself as notebook exercises drawn from Dixon et al. (2021), *Machine Learning
+in Finance: From Theory to Practice*, and Tsay (2005), *Analysis of Financial
+Time Series*. Treat it as a topic-discovery source, not as an authority: some
+notebooks use runtime `yfinance`/Colab calls, some are formula-only, and the PDF
+exercise files are image-like exports rather than easily auditable source text.
+
+Integration decisions:
+
+- **Asset return measurement and annualization** from
+  `AFTS/Ch1/AFTS_Ch1_Ex3.ipynb`: integrate into the existing
+  `efficient-market-tests` tutorial if that page is expanded. It is prerequisite
+  notation for return predictability, not a standalone chapter topic.
+- **MA(1), AR(1), and ARMA forecasting mechanics** from
+  `AFTS Ch2/AFTS_Ch2_Ex1.ipynb`, `Fin_ML_Ch6_Ex1.ipynb`, and
+  `Fin_ML_Ch6_Ex2.ipynb`: integrate only as a compact extension to
+  `ar1-rate-forecasting`. Do not create separate MA or ARMA tutorials unless the
+  chapter later becomes a financial-time-series chapter.
+- **Bayesian rare-event classification in finance** from
+  `Fin_ML_Ch2_Ex1.ipynb`: route to the existing `choice/bayesian-learning`
+  material or a future general diagnostic tutorial. Do not add it to
+  computational finance just because the example uses fraud screening.
+- **Runtime equity-data downloads** from the return notebook: do not use in
+  active tutorials. Use static or synthetic data.
+
+Genuinely new standalone candidate:
+
+- **Geometric Brownian motion and lognormal price distributions** from
+  `AFTS Ch6/AFTS_Ch6_Ex6.ipynb`. This could become one short tutorial on
+  log-price dynamics, arithmetic price moments, simulated paths, and confidence
+  bands. It is the only Macro_Finance item that is distinct enough to add to the
+  compact computational-finance chapter later.
+
 ## Bond Yield to Maturity
 
 - Source notebook: `01_Yeild_to_Maturity_for_Bonds.ipynb`.

@@ -6,6 +6,22 @@ Executable examples for applied structural and computational economics after the
 
 **Built with:** Python, JAX, NumPy, SciPy, Matplotlib | **License:** MIT
 
+## Contents
+
+- [Quick Start](#quick-start)
+- [How to Use This Library](#how-to-use-this-library)
+- [Dynamic Programming](#dynamic-programming)
+- [Macroeconomics](#macroeconomics)
+- [Industrial Organization](#industrial-organization)
+- [Choice and Demand](#choice-and-demand)
+- [Game Theory](#game-theory)
+- [Time Series and Data](#time-series-and-data)
+- [Computational Finance](#computational-finance)
+- [Computational Methods](#computational-methods)
+- [Structure](#structure)
+- [Other Code Repositories](#other-code-repositories)
+- [License](#license)
+
 ## Quick Start
 
 ```bash
@@ -17,11 +33,16 @@ python run.py
 
 ---
 
-## How to Use This Library
+## Contents
 
-The catalog is organized by economic subject first and numerical method second. Start with the section closest to the question you care about, then use the method column to see how the computation is being done.
-
-Each tutorial is meant to be small enough to read in one sitting. The folder contains one executable `run.py`, a generated `README.md`, figures, and optional tables. Running `python run.py` inside a tutorial folder regenerates the local report and outputs.
+- [Dynamic Programming](#dynamic-programming)
+- [Macroeconomics](#macroeconomics): [Heterogeneous Agents](#heterogeneous-agents), [DSGE and Dynare](#dsge-and-dynare), [Global Nonlinear DSGE](#global-nonlinear-dsge), [Continuous-Time Macro and Optimal Control](#continuous-time-macro-and-optimal-control)
+- [Industrial Organization](#industrial-organization)
+- [Choice and Demand](#choice-and-demand)
+- [Game Theory](#game-theory)
+- [Time Series and Data](#time-series-and-data)
+- [Computational Finance](#computational-finance)
+- [Computational Methods](#computational-methods)
 
 ---
 
@@ -210,6 +231,22 @@ python scripts/validate_catalog.py
 ```
 
 Original files are preserved in `_legacy/`.
+
+## Other Code Repositories
+
+- [QuantEcon](https://github.com/QuantEcon)
+- [Dynamic Structural Econometrics (DSE 2023)](https://github.com/dseconf/DSE2023)
+- [Chris Conlon Grad IO](https://github.com/chrisconlon/Grad-IO)
+- [EconRL](https://github.com/SimonHashtag/EconRL)
+- [CompEcon](https://github.com/fediskhakov/CompEcon)
+- [CompEcon Fall 2017](https://github.com/ScPo-CompEcon/CoursePack)
+- [EmpiricalIO](https://github.com/kohei-kawaguchi/EmpiricalIO)
+- [Quantitative Macro Models](https://github.com/hessjacob/Quantitative-Macro-Models)
+- [Archive of Empirical Dynamic Programming Research](https://github.com/CForg/Archive-of-Empirical-Dynamic-Programming-Research)
+- [Dynamical Systems](https://github.com/JuliaDynamics/DynamicalSystems.jl)
+- [Heterogeneous Agents Bayes](https://github.com/BASEforHANK)
+- [Kalman and Bayesian Filters in Python](https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python)
+- [OpenSourceEcon CompMethods](https://github.com/OpenSourceEcon/CompMethods)
 
 ## License
 

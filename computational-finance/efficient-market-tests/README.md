@@ -4,11 +4,17 @@
 
 ## Overview
 
-The source efficient-market notebook was a placeholder. This tutorial builds a small weak-form diagnostic exercise around daily ten-year Treasury yield changes.
+Weak-form efficiency asks whether information in past prices or returns predicts future returns. In this interest-rate setting, the return-like object is the daily change in the ten-year Treasury yield, so the diagnostics ask whether past yield changes forecast future yield changes.
 
-The efficient-market interpretation must be modest. These are yield changes, not fully measured asset returns, and every market-efficiency test is also a test of the maintained expected-return model and the data-generating assumptions.
+The efficient-market interpretation must be modest. Yield changes are not fully measured holding-period bond returns, and every market-efficiency test is also a test of the maintained expected-return model, sampling choices, and measurement assumptions. The data are a static 1990 Treasury CMT snapshot.
 
 ## Equations
+
+Define the daily yield change as
+
+$$
+\Delta y_t = y_t - y_{t-1}.
+$$
 
 A weak-form predictability regression is
 
@@ -31,14 +37,14 @@ The random-walk benchmark has $VR(q) = 1$.
 | Object | Value |
 |--------|-------|
 | Series | Daily 10-year Treasury yield changes |
-| Data | Bundled 1990 Treasury curve snapshot |
+| Data | Static 1990 Treasury CMT snapshot |
 | Autocorrelation lags | 1 to 20 |
 | Variance-ratio horizons | 2, 5, 10, 20 days |
 | Interpretation | Weak-form diagnostic, not a trading backtest |
 
 ## Solution Method
 
-The script computes daily yield changes, sample autocorrelations, simple variance ratios, and a one-lag predictive regression. The variance-ratio diagnostic follows the Lo-MacKinlay intuition, but this short tutorial does not implement the full heteroskedasticity-robust test statistic.
+Daily yield changes, sample autocorrelations, simple variance ratios, and a one-lag predictive regression provide complementary diagnostics. The variance-ratio diagnostic follows the Lo-MacKinlay intuition, but the exercise does not implement the full heteroskedasticity-robust test statistic.
 
 ## Results
 

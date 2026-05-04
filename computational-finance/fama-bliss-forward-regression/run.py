@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fama-Bliss-style forward-rate regressions on bundled Treasury data."""
+"""Fama-Bliss-style forward-rate regressions on static Treasury data."""
 from __future__ import annotations
 
 import sys
@@ -103,17 +103,18 @@ def main() -> None:
 
     report = ModelReport(
         "Fama-Bliss-Style Forward Regressions",
-        "A small term-structure predictability exercise using bundled Treasury curve data.",
+        "A small term-structure predictability exercise using a static Treasury CMT snapshot.",
     )
 
     report.add_overview(
-        "Fama and Bliss ask whether long-maturity forward rates contain information about "
-        "future interest rates and bond returns. The old notebook aimed in this direction, "
-        "but it depended on an unavailable local CRSP bond file.\n\n"
-        "This tutorial is therefore a teaching analogue, not a replication. It uses the "
-        "bundled Treasury curve snapshot, approximates forward rates from observed par-yield "
-        "maturities, and asks whether the forward-minus-short spread predicts future yield "
-        "changes over a short horizon."
+        "The expectations hypothesis links long rates and forward rates to expected future "
+        "short rates, with risk premia determining how far the link is from a one-for-one "
+        "prediction. Fama and Bliss use this idea to ask whether long-maturity forward rates "
+        "contain information about future interest rates and bond returns.\n\n"
+        "The data here are a static 1990 Treasury CMT snapshot, not the CRSP zero-coupon "
+        "bond panel needed for a full Fama-Bliss replication. The exercise approximates "
+        "forward rates from observed par-yield maturities and asks whether the "
+        "forward-minus-short spread predicts future yield changes over a short horizon."
     )
 
     report.add_equations(
@@ -126,7 +127,7 @@ $$
 f_t^{{1,n}} = \frac{{n y_t^n - y_t^1}}{{n-1}}.
 $$
 
-The teaching regression is
+The predictive regression is
 
 $$
 y_{{t+h}}^n - y_t^n = \alpha_n + \beta_n (f_t^{{1,n}} - y_t^1) + \epsilon_{{t+h}}^n,
@@ -139,17 +140,17 @@ with $h = {HORIZON_DAYS}$ trading days in this static dataset.
     report.add_model_setup(
         f"| Object | Value |\n"
         f"|--------|-------|\n"
-        f"| Data | Bundled 1990 Treasury curve snapshot |\n"
+        f"| Data | Static 1990 Treasury CMT snapshot |\n"
         f"| Short rate | 1-year CMT rate |\n"
         f"| Long maturities | {', '.join(MATURITY_MAP.keys())} |\n"
         f"| Forecast horizon | {HORIZON_DAYS} trading days |\n"
-        f"| Replication status | Teaching analogue, not full Fama-Bliss replication |"
+        f"| Data limitation | CMT snapshot, not full Fama-Bliss replication |"
     )
 
     report.add_solution_method(
-        "The script converts percentage yields to decimal rates, approximates forward rates "
-        "from one-year and longer-maturity yields, and runs separate OLS regressions by "
-        "maturity. Because the data are par-yield CMT rates and cover only one year, the "
+        "Percentage yields are converted to decimal rates, forward rates are approximated "
+        "from one-year and longer-maturity yields, and separate OLS regressions are estimated "
+        "by maturity. Because the data are par-yield CMT rates and cover only one year, the "
         "results should be read as mechanics and diagnostics rather than a published-style "
         "bond-risk-premium estimate."
     )
@@ -171,8 +172,8 @@ with $h = {HORIZON_DAYS}$ trading days in this static dataset.
         fig1,
         description=(
             f"For the ten-year maturity, the fitted slope is {beta_10:.2f} and the R-squared "
-            f"is {r2_10:.3f}. The point is the regression setup, not a claim that this short "
-            "snapshot establishes a stable term-structure premium."
+            f"is {r2_10:.3f}. The fitted relationship illustrates the regression mechanics; "
+            "the short snapshot does not establish a stable term-structure premium."
         ),
     )
 
@@ -203,9 +204,9 @@ with $h = {HORIZON_DAYS}$ trading days in this static dataset.
 
     report.add_takeaway(
         "Forward rates are not just curve decoration: they can be used as predictors in "
-        "term-structure regressions. But the interpretation is delicate. With this bundled "
-        "snapshot, the honest takeaway is how to set up the regression and what cautions "
-        "attach to it, not a full Fama-Bliss or Cochrane-Piazzesi replication."
+        "term-structure regressions. But the interpretation is delicate. With this static "
+        "snapshot, the result is a compact predictability exercise with clear data limits, "
+        "not a full Fama-Bliss or Cochrane-Piazzesi replication."
     )
     report.add_references(
         [

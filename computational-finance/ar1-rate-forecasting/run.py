@@ -15,7 +15,7 @@ from lib.plotting import setup_style
 
 
 def load_ten_year() -> pd.DataFrame:
-    """Load the ten-year Treasury yield from the static source dataset."""
+    """Load the ten-year Treasury yield from the static Treasury CMT dataset."""
     path = Path(__file__).resolve().parents[1] / "_data" / "daily-treasury-rates.csv"
     df = pd.read_csv(path)
     df["Date"] = pd.to_datetime(df["Date"], format="%m/%d/%Y")
@@ -106,12 +106,15 @@ def main() -> None:
     )
 
     report.add_overview(
-        "The source AR(1) notebook was a placeholder. This tutorial turns the topic into a "
-        "small forecasting benchmark using the ten-year Treasury yield from the bundled "
-        "static data.\n\n"
-        "The goal is not to build a complete term-structure model. The goal is to show what "
-        "an AR(1) forecast means, how persistence enters the one-step prediction, and why a "
-        "simple no-change forecast is a serious benchmark for persistent interest rates."
+        "Interest rates are often highly persistent: today's level contains substantial "
+        "information about tomorrow's level. An AR(1) model puts that persistence in one "
+        "coefficient, which controls how much the current yield carries into the next "
+        "one-step prediction.\n\n"
+        "Because rates move slowly at daily horizons, the no-change forecast is the natural "
+        "benchmark. A fitted autoregression has to improve on the forecast that simply sets "
+        "tomorrow's yield equal to today's yield. The data are a static 1990 Treasury CMT "
+        "snapshot, so the exercise is a compact benchmark rather than a full term-structure "
+        "forecasting model."
     )
 
     report.add_equations(
@@ -140,16 +143,16 @@ $$
         f"| Object | Value |\n"
         f"|--------|-------|\n"
         f"| Series | 10-year Treasury yield |\n"
-        f"| Data | Bundled 1990 Treasury curve snapshot |\n"
+        f"| Data | Static 1990 Treasury CMT snapshot |\n"
         f"| Training share | 70% |\n"
         f"| Estimated $\\rho$ | {params['rho']:.3f} |\n"
         f"| Benchmark | No-change forecast $y_{{t+1}} = y_t$ |"
     )
 
     report.add_solution_method(
-        "The script estimates the AR(1) coefficients by least squares on the first 70% of "
-        "the sample. It then evaluates rolling one-step forecasts on the remaining dates. "
-        "The comparison forecast simply sets tomorrow's yield equal to today's yield."
+        "AR(1) coefficients are estimated by least squares on the first 70% of the sample. "
+        "Rolling one-step forecasts are evaluated on the remaining dates. The comparison "
+        "forecast simply sets tomorrow's yield equal to today's yield."
     )
 
     fig1, ax1 = plt.subplots(figsize=(7.4, 5.2))
@@ -166,8 +169,8 @@ $$
         fig1,
         description=(
             "With highly persistent rates, AR(1) and no-change forecasts can be close. That "
-            "is an empirical feature, not a coding failure: persistence makes simple "
-            "benchmarks hard to beat at short horizons."
+            "is an empirical feature: persistence makes simple benchmarks hard to beat at "
+            "short horizons."
         ),
     )
 

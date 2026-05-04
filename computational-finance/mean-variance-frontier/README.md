@@ -4,9 +4,9 @@
 
 ## Overview
 
-The source notebook simulated random portfolio weights. This tutorial keeps that intuition but adds the analytic Markowitz frontier so the geometry is clear.
+Markowitz portfolio choice formalizes the risk-return tradeoff. Expected return is a weighted average of asset means, while risk depends on the full covariance matrix. Diversification comes from imperfect co-movement, not from low standalone volatility alone.
 
-The inputs are synthetic annual expected returns, volatilities, and correlations. They are chosen for teaching, not investment advice. The important lesson is that risk depends on covariances and that the frontier is highly sensitive to estimated means and covariances.
+The inputs are stylized annual expected returns, volatilities, and correlations. Random long-only portfolios show the constrained feasible set; the analytic Markowitz frontier shows the unconstrained minimum-variance portfolio for each target return. The practical caveat is central: frontiers are highly sensitive to estimated means and covariances.
 
 ## Equations
 
@@ -31,6 +31,10 @@ $$
 w^\top \mu = \mu_p,\quad w^\top \mathbf{1} = 1.
 $$
 
+A long-only constrained version adds $w_i \geq 0$ for every asset. The
+unconstrained frontier is analytically convenient, but it can imply short or
+levered positions.
+
 ## Model Setup
 
 | Asset | Expected return | Volatility |
@@ -43,7 +47,7 @@ $$
 
 ## Solution Method
 
-The script simulates random long-only portfolios from a Dirichlet distribution and computes their mean, variance, and Sharpe ratio. It also solves the unconstrained Markowitz formulas for the global minimum-variance portfolio, the tangency portfolio, and the continuous frontier.
+Random long-only portfolios are simulated from a Dirichlet distribution and assigned their mean, variance, and Sharpe ratio. The unconstrained Markowitz formulas then give the global minimum-variance portfolio, the tangency portfolio, and the continuous frontier.
 
 ## Results
 

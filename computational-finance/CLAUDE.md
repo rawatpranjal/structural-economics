@@ -24,6 +24,8 @@ finance references.
 - Keep examples short and inspectable.
 - Put data cautions in the generated report when interpretation depends on a
   static or simplified dataset.
+- Keep non-executable topic ideas in `docs/superpowers/specs/`, not in the root
+  catalog. The root README should list only runnable tutorials.
 
 ## Key economics
 - Yield to maturity is the internal rate that prices promised cash flows.
@@ -34,3 +36,13 @@ finance references.
   return model.
 - Mean-variance frontiers depend on covariance estimates and are sensitive to
   inputs.
+
+## Candidate extensions
+- Integrate return measurement into `efficient-market-tests` if needed; do not
+  make a separate returns-only tutorial.
+- Integrate MA/ARMA mechanics into `ar1-rate-forecasting` only as a compact
+  extension; do not create separate MA or ARMA tutorials in this compact chapter.
+- Route Bayesian rare-event screening to `choice/bayesian-learning` or a general
+  diagnostics tutorial, not computational finance.
+- Keep geometric Brownian motion as the only standalone Macro_Finance-derived
+  candidate for this chapter.

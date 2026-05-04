@@ -4,9 +4,9 @@
 
 ## Overview
 
-Yield to maturity is the discount rate that makes the present value of a bond's promised payments equal to its current price. That makes it a useful summary rate, but it is not a guaranteed realized return unless the promised payments arrive and the holding-period assumptions are satisfied.
+Fixed-income instruments are claims to dated cash flows. Once a price and a set of promised payments are specified, valuation becomes a present-value problem: discount future dollars until their value matches the price paid today.
 
-The source notebook listed several debt instruments separately. This version puts them in one cash-flow representation so the same present-value logic handles simple loans, discount bonds, fixed-payment loans, coupon bonds, and arbitrary cash flows.
+Yield to maturity is the single discount rate that rationalizes that price. It is a useful summary because the same equation handles simple loans, discount bonds, fixed-payment loans, coupon bonds, and arbitrary cash-flow streams. It is not a guaranteed realized return unless promised payments arrive and the holding-period assumptions are satisfied.
 
 ## Equations
 
@@ -43,7 +43,7 @@ $$
 
 ## Solution Method
 
-All finite instruments are converted into payment times and cash-flow amounts. For a candidate yield, the script discounts each cash flow and compares the sum with the observed price. The YTM is found with a scalar root finder. The plots then hold the cash-flow schedule fixed while varying price, coupon, or yield.
+All finite instruments are converted into payment times and cash-flow amounts. For a candidate yield, each cash flow is discounted and the sum is compared with the observed price. The YTM is found with a scalar root finder. The plots then hold the cash-flow schedule fixed while varying price, coupon, or yield.
 
 ## Results
 
@@ -57,7 +57,7 @@ For the same 6% coupon bond, a price below par implies a YTM above the coupon ra
 ![Yield to maturity implied by price](figures/implied-yield-by-price.png)
 *Yield to maturity implied by price*
 
-The same present-value equation handles the source notebook's different debt instruments once each one is written as cash flows.
+The same present-value equation handles different debt instruments once each one is written as a price and a sequence of promised cash flows.
 
 **Yield-to-maturity examples**
 

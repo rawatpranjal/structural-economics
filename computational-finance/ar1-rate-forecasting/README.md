@@ -4,9 +4,9 @@
 
 ## Overview
 
-The source AR(1) notebook was a placeholder. This tutorial turns the topic into a small forecasting benchmark using the ten-year Treasury yield from the bundled static data.
+Interest rates are often highly persistent: today's level contains substantial information about tomorrow's level. An AR(1) model puts that persistence in one coefficient, which controls how much the current yield carries into the next one-step prediction.
 
-The goal is not to build a complete term-structure model. The goal is to show what an AR(1) forecast means, how persistence enters the one-step prediction, and why a simple no-change forecast is a serious benchmark for persistent interest rates.
+Because rates move slowly at daily horizons, the no-change forecast is the natural benchmark. A fitted autoregression has to improve on the forecast that simply sets tomorrow's yield equal to today's yield. The data are a static 1990 Treasury CMT snapshot, so the exercise is a compact benchmark rather than a full term-structure forecasting model.
 
 ## Equations
 
@@ -33,18 +33,18 @@ $$
 | Object | Value |
 |--------|-------|
 | Series | 10-year Treasury yield |
-| Data | Bundled 1990 Treasury curve snapshot |
+| Data | Static 1990 Treasury CMT snapshot |
 | Training share | 70% |
 | Estimated $\rho$ | 0.944 |
 | Benchmark | No-change forecast $y_{t+1} = y_t$ |
 
 ## Solution Method
 
-The script estimates the AR(1) coefficients by least squares on the first 70% of the sample. It then evaluates rolling one-step forecasts on the remaining dates. The comparison forecast simply sets tomorrow's yield equal to today's yield.
+AR(1) coefficients are estimated by least squares on the first 70% of the sample. Rolling one-step forecasts are evaluated on the remaining dates. The comparison forecast simply sets tomorrow's yield equal to today's yield.
 
 ## Results
 
-With highly persistent rates, AR(1) and no-change forecasts can be close. That is an empirical feature, not a coding failure: persistence makes simple benchmarks hard to beat at short horizons.
+With highly persistent rates, AR(1) and no-change forecasts can be close. That is an empirical feature: persistence makes simple benchmarks hard to beat at short horizons.
 
 ![Observed ten-year yield and one-step forecasts](figures/ar1-forecast.png)
 *Observed ten-year yield and one-step forecasts*

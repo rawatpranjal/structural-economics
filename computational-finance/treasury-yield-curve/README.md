@@ -4,11 +4,17 @@
 
 ## Overview
 
-The source notebook plotted Treasury yields from online tickers and from a local CSV. This chapter uses only the bundled CSV so the tutorial is reproducible without a network call.
+A yield curve records interest rates by maturity on a given date. Its level describes the broad height of rates, its slope compares long and short maturities, and its curvature captures how middle maturities sit relative to the ends of the curve.
 
-The data are a 1990 teaching snapshot of Treasury constant-maturity rates. Treasury constant-maturity rates should be interpreted as par-yield-curve rates derived from market quotes and interpolation, not as raw transaction yields for one traded bond.
+The data are a static 1990 Treasury CMT snapshot. Treasury constant-maturity rates should be interpreted as par-yield-curve rates derived from market quotes and interpolation, not as raw transaction yields for one traded bond.
 
 ## Equations
+
+One compact level measure is the ten-year yield:
+
+$$
+\text{Level}_t = y_{10,t}.
+$$
 
 A simple slope measure compares a long maturity with a short maturity:
 
@@ -16,10 +22,11 @@ $$
 \text{Slope}_t = y_{10,t} - y_{3m,t}.
 $$
 
-A simple long-end spread compares two longer maturities:
+A simple curvature measure compares the five-year yield with the line between
+two-year and ten-year yields:
 
 $$
-\text{LongSpread}_t = y_{30,t} - y_{10,t}.
+\text{Curvature}_t = 2 y_{5,t} - y_{2,t} - y_{10,t}.
 $$
 
 These are descriptive statistics. They summarize curve shape but do not by
@@ -29,15 +36,15 @@ themselves identify risk premia or expected future short rates.
 
 | Object | Value |
 |--------|-------|
-| Data source | Bundled source-repo Treasury CSV |
+| Data | Static 1990 Treasury CMT snapshot |
 | Date range | 1990-01-02 to 1990-12-31 |
 | Observations | 250 daily rows |
 | Maturities | 3 Mo, 6 Mo, 1 Yr, 2 Yr, 3 Yr, 5 Yr, 7 Yr, 10 Yr, 30 Yr |
-| Runtime data calls | None |
+| Measurement | Constant-maturity par-yield rates |
 
 ## Solution Method
 
-The script parses the CSV dates, orders the series from January to December 1990, then treats each row as a cross-sectional curve. It reports selected curve snapshots and computes simple term spreads over time.
+Dates are ordered from January to December 1990, and each daily row is treated as a cross-sectional curve. Selected snapshots show curve shape on particular dates; term spreads summarize how that shape moves over time.
 
 ## Results
 

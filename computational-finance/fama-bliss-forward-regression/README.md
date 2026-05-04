@@ -1,12 +1,12 @@
 # Fama-Bliss-Style Forward Regressions
 
-> A small term-structure predictability exercise using bundled Treasury curve data.
+> A small term-structure predictability exercise using a static Treasury CMT snapshot.
 
 ## Overview
 
-Fama and Bliss ask whether long-maturity forward rates contain information about future interest rates and bond returns. The old notebook aimed in this direction, but it depended on an unavailable local CRSP bond file.
+The expectations hypothesis links long rates and forward rates to expected future short rates, with risk premia determining how far the link is from a one-for-one prediction. Fama and Bliss use this idea to ask whether long-maturity forward rates contain information about future interest rates and bond returns.
 
-This tutorial is therefore a teaching analogue, not a replication. It uses the bundled Treasury curve snapshot, approximates forward rates from observed par-yield maturities, and asks whether the forward-minus-short spread predicts future yield changes over a short horizon.
+The data here are a static 1990 Treasury CMT snapshot, not the CRSP zero-coupon bond panel needed for a full Fama-Bliss replication. The exercise approximates forward rates from observed par-yield maturities and asks whether the forward-minus-short spread predicts future yield changes over a short horizon.
 
 ## Equations
 
@@ -18,7 +18,7 @@ $$
 f_t^{1,n} = \frac{n y_t^n - y_t^1}{n-1}.
 $$
 
-The teaching regression is
+The predictive regression is
 
 $$
 y_{t+h}^n - y_t^n = \alpha_n + \beta_n (f_t^{1,n} - y_t^1) + \epsilon_{t+h}^n,
@@ -30,19 +30,19 @@ with $h = 20$ trading days in this static dataset.
 
 | Object | Value |
 |--------|-------|
-| Data | Bundled 1990 Treasury curve snapshot |
+| Data | Static 1990 Treasury CMT snapshot |
 | Short rate | 1-year CMT rate |
 | Long maturities | 2 Yr, 3 Yr, 5 Yr, 7 Yr, 10 Yr, 30 Yr |
 | Forecast horizon | 20 trading days |
-| Replication status | Teaching analogue, not full Fama-Bliss replication |
+| Data limitation | CMT snapshot, not full Fama-Bliss replication |
 
 ## Solution Method
 
-The script converts percentage yields to decimal rates, approximates forward rates from one-year and longer-maturity yields, and runs separate OLS regressions by maturity. Because the data are par-yield CMT rates and cover only one year, the results should be read as mechanics and diagnostics rather than a published-style bond-risk-premium estimate.
+Percentage yields are converted to decimal rates, forward rates are approximated from one-year and longer-maturity yields, and separate OLS regressions are estimated by maturity. Because the data are par-yield CMT rates and cover only one year, the results should be read as mechanics and diagnostics rather than a published-style bond-risk-premium estimate.
 
 ## Results
 
-For the ten-year maturity, the fitted slope is -0.35 and the R-squared is 0.261. The point is the regression setup, not a claim that this short snapshot establishes a stable term-structure premium.
+For the ten-year maturity, the fitted slope is -0.35 and the R-squared is 0.261. The fitted relationship illustrates the regression mechanics; the short snapshot does not establish a stable term-structure premium.
 
 ![Ten-year forward-spread predictability regression](figures/forward-regression-10y.png)
 *Ten-year forward-spread predictability regression*
@@ -65,7 +65,7 @@ A predictive regression can fit broad movement without becoming a trading rule. 
 
 ## Takeaway
 
-Forward rates are not just curve decoration: they can be used as predictors in term-structure regressions. But the interpretation is delicate. With this bundled snapshot, the honest takeaway is how to set up the regression and what cautions attach to it, not a full Fama-Bliss or Cochrane-Piazzesi replication.
+Forward rates are not just curve decoration: they can be used as predictors in term-structure regressions. But the interpretation is delicate. With this static snapshot, the result is a compact predictability exercise with clear data limits, not a full Fama-Bliss or Cochrane-Piazzesi replication.
 
 ## Reproduce
 
