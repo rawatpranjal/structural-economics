@@ -296,7 +296,7 @@ $$
 
     report.add_references(
         [
-            "Chang, M. ECON 609 lecture slides: Linearization and Perturbation.",
+            "[Blanchard, O. J. and Kahn, C. M. (1980). The Solution of Linear Difference Models under Rational Expectations. *Econometrica*, 48(5), 1305-1311.](https://doi.org/10.2307/1912186)",
             "[Judd, K. L. (1998). *Numerical Methods in Economics*. MIT Press.](https://mitpress.mit.edu/9780262100717/numerical-methods-in-economics/)",
             "[Schmitt-Grohe, S. and Uribe, M. (2004). Solving Dynamic General Equilibrium Models Using a Second-Order Approximation to the Policy Function. *Journal of Economic Dynamics and Control*, 28(4), 755-775.](https://doi.org/10.1016/S0165-1889(03)00043-5)",
         ]

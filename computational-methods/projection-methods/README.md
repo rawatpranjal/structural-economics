@@ -98,6 +98,6 @@ python run.py
 
 ## References
 
-- Chang, M. ECON 609 lecture slides: Projection.
+- [Judd, K. L. (1992). Projection Methods for Solving Aggregate Growth Models. *Journal of Economic Theory*, 58(2), 410-452.](https://doi.org/10.1016/0022-0531(92)90061-L)
 - [Judd, K. L. (1998). *Numerical Methods in Economics*. MIT Press.](https://mitpress.mit.edu/9780262100717/numerical-methods-in-economics/)
 - [Miranda, M. J. and Fackler, P. L. (2002). *Applied Computational Economics and Finance*. MIT Press.](https://mitpress.mit.edu/9780262633093/applied-computational-economics-and-finance/)
