@@ -1,6 +1,8 @@
-# After Quant Econ
+# Computational Economics
 
-This repository is for graduate students and researchers in economics, business, public policy, finance, and neighboring quantitative fields who want executable examples after the standard first pass through quantitative economics.
+This repository is for graduate students and researchers in economics, business, public policy, finance, and neighboring quantitative fields who want executable examples of computational economics.
+
+It is independent from QuantEcon, but it is written for a similar audience: readers who already have the standard foundations and want short, self-contained examples that push further into structural modeling, computational macro, IO, demand, finance, and numerical methods.
 
 The tutorials are organized around economic questions first: dynamic programming, computational macro, industrial organization, revealed preference and demand, computational game theory, time series, finance, and numerical methods. Each example is meant to be readable in one sitting and runnable from its folder with `python run.py`, producing a short report with equations, computation, figures, and takeaways.
 

@@ -1,8 +1,8 @@
 # Internal Glossary
 
 This file is an internal reference for contributors and agents working in the
-`After Quant Econ` repository. It records recurring notation, economic terms,
-computational terms, and catalog language used across active tutorials.
+`Computational Economics` repository. It records recurring notation, economic
+terms, computational terms, and catalog language used across active tutorials.
 
 It is not meant to be exhaustive. Tutorial-specific notation belongs in that
 tutorial's generated `README.md`. Use this glossary to keep new tutorials and

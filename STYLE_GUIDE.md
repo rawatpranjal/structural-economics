@@ -1,6 +1,7 @@
 # Tutorial Style Guide
 
-This file records soft writing conventions for `After Quant Econ` tutorials.
+This file records soft writing conventions for `Computational Economics`
+tutorials.
 It complements, but does not replace, `CLAUDE.md` and `GLOSSARY.md`.
 
 - `CLAUDE.md` is the contract: folder structure, required files, generated
@@ -15,10 +16,10 @@ them when the model, estimator, or source material genuinely calls for it.
 ## Reader
 
 Write for graduate students and researchers who have already made a first pass
-through Quant Econ style material. The reader knows the standard vocabulary of
-dynamic programming, equilibrium, estimation, and simulation, but still benefits
-from clear notation, explicit economic objects, and short computational
-explanations.
+through quantitative-economics or QuantEcon-style material. The reader knows the
+standard vocabulary of dynamic programming, equilibrium, estimation, and
+simulation, but still benefits from clear notation, explicit economic objects,
+and short computational explanations.
 
 Do not write as if the reader is only learning Python, NumPy, or a solver. The
 code matters because it computes an economic object.

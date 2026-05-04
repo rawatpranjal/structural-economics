@@ -1,4 +1,4 @@
-# Design Spec: Structural Economics Library Transformation
+# Design Spec: Computational Economics Library Transformation
 
 **Date:** 2026-04-07
 **Author:** Pranjal Rawat + Claude
@@ -8,7 +8,7 @@
 
 ## Context
 
-The repo `structural-economics` contains ~609 files across MATLAB, Python, Julia, and R implementing ~40-50 distinct computational/structural economics models. The code is functional but unpolished: no standardized output, inconsistent naming, no shared utilities, no project infrastructure.
+The repo `computational-economics` contains ~609 files across MATLAB, Python, Julia, and R implementing ~40-50 distinct computational/structural economics models. The code is functional but unpolished: no standardized output, inconsistent naming, no shared utilities, no project infrastructure.
 
 **Goal:** Transform this into a polished, pedagogical library where every model is:
 - Executable via a single `python run.py`
@@ -28,7 +28,7 @@ The repo `structural-economics` contains ~609 files across MATLAB, Python, Julia
 ### Repository Structure
 
 ```
-structural-economics/
+computational-economics/
 ├── README.md                          # Visual catalog hub with thumbnails
 ├── CLAUDE.md                          # Root-level Claude instructions
 ├── .gitignore                         # Comprehensive gitignore
@@ -349,7 +349,7 @@ if __name__ == "__main__":
 ## Root README.md — Visual Catalog
 
 ```markdown
-# Structural Economics: Computational Examples
+# Computational Economics
 
 A library of executable models in computational and structural economics.
 Every model is self-contained, runs with `python run.py`, and produces a
@@ -411,7 +411,7 @@ python run.py
 ### Root `CLAUDE.md`
 
 ```markdown
-# Structural Economics Library
+# Computational Economics Library
 
 ## Project Overview
 Pedagogical library of computational/structural economics models.
@@ -633,7 +633,7 @@ pandas>=2.0
 
 ```toml
 [project]
-name = "structural-economics"
+name = "computational-economics"
 version = "1.0.0"
 description = "Computational examples in structural economics"
 license = {text = "MIT"}

@@ -102,7 +102,8 @@ def build_prompt(tutorial: Path) -> str:
     rel = tutorial.relative_to(ROOT)
     return dedent(
         f"""\
-        You are working in /Users/pranjal/Code/structural-economics.
+        You are working in {ROOT}.
+        Public project name: Computational Economics.
 
         Target tutorial for this run: {rel}
 

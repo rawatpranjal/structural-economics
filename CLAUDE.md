@@ -1,4 +1,4 @@
-# After Quant Econ
+# Computational Economics
 
 ## Project Overview
 Pedagogical library of computational and structural economics models. The active
@@ -6,9 +6,11 @@ repo is a tutorial catalog, not a dump of course files. Every active model must
 live in a self-contained folder with `run.py` that regenerates `README.md`,
 `figures/`, and optional `tables/`.
 
-The public name is `After Quant Econ`: a next-step collection for readers who
-know the Quant Econ foundations and want executable structural and computational
-economics examples. Do not imply official affiliation with Quant Econ.
+The public name is `Computational Economics`: a tutorial collection for readers
+who know the standard quantitative-economics foundations and want executable
+structural and computational economics examples. It is fine to mention QuantEcon
+as related background or inspiration, but do not imply official affiliation or
+position this repo as piggybacking on that project.
 
 ## Catalog Ideology
 - Organize the public catalog by economic subject first and numerical method
