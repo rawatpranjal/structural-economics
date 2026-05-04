@@ -57,7 +57,7 @@ These tutorials focus on household heterogeneity, wealth distributions, and fast
 
 | | Tutorial | What it teaches | Method | Key Insight |
 |:---:|---|---|---|---|
-| <img src="heterogeneous-agents/vfi-deterministic/figures/thumb.png" width="192"> | [**Deterministic Consumption-Savings by VFI**](heterogeneous-agents/vfi-deterministic/) | A savings problem without income risk | VFI | With $\beta R < 1$, assets run down to zero |
+| <img src="heterogeneous-agents/vfi-deterministic/figures/thumb.png" width="192"> | [**Deterministic Saving with a Borrowing Constraint**](heterogeneous-agents/vfi-deterministic/) | Why the no-risk household problem collapses to a transition back to the asset floor | Grid VFI + exact steady state | Without income risk, $\beta R<1$ makes initial wealth temporary rather than a buffer stock |
 | <img src="heterogeneous-agents/vfi-iid-income/figures/thumb.png" width="192"> | [**IID Income Risk by VFI**](heterogeneous-agents/vfi-iid-income/) | The same savings problem with uninsurable shocks | VFI | Income risk creates a buffer-stock motive |
 | <img src="heterogeneous-agents/endogenous-grid-points/figures/thumb.png" width="192"> | [**Endogenous Grid Method for Income Risk**](heterogeneous-agents/endogenous-grid-points/) | Carroll's Euler-equation inversion for savings models | EGP | Inverting the Euler equation avoids costly root-finding |
 | <img src="heterogeneous-agents/egp-aiyagari/figures/thumb.png" width="192"> | [**Fast Aiyagari Equilibrium by EGP**](heterogeneous-agents/egp-aiyagari/) | Aiyagari general equilibrium with a faster household solver | EGP + GE bisection | EGP makes the equilibrium loop much cheaper |

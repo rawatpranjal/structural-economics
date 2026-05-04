@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
-"""Deterministic VFI Consumption-Savings Model.
+"""Deterministic consumption-savings by grid VFI.
 
-Solves the infinite-horizon consumption-savings problem with deterministic income
-using value function iteration. A single agent chooses how much to save on a
-discrete asset grid, subject to a borrowing constraint, earning a fixed interest
-rate on savings and receiving constant income each period.
-
-Reference: Kaplan (2017), HA Codes; Ljungqvist and Sargent (2018), Ch. 16.
+This tutorial solves the no-risk household problem that sits underneath many
+incomplete-market models. With constant income and beta * R < 1, the economic
+content is deliberately stark: absent income risk, an impatient household runs
+assets down to the borrowing limit.
 """
 import sys
 from pathlib import Path
@@ -18,7 +16,7 @@ from scipy.interpolate import interp1d
 
 # Add repo root to path for lib/ imports
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.plotting import setup_style, save_figure
+from lib.plotting import setup_style
 from lib.output import ModelReport
 
 
@@ -61,15 +59,16 @@ def main():
     # =========================================================================
     # Utility Function
     # =========================================================================
-    if risk_aver == 1:
-        u = lambda c: np.log(c)
-    else:
-        u = lambda c: (c ** (1 - risk_aver) - 1) / (1 - risk_aver)
+    def utility(c):
+        """CRRA utility evaluated only on positive consumption."""
+        if risk_aver == 1:
+            return np.log(c)
+        return (c ** (1 - risk_aver) - 1) / (1 - risk_aver)
 
     # =========================================================================
     # Initialize Value Function
     # =========================================================================
-    Vguess = u(r * agrid + y) / (1 - beta)
+    Vguess = utility(r * agrid + y) / (1 - beta)
     V = Vguess.copy()
 
     # =========================================================================
@@ -88,7 +87,12 @@ def main():
 
         for ia in range(na):
             cash = R * agrid[ia] + y
-            Vchoice = u(np.maximum(cash - agrid, 1.0e-10)) + beta * Vlast
+            consumption_choices = cash - agrid
+            feasible = consumption_choices > 0
+            Vchoice = np.full(na, -np.inf)
+            Vchoice[feasible] = (
+                utility(consumption_choices[feasible]) + beta * Vlast[feasible]
+            )
             V[ia] = np.max(Vchoice)
             savind[ia] = np.argmax(Vchoice)
             sav[ia] = agrid[savind[ia]]
@@ -127,6 +131,10 @@ def main():
     ss_idx = np.argmin(np.abs(sav - agrid))
     a_ss = agrid[ss_idx]
     c_ss = R * a_ss + y - a_ss
+    exact_ss_a = borrow_lim
+    exact_ss_c = r * exact_ss_a + y
+    ss_error = abs(a_ss - exact_ss_a)
+    beta_r = beta * R
 
     # =========================================================================
     # Generate Report
@@ -134,36 +142,56 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "Deterministic Consumption-Savings by VFI",
-        "Infinite-horizon savings problem with deterministic income, solved by value function iteration on a discrete asset grid.",
+        "Deterministic Saving with a Borrowing Constraint",
+        "A no-risk household savings problem solved by value function iteration on an asset grid.",
+        include_reproduce=False,
+        show_figure_captions=False,
     )
 
     report.add_overview(
-        "This is the simplest heterogeneous-agents building block: a single agent choosing "
-        "how much to consume and save each period, facing a constant interest rate $r$ and "
-        "deterministic income $y$. The agent can save in a risk-free asset but faces a "
-        "borrowing constraint $a \\ge 0$.\n\n"
-        "Despite its simplicity, this model introduces the core mechanics of HA models: "
-        "discrete asset grids, the consumption-savings Bellman equation, and forward simulation "
-        "of asset dynamics. The borrowing constraint generates a kink in the consumption policy "
-        "function at low wealth levels."
+        "This tutorial strips the household side of a heterogeneous-agent model down to "
+        "one state, one asset, and no income risk. The household receives the same income "
+        "$y$ every period, saves in a risk-free asset with gross return $R=1+r$, and cannot "
+        "borrow below $\\underline a=0$.\n\n"
+        "That benchmark is useful precisely because it does not produce a meaningful wealth "
+        "distribution. With $\\beta R<1$, patience is not strong enough to offset the return, "
+        "so the household eventually runs any initial assets down to the borrowing limit. "
+        "The next savings tutorials add income risk and faster Euler-equation methods; this "
+        "one makes clear what is already present before those complications enter."
     )
 
     report.add_equations(
         r"""
-$$V(a) = \max_{a' \in [\underline{a},\, \bar{a}]} \bigl[ u(c) + \beta \, V(a') \bigr]$$
+For current assets $a \in [\underline a,\bar a]$, next-period assets $a'$ are chosen
+from the same grid subject to positive consumption:
 
-subject to the budget constraint:
+$$
+V(a) =
+\max_{a' \in [\underline a,\bar a]}
+[u(c) + \beta V(a')],
+\qquad
+c = Ra + y - a' > 0.
+$$
 
-$$c = Ra + y - a'$$
+The utility function is CRRA,
 
-where $a$ is current assets, $a'$ is savings (next-period assets), $R = 1+r$ is the gross
-interest rate, and $y$ is deterministic income.
+$$
+u(c)=
+\begin{cases}
+\dfrac{c^{1-\gamma}-1}{1-\gamma}, & \gamma \neq 1,\\[4pt]
+\log c, & \gamma = 1.
+\end{cases}
+$$
 
-**CRRA utility:** $u(c) = \frac{c^{1-\gamma} - 1}{1 - \gamma}$, with $\gamma$ the coefficient
-of relative risk aversion.
+Away from the borrowing limit, the Euler equation is
 
-**Euler equation:** $u'(c) \ge \beta R \, u'(c')$, with equality when $a' > \underline{a}$.
+$$
+u'(c_t) = \beta R u'(c_{t+1}).
+$$
+
+At $a'=\underline a$, the condition becomes an inequality. Since the calibration
+has $\beta R<1$, there is no positive interior stationary asset level satisfying
+the Euler equation; the exact stationary asset benchmark is $a^{*}=\underline a$.
 """
     )
 
@@ -173,6 +201,7 @@ of relative risk aversion.
         f"| $\\gamma$  | {risk_aver} | CRRA risk aversion |\n"
         f"| $\\beta$   | {beta} | Discount factor |\n"
         f"| $r$       | {r} | Interest rate |\n"
+        f"| $\\beta R$ | {beta_r:.4f} | Patience-return product |\n"
         f"| $y$       | {y} | Deterministic income |\n"
         f"| $\\underline{{a}}$ | {borrow_lim} | Borrowing limit |\n"
         f"| Grid points | {na} | Linear spacing on $[0, {amax}]$ |\n"
@@ -181,15 +210,38 @@ of relative risk aversion.
     )
 
     report.add_solution_method(
-        "**Value Function Iteration (VFI):** Starting from an initial guess "
-        "$V_0(a) = u(ra + y) / (1 - \\beta)$, we iterate on the Bellman equation:\n\n"
-        "$$V_{n+1}(a) = \\max_{a' \\in [\\underline{a},\\, \\bar{a}]} "
-        "\\left\\{ u(Ra + y - a') + \\beta \\, V_n(a') \\right\\}$$\n\n"
-        "The maximization is performed by evaluating all feasible savings choices on the "
-        "asset grid (discrete search). Convergence is declared when "
-        "$\\|V_{n+1} - V_n\\|_\\infty < 10^{-6}$.\n\n"
-        f"Converged in **{iteration} iterations** (error = {Vdiff:.2e}).\n\n"
-        f"**Steady-state assets:** $a^{*} = {a_ss:.4f}$, **steady-state consumption:** $c^{*} = {c_ss:.4f}$."
+        "The computation uses plain grid VFI. For each current asset grid point, it "
+        "evaluates every feasible next-asset choice, rules out choices with "
+        "$Ra+y-a'\\le 0$, and keeps the maximizing value and policy. This is slow relative "
+        "to endogenous-grid methods, but it makes the Bellman problem transparent.\n\n"
+        "```text\n"
+        "Input: asset grid A, primitives beta, R, y, gamma, tolerance epsilon\n"
+        "Initialize V_0(a) = u(ra + y) / (1 - beta) for each a in A\n"
+        "For n = 0, 1, 2, ...:\n"
+        "    For each current asset a in A:\n"
+        "        For each candidate next asset a' in A:\n"
+        "            If c = R a + y - a' > 0, compute u(c) + beta V_n(a')\n"
+        "            Otherwise mark the choice infeasible\n"
+        "        Set V_{n+1}(a) to the largest feasible value\n"
+        "        Store g(a), the next-asset choice attaining that value\n"
+        "    Stop when max_a |V_{n+1}(a) - V_n(a)| < epsilon\n"
+        "Output: value function V, savings policy g, consumption policy c(a)\n"
+        "```\n\n"
+        "After solving the Bellman equation, the policy is simulated from many initial "
+        "asset positions. In this deterministic setting the simulation is not a Monte "
+        "Carlo approximation to aggregate risk; it is a way to show the transition map "
+        "implied by the policy.\n\n"
+        f"The VFI loop converged in **{iteration} iterations** with sup-norm error "
+        f"{Vdiff:.2e}. The numerical stationary asset is $a^{{*}}={a_ss:.4f}$, matching "
+        f"the exact benchmark $\\underline a={exact_ss_a:.4f}$ up to grid error "
+        f"({ss_error:.2e}). Stationary consumption is $c^{{*}}={c_ss:.4f}$."
+    )
+
+    report.add_results(
+        f"The calibration is intentionally impatient: $\\beta R={beta_r:.4f}<1$. "
+        "That one inequality is enough to organize the results. The value function "
+        "is still smooth and concave on the grid, but the policy points toward asset "
+        "decumulation rather than long-run wealth accumulation."
     )
 
     # --- Figure 1: Value Function ---
@@ -200,86 +252,88 @@ of relative risk aversion.
     ax1.set_title("Value Function")
     ax1.set_xlim(0, amax)
     report.add_figure("figures/value-function.png", "Value function V(a) over the asset grid", fig1,
-        description="The value function is concave and increasing in assets, reflecting diminishing "
-        "marginal value of wealth. The curvature is driven by CRRA preferences: an extra dollar "
-        "matters much more to a poor agent than a rich one.")
+        description="The value function rises with assets, but its curvature is the main object: "
+        "wealth is most valuable close to the borrowing limit. The deterministic environment "
+        "does not remove curvature from preferences; it removes the risk motive "
+        "for holding a buffer stock.")
 
 
     # --- Figure 2: Consumption Policy ---
     fig2, ax2 = plt.subplots()
     ax2.plot(agrid, con, "b-", linewidth=2, label="$c^{*}(a)$")
     ax2.plot(agrid, R * agrid + y, "k:", linewidth=0.8, alpha=0.5, label="Cash-on-hand $Ra + y$")
+    ax2.scatter([exact_ss_a], [exact_ss_c], color="r", s=30, zorder=3, label="Exact steady state")
     ax2.set_xlabel("Assets $a$")
     ax2.set_ylabel("Consumption $c$")
     ax2.set_title("Consumption Policy Function")
     ax2.set_xlim(0, amax)
     ax2.legend()
     report.add_figure("figures/consumption-policy.png", "Consumption policy function c(a)", fig2,
-        description="At low wealth the borrowing constraint binds and the agent consumes all "
-        "cash-on-hand (the policy tracks the 45-degree line). As wealth increases, the agent "
-        "saves a growing fraction of resources, and the consumption function flattens.")
+        description="The consumption policy is far below cash-on-hand for wealthy households: "
+        "they do not consume all assets at once, but they do consume enough to reduce assets "
+        "over time. At the borrowing limit, the household simply consumes current income.")
 
 
     # --- Figure 3: Savings Policy ---
     fig3, ax3 = plt.subplots()
     ax3.plot(agrid, sav - agrid, "b-", linewidth=2, label="$a' - a$")
     ax3.axhline(0, color="k", linewidth=0.5)
+    ax3.scatter([exact_ss_a], [0], color="r", s=30, zorder=3, label="Exact steady state")
     ax3.set_xlabel("Assets $a$")
     ax3.set_ylabel("Net savings $a' - a$")
     ax3.set_title("Savings Policy Function")
     ax3.set_xlim(0, amax)
     ax3.legend()
     report.add_figure("figures/savings-policy.png", "Savings policy: net change in assets a'-a as a function of current assets", fig3,
-        description="The zero crossing identifies the steady-state asset level: agents below it "
-        "accumulate wealth, agents above it decumulate. With beta*R < 1 (impatience dominates), "
-        "the steady state is interior and all agents converge to it monotonically.")
+        description="The net-saving policy makes the no-risk benchmark stark. The only fixed "
+        "point is the borrowing limit, so positive initial assets are gradually spent down. "
+        "In the later income-risk tutorial, the same kind of policy plot bends upward because "
+        "risk creates a reason to hold buffer wealth.")
 
 
     # --- Figure 4: Simulated Asset Dynamics ---
     fig4, ax4 = plt.subplots(figsize=(10, 5))
     for i in range(min(Nsim, 20)):  # Plot a subset to avoid clutter
         ax4.plot(range(Tsim), asim[i, :], linewidth=0.5, alpha=0.6)
-    ax4.axhline(a_ss, color="r", linewidth=1.5, linestyle="--", label=f"Steady state $a^{*} = {a_ss:.2f}$")
+    ax4.axhline(exact_ss_a, color="r", linewidth=1.5, linestyle="--", label=f"Exact $a^{{*}} = {exact_ss_a:.2f}$")
     ax4.set_xlabel("Period")
     ax4.set_ylabel("Assets $a_t$")
     ax4.set_title("Simulated Asset Dynamics (20 agents)")
     ax4.set_xlim(0, Tsim)
+    ax4.set_ylim(bottom=0)
     ax4.legend()
     report.add_figure("figures/asset-dynamics.png", "Simulated asset paths converging to steady state", fig4,
-        description="Regardless of initial wealth, every agent converges to the same steady state. "
-        "This degenerate long-run distribution is the hallmark of the deterministic model and "
-        "motivates the introduction of income risk to generate a non-trivial wealth distribution.")
+        description="The simulated paths start from different asset positions but all converge "
+        "to the same lower bound. The exercise is therefore a transition experiment, not a "
+        "claim that deterministic savings can generate cross-sectional wealth inequality.")
 
 
     # --- Table: Policy Function at Selected Grid Points ---
-    sample_idx = np.linspace(0, na - 1, 10, dtype=int)
+    sample_idx = np.unique(np.r_[0, 1, 2, 5, 10, 25, 50, 100, 250, 500, na - 1])
     table_data = {
-        "Assets (a)": [f"{agrid[i]:.3f}" for i in sample_idx],
+        "Assets a": [f"{agrid[i]:.4f}" for i in sample_idx],
         "Consumption c(a)": [f"{con[i]:.4f}" for i in sample_idx],
-        "Savings a'(a)": [f"{sav[i]:.4f}" for i in sample_idx],
-        "Net savings a'-a": [f"{(sav[i] - agrid[i]):.4f}" for i in sample_idx],
+        "Next assets g(a)": [f"{sav[i]:.4f}" for i in sample_idx],
+        "Net saving g(a)-a": [f"{(sav[i] - agrid[i]):.4f}" for i in sample_idx],
         "V(a)": [f"{V[i]:.4f}" for i in sample_idx],
     }
     df = pd.DataFrame(table_data)
-    report.add_table("tables/policy-function.csv", "Policy Function at Selected Grid Points", df,
-        description="At low asset levels, consumption nearly equals cash-on-hand and net savings "
-        "are near zero (the constraint region). As assets grow, net savings become negative, "
-        "confirming the agent dissaves toward the steady state from above.")
+    report.add_table("tables/policy-function.csv", "Selected Policy Values", df,
+        description="The table reports low-asset grid points explicitly because the action near "
+        "the borrowing limit is easy to miss on a wide plot. Once assets are positive, the "
+        "policy keeps $g(a)<a$ and moves the household back toward $a^{*}=0$.")
 
 
     report.add_takeaway(
-        "The deterministic consumption-savings model illustrates how a borrowing-constrained "
-        "agent accumulates assets toward a steady state.\n\n"
-        "**Key insights:**\n"
-        "- With $\\beta R < 1$ (impatience dominates returns), the agent has a finite steady-state "
-        "asset level $a^{*}$ where consumption equals income plus net interest: $c^{*} = ra^{*} + y$.\n"
-        "- The borrowing constraint $a \\ge 0$ binds for agents with very low wealth, creating "
-        "a kink in the consumption policy where $c = Ra + y$ (consume everything).\n"
-        "- All agents converge to the same steady state regardless of initial assets, since "
-        "income is deterministic. This is why stochastic income (the next model) is needed "
-        "to generate a non-degenerate wealth distribution.\n"
-        "- The savings policy function $a' - a$ crosses zero exactly at the steady state: "
-        "agents below save, agents above dissave."
+        "The deterministic model is the baseline to subtract from richer household problems. "
+        "Here the borrowing constraint matters, but it does not create a wealth distribution: "
+        "with $\\beta R<1$, every positive asset position is temporary and the exact stationary "
+        "asset level is $a^{*}=0$.\n\n"
+        "This is why the neighboring [IID income-risk VFI tutorial](../vfi-iid-income/) is not "
+        "just the same code with an extra shock. Once income is risky, assets become self-insurance "
+        "and the stationary distribution is an economic object. The later "
+        "[endogenous-grid tutorial](../endogenous-grid-points/) keeps that economic problem but "
+        "changes the solver."
     )
 
     report.add_references([

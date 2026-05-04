@@ -1,28 +1,45 @@
-# Deterministic Consumption-Savings by VFI
+# Deterministic Saving with a Borrowing Constraint
 
-> Infinite-horizon savings problem with deterministic income, solved by value function iteration on a discrete asset grid.
+> A no-risk household savings problem solved by value function iteration on an asset grid.
 
 ## Overview
 
-This is the simplest heterogeneous-agents building block: a single agent choosing how much to consume and save each period, facing a constant interest rate $r$ and deterministic income $y$. The agent can save in a risk-free asset but faces a borrowing constraint $a \ge 0$.
+This tutorial strips the household side of a heterogeneous-agent model down to one state, one asset, and no income risk. The household receives the same income $y$ every period, saves in a risk-free asset with gross return $R=1+r$, and cannot borrow below $\underline a=0$.
 
-Despite its simplicity, this model introduces the core mechanics of HA models: discrete asset grids, the consumption-savings Bellman equation, and forward simulation of asset dynamics. The borrowing constraint generates a kink in the consumption policy function at low wealth levels.
+That benchmark is useful precisely because it does not produce a meaningful wealth distribution. With $\beta R<1$, patience is not strong enough to offset the return, so the household eventually runs any initial assets down to the borrowing limit. The next savings tutorials add income risk and faster Euler-equation methods; this one makes clear what is already present before those complications enter.
 
 ## Equations
 
-$$V(a) = \max_{a' \in [\underline{a},\, \bar{a}]} \bigl[ u(c) + \beta \, V(a') \bigr]$$
+For current assets $a \in [\underline a,\bar a]$, next-period assets $a'$ are chosen
+from the same grid subject to positive consumption:
 
-subject to the budget constraint:
+$$
+V(a) =
+\max_{a' \in [\underline a,\bar a]}
+[u(c) + \beta V(a')],
+\qquad
+c = Ra + y - a' > 0.
+$$
 
-$$c = Ra + y - a'$$
+The utility function is CRRA,
 
-where $a$ is current assets, $a'$ is savings (next-period assets), $R = 1+r$ is the gross
-interest rate, and $y$ is deterministic income.
+$$
+u(c)=
+\begin{cases}
+\dfrac{c^{1-\gamma}-1}{1-\gamma}, & \gamma \neq 1,\\[4pt]
+\log c, & \gamma = 1.
+\end{cases}
+$$
 
-**CRRA utility:** $u(c) = \frac{c^{1-\gamma} - 1}{1 - \gamma}$, with $\gamma$ the coefficient
-of relative risk aversion.
+Away from the borrowing limit, the Euler equation is
 
-**Euler equation:** $u'(c) \ge \beta R \, u'(c')$, with equality when $a' > \underline{a}$.
+$$
+u'(c_t) = \beta R u'(c_{t+1}).
+$$
+
+At $a'=\underline a$, the condition becomes an inequality. Since the calibration
+has $\beta R<1$, there is no positive interior stationary asset level satisfying
+the Euler equation; the exact stationary asset benchmark is $a^{*}=\underline a$.
 
 ## Model Setup
 
@@ -31,6 +48,7 @@ of relative risk aversion.
 | $\gamma$  | 2 | CRRA risk aversion |
 | $\beta$   | 0.95 | Discount factor |
 | $r$       | 0.03 | Interest rate |
+| $\beta R$ | 0.9785 | Patience-return product |
 | $y$       | 1 | Deterministic income |
 | $\underline{a}$ | 0 | Borrowing limit |
 | Grid points | 1000 | Linear spacing on $[0, 20]$ |
@@ -39,60 +57,69 @@ of relative risk aversion.
 
 ## Solution Method
 
-**Value Function Iteration (VFI):** Starting from an initial guess $V_0(a) = u(ra + y) / (1 - \beta)$, we iterate on the Bellman equation:
+The computation uses plain grid VFI. For each current asset grid point, it evaluates every feasible next-asset choice, rules out choices with $Ra+y-a'\le 0$, and keeps the maximizing value and policy. This is slow relative to endogenous-grid methods, but it makes the Bellman problem transparent.
 
-$$V_{n+1}(a) = \max_{a' \in [\underline{a},\, \bar{a}]} \bigl[ u(Ra + y - a') + \beta \, V_n(a') \bigr]$$
+```text
+Input: asset grid A, primitives beta, R, y, gamma, tolerance epsilon
+Initialize V_0(a) = u(ra + y) / (1 - beta) for each a in A
+For n = 0, 1, 2, ...:
+    For each current asset a in A:
+        For each candidate next asset a' in A:
+            If c = R a + y - a' > 0, compute u(c) + beta V_n(a')
+            Otherwise mark the choice infeasible
+        Set V_{n+1}(a) to the largest feasible value
+        Store g(a), the next-asset choice attaining that value
+    Stop when max_a |V_{n+1}(a) - V_n(a)| < epsilon
+Output: value function V, savings policy g, consumption policy c(a)
+```
 
-The maximization is performed by evaluating all feasible savings choices on the asset grid (discrete search). Convergence is declared when $\|V_{n+1} - V_n\|_\infty < 10^{-6}$.
+After solving the Bellman equation, the policy is simulated from many initial asset positions. In this deterministic setting the simulation is not a Monte Carlo approximation to aggregate risk; it is a way to show the transition map implied by the policy.
 
-Converged in **70 iterations** (error = 0.00e+00).
-
-**Steady-state assets:** $a^{*} = 0.0000$, **steady-state consumption:** $c^{*} = 1.0000$.
+The VFI loop converged in **70 iterations** with sup-norm error 0.00e+00. The numerical stationary asset is $a^{*}=0.0000$, matching the exact benchmark $\underline a=0.0000$ up to grid error (0.00e+00). Stationary consumption is $c^{*}=1.0000$.
 
 ## Results
 
+The calibration is intentionally impatient: $\beta R=0.9785<1$. That one inequality is enough to organize the results. The value function is still smooth and concave on the grid, but the policy points toward asset decumulation rather than long-run wealth accumulation.
+
+The value function rises with assets, but its curvature is the main object: wealth is most valuable close to the borrowing limit. The deterministic environment does not remove curvature from preferences; it removes the risk motive for holding a buffer stock.
+
 <img src="figures/value-function.png" alt="Value function V(a) over the asset grid" width="80%">
-*Value function V(a) over the asset grid*
+
+The consumption policy is far below cash-on-hand for wealthy households: they do not consume all assets at once, but they do consume enough to reduce assets over time. At the borrowing limit, the household simply consumes current income.
 
 <img src="figures/consumption-policy.png" alt="Consumption policy function c(a)" width="80%">
-*Consumption policy function c(a)*
+
+The net-saving policy makes the no-risk benchmark stark. The only fixed point is the borrowing limit, so positive initial assets are gradually spent down. In the later income-risk tutorial, the same kind of policy plot bends upward because risk creates a reason to hold buffer wealth.
 
 <img src="figures/savings-policy.png" alt="Savings policy: net change in assets a'-a as a function of current assets" width="80%">
-*Savings policy: net change in assets a'-a as a function of current assets*
+
+The simulated paths start from different asset positions but all converge to the same lower bound. The exercise is therefore a transition experiment, not a claim that deterministic savings can generate cross-sectional wealth inequality.
 
 <img src="figures/asset-dynamics.png" alt="Simulated asset paths converging to steady state" width="80%">
-*Simulated asset paths converging to steady state*
 
-**Policy Function at Selected Grid Points**
+The table reports low-asset grid points explicitly because the action near the borrowing limit is easy to miss on a wide plot. Once assets are positive, the policy keeps $g(a)<a$ and moves the household back toward $a^{*}=0$.
 
-|   Assets (a) |   Consumption c(a) |   Savings a'(a) |   Net savings a'-a |    V(a) |
-|-------------:|-------------------:|----------------:|-------------------:|--------:|
-|        0     |             1      |          0      |             0      | -0      |
-|        2.222 |             1.2669 |          2.022  |            -0.2002 |  1.7094 |
-|        4.444 |             1.3936 |          4.1842 |            -0.2603 |  3.0079 |
-|        6.667 |             1.5203 |          6.3463 |            -0.3203 |  4.0876 |
-|        8.889 |             1.627  |          8.5285 |            -0.3604 |  5.0148 |
-|       11.111 |             1.7337 |         10.7107 |            -0.4004 |  5.8262 |
-|       13.333 |             1.8404 |         12.8929 |            -0.4404 |  6.5457 |
-|       15.556 |             1.9271 |         15.0951 |            -0.4605 |  7.19   |
-|       17.778 |             2.0338 |         17.2773 |            -0.5005 |  7.7716 |
-|       20     |             2.1205 |         19.4795 |            -0.5205 |  8.2999 |
+**Selected Policy Values**
+
+|   Assets a |   Consumption c(a) |   Next assets g(a) |   Net saving g(a)-a |    V(a) |
+|-----------:|-------------------:|-------------------:|--------------------:|--------:|
+|     0      |             1      |             0      |              0      | -0      |
+|     0.02   |             1.0206 |             0      |             -0.02   |  0.0202 |
+|     0.04   |             1.0212 |             0.02   |             -0.02   |  0.04   |
+|     0.1001 |             1.043  |             0.0601 |             -0.04   |  0.0977 |
+|     0.2002 |             1.0661 |             0.1401 |             -0.0601 |  0.1904 |
+|     0.5005 |             1.1151 |             0.4004 |             -0.1001 |  0.4519 |
+|     1.001  |             1.1702 |             0.8609 |             -0.1401 |  0.8515 |
+|     2.002  |             1.2402 |             1.8218 |             -0.1802 |  1.5643 |
+|     5.005  |             1.4304 |             4.7247 |             -0.2803 |  3.2975 |
+|    10.01   |             1.6807 |             9.6296 |             -0.3804 |  5.4369 |
+|    20      |             2.1205 |            19.4795 |             -0.5205 |  8.2999 |
 
 ## Takeaway
 
-The deterministic consumption-savings model illustrates how a borrowing-constrained agent accumulates assets toward a steady state.
+The deterministic model is the baseline to subtract from richer household problems. Here the borrowing constraint matters, but it does not create a wealth distribution: with $\beta R<1$, every positive asset position is temporary and the exact stationary asset level is $a^{*}=0$.
 
-**Key insights:**
-- With $\beta R < 1$ (impatience dominates returns), the agent has a finite steady-state asset level $a^{*}$ where consumption equals income plus net interest: $c^{*} = ra^{*} + y$.
-- The borrowing constraint $a \ge 0$ binds for agents with very low wealth, creating a kink in the consumption policy where $c = Ra + y$ (consume everything).
-- All agents converge to the same steady state regardless of initial assets, since income is deterministic. This is why stochastic income (the next model) is needed to generate a non-degenerate wealth distribution.
-- The savings policy function $a' - a$ crosses zero exactly at the steady state: agents below save, agents above dissave.
-
-## Reproduce
-
-```bash
-python run.py
-```
+This is why the neighboring [IID income-risk VFI tutorial](../vfi-iid-income/) is not just the same code with an extra shock. Once income is risky, assets become self-insurance and the stationary distribution is an economic object. The later [endogenous-grid tutorial](../endogenous-grid-points/) keeps that economic problem but changes the solver.
 
 ## References
 
