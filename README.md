@@ -86,7 +86,7 @@ These examples cover Hamilton-Jacobi-Bellman equations, phase diagrams, shooting
 
 | | Tutorial | What it teaches | Method | Key Insight |
 |:---:|---|---|---|---|
-| <img src="optimal-control/hjb-growth/figures/thumb.png" width="192"> | [**Continuous-Time Growth by HJB**](optimal-control/hjb-growth/) | Neoclassical growth as a Hamilton-Jacobi-Bellman equation | Upwind finite differences | Continuous-time growth can be solved as an HJB |
+| <img src="optimal-control/hjb-growth/figures/thumb.png" width="192"> | [**HJB Growth and Capital Accumulation**](optimal-control/hjb-growth/) | How a Ramsey planner turns marginal value into consumption and capital drift | Implicit upwind HJB | The drift selects the derivative direction, so the policy converges to the Ramsey steady state without a grid search |
 | <img src="optimal-control/phase-diagrams/figures/thumb.png" width="192"> | [**Ramsey Phase Diagrams and Saddle Paths**](optimal-control/phase-diagrams/) | Reading capital-consumption dynamics in the phase plane | Linearization | The Ramsey steady state is a saddle point |
 | <img src="optimal-control/ramsey-growth/figures/thumb.png" width="192"> | [**Ramsey Growth by Shooting**](optimal-control/ramsey-growth/) | Finding the stable path by choosing initial consumption | Shooting method | Bisection recovers the saddle path |
 | <img src="optimal-control/continuous-cake-eating/figures/thumb.png" width="192"> | [**Continuous-Time Cake Eating by Pontryagin**](optimal-control/continuous-cake-eating/) | Resource depletion with costates and shadow prices | Pontryagin | The shadow price rises at rate $\rho$ |
