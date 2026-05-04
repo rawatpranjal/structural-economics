@@ -1,9 +1,12 @@
 Variable,Value
 Interest rate $r$,0.025959
 Wage $w$,1.2734
-Capital $K$,6.7514
-Output $Y$,1.9888
-Capital-output ratio $K/Y$,3.3948
+Firm capital demand $K^d$,6.7599
+Aggregate household assets $K^s$,6.7514
+Market-clearing gap $K^s-K^d$,-8.4953e-03
+Relative gap $(K^s-K^d)/K^d$,-1.2567e-03
+Output $Y$,1.9897
+Capital-output ratio $K/Y$,3.3975
 Gini coefficient,0.5271
 Fraction at constraint,0.0241
 $r$ vs $1/\beta - 1$,0.025959 < 0.041667
