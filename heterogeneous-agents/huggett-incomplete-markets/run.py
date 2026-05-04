@@ -232,10 +232,10 @@ def find_equilibrium(params, r_min=0.001, r_max=0.04, tol=1e-5, max_iter=40):
             print(f"  Equilibrium found: r* = {r_eq:.6f}")
             break
         elif S > 0:
-            # Excess supply of bonds -> lower r to increase demand
+            # Desired aggregate assets are positive; lower r to reduce saving.
             r_hi = r_mid
         else:
-            # Excess demand for bonds -> raise r to increase supply
+            # Desired aggregate assets are negative; raise r to reduce borrowing.
             r_lo = r_mid
         r_eq = r_mid
 
@@ -301,6 +301,8 @@ def main():
     frac_constrained = np.sum(g[:5, :]) * da  # fraction near borrowing limit
     prob_z1 = np.sum(g[:, 0]) * da
     prob_z2 = np.sum(g[:, 1]) * da
+    market_residual = abs(mean_wealth)
+    mean_wealth_display = 0.0 if market_residual < 5e-5 else mean_wealth
 
     # =========================================================================
     # Generate Report
@@ -308,82 +310,133 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "Continuous-Time Huggett Incomplete Markets",
-        "Stationary equilibrium of a heterogeneous-agent economy with "
-        "idiosyncratic income risk, borrowing constraints, and a single bond.",
+        "Huggett Equilibrium and the Risk-Free Rate",
+        "A continuous-time incomplete-markets economy where idiosyncratic income risk "
+        "and borrowing limits determine the equilibrium bond return.",
+        include_reproduce=False,
+        show_figure_captions=False,
     )
 
     report.add_overview(
-        "The Huggett (1993) model is a foundational heterogeneous-agent model in which "
-        "a continuum of agents face uninsurable idiosyncratic income shocks and trade a "
-        "single risk-free bond subject to a borrowing constraint. In the continuous-time "
-        "formulation of Achdou et al. (2022), optimal behavior is characterized by a "
-        "Hamilton-Jacobi-Bellman (HJB) equation, and the stationary wealth distribution "
-        "satisfies a Kolmogorov Forward Equation (KFE). The equilibrium interest rate "
-        "clears the bond market: net asset demand equals zero in the aggregate."
+        "Huggett (1993) asks how a risk-free asset is priced when households cannot "
+        "perfectly insure idiosyncratic income risk. Each household can save or borrow "
+        "in a single bond, but debt is limited by $a \\geq \\underline a$. Since the "
+        "bond is in zero net supply, the interest rate has to make the cross-sectional "
+        "demand for assets add up to zero.\n\n"
+        "The economic force is precautionary saving. Low-income spells make the "
+        "borrowing limit valuable, so households try to carry buffer wealth into bad "
+        "states. In equilibrium that desired asset demand is offset by a lower risk-free "
+        "rate. The tutorial uses the continuous-time HJB/KFE representation from "
+        "Achdou et al. (2022) because it makes the two equilibrium objects explicit: "
+        "the household drift in asset space and the stationary density that drift "
+        "induces."
     )
 
     report.add_equations(
         r"""
-**HJB equation:**
-$$\rho V_i(a) = \max_{c} \bigl[ \frac{c^{1-\sigma}}{1-\sigma} + V_i'(a)(z_i + ra - c) \bigr] + \lambda_i \left[ V_j(a) - V_i(a) \right]$$
+There are two income states, $i \in \{L,H\}$, with income $z_i$ and Poisson
+switching intensity $\lambda_i$ into the other state $j$. Assets are denoted by
+$a$, the bond return by $r$, and the stationary density by $g_i(a)$.
 
-**Optimal consumption (FOC):** $c_i(a) = \left( V_i'(a) \right)^{-1/\sigma}$
+Household assets evolve according to
+$$\dot a = s_i(a) = z_i + r a - c_i(a), \qquad a \geq \underline a.$$
 
-**Savings policy:** $s_i(a) = z_i + ra - c_i(a)$
+The HJB equation is
+$$\rho V_i(a) =
+\max_{c > 0}
+\Bigl[
+\frac{c^{1-\sigma}}{1-\sigma}
++ V_i'(a)\,[z_i + r a - c]
++ \lambda_i [V_j(a)-V_i(a)]
+\Bigr].$$
 
-**KFE (Kolmogorov Forward Equation):**
-$$0 = -\frac{\partial}{\partial a}\left[ s_i(a) \, g_i(a) \right] - \lambda_i \, g_i(a) + \lambda_j \, g_j(a)$$
+The consumption rule comes from the first-order condition
+$$c_i(a)=\left[V_i'(a)\right]^{-1/\sigma},$$
+so the asset drift is $s_i(a)=z_i+ra-c_i(a)$. At the borrowing limit the state
+constraint requires $s_i(\underline a)\geq 0$.
 
-**Bond market clearing:**
-$$\int a \left[ g_1(a) + g_2(a) \right] da = 0$$
+The stationary distribution solves the KFE
+$$0 =
+-\frac{\partial}{\partial a}\left[s_i(a)g_i(a)\right]
+-\lambda_i g_i(a)+\lambda_j g_j(a),$$
+with total mass normalized to one. The zero-net-supply bond market clears when
+$$S(r)=\int_{\underline a}^{\bar a} a\,[g_L(a)+g_H(a)]\,da=0.$$
 """
     )
 
     report.add_model_setup(
+        "The calibration is deliberately small: two income states, symmetric switching, "
+        "and a one-dimensional asset grid. This keeps the focus on how incomplete "
+        "insurance pins down the risk-free rate.\n\n"
         f"| Parameter | Value | Description |\n"
         f"|-----------|-------|-------------|\n"
-        f"| $\\rho$   | {rho} | Discount rate |\n"
-        f"| $\\sigma$ | {sigma} | CRRA coefficient |\n"
+        f"| $\\rho$   | {rho} | Rate of time preference |\n"
+        f"| $\\sigma$ | {sigma} | Relative risk aversion |\n"
         f"| $z$       | [{z[0]}, {z[1]}] | Income states |\n"
-        f"| $\\lambda$ | [{la[0]}, {la[1]}] | Poisson switching rates |\n"
+        f"| $\\lambda$ | [{la[0]}, {la[1]}] | Income-state switching rates |\n"
         f"| $\\underline{{a}}$ | {a_min} | Borrowing constraint |\n"
         f"| $\\bar{{a}}$       | {a_max} | Upper bound on assets |\n"
-        f"| Grid points | {I} | Uniform spacing |"
+        f"| Asset grid points | {I} | Uniform spacing |"
     )
 
     report.add_solution_method(
-        "**Finite-difference implicit method:** The HJB is solved using an upwind "
-        "finite-difference scheme. At each grid point, the derivative $V'(a)$ is "
-        "approximated by forward or backward differences depending on the sign of the "
-        "drift (savings). This ensures numerical stability and respects the direction of "
-        "information flow. The implicit time-stepping scheme\n\n"
-        "$$\\frac{V^{n+1} - V^n}{\\Delta} + \\rho V^{n+1} = u(c^n) + A^n V^{n+1}$$\n\n"
-        "is unconditionally stable, allowing large time steps ($\\Delta = 1000$) for fast "
-        "convergence.\n\n"
-        "**KFE:** The stationary distribution solves $A^\\top g = 0$ with $\\int g\\, da = 1$, "
-        "computed via a sparse linear system.\n\n"
-        "**General equilibrium:** Bisection on $r$ until $S(r) = \\int a \\, g(a)\\, da = 0$.\n\n"
-        f"HJB converged in **{info['iterations']} iterations** (error = {info['error']:.2e}). "
-        f"Equilibrium found at **$r^{{*}} = {r_eq:.5f}$**."
+        r"""
+For a candidate interest rate, the HJB is solved by an implicit finite-difference
+step. The only delicate choice is the derivative of $V_i(a)$. If assets drift to
+the right, the update uses the forward derivative; if assets drift to the left,
+it uses the backward derivative. This upwind choice is what keeps the borrowing
+constraint from being crossed numerically.
+
+The implicit update can be written as
+$$\left[(\Delta^{-1}+\rho)I-A^n\right]V^{n+1}
+=u(c^n)+\Delta^{-1}V^n,$$
+where $A^n$ is the Markov generator over asset and income states implied by the
+current drift. After the HJB step converges, the same generator is used in the
+KFE, $A^\top g=0$, with $\int g\,da=1$.
+
+```text
+Inputs: candidate r, asset grid a, income states z, switching intensities lambda
+Output: policies c_i(a), s_i(a), density g_i(a), aggregate assets S(r)
+
+1. Guess V_i^0(a).
+2. Until the HJB sup norm is small:
+   a. Compute forward and backward derivatives of V_i^n(a).
+   b. Convert each derivative into candidate consumption using u'(c)=V_i'(a).
+   c. Select the derivative whose implied asset drift points into the grid.
+   d. Build the generator A^n for asset drift plus income switching.
+   e. Solve the sparse implicit system for V_i^{n+1}(a).
+3. Solve A(r)' g = 0 and normalize the density to integrate to one.
+4. Compute S(r)=integral a[g_L(a)+g_H(a)] da.
+5. Use bisection on r until S(r) is close to zero.
+```
+
+There is no closed-form equilibrium to overlay as ground truth in this
+truncated-grid Huggett problem. The relevant numerical checks are therefore the
+HJB fixed-point tolerance and the zero-net-supply bond-market residual.
+"""
+        + "\n"
+        + f"The final HJB step converged in **{info['iterations']} iterations** "
+        + f"(sup-norm change {info['error']:.2e}). Bisection gives "
+        + f"**$r^{{*}}={r_eq:.5f}$**, with a market-clearing residual of "
+        + f"**{market_residual:.2e}** in aggregate assets."
     )
 
     # --- Figure 1: Value Function ---
     fig1, ax1 = plt.subplots()
     ax1.plot(a, V[:, 0], "b-", linewidth=2, label=f"$V_1(a)$, $z = {z[0]}$")
     ax1.plot(a, V[:, 1], "r-", linewidth=2, label=f"$V_2(a)$, $z = {z[1]}$")
-    ax1.set_xlabel("Wealth $a$")
+    ax1.set_xlabel("Assets $a$")
     ax1.set_ylabel("$V_i(a)$")
     ax1.set_title("Value Function")
     ax1.legend()
     report.add_figure(
         "figures/value-function.png",
-        "Value function V(a) for each income state at the equilibrium interest rate",
+        "Value functions by asset holdings and income state at the equilibrium interest rate",
         fig1,
-        description="The high-income value function lies above the low-income one at every "
-        "asset level. Both curves steepen near the borrowing constraint, reflecting the "
-        "high marginal value of an additional unit of wealth when the agent is nearly "
-        "constrained.",
+        description="The value functions put the income state and the borrowing limit in "
+        "one picture. High income raises continuation value at every asset level. Near "
+        "$\\underline a$, both curves become steep because one more unit of wealth relaxes "
+        "the state constraint and buys insurance against staying in the low-income state.",
     )
 
     # --- Figure 2: Savings Policy ---
@@ -392,19 +445,20 @@ $$\int a \left[ g_1(a) + g_2(a) \right] da = 0$$
     ax2.plot(a, s[:, 1], "r-", linewidth=2, label=f"$s_2(a)$, $z = {z[1]}$")
     ax2.axhline(0, color="k", linestyle="--", linewidth=0.8)
     ax2.axvline(a_min, color="k", linestyle="--", linewidth=0.8, alpha=0.5)
-    ax2.set_xlabel("Wealth $a$")
+    ax2.set_xlabel("Assets $a$")
     ax2.set_ylabel("Savings $s_i(a) = z_i + ra - c_i(a)$")
     ax2.set_title("Savings Policy Function")
     ax2.set_xlim([a_min - 0.03, 1.0])
     ax2.legend()
     report.add_figure(
         "figures/savings-policy.png",
-        "Savings policy s(a,z) = z + r*a - c(a,z) at equilibrium; zero crossings are steady states",
+        "Asset drift policies by income state at the equilibrium interest rate",
         fig2,
-        description="The zero crossings mark the target asset levels for each income state. "
-        "Low-income agents save when wealthy (positive drift) but dissave when poor (negative "
-        "drift), creating the flow toward the borrowing constraint that generates the mass "
-        "point in the wealth distribution.",
+        description="The savings policies show the direction of movement in asset space. "
+        "Low-income households run assets down unless they are already wealthy; high-income "
+        "households rebuild buffer wealth. The zero crossings are local asset targets for a "
+        "fixed income state, but income switching keeps households moving across the two "
+        "drift fields.",
     )
 
     # --- Figure 3: Stationary Wealth Distribution ---
@@ -412,19 +466,20 @@ $$\int a \left[ g_1(a) + g_2(a) \right] da = 0$$
     ax3.plot(a, g[:, 0], "b-", linewidth=2, label=f"$g_1(a)$, $z = {z[0]}$")
     ax3.plot(a, g[:, 1], "r-", linewidth=2, label=f"$g_2(a)$, $z = {z[1]}$")
     ax3.axvline(a_min, color="k", linestyle="--", linewidth=0.8, alpha=0.5)
-    ax3.set_xlabel("Wealth $a$")
+    ax3.set_xlabel("Assets $a$")
     ax3.set_ylabel("Density $g_i(a)$")
     ax3.set_title("Stationary Wealth Distribution")
     ax3.set_xlim([a_min - 0.03, 1.0])
     ax3.legend()
     report.add_figure(
         "figures/wealth-distribution.png",
-        "Stationary wealth distribution g(a) by income state; mass piles up near borrowing constraint",
+        "Stationary asset densities by income state",
         fig3,
-        description="The KFE solution reveals where agents spend most of their time. The density "
-        "peaks near the borrowing limit because low-income agents drift toward it and linger "
-        "there until switching to the high-income state. The smooth tail reflects agents who "
-        "have accumulated savings during high-income spells.",
+        description="The KFE turns those drift policies into a cross-sectional distribution. "
+        "Density is largest near the borrowing limit because low-income households drift "
+        "toward it and cannot continue borrowing once they arrive. The right tail is thin "
+        "but nonzero, coming from households that have spent enough time in the high-income "
+        "state to accumulate assets.",
     )
 
     # --- Figure 4: Bond Market Clearing ---
@@ -432,21 +487,21 @@ $$\int a \left[ g_1(a) + g_2(a) \right] da = 0$$
     ax4.plot(S_grid_plot, r_grid_plot, "b-", linewidth=2, label="$S(r)$")
     ax4.axvline(0, color="k", linestyle="--", linewidth=0.8)
     ax4.axhline(rho, color="gray", linestyle="--", linewidth=0.8, alpha=0.7)
-    ax4.axvline(a_min, color="gray", linestyle="--", linewidth=0.8, alpha=0.5)
     ax4.plot(0, r_eq, "ro", markersize=8, zorder=5, label=f"$r^{{*}} = {r_eq:.4f}$")
-    ax4.set_xlabel("Bond supply $S(r) = \\int a \\, g(a) \\, da$")
+    ax4.set_xlabel("Aggregate asset demand $S(r) = \\int a \\, g(a) \\, da$")
     ax4.set_ylabel("Interest rate $r$")
     ax4.set_title("Bond Market Clearing")
     ax4.text(0.3, rho + 0.002, "$r = \\rho$", fontsize=10, color="gray")
     ax4.legend(loc="lower right")
     report.add_figure(
         "figures/bond-market.png",
-        "Bond market: excess demand S(r) vs interest rate; equilibrium where S(r*)=0",
+        "Aggregate asset demand as a function of the interest rate",
         fig4,
-        description="The upward-sloping supply curve shows that higher interest rates induce "
-        "more aggregate saving. The equilibrium r* falls below the discount rate rho because "
-        "precautionary demand pushes agents to hold positive net assets, and the market must "
-        "clear at zero net supply of bonds.",
+        description="The market-clearing plot is the equilibrium argument. Higher $r$ makes "
+        "saving more attractive, so aggregate asset demand rises. Because the bond is in "
+        "zero net supply, equilibrium is the point where the curve crosses $S(r)=0$. That "
+        "crossing is below $\\rho$: the interest rate has to fall enough to offset "
+        "precautionary asset demand.",
     )
 
     # --- Table: Equilibrium Values ---
@@ -456,18 +511,24 @@ $$\int a \left[ g_1(a) + g_2(a) \right] da = 0$$
             "Mean wealth E[a]",
             "Mean income E[z]",
             "Mean consumption E[c]",
+            "Mass near borrowing limit",
             "Prob(z = z_low)",
             "Prob(z = z_high)",
+            "Bond-market residual abs(E[a])",
             "HJB iterations",
+            "HJB final sup-norm change",
         ],
         "Value": [
             f"{r_eq:.5f}",
-            f"{mean_wealth:.5f}",
+            f"{mean_wealth_display:.5f}",
             f"{mean_income:.4f}",
             f"{mean_cons:.4f}",
+            f"{frac_constrained:.4f}",
             f"{prob_z1:.4f}",
             f"{prob_z2:.4f}",
+            f"{market_residual:.2e}",
             f"{info['iterations']}",
+            f"{info['error']:.2e}",
         ],
     }
     df = pd.DataFrame(table_data)
@@ -475,27 +536,21 @@ $$\int a \left[ g_1(a) + g_2(a) \right] da = 0$$
         "tables/equilibrium.csv",
         "Equilibrium Values",
         df,
-        description="The equilibrium interest rate r* < rho confirms the Huggett (1993) result: "
-        "incomplete markets and precautionary motives depress the risk-free rate below the "
-        "rate of time preference.",
+        description="The table summarizes the equilibrium, not a separate calibration target. "
+        "Mean assets are numerically zero because the interest rate has been chosen to clear "
+        "the zero-net-supply bond market. The mass near $\\underline a$ is the visible trace "
+        "of incomplete insurance in this two-state economy.",
     )
 
     report.add_takeaway(
-        "The continuous-time approach to heterogeneous-agent models converts the problem "
-        "into a coupled PDE system: the HJB equation characterizes optimal individual "
-        "behavior, and the KFE describes the resulting cross-sectional distribution.\n\n"
-        "**Key insights:**\n"
-        "- The equilibrium interest rate $r^{*}$ is below the discount rate $\\rho$. This is "
-        "the hallmark result of Huggett (1993): precautionary savings motives push agents "
-        "to accumulate bonds, driving down the interest rate.\n"
-        "- The wealth distribution features a mass point near the borrowing constraint "
-        "$\\underline{a}$, reflecting agents hit by adverse income shocks who are unable "
-        "to smooth consumption.\n"
-        "- The savings function exhibits a square-root behavior near the constraint, "
-        "reflecting the binding nature of the borrowing limit.\n"
-        "- The upwind finite-difference scheme is essential: it selects forward or backward "
-        "differences based on the direction of asset drift, ensuring stability and "
-        "correctly capturing the state constraint at $\\underline{a}$."
+        "The main lesson is the Huggett pricing mechanism. With incomplete insurance, "
+        "households want to self-insure by holding the risk-free bond; with zero net "
+        "supply, the equilibrium return must fall until aggregate desired assets are zero. "
+        "The HJB/KFE machinery is useful because it keeps the individual saving drift and "
+        "the induced wealth distribution in the same equilibrium calculation. This is the "
+        "continuous-time counterpart to the discrete-time incomplete-markets logic in the "
+        "[Aiyagari saving tutorial](../../dynamic-programming/aiyagari/), but here the "
+        "asset in fixed supply is a bond rather than aggregate capital."
     )
 
     report.add_references([

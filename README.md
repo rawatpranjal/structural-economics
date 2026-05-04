@@ -58,7 +58,7 @@ These tutorials are the incomplete-markets method library: Euler-equation invers
 |:---:|---|---|---|---|
 | <img src="heterogeneous-agents/endogenous-grid-points/figures/thumb.png" width="192"> | [**Buffer-Stock Saving by Endogenous Grid Points**](heterogeneous-agents/endogenous-grid-points/) | How Euler-equation inversion computes the IID income-risk saving policy | EGP + fine-grid policy check | Choosing $a'$ first maps the Euler equation back to current assets without a VFI search |
 | <img src="heterogeneous-agents/envelope-equation-iteration/figures/thumb.png" width="192"> | [**Envelope-Equation Iteration for Buffer-Stock Saving**](heterogeneous-agents/envelope-equation-iteration/) | How the envelope condition computes the IID income-risk saving policy from marginal continuation values | EEI + fine-grid policy check | Iterating on $W_a(a)$ keeps the self-insurance motive in marginal-value form |
-| <img src="heterogeneous-agents/huggett-incomplete-markets/figures/thumb.png" width="192"> | [**Continuous-Time Huggett Incomplete Markets**](heterogeneous-agents/huggett-incomplete-markets/) | Stationary incomplete-market equilibrium with HJB and KFE blocks | HJB + KFE + bond-market clearing | Precautionary saving pushes the equilibrium interest rate below the discount rate |
+| <img src="heterogeneous-agents/huggett-incomplete-markets/figures/thumb.png" width="192"> | [**Huggett Equilibrium and the Risk-Free Rate**](heterogeneous-agents/huggett-incomplete-markets/) | How idiosyncratic income risk and a borrowing limit price a zero-net-supply bond | HJB + KFE + bisection | Precautionary saving lowers the clearing return below the rate of time preference |
 
 ### DSGE and Dynare
 

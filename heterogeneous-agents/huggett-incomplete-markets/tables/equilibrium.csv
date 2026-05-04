@@ -1,8 +1,11 @@
 Variable,Value
 Equilibrium interest rate r*,0.03192
-Mean wealth E[a],-0.00000
+Mean wealth E[a],0.00000
 Mean income E[z],0.1500
 Mean consumption E[c],0.1500
+Mass near borrowing limit,0.1447
 Prob(z = z_low),0.5000
 Prob(z = z_high),0.5000
+Bond-market residual abs(E[a]),2.86e-06
 HJB iterations,8
+HJB final sup-norm change,1.56e-07
