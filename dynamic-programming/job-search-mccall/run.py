@@ -1,347 +1,426 @@
 #!/usr/bin/env python3
-"""McCall Job Search Model: Optimal Sequential Search by an Unemployed Worker.
+"""McCall job search tutorial.
 
-Solves the McCall (1970) job search model using value function iteration
-with JAX. An unemployed worker draws wage offers from a known distribution
-and must decide each period whether to accept (work forever at that wage)
-or reject (collect unemployment benefit, draw again next period).
-
-Reference: McCall, J.J. (1970). "Economics of Information and Job Search."
-           Quarterly Journal of Economics, 84(1), 113-126.
+The script solves a wage-offer search problem on a finite grid and uses the
+continuous lognormal offer distribution as a benchmark for the reservation wage.
+It regenerates README.md, figures, tables, and the catalog thumbnail.
 """
 import sys
 from pathlib import Path
 
-import jax
-import jax.numpy as jnp
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
-from scipy.stats import lognorm
+from scipy.optimize import brentq
+from scipy.stats import lognorm, norm
 
-# Add repo root to path for lib/ imports
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.plotting import setup_style, save_figure
 from lib.output import ModelReport
+from lib.plotting import setup_style
 
 
-def discretize_lognormal(mu: float, sigma: float, n: int):
-    """Discretize a lognormal distribution into n points with probabilities.
+def discretize_lognormal(
+    mu: float,
+    sigma: float,
+    n: int,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Approximate a lognormal distribution with equiprobable mean bins."""
+    edges = np.linspace(0.0, 1.0, n + 1)
+    z_edges = norm.ppf(edges)
+    mean = np.exp(mu + 0.5 * sigma**2)
 
-    Returns (wages, probabilities) where wages are evenly spaced quantile
-    midpoints and probabilities sum to 1.
-    """
-    # Use quantile-based discretization for better coverage
-    dist = lognorm(s=sigma, scale=np.exp(mu))
-    # Create n evenly spaced quantile bins
-    quantile_edges = np.linspace(0.01, 0.99, n + 1)
-    wages = np.array([
-        dist.ppf(0.5 * (quantile_edges[i] + quantile_edges[i + 1]))
-        for i in range(n)
-    ])
-    # Probabilities proportional to the mass in each bin
-    probs = np.diff(dist.cdf(
-        np.array([dist.ppf(q) for q in quantile_edges])
-    ))
-    probs = probs / probs.sum()  # normalize
+    # Conditional means in probability bins preserve the full mean, including
+    # both tails, better than raw quantile midpoints.
+    probs = np.diff(edges)
+    interval_means = mean * (
+        norm.cdf(z_edges[1:] - sigma) - norm.cdf(z_edges[:-1] - sigma)
+    )
+    wages = interval_means / probs
     return wages, probs
 
 
-def solve_mccall(beta: float, b: float, wages: np.ndarray, probs: np.ndarray,
-                 tol: float = 1e-8, max_iter: int = 1000):
-    """Solve the McCall model via value function iteration.
+def expected_max_lognormal(r: float, mu: float, sigma: float) -> float:
+    """Compute E[max(W, r)] for W lognormally distributed."""
+    mean = np.exp(mu + 0.5 * sigma**2)
+    if r <= 0:
+        return float(mean)
+    cdf_at_r = lognorm.cdf(r, s=sigma, scale=np.exp(mu))
+    tail_mean = mean * norm.sf((np.log(r) - mu - sigma**2) / sigma)
+    return float(r * cdf_at_r + tail_mean)
 
-    Bellman equation:
-        V(w) = max{ w/(1-beta),  b + beta * E[V(w')] }
 
-    The continuation value c_val = b + beta * E[V(w')] is the same for all w,
-    so the reservation wage w* satisfies: w*/(1-beta) = c_val.
+def solve_continuous_reservation_wage(
+    beta: float,
+    b: float,
+    mu: float,
+    sigma: float,
+    tol: float = 1e-12,
+) -> float:
+    """Solve the scalar reservation-wage equation under the continuous law."""
+    mean = np.exp(mu + 0.5 * sigma**2)
 
-    Args:
-        beta: Discount factor.
-        b: Unemployment benefit (per-period flow).
-        wages: Discretized wage grid (n_w,).
-        probs: Probability of each wage (n_w,), sums to 1.
-        tol: Convergence tolerance.
-        max_iter: Maximum VFI iterations.
+    def residual(r: float) -> float:
+        continuation = (1.0 - beta) * b
+        continuation += beta * expected_max_lognormal(r, mu, sigma)
+        return r - continuation
 
-    Returns:
-        V: Value function on wage grid.
-        reservation_wage: The reservation wage w*.
-        info: Dict with convergence details.
-    """
-    n_w = len(wages)
-    # Value of accepting each wage forever
+    lower = 0.0
+    upper = max(1.0, b, mean)
+    while residual(upper) <= 0.0:
+        upper *= 2.0
+
+    return float(brentq(residual, lower, upper, xtol=tol, rtol=tol))
+
+
+def continuous_acceptance_probability(w_star: float, mu: float, sigma: float) -> float:
+    """Probability that a continuous lognormal offer exceeds the cutoff."""
+    return float(1.0 - lognorm.cdf(w_star, s=sigma, scale=np.exp(mu)))
+
+
+def solve_mccall(
+    beta: float,
+    b: float,
+    wages: np.ndarray,
+    probs: np.ndarray,
+    tol: float = 1e-8,
+    max_iter: int = 1_000,
+) -> tuple[np.ndarray, float, dict[str, float | int | bool]]:
+    """Solve the finite-grid McCall model by value function iteration."""
     accept_values = wages / (1.0 - beta)
-
-    # Initial guess: V(w) = accept value
-    V = accept_values.copy()
+    value = accept_values.copy()
+    error = np.inf
 
     for iteration in range(1, max_iter + 1):
-        # Continuation value (same for all w)
-        continuation = b + beta * np.dot(probs, V)
-
-        # Bellman update
-        V_new = np.maximum(accept_values, continuation)
-
-        error = np.max(np.abs(V_new - V))
-        if iteration % 50 == 0:
-            print(f"  VFI iteration {iteration:3d}, error = {error:.2e}")
-        V = V_new
-
+        continuation_value = b + beta * np.dot(probs, value)
+        new_value = np.maximum(accept_values, continuation_value)
+        error = float(np.max(np.abs(new_value - value)))
+        value = new_value
         if error < tol:
-            print(f"  VFI converged in {iteration} iterations (error = {error:.2e})")
             break
 
-    # Reservation wage: w*/(1-beta) = continuation value
-    continuation = b + beta * np.dot(probs, V)
-    reservation_wage = (1.0 - beta) * continuation
-
+    continuation_value = b + beta * np.dot(probs, value)
+    reservation_wage = (1.0 - beta) * continuation_value
     info = {
         "iterations": iteration,
         "converged": error < tol,
-        "error": float(error),
-        "continuation_value": float(continuation),
+        "error": error,
+        "continuation_value": float(continuation_value),
     }
-    return V, reservation_wage, info
+    return value, float(reservation_wage), info
 
 
-def main():
-    # =========================================================================
-    # Parameters
-    # =========================================================================
-    beta = 0.95       # Discount factor
-    b = 1.0           # Unemployment benefit (per-period)
-    mu = 0.0          # Log-mean of wage distribution
-    sigma = 1.0       # Log-std of wage distribution
-    n_w = 50          # Number of discrete wage points
-    tol = 1e-8        # Convergence tolerance
+def main() -> None:
+    beta = 0.95
+    b = 1.0
+    mu = 0.0
+    sigma = 1.0
+    n_w = 50
+    tol = 1e-8
 
-    # =========================================================================
-    # Discretize wage distribution
-    # =========================================================================
     wages, probs = discretize_lognormal(mu, sigma, n_w)
-    print(f"Wage grid: [{wages.min():.3f}, {wages.max():.3f}], "
-          f"E[w] = {np.dot(probs, wages):.3f}")
+    mean_wage = float(np.dot(probs, wages))
 
-    # =========================================================================
-    # Solve the baseline model
-    # =========================================================================
-    print("\nSolving baseline McCall model...")
-    V, w_star, info = solve_mccall(beta, b, wages, probs, tol=tol)
+    print(
+        f"Wage grid: [{wages.min():.3f}, {wages.max():.3f}], "
+        f"E[W] = {mean_wage:.3f}"
+    )
+    print("Solving baseline finite-grid McCall model...")
+    value, w_star, info = solve_mccall(beta, b, wages, probs, tol=tol)
+    w_star_cont = solve_continuous_reservation_wage(beta, b, mu, sigma)
+    accept_frac_grid = float(np.sum(probs[wages >= w_star]))
+    accept_frac_cont = continuous_acceptance_probability(w_star_cont, mu, sigma)
+    grid_gap = w_star - w_star_cont
 
-    print(f"  Reservation wage w* = {w_star:.4f}")
-    print(f"  E[w] = {np.dot(probs, wages):.4f}")
-    print(f"  Fraction of offers accepted = "
-          f"{np.sum(probs[wages >= w_star]):.4f}")
+    print(
+        f"  grid w* = {w_star:.4f}; continuous benchmark = {w_star_cont:.4f}; "
+        f"gap = {grid_gap:.4f}"
+    )
 
-    # Accept/reject values for plotting
     accept_values = wages / (1.0 - beta)
-    continuation = b + beta * np.dot(probs, V)
+    continuation_value = b + beta * np.dot(probs, value)
 
-    # =========================================================================
-    # Comparative statics: reservation wage vs beta
-    # =========================================================================
-    print("\nComparative statics: w*(beta)...")
+    print("Building comparative statics...")
     beta_vals = np.linspace(0.80, 0.99, 40)
     wstar_beta = np.zeros_like(beta_vals)
+    wstar_beta_cont = np.zeros_like(beta_vals)
     for i, beta_i in enumerate(beta_vals):
         _, wstar_beta[i], _ = solve_mccall(beta_i, b, wages, probs, tol=tol)
-    print(f"  w* range: [{wstar_beta.min():.3f}, {wstar_beta.max():.3f}]")
+        wstar_beta_cont[i] = solve_continuous_reservation_wage(beta_i, b, mu, sigma)
 
-    # =========================================================================
-    # Comparative statics: reservation wage vs b
-    # =========================================================================
-    print("\nComparative statics: w*(b)...")
     b_vals = np.linspace(0.0, 3.0, 40)
     wstar_b = np.zeros_like(b_vals)
+    wstar_b_cont = np.zeros_like(b_vals)
     for i, b_i in enumerate(b_vals):
         _, wstar_b[i], _ = solve_mccall(beta, b_i, wages, probs, tol=tol)
-    print(f"  w* range: [{wstar_b.min():.3f}, {wstar_b.max():.3f}]")
+        wstar_b_cont[i] = solve_continuous_reservation_wage(beta, b_i, mu, sigma)
 
-    # =========================================================================
-    # Table: reservation wages for parameter grid
-    # =========================================================================
-    print("\nBuilding parameter table...")
-    beta_table = [0.90, 0.95, 0.99]
-    b_table = [0.5, 1.0, 2.0]
+    print("Building parameter table...")
     table_rows = []
-    for beta_t in beta_table:
-        for b_t in b_table:
+    for beta_t in [0.90, 0.95, 0.99]:
+        for b_t in [0.5, 1.0, 2.0]:
             _, w_star_t, info_t = solve_mccall(beta_t, b_t, wages, probs, tol=tol)
-            accept_frac = float(np.sum(probs[wages >= w_star_t]))
-            table_rows.append({
-                "beta": f"{beta_t:.2f}",
-                "b": f"{b_t:.1f}",
-                "w*": f"{w_star_t:.4f}",
-                "Accept %": f"{100 * accept_frac:.1f}",
-                "Iterations": info_t["iterations"],
-            })
+            w_star_t_cont = solve_continuous_reservation_wage(beta_t, b_t, mu, sigma)
+            accept_t_cont = continuous_acceptance_probability(w_star_t_cont, mu, sigma)
+            table_rows.append(
+                {
+                    "beta": f"{beta_t:.2f}",
+                    "b": f"{b_t:.1f}",
+                    "w* grid": f"{w_star_t:.4f}",
+                    "w* cont.": f"{w_star_t_cont:.4f}",
+                    "grid gap": f"{w_star_t - w_star_t_cont:+.4f}",
+                    "Accept % (cont.)": f"{100.0 * accept_t_cont:.1f}",
+                    "VFI iter.": info_t["iterations"],
+                }
+            )
     df_table = pd.DataFrame(table_rows)
 
-    # =========================================================================
-    # Generate Report
-    # =========================================================================
     setup_style()
 
     report = ModelReport(
-        "McCall Job Search and Reservation Wages",
-        "Optimal sequential search by an unemployed worker drawing wage offers "
-        "from a known distribution.",
+        "McCall Job Search and the Reservation Wage",
+        "Sequential wage-offer search, option value, and threshold acceptance.",
+        include_reproduce=False,
+        show_figure_captions=False,
     )
 
     report.add_overview(
-        "The McCall (1970) job search model is the foundational model of frictional "
-        "unemployment. An unemployed worker sequentially draws wage offers from a known "
-        "distribution. Each period, the worker must make an irreversible decision: accept "
-        "the current offer (and work at that wage forever) or reject it (receive unemployment "
-        "benefit $b$ and draw a new offer next period).\n\n"
-        "The key question: how selective should the worker be? The answer is a simple "
-        "**reservation wage** policy: accept any offer above a threshold $w^{*}$ and reject "
-        "anything below it. This threshold balances the cost of continued search (foregone "
-        "wages) against the option value of potentially finding a better match."
+        "The McCall model is a small partial-equilibrium model of unemployment "
+        "with a sharp economic object: the value of waiting for a better wage "
+        "offer. An unemployed worker observes one offer at a time. Accepting "
+        "locks in that wage forever; rejecting pays the unemployment benefit "
+        "$b$ today and preserves the right to draw again tomorrow.\n\n"
+        "The optimal policy is a reservation rule. The worker accepts offers at "
+        "or above a cutoff $w^{*}$ and rejects offers below it. The cutoff is "
+        "not a taste parameter; it is an endogenous price of search, pinned "
+        "down by the wage-offer distribution, the benefit level, and the "
+        "discount factor. This is the worker-side building block behind richer "
+        "search models such as [search and matching unemployment](../diamond-mortensen-pissarides/). "
+        "It also echoes the logic in [income-risk saving](../consumption-savings/): "
+        "a current choice is valuable because it changes exposure to future states."
     )
 
     report.add_equations(
         r"""
-$$V(w) = \max\bigl[ \frac{w}{1-\beta},\; b + \beta \, \mathbb{E}[V(w')] \bigr]$$
+Let $W$ denote a wage offer drawn from distribution $F$, and let $w$ be the
+current realization. The worker discounts next period by $\beta \in (0,1)$.
+Accepting $w$ gives the permanent value
 
-where $w/(1-\beta)$ is the lifetime value of accepting wage $w$ forever, and
-$b + \beta \, \mathbb{E}[V(w')]$ is the value of rejecting (collecting benefit $b$
-today, then drawing a new offer $w'$ tomorrow).
+$$A(w)=\frac{w}{1-\beta}.$$
 
-**Reservation wage** $w^{*}$ solves:
-$$\frac{w^{*}}{1-\beta} = b + \beta \, \mathbb{E}[V(w')]$$
+Rejecting gives the common continuation value
 
-The optimal policy is a threshold rule: accept if $w \ge w^{*}$, reject otherwise.
+$$C=b+\beta \mathbb{E}_{F}[V(W')],$$
+
+so the Bellman equation is
+
+$$V(w)=\max\bigl[ \frac{w}{1-\beta},\; b+\beta \mathbb{E}_{F}[V(W')] \bigr].$$
+
+The reservation wage is the offer that makes the worker indifferent:
+
+$$\frac{w^{*}}{1-\beta}=C.$$
+
+Using this indifference condition inside the Bellman equation gives the scalar
+fixed point
+
+$$w^{*}=(1-\beta)b+\beta \mathbb{E}_{F}[\max\{W',w^{*}\}].$$
+
+This last equation is useful for interpretation. A higher $b$ raises the value
+of rejection directly. A higher $\beta$ raises the option value of future draws.
+A thicker right tail also raises $w^{*}$ because rejecting a mediocre offer buys
+exposure to rare high wages.
 """
     )
 
     report.add_model_setup(
-        f"| Parameter | Value | Description |\n"
-        f"|-----------|-------|-------------|\n"
-        f"| $\\beta$  | {beta} | Discount factor |\n"
-        f"| $b$       | {b} | Unemployment benefit (per period) |\n"
-        f"| $\\mu$    | {mu} | Log-mean of wage distribution |\n"
-        f"| $\\sigma$ | {sigma} | Log-std of wage distribution |\n"
-        f"| Grid      | {n_w} points | Quantile-based discretization |"
+        f"| Object | Value | Role |\n"
+        f"|---|---:|---|\n"
+        f"| Discount factor $\\beta$ | {beta:.2f} | Weight on future search opportunities |\n"
+        f"| Flow benefit $b$ | {b:.1f} | Payoff while unemployed |\n"
+        f"| Wage law | $\\log W \\sim N({mu:.1f},{sigma:.1f}^2)$ | Offer distribution |\n"
+        f"| Mean offer $\\mathbb{{E}}[W]$ | {mean_wage:.4f} | Reference level, not an upper bound on $w^{{*}}$ |\n"
+        f"| Main wage grid | {n_w} bins | Equiprobable bins represented by conditional means |\n"
+        f"| Continuous benchmark | lognormal tail moments | Held-out reservation-wage check |\n"
+        f"| VFI tolerance | {tol:.0e} | Sup-norm stopping rule |"
     )
 
     report.add_solution_method(
-        "**Value Function Iteration (VFI):** Starting from an initial guess "
-        "$V_0(w) = w/(1-\\beta)$ (accept everything), we iterate on the Bellman equation:\n\n"
-        "$$V_{n+1}(w) = \\max\\left\\{ \\frac{w}{1-\\beta},\\; "
-        "b + \\beta \\sum_{w'} p(w') V_n(w') \\right\\}$$\n\n"
-        "The continuation value $b + \\beta \\, \\mathbb{E}[V(w')]$ is the same for all wages, "
-        "which makes the McCall model particularly clean: each iteration requires only a single "
-        "dot product to compute the expected value, then an elementwise max.\n\n"
-        f"Converged in **{info['iterations']} iterations** (error = {info['error']:.2e}).\n\n"
-        f"**Baseline reservation wage:** $w^{*} = {w_star:.4f}$"
+        "On a finite offer grid, the Bellman iteration is especially simple "
+        "because the value of rejecting does not depend on the current offer. "
+        "Each iteration computes one expected continuation value and then "
+        "compares it with the lifetime value of accepting each grid wage.\n\n"
+        "```text\n"
+        "Algorithm: finite-grid McCall VFI\n"
+        "Input: wages w_i, probabilities p_i, beta, benefit b, tolerance epsilon\n"
+        "Output: value function V_i and reservation wage w*\n"
+        "Initialize V_i = w_i / (1 - beta)\n"
+        "repeat for n = 0, 1, 2, ...:\n"
+        "    C_n = b + beta * sum_i p_i V_i\n"
+        "    V_i_new = max{w_i / (1 - beta), C_n} for every wage i\n"
+        "    error = max_i |V_i_new - V_i|\n"
+        "    set V_i = V_i_new\n"
+        "until error < epsilon\n"
+        "set w* = (1 - beta) * (b + beta * sum_i p_i V_i)\n"
+        "```\n\n"
+        "The continuous benchmark uses the scalar reservation-wage equation "
+        "rather than the value function. For a candidate cutoff $r$, compute "
+        "$m(r)=\\mathbb{E}[\\max\\{W,r\\}]$ under the lognormal distribution and "
+        "find the root of $r-(1-\\beta)b-\\beta m(r)=0$ by bracketing.\n\n"
+        "```text\n"
+        "Algorithm: continuous reservation-wage benchmark\n"
+        "Input: beta, b, lognormal parameters mu and sigma, tolerance epsilon\n"
+        "Output: continuous-distribution cutoff r\n"
+        "Define m(r) = E_F[max{W, r}] using lognormal tail moments\n"
+        "Find a bracket [low, high] with residual(low) < 0 < residual(high)\n"
+        "Solve residual(r) = r - (1 - beta)*b - beta*m(r) = 0\n"
+        "```\n\n"
+        f"The finite-grid VFI converged in **{info['iterations']} iterations** "
+        f"with sup-norm error **{info['error']:.2e}**. The baseline cutoff is "
+        f"$w^{{*}}_{{grid}}={w_star:.4f}$, compared with the continuous "
+        f"lognormal benchmark $w^{{*}}_{{cont}}={w_star_cont:.4f}$."
     )
 
-    # --- Figure 1: Accept vs Reject Values ---
     fig1, ax1 = plt.subplots()
-    ax1.plot(wages, accept_values, "b-", linewidth=2,
-             label=r"Accept: $w/(1-\beta)$")
-    ax1.axhline(continuation, color="r", linestyle="--", linewidth=2,
-                label=f"Reject: $b + \\beta E[V(w')]$ = {continuation:.2f}")
-    ax1.axvline(w_star, color="k", linestyle=":", linewidth=1.5, alpha=0.7,
-                label=f"$w^{*} = {w_star:.3f}$")
-    ax1.fill_between(wages, 0, ax1.get_ylim()[1] if ax1.get_ylim()[1] > 0 else 100,
-                     where=wages >= w_star, alpha=0.08, color="green",
-                     label="Accept region")
-    # Reset ylim after fill_between
-    ymin = min(accept_values.min(), continuation) - 2
-    ymax = max(accept_values.max(), continuation) + 2
+    ax1.plot(wages, accept_values, linewidth=2, label=r"Accept: $w/(1-\beta)$")
+    ax1.axhline(
+        continuation_value,
+        color="tab:red",
+        linestyle="--",
+        linewidth=2,
+        label=rf"Reject: $C={continuation_value:.2f}$",
+    )
+    ax1.axvline(
+        w_star,
+        color="black",
+        linestyle=":",
+        linewidth=1.8,
+        label=rf"Grid $w^{{*}}={w_star:.2f}$",
+    )
+    ax1.axvline(
+        w_star_cont,
+        color="0.45",
+        linestyle="-.",
+        linewidth=1.4,
+        label=rf"Continuous $w^{{*}}={w_star_cont:.2f}$",
+    )
+    ymin = min(accept_values.min(), continuation_value) - 2.0
+    ymax = max(accept_values.max(), continuation_value) + 2.0
     ax1.set_ylim(ymin, ymax)
-    ax1.fill_between(wages, ymin, ymax,
-                     where=wages >= w_star, alpha=0.08, color="green")
+    ax1.axvspan(w_star, wages.max(), color="tab:green", alpha=0.08)
     ax1.set_xlabel("Wage offer $w$")
     ax1.set_ylabel("Lifetime value")
-    ax1.set_title("Accept vs Reject: Identifying the Reservation Wage")
+    ax1.set_title("Threshold Logic")
     ax1.legend(loc="lower right")
-    report.add_figure("figures/accept-vs-reject.png",
-                      "Value of accepting vs rejecting each wage offer. "
-                      "The reservation wage is where the two curves intersect.",
-                      fig1,
-        description="The accept value rises linearly in the wage offer while the reject value is flat (it depends only on the distribution of future offers). "
-        "Their intersection defines w*: below it the option value of continued search exceeds the offered wage, above it accepting dominates.")
-
-    # --- Figure 2: Reservation wage vs beta ---
-    fig2, ax2 = plt.subplots()
-    ax2.plot(beta_vals, wstar_beta, "b-", linewidth=2)
-    ax2.axhline(np.dot(probs, wages), color="gray", linestyle=":", alpha=0.5,
-                label=f"$E[w] = {np.dot(probs, wages):.2f}$")
-    ax2.axhline(b, color="r", linestyle=":", alpha=0.5,
-                label=f"$b = {b:.1f}$")
-    ax2.set_xlabel("Discount factor $\\beta$")
-    ax2.set_ylabel("Reservation wage $w^{*}$")
-    ax2.set_title("Reservation Wage vs Patience")
-    ax2.legend()
-    report.add_figure("figures/wstar-vs-beta.png",
-                      "More patient workers (higher beta) are more selective, "
-                      "demanding higher wages before accepting.",
-                      fig2,
-        description="The reservation wage rises steeply as beta approaches 1, because patient workers weight future opportunities almost as heavily as the present. "
-        "The reference lines show that w* always lies between the unemployment benefit b and the expected wage E[w].")
-
-    # --- Figure 3: Reservation wage vs b ---
-    fig3, ax3 = plt.subplots()
-    ax3.plot(b_vals, wstar_b, "r-", linewidth=2)
-    ax3.plot(b_vals, b_vals, "k:", linewidth=1, alpha=0.5, label="45-degree line")
-    ax3.axhline(np.dot(probs, wages), color="gray", linestyle=":", alpha=0.5,
-                label=f"$E[w] = {np.dot(probs, wages):.2f}$")
-    ax3.set_xlabel("Unemployment benefit $b$")
-    ax3.set_ylabel("Reservation wage $w^{*}$")
-    ax3.set_title("Reservation Wage vs Unemployment Benefits")
-    ax3.legend()
-    report.add_figure("figures/wstar-vs-benefits.png",
-                      "Higher unemployment benefits raise the reservation wage: "
-                      "workers can afford to be more selective when the safety net is generous.",
-                      fig3,
-        description="This is the central policy trade-off in unemployment insurance design: generous benefits improve match quality "
-        "(workers hold out for better jobs) but extend unemployment duration. The slope of the curve quantifies this moral hazard effect.")
-
-    # --- Table ---
-    report.add_table("tables/reservation-wages.csv",
-                     "Reservation wage and acceptance probability for different "
-                     "parameter combinations",
-                     df_table,
-        description="The interaction between patience (beta) and the safety net (b) shapes search behavior: "
-        "a patient worker with generous benefits accepts fewer than half of offers, while an impatient worker with low benefits accepts nearly all.")
-
-    report.add_takeaway(
-        "The McCall model provides the cleanest illustration of the **search-theoretic "
-        "approach** to unemployment. Unemployment is not involuntary idleness but an "
-        "investment in finding a better match.\n\n"
-        "**Key insights:**\n"
-        "- The optimal policy is a simple **threshold rule**: accept any wage above $w^{*}$, "
-        "reject below. No complicated history-dependence is needed.\n"
-        "- **Higher unemployment benefits $\\Rightarrow$ higher reservation wage $\\Rightarrow$ "
-        "longer unemployment spells** but better eventual matches. This is the core policy "
-        "trade-off in unemployment insurance design.\n"
-        "- **More patient workers (higher $\\beta$) are more selective.** A patient worker "
-        "values the option of future draws more, so they hold out for better offers.\n"
-        "- The reservation wage $w^{*}$ is *always above* the unemployment benefit $b$ "
-        "(since the option value of search is positive) but *below* the expected wage "
-        "$E[w]$ (since accepting a good offer now avoids the risk of worse draws later).\n"
-        "- Despite its simplicity, this model is the building block for richer search models "
-        "with on-the-job search, matching functions, and equilibrium wage determination "
-        "(Mortensen-Pissarides)."
+    report.add_figure(
+        "figures/accept-vs-reject.png",
+        "Accept and reject values with finite-grid and continuous reservation wages.",
+        fig1,
+        description=(
+            "The first figure shows the reservation rule in value units. "
+            "Accepting is linear in the current offer, while rejecting is flat "
+            "because it depends only on the distribution of future offers. In "
+            f"the baseline calibration the finite grid accepts about "
+            f"**{100.0 * accept_frac_grid:.1f}%** of grid offers. The continuous "
+            f"benchmark accepts **{100.0 * accept_frac_cont:.1f}%** of offers."
+        ),
     )
 
-    report.add_references([
-        "McCall, J.J. (1970). \"Economics of Information and Job Search.\" "
-        "*Quarterly Journal of Economics*, 84(1), 113-126.",
-        "Ljungqvist, L. and Sargent, T. (2018). *Recursive Macroeconomic Theory*. "
-        "MIT Press, 4th edition, Ch. 6.",
-        "Stokey, N., Lucas, R., and Prescott, E. (1989). *Recursive Methods in "
-        "Economic Dynamics*. Harvard University Press.",
-    ])
+    fig2, ax2 = plt.subplots()
+    ax2.plot(beta_vals, wstar_beta, linewidth=2, label="50-bin grid")
+    ax2.plot(
+        beta_vals,
+        wstar_beta_cont,
+        color="black",
+        linestyle="--",
+        linewidth=1.8,
+        label="Continuous benchmark",
+    )
+    ax2.axhline(mean_wage, color="0.55", linestyle=":", linewidth=1.2, label=r"$E[W]$")
+    ax2.axhline(b, color="tab:red", linestyle=":", linewidth=1.2, label="$b$")
+    ax2.set_xlabel("Discount factor $\\beta$")
+    ax2.set_ylabel("Reservation wage $w^{*}$")
+    ax2.set_title("Patience and Search Option Value")
+    ax2.legend()
+    report.add_figure(
+        "figures/wstar-vs-beta.png",
+        "Reservation wage by discount factor with continuous benchmark.",
+        fig2,
+        description=(
+            "Patience makes the worker more selective because the future draw "
+            "arrives almost as valuable as the current payoff. The cutoff can "
+            "rise above the mean offer in a right-skewed distribution; the mean "
+            "is a reference point, not a bound on optimal selectivity."
+        ),
+    )
+
+    fig3, ax3 = plt.subplots()
+    ax3.plot(b_vals, wstar_b, color="tab:red", linewidth=2, label="50-bin grid")
+    ax3.plot(
+        b_vals,
+        wstar_b_cont,
+        color="black",
+        linestyle="--",
+        linewidth=1.8,
+        label="Continuous benchmark",
+    )
+    ax3.plot(b_vals, b_vals, color="0.45", linestyle=":", linewidth=1.2, label="45-degree line")
+    ax3.axhline(mean_wage, color="0.55", linestyle=":", linewidth=1.2, label=r"$E[W]$")
+    ax3.set_xlabel("Unemployment benefit $b$")
+    ax3.set_ylabel("Reservation wage $w^{*}$")
+    ax3.set_title("Benefits and the Outside Option")
+    ax3.legend()
+    report.add_figure(
+        "figures/wstar-vs-benefits.png",
+        "Reservation wage by unemployment benefit with continuous benchmark.",
+        fig3,
+        description=(
+            "Benefits move the outside option one for one only in the limiting "
+            "case where search has no upside. With a non-degenerate wage offer "
+            "distribution, a higher benefit also preserves the option to wait, "
+            "so the cutoff remains above the 45-degree line over this range."
+        ),
+    )
+
+    report.add_table(
+        "tables/reservation-wages.csv",
+        "Reservation wages and continuous-benchmark acceptance rates",
+        df_table,
+        description=(
+            "The parameter grid separates two margins. Increasing $b$ improves "
+            "the payoff from unemployment today. Increasing $\\beta$ raises the "
+            "present value of future draws. Both margins reduce the probability "
+            "that a fresh offer is accepted."
+        ),
+    )
+
+    report.add_takeaway(
+        "The McCall model is useful because it turns unemployment duration into "
+        "a reservation-price problem. The worker rejects low offers not because "
+        "the current benefit is large by itself, but because rejecting preserves "
+        "a valuable claim on future wage draws. In this calibration the right "
+        "tail is important enough that the cutoff can sit above the mean offer, "
+        "a point the finite-grid and continuous benchmarks make explicit. The "
+        "same acceptance-threshold logic is the partial-equilibrium core of "
+        "larger search models with matching frictions, endogenous vacancies, "
+        "and equilibrium wage determination."
+    )
+
+    report.add_references(
+        [
+            "McCall, J.J. (1970). \"Economics of Information and Job Search.\" "
+            "*Quarterly Journal of Economics*, 84(1), 113-126.",
+            "Ljungqvist, L. and Sargent, T. (2018). *Recursive Macroeconomic Theory*. "
+            "MIT Press, 4th edition, Ch. 6.",
+            "Stokey, N., Lucas, R., and Prescott, E. (1989). *Recursive Methods in "
+            "Economic Dynamics*. Harvard University Press.",
+            "Pissarides, C.A. (2000). *Equilibrium Unemployment Theory*. MIT Press.",
+        ]
+    )
 
     report.write("README.md")
-    print(f"\nGenerated: README.md + {len(report._figures)} figures + "
-          f"{len(report._tables)} tables")
+    print(
+        f"Generated README.md, {len(report._figures)} figures, "
+        f"and {len(report._tables)} table."
+    )
 
 
 if __name__ == "__main__":
