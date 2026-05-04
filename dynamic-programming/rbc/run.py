@@ -16,7 +16,7 @@ import pandas as pd
 
 # Add repo root to path for lib/ imports
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.plotting import setup_style, save_figure
+from lib.plotting import setup_style
 from lib.output import ModelReport
 
 
@@ -80,11 +80,17 @@ def main():
     # =========================================================================
     # From FOC: r = alpha * (k/l)^(alpha-1) = 1/beta - 1 + delta
     # => k/l = ((1/alpha) * (1/beta + delta - 1))^(1/(alpha-1))
-    k_l_ratio = ((1.0 / alpha) * (1.0 / beta + delta - 1.0)) ** (1.0 / (alpha - 1.0))
-    # Steady state from intratemporal condition: phi/(1-l) = w/c, w = (1-alpha)*(k/l)^alpha
-    k_ss_approx = k_l_ratio * 0.33  # l ~ 1/3 in steady state
+    rental_rate_ss = 1.0 / beta - 1.0 + delta
+    k_l_ratio = (rental_rate_ss / alpha) ** (1.0 / (alpha - 1.0))
+    wage_per_labor_ss = (1.0 - alpha) * k_l_ratio ** alpha
+    net_output_per_labor_ss = k_l_ratio ** alpha - delta * k_l_ratio
+    l_ss = wage_per_labor_ss / (wage_per_labor_ss + phi * net_output_per_labor_ss)
+    k_ss = k_l_ratio * l_ss
+    y_ss = k_ss ** alpha * l_ss ** (1.0 - alpha)
+    c_ss = y_ss - delta * k_ss
+    i_ss = delta * k_ss
     print(f"Steady-state k/l ratio: {k_l_ratio:.4f}")
-    print(f"Approximate steady-state k: {k_ss_approx:.4f}")
+    print(f"Deterministic steady state: k={k_ss:.4f}, l={l_ss:.4f}, c={c_ss:.4f}")
 
     # =========================================================================
     # Precompute return matrix for all (k, z, k', l) combinations
@@ -296,37 +302,73 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "Real Business Cycles with Capital Accumulation",
-        "Aggregate TFP shocks drive business cycles through optimal responses of "
-        "consumption, investment, and labor supply (Kydland and Prescott, 1982).",
+        "RBC Capital, Labor, and Business-Cycle Moments",
+        "Persistent productivity shocks move output on impact, while investment and "
+        "labor choices determine how the cycle propagates.",
+        include_reproduce=False,
+        show_figure_captions=False,
     )
 
     report.add_overview(
-        "The Real Business Cycle (RBC) model is the foundational framework of modern "
-        "macroeconomics. A representative agent chooses consumption, labor supply, and "
-        "investment to maximize expected discounted utility. Aggregate productivity "
-        "follows a stochastic process (here a 2-state Markov chain), and the economy's "
-        "response to these shocks generates business cycle fluctuations.\n\n"
-        "This implementation solves the full model with endogenous labor supply using "
-        "value function iteration with grid search over both the capital and labor "
-        "choice variables."
+        "This tutorial puts the standard real-business-cycle mechanism on a finite "
+        "state space. A representative household owns the capital stock, supplies labor, "
+        "and chooses investment after observing aggregate productivity. Good technology "
+        "states raise the return to working and accumulating capital; bad states make "
+        "investment the main margin that absorbs the shock.\n\n"
+        "The example is intentionally global and nonlinear. Unlike the later "
+        "[Dynare RBC](../../dynare/rbc/) tutorial, it does not log-linearize around the "
+        "steady state. Unlike the larger [nonlinear RBC](../../global-dsge/rbc-nonlinear/) "
+        "tutorial, it keeps productivity to two Markov states so the Bellman logic, "
+        "policy functions, and simulated business-cycle moments fit in one pass."
     )
 
     report.add_equations(
         r"""
-$$V(k, z) = \max_{k', l} \bigl[ \ln(c) + \phi \ln(1-l) + \beta \, \mathbb{E}\left[ V(k', z') \,|\, z \right] \bigr]$$
+Let $k_t$ be capital at the start of period $t$, $z_t$ aggregate TFP,
+$l_t \in (0,1)$ labor, $c_t>0$ consumption, and $k_{t+1}$ next-period
+capital. Output is
 
-subject to the budget constraint:
+$$y_t = z_t k_t^\alpha l_t^{1-\alpha}, \qquad \alpha \in (0,1).$$
 
-$$c = z \, k^\alpha \, l^{1-\alpha} + (1-\delta) k - k'$$
+Capital evolves through the resource constraint
 
-where $k$ is capital, $z$ is TFP, $l$ is labor, $c$ is consumption, $k'$ is next-period capital, $\alpha$ is the capital share, $\delta$ is depreciation, and $\phi$ is the weight on leisure.
+$$c_t + k_{t+1} = z_t k_t^\alpha l_t^{1-\alpha}
+    + (1-\delta)k_t.$$
 
-**TFP process:** $z \in \{0.95, 1.05\}$ with transition matrix $P_{ij} = \Pr(z'=z_j \mid z=z_i)$:
+The household has period utility
+
+$$u(c_t,l_t)=\log c_t + \phi \log(1-l_t), \qquad \phi>0,$$
+
+and maximizes $\mathbb{E}_0\sum_{t=0}^{\infty}\beta^t u(c_t,l_t)$.
+With $z \in \{z_L,z_H\}=\{0.95,1.05\}$ and
+$P_{ij}=\Pr(z_{t+1}=z_j\mid z_t=z_i)$,
 
 $$P = \begin{pmatrix} 0.95 & 0.05 \\ 0.05 & 0.95 \end{pmatrix}$$
 
-**Steady state (deterministic, $z=1$):** $k/l = \left[\frac{1}{\alpha}\left(\frac{1}{\beta} + \delta - 1\right)\right]^{1/(\alpha-1)}$
+is the productivity transition matrix.
+
+The recursive problem is
+
+$$V(k,z_i)=\max_{k',l}
+\bigl[
+\log c+\phi\log(1-l)+
+\beta \sum_j P_{ij}V(k',z_j)
+\bigr],$$
+
+where $c=z_i k^\alpha l^{1-\alpha}+(1-\delta)k-k'$ and infeasible choices
+with $c \leq 0$ are discarded. The capital policy is $g_k(k,z)$ and the labor
+policy is $g_l(k,z)$.
+
+The deterministic $z=1$ steady state is useful as a benchmark. Its capital-labor
+ratio satisfies
+
+$$\frac{k}{l} =
+\left(\frac{1/\beta-1+\delta}{\alpha}\right)^{1/(\alpha-1)},$$
+
+and labor is pinned down by
+
+$$\frac{\phi}{1-l} =
+\frac{(1-\alpha)(k/l)^\alpha}{l\left((k/l)^\alpha-\delta(k/l)\right)}.$$
 """
     )
 
@@ -337,47 +379,74 @@ $$P = \begin{pmatrix} 0.95 & 0.05 \\ 0.05 & 0.95 \end{pmatrix}$$
         f"| $\\delta$ | {delta} | Depreciation rate |\n"
         f"| $\\alpha$ | {alpha:.4f} | Capital share |\n"
         f"| $\\phi$   | {phi} | Weight on leisure |\n"
-        f"| $z$       | {{0.95, 1.05}} | TFP states |\n"
-        f"| $K$ grid  | [{k_min}, {k_max}], {n_k} pts | Capital grid |\n"
-        f"| $L$ grid  | [{l_min}, {l_max}], {n_l} pts | Labor grid |"
+        f"| $z$       | {{0.95, 1.05}} | Low and high TFP states |\n"
+        f"| $P_{{ii}}$ | {P[0, 0]:.2f} | Probability that TFP remains in the same state |\n"
+        f"| $k_{{ss}}$ | {k_ss:.4f} | Deterministic steady-state capital at $z=1$ |\n"
+        f"| $l_{{ss}}$ | {l_ss:.4f} | Deterministic steady-state labor |\n"
+        f"| $c_{{ss}}$ | {c_ss:.4f} | Deterministic steady-state consumption |\n"
+        f"| $i_{{ss}}$ | {i_ss:.4f} | Deterministic steady-state investment |\n"
+        f"| Capital grid | [{k_min}, {k_max}], {n_k} points | State and $k'$ choice grid |\n"
+        f"| Labor grid | [{l_min}, {l_max}], {n_l} points | Candidate values for $l$ |\n"
+        f"| Tolerance | {tol:.0e} | Sup-norm convergence criterion |\n"
+        f"| Simulation periods | {T_sim} | Kept after {T_burn} burn-in periods |"
     )
 
     report.add_solution_method(
-        "**Value Function Iteration (VFI) with grid search:** For each state $(k, z)$, "
-        "we search over all combinations of next-period capital $k'$ and current labor $l$ "
-        "to find the maximizing pair. The continuation value $\\mathbb{E}[V(k',z') | z]$ "
-        "is computed using the Markov transition matrix.\n\n"
-        "Starting from $V_0 = 0$, iterate:\n\n"
-        "$$V_{n+1}(k, z) = \\max_{k', l} \\left\\{ \\ln(c) + \\phi \\ln(1-l) + "
-        "\\beta \\sum_{z'} P(z'|z) V_n(k', z') \\right\\}$$\n\n"
-        f"until $\\|V_{{n+1}} - V_n\\|_\\infty < {tol}$.\n\n"
-        f"Converged in **{info['iterations']} iterations** (error = {info['error']:.2e})."
+        "The solution approximates $V(k,z)$ on the capital grid and treats labor as a "
+        "static choice nested inside the Bellman update. For every current state, the "
+        "solver evaluates all feasible pairs $(l,k')$. The continuation value is the "
+        "Markov expectation over tomorrow's productivity state.\n\n"
+        "```text\n"
+        "Algorithm: global VFI for the two-state RBC model\n"
+        "Input: capital grid K, labor grid L, TFP states Z, transition matrix P,\n"
+        "       primitives beta, delta, alpha, phi, tolerance epsilon\n"
+        "Output: value V(k,z), capital policy g_k(k,z), labor policy g_l(k,z)\n"
+        "Precompute u(k,z,l,k') for every feasible c = z k^alpha l^(1-alpha) + (1-delta)k - k'\n"
+        "Initialize V_0(k,z) from a steady-state-like consumption rule\n"
+        "repeat for n = 0, 1, 2, ...:\n"
+        "    for each productivity state z_i:\n"
+        "        EV_n(k',z_i) = sum_j P_ij V_n(k',z_j)\n"
+        "    for each state (k,z_i):\n"
+        "        choose (l,k') maximizing u(k,z_i,l,k') + beta * EV_n(k',z_i)\n"
+        "        record V_{n+1}(k,z_i), g_l(k,z_i), and g_k(k,z_i)\n"
+        "    error = max_{k,z} |V_{n+1}(k,z) - V_n(k,z)|\n"
+        "until error < epsilon\n"
+        "Simulate z_t from P, apply the policies, HP-filter log series, and compute moments\n"
+        "```\n\n"
+        "There is no closed-form stochastic policy here, so the deterministic steady state "
+        "serves only as a benchmark location. The economic diagnostics are the policy "
+        "functions and the simulated second moments. The VFI loop converged in "
+        f"**{info['iterations']} iterations** with sup-norm error **{info['error']:.2e}**."
     )
 
     # --- Figure 1: Value Function ---
     fig1, ax1 = plt.subplots()
     ax1.plot(k_grid, V[:, 0], "b-", linewidth=2, label=f"$z = {z_vals[0]:.2f}$ (low)")
     ax1.plot(k_grid, V[:, 1], "r-", linewidth=2, label=f"$z = {z_vals[1]:.2f}$ (high)")
+    ax1.axvline(k_ss, color="k", linestyle=":", linewidth=1.0, alpha=0.7, label="$k_{ss}$ at $z=1$")
     ax1.set_xlabel("Capital $k$")
     ax1.set_ylabel("$V(k, z)$")
     ax1.set_title("Value Function")
     ax1.legend()
-    report.add_figure("figures/value-function.png", "Value function V(k,z) for both TFP states", fig1,
-        description="The gap between the high- and low-TFP value functions measures the welfare cost of being in a recession. "
-        "Both curves are concave, reflecting the agent's desire to smooth consumption across states and over time.")
+    report.add_figure("figures/value-function.png", "Value function by capital and TFP state", fig1,
+        description="The value function is increasing in capital and higher in the good productivity state. "
+        "The vertical line is the exact deterministic steady state at $z=1$; the stochastic economy does not stay there, "
+        "but it is a useful reference point for reading the state space.")
 
     # --- Figure 2: Capital Policy Function ---
     fig2, ax2 = plt.subplots()
     ax2.plot(k_grid, k_prime_policy[:, 0], "b-", linewidth=2, label=f"$z = {z_vals[0]:.2f}$ (low)")
     ax2.plot(k_grid, k_prime_policy[:, 1], "r-", linewidth=2, label=f"$z = {z_vals[1]:.2f}$ (high)")
     ax2.plot(k_grid, k_grid, "k:", linewidth=0.8, alpha=0.5, label="45-degree line")
+    ax2.axvline(k_ss, color="0.35", linestyle="--", linewidth=1.0, alpha=0.7, label="$k_{ss}$ at $z=1$")
     ax2.set_xlabel("Capital $k$")
     ax2.set_ylabel("Next-period capital $k'$")
     ax2.set_title("Capital Policy Function")
     ax2.legend()
-    report.add_figure("figures/capital-policy.png", "Capital policy k'(k,z): investment is higher in the high-TFP state", fig2,
-        description="In the high-TFP state, the agent invests more because the marginal product of capital is higher. "
-        "The crossing of the 45-degree line identifies the state-dependent steady states; the economy oscillates between them as TFP switches.")
+    report.add_figure("figures/capital-policy.png", "Capital policy by TFP state", fig2,
+        description="The capital policy is the main intertemporal object. Where $g_k(k,z)$ lies above the 45-degree line, "
+        "gross investment more than offsets depreciation and capital rises. The high-TFP policy is above the low-TFP policy "
+        "because productivity raises the return to carrying capital into the next period.")
 
     # --- Figure 3: Simulated Output Path ---
     fig3, axes3 = plt.subplots(2, 1, figsize=(10, 7), sharex=True)
@@ -396,8 +465,9 @@ $$P = \begin{pmatrix} 0.95 & 0.05 \\ 0.05 & 0.95 \end{pmatrix}$$
     axes3[1].set_title("Productivity Shocks")
     fig3.tight_layout()
     report.add_figure("figures/simulation.png", "Simulated output, consumption, and TFP paths", fig3,
-        description="Output responds immediately to TFP shocks but consumption is visibly smoother, reflecting the agent's optimal smoothing behavior. "
-        "The gap between output and consumption is investment, which absorbs most of the volatility.")
+        description="A simulated path makes the mechanism less abstract. Output jumps when TFP switches, while consumption moves less "
+        "because the household smooths marginal utility. The gap between output and consumption is investment, so investment takes "
+        "much of the adjustment when productivity changes.")
 
     # --- Figure 4: Business Cycle Comovements ---
     fig4, axes4 = plt.subplots(2, 2, figsize=(12, 8))
@@ -430,9 +500,10 @@ $$P = \begin{pmatrix} 0.95 & 0.05 \\ 0.05 & 0.95 \end{pmatrix}$$
     axes4[1, 1].legend()
 
     fig4.tight_layout()
-    report.add_figure("figures/comovements.png", "Business cycle comovements: cyclical components from HP filter", fig4,
-        description="These panels reproduce the core stylized facts that motivated the RBC literature: consumption is less volatile than output, "
-        "investment is more volatile, and labor is procyclical. Capital moves sluggishly because it is a stock that adjusts only through the flow of investment.")
+    report.add_figure("figures/comovements.png", "HP-filtered cyclical comovements", fig4,
+        description="The HP-filtered series show the second-moment logic usually used to summarize RBC models. Consumption is smoother "
+        "than output, investment is much more volatile, and labor is procyclical. Capital is persistent because it is a stock, "
+        "so it comoves less tightly with the contemporaneous output cycle.")
 
     # --- Table: Business Cycle Statistics ---
     bc_data = {
@@ -447,24 +518,20 @@ $$P = \begin{pmatrix} 0.95 & 0.05 \\ 0.05 & 0.95 \end{pmatrix}$$
         "tables/business-cycle-stats.csv",
         "Business Cycle Statistics (HP-filtered, simulated 5000 periods)",
         df,
-        description="These statistics are the standard diagnostic for RBC models. The relative standard deviations and correlations "
-        "should be compared against U.S. quarterly data: consumption smoother than output, investment 2-3x more volatile, and all variables procyclical.",
+        description="The table reports model moments, not empirical estimates. They are the standard RBC diagnostic: relative volatility "
+        "says which margins absorb shocks, correlations say which variables are procyclical, and autocorrelations summarize propagation.",
     )
 
     report.add_takeaway(
-        "The RBC model replicates several key stylized facts of business cycles:\n\n"
-        "**Key insights:**\n"
-        f"- **Investment is more volatile than output** (relative std = {rel_i:.2f}), while "
-        f"**consumption is smoother** (relative std = {rel_c:.2f}). This reflects consumption "
-        "smoothing: agents use investment as a buffer against shocks.\n"
-        f"- **Labor and output are strongly procyclical** (corr = {corr_ly:.2f}). When "
-        "productivity is high, higher wages induce agents to work more.\n"
-        f"- **Capital is a slow-moving state variable** (autocorr = {ac_k:.2f}) that generates "
-        "persistence in output even from i.i.d.-like shocks to TFP.\n"
-        "- All variables are procyclical, consistent with a supply-driven theory of "
-        "business cycles where technology shocks are the main impulse.\n"
-        "- The model's main limitation: it struggles to match the observed volatility of hours "
-        "worked relative to output, a well-known challenge for the basic RBC framework."
+        "In this finite-state RBC economy, the technology shock is the impulse, but the "
+        "capital and labor policies decide the propagation. Investment is the volatile "
+        f"margin, with relative standard deviation **{rel_i:.2f}**, while consumption is "
+        f"smoother at **{rel_c:.2f}**. Labor is strongly procyclical "
+        f"($\\mathrm{{corr}}(L,Y)$ = **{corr_ly:.2f}**), and capital is highly persistent "
+        f"(autocorr = **{ac_k:.2f}**) because it moves only through accumulated investment. "
+        "The useful lesson is not that this small calibration is a complete quantitative "
+        "business-cycle model; it is that a Bellman equation over aggregate capital and TFP "
+        "can produce the canonical RBC moment comparisons without leaving the nonlinear policy functions."
     )
 
     report.add_references([
