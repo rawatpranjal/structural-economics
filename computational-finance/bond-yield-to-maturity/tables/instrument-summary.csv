@@ -1,0 +1,7 @@
+Instrument,Price,YTM,PV at YTM,Interpretation
+Simple loan,1000.00,1.60%,1000.00,One final principal-plus-interest payment.
+Discount bond,95.00,1.03%,95.00,No coupon; all payoff comes at maturity.
+Perpetuity,99.00,5.05%,99.00,Closed-form yield is coupon divided by price.
+Fixed-payment loan,100000.00,7.00%,100000.00,Equal annual payments amortize the loan.
+Coupon bond,95.00,10.84%,95.00,Coupon stream plus final face value.
+Arbitrary cash flow,486.84,10.00%,486.84,YTM is still a root of the present-value equation.

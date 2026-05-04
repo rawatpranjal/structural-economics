@@ -1,0 +1,4 @@
+Model,RMSE (bp),MAE (bp),Mean error (bp),Test obs.
+AR(1),5.95,4.56,-1.91,75
+No-change,5.54,4.33,-1.00,75
+Estimated rho,0.944,,,175

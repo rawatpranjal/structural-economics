@@ -1,0 +1,4 @@
+Portfolio,Return,Risk,Sharpe,Bills,Bonds,Equity,Real assets
+Global min variance,2.51%,1.00%,0.51,100.1%,-0.7%,-0.1%,0.8%
+Tangency,2.97%,1.37%,0.71,85.8%,7.7%,2.6%,3.9%
+Best simulated long-only Sharpe,2.96%,1.37%,0.70,87.0%,5.9%,2.9%,4.2%

@@ -1,0 +1,8 @@
+Diagnostic,Value,Null benchmark
+Lag-1 predictive slope,0.118,0
+Predictive R-squared,0.014,0
+Variance ratio q=2,1.118,1
+Variance ratio q=5,1.161,1
+Variance ratio q=10,1.056,1
+Variance ratio q=20,1.029,1
+Mean daily change (bp),0.03,0

@@ -147,6 +147,19 @@ These tutorials are for macro data handling and reduced-form forecasting tools t
 | <img src="time-series/fred-macro-data/figures/thumb.png" width="240"> | [**FRED-Style Business Cycle Facts**](time-series/fred-macro-data/) | Business-cycle moments from macro time series | HP filter | Cyclical components reveal Okun and Phillips patterns |
 | <img src="time-series/stock-watson/figures/thumb.png" width="240"> | [**Stock-Watson Factor Forecasting**](time-series/stock-watson/) | Extracting common factors from large panels | PCA | A small number of factors can improve forecasts |
 
+## Computational Finance
+
+These tutorials convert the old computational-finance notebooks into short, reproducible finance examples. The emphasis is interpretation: bond prices, yield curves, predictability tests, and portfolio frontiers are useful only when the data object and maintained assumptions are clear.
+
+| | Tutorial | What it teaches | Method | Key Insight |
+|:---:|---|---|---|---|
+| <img src="computational-finance/bond-yield-to-maturity/figures/thumb.png" width="240"> | [**Bond Prices and Yield to Maturity**](computational-finance/bond-yield-to-maturity/) | Pricing promised cash flows and solving for implied yields | Root finding | YTM is an implied discount rate, not a guaranteed realized return |
+| <img src="computational-finance/treasury-yield-curve/figures/thumb.png" width="240"> | [**Treasury Yield Curve Snapshots**](computational-finance/treasury-yield-curve/) | Reading curve levels, slopes, and maturity patterns | Static data analysis | CMT rates summarize an interpolated par-yield curve |
+| <img src="computational-finance/fama-bliss-forward-regression/figures/thumb.png" width="240"> | [**Fama-Bliss-Style Forward Regressions**](computational-finance/fama-bliss-forward-regression/) | Testing whether forward spreads predict future yield changes | OLS regression | Forward-rate predictability needs careful data and horizon choices |
+| <img src="computational-finance/ar1-rate-forecasting/figures/thumb.png" width="240"> | [**AR(1) Forecasting for Treasury Yields**](computational-finance/ar1-rate-forecasting/) | Forecasting persistent interest rates against a no-change benchmark | AR(1) regression | Simple persistence benchmarks are hard to beat at short horizons |
+| <img src="computational-finance/efficient-market-tests/figures/thumb.png" width="240"> | [**Weak-Form Efficient-Market Diagnostics**](computational-finance/efficient-market-tests/) | Autocorrelation, variance-ratio, and predictability checks | Random-walk diagnostics | Rejections test both market efficiency and the expected-return model |
+| <img src="computational-finance/mean-variance-frontier/figures/thumb.png" width="240"> | [**Mean-Variance Portfolio Frontier**](computational-finance/mean-variance-frontier/) | Diversification, covariance, and efficient portfolios | Markowitz frontier | Covariance drives risk, and frontiers are input-sensitive |
+
 ## Computational Methods
 
 Methods are now at the bottom because they are support tools for the subject areas above. These tutorials are still useful as standalone references when optimization or sampling is the bottleneck.
