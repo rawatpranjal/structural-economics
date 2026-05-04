@@ -77,7 +77,7 @@ These tutorials solve macro models on grids to keep taxes, constraints, and nonl
 | | Tutorial | What it teaches | Method | Key Insight |
 |:---:|---|---|---|---|
 | <img src="global-dsge/rbc-capital-tax/figures/thumb.png" width="192"> | [**Capital Tax Wedges in an RBC Model**](global-dsge/rbc-capital-tax/) | How a revenue-neutral capital tax lowers after-tax returns, saving, and the capital base | Global VFI + Euler refinement | Lump-sum rebates leave resources intact but do not undo the Euler wedge |
-| <img src="global-dsge/rbc-irreversible-investment/figures/thumb.png" width="192"> | [**RBC with Irreversible Investment**](global-dsge/rbc-irreversible-investment/) | Occasionally binding investment constraints | VFI + constraint | Irreversibility amplifies downturns |
+| <img src="global-dsge/rbc-irreversible-investment/figures/thumb.png" width="192"> | [**Irreversible Investment and Capital Overhang in RBC**](global-dsge/rbc-irreversible-investment/) | How an $I_t \geq 0$ constraint changes policy only when low productivity meets high installed capital | Global VFI + fine-grid check | The steady state is unchanged, but recession states have a real policy kink |
 | <img src="global-dsge/heaton-lucas/figures/thumb.png" width="192"> | [**Heaton-Lucas Incomplete Markets via STPFI**](global-dsge/heaton-lucas/) | Portfolio choice with heterogeneous agents and trading constraints | STPFI | Trading constraints create asset-pricing kinks and risk premia |
 
 ### Continuous-Time Macro and Optimal Control

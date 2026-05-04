@@ -1,562 +1,677 @@
 #!/usr/bin/env python3
-"""RBC with Irreversible Investment: Occasionally Binding Constraints.
+"""Irreversible investment and capital overhang in a stochastic RBC model.
 
-Solves an RBC model where investment must be non-negative (I >= 0), meaning
-the agent cannot disinvest or eat capital. This occasionally binding constraint
-creates asymmetric business cycles: expansions look standard, but contractions
-are amplified because the agent cannot freely reduce the capital stock.
+The representative household chooses next-period capital, but investment cannot
+be negative. The friction matters most after capital has already been installed:
+in low-productivity states the unconstrained model wants to run capital down
+faster than depreciation, while the irreversible model must carry a capital
+overhang.
 
-The constraint also creates an option value of waiting, as installed capital
-cannot be recovered.
-
-Reference: Cao, Luo, Nie (2023) GDSGE, Abel and Eberly (1996).
+References: Abel and Eberly (1996), Bertola and Caballero (1994), and the
+global-solution examples in Cao, Luo, and Nie (2023).
 """
 import sys
 from pathlib import Path
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 from scipy.interpolate import RegularGridInterpolator
+from scipy.stats import norm
 
-# Add repo root to path for lib/ imports
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.plotting import setup_style, save_figure
 from lib.output import ModelReport
+from lib.plotting import setup_style
 
 
-def main():
-    # =========================================================================
-    # Parameters
-    # =========================================================================
-    beta = 0.99        # Discount factor
-    alpha = 0.36       # Capital share
-    sigma = 2.0        # CRRA coefficient
-    delta = 0.025      # Depreciation rate
-    rho = 0.95         # TFP persistence
-    sigma_e = 0.01     # TFP innovation std
+def utility(c: np.ndarray, sigma: float) -> np.ndarray:
+    """CRRA utility with a large penalty for infeasible consumption."""
+    safe_c = np.maximum(c, 1e-12)
+    u = safe_c ** (1.0 - sigma) / (1.0 - sigma)
+    return np.where(c > 1e-12, u, -1e12)
 
-    # Irreversibility: I >= phi * Iss (phi=0 means strict I>=0, phi<0 allows some disinvestment)
-    phi = 0.0          # Strict irreversibility: I >= 0
 
-    # =========================================================================
-    # Steady state (same as standard RBC, constraint not binding at SS)
-    # =========================================================================
-    Kss = (alpha / (1.0 / beta - 1.0 + delta)) ** (1.0 / (1.0 - alpha))
-    Yss = Kss ** alpha
-    Css = Yss - delta * Kss
-    Iss = delta * Kss
-
-    # =========================================================================
-    # Grids
-    # =========================================================================
-    n_k = 50       # Capital grid points (more needed for constraint region)
-    n_z = 7        # TFP grid points
-
-    # Wider grid to capture constraint binding (low TFP => want to disinvest)
-    K_min = Kss * 0.5
-    K_max = Kss * 1.5
-    K_grid = np.linspace(K_min, K_max, n_k)
-
-    # TFP grid (Tauchen)
-    from scipy.stats import norm
+def tauchen_grid(rho: float, sigma_e: float, n_z: int, m: float = 3.0) -> tuple[np.ndarray, np.ndarray]:
+    """Discretize log productivity with Tauchen's method."""
     sigma_z = sigma_e / np.sqrt(1.0 - rho ** 2)
-    m_z = 3.0
-    z_grid_log = np.linspace(-m_z * sigma_z, m_z * sigma_z, n_z)
-    z_grid = np.exp(z_grid_log)
-    step = z_grid_log[1] - z_grid_log[0]
+    z_log = np.linspace(-m * sigma_z, m * sigma_z, n_z)
+    z_grid = np.exp(z_log)
+    step = z_log[1] - z_log[0]
 
     trans_z = np.zeros((n_z, n_z))
     for i in range(n_z):
         for j in range(n_z):
+            left = (z_log[j] - rho * z_log[i] - step / 2.0) / sigma_e
+            right = (z_log[j] - rho * z_log[i] + step / 2.0) / sigma_e
             if j == 0:
-                trans_z[i, j] = norm.cdf((z_grid_log[j] - rho * z_grid_log[i] + step / 2) / sigma_e)
+                trans_z[i, j] = norm.cdf(right)
             elif j == n_z - 1:
-                trans_z[i, j] = 1.0 - norm.cdf((z_grid_log[j] - rho * z_grid_log[i] - step / 2) / sigma_e)
+                trans_z[i, j] = 1.0 - norm.cdf(left)
             else:
-                trans_z[i, j] = (
-                    norm.cdf((z_grid_log[j] - rho * z_grid_log[i] + step / 2) / sigma_e)
-                    - norm.cdf((z_grid_log[j] - rho * z_grid_log[i] - step / 2) / sigma_e)
-                )
+                trans_z[i, j] = norm.cdf(right) - norm.cdf(left)
+    return z_grid, trans_z
 
-    # =========================================================================
-    # VFI with irreversibility constraint
-    # =========================================================================
-    def u(c):
-        return np.where(c > 1e-10, c ** (1.0 - sigma) / (1.0 - sigma), -1e10)
 
-    # K' >= (1-delta)*K + phi*Iss = (1-delta)*K when phi=0
-    # This means I = K' - (1-delta)*K >= 0
-    K_min_choice = (1.0 - delta) * K_grid  # minimum K' for each K (irreversibility)
+def solve_rbc(
+    *,
+    constrained: bool,
+    beta: float,
+    alpha: float,
+    sigma: float,
+    delta: float,
+    rho: float,
+    sigma_e: float,
+    n_k: int,
+    n_z: int,
+    tol: float = 1e-6,
+    max_iter: int = 500,
+    howard_steps: int = 25,
+    verbose: bool = True,
+) -> dict[str, np.ndarray | float | int | bool]:
+    """Solve the RBC model, optionally imposing nonnegative investment."""
+    k_ss = (alpha / (1.0 / beta - 1.0 + delta)) ** (1.0 / (1.0 - alpha))
+    y_ss = k_ss ** alpha
+    c_ss = y_ss - delta * k_ss
+    i_ss = delta * k_ss
 
-    # Also solve unconstrained version for comparison
-    print("Solving RBC with irreversible investment via VFI...")
+    k_min = 0.55 * k_ss
+    k_max = 1.60 * k_ss
+    k_grid = np.linspace(k_min, k_max, n_k)
+    z_grid, trans_z = tauchen_grid(rho, sigma_e, n_z)
 
-    # Precompute base utility matrices and constraint masks
-    resources_all = np.zeros((n_z, n_k))
-    u_mats_base = np.zeros((n_z, n_k, n_k))
+    resources = np.zeros((n_z, n_k))
+    u_mats = np.zeros((n_z, n_k, n_k))
+    for iz, z in enumerate(z_grid):
+        resources[iz] = z * k_grid ** alpha + (1.0 - delta) * k_grid
+        c_mat = resources[iz, :, None] - k_grid[None, :]
+        u_mats[iz] = utility(c_mat, sigma)
+
+    lower_bound = (1.0 - delta) * k_grid
+    feasible_mask = k_grid[None, :] >= lower_bound[:, None] - 1e-12
+    boundary_allowed = (lower_bound >= k_min) & (lower_bound <= k_max)
+
+    v = np.zeros((n_z, n_k))
     for iz in range(n_z):
-        resources_all[iz] = z_grid[iz] * K_grid ** alpha + (1.0 - delta) * K_grid
-        c_mat = resources_all[iz][:, None] - K_grid[None, :]
-        u_mats_base[iz] = u(c_mat)
+        c_guess = np.maximum(resources[iz] - k_ss, 1e-8)
+        v[iz] = utility(c_guess, sigma) / (1.0 - beta)
 
-    # Precompute irreversibility mask: for each ik, which ik' are feasible?
-    irr_mask = np.zeros((n_k, n_k), dtype=bool)
-    for ik in range(n_k):
-        k_min_irr = (1.0 - delta) * K_grid[ik]
-        irr_mask[ik, :] = K_grid >= k_min_irr - 1e-10
+    policy_k = np.zeros((n_z, n_k))
+    policy_c = np.zeros((n_z, n_k))
+    binding = np.zeros((n_z, n_k), dtype=bool)
+    neg_large = -1e12
 
-    results = {}
-    for model_name, constrained in [("irreversible", True), ("standard", False)]:
-        print(f"\n  Solving {model_name} model...")
-        V = np.zeros((n_z, n_k))
+    label = "irreversible" if constrained else "standard"
+    if verbose:
+        print(f"  Solving {label} model on {n_k} x {n_z} grid...")
+
+    for iteration in range(1, max_iter + 1):
+        v_new = np.zeros_like(v)
+
         for iz in range(n_z):
-            for ik in range(n_k):
-                c_guess = max(z_grid[iz] * K_grid[ik] ** alpha + (1.0 - delta) * K_grid[ik] - Kss, 1e-10)
-                V[iz, ik] = u(np.array([c_guess]))[0] / (1.0 - beta)
+            ev_grid = trans_z[iz] @ v
+            val_mat = u_mats[iz] + beta * ev_grid[None, :]
+            if constrained:
+                val_mat = np.where(feasible_mask, val_mat, neg_large)
 
-        policy_k = np.zeros((n_z, n_k))
-        policy_c = np.zeros((n_z, n_k))
-        policy_idx = np.zeros((n_z, n_k), dtype=int)
-        constraint_binding = np.zeros((n_z, n_k), dtype=bool)
-        tol = 1e-6
-        max_iter = 500
-        howard_steps = 25
+            best_idx = np.argmax(val_mat, axis=1)
+            best_val = val_mat[np.arange(n_k), best_idx]
+            best_k = k_grid[best_idx]
+            is_binding = np.zeros(n_k, dtype=bool)
 
-        # Build u_mats with constraint applied
-        u_mats = u_mats_base.copy()
-        if constrained:
+            ev_boundary = np.zeros(n_k)
+            for jz in range(n_z):
+                ev_boundary += trans_z[iz, jz] * np.interp(lower_bound, k_grid, v[jz])
+            boundary_c = resources[iz] - lower_bound
+            boundary_val = utility(boundary_c, sigma) + beta * ev_boundary
+            boundary_val = np.where(boundary_allowed, boundary_val, neg_large)
+            use_boundary = boundary_val >= best_val - 1e-10
+            best_val = np.where(use_boundary, boundary_val, best_val)
+            best_k = np.where(use_boundary, lower_bound, best_k)
+            if constrained:
+                is_binding = use_boundary
+
+            v_new[iz] = best_val
+            policy_k[iz] = best_k
+            policy_c[iz] = resources[iz] - best_k
+            binding[iz] = is_binding
+
+        error = float(np.max(np.abs(v_new - v)))
+        v = v_new.copy()
+
+        for _ in range(howard_steps):
+            v_howard = np.zeros_like(v)
             for iz in range(n_z):
-                for ik in range(n_k):
-                    u_mats[iz, ik, ~irr_mask[ik, :]] = -1e10
+                ev_policy = np.zeros(n_k)
+                for jz in range(n_z):
+                    ev_policy += trans_z[iz, jz] * np.interp(policy_k[iz], k_grid, v[jz])
+                v_howard[iz] = utility(policy_c[iz], sigma) + beta * ev_policy
+            v = v_howard
 
-        for iteration in range(1, max_iter + 1):
-            V_new = np.zeros_like(V)
+        if verbose and iteration % 10 == 0:
+            print(f"    {label} VFI iter {iteration:3d}, error = {error:.2e}")
+        if error < tol:
+            if verbose:
+                print(f"    {label} converged in {iteration} iters (error = {error:.2e})")
+            break
 
-            for iz in range(n_z):
-                EV_kprime = trans_z[iz, :] @ V
-                val_mat = u_mats[iz] + beta * EV_kprime[None, :]
-                best_idx = np.argmax(val_mat, axis=1)
-                V_new[iz, :] = val_mat[np.arange(n_k), best_idx]
-                policy_idx[iz, :] = best_idx
-                policy_k[iz, :] = K_grid[best_idx]
-                policy_c[iz, :] = resources_all[iz] - K_grid[best_idx]
-
-                if constrained:
-                    for ik in range(n_k):
-                        investment = policy_k[iz, ik] - (1.0 - delta) * K_grid[ik]
-                        constraint_binding[iz, ik] = investment < 1e-6
-
-            error = np.max(np.abs(V_new - V))
-            V = V_new.copy()
-
-            # Howard policy iteration acceleration
-            for _ in range(howard_steps):
-                V_howard = np.zeros_like(V)
-                for iz in range(n_z):
-                    EV_kprime = trans_z[iz, :] @ V
-                    for ik in range(n_k):
-                        ik_prime = policy_idx[iz, ik]
-                        V_howard[iz, ik] = u_mats[iz][ik, ik_prime] + beta * EV_kprime[ik_prime]
-                V = V_howard
-
-            if iteration % 10 == 0:
-                print(f"    {model_name} VFI iter {iteration:3d}, error = {error:.2e}")
-            if error < tol:
-                print(f"    {model_name} converged in {iteration} iters (error = {error:.2e})")
-                break
-
-        results[model_name] = {
-            "V": V, "policy_k": policy_k, "policy_c": policy_c,
-            "constraint_binding": constraint_binding.copy(),
-            "iterations": iteration,
-        }
-
-    # =========================================================================
-    # Compute multiplier (shadow value of the irreversibility constraint)
-    # mu = beta * E[V_K(K', z')] - u'(c) when binding, 0 otherwise
-    # Approximated from the difference in value functions
-    # =========================================================================
-    V_irr = results["irreversible"]["V"]
-    V_std = results["standard"]["V"]
-
-    # Shadow value: difference in marginal value of capital
-    # For each state, the constraint multiplier mu satisfies:
-    # u'(c)(1 - mu) = beta * E[u'(c') * (MPK' + (1-delta)(1-mu'))]
-    # We approximate mu from the wedge between constrained and unconstrained Euler
-    policy_c_irr = results["irreversible"]["policy_c"]
-    policy_c_std = results["standard"]["policy_c"]
-    policy_k_irr = results["irreversible"]["policy_k"]
-    policy_k_std = results["standard"]["policy_k"]
-
-    # Investment policies
-    inv_irr = np.zeros((n_z, n_k))
-    inv_std = np.zeros((n_z, n_k))
-    for iz in range(n_z):
-        inv_irr[iz, :] = policy_k_irr[iz, :] - (1.0 - delta) * K_grid
-        inv_std[iz, :] = policy_k_std[iz, :] - (1.0 - delta) * K_grid
-
-    # =========================================================================
-    # Simulation (5000 periods)
-    # =========================================================================
-    T_sim = 5000
-    burn = 500
-    np.random.seed(42)
-
-    # Shared shock sequence
-    z_sim_idx = np.zeros(T_sim, dtype=int)
-    z_sim_idx[0] = n_z // 2
-    for t in range(T_sim - 1):
-        z_sim_idx[t + 1] = min(
-            np.searchsorted(np.cumsum(trans_z[z_sim_idx[t], :]), np.random.uniform()),
-            n_z - 1
-        )
-    z_sim = z_grid[z_sim_idx]
-
-    sim_results = {}
-    for model_name in ["irreversible", "standard"]:
-        pk = results[model_name]["policy_k"]
-        pc = results[model_name]["policy_c"]
-
-        interp_k = RegularGridInterpolator(
-            (z_grid, K_grid), pk, method="linear", bounds_error=False, fill_value=None
-        )
-        interp_c = RegularGridInterpolator(
-            (z_grid, K_grid), pc, method="linear", bounds_error=False, fill_value=None
-        )
-
-        K_sim = np.zeros(T_sim)
-        C_sim = np.zeros(T_sim)
-        Y_sim = np.zeros(T_sim)
-        I_sim = np.zeros(T_sim)
-        binding_sim = np.zeros(T_sim, dtype=bool)
-        K_sim[0] = Kss
-
-        for t in range(T_sim):
-            pt = np.array([[z_sim[t], K_sim[t]]])
-            C_sim[t] = float(interp_c(pt))
-            Y_sim[t] = z_sim[t] * K_sim[t] ** alpha
-            kp = float(interp_k(pt))
-            I_sim[t] = kp - (1.0 - delta) * K_sim[t]
-            if model_name == "irreversible":
-                if I_sim[t] < 1e-6:
-                    binding_sim[t] = True
-                    I_sim[t] = max(I_sim[t], 0.0)
-                    kp = (1.0 - delta) * K_sim[t] + I_sim[t]
-            if t < T_sim - 1:
-                K_sim[t + 1] = np.clip(kp, K_min, K_max)
-
-        sim_results[model_name] = {
-            "K": K_sim, "C": C_sim, "Y": Y_sim, "I": I_sim,
-            "binding": binding_sim,
-        }
-
-    # =========================================================================
-    # Business cycle statistics
-    # =========================================================================
-    def bc_stats(sim, label):
-        Y = sim["Y"][burn:]
-        C = sim["C"][burn:]
-        I = sim["I"][burn:]
-        K = sim["K"][burn:]
-        ly = np.log(Y)
-        lc = np.log(np.maximum(C, 1e-10))
-        # For investment, handle zeros
-        I_pos = np.maximum(I, 1e-10)
-        li = np.log(I_pos)
-        ly_d = ly - ly.mean()
-        lc_d = lc - lc.mean()
-        li_d = li - li.mean()
-        return {
-            "Model": label,
-            "std(Y) %": f"{100*np.std(ly_d):.3f}",
-            "std(C)/std(Y)": f"{np.std(lc_d)/max(np.std(ly_d), 1e-10):.3f}",
-            "std(I)/std(Y)": f"{np.std(li_d)/max(np.std(ly_d), 1e-10):.3f}",
-            "corr(C,Y)": f"{np.corrcoef(lc_d, ly_d)[0,1]:.3f}",
-            "mean(K)": f"{K.mean():.4f}",
-            "mean(I/Y)": f"{(I/Y).mean():.4f}",
-        }
-
-    stats_irr = bc_stats(sim_results["irreversible"], "Irreversible")
-    stats_std = bc_stats(sim_results["standard"], "Standard RBC")
-
-    binding_frac = sim_results["irreversible"]["binding"][burn:].mean()
-
-    # =========================================================================
-    # Conditional responses: expansion vs contraction
-    # =========================================================================
-    # Compare how output responds to positive vs negative TFP changes
-    Y_irr = sim_results["irreversible"]["Y"][burn:]
-    Y_std = sim_results["standard"]["Y"][burn:]
-    z_post = z_sim[burn:]
-
-    # Output growth
-    dY_irr = np.diff(np.log(Y_irr))
-    dY_std = np.diff(np.log(Y_std))
-    dz = np.diff(np.log(z_post))
-
-    pos_dz = dz > 0
-    neg_dz = dz < 0
-
-    asym_data = {
-        "": ["Positive dz", "Negative dz", "Ratio abs(neg/pos)"],
-        "std(dY) Irr %": [
-            f"{100*np.std(dY_irr[pos_dz]):.3f}",
-            f"{100*np.std(dY_irr[neg_dz]):.3f}",
-            f"{np.std(dY_irr[neg_dz])/max(np.std(dY_irr[pos_dz]), 1e-10):.3f}",
-        ],
-        "std(dY) Std %": [
-            f"{100*np.std(dY_std[pos_dz]):.3f}",
-            f"{100*np.std(dY_std[neg_dz]):.3f}",
-            f"{np.std(dY_std[neg_dz])/max(np.std(dY_std[pos_dz]), 1e-10):.3f}",
-        ],
+    return {
+        "constrained": constrained,
+        "V": v,
+        "policy_k": policy_k,
+        "policy_c": policy_c,
+        "binding": binding,
+        "K_grid": k_grid,
+        "z_grid": z_grid,
+        "trans_z": trans_z,
+        "Kss": k_ss,
+        "Yss": y_ss,
+        "Css": c_ss,
+        "Iss": i_ss,
+        "K_min": k_min,
+        "K_max": k_max,
+        "iterations": iteration,
+        "error": error,
+        "beta": beta,
+        "alpha": alpha,
+        "sigma": sigma,
+        "delta": delta,
+        "rho": rho,
+        "sigma_e": sigma_e,
     }
 
-    # =========================================================================
-    # Generate Report
-    # =========================================================================
-    setup_style()
 
+def simulate(
+    sol: dict[str, np.ndarray | float | int | bool],
+    z_idx: np.ndarray,
+    *,
+    k0: float,
+) -> dict[str, np.ndarray]:
+    """Simulate policies on a fixed productivity-state path."""
+    k_grid = sol["K_grid"]
+    z_grid = sol["z_grid"]
+    alpha = float(sol["alpha"])
+    delta = float(sol["delta"])
+    constrained = bool(sol["constrained"])
+
+    interp_k = RegularGridInterpolator(
+        (z_grid, k_grid), sol["policy_k"], method="linear",
+        bounds_error=False, fill_value=None
+    )
+    interp_c = RegularGridInterpolator(
+        (z_grid, k_grid), sol["policy_c"], method="linear",
+        bounds_error=False, fill_value=None
+    )
+    interp_bind = None
+    if constrained:
+        interp_bind = RegularGridInterpolator(
+            (z_grid, k_grid), sol["binding"].astype(float), method="linear",
+            bounds_error=False, fill_value=0.0
+        )
+
+    t_sim = len(z_idx)
+    z_sim = z_grid[z_idx]
+    k = np.zeros(t_sim)
+    c = np.zeros(t_sim)
+    y = np.zeros(t_sim)
+    inv = np.zeros(t_sim)
+    binding = np.zeros(t_sim, dtype=bool)
+    k[0] = k0
+
+    for t in range(t_sim):
+        point = np.array([[z_sim[t], k[t]]])
+        kp = interp_k(point).item()
+        c[t] = interp_c(point).item()
+        y[t] = z_sim[t] * k[t] ** alpha
+
+        lower = (1.0 - delta) * k[t]
+        if constrained and interp_bind is not None:
+            binding_score = interp_bind(point).item()
+            if binding_score >= 0.5 or kp <= lower + 1e-5:
+                kp = lower
+                binding[t] = True
+
+        inv[t] = kp - lower
+        if constrained:
+            inv[t] = max(inv[t], 0.0)
+        if t < t_sim - 1:
+            k[t + 1] = np.clip(kp, float(sol["K_min"]), float(sol["K_max"]))
+
+    return {"K": k, "C": c, "Y": y, "I": inv, "z": z_sim, "binding": binding}
+
+
+def draw_markov_path(trans_z: np.ndarray, t_sim: int, seed: int = 42) -> np.ndarray:
+    """Draw a productivity-state path from the Markov transition matrix."""
+    rng = np.random.default_rng(seed)
+    n_z = trans_z.shape[0]
+    z_idx = np.zeros(t_sim, dtype=int)
+    z_idx[0] = n_z // 2
+    cdf = np.cumsum(trans_z, axis=1)
+    for t in range(t_sim - 1):
+        z_idx[t + 1] = min(np.searchsorted(cdf[z_idx[t]], rng.uniform()), n_z - 1)
+    return z_idx
+
+
+def overhang_path(n_z: int, t_sim: int = 90) -> np.ndarray:
+    """Construct a low-productivity episode after the economy starts with high capital."""
+    mid = n_z // 2
+    low = 0
+    path = np.full(t_sim, mid, dtype=int)
+    path[8:32] = low
+    path[32:48] = 1
+    return path
+
+
+def main() -> None:
+    beta = 0.99
+    alpha = 0.36
+    sigma = 2.0
+    delta = 0.025
+    rho = 0.90
+    sigma_e = 0.05
+    n_k = 72
+    n_z = 7
+
+    print("Solving RBC models with and without the investment floor...")
+    sol_irr = solve_rbc(
+        constrained=True, beta=beta, alpha=alpha, sigma=sigma, delta=delta,
+        rho=rho, sigma_e=sigma_e, n_k=n_k, n_z=n_z, verbose=True
+    )
+    sol_std = solve_rbc(
+        constrained=False, beta=beta, alpha=alpha, sigma=sigma, delta=delta,
+        rho=rho, sigma_e=sigma_e, n_k=n_k, n_z=n_z, verbose=True
+    )
+    sol_fine = solve_rbc(
+        constrained=True, beta=beta, alpha=alpha, sigma=sigma, delta=delta,
+        rho=rho, sigma_e=sigma_e, n_k=150, n_z=n_z, tol=2e-6, verbose=False
+    )
+
+    k_grid = sol_irr["K_grid"]
+    z_grid = sol_irr["z_grid"]
+    k_ss = float(sol_irr["Kss"])
+    y_ss = float(sol_irr["Yss"])
+    c_ss = float(sol_irr["Css"])
+    i_ss = float(sol_irr["Iss"])
+
+    inv_irr = sol_irr["policy_k"] - (1.0 - delta) * k_grid[None, :]
+    inv_std = sol_std["policy_k"] - (1.0 - delta) * k_grid[None, :]
+    inv_irr = np.maximum(inv_irr, 0.0)
+    inv_fine_low = sol_fine["policy_k"][0] - (1.0 - delta) * sol_fine["K_grid"]
+    inv_fine_low_on_coarse = np.interp(k_grid, sol_fine["K_grid"], np.maximum(inv_fine_low, 0.0))
+    max_fine_gap = float(np.max(np.abs(inv_irr[0] - inv_fine_low_on_coarse)))
+
+    stress_idx = overhang_path(n_z)
+    k0_stress = 1.25 * k_ss
+    stress_irr = simulate(sol_irr, stress_idx, k0=k0_stress)
+    stress_std = simulate(sol_std, stress_idx, k0=k0_stress)
+
+    stationary_idx = draw_markov_path(sol_irr["trans_z"], 6000, seed=42)
+    stat_irr = simulate(sol_irr, stationary_idx, k0=k_ss)
+    stat_std = simulate(sol_std, stationary_idx, k0=k_ss)
+    burn = 1000
+    binding_share_states = float(sol_irr["binding"].mean())
+    binding_share_stress = float(stress_irr["binding"].mean())
+    binding_share_stationary = float(stat_irr["binding"][burn:].mean())
+
+    def stationary_stats(sim: dict[str, np.ndarray], label: str) -> dict[str, str]:
+        y = sim["Y"][burn:]
+        c = sim["C"][burn:]
+        inv = sim["I"][burn:]
+        k = sim["K"][burn:]
+        log_y = np.log(y)
+        log_c = np.log(c)
+        return {
+            "Model": label,
+            "mean K": f"{k.mean():.3f}",
+            "std(Y) %": f"{100.0 * np.std(log_y - log_y.mean()):.3f}",
+            "std(C)/std(Y)": f"{np.std(log_c - log_c.mean()) / np.std(log_y - log_y.mean()):.3f}",
+            "mean I/Y": f"{np.mean(inv / y):.3f}",
+            "I=0 frequency": f"{100.0 * sim['binding'][burn:].mean():.2f}%",
+        }
+
+    diagnostics = pd.DataFrame([
+        {
+            "Check": "Irreversible VFI iterations",
+            "Value": f"{sol_irr['iterations']}",
+            "Interpretation": "Coarse-grid constrained solution",
+        },
+        {
+            "Check": "Standard VFI iterations",
+            "Value": f"{sol_std['iterations']}",
+            "Interpretation": "Unconstrained comparison on the same grid",
+        },
+        {
+            "Check": "Binding states on coarse grid",
+            "Value": f"{100.0 * binding_share_states:.1f}%",
+            "Interpretation": "Fraction of (z,K) states where the policy chooses I=0",
+        },
+        {
+            "Check": "Overhang episode binding frequency",
+            "Value": f"{100.0 * binding_share_stress:.1f}%",
+            "Interpretation": "Share of periods with I=0 in the displayed recession experiment",
+        },
+        {
+            "Check": "Stationary binding frequency",
+            "Value": f"{100.0 * binding_share_stationary:.2f}%",
+            "Interpretation": "Share of simulated periods with I=0 from K_ss",
+        },
+        {
+            "Check": "Fine-grid low-z investment gap",
+            "Value": f"{max_fine_gap:.4f}",
+            "Interpretation": "Max absolute gap between 72- and 150-point irreversible policies",
+        },
+    ])
+
+    setup_style()
     report = ModelReport(
-        "RBC with Irreversible Investment",
-        "Occasionally binding I >= 0 constraint creates asymmetric business cycles and option value of waiting.",
+        "Irreversible Investment and Capital Overhang in RBC",
+        "A nonnegative-investment constraint is quiet near steady state but creates a kink when low productivity meets high installed capital.",
+        include_reproduce=False,
+        show_figure_captions=False,
     )
 
     report.add_overview(
-        "In the standard RBC model, the representative agent can freely adjust the capital "
-        "stock in both directions. In reality, much physical capital is irreversible: once "
-        "installed, machinery and structures cannot easily be converted back to consumption goods.\n\n"
-        "We impose the constraint $I_t \\geq 0$ (investment cannot be negative), which binds "
-        "when TFP is low and the agent would prefer to disinvest. This creates:\n\n"
-        "- **Asymmetric responses**: Contractions are amplified (can't reduce K fast enough) "
-        "while expansions look like the standard model\n"
-        "- **Option value of waiting**: Irreversibility makes capital decisions partially "
-        "irreversible, creating value in delaying investment\n"
-        "- **Precautionary behavior**: The constraint raises the effective cost of capital, "
-        "leading to lower average investment"
+        "Irreversible investment is a small change to the RBC problem with a large "
+        "interpretive payoff. The household can install new capital, but installed "
+        "capital cannot be converted back into consumption goods. After a bad "
+        "productivity draw, the unconstrained economy may want to reduce capital "
+        "faster than depreciation. The irreversible economy cannot. It carries a "
+        "capital overhang until depreciation and future investment decisions bring "
+        "the state back toward the usual region.\n\n"
+        "This tutorial sits between the local [Dynare RBC](../../dynare/rbc/) "
+        "shock-propagation example and the global [capital-tax RBC](../rbc-capital-tax/) "
+        "tutorial. The lesson here is not that every period is constrained. It is "
+        "that a global solution keeps track of the states where the Euler equation "
+        "has a kink, which a linear solution around the steady state cannot show."
     )
 
-    report.add_equations(
-        r"""
-$$V(K, z) = \max_{c, K'} \bigl[ \frac{c^{1-\sigma}}{1-\sigma} + \beta \, \mathbb{E}\left[V(K', z')\right] \bigr]$$
+    equations = r"""
+Let $K_t$ be beginning-of-period capital, $z_t$ productivity, $c_t$ consumption,
+and $K_{t+1}$ next-period capital. Output is $Y_t=z_tK_t^\alpha$ and
 
-subject to:
-$$c + K' = z K^\alpha + (1-\delta) K$$
-$$K' \geq (1-\delta) K \quad \Leftrightarrow \quad I \geq 0$$
+$$\log z_{t+1}=\rho \log z_t+\varepsilon_{t+1},
+\qquad \varepsilon_{t+1}\sim N(0,\sigma_\varepsilon^2).$$
 
-**Euler equation with complementary slackness:**
-$$c^{-\sigma} (1-\mu) = \beta \, \mathbb{E}\left[ c'^{-\sigma} \left(\alpha z' K'^{\alpha-1} + (1-\delta)(1-\mu')\right) \right]$$
-$$\mu \geq 0, \quad I \geq 0, \quad \mu \cdot I = 0$$
+The Bellman equation is
 
-When $\mu > 0$, the constraint binds: the agent would like to disinvest but cannot.
-"""
+$$V(K,z)=\max_{K'\in \Gamma(K,z)}\Bigg[
+\frac{\left[zK^\alpha+(1-\delta)K-K'\right]^{1-\sigma}}{1-\sigma}
++\beta \sum_{z'} P(z,z')V(K',z')\Bigg].$$
+
+The standard RBC choice set is
+
+$$\Gamma^{std}(K,z)=\{K'\geq 0:
+zK^\alpha+(1-\delta)K-K'>0\}.$$
+
+Irreversibility adds
+
+$$I_t\equiv K_{t+1}-(1-\delta)K_t\geq 0,
+\qquad
+\Gamma^{irr}(K,z)=\{K'\geq (1-\delta)K:
+zK^\alpha+(1-\delta)K-K'>0\}.$$
+
+With multiplier $\lambda_t\geq 0$ on $K_{t+1}-(1-\delta)K_t\geq 0$,
+
+$$u_c(c_t)-\lambda_t
+=\beta E_t\left[
+u_c(c_{t+1})\left(\alpha z_{t+1}K_{t+1}^{\alpha-1}+1-\delta\right)
+-\lambda_{t+1}(1-\delta)
+\right],$$
+
+$$\lambda_t\geq 0,\qquad I_t\geq 0,\qquad \lambda_t I_t=0.$$
+
+At the deterministic steady state the constraint is slack because
+$I_{ss}=\delta K_{ss}>0$.
+""" + (
+        f"With the calibration below, $K_{{ss}}={k_ss:.3f}$, "
+        f"$Y_{{ss}}={y_ss:.3f}$, $C_{{ss}}={c_ss:.3f}$, and "
+        f"$I_{{ss}}={i_ss:.3f}$."
     )
+    report.add_equations(equations)
 
     report.add_model_setup(
         f"| Parameter | Value | Description |\n"
         f"|-----------|-------|-------------|\n"
-        f"| $\\beta$  | {beta} | Discount factor |\n"
+        f"| $\\beta$ | {beta} | Discount factor |\n"
         f"| $\\alpha$ | {alpha} | Capital share |\n"
         f"| $\\sigma$ | {sigma} | CRRA coefficient |\n"
         f"| $\\delta$ | {delta} | Depreciation rate |\n"
-        f"| $\\rho$   | {rho} | TFP persistence |\n"
-        f"| $\\sigma_\\varepsilon$ | {sigma_e} | TFP innovation std |\n"
-        f"| $\\phi$   | {phi} | Irreversibility (0 = strict I >= 0) |\n"
-        f"| Capital grid | {n_k} points on [{K_min:.2f}, {K_max:.2f}] | Wider range needed |\n"
-        f"| TFP grid | {n_z} points (Tauchen) | |\n"
-        f"| $K_{{ss}}$ | {Kss:.4f} | Steady-state capital |"
+        f"| $\\rho$ | {rho} | Persistence of log productivity |\n"
+        f"| $\\sigma_\\varepsilon$ | {sigma_e} | Innovation std for log productivity |\n"
+        f"| Capital grid | {n_k} points on [{float(sol_irr['K_min']):.2f}, {float(sol_irr['K_max']):.2f}] | State grid and candidate $K'$ grid |\n"
+        f"| TFP grid | {n_z} Tauchen states | Common shock grid for both models |\n"
+        f"| Fine-grid check | 150 capital points | Used only to benchmark the low-productivity investment policy |\n"
+        f"| Overhang experiment | $K_0=1.25K_{{ss}}$ plus a low-$z$ episode | A stress path, not a stationary moment |"
     )
 
     report.add_solution_method(
-        "**Value Function Iteration (VFI)** with the irreversibility constraint enforced "
-        "directly in the grid search: for each state $(z, K)$, the choice set for $K'$ is "
-        "restricted to $K' \\geq (1-\\delta)K$. This naturally handles the occasionally binding "
-        f"constraint without requiring complementarity solvers.\n\n"
-        f"Both the constrained and unconstrained models are solved on the same grid for comparison.\n\n"
-        f"Irreversible model converged in **{results['irreversible']['iterations']}** iterations. "
-        f"Standard model converged in **{results['standard']['iterations']}** iterations."
+        "The computation solves two Bellman problems on the same productivity grid: "
+        "a standard RBC model and the irreversible model. For the irreversible model, "
+        "the grid search includes the exact lower-bound choice $K'=(1-\\delta)K$ "
+        "whenever that point falls between grid nodes. That detail matters because "
+        "the economic kink is precisely at $I=0$.\n\n"
+        "```text\n"
+        "Algorithm: global VFI with an irreversible-investment boundary\n"
+        "Input: grids K and Z, transition matrix P, primitives beta, alpha, sigma, delta\n"
+        "Output: value V(z,K), policies g_K(z,K), g_c(z,K), binding indicator b(z,K)\n"
+        "Precompute resources R(z,K)=z K^alpha+(1-delta)K and utility for all grid choices K'\n"
+        "repeat:\n"
+        "    for each productivity state z_i and capital state K_m:\n"
+        "        set A_std(K_m) to all feasible grid choices K'\n"
+        "        set A_irr(K_m) to choices in A_std with K' >= (1-delta)K_m\n"
+        "        add the exact boundary K'=(1-delta)K_m to A_irr when it is between grid nodes\n"
+        "        choose K' to maximize u(R(z_i,K_m)-K') + beta * sum_j P_ij V_n(z_j,K')\n"
+        "        set b(z_i,K_m)=1 if the boundary K'=(1-delta)K_m is chosen\n"
+        "    apply Howard improvement to the fixed policy\n"
+        "until the sup-norm Bellman update is below epsilon\n"
+        "Solve a finer-grid irreversible model and compare the low-z investment policy\n"
+        "Simulate the standard and irreversible policies on the same productivity paths\n"
+        "```\n\n"
+        f"The irreversible model converged in **{sol_irr['iterations']}** VFI iterations; "
+        f"the standard comparison converged in **{sol_std['iterations']}**. "
+        f"The fine-grid check changes the low-productivity investment policy by at most "
+        f"**{max_fine_gap:.4f}** units of capital on the coarse grid."
     )
 
-    # --- Figure 1: Investment policy functions ---
+    # Figure 1: policy functions with fine-grid check.
     fig1, (ax1a, ax1b) = plt.subplots(1, 2, figsize=(13, 5))
-    colors = plt.cm.viridis(np.linspace(0.2, 0.9, n_z))
-
-    for iz in [0, n_z // 2, n_z - 1]:
-        label = f"z={z_grid[iz]:.3f}"
-        ax1a.plot(K_grid, inv_irr[iz, :], "-", color=colors[iz], linewidth=2, label=f"Irr {label}")
-        ax1a.plot(K_grid, inv_std[iz, :], "--", color=colors[iz], linewidth=1.2, label=f"Std {label}")
-    ax1a.axhline(0, color="red", linewidth=1.5, linestyle=":", label="I = 0 constraint")
+    colors = plt.cm.viridis(np.linspace(0.15, 0.85, n_z))
+    selected_z = [0, n_z // 2]
+    for iz in selected_z:
+        label = f"$z={z_grid[iz]:.3f}$"
+        ax1a.plot(k_grid, inv_irr[iz], "-", color=colors[iz], linewidth=2.1, label=f"Irrev {label}")
+        ax1a.plot(k_grid, inv_std[iz], "--", color=colors[iz], linewidth=1.3, label=f"Std {label}")
+    ax1a.plot(k_grid, inv_fine_low_on_coarse, "k:", linewidth=2.0, label="Fine-grid low $z$")
+    ax1a.axhline(0, color="black", linewidth=1.0)
+    ax1a.axvline(k_ss, color="0.35", linewidth=1.0, linestyle=":", label="$K_{ss}$")
     ax1a.set_xlabel("Capital $K$")
-    ax1a.set_ylabel("Investment $I$")
-    ax1a.set_title("Investment Policy: Irreversible vs Standard")
+    ax1a.set_ylabel("Investment $I=K'-(1-\\delta)K$")
+    ax1a.set_title("Investment Policy")
     ax1a.legend(fontsize=7, ncol=2)
 
-    # Consumption
-    for iz in [0, n_z // 2, n_z - 1]:
-        label = f"z={z_grid[iz]:.3f}"
-        ax1b.plot(K_grid, policy_c_irr[iz, :], "-", color=colors[iz], linewidth=2, label=f"Irr {label}")
-        ax1b.plot(K_grid, policy_c_std[iz, :], "--", color=colors[iz], linewidth=1.2, label=f"Std {label}")
+    for iz in selected_z:
+        label = f"$z={z_grid[iz]:.3f}$"
+        ax1b.plot(k_grid, sol_irr["policy_c"][iz], "-", color=colors[iz], linewidth=2.1, label=f"Irrev {label}")
+        ax1b.plot(k_grid, sol_std["policy_c"][iz], "--", color=colors[iz], linewidth=1.3, label=f"Std {label}")
+    ax1b.axvline(k_ss, color="0.35", linewidth=1.0, linestyle=":")
     ax1b.set_xlabel("Capital $K$")
     ax1b.set_ylabel("Consumption $c$")
-    ax1b.set_title("Consumption Policy: Irreversible vs Standard")
+    ax1b.set_title("Consumption Policy")
     ax1b.legend(fontsize=7, ncol=2)
     fig1.tight_layout()
-    report.add_figure("figures/policy-functions.png", "Investment and consumption policies: irreversible (solid) vs standard (dashed). Red line marks the I=0 constraint.", fig1,
-        description="Look for the kink where the irreversible investment policy meets the I=0 line: "
-        "to the right of this kink (high K, low z), the constraint binds and investment is pinned at "
-        "zero. The standard model's dashed lines pass freely below zero, showing the disinvestment "
-        "that irreversibility prevents.")
+    report.add_figure(
+        "figures/policy-functions.png",
+        "Investment and consumption policies for standard and irreversible RBC models",
+        fig1,
+        description=(
+            "The policy comparison shows where irreversibility bites. At low productivity and "
+            "high capital, the standard model chooses negative investment and runs capital down. "
+            "The irreversible policy instead flattens at $I=0$. The dotted fine-grid line in "
+            "the investment panel is a local check that the coarse-grid kink is not a plotting artifact."
+        ),
+    )
 
-    # --- Figure 2: Constraint binding region ---
+    # Figure 2: binding region.
     fig2, ax2 = plt.subplots(figsize=(8, 5))
-    K_mesh, Z_mesh = np.meshgrid(K_grid, z_grid)
-    binding_float = results["irreversible"]["constraint_binding"].astype(float)
-    cf = ax2.contourf(K_mesh, Z_mesh, binding_float, levels=[-0.5, 0.5, 1.5],
-                       colors=["#d4edda", "#f8d7da"], alpha=0.7)
-    ax2.contour(K_mesh, Z_mesh, binding_float, levels=[0.5], colors=["red"], linewidths=2)
+    k_mesh, z_mesh = np.meshgrid(k_grid, z_grid)
+    binding_float = sol_irr["binding"].astype(float)
+    ax2.contourf(
+        k_mesh, z_mesh, binding_float, levels=[-0.5, 0.5, 1.5],
+        colors=["#dbe9f6", "#f3c7b3"], alpha=0.85
+    )
+    ax2.contour(k_mesh, z_mesh, binding_float, levels=[0.5], colors=["#7f2704"], linewidths=2)
+    ax2.axvline(k_ss, color="0.25", linewidth=1.0, linestyle=":")
     ax2.set_xlabel("Capital $K$")
     ax2.set_ylabel("TFP $z$")
-    ax2.set_title("Irreversibility Constraint Binding Region")
-    # Manual legend
+    ax2.set_title("States Where the Policy Chooses $I=0$")
     from matplotlib.patches import Patch
-    legend_elements = [
-        Patch(facecolor="#d4edda", edgecolor="k", label="Unconstrained"),
-        Patch(facecolor="#f8d7da", edgecolor="k", label="Constraint binds (I=0)"),
-    ]
-    ax2.legend(handles=legend_elements, loc="upper right")
-    report.add_figure("figures/binding-region.png", "Region where the irreversibility constraint binds (red). High K + low z = binding.", fig2,
-        description="The constraint binds in the upper-left region where capital is high relative to "
-        "productivity. In these states the agent would prefer to sell capital but cannot, creating a "
-        "capital overhang that depresses returns and prolongs recessions.")
+    ax2.legend(
+        handles=[
+            Patch(facecolor="#dbe9f6", edgecolor="k", label="Interior investment"),
+            Patch(facecolor="#f3c7b3", edgecolor="k", label="$I=0$ boundary"),
+        ],
+        loc="upper right",
+    )
+    fig2.tight_layout()
+    report.add_figure(
+        "figures/binding-region.png",
+        "State-space region where nonnegative investment binds",
+        fig2,
+        description=(
+            "The binding set is not centered at the deterministic steady state. It lives in "
+            "states with too much installed capital for the current productivity level. This "
+            "is why a stationary simulation can spend little time constrained while the "
+            "constraint remains economically important for recession states."
+        ),
+    )
 
-    # --- Figure 3: Simulation comparison ---
-    fig3, axes3 = plt.subplots(2, 2, figsize=(13, 9))
-    t_plot = slice(burn, burn + 300)
-
-    axes3[0, 0].plot(sim_results["irreversible"]["Y"][t_plot], "b-", linewidth=0.8, label="Irreversible")
-    axes3[0, 0].plot(sim_results["standard"]["Y"][t_plot], "r--", linewidth=0.8, label="Standard")
-    axes3[0, 0].set_title("Output")
-    axes3[0, 0].legend(fontsize=8)
-
-    axes3[0, 1].plot(sim_results["irreversible"]["C"][t_plot], "b-", linewidth=0.8)
-    axes3[0, 1].plot(sim_results["standard"]["C"][t_plot], "r--", linewidth=0.8)
-    axes3[0, 1].set_title("Consumption")
-
-    axes3[1, 0].plot(sim_results["irreversible"]["K"][t_plot], "b-", linewidth=0.8)
-    axes3[1, 0].plot(sim_results["standard"]["K"][t_plot], "r--", linewidth=0.8)
-    axes3[1, 0].axhline(Kss, color="k", linewidth=0.5, linestyle=":")
-    axes3[1, 0].set_title("Capital")
-
-    # Investment with binding indicator
-    I_irr_plot = sim_results["irreversible"]["I"][t_plot]
-    I_std_plot = sim_results["standard"]["I"][t_plot]
-    bind_plot = sim_results["irreversible"]["binding"][t_plot]
-    axes3[1, 1].plot(I_std_plot, "r--", linewidth=0.8, label="Standard")
-    axes3[1, 1].plot(I_irr_plot, "b-", linewidth=0.8, label="Irreversible")
-    # Mark binding periods
-    t_range = np.arange(len(I_irr_plot))
-    axes3[1, 1].fill_between(t_range, I_irr_plot.min() - 0.01, I_irr_plot.max() + 0.01,
-                              where=bind_plot, alpha=0.2, color="red", label="Constraint binds")
-    axes3[1, 1].axhline(0, color="k", linewidth=1, linestyle=":")
-    axes3[1, 1].set_title("Investment (shaded = constraint binds)")
-    axes3[1, 1].legend(fontsize=7)
-
-    for ax in axes3.flat:
+    # Figure 3: overhang experiment.
+    fig3, axes = plt.subplots(2, 2, figsize=(13, 8))
+    t = np.arange(len(stress_idx))
+    shock_window = (t >= 8) & (t < 32)
+    for ax in axes.flat:
+        ax.axvspan(8, 32, color="#eeeeee", alpha=0.8)
         ax.set_xlabel("Period")
+
+    axes[0, 0].plot(t, stress_irr["z"], color="#1f77b4", linewidth=2)
+    axes[0, 0].set_title("Productivity Path")
+    axes[0, 0].set_ylabel("$z_t$")
+
+    axes[0, 1].plot(t, stress_std["K"] / k_ss, "--", color="#b2182b", label="Standard")
+    axes[0, 1].plot(t, stress_irr["K"] / k_ss, "-", color="#2166ac", label="Irreversible")
+    axes[0, 1].fill_between(
+        t, stress_std["K"] / k_ss, stress_irr["K"] / k_ss,
+        where=stress_irr["K"] >= stress_std["K"], color="#92c5de", alpha=0.35
+    )
+    axes[0, 1].axhline(1.0, color="0.35", linestyle=":", linewidth=1)
+    axes[0, 1].set_title("Capital Overhang")
+    axes[0, 1].set_ylabel("$K_t/K_{ss}$")
+    axes[0, 1].legend()
+
+    axes[1, 0].plot(t, stress_std["I"] / y_ss, "--", color="#b2182b", label="Standard")
+    axes[1, 0].plot(t, stress_irr["I"] / y_ss, "-", color="#2166ac", label="Irreversible")
+    axes[1, 0].fill_between(
+        t, -0.05, 0.25, where=stress_irr["binding"],
+        color="#f4a582", alpha=0.35, label="$I=0$"
+    )
+    axes[1, 0].axhline(0.0, color="0.25", linewidth=1)
+    axes[1, 0].set_title("Investment")
+    axes[1, 0].set_ylabel("$I_t/Y_{ss}$")
+    axes[1, 0].legend(fontsize=8)
+
+    axes[1, 1].plot(t, stress_std["C"] / stress_std["Y"], "--", color="#b2182b", label="Standard")
+    axes[1, 1].plot(t, stress_irr["C"] / stress_irr["Y"], "-", color="#2166ac", label="Irreversible")
+    axes[1, 1].set_title("Consumption Share")
+    axes[1, 1].set_ylabel("$C_t/Y_t$")
+    axes[1, 1].legend()
     fig3.tight_layout()
-    report.add_figure("figures/simulation.png", "Simulated paths comparing irreversible (blue) vs standard (red) RBC. Shaded regions mark binding constraint.", fig3,
-        description="The shaded periods in the investment panel show when the constraint binds. During "
-        "these episodes, capital cannot adjust downward, so consumption must absorb all of the output "
-        "decline, making consumption more volatile in contractions than the standard model predicts.")
+    report.add_figure(
+        "figures/overhang-experiment.png",
+        "Stress-path comparison after a low-productivity episode",
+        fig3,
+        description=(
+            "The stress path starts with capital above steady state and then sends productivity "
+            "to its lowest grid state. The standard model disinvests immediately. The irreversible "
+            "model cannot do that, so investment sits at zero and capital remains high until "
+            "depreciation works through the overhang. The gray band is the adverse productivity episode."
+        ),
+    )
 
-    # --- Figure 4: Asymmetric distributions ---
-    fig4, (ax4a, ax4b) = plt.subplots(1, 2, figsize=(13, 5))
-
-    # Investment distribution
-    I_irr_data = sim_results["irreversible"]["I"][burn:]
-    I_std_data = sim_results["standard"]["I"][burn:]
-    ax4a.hist(I_std_data, bins=50, alpha=0.5, density=True, color="red", label="Standard")
-    ax4a.hist(I_irr_data, bins=50, alpha=0.5, density=True, color="blue", label="Irreversible")
-    ax4a.axvline(0, color="k", linewidth=1.5, linestyle=":")
-    ax4a.set_xlabel("Investment $I$")
-    ax4a.set_ylabel("Density")
-    ax4a.set_title("Investment Distribution")
-    ax4a.legend()
-
-    # Output growth skewness
-    from scipy.stats import skew, kurtosis
-    ax4b.hist(dY_std * 100, bins=50, alpha=0.5, density=True, color="red", label="Standard")
-    ax4b.hist(dY_irr * 100, bins=50, alpha=0.5, density=True, color="blue", label="Irreversible")
-    ax4b.set_xlabel("Output growth (%)")
-    ax4b.set_ylabel("Density")
-    ax4b.set_title(f"Output Growth (skew: irr={skew(dY_irr):.3f}, std={skew(dY_std):.3f})")
-    ax4b.legend()
+    # Figure 4: value loss.
+    fig4, ax4 = plt.subplots(figsize=(8, 5))
+    v_loss = np.maximum(sol_std["V"] - sol_irr["V"], 0.0)
+    cf = ax4.contourf(k_mesh, z_mesh, v_loss, levels=22, cmap="YlOrRd")
+    plt.colorbar(cf, ax=ax4, label="$V^{std}(K,z)-V^{irr}(K,z)$")
+    ax4.contour(k_mesh, z_mesh, binding_float, levels=[0.5], colors="black", linewidths=1.8)
+    ax4.axvline(k_ss, color="0.25", linestyle=":", linewidth=1)
+    ax4.set_xlabel("Capital $K$")
+    ax4.set_ylabel("TFP $z$")
+    ax4.set_title("Value Loss from the Investment Floor")
     fig4.tight_layout()
-    report.add_figure("figures/asymmetric-distributions.png", "Investment truncated at zero (left). Output growth shows negative skewness under irreversibility (right).", fig4,
-        description="The left panel shows the mass point at I=0 created by the constraint, which is "
-        "absent in the symmetric standard-model distribution. The right panel's negative skewness in "
-        "output growth under irreversibility formalizes the intuition that recessions are sharper than "
-        "expansions when capital adjustment is one-sided.")
+    report.add_figure(
+        "figures/value-difference.png",
+        "Value-function difference between irreversible and standard RBC models",
+        fig4,
+        description=(
+            "The value loss is concentrated near the same high-capital, low-productivity states "
+            "where the boundary binds. Near the steady state the loss is small because normal "
+            "replacement investment is positive; the friction is mostly an insurance problem "
+            "against bad states reached with too much installed capital."
+        ),
+    )
 
-    # --- Figure 5: Value function difference ---
-    fig5, ax5 = plt.subplots(figsize=(8, 5))
-    V_diff = V_irr - V_std
-    cf5 = ax5.contourf(K_mesh, Z_mesh, V_diff, levels=20, cmap="RdBu_r")
-    plt.colorbar(cf5, ax=ax5, label="$V_{irr}(K,z) - V_{std}(K,z)$")
-    ax5.contour(K_mesh, Z_mesh, binding_float, levels=[0.5], colors=["black"], linewidths=2, linestyles="--")
-    ax5.set_xlabel("Capital $K$")
-    ax5.set_ylabel("TFP $z$")
-    ax5.set_title("Welfare Cost of Irreversibility (Value Function Difference)")
-    report.add_figure("figures/value-difference.png", "Welfare cost: V_irr - V_std everywhere non-positive. Dashed line marks binding region boundary.", fig5,
-        description="The value difference is zero where the constraint never binds (lower-right) and "
-        "most negative where it binds tightly (upper-left). This surface maps the welfare cost of "
-        "irreversibility across the state space, showing that the cost is concentrated in high-capital, "
-        "low-productivity states.")
+    stationary_table = pd.DataFrame([
+        stationary_stats(stat_irr, "Irreversible"),
+        stationary_stats(stat_std, "Standard RBC"),
+    ])
+    report.add_table(
+        "tables/stationary-moments.csv",
+        "Stationary Simulation Moments",
+        stationary_table,
+        description=(
+            "The stationary simulation starts at $K_{ss}$ and uses the same productivity draws "
+            "for both policies. The binding frequency is modest because the economy does not "
+            "often enter the high-capital, low-productivity region. That is a feature of the "
+            "calibration, not evidence that the constraint is irrelevant."
+        ),
+    )
 
-    # --- Tables ---
-    df_bc = pd.DataFrame([stats_irr, stats_std])
-    report.add_table("tables/bc-statistics.csv", "Business Cycle Statistics (5000 periods, burn-in 500)", df_bc,
-        description="Compare std(I)/std(Y) across models: irreversibility truncates the investment "
-        "distribution, altering relative volatilities and the consumption-output correlation.")
-
-    df_asym = pd.DataFrame(asym_data)
-    report.add_table("tables/asymmetry.csv", "Asymmetric Responses to Positive vs Negative TFP Changes", df_asym,
-        description="The negative-to-positive response ratio exceeding 1.0 for the irreversible model confirms that output "
-        "growth is more volatile in downturns than in expansions. The standard model shows a ratio "
-        "near 1.0, as expected for a symmetric linear system.")
+    report.add_table(
+        "tables/numerical-checks.csv",
+        "Solution and Boundary Checks",
+        diagnostics,
+        description=(
+            "The numerical checks separate three objects: the global state-space binding set, "
+            "the deliberately adverse overhang path, and the ordinary stationary simulation. "
+            "Only the first two are meant to stress the kink."
+        ),
+    )
 
     report.add_results(
-        f"**Constraint binding frequency:** The irreversibility constraint binds in "
-        f"{binding_frac*100:.1f}% of simulated periods. It binds more often when capital "
-        f"is high relative to TFP (upper-left region of the state space).\n\n"
-        f"**Asymmetric business cycles:** The irreversibility constraint amplifies contractions: "
-        f"when TFP falls, the agent cannot reduce the capital stock quickly enough, leading to "
-        f"excess capital and depressed returns. In contrast, expansions are unconstrained and "
-        f"look similar to the standard model.\n\n"
-        f"**Welfare cost:** The value function under irreversibility is everywhere weakly below "
-        f"the unconstrained value, with the largest gaps occurring where the constraint binds."
+        "Taken together, the figures give the main economic message. The investment floor "
+        "does not move the deterministic steady state, because replacement investment is "
+        "strictly positive there. It changes the state-contingent policy. Once productivity "
+        "is low enough relative to installed capital, the unconstrained Euler equation asks "
+        "for disinvestment, but the feasible policy is pinned at $I=0$.\n\n"
+        "The comparison with the standard RBC model should therefore be read locally. Around "
+        "ordinary states, the two policies are close. In overhang states, the irreversible "
+        "model has a kink, a binding multiplier, and a value loss. That is exactly the kind "
+        "of object a global grid solution is meant to preserve."
     )
 
     report.add_takeaway(
-        "Irreversible investment fundamentally alters business cycle dynamics:\n\n"
-        "1. **Asymmetry**: The constraint creates a kink in the investment policy function. "
-        "Below the kink, investment is pinned at zero and consumption absorbs all output "
-        "fluctuations, making consumption more volatile in recessions.\n\n"
-        "2. **Option value**: Because installed capital cannot be recovered, each investment "
-        "decision carries an option cost. Firms optimally delay investment to preserve the "
-        "option of waiting for better information about future TFP.\n\n"
-        "3. **Capital overhang**: When the constraint binds, the economy carries excess capital "
-        "that depresses the marginal product of capital and the return on saving. This can "
-        "amplify and prolong recessions.\n\n"
-        "4. **Policy implications**: The occasionally binding constraint means that linearized "
-        "solutions are qualitatively wrong -- they cannot capture the asymmetry or the "
-        "constraint binding region. Global methods are essential."
+        "Irreversibility is not a different steady-state theory of capital accumulation. "
+        "It is a theory of bad states. When the economy has too much installed capital "
+        "for current productivity, the standard RBC model adjusts by selling or scrapping "
+        "capital immediately. The irreversible model adjusts only through depreciation and "
+        "future low investment. For nearby DSGE applications, this is the practical lesson: "
+        "occasionally binding constraints matter because they create state-dependent kinks, "
+        "not because they necessarily bind in the average period."
     )
 
     report.add_references([
-        "Abel, A. and Eberly, J. (1996). *Optimal Investment with Costly Reversibility*. RES.",
+        "Abel, A. and Eberly, J. (1996). *Optimal Investment with Costly Reversibility*. Review of Economic Studies.",
+        "Bertola, G. and Caballero, R. (1994). *Irreversibility and Aggregate Investment*. Review of Economic Studies.",
         "Cao, D., Luo, W., and Nie, G. (2023). *Global DSGE Models*. Review of Economic Dynamics.",
-        "Bertola, G. and Caballero, R. (1994). *Irreversibility and Aggregate Investment*. RES.",
         "Khan, A. and Thomas, J. (2008). *Idiosyncratic Shocks and the Role of Nonconvexities*. Econometrica.",
     ])
 

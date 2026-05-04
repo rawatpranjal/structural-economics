@@ -1,0 +1,3 @@
+Model,mean K,std(Y) %,std(C)/std(Y),mean I/Y,I=0 frequency
+Irreversible,39.499,17.110,0.729,0.251,0.42%
+Standard RBC,39.499,17.110,0.729,0.251,0.00%
