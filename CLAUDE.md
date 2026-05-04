@@ -36,9 +36,19 @@ Every tutorial folder must have:
 - A root `README.md` catalog row with thumbnail, descriptive link title, what it
   teaches, method, and key insight.
 
-The README section order is strict:
+The standard README section flow is:
 Overview -> Equations -> Model Setup -> Solution Method -> Results -> Takeaway
--> Reproduce -> References.
+-> References.
+
+`Reproduce` is optional in the generated report. The folder contract still
+requires `python run.py` to regenerate outputs, but the report does not need to
+repeat that command when it adds clutter. Visible figure captions are also
+optional when the surrounding prose already interprets the figure; keep useful
+alt text and figure descriptions either way.
+
+For prose tone, pseudocode, figures, tables, takeaways, and catalog-row wording,
+see `STYLE_GUIDE.md`. It records soft stylistic conventions, not additional
+validation rules.
 
 ## Code Style
 - Python 3.11+.

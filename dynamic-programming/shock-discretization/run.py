@@ -2,8 +2,9 @@
 """Shock Discretization: Tauchen, Rouwenhorst, and Discrete Normal Grids.
 
 Compares standard finite-state approximations to continuous shocks. The focus is
-on the practical question faced by many dynamic programs: how much of the
-continuous income or productivity process is preserved after discretization?
+on the economic modeling choice faced by many dynamic programs: how the finite
+shock process changes continuation values, policy curvature, and equilibrium
+objects.
 
 Reference: Tauchen (1986); Rouwenhorst (1995); Kopecky and Suen (2010).
 """
@@ -14,6 +15,7 @@ import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from scipy.stats import norm
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from lib.discretize import discrete_normal, rouwenhorst, tauchen
@@ -46,14 +48,25 @@ def markov_moments(grid: np.ndarray, P: np.ndarray) -> dict[str, float]:
     }
 
 
-def simulate_chain(P: np.ndarray, grid: np.ndarray, T: int, seed: int) -> np.ndarray:
-    """Simulate a Markov chain from its stationary distribution."""
+def simulate_ar1(rho: float, sigma_eps: float, T: int, seed: int) -> tuple[np.ndarray, np.ndarray]:
+    """Simulate the continuous AR(1) from its stationary distribution."""
     rng = np.random.default_rng(seed)
-    pi = stationary_distribution(P)
-    idx = np.empty(T, dtype=int)
-    idx[0] = rng.choice(len(grid), p=pi)
+    true_std = sigma_eps / np.sqrt(1.0 - rho**2)
+    path = np.empty(T)
+    path[0] = rng.normal(0.0, true_std)
+    innovations = rng.normal(size=T - 1)
     for t in range(1, T):
-        idx[t] = rng.choice(len(grid), p=P[idx[t - 1]])
+        path[t] = rho * path[t - 1] + sigma_eps * innovations[t - 1]
+    return path, innovations
+
+
+def simulate_chain_from_uniforms(P: np.ndarray, grid: np.ndarray, z0: float, uniforms: np.ndarray) -> np.ndarray:
+    """Simulate a finite chain using common random numbers."""
+    idx = np.empty(len(uniforms) + 1, dtype=int)
+    idx[0] = int(np.argmin(np.abs(grid - z0)))
+    for t, u in enumerate(uniforms, start=1):
+        cdf = np.cumsum(P[idx[t - 1]])
+        idx[t] = min(int(np.searchsorted(cdf, u, side="right")), len(grid) - 1)
     return grid[idx]
 
 
@@ -114,31 +127,52 @@ def main() -> None:
     setup_style()
     report = ModelReport(
         "Discretizing Persistent Shocks",
-        "Finite-state approximations to continuous productivity and income shocks.",
+        "Finite Markov approximations to persistent productivity and income risk.",
+        include_reproduce=False,
+        show_figure_captions=False,
     )
 
     report.add_overview(
-        "Many dynamic economic models begin with a continuous shock process but solve on a "
-        "finite grid. This tutorial compares three workhorse approximations: Tauchen's "
-        "normal grid for AR(1) processes, Rouwenhorst's highly persistent Markov chain, "
-        "and a simple discrete-normal quadrature for one-period shocks.\n\n"
-        "The comparison tracks what each method preserves: unconditional variance, "
-        "persistence, tail support, and transition probabilities."
+        "Persistent productivity or income risk usually enters a Bellman equation through "
+        "a finite Markov chain. That chain is not just a numerical convenience. Its grid "
+        "points and transition probabilities determine continuation values, so they can "
+        "change precautionary behavior, asset prices, equilibrium distributions, and the "
+        "curvature of policy functions.\n\n"
+        "This tutorial compares Tauchen, Rouwenhorst, and a discrete-normal quadrature. "
+        "The point is to see how one target AR(1) can lead to different grids, transition "
+        "matrices, and stationary distributions. "
+        "The same issue appears downstream in the consumption-savings, RBC, and Aiyagari "
+        "tutorials, where the shock process feeds directly into household choices or "
+        "equilibrium objects."
     )
 
     report.add_equations(
         rf"""
-We start from the continuous AR(1):
+Let $z_t$ denote the continuous shock state. The target process is the AR(1)
 
 $$z_{{t+1}} = \rho z_t + \sigma_\epsilon \epsilon_{{t+1}}, \qquad
 \epsilon_{{t+1}} \sim N(0,1).$$
 
-The continuous process has unconditional variance:
+Here $\rho$ is persistence and $\sigma_\epsilon$ is the innovation standard
+deviation. The continuous process has unconditional variance
 
 $$\operatorname{{Var}}(z_t) = \frac{{\sigma_\epsilon^2}}{{1-\rho^2}}.$$
 
-With $\rho={rho}$ and $\sigma_\epsilon={sigma_eps}$, the true unconditional
-standard deviation is **{true_std:.4f}**.
+A finite-state approximation replaces the continuous state with grid points
+$z_1,\ldots,z_N$ and transition probabilities
+
+$$P_{{ij}} = \Pr(z_{{t+1}} = z_j \mid z_t = z_i).$$
+
+If a Bellman equation contains expected continuation value, the approximation
+turns the integral over next period's shock into
+
+$$\mathbb{{E}}[V(x_{{t+1}},z_{{t+1}})\mid z_t=z_i]
+  \approx \sum_{{j=1}}^N P_{{ij}} V(x_{{t+1}},z_j).$$
+
+The invariant distribution $\pi$ of the finite chain satisfies
+$\pi = \pi P$ and $\sum_i \pi_i = 1$. With $\rho={rho}$ and
+$\sigma_\epsilon={sigma_eps}$, the target unconditional standard deviation is
+**{true_std:.4f}**.
 """
     )
 
@@ -148,18 +182,66 @@ standard deviation is **{true_std:.4f}**.
         f"| $\\rho$ | {rho} | AR(1) persistence |\n"
         f"| $\\sigma_\\epsilon$ | {sigma_eps} | Innovation standard deviation |\n"
         f"| States | {n_grid} | Main comparison grid size |\n"
-        f"| Grid sizes tested | {n_values} | Moment-accuracy sweep |"
+        f"| Grid sizes tested | {n_values} | Moment-accuracy sweep |\n"
+        f"| Simulation periods | {T_sim} | Path-comparison horizon |\n"
+        f"| Path benchmark | Continuous AR(1) | Ground-truth history for transition plot |"
     )
 
     report.add_solution_method(
-        "**Tauchen** chooses an evenly spaced grid over a fixed number of unconditional "
-        "standard deviations and assigns transition probabilities by integrating normal "
-        "mass between grid-cell cutoffs.\n\n"
-        "**Rouwenhorst** builds the transition matrix recursively. It is especially useful "
-        "when shocks are persistent because it preserves persistence well with few states.\n\n"
-        "**Discrete normal** approximates a one-period normal distribution directly. It is "
-        "not a Markov approximation to persistence, but it is useful for quadrature and "
-        "independent shocks."
+        f"The pseudocode below uses the main comparison values "
+        f"$\\rho={rho}$, $\\sigma_\\epsilon={sigma_eps}$, and $N={n_grid}$.\n\n"
+        "**Tauchen** is transparent and interval-based. It chooses an evenly spaced grid "
+        "over a fixed number of unconditional standard deviations, then assigns transition "
+        "probabilities by integrating normal mass between grid-cell cutoffs.\n\n"
+        "```text\n"
+        "Algorithm: Tauchen AR(1) discretization\n"
+        "Input: rho=0.95, sigma_epsilon=0.02, N=7, width m=3\n"
+        "Output: grid z_1,...,z_N, transition matrix P, invariant distribution pi\n"
+        "sigma_z = sigma_epsilon / sqrt(1 - rho^2)\n"
+        "Delta = 2 * m * sigma_z / (N - 1)\n"
+        "z_j = -m * sigma_z + (j - 1) * Delta,  j=1,...,N\n"
+        "c_1 = -infinity, c_{N+1} = +infinity\n"
+        "c_j = (z_{j-1} + z_j) / 2,  j=2,...,N\n"
+        "for current state i=1,...,N:\n"
+        "    for next state j=1,...,N:\n"
+        "        P_ij = Phi((c_{j+1} - rho * z_i) / sigma_epsilon)\n"
+        "               - Phi((c_j - rho * z_i) / sigma_epsilon)\n"
+        "pi solves pi = pi P and sum_j pi_j = 1\n"
+        "```\n\n"
+        "**Rouwenhorst** is built for persistent processes on coarse grids. The recursive "
+        "construction preserves the target autocorrelation especially well when $\\rho$ is "
+        "close to one.\n\n"
+        "```text\n"
+        "Algorithm: Rouwenhorst AR(1) discretization\n"
+        "Input: rho=0.95, sigma_epsilon=0.02, N=7\n"
+        "Output: grid z_1,...,z_N, transition matrix P_N, invariant distribution pi\n"
+        "p = (1 + rho) / 2\n"
+        "P_2 = [[p, 1 - p], [1 - p, p]]\n"
+        "for n = 3,...,N:\n"
+        "    P_n = p       * upper_left(P_{n-1})\n"
+        "        + (1 - p) * upper_right(P_{n-1})\n"
+        "        + (1 - p) * lower_left(P_{n-1})\n"
+        "        + p       * lower_right(P_{n-1})\n"
+        "row-normalize P_N so each row sums to one\n"
+        "sigma_z = sigma_epsilon / sqrt(1 - rho^2)\n"
+        "z_j = sigma_z * sqrt(N - 1) * (2*(j - 1)/(N - 1) - 1)\n"
+        "pi solves pi = pi P_N and sum_j pi_j = 1\n"
+        "```\n\n"
+        "**Discrete normal** approximates an IID normal random variable directly. It is "
+        "useful for quadrature and independent shocks, but it should not be confused with "
+        "a Markov approximation to a persistent AR(1).\n\n"
+        "```text\n"
+        "Algorithm: discrete-normal quadrature\n"
+        "Input: mu=0, sigma_z=sigma_epsilon/sqrt(1-rho^2), N=7, width m=3\n"
+        "Output: grid z_1,...,z_N and one-period probabilities p_1,...,p_N\n"
+        "z_j = evenly spaced points from mu - m*sigma_z to mu + m*sigma_z\n"
+        "d_j = (z_j + z_{j+1}) / 2,  j=1,...,N-1\n"
+        "p_1 = Phi((d_1 - mu) / sigma_z)\n"
+        "for j=2,...,N-1:\n"
+        "    p_j = Phi((d_j - mu) / sigma_z) - Phi((d_{j-1} - mu) / sigma_z)\n"
+        "p_N = 1 - sum_{j=1}^{N-1} p_j\n"
+        "return grid z and probabilities p; there is no transition matrix\n"
+        "```"
     )
 
     # Figure 1: stationary distributions
@@ -171,17 +253,23 @@ standard deviation is **{true_std:.4f}**.
     ax1.vlines(z_norm, 0, p_norm, color="tab:green", linewidth=1.5, label="Discrete normal")
     ax1.set_xlabel("Shock state")
     ax1.set_ylabel("Stationary probability")
-    ax1.set_title("Finite-State Probability Mass")
+    ax1.set_title("Stationary Mass by Approximation")
     ax1.legend()
+    report.add_results(
+        "Start with the stationary probabilities. They show where the finite chain spends "
+        "time in the long run. Even when methods target the same continuous process, they can "
+        "place mass on different support points, which changes the states used inside "
+        "continuation-value calculations."
+    )
     report.add_figure(
         "figures/stationary-mass.png",
-        "Stationary distributions implied by 7-state discretizations",
+        "Stationary mass across discretization methods",
         fig1,
         description=(
-            "Rouwenhorst places more mass near the center and preserves the target variance. "
-            "Tauchen uses the wider evenly spaced support implied by the chosen width. The "
-            "discrete-normal grid matches a one-period normal distribution rather than an "
-            "AR(1) transition."
+            "Rouwenhorst places more mass near the center while preserving the target "
+            "variance. Tauchen uses the wider evenly spaced support implied by the chosen "
+            "width. The discrete-normal grid matches a one-period normal distribution rather "
+            "than a persistent transition law."
         ),
     )
 
@@ -194,40 +282,56 @@ standard deviation is **{true_std:.4f}**.
     ax2b.axhline(0.0, color="black", linewidth=0.8)
     ax2a.set_xlabel("Number of states")
     ax2a.set_ylabel("Std error")
-    ax2a.set_title("Variance Accuracy")
+    ax2a.set_title("Unconditional Variance")
     ax2b.set_xlabel("Number of states")
     ax2b.set_ylabel("Persistence error")
-    ax2b.set_title("Persistence Accuracy")
+    ax2b.set_title("Autocorrelation")
     ax2b.legend()
     fig2.tight_layout()
+    report.add_results(
+        "The moment errors separate two questions: whether the finite chain has the right "
+        "unconditional dispersion, and whether it carries shocks forward at the right rate. "
+        "For persistent income or productivity risk, autocorrelation errors are often the "
+        "more damaging error because they directly enter expected continuation values."
+    )
     report.add_figure(
         "figures/moment-accuracy.png",
-        "Moment errors relative to the continuous AR(1)",
+        "Coarse Tauchen grids can overstate persistence",
         fig2,
         description=(
             "For highly persistent shocks, Tauchen can distort persistence on coarse grids. "
-            "Rouwenhorst is designed to preserve the persistence parameter more tightly."
+            "Rouwenhorst is designed to keep the autocorrelation close to the target even "
+            "with few states."
         ),
     )
 
     # Figure 3: sample paths
-    tau_path = simulate_chain(P_tau, z_tau, T_sim, seed=123)
-    rou_path = simulate_chain(P_rou, z_rou, T_sim, seed=123)
+    true_path, true_innovations = simulate_ar1(rho, sigma_eps, T_sim, seed=123)
+    common_uniforms = norm.cdf(true_innovations)
+    tau_path = simulate_chain_from_uniforms(P_tau, z_tau, true_path[0], common_uniforms)
+    rou_path = simulate_chain_from_uniforms(P_rou, z_rou, true_path[0], common_uniforms)
     fig3, ax3 = plt.subplots(figsize=(9, 4.5))
+    ax3.plot(true_path, label="Ground truth AR(1)", color="black", linewidth=2.0, alpha=0.8)
     ax3.plot(tau_path, label="Tauchen", alpha=0.85)
     ax3.plot(rou_path, label="Rouwenhorst", alpha=0.85)
     ax3.set_xlabel("Period")
     ax3.set_ylabel("Shock state")
-    ax3.set_title("Simulated Markov Chains")
+    ax3.set_title("Transition Histories Against the Continuous AR(1)")
     ax3.legend()
+    report.add_results(
+        "Sample paths make the transition matrix concrete. The black line is the continuous "
+        "AR(1) ground truth. The finite chains start from the nearest grid point and use the "
+        "same sequence of shock ranks, so the comparison shows how a coarse Markov chain "
+        "turns a continuous history into discrete transitions."
+    )
     report.add_figure(
         "figures/simulated-paths.png",
-        "Sample paths from Tauchen and Rouwenhorst chains",
+        "Transition histories against the continuous AR(1)",
         fig3,
         description=(
-            "The two chains can share the same target process but generate visibly different "
-            "finite-state dynamics on coarse grids. This matters for policy functions near "
-            "borrowing constraints or other nonlinear regions."
+            "The finite paths should not match the continuous path point by point. They show "
+            "which movements the solved finite model can represent when the ground-truth "
+            "process is compressed to seven states."
         ),
     )
 
@@ -238,21 +342,26 @@ standard deviation is **{true_std:.4f}**.
         "tables/moment-comparison.csv",
         "Moment accuracy across discretization methods",
         table,
-        description="The table reports moments implied by the finite Markov chains.",
+        description=(
+            "The table reports the moments implied by each finite Markov chain. The "
+            f"7-state Tauchen chain implies persistence {tau_moments['rho']:.4f}, while "
+            f"the 7-state Rouwenhorst chain implies persistence {rou_moments['rho']:.4f}. "
+            f"The discrete-normal standard-deviation error is {normal_error:.4e}."
+        ),
     )
 
     report.add_results(
-        f"The 7-state Tauchen chain implies persistence {tau_moments['rho']:.4f}, while "
-        f"the 7-state Rouwenhorst chain implies persistence {rou_moments['rho']:.4f}. "
-        f"The discrete-normal standard-deviation error is {normal_error:.4e}."
+        "These differences matter in models such as the consumption-savings, RBC, and "
+        "Aiyagari examples. In each case, the shock process is inside an expectation "
+        "operator, so the Markov chain affects choices before any simulation is run."
     )
 
     report.add_takeaway(
-        "Discretization is part of the model, not a harmless preprocessing step. Tauchen is "
+        "The Markov chain is part of the economic model, not preprocessing. Tauchen is "
         "transparent and often adequate for moderate persistence. Rouwenhorst is safer for "
-        "persistent income or productivity shocks because it preserves autocorrelation on "
-        "small grids. Discrete-normal grids are useful for independent quadrature but do not "
-        "replace a Markov transition matrix when persistence matters."
+        "persistent income or productivity shocks on small grids because it preserves "
+        "autocorrelation. Discrete-normal grids are useful for IID quadrature, but they do "
+        "not replace a transition matrix when persistence matters."
     )
 
     report.add_references([

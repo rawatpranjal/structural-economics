@@ -1,8 +1,8 @@
 # After Quant Econ
 
-[QuantEcon](https://quantecon.org/) is the starting point; this repo continues with executable structural and computational economics examples.
+This repository is for graduate students and researchers in economics, business, public policy, finance, and neighboring quantitative fields who want executable examples after the standard first pass through quantitative economics.
 
-Executable examples for applied structural and computational economics after the Quant Econ foundations. Every model is self-contained, runs with `python run.py`, and produces a documented report with equations, solutions, visualizations, and takeaways.
+The tutorials are organized around economic questions first: dynamic programming, computational macro, industrial organization, revealed preference and demand, computational game theory, time series, finance, and numerical methods. Each example is meant to be readable in one sitting and runnable from its folder with `python run.py`, producing a short report with equations, computation, figures, and takeaways.
 
 **Built with:** Python, JAX, NumPy, SciPy, Matplotlib | **License:** MIT
 
@@ -35,7 +35,7 @@ Dynamic programming is both a method and a language for many structural models. 
 
 | | Tutorial | What it teaches | Method | Key Insight |
 |:---:|---|---|---|---|
-| <img src="dynamic-programming/shock-discretization/figures/thumb.png" width="192"> | [**Discretizing Persistent Shocks**](dynamic-programming/shock-discretization/) | Turning continuous AR(1) risk into finite Markov states | Tauchen + Rouwenhorst | Shock grids are part of the model, not harmless preprocessing |
+| <img src="dynamic-programming/shock-discretization/figures/thumb.png" width="192"> | [**Discretizing Persistent Shocks**](dynamic-programming/shock-discretization/) | Approximating persistent income or productivity risk with finite Markov states | Tauchen + Rouwenhorst | The Markov chain is part of the economic model, not preprocessing |
 | <img src="dynamic-programming/cake-eating/figures/thumb.png" width="192"> | [**Finite-Resource Cake Eating**](dynamic-programming/cake-eating/) | The cleanest infinite-horizon Bellman problem | Value function iteration | Optimal depletion consumes fraction $(1-\beta)$ each period |
 | <img src="dynamic-programming/optimal-growth/figures/thumb.png" width="192"> | [**Optimal Growth by Value Function Iteration**](dynamic-programming/optimal-growth/) | Capital accumulation with an optimizing representative household | VFI | Capital converges to $k_{ss} = (\alpha\beta A)^{1/(1-\alpha)}$ |
 | <img src="dynamic-programming/solow-growth/figures/thumb.png" width="192"> | [**Solow Growth with Exogenous Saving**](dynamic-programming/solow-growth/) | Baseline growth dynamics without household optimization | Simulation | Savings, depreciation, and technology pin down long-run output |
@@ -186,13 +186,20 @@ These tutorials are useful as standalone references when optimization or samplin
 ## Other Code Repositories
 
 - [QuantEcon](https://github.com/QuantEcon) - Open-source lectures and libraries for quantitative economics, founded and led by Thomas J. Sargent and John Stachurski.
+- [John Stachurski GitHub](https://github.com/jstac) - John Stachurski's repositories for computational economics, stochastic dynamics, econometric theory, and QuantEcon-adjacent course materials.
 - [Dynamic Structural Econometrics (DSE 2023)](https://github.com/dseconf/DSE2023) - University of Lausanne summer-school and conference materials on deep learning for solving and estimating dynamic models; contributors include Simon Scheidegger, John Rust, John Stachurski, Fedor Iskhakov, Bertel Schjerning, Jesus Fernandez-Villaverde, and others.
+- [New York Fed DSGE.jl](https://github.com/FRBNY-DSGE/DSGE.jl) - The Federal Reserve Bank of New York's Julia package for solving and estimating DSGE models, including the New York Fed DSGE model.
+- [GDSGE](https://github.com/gdsge/gdsge) - Dan Cao, Wenlan Luo, and Guangyu Nie's Matlab/C++ toolbox for global solution of nonlinear DSGE models using simultaneous transition and policy function iteration.
+- [DSGE_mod](https://github.com/JohannesPfeifer/DSGE_mod) - Johannes Pfeifer's collection of Dynare `.mod` files that demonstrate best practices and replicate important DSGE models.
 - [Chris Conlon Grad IO](https://github.com/chrisconlon/Grad-IO) - Chris Conlon's first PhD course in empirical industrial organization, covering demand, BLP, welfare, conduct, dynamic discrete choice, and entry.
+- [Kenneth Train Software](https://eml.berkeley.edu/~train/software.html) - Kenneth E. Train's UC Berkeley software page with Matlab code for mixed logit estimation, including maximum simulated likelihood and Bayesian/hierarchical Bayes methods.
+- [Victor Aguirregabiria Computer Code](https://sites.google.com/view/victoraguirregabiriaswebsite/computer-code?authuser=0) - Victor Aguirregabiria's code page for dynamic discrete choice structural models, including NPL, BBL, Bayesian estimation, dynamic games, and NFXP materials.
 - [EconRL](https://github.com/SimonHashtag/EconRL) - Simon G. Haastert's curated bibliography of economics and finance papers using reinforcement learning.
 - [CompEcon](https://github.com/fediskhakov/CompEcon) - Fedor Iskhakov's Foundations of Computational Economics course materials.
 - [CompEcon Fall 2017](https://github.com/ScPo-CompEcon/CoursePack) - Florian Oswald's Sciences Po computational economics course pack, with Julia notebooks, slides, and assignments.
 - [EmpiricalIO](https://github.com/kohei-kawaguchi/EmpiricalIO) - Kohei Kawaguchi's empirical industrial organization lecture notes, assignments, and R code.
 - [Quantitative Macro Models](https://github.com/hessjacob/Quantitative-Macro-Models) - Jacob Hess's Python/Numba implementations of heterogeneous-agent macro, firm dynamics, Aiyagari, Hopenhayn, Restuccia-Rogerson, and related models.
+- [Benjamin Moll Codes](https://benjaminmoll.com/codes/) - Benjamin Moll's finite-difference codes for continuous-time heterogeneous-agent models, including Huggett, Aiyagari, sequence-space, lifecycle, and transition-dynamics examples.
 - [Archive of Empirical Dynamic Programming Research](https://github.com/CForg/Archive-of-Empirical-Dynamic-Programming-Research) - Christopher Ferrall's archive of published papers and replication materials for empirical dynamic programming and dynamic structural estimation.
 - [Dynamical Systems](https://github.com/JuliaDynamics/DynamicalSystems.jl) - JuliaDynamics' general-purpose Julia library for nonlinear dynamics and time-series analysis, led by George Datseris.
 - [Heterogeneous Agents Bayes](https://github.com/BASEforHANK) - BASEforHANK Julia toolboxes for Bayesian solution and estimation of HANK models, based on work by Christian Bayer, Benjamin Born, and Ralph Luetticke.

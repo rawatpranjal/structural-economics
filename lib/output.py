@@ -13,9 +13,17 @@ from lib.plotting import save_figure, save_thumbnail
 class ModelReport:
     """Generates a standardized README.md with equations, figures, and tables."""
 
-    def __init__(self, title: str, description: str = ""):
+    def __init__(
+        self,
+        title: str,
+        description: str = "",
+        include_reproduce: bool = True,
+        show_figure_captions: bool = True,
+    ):
         self.title = title
         self.description = description
+        self.include_reproduce = include_reproduce
+        self.show_figure_captions = show_figure_captions
         self._overview: str = ""
         self._equations: str = ""
         self._model_setup: str = ""
@@ -140,7 +148,8 @@ class ModelReport:
                         lines.append(desc)
                         lines.append("")
                     lines.append(f'<img src="{fig_path}" alt="{caption}" width="80%">')
-                    lines.append(f"*{caption}*")
+                    if self.show_figure_captions and caption:
+                        lines.append(f"*{caption}*")
                     lines.append("")
                 elif item[0] == "table":
                     _, _, caption, md_table, desc = item
@@ -160,12 +169,13 @@ class ModelReport:
             lines.append("")
 
         # Reproduce
-        lines.append("## Reproduce")
-        lines.append("")
-        lines.append("```bash")
-        lines.append("python run.py")
-        lines.append("```")
-        lines.append("")
+        if self.include_reproduce:
+            lines.append("## Reproduce")
+            lines.append("")
+            lines.append("```bash")
+            lines.append("python run.py")
+            lines.append("```")
+            lines.append("")
 
         # References
         if self._references:
