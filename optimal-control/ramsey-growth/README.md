@@ -48,13 +48,13 @@ The ODE system is integrated using `scipy.integrate.solve_ivp` (RK45, adaptive s
 
 ## Results
 
-![Phase diagram showing saddle paths converging to the steady state from different initial capital stocks](figures/phase-diagram.png)
+<img src="figures/phase-diagram.png" alt="Phase diagram showing saddle paths converging to the steady state from different initial capital stocks" width="80%">
 *Phase diagram showing saddle paths converging to the steady state from different initial capital stocks*
 
-![Time paths of capital and consumption from different initial conditions, all converging to steady state](figures/time-paths.png)
+<img src="figures/time-paths.png" alt="Time paths of capital and consumption from different initial conditions, all converging to steady state" width="80%">
 *Time paths of capital and consumption from different initial conditions, all converging to steady state*
 
-![Log-scale convergence of capital to steady state, compared with linearized prediction](figures/convergence-speed.png)
+<img src="figures/convergence-speed.png" alt="Log-scale convergence of capital to steady state, compared with linearized prediction" width="80%">
 *Log-scale convergence of capital to steady state, compared with linearized prediction*
 
 **Shooting Method Results for Different Initial Capital Stocks**

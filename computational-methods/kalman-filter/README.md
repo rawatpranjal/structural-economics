@@ -52,17 +52,17 @@ The plots are meant to make the recursion concrete: the data are noisy, the filt
 
 The scalar observation combines both hidden states and measurement error. The filter uses the transition law to separate persistent state movements from observation noise.
 
-![Observed signal and hidden state paths](figures/simulated-signal.png)
+<img src="figures/simulated-signal.png" alt="Observed signal and hidden state paths" width="80%">
 *Observed signal and hidden state paths*
 
 The posterior covariance is not a side product. It tells us how uncertain the filter is about each latent state after seeing data through period t.
 
-![Kalman filtered states with credible bands](figures/filter-bands.png)
+<img src="figures/filter-bands.png" alt="Kalman filtered states with credible bands" width="80%">
 *Kalman filtered states with credible bands*
 
 The innovation is the surprise in the new observation. The Kalman gain converts that surprise into a state update, with weights pinned down by signal and state noise.
 
-![Forecast innovations and Kalman gains](figures/innovations-gain.png)
+<img src="figures/innovations-gain.png" alt="Forecast innovations and Kalman gains" width="80%">
 *Forecast innovations and Kalman gains*
 
 The table compares filtered state means to the simulated hidden states.

@@ -42,13 +42,13 @@ $$q_i^*(q_j) = \frac{a - c - bq_j}{2b}, \qquad q^{NE} = \frac{a-c}{3b}$$
 
 ## Results
 
-![Cournot best responses intersect at Nash equilibrium](figures/cournot-best-response.png)
+<img src="figures/cournot-best-response.png" alt="Cournot best responses intersect at Nash equilibrium" width="80%">
 *Cournot best responses intersect at Nash equilibrium*
 
-![Matching Pennies: only equilibrium is mixed (0.5, 0.5)](figures/matching-pennies-br.png)
+<img src="figures/matching-pennies-br.png" alt="Matching Pennies: only equilibrium is mixed (0.5, 0.5)" width="80%">
 *Matching Pennies: only equilibrium is mixed (0.5, 0.5)*
 
-![Cournot output lies between monopoly and competitive levels](figures/welfare-analysis.png)
+<img src="figures/welfare-analysis.png" alt="Cournot output lies between monopoly and competitive levels" width="80%">
 *Cournot output lies between monopoly and competitive levels*
 
 **Nash Equilibria in Classic 2x2 Games**

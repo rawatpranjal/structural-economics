@@ -44,16 +44,16 @@ $$R^{(k)}[i,j] = R^{(k-1)}[i,j] \;\lor\; \bigl(R^{(k-1)}[i,k] \;\land\; R^{(k-1)
 
 ## Results
 
-![Warshall algorithm: progressive construction of the transitive closure from direct preferences](figures/warshall-steps.png)
+<img src="figures/warshall-steps.png" alt="Warshall algorithm: progressive construction of the transitive closure from direct preferences" width="80%">
 *Warshall algorithm: progressive construction of the transitive closure from direct preferences*
 
-![GARP violation detection: Cobb-Douglas data (left, no violations) vs random data (right, violations in red)](figures/garp-violations.png)
+<img src="figures/garp-violations.png" alt="GARP violation detection: Cobb-Douglas data (left, no violations) vs random data (right, violations in red)" width="80%">
 *GARP violation detection: Cobb-Douglas data (left, no violations) vs random data (right, violations in red)*
 
-![Bronars power: fraction of random datasets violating GARP, increasing with T](figures/bronars-power.png)
+<img src="figures/bronars-power.png" alt="Bronars power: fraction of random datasets violating GARP, increasing with T" width="80%">
 *Bronars power: fraction of random datasets violating GARP, increasing with T*
 
-![Afriat efficiency index distribution for random data: distance from rationalizability](figures/afriat-distribution.png)
+<img src="figures/afriat-distribution.png" alt="Afriat efficiency index distribution for random data: distance from rationalizability" width="80%">
 *Afriat efficiency index distribution for random data: distance from rationalizability*
 
 **Direct Revealed Preference R and Transitive Closure R* (random data, first 10 obs)**

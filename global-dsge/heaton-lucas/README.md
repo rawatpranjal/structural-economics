@@ -50,10 +50,10 @@ Result: **80 iters** (Δ=2.06e-02, res=1.27e-03).
 
 ## Results
 
-![Equity premium and ergodic distribution of wealth share.](figures/equity-premium-and-distribution.png)
+<img src="figures/equity-premium-and-distribution.png" alt="Equity premium and ergodic distribution of wealth share." width="80%">
 *Equity premium and ergodic distribution of wealth share.*
 
-![Multipliers and equity premium — kinks where constraints bind.](figures/policy-functions.png)
+<img src="figures/policy-functions.png" alt="Multipliers and equity premium — kinks where constraints bind." width="80%">
 *Multipliers and equity premium — kinks where constraints bind.*
 
 **Euler Equation Errors**

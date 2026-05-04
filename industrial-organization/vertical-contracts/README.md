@@ -40,17 +40,17 @@ The assortment problem is solved by enumerating all feasible seven-product subse
 
 The all-unit discount and slotting-fee contracts shift scarce machine slots toward the manufacturer's products. The contract changes product availability, not just transfers between firms.
 
-![Assortment selected under each vertical contract](figures/assortment-selection.png)
+<img src="figures/assortment-selection.png" alt="Assortment selected under each vertical contract" width="80%">
 *Assortment selected under each vertical contract*
 
 Fixed payments can make the retailer willing to stock products that are not selected under wholesale-only incentives. The manufacturer pays for placement when the incremental product-level margin is worth it.
 
-![Retailer and manufacturer payoffs by contract](figures/profit-incidence.png)
+<img src="figures/profit-incidence.png" alt="Retailer and manufacturer payoffs by contract" width="80%">
 *Retailer and manufacturer payoffs by contract*
 
 A target that is too low gives away margin without changing behavior. A target that is too high may be unreachable. The interesting region is where the threshold changes the retailer's assortment choice.
 
-![Mars slots and manufacturer profit as the all-unit discount threshold changes](figures/rebate-thresholds.png)
+<img src="figures/rebate-thresholds.png" alt="Mars slots and manufacturer profit as the all-unit discount threshold changes" width="80%">
 *Mars slots and manufacturer profit as the all-unit discount threshold changes*
 
 **Contract outcomes**

@@ -49,12 +49,12 @@ The diagnostic is the fixed-point residual $\max_i |q_i - BR_i(q_{-i})|$.
 
 Each path starts from a different output pair and moves by damped simultaneous best responses. The intersection of best-response curves is the Nash equilibrium.
 
-![Best-response iteration converges to the Cournot Nash equilibrium](figures/best-response-paths.png)
+<img src="figures/best-response-paths.png" alt="Best-response iteration converges to the Cournot Nash equilibrium" width="80%">
 *Best-response iteration converges to the Cournot Nash equilibrium*
 
 The residual measures the largest profitable correction implied by the best-response map. A Nash equilibrium has residual zero.
 
-![Best-response residual falls toward zero](figures/residuals.png)
+<img src="figures/residuals.png" alt="Best-response residual falls toward zero" width="80%">
 *Best-response residual falls toward zero*
 
 **Convergence Summary**

@@ -43,16 +43,16 @@ Converged in **260 iterations** (error = 9.91e-07).
 
 ## Results
 
-![Value functions for each income state](figures/value-functions.png)
+<img src="figures/value-functions.png" alt="Value functions for each income state" width="80%">
 *Value functions for each income state*
 
-![Consumption policy functions by income state](figures/consumption-policy.png)
+<img src="figures/consumption-policy.png" alt="Consumption policy functions by income state" width="80%">
 *Consumption policy functions by income state*
 
-![Net savings (a' - a) by income state](figures/savings-policy.png)
+<img src="figures/savings-policy.png" alt="Net savings (a' - a) by income state" width="80%">
 *Net savings (a' - a) by income state*
 
-![Simulated asset paths for 5 agents over 200 periods](figures/simulated-paths.png)
+<img src="figures/simulated-paths.png" alt="Simulated asset paths for 5 agents over 200 periods" width="80%">
 *Simulated asset paths for 5 agents over 200 periods*
 
 **Policy Functions at Selected Grid Points**

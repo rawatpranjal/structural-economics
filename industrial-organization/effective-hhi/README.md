@@ -59,13 +59,13 @@ where $\Omega$ is the ownership matrix. We solve this system of equations via `s
 
 In segmented markets ($\beta = 0$, no cross-price effects), a merger changes ownership but cannot raise prices because products are independent. HHI still changes mechanically through quantity reallocation. In differentiated markets ($\beta > 0$), merged firms internalize cross-price externalities, raising prices on substitutes and amplifying concentration.
 
-![HHI declines as 10000/N for equal-sized firms, with DOJ/FTC threshold regions shaded](figures/hhi-vs-nfirms.png)
+<img src="figures/hhi-vs-nfirms.png" alt="HHI declines as 10000/N for equal-sized firms, with DOJ/FTC threshold regions shaded" width="80%">
 *HHI declines as 10000/N for equal-sized firms, with DOJ/FTC threshold regions shaded*
 
-![HHI before and after merger of the two largest firms across market structures](figures/merger-delta-hhi.png)
+<img src="figures/merger-delta-hhi.png" alt="HHI before and after merger of the two largest firms across market structures" width="80%">
 *HHI before and after merger of the two largest firms across market structures*
 
-![Lorenz curves: more bowed curves indicate greater concentration and higher HHI](figures/lorenz-curves.png)
+<img src="figures/lorenz-curves.png" alt="Lorenz curves: more bowed curves indicate greater concentration and higher HHI" width="80%">
 *Lorenz curves: more bowed curves indicate greater concentration and higher HHI*
 
 **HHI for Example Market Structures**

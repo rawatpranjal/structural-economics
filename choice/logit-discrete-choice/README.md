@@ -51,22 +51,22 @@ Converged in **9 iterations** (log-likelihood = -7493.95).
 
 The single peak confirms global concavity of the logit likelihood -- any gradient-based optimizer will find the same maximum. Notice how tightly the MLE estimate clusters near the true parameters, illustrating the statistical precision achievable with N=5000 observations.
 
-![Log-likelihood surface: the logit likelihood is globally concave, with the MLE close to the true parameters](figures/log-likelihood-surface.png)
+<img src="figures/log-likelihood-surface.png" alt="Log-likelihood surface: the logit likelihood is globally concave, with the MLE close to the true parameters" width="80%">
 *Log-likelihood surface: the logit likelihood is globally concave, with the MLE close to the true parameters*
 
 Close agreement between predicted and observed shares validates the model specification. Any systematic gap would signal omitted product characteristics or misspecification of the utility function.
 
-![Predicted vs actual market shares: the estimated model closely recovers observed choice frequencies](figures/market-shares.png)
+<img src="figures/market-shares.png" alt="Predicted vs actual market shares: the estimated model closely recovers observed choice frequencies" width="80%">
 *Predicted vs actual market shares: the estimated model closely recovers observed choice frequencies*
 
 In the logit, own-price elasticity is driven by both the price level and market share through the formula $\eta_{jj} = \beta_p \, p_j (1 - s_j)$. Higher-priced products lose a larger fraction of their customers for a given percentage price increase, which makes elasticities useful for interpreting demand sensitivity.
 
-![Own-price elasticities: higher-priced products have more elastic demand in the logit model](figures/own-price-elasticities.png)
+<img src="figures/own-price-elasticities.png" alt="Own-price elasticities: higher-priced products have more elastic demand in the logit model" width="80%">
 *Own-price elasticities: higher-priced products have more elastic demand in the logit model*
 
 The left panel shows that removing a product reallocates its share proportionally to all remaining products, regardless of similarity. The right panel confirms that pairwise share ratios are exactly preserved -- this is the IIA property, and it is the main limitation motivating grouped and mixed-logit choice models.
 
-![IIA property: removing an alternative does not change the ratio of choice probabilities between remaining alternatives](figures/iia-illustration.png)
+<img src="figures/iia-illustration.png" alt="IIA property: removing an alternative does not change the ratio of choice probabilities between remaining alternatives" width="80%">
 *IIA property: removing an alternative does not change the ratio of choice probabilities between remaining alternatives*
 
 Both coefficients are estimated with high precision and are statistically significant. The negative price coefficient and positive quality coefficient confirm that consumers trade off price against quality as expected.

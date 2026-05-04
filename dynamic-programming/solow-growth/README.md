@@ -53,13 +53,13 @@ We then convert to effective units $k_t = K_t / (A_t L_t)$ to analyze convergenc
 
 ## Results
 
-![Output per effective worker converges to the analytically computed steady state](figures/output-per-effective-worker.png)
+<img src="figures/output-per-effective-worker.png" alt="Output per effective worker converges to the analytically computed steady state" width="80%">
 *Output per effective worker converges to the analytically computed steady state*
 
-![Capital per effective worker converges to the steady state determined by savings and effective depreciation](figures/capital-per-effective-worker.png)
+<img src="figures/capital-per-effective-worker.png" alt="Capital per effective worker converges to the steady state determined by savings and effective depreciation" width="80%">
 *Capital per effective worker converges to the steady state determined by savings and effective depreciation*
 
-![Factor prices (rental rate and wage per effective worker) converge to steady-state values](figures/factor-prices.png)
+<img src="figures/factor-prices.png" alt="Factor prices (rental rate and wage per effective worker) converge to steady-state values" width="80%">
 *Factor prices (rental rate and wage per effective worker) converge to steady-state values*
 
 **Steady-State Comparison: Analytical vs Simulated**

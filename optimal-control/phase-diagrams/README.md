@@ -45,13 +45,13 @@ $$\dot{c} = \frac{1}{\sigma} \left( f'(k) - \delta - \rho \right) c$$
 
 ## Results
 
-![Phase diagram with nullclines, vector field, and saddle path](figures/phase-diagram.png)
+<img src="figures/phase-diagram.png" alt="Phase diagram with nullclines, vector field, and saddle path" width="80%">
 *Phase diagram with nullclines, vector field, and saddle path*
 
-![Capital and consumption converge to steady state along the saddle path](figures/time-paths.png)
+<img src="figures/time-paths.png" alt="Capital and consumption converge to steady state along the saddle path" width="80%">
 *Capital and consumption converge to steady state along the saddle path*
 
-![Only trajectories starting on the saddle path converge to steady state](figures/four-regions.png)
+<img src="figures/four-regions.png" alt="Only trajectories starting on the saddle path converge to steady state" width="80%">
 *Only trajectories starting on the saddle path converge to steady state*
 
 **Steady-State Values and Eigenvalues**

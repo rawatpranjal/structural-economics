@@ -63,19 +63,19 @@ These models are **purely backward-looking**, so no expectations need to be solv
 
 ## Results
 
-![AR(1) impulse responses for different persistence parameters](figures/ar1-irfs.png)
+<img src="figures/ar1-irfs.png" alt="AR(1) impulse responses for different persistence parameters" width="80%">
 *AR(1) impulse responses for different persistence parameters*
 
-![Multiplier-accelerator impulse responses to a unit government spending shock](figures/multiplier-accelerator-irfs.png)
+<img src="figures/multiplier-accelerator-irfs.png" alt="Multiplier-accelerator impulse responses to a unit government spending shock" width="80%">
 *Multiplier-accelerator impulse responses to a unit government spending shock*
 
-![Simulated time series for AR(1) and multiplier-accelerator models](figures/simulated-paths.png)
+<img src="figures/simulated-paths.png" alt="Simulated time series for AR(1) and multiplier-accelerator models" width="80%">
 *Simulated time series for AR(1) and multiplier-accelerator models*
 
-![Autocorrelation functions: AR(1) sample vs theoretical, and multiplier-accelerator output](figures/autocorrelation.png)
+<img src="figures/autocorrelation.png" alt="Autocorrelation functions: AR(1) sample vs theoretical, and multiplier-accelerator output" width="80%">
 *Autocorrelation functions: AR(1) sample vs theoretical, and multiplier-accelerator output*
 
-![Spectral density of AR(1) for different persistence levels (log scale)](figures/spectral-density.png)
+<img src="figures/spectral-density.png" alt="Spectral density of AR(1) for different persistence levels (log scale)" width="80%">
 *Spectral density of AR(1) for different persistence levels (log scale)*
 
 **AR(1) Process Properties**

@@ -46,12 +46,12 @@ AR(1) coefficients are estimated by least squares on the first 70% of the sample
 
 With highly persistent rates, AR(1) and no-change forecasts can be close. That is an empirical feature: persistence makes simple benchmarks hard to beat at short horizons.
 
-![Observed ten-year yield and one-step forecasts](figures/ar1-forecast.png)
+<img src="figures/ar1-forecast.png" alt="Observed ten-year yield and one-step forecasts" width="80%">
 *Observed ten-year yield and one-step forecasts*
 
 Forecast errors are the object to compare, not visual fit alone. A model with more structure should earn its place by improving out-of-sample errors.
 
-![One-step forecast errors](figures/forecast-errors.png)
+<img src="figures/forecast-errors.png" alt="One-step forecast errors" width="80%">
 *One-step forecast errors*
 
 **Forecast accuracy**

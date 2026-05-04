@@ -48,13 +48,13 @@ Simulation: 5,000 periods of aggregate productivity shocks drawn from $\hat{z}_{
 
 ## Results
 
-![Unemployment and vacancy dynamics over 1000 periods](figures/unemployment-vacancies.png)
+<img src="figures/unemployment-vacancies.png" alt="Unemployment and vacancy dynamics over 1000 periods" width="80%">
 *Unemployment and vacancy dynamics over 1000 periods*
 
-![Beveridge curve: negative correlation between unemployment and vacancies](figures/beveridge-curve.png)
+<img src="figures/beveridge-curve.png" alt="Beveridge curve: negative correlation between unemployment and vacancies" width="80%">
 *Beveridge curve: negative correlation between unemployment and vacancies*
 
-![Productivity shocks drive labor market tightness (amplification factor C)](figures/productivity-tightness.png)
+<img src="figures/productivity-tightness.png" alt="Productivity shocks drive labor market tightness (amplification factor C)" width="80%">
 *Productivity shocks drive labor market tightness (amplification factor C)*
 
 **Business Cycle Statistics (simulated)**

@@ -54,10 +54,10 @@ where $\hat{x}_t = [\hat{k}_t, \hat{a}_t]'$. The stable eigenvalue for capital i
 
 ## Results
 
-![Impulse responses of output, consumption, investment, and capital to a 1% TFP shock](figures/irf-tfp-shock.png)
+<img src="figures/irf-tfp-shock.png" alt="Impulse responses of output, consumption, investment, and capital to a 1% TFP shock" width="80%">
 *Impulse responses of output, consumption, investment, and capital to a 1% TFP shock*
 
-![Model equations and calibration for the standard RBC](figures/model-equations.png)
+<img src="figures/model-equations.png" alt="Model equations and calibration for the standard RBC" width="80%">
 *Model equations and calibration for the standard RBC*
 
 **IRF Summary Statistics**

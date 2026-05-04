@@ -49,16 +49,16 @@ HJB converged in **8 iterations** (error = 1.56e-07). Equilibrium found at **$r^
 
 ## Results
 
-![Value function V(a) for each income state at the equilibrium interest rate](figures/value-function.png)
+<img src="figures/value-function.png" alt="Value function V(a) for each income state at the equilibrium interest rate" width="80%">
 *Value function V(a) for each income state at the equilibrium interest rate*
 
-![Savings policy s(a,z) = z + r*a - c(a,z) at equilibrium; zero crossings are steady states](figures/savings-policy.png)
+<img src="figures/savings-policy.png" alt="Savings policy s(a,z) = z + r*a - c(a,z) at equilibrium; zero crossings are steady states" width="80%">
 *Savings policy s(a,z) = z + r*a - c(a,z) at equilibrium; zero crossings are steady states*
 
-![Stationary wealth distribution g(a) by income state; mass piles up near borrowing constraint](figures/wealth-distribution.png)
+<img src="figures/wealth-distribution.png" alt="Stationary wealth distribution g(a) by income state; mass piles up near borrowing constraint" width="80%">
 *Stationary wealth distribution g(a) by income state; mass piles up near borrowing constraint*
 
-![Bond market: excess demand S(r) vs interest rate; equilibrium where S(r*)=0](figures/bond-market.png)
+<img src="figures/bond-market.png" alt="Bond market: excess demand S(r) vs interest rate; equilibrium where S(r*)=0" width="80%">
 *Bond market: excess demand S(r) vs interest rate; equilibrium where S(r*)=0*
 
 **Equilibrium Values**

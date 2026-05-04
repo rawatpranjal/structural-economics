@@ -139,7 +139,7 @@ class ModelReport:
                     if desc:
                         lines.append(desc)
                         lines.append("")
-                    lines.append(f"![{caption}]({fig_path})")
+                    lines.append(f'<img src="{fig_path}" alt="{caption}" width="80%">')
                     lines.append(f"*{caption}*")
                     lines.append("")
                 elif item[0] == "table":

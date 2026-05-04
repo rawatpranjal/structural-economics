@@ -50,19 +50,19 @@ $$u_i - u_j \leq \lambda_j \, p_j \cdot (x_i - x_j) \quad \forall \, i, j$$
 
 ## Results
 
-![Budget lines and chosen bundles (2D projection) for consistent data generated from a Cobb-Douglas utility maximizer. All choices lie on their respective budget lines.](figures/budget-lines-consistent.png)
+<img src="figures/budget-lines-consistent.png" alt="Budget lines and chosen bundles (2D projection) for consistent data generated from a Cobb-Douglas utility maximizer. All choices lie on their respective budget lines." width="80%">
 *Budget lines and chosen bundles (2D projection) for consistent data generated from a Cobb-Douglas utility maximizer. All choices lie on their respective budget lines.*
 
-![Budget lines and chosen bundles for inconsistent data. Swapped bundles create revealed preference cycles that cannot be rationalized by any utility function.](figures/budget-lines-inconsistent.png)
+<img src="figures/budget-lines-inconsistent.png" alt="Budget lines and chosen bundles for inconsistent data. Swapped bundles create revealed preference cycles that cannot be rationalized by any utility function." width="80%">
 *Budget lines and chosen bundles for inconsistent data. Swapped bundles create revealed preference cycles that cannot be rationalized by any utility function.*
 
-![Directed graph of the revealed preference relation for consistent data. Red edges indicate mutual relations. No GARP-violating cycles exist.](figures/rp-graph-consistent.png)
+<img src="figures/rp-graph-consistent.png" alt="Directed graph of the revealed preference relation for consistent data. Red edges indicate mutual relations. No GARP-violating cycles exist." width="80%">
 *Directed graph of the revealed preference relation for consistent data. Red edges indicate mutual relations. No GARP-violating cycles exist.*
 
-![Directed graph for inconsistent data. Mutual red edges in the transitive closure reveal GARP-violating cycles — these observations cannot be rationalized.](figures/rp-graph-inconsistent.png)
+<img src="figures/rp-graph-inconsistent.png" alt="Directed graph for inconsistent data. Mutual red edges in the transitive closure reveal GARP-violating cycles — these observations cannot be rationalized." width="80%">
 *Directed graph for inconsistent data. Mutual red edges in the transitive closure reveal GARP-violating cycles — these observations cannot be rationalized.*
 
-![Power of the GARP test: fraction of random datasets that violate GARP as a function of the number of observations T. With more data, random choices are increasingly likely to produce violations — GARP has real empirical bite.](figures/garp-power.png)
+<img src="figures/garp-power.png" alt="Power of the GARP test: fraction of random datasets that violate GARP as a function of the number of observations T. With more data, random choices are increasingly likely to produce violations — GARP has real empirical bite." width="80%">
 *Power of the GARP test: fraction of random datasets that violate GARP as a function of the number of observations T. With more data, random choices are increasingly likely to produce violations — GARP has real empirical bite.*
 
 **Pairwise Revealed Preference Relation (Example 1: Consistent). R = directly revealed preferred, R* = indirectly (via transitive closure)**

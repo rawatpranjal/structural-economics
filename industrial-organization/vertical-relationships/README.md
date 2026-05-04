@@ -40,17 +40,17 @@ The model is solved by backward induction. The retailer first solves its static 
 
 The linear wholesale contract produces the highest retail price. The two-part tariff restores the integrated-channel price by removing the manufacturer's margin from the retailer's marginal cost.
 
-![Price and quantity by vertical contract](figures/price-quantity.png)
+<img src="figures/price-quantity.png" alt="Price and quantity by vertical contract" width="80%">
 *Price and quantity by vertical contract*
 
 Double marginalization destroys surplus. A two-part tariff improves channel profit and consumer surplus in this simple environment because it lowers the marginal wholesale price.
 
-![Consumer surplus and channel profit by contract](figures/surplus-decomposition.png)
+<img src="figures/surplus-decomposition.png" alt="Consumer surplus and channel profit by contract" width="80%">
 *Consumer surplus and channel profit by contract*
 
 A higher wholesale price shifts the retailer's perceived marginal cost. Only part of the increase is passed through to price, but quantity still falls.
 
-![Retail pass-through as wholesale price changes](figures/wholesale-pass-through.png)
+<img src="figures/wholesale-pass-through.png" alt="Retail pass-through as wholesale price changes" width="80%">
 *Retail pass-through as wholesale price changes*
 
 **Contract outcomes**

@@ -44,12 +44,12 @@ Percentage yields are converted to decimal rates, forward rates are approximated
 
 For the ten-year maturity, the fitted slope is -0.35 and the R-squared is 0.261. The fitted relationship illustrates the regression mechanics; the short snapshot does not establish a stable term-structure premium.
 
-![Ten-year forward-spread predictability regression](figures/forward-regression-10y.png)
+<img src="figures/forward-regression-10y.png" alt="Ten-year forward-spread predictability regression" width="80%">
 *Ten-year forward-spread predictability regression*
 
 A predictive regression can fit broad movement without becoming a trading rule. Overlapping horizons, short samples, and measurement choices matter.
 
-![Realized versus fitted ten-year yield changes](figures/fitted-vs-realized.png)
+<img src="figures/fitted-vs-realized.png" alt="Realized versus fitted ten-year yield changes" width="80%">
 *Realized versus fitted ten-year yield changes*
 
 **Forward-regression coefficients by maturity**

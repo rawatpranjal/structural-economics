@@ -38,12 +38,12 @@ The examples are four canonical 2x2 games: Prisoner's Dilemma, Matching Pennies,
 
 The red boxes mark pure Nash equilibria. Matching Pennies has no red box because every pure profile gives one player a profitable deviation.
 
-![Payoff matrices with pure Nash equilibria outlined](figures/payoff-matrices.png)
+<img src="figures/payoff-matrices.png" alt="Payoff matrices with pure Nash equilibria outlined" width="80%">
 *Payoff matrices with pure Nash equilibria outlined*
 
 At probability 0.5, each player's two pure actions have the same expected payoff. That indifference is what supports randomization.
 
-![Mixed equilibrium makes both players indifferent](figures/mixed-indifference.png)
+<img src="figures/mixed-indifference.png" alt="Mixed equilibrium makes both players indifferent" width="80%">
 *Mixed equilibrium makes both players indifferent*
 
 The residual column checks the mixed-equilibrium indifference equations.

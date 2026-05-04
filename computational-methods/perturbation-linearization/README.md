@@ -53,22 +53,22 @@ This is the same logic used in larger DSGE applications: solve around a steady s
 
 All approximations agree at the steady state. Differences grow as the state moves away from the expansion point.
 
-![Taylor approximations around the steady state](figures/local-approximations.png)
+<img src="figures/local-approximations.png" alt="Taylor approximations around the steady state" width="80%">
 *Taylor approximations around the steady state*
 
 Higher order terms reduce local error, but no finite Taylor expansion is a global solution. The relevant question is how far the model travels from the steady state.
 
-![Approximation error by distance from the expansion point](figures/local-errors.png)
+<img src="figures/local-errors.png" alt="Approximation error by distance from the expansion point" width="80%">
 *Approximation error by distance from the expansion point*
 
 The first-order approximation is symmetric: changing the sign of the shock changes only the sign of the response. Higher-order terms can capture asymmetric adjustment.
 
-![Impulse responses under exact and approximated dynamics](figures/impulse-responses.png)
+<img src="figures/impulse-responses.png" alt="Impulse responses under exact and approximated dynamics" width="80%">
 *Impulse responses under exact and approximated dynamics*
 
 For a purely linear model, positive and negative impulse responses cancel exactly. A nonzero sum is a direct diagnostic for nonlinear asymmetry.
 
-![Nonlinear asymmetry in positive and negative responses](figures/asymmetry.png)
+<img src="figures/asymmetry.png" alt="Nonlinear asymmetry in positive and negative responses" width="80%">
 *Nonlinear asymmetry in positive and negative responses*
 
 Map errors are computed directly; IRF errors compare each approximation to the exact path.

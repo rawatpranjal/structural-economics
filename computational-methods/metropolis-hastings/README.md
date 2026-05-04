@@ -56,17 +56,17 @@ The diagnostics compare three proposal step sizes. For each chain, the code repo
 
 With proposal step 0.6, the chain explores both modes while still accepting 69.9% of proposed moves.
 
-![Metropolis-Hastings walk over target-density contours](figures/mh-walk.png)
+<img src="figures/mh-walk.png" alt="Metropolis-Hastings walk over target-density contours" width="80%">
 *Metropolis-Hastings walk over target-density contours*
 
 Trace plots reveal whether the chain has left its starting point, whether it moves between modes, and whether the retained draws are still highly persistent.
 
-![Trace plots for the middle-step random-walk chain](figures/trace-plots.png)
+<img src="figures/trace-plots.png" alt="Trace plots for the middle-step random-walk chain" width="80%">
 *Trace plots for the middle-step random-walk chain*
 
 A tiny proposal can have a comfortable acceptance rate but still move too slowly. A large proposal can switch modes, but rejection creates persistence. The best choice is empirical and target-specific.
 
-![Proposal tuning changes bias and persistence](figures/tuning-diagnostics.png)
+<img src="figures/tuning-diagnostics.png" alt="Proposal tuning changes bias and persistence" width="80%">
 *Proposal tuning changes bias and persistence*
 
 The true mixture mean is zero. The true marginal variance of each coordinate is 3.25, which is much larger than the within-component variance because the two modes are far apart.

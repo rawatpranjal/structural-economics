@@ -56,13 +56,13 @@ This is valid when the Taylor principle ($\phi_\pi > 1$ in many calibrations, or
 
 ## Results
 
-![Impulse responses to a contractionary monetary policy shock (1% increase in the policy rate)](figures/irf-monetary-shock.png)
+<img src="figures/irf-monetary-shock.png" alt="Impulse responses to a contractionary monetary policy shock (1% increase in the policy rate)" width="80%">
 *Impulse responses to a contractionary monetary policy shock (1% increase in the policy rate)*
 
-![Impulse responses to a positive demand shock (1% increase in natural rate)](figures/irf-demand-shock.png)
+<img src="figures/irf-demand-shock.png" alt="Impulse responses to a positive demand shock (1% increase in natural rate)" width="80%">
 *Impulse responses to a positive demand shock (1% increase in natural rate)*
 
-![The three core equations of the New Keynesian model](figures/model-equations.png)
+<img src="figures/model-equations.png" alt="The three core equations of the New Keynesian model" width="80%">
 *The three core equations of the New Keynesian model*
 
 **Impact Responses to Unit Shocks**

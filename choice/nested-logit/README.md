@@ -56,22 +56,22 @@ The nested logit introduces a second endogenous variable, $\ln s_{j|g}$, because
 
 The gold-outlined blocks mark within-nest product pairs. Cross-elasticities inside these blocks are visibly larger than those outside, reflecting the intuition that consumers substitute more readily among similar products. This asymmetric substitution pattern is exactly what IIA forbids and what the nested logit is designed to capture.
 
-![Nested logit elasticity matrix with nest blocks highlighted. Same-nest cross-elasticities (inside gold boxes) are higher than cross-nest elasticities.](figures/elasticity-heatmap.png)
+<img src="figures/elasticity-heatmap.png" alt="Nested logit elasticity matrix with nest blocks highlighted. Same-nest cross-elasticities (inside gold boxes) are higher than cross-nest elasticities." width="80%">
 *Nested logit elasticity matrix with nest blocks highlighted. Same-nest cross-elasticities (inside gold boxes) are higher than cross-nest elasticities.*
 
 Under IIA (blue bars), all rivals gain equally from Choco-Bombs' price increase regardless of product similarity. The nested logit (green/red bars) predicts that Store-Frosted -- another sugary cereal -- absorbs the lion's share of switching customers. The point is demand-side substitution: observed groups can concentrate switching toward closer alternatives.
 
-![Logit vs nested logit cross-elasticities when Choco-Bombs raises its price. Nested logit sends more customers to Store-Frosted (same nest).](figures/cross-elasticity-comparison.png)
+<img src="figures/cross-elasticity-comparison.png" alt="Logit vs nested logit cross-elasticities when Choco-Bombs raises its price. Nested logit sends more customers to Store-Frosted (same nest)." width="80%">
 *Logit vs nested logit cross-elasticities when Choco-Bombs raises its price. Nested logit sends more customers to Store-Frosted (same nest).*
 
 Diversion ratios summarize where customers go after one product becomes less attractive. The nested logit concentrates switching within the sugary nest instead of spreading it flatly by market share.
 
-![Diversion ratios: fraction of Choco-Bombs' lost sales captured by each rival. Nested logit predicts much higher diversion to same-nest products.](figures/diversion-ratios.png)
+<img src="figures/diversion-ratios.png" alt="Diversion ratios: fraction of Choco-Bombs' lost sales captured by each rival. Nested logit predicts much higher diversion to same-nest products." width="80%">
 *Diversion ratios: fraction of Choco-Bombs' lost sales captured by each rival. Nested logit predicts much higher diversion to same-nest products.*
 
 At $\sigma \approx 0$ the model collapses to plain logit with symmetric cross-elasticities. As $\sigma$ rises toward 1, within-nest products become near-perfect substitutes while cross-nest substitution barely changes. The structural role of $\sigma$ is clear: it controls the degree to which product groupings shape consumer switching behavior.
 
-![Effect of the nesting parameter sigma on substitution patterns. As sigma increases, within-nest substitution intensifies while cross-nest substitution stays flat.](figures/sigma-effect.png)
+<img src="figures/sigma-effect.png" alt="Effect of the nesting parameter sigma on substitution patterns. As sigma increases, within-nest substitution intensifies while cross-nest substitution stays flat." width="80%">
 *Effect of the nesting parameter sigma on substitution patterns. As sigma increases, within-nest substitution intensifies while cross-nest substitution stays flat.*
 
 The plain logit omits $\sigma$ entirely, which biases the price sensitivity estimate because within-nest correlation is absorbed into the price coefficient. The nested logit recovers all four structural parameters, including the nesting parameter that governs substitution patterns.

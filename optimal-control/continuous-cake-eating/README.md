@@ -48,13 +48,13 @@ The ODE system $\dot{W} = -c$, $\dot{c} = -(\rho/\sigma)c$ is integrated numeric
 
 ## Results
 
-![Optimal consumption path: continuous vs discrete time](figures/consumption-path.png)
+<img src="figures/consumption-path.png" alt="Optimal consumption path: continuous vs discrete time" width="80%">
 *Optimal consumption path: continuous vs discrete time*
 
-![Cake depletion: continuous exponential decay vs discrete geometric decay](figures/cake-remaining.png)
+<img src="figures/cake-remaining.png" alt="Cake depletion: continuous exponential decay vs discrete geometric decay" width="80%">
 *Cake depletion: continuous exponential decay vs discrete geometric decay*
 
-![Shadow price of cake: present-value (constant) and current-value (rising as cake becomes scarce)](figures/shadow-price.png)
+<img src="figures/shadow-price.png" alt="Shadow price of cake: present-value (constant) and current-value (rising as cake becomes scarce)" width="80%">
 *Shadow price of cake: present-value (constant) and current-value (rising as cake becomes scarce)*
 
 **Analytical vs Numerical Solution at Selected Time Points**

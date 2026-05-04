@@ -53,16 +53,16 @@ Multi-product firms internalise cannibalisation and charge higher markups.
 
 ## Results
 
-![Parameter estimates: True vs OLS (biased) vs IV/2SLS (consistent). OLS attenuates price sensitivity because high-xi products command higher prices.](figures/estimation-comparison.png)
+<img src="figures/estimation-comparison.png" alt="Parameter estimates: True vs OLS (biased) vs IV/2SLS (consistent). OLS attenuates price sensitivity because high-xi products command higher prices." width="80%">
 *Parameter estimates: True vs OLS (biased) vs IV/2SLS (consistent). OLS attenuates price sensitivity because high-xi products command higher prices.*
 
-![Elasticity matrix. Cross-elasticities in each column are identical -- the IIA limitation of the simple logit.](figures/elasticity-heatmap.png)
+<img src="figures/elasticity-heatmap.png" alt="Elasticity matrix. Cross-elasticities in each column are identical -- the IIA limitation of the simple logit." width="80%">
 *Elasticity matrix. Cross-elasticities in each column are identical -- the IIA limitation of the simple logit.*
 
-![Price = marginal cost + markup. Estimated MC (green, from Bertrand-Nash FOC) compared with true MC (blue). No accounting data required.](figures/price-decomposition.png)
+<img src="figures/price-decomposition.png" alt="Price = marginal cost + markup. Estimated MC (green, from Bertrand-Nash FOC) compared with true MC (blue). No accounting data required." width="80%">
 *Price = marginal cost + markup. Estimated MC (green, from Bertrand-Nash FOC) compared with true MC (blue). No accounting data required.*
 
-![IIA demonstration. When any product raises its price, substitution to each rival is proportional to that rival's market share -- not to how similar the products are.](figures/iia-demonstration.png)
+<img src="figures/iia-demonstration.png" alt="IIA demonstration. When any product raises its price, substitution to each rival is proportional to that rival's market share -- not to how similar the products are." width="80%">
 *IIA demonstration. When any product raises its price, substitution to each rival is proportional to that rival's market share -- not to how similar the products are.*
 
 **Estimation Results: True vs OLS vs IV/2SLS**

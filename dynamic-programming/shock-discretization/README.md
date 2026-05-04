@@ -43,17 +43,17 @@ standard deviation is **0.0641**.
 
 Rouwenhorst places more mass near the center and preserves the target variance. Tauchen uses the wider evenly spaced support implied by the chosen width. The discrete-normal grid matches a one-period normal distribution rather than an AR(1) transition.
 
-![Stationary distributions implied by 7-state discretizations](figures/stationary-mass.png)
+<img src="figures/stationary-mass.png" alt="Stationary distributions implied by 7-state discretizations" width="80%">
 *Stationary distributions implied by 7-state discretizations*
 
 For highly persistent shocks, Tauchen can distort persistence on coarse grids. Rouwenhorst is designed to preserve the persistence parameter more tightly.
 
-![Moment errors relative to the continuous AR(1)](figures/moment-accuracy.png)
+<img src="figures/moment-accuracy.png" alt="Moment errors relative to the continuous AR(1)" width="80%">
 *Moment errors relative to the continuous AR(1)*
 
 The two chains can share the same target process but generate visibly different finite-state dynamics on coarse grids. This matters for policy functions near borrowing constraints or other nonlinear regions.
 
-![Sample paths from Tauchen and Rouwenhorst chains](figures/simulated-paths.png)
+<img src="figures/simulated-paths.png" alt="Sample paths from Tauchen and Rouwenhorst chains" width="80%">
 *Sample paths from Tauchen and Rouwenhorst chains*
 
 The table reports moments implied by the finite Markov chains.

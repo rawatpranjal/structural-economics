@@ -50,16 +50,16 @@ Converged in **515 iterations** (error = 9.95e-06).
 
 ## Results
 
-![Value function V(k,z) for both TFP states](figures/value-function.png)
+<img src="figures/value-function.png" alt="Value function V(k,z) for both TFP states" width="80%">
 *Value function V(k,z) for both TFP states*
 
-![Capital policy k'(k,z): investment is higher in the high-TFP state](figures/capital-policy.png)
+<img src="figures/capital-policy.png" alt="Capital policy k'(k,z): investment is higher in the high-TFP state" width="80%">
 *Capital policy k'(k,z): investment is higher in the high-TFP state*
 
-![Simulated output, consumption, and TFP paths](figures/simulation.png)
+<img src="figures/simulation.png" alt="Simulated output, consumption, and TFP paths" width="80%">
 *Simulated output, consumption, and TFP paths*
 
-![Business cycle comovements: cyclical components from HP filter](figures/comovements.png)
+<img src="figures/comovements.png" alt="Business cycle comovements: cyclical components from HP filter" width="80%">
 *Business cycle comovements: cyclical components from HP filter*
 
 **Business Cycle Statistics (HP-filtered, simulated 5000 periods)**

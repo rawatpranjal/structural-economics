@@ -1,0 +1,5 @@
+Dataset,GARP rejects,Best cycle,MPI,Violating pairs
+No cycle,no,none,0.000,0
+Small cycle,yes,1 -> 2 -> 3 -> 1,0.030,3
+Medium cycle,yes,1 -> 2 -> 3 -> 1,0.103,3
+Severe cycle,yes,1 -> 2 -> 3 -> 1,0.167,3

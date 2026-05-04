@@ -41,13 +41,13 @@ This is a piecewise-linear, concave function that passes through all observed po
 
 ## Results
 
-![Budget constraints and optimal choices from Cobb-Douglas consumer](figures/budget-lines.png)
+<img src="figures/budget-lines.png" alt="Budget constraints and optimal choices from Cobb-Douglas consumer" width="80%">
 *Budget constraints and optimal choices from Cobb-Douglas consumer*
 
-![Nonparametric bounds on indifference curve vs true Cobb-Douglas](figures/indifference-curve.png)
+<img src="figures/indifference-curve.png" alt="Nonparametric bounds on indifference curve vs true Cobb-Douglas" width="80%">
 *Nonparametric bounds on indifference curve vs true Cobb-Douglas*
 
-![Afriat numbers (u_t, lambda_t) that rationalize the data](figures/afriat-numbers.png)
+<img src="figures/afriat-numbers.png" alt="Afriat numbers (u_t, lambda_t) that rationalize the data" width="80%">
 *Afriat numbers (u_t, lambda_t) that rationalize the data*
 
 **Afriat Numbers and Welfare Bounds**

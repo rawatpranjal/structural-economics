@@ -57,13 +57,13 @@ For log-linearized dividends following an AR(1) with both surprise and news comp
 
 ## Results
 
-![Comparison of impulse responses to surprise (unanticipated) vs news (anticipated) dividend shocks](figures/irf-surprise-vs-news.png)
+<img src="figures/irf-surprise-vs-news.png" alt="Comparison of impulse responses to surprise (unanticipated) vs news (anticipated) dividend shocks" width="80%">
 *Comparison of impulse responses to surprise (unanticipated) vs news (anticipated) dividend shocks*
 
-![Detailed view: surprise shocks move prices and dividends together; news shocks cause prices to lead dividends](figures/price-dynamics.png)
+<img src="figures/price-dynamics.png" alt="Detailed view: surprise shocks move prices and dividends together; news shocks cause prices to lead dividends" width="80%">
 *Detailed view: surprise shocks move prices and dividends together; news shocks cause prices to lead dividends*
 
-![Simulated dividend and asset price paths with both surprise and news shocks](figures/simulated-paths.png)
+<img src="figures/simulated-paths.png" alt="Simulated dividend and asset price paths with both surprise and news shocks" width="80%">
 *Simulated dividend and asset price paths with both surprise and news shocks*
 
 **Impact Responses: Surprise vs News Shocks**

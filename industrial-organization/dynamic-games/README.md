@@ -41,17 +41,17 @@ The solver iterates on firm value functions. At each state it constructs the two
 
 Investment incentives are strongest when a firm is behind or close to its rival. At high own quality, the marginal benefit of another quality step is smaller.
 
-![Firm 1 investment policy over the quality state space](figures/investment-policy.png)
+<img src="figures/investment-policy.png" alt="Firm 1 investment policy over the quality state space" width="80%">
 *Firm 1 investment policy over the quality state space*
 
 Dynamic state variables are payoff relevant. A one-step quality lead changes both current market share and future investment incentives.
 
-![Value advantage across states](figures/value-advantage.png)
+<img src="figures/value-advantage.png" alt="Value advantage across states" width="80%">
 *Value advantage across states*
 
 The vertical lines mark periods with at least one investment action. Quality leadership is persistent but not permanent because investment and depreciation keep the state moving.
 
-![Simulated quality paths under Markov-perfect policies](figures/simulated-quality-path.png)
+<img src="figures/simulated-quality-path.png" alt="Simulated quality paths under Markov-perfect policies" width="80%">
 *Simulated quality paths under Markov-perfect policies*
 
 **Selected state policies and values**

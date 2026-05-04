@@ -41,13 +41,13 @@ The upwind scheme guarantees monotonicity of the numerical solution — crucial 
 
 ## Results
 
-![Value function solved via upwind finite differences](figures/value-function.png)
+<img src="figures/value-function.png" alt="Value function solved via upwind finite differences" width="80%">
 *Value function solved via upwind finite differences*
 
-![Consumption and savings policies with steady-state asset level](figures/policy-functions.png)
+<img src="figures/policy-functions.png" alt="Consumption and savings policies with steady-state asset level" width="80%">
 *Consumption and savings policies with steady-state asset level*
 
-![Convergence of the implicit upwind scheme](figures/convergence.png)
+<img src="figures/convergence.png" alt="Convergence of the implicit upwind scheme" width="80%">
 *Convergence of the implicit upwind scheme*
 
 **Solution Summary**

@@ -61,16 +61,16 @@ Equilibrium interest rate: $r^* = 0.025959$ (vs. $1/\beta - 1 = 0.041667$).
 
 ## Results
 
-![Value functions V(a,z) for different income states at equilibrium prices](figures/value-functions.png)
+<img src="figures/value-functions.png" alt="Value functions V(a,z) for different income states at equilibrium prices" width="80%">
 *Value functions V(a,z) for different income states at equilibrium prices*
 
-![Savings policy a'(a,z) showing how next-period assets depend on current state](figures/savings-policy.png)
+<img src="figures/savings-policy.png" alt="Savings policy a'(a,z) showing how next-period assets depend on current state" width="80%">
 *Savings policy a'(a,z) showing how next-period assets depend on current state*
 
-![Stationary wealth distribution (marginal over income states)](figures/wealth-distribution.png)
+<img src="figures/wealth-distribution.png" alt="Stationary wealth distribution (marginal over income states)" width="80%">
 *Stationary wealth distribution (marginal over income states)*
 
-![Capital supply and demand curves intersecting at the general equilibrium](figures/capital-market.png)
+<img src="figures/capital-market.png" alt="Capital supply and demand curves intersecting at the general equilibrium" width="80%">
 *Capital supply and demand curves intersecting at the general equilibrium*
 
 **General Equilibrium Outcomes**

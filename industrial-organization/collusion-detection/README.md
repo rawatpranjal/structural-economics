@@ -48,16 +48,16 @@ For the symmetric Cournot case: $\delta^* = \frac{(n+1)^2}{n^2 + 6n + 1}$ (incre
 
 ## Results
 
-![Per-firm profits under Nash competition, collusion, and one-shot deviation as a function of the number of firms](figures/profits-by-regime.png)
+<img src="figures/profits-by-regime.png" alt="Per-firm profits under Nash competition, collusion, and one-shot deviation as a function of the number of firms" width="80%">
 *Per-firm profits under Nash competition, collusion, and one-shot deviation as a function of the number of firms*
 
-![Critical discount factor as a function of the number of firms -- more firms make collusion harder to sustain](figures/critical-discount-factor.png)
+<img src="figures/critical-discount-factor.png" alt="Critical discount factor as a function of the number of firms -- more firms make collusion harder to sustain" width="80%">
 *Critical discount factor as a function of the number of firms -- more firms make collusion harder to sustain*
 
-![Simulated price series showing competition, collusion, and post-detection regimes](figures/price-series-structural-break.png)
+<img src="figures/price-series-structural-break.png" alt="Simulated price series showing competition, collusion, and post-detection regimes" width="80%">
 *Simulated price series showing competition, collusion, and post-detection regimes*
 
-![Price-cost margin over time showing elevated margins during collusion](figures/price-cost-margin.png)
+<img src="figures/price-cost-margin.png" alt="Price-cost margin over time showing elevated margins during collusion" width="80%">
 *Price-cost margin over time showing elevated margins during collusion*
 
 **Cartel Stability Conditions for Different Market Structures (a=100, c=40)**

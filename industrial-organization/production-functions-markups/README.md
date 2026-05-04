@@ -42,17 +42,17 @@ OLS regresses log output on log inputs directly. The proxy-control regression us
 
 OLS loads part of unobserved productivity onto flexible inputs. The proxy-control regression moves the input elasticities closer to the data-generating values.
 
-![True and estimated output elasticities](figures/production-estimates.png)
+<img src="figures/production-estimates.png" alt="True and estimated output elasticities" width="80%">
 *True and estimated output elasticities*
 
 Markup estimates inherit any error in the production elasticity and any noise in the expenditure share. The distribution is still informative about dispersion.
 
-![True and estimated markup distributions](figures/markup-distribution.png)
+<img src="figures/markup-distribution.png" alt="True and estimated markup distributions" width="80%">
 *True and estimated markup distributions*
 
 The same production data can be used to study heterogeneity: high-productivity firms have lower material shares and therefore higher measured markups in this design.
 
-![Estimated markups rise with productivity in the simulated panel](figures/productivity-markups.png)
+<img src="figures/productivity-markups.png" alt="Estimated markups rise with productivity in the simulated panel" width="80%">
 *Estimated markups rise with productivity in the simulated panel*
 
 **Production function estimates**

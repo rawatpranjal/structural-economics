@@ -1,0 +1,5 @@
+Case,Economic comparison,GARP,GAPP,Bundle violations,Price violations
+A,"Bundle-rational, price-inconsistent",pass,fail,0,2
+B,Both restrictions pass,pass,pass,0,0
+C,"Bundle-inconsistent, price-rational",fail,pass,4,0
+D,Both restrictions fail,fail,fail,2,2

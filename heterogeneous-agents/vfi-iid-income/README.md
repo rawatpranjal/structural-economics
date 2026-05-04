@@ -56,16 +56,16 @@ Converged in **204 iterations** (error = 9.76e-07).
 
 ## Results
 
-![Value functions for each income state -- higher income shifts V up](figures/value-functions.png)
+<img src="figures/value-functions.png" alt="Value functions for each income state -- higher income shifts V up" width="80%">
 *Value functions for each income state -- higher income shifts V up*
 
-![Consumption policy: agents with higher income consume more at every asset level](figures/consumption-policy.png)
+<img src="figures/consumption-policy.png" alt="Consumption policy: agents with higher income consume more at every asset level" width="80%">
 *Consumption policy: agents with higher income consume more at every asset level*
 
-![Net savings: low-income agents dissave, high-income agents accumulate](figures/savings-policy.png)
+<img src="figures/savings-policy.png" alt="Net savings: low-income agents dissave, high-income agents accumulate" width="80%">
 *Net savings: low-income agents dissave, high-income agents accumulate*
 
-![Simulated asset paths and mean convergence across agents](figures/simulated-paths.png)
+<img src="figures/simulated-paths.png" alt="Simulated asset paths and mean convergence across agents" width="80%">
 *Simulated asset paths and mean convergence across agents*
 
 **Consumption and Savings Policy at Selected Asset Grid Points**

@@ -55,16 +55,16 @@ Discrete-time VFI (on 200-point grid) converged in **243 iterations** (error = 9
 
 ## Results
 
-![Value function from continuous-time HJB vs discrete-time VFI](figures/value-function.png)
+<img src="figures/value-function.png" alt="Value function from continuous-time HJB vs discrete-time VFI" width="80%">
 *Value function from continuous-time HJB vs discrete-time VFI*
 
-![Consumption policy c(k) with analytical steady state marked](figures/consumption-policy.png)
+<img src="figures/consumption-policy.png" alt="Consumption policy c(k) with analytical steady state marked" width="80%">
 *Consumption policy c(k) with analytical steady state marked*
 
-![Savings policy s(k) = f(k) - delta*k - c(k); zero crossing at steady state](figures/savings-policy.png)
+<img src="figures/savings-policy.png" alt="Savings policy s(k) = f(k) - delta*k - c(k); zero crossing at steady state" width="80%">
 *Savings policy s(k) = f(k) - delta*k - c(k); zero crossing at steady state*
 
-![Transition dynamics k(t) from different initial conditions converging to steady state](figures/transition-dynamics.png)
+<img src="figures/transition-dynamics.png" alt="Transition dynamics k(t) from different initial conditions converging to steady state" width="80%">
 *Transition dynamics k(t) from different initial conditions converging to steady state*
 
 **Steady-State Values: Analytical vs Numerical**

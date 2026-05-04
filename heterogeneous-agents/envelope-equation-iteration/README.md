@@ -67,16 +67,16 @@ All three methods converge to the same policy function, but differ in computatio
 
 ## Results
 
-![Consumption policy function c(a,y) from EEI for different income states](figures/consumption-policy.png)
+<img src="figures/consumption-policy.png" alt="Consumption policy function c(a,y) from EEI for different income states" width="80%">
 *Consumption policy function c(a,y) from EEI for different income states*
 
-![Value function derivative V'(a) from the envelope condition, with R*u'(c) for extreme income states](figures/value-derivative.png)
+<img src="figures/value-derivative.png" alt="Value function derivative V'(a) from the envelope condition, with R*u'(c) for extreme income states" width="80%">
 *Value function derivative V'(a) from the envelope condition, with R*u'(c) for extreme income states*
 
-![Simulated stationary wealth distribution from 50,000 agents over 500 periods](figures/wealth-distribution.png)
+<img src="figures/wealth-distribution.png" alt="Simulated stationary wealth distribution from 50,000 agents over 500 periods" width="80%">
 *Simulated stationary wealth distribution from 50,000 agents over 500 periods*
 
-![Convergence comparison across three solution methods for the same problem](figures/convergence-comparison.png)
+<img src="figures/convergence-comparison.png" alt="Convergence comparison across three solution methods for the same problem" width="80%">
 *Convergence comparison across three solution methods for the same problem*
 
 **Solution Statistics: EEI vs VFI vs EGP**

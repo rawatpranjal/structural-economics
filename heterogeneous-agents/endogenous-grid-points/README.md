@@ -53,16 +53,16 @@ Converged in **151 iterations** (tolerance = 1e-06).
 
 ## Results
 
-![Consumption policy by income state: higher income shifts the policy up](figures/consumption-policy.png)
+<img src="figures/consumption-policy.png" alt="Consumption policy by income state: higher income shifts the policy up" width="80%">
 *Consumption policy by income state: higher income shifts the policy up*
 
-![Net savings (a'-a) by income state: low-income agents dissave, high-income agents accumulate](figures/savings-policy.png)
+<img src="figures/savings-policy.png" alt="Net savings (a'-a) by income state: low-income agents dissave, high-income agents accumulate" width="80%">
 *Net savings (a'-a) by income state: low-income agents dissave, high-income agents accumulate*
 
-![Simulated stationary wealth distribution with right skew and mass at the constraint](figures/wealth-distribution.png)
+<img src="figures/wealth-distribution.png" alt="Simulated stationary wealth distribution with right skew and mass at the constraint" width="80%">
 *Simulated stationary wealth distribution with right skew and mass at the constraint*
 
-![MPC distribution: constrained agents have MPC near 1, wealthy agents approach the theoretical limit](figures/mpc-distribution.png)
+<img src="figures/mpc-distribution.png" alt="MPC distribution: constrained agents have MPC near 1, wealthy agents approach the theoretical limit" width="80%">
 *MPC distribution: constrained agents have MPC near 1, wealthy agents approach the theoretical limit*
 
 **Summary Statistics from Simulated Stationary Distribution**

@@ -53,27 +53,27 @@ Irreversible model converged in **49** iterations. Standard model converged in *
 
 Look for the kink where the irreversible investment policy meets the I=0 line: to the right of this kink (high K, low z), the constraint binds and investment is pinned at zero. The standard model's dashed lines pass freely below zero, showing the disinvestment that irreversibility prevents.
 
-![Investment and consumption policies: irreversible (solid) vs standard (dashed). Red line marks the I=0 constraint.](figures/policy-functions.png)
+<img src="figures/policy-functions.png" alt="Investment and consumption policies: irreversible (solid) vs standard (dashed). Red line marks the I=0 constraint." width="80%">
 *Investment and consumption policies: irreversible (solid) vs standard (dashed). Red line marks the I=0 constraint.*
 
 The constraint binds in the upper-left region where capital is high relative to productivity. In these states the agent would prefer to sell capital but cannot, creating a capital overhang that depresses returns and prolongs recessions.
 
-![Region where the irreversibility constraint binds (red). High K + low z = binding.](figures/binding-region.png)
+<img src="figures/binding-region.png" alt="Region where the irreversibility constraint binds (red). High K + low z = binding." width="80%">
 *Region where the irreversibility constraint binds (red). High K + low z = binding.*
 
 The shaded periods in the investment panel show when the constraint binds. During these episodes, capital cannot adjust downward, so consumption must absorb all of the output decline, making consumption more volatile in contractions than the standard model predicts.
 
-![Simulated paths comparing irreversible (blue) vs standard (red) RBC. Shaded regions mark binding constraint.](figures/simulation.png)
+<img src="figures/simulation.png" alt="Simulated paths comparing irreversible (blue) vs standard (red) RBC. Shaded regions mark binding constraint." width="80%">
 *Simulated paths comparing irreversible (blue) vs standard (red) RBC. Shaded regions mark binding constraint.*
 
 The left panel shows the mass point at I=0 created by the constraint, which is absent in the symmetric standard-model distribution. The right panel's negative skewness in output growth under irreversibility formalizes the intuition that recessions are sharper than expansions when capital adjustment is one-sided.
 
-![Investment truncated at zero (left). Output growth shows negative skewness under irreversibility (right).](figures/asymmetric-distributions.png)
+<img src="figures/asymmetric-distributions.png" alt="Investment truncated at zero (left). Output growth shows negative skewness under irreversibility (right)." width="80%">
 *Investment truncated at zero (left). Output growth shows negative skewness under irreversibility (right).*
 
 The value difference is zero where the constraint never binds (lower-right) and most negative where it binds tightly (upper-left). This surface maps the welfare cost of irreversibility across the state space, showing that the cost is concentrated in high-capital, low-productivity states.
 
-![Welfare cost: V_irr - V_std everywhere non-positive. Dashed line marks binding region boundary.](figures/value-difference.png)
+<img src="figures/value-difference.png" alt="Welfare cost: V_irr - V_std everywhere non-positive. Dashed line marks binding region boundary." width="80%">
 *Welfare cost: V_irr - V_std everywhere non-positive. Dashed line marks binding region boundary.*
 
 Compare std(I)/std(Y) across models: irreversibility truncates the investment distribution, altering relative volatilities and the consumption-output correlation.

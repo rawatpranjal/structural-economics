@@ -62,16 +62,16 @@ In matrix form: $\mathbf{q} + (\Omega \circ \mathbf{J}') (\mathbf{p} - \mathbf{c
 
 ## Results
 
-![Pre- vs post-merger prices across three demand systems. Merging products (1-4) see larger price increases; the magnitude depends heavily on the demand model.](figures/price-comparison.png)
+<img src="figures/price-comparison.png" alt="Pre- vs post-merger prices across three demand systems. Merging products (1-4) see larger price increases; the magnitude depends heavily on the demand model." width="80%">
 *Pre- vs post-merger prices across three demand systems. Merging products (1-4) see larger price increases; the magnitude depends heavily on the demand model.*
 
-![Welfare decomposition across demand systems: consumers lose, producers may gain, and the net effect depends on the demand model.](figures/welfare-decomposition.png)
+<img src="figures/welfare-decomposition.png" alt="Welfare decomposition across demand systems: consumers lose, producers may gain, and the net effect depends on the demand model." width="80%">
 *Welfare decomposition across demand systems: consumers lose, producers may gain, and the net effect depends on the demand model.*
 
-![UPP and GUPPI by product and demand model. Only merging products (1-4) have positive values; non-merging products have zero UPP by construction.](figures/upp-guppi.png)
+<img src="figures/upp-guppi.png" alt="UPP and GUPPI by product and demand model. Only merging products (1-4) have positive values; non-merging products have zero UPP by construction." width="80%">
 *UPP and GUPPI by product and demand model. Only merging products (1-4) have positive values; non-merging products have zero UPP by construction.*
 
-![How much marginal cost reduction is needed to offset the merger price increase? The break-even point differs substantially across demand models.](figures/efficiency-frontier.png)
+<img src="figures/efficiency-frontier.png" alt="How much marginal cost reduction is needed to offset the merger price increase? The break-even point differs substantially across demand models." width="80%">
 *How much marginal cost reduction is needed to offset the merger price increase? The break-even point differs substantially across demand models.*
 
 **Merger Effects Comparison Across Demand Models**

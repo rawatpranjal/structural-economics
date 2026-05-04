@@ -37,13 +37,13 @@ Each bilateral negotiated price is computed analytically from the Nash bargainin
 
 ## Results
 
-![Negotiated prices: higher-cost hospital commands higher price](figures/negotiated-prices.png)
+<img src="figures/negotiated-prices.png" alt="Negotiated prices: higher-cost hospital commands higher price" width="80%">
 *Negotiated prices: higher-cost hospital commands higher price*
 
-![Profits shift from downstream to upstream as bargaining power increases](figures/profits-vs-bargaining.png)
+<img src="figures/profits-vs-bargaining.png" alt="Profits shift from downstream to upstream as bargaining power increases" width="80%">
 *Profits shift from downstream to upstream as bargaining power increases*
 
-![Hospital merger raises all negotiated prices by increasing outside option](figures/merger-prices.png)
+<img src="figures/merger-prices.png" alt="Hospital merger raises all negotiated prices by increasing outside option" width="80%">
 *Hospital merger raises all negotiated prices by increasing outside option*
 
 **Nash-in-Nash Negotiation Results**

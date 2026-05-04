@@ -46,13 +46,13 @@ where $\Omega$ is the ownership matrix and $\Delta = \partial \mathbf{s} / \part
 
 ## Results
 
-![Equilibrium prices across merger scenarios](figures/price-comparison.png)
+<img src="figures/price-comparison.png" alt="Equilibrium prices across merger scenarios" width="80%">
 *Equilibrium prices across merger scenarios*
 
-![Market shares shift as prices rise post-merger](figures/share-comparison.png)
+<img src="figures/share-comparison.png" alt="Market shares shift as prices rise post-merger" width="80%">
 *Market shares shift as prices rise post-merger*
 
-![Diversion ratios: where do lost sales go?](figures/diversion-ratios.png)
+<img src="figures/diversion-ratios.png" alt="Diversion ratios: where do lost sales go?" width="80%">
 *Diversion ratios: where do lost sales go?*
 
 **Merger Simulation Results**

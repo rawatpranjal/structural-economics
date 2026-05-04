@@ -51,16 +51,16 @@ $$y_{t+h} = \alpha + \sum_{j=1}^{p} \beta_j y_{t-j+1} + \gamma' \hat{F}_t + \var
 
 ## Results
 
-![True common factor vs PCA estimate (correlation = 0.9970). PCA recovers the latent factor up to a scale normalization.](figures/factor-comparison.png)
+<img src="figures/factor-comparison.png" alt="True common factor vs PCA estimate (correlation = 0.9970). PCA recovers the latent factor up to a scale normalization." width="80%">
 *True common factor vs PCA estimate (correlation = 0.9970). PCA recovers the latent factor up to a scale normalization.*
 
-![Scree plot and cumulative variance explained. The sharp drop after the first eigenvalue correctly indicates one dominant factor.](figures/scree-plot.png)
+<img src="figures/scree-plot.png" alt="Scree plot and cumulative variance explained. The sharp drop after the first eigenvalue correctly indicates one dominant factor." width="80%">
 *Scree plot and cumulative variance explained. The sharp drop after the first eigenvalue correctly indicates one dominant factor.*
 
-![Factor loadings sorted by true value. PCA estimates track the cross-sectional pattern of true loadings.](figures/factor-loadings.png)
+<img src="figures/factor-loadings.png" alt="Factor loadings sorted by true value. PCA estimates track the cross-sectional pattern of true loadings." width="80%">
 *Factor loadings sorted by true value. PCA estimates track the cross-sectional pattern of true loadings.*
 
-![Forecast comparison: FAAR reduces RMSE by 28.0% relative to AR(2). Right panel shows cumulative squared errors.](figures/forecast-comparison.png)
+<img src="figures/forecast-comparison.png" alt="Forecast comparison: FAAR reduces RMSE by 28.0% relative to AR(2). Right panel shows cumulative squared errors." width="80%">
 *Forecast comparison: FAAR reduces RMSE by 28.0% relative to AR(2). Right panel shows cumulative squared errors.*
 
 **Top 5 Eigenvalues and Variance Explained**

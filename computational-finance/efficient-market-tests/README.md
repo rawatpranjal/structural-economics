@@ -50,12 +50,12 @@ Daily yield changes, sample autocorrelations, simple variance ratios, and a one-
 
 Weak-form tests ask whether past changes predict future changes. Sample autocorrelation is the first diagnostic, but isolated bars in a short sample should not be overread.
 
-![Autocorrelations of daily ten-year yield changes](figures/autocorrelations.png)
+<img src="figures/autocorrelations.png" alt="Autocorrelations of daily ten-year yield changes" width="80%">
 *Autocorrelations of daily ten-year yield changes*
 
 Under independent increments, q-period variance should scale roughly linearly with q. Deviations are evidence about serial dependence, not automatically evidence of exploitable profits.
 
-![Variance ratios for yield changes](figures/variance-ratios.png)
+<img src="figures/variance-ratios.png" alt="Variance ratios for yield changes" width="80%">
 *Variance ratios for yield changes*
 
 **Weak-form diagnostic summary**

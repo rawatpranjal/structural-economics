@@ -57,16 +57,16 @@ Contraction converged in **627 iterations** at true parameters. GMM optimization
 
 ## Results
 
-![Observed vs predicted market shares at estimated parameters. Points near the 45-degree line indicate good model fit.](figures/observed-vs-predicted-shares.png)
+<img src="figures/observed-vs-predicted-shares.png" alt="Observed vs predicted market shares at estimated parameters. Points near the 45-degree line indicate good model fit." width="80%">
 *Observed vs predicted market shares at estimated parameters. Points near the 45-degree line indicate good model fit.*
 
-![Own-price elasticities in market 1. BLP produces heterogeneous elasticities across products; plain logit elasticities are driven almost entirely by price level.](figures/own-price-elasticities.png)
+<img src="figures/own-price-elasticities.png" alt="Own-price elasticities in market 1. BLP produces heterogeneous elasticities across products; plain logit elasticities are driven almost entirely by price level." width="80%">
 *Own-price elasticities in market 1. BLP produces heterogeneous elasticities across products; plain logit elasticities are driven almost entirely by price level.*
 
-![Convergence of the BLP contraction mapping. The log-linear decline confirms the contraction property proved by Berry (1994).](figures/contraction-convergence.png)
+<img src="figures/contraction-convergence.png" alt="Convergence of the BLP contraction mapping. The log-linear decline confirms the contraction property proved by Berry (1994)." width="80%">
 *Convergence of the BLP contraction mapping. The log-linear decline confirms the contraction property proved by Berry (1994).*
 
-![Cross-price elasticity matrices. BLP produces asymmetric off-diagonal entries reflecting heterogeneous substitution; plain logit cross-elasticities depend only on the column product (IIA).](figures/cross-price-elasticity-matrix.png)
+<img src="figures/cross-price-elasticity-matrix.png" alt="Cross-price elasticity matrices. BLP produces asymmetric off-diagonal entries reflecting heterogeneous substitution; plain logit cross-elasticities depend only on the column product (IIA)." width="80%">
 *Cross-price elasticity matrices. BLP produces asymmetric off-diagonal entries reflecting heterogeneous substitution; plain logit cross-elasticities depend only on the column product (IIA).*
 
 **Estimated vs True Parameters**

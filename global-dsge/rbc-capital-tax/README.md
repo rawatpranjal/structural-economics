@@ -45,16 +45,16 @@ A 30% capital tax reduces steady-state capital by 42.7% and steady-state output 
 
 Higher taxes shift the entire capital policy function downward: for any given state, the agent chooses less capital accumulation because the after-tax return is lower. This creates a permanently lower capital stock and output level.
 
-![Steady-state levels and percentage losses as a function of the capital tax rate](figures/steady-state-tax.png)
+<img src="figures/steady-state-tax.png" alt="Steady-state levels and percentage losses as a function of the capital tax rate" width="80%">
 *Steady-state levels and percentage losses as a function of the capital tax rate*
 
-![Policy functions at median TFP for different capital tax rates](figures/policy-by-tax.png)
+<img src="figures/policy-by-tax.png" alt="Policy functions at median TFP for different capital tax rates" width="80%">
 *Policy functions at median TFP for different capital tax rates*
 
-![Simulated capital and output paths under different tax rates](figures/simulation-paths.png)
+<img src="figures/simulation-paths.png" alt="Simulated capital and output paths under different tax rates" width="80%">
 *Simulated capital and output paths under different tax rates*
 
-![Distribution of investment rate and capital-output ratio across tax regimes](figures/investment-distributions.png)
+<img src="figures/investment-distributions.png" alt="Distribution of investment rate and capital-output ratio across tax regimes" width="80%">
 *Distribution of investment rate and capital-output ratio across tax regimes*
 
 **Steady State and Simulation Statistics by Tax Rate**

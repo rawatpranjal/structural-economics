@@ -45,13 +45,13 @@ Converged in **149 iterations** (error = 9.11e-09).
 
 ## Results
 
-![Value of accepting vs rejecting each wage offer. The reservation wage is where the two curves intersect.](figures/accept-vs-reject.png)
+<img src="figures/accept-vs-reject.png" alt="Value of accepting vs rejecting each wage offer. The reservation wage is where the two curves intersect." width="80%">
 *Value of accepting vs rejecting each wage offer. The reservation wage is where the two curves intersect.*
 
-![More patient workers (higher beta) are more selective, demanding higher wages before accepting.](figures/wstar-vs-beta.png)
+<img src="figures/wstar-vs-beta.png" alt="More patient workers (higher beta) are more selective, demanding higher wages before accepting." width="80%">
 *More patient workers (higher beta) are more selective, demanding higher wages before accepting.*
 
-![Higher unemployment benefits raise the reservation wage: workers can afford to be more selective when the safety net is generous.](figures/wstar-vs-benefits.png)
+<img src="figures/wstar-vs-benefits.png" alt="Higher unemployment benefits raise the reservation wage: workers can afford to be more selective when the safety net is generous." width="80%">
 *Higher unemployment benefits raise the reservation wage: workers can afford to be more selective when the safety net is generous.*
 
 **Reservation wage and acceptance probability for different parameter combinations**

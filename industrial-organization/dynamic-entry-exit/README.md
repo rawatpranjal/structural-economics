@@ -64,16 +64,16 @@ The stationary distribution is computed by constructing the Markov transition ma
 
 ## Results
 
-![Incumbent value function V(N): value of being an active firm as a function of market structure](figures/value-function.png)
+<img src="figures/value-function.png" alt="Incumbent value function V(N): value of being an active firm as a function of market structure" width="80%">
 *Incumbent value function V(N): value of being an active firm as a function of market structure*
 
-![Exit probability and expected entry as functions of the number of active firms](figures/entry-exit-probabilities.png)
+<img src="figures/entry-exit-probabilities.png" alt="Exit probability and expected entry as functions of the number of active firms" width="80%">
 *Exit probability and expected entry as functions of the number of active firms*
 
-![Stationary distribution of the number of active firms](figures/stationary-distribution.png)
+<img src="figures/stationary-distribution.png" alt="Stationary distribution of the number of active firms" width="80%">
 *Stationary distribution of the number of active firms*
 
-![Simulated market: number of firms and entry/exit flows over 200 periods](figures/simulated-market.png)
+<img src="figures/simulated-market.png" alt="Simulated market: number of firms and entry/exit flows over 200 periods" width="80%">
 *Simulated market: number of firms and entry/exit flows over 200 periods*
 
 **Equilibrium Statistics**

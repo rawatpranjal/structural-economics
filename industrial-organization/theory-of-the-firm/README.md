@@ -40,17 +40,17 @@ For each value of specificity, the script computes the private investment implie
 
 Spot contracts provide weak protection when assets are highly specific. Integration keeps investment closer to the efficient benchmark at high specificity, but it is not free.
 
-![Relationship-specific investment by governance regime](figures/investment-incentives.png)
+<img src="figures/investment-incentives.png" alt="Relationship-specific investment by governance regime" width="80%">
 *Relationship-specific investment by governance regime*
 
 The best governance form changes with specificity because incentive benefits and governance costs move in opposite directions.
 
-![Surplus by governance regime](figures/surplus-by-regime.png)
+<img src="figures/surplus-by-regime.png" alt="Surplus by governance regime" width="80%">
 *Surplus by governance regime*
 
 The model reproduces the Williamson/GHM comparative static: integration is most attractive where relationship-specific investment is hardest to protect with ordinary contracts.
 
-![Governance regions over asset specificity](figures/governance-regions.png)
+<img src="figures/governance-regions.png" alt="Governance regions over asset specificity" width="80%">
 *Governance regions over asset specificity*
 
 **Governance comparison at low, medium, and high asset specificity**

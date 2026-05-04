@@ -50,17 +50,17 @@ $$P(a=1 \mid x) =
 
 The keep option becomes less attractive as mileage rises. The replacement probability is therefore low at fresh-engine states and high at worn-engine states.
 
-![Value functions and replacement probabilities](figures/value-and-ccp.png)
+<img src="figures/value-and-ccp.png" alt="Value functions and replacement probabilities" width="80%">
 *Value functions and replacement probabilities*
 
 Mileage drifts upward when the operator keeps the old engine and resets after replacement. The scattered points mark replacement decisions.
 
-![Mileage histories for six simulated buses](figures/simulated-histories.png)
+<img src="figures/simulated-histories.png" alt="Mileage histories for six simulated buses" width="80%">
 *Mileage histories for six simulated buses*
 
 Both estimators recover the main economic pattern: replacement becomes more likely as mileage increases. Differences are largest in high-mileage states that are rarely observed because buses are usually replaced before reaching them.
 
-![Policy rules implied by the true and estimated parameters](figures/estimated-policies.png)
+<img src="figures/estimated-policies.png" alt="Policy rules implied by the true and estimated parameters" width="80%">
 *Policy rules implied by the true and estimated parameters*
 
 The full-solution estimator nests a value-function solve inside the likelihood. The CCP estimator uses an estimated policy rule to reduce that computational burden.

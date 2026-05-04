@@ -37,17 +37,17 @@ Backward induction solves the monthly usage problem for each plan and consumer t
 
 Near the allowance, consumers conserve usage early in the cycle because today's usage raises the chance of overage payments later. The constraint relaxes near the end of the month.
 
-![Daily usage policy by day and remaining allowance](figures/usage-policy.png)
+<img src="figures/usage-policy.png" alt="Daily usage policy by day and remaining allowance" width="80%">
 *Daily usage policy by day and remaining allowance*
 
 The consumer manages usage around the allowance. Overage risk creates intertemporal substitution even though daily tastes are constant.
 
-![Cumulative and daily usage under the three-part plan](figures/billing-cycle-usage.png)
+<img src="figures/billing-cycle-usage.png" alt="Cumulative and daily usage under the three-part plan" width="80%">
 *Cumulative and daily usage under the three-part plan*
 
 Heterogeneous consumers sort across contracts. Low-usage types prefer metered plans, middle types value the allowance, and high-usage types value unlimited access.
 
-![Plan shares, average usage, and average revenue](figures/plan-comparison.png)
+<img src="figures/plan-comparison.png" alt="Plan shares, average usage, and average revenue" width="80%">
 *Plan shares, average usage, and average revenue*
 
 **Plan-choice summary across consumer types**

@@ -58,22 +58,22 @@ The code repeats each filter many times and reports Monte Carlo error relative t
 
 With 500 particles, both particle filters track the Kalman benchmark. The difference between the two methods is easier to see in repeated-run error and effective sample size.
 
-![Particle filter state estimates compared with the Kalman filter](figures/filter-comparison.png)
+<img src="figures/filter-comparison.png" alt="Particle filter state estimates compared with the Kalman filter" width="80%">
 *Particle filter state estimates compared with the Kalman filter*
 
 Effective sample size falls when a few particles receive most of the weight. The conditionally optimal proposal usually preserves more useful particles because it looks at the observation before drawing the new state.
 
-![Repeated-run Monte Carlo error and effective sample size](figures/mse-and-ess.png)
+<img src="figures/mse-and-ess.png" alt="Repeated-run Monte Carlo error and effective sample size" width="80%">
 *Repeated-run Monte Carlo error and effective sample size*
 
 Low measurement noise makes the likelihood sharply peaked. Bootstrap particles drawn from the transition can miss that peak, creating weight degeneracy.
 
-![Particle accuracy as measurement noise falls](figures/measurement-noise.png)
+<img src="figures/measurement-noise.png" alt="Particle accuracy as measurement noise falls" width="80%">
 *Particle accuracy as measurement noise falls*
 
 Outliers are hard for likelihood-weighted simulation. A single extreme observation can concentrate weights and pull the filtered state sharply.
 
-![Filtering after multiplying observation 25 by ten](figures/outlier-stress.png)
+<img src="figures/outlier-stress.png" alt="Filtering after multiplying observation 25 by ten" width="80%">
 *Filtering after multiplying observation 25 by ten*
 
 The baseline repeats each filter 50 times with 500 particles.

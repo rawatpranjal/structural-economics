@@ -46,16 +46,16 @@ All ODE systems are solved using `scipy.integrate.solve_ivp` with the RK45 (Dorm
 
 ## Results
 
-![Solow growth model: phase diagram (left) and convergence dynamics (right)](figures/solow-phase-diagram.png)
+<img src="figures/solow-phase-diagram.png" alt="Solow growth model: phase diagram (left) and convergence dynamics (right)" width="80%">
 *Solow growth model: phase diagram (left) and convergence dynamics (right)*
 
-![Ramsey optimal growth: phase diagram with nullclines, vector field, and saddle paths from multiple initial conditions](figures/ramsey-phase-diagram.png)
+<img src="figures/ramsey-phase-diagram.png" alt="Ramsey optimal growth: phase diagram with nullclines, vector field, and saddle paths from multiple initial conditions" width="80%">
 *Ramsey optimal growth: phase diagram with nullclines, vector field, and saddle paths from multiple initial conditions*
 
-![Lotka-Volterra predator-prey: time series (left) and phase portrait showing closed orbits (right)](figures/lotka-volterra-cycles.png)
+<img src="figures/lotka-volterra-cycles.png" alt="Lotka-Volterra predator-prey: time series (left) and phase portrait showing closed orbits (right)" width="80%">
 *Lotka-Volterra predator-prey: time series (left) and phase portrait showing closed orbits (right)*
 
-![Ramsey model: time paths of capital k(t) and consumption c(t) along saddle paths](figures/ramsey-time-paths.png)
+<img src="figures/ramsey-time-paths.png" alt="Ramsey model: time paths of capital k(t) and consumption c(t) along saddle paths" width="80%">
 *Ramsey model: time paths of capital k(t) and consumption c(t) along saddle paths*
 
 **Steady-State Values for Each Model**

@@ -39,15 +39,15 @@ The baseline assumes independent $U[0,1]$ values, risk-neutral bidders, no reser
 
 More competition reduces bid shading. With many rivals, winning becomes more valuable at the margin, so bids move closer to values.
 
-![First-price bidders shade bids below values](figures/bid-functions.png)
+<img src="figures/bid-functions.png" alt="First-price bidders shade bids below values" width="80%">
 *First-price bidders shade bids below values*
 
 For a bidder with value 0.8 in a 3-bidder auction, the payoff-maximizing deviation is the equilibrium bid.
 
-![Closed-form bid matches the grid best response](figures/best-response-check.png)
+<img src="figures/best-response-check.png" alt="Closed-form bid matches the grid best response" width="80%">
 *Closed-form bid matches the grid best response*
 
-![Expected revenue rises with the number of bidders](figures/revenue-by-bidders.png)
+<img src="figures/revenue-by-bidders.png" alt="Expected revenue rises with the number of bidders" width="80%">
 *Expected revenue rises with the number of bidders*
 
 **Auction Summary**

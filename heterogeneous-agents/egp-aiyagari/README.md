@@ -52,16 +52,16 @@ The inner EGP loop converged in **11 iterations**. The outer K/L iteration conve
 
 ## Results
 
-![Consumption policy functions at equilibrium for each income state](figures/consumption-policy.png)
+<img src="figures/consumption-policy.png" alt="Consumption policy functions at equilibrium for each income state" width="80%">
 *Consumption policy functions at equilibrium for each income state*
 
-![Capital supply (household savings) and demand (firm FOC) as functions of r](figures/capital-supply-demand.png)
+<img src="figures/capital-supply-demand.png" alt="Capital supply (household savings) and demand (firm FOC) as functions of r" width="80%">
 *Capital supply (household savings) and demand (firm FOC) as functions of r*
 
-![Stationary wealth distribution in equilibrium](figures/wealth-distribution.png)
+<img src="figures/wealth-distribution.png" alt="Stationary wealth distribution in equilibrium" width="80%">
 *Stationary wealth distribution in equilibrium*
 
-![Lorenz curve for wealth distribution (Gini = 0.601)](figures/lorenz-curve.png)
+<img src="figures/lorenz-curve.png" alt="Lorenz curve for wealth distribution (Gini = 0.601)" width="80%">
 *Lorenz curve for wealth distribution (Gini = 0.601)*
 
 **Equilibrium Statistics**

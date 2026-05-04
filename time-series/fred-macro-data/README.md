@@ -42,16 +42,16 @@ for quarterly data (Hodrick and Prescott, 1997).
 
 ## Results
 
-![Synthetic macroeconomic time series mimicking FRED data. Dashed lines show sample means.](figures/time-series.png)
+<img src="figures/time-series.png" alt="Synthetic macroeconomic time series mimicking FRED data. Dashed lines show sample means." width="80%">
 *Synthetic macroeconomic time series mimicking FRED data. Dashed lines show sample means.*
 
-![HP-filtered cyclical components. Shaded areas indicate below-trend periods.](figures/hp-cycles.png)
+<img src="figures/hp-cycles.png" alt="HP-filtered cyclical components. Shaded areas indicate below-trend periods." width="80%">
 *HP-filtered cyclical components. Shaded areas indicate below-trend periods.*
 
-![Okun's law: negative relationship between cyclical GDP growth and unemployment (correlation = -0.423).](figures/okuns-law.png)
+<img src="figures/okuns-law.png" alt="Okun's law: negative relationship between cyclical GDP growth and unemployment (correlation = -0.423)." width="80%">
 *Okun's law: negative relationship between cyclical GDP growth and unemployment (correlation = -0.423).*
 
-![Cross-correlation structure of HP-filtered cyclical components.](figures/cross-correlation.png)
+<img src="figures/cross-correlation.png" alt="Cross-correlation structure of HP-filtered cyclical components." width="80%">
 *Cross-correlation structure of HP-filtered cyclical components.*
 
 **Business Cycle Statistics (HP-filtered, quarterly)**

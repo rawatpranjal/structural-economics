@@ -51,16 +51,16 @@ Converged in **70 iterations** (error = 0.00e+00).
 
 ## Results
 
-![Value function V(a) over the asset grid](figures/value-function.png)
+<img src="figures/value-function.png" alt="Value function V(a) over the asset grid" width="80%">
 *Value function V(a) over the asset grid*
 
-![Consumption policy function c(a)](figures/consumption-policy.png)
+<img src="figures/consumption-policy.png" alt="Consumption policy function c(a)" width="80%">
 *Consumption policy function c(a)*
 
-![Savings policy: net change in assets a'-a as a function of current assets](figures/savings-policy.png)
+<img src="figures/savings-policy.png" alt="Savings policy: net change in assets a'-a as a function of current assets" width="80%">
 *Savings policy: net change in assets a'-a as a function of current assets*
 
-![Simulated asset paths converging to steady state](figures/asset-dynamics.png)
+<img src="figures/asset-dynamics.png" alt="Simulated asset paths converging to steady state" width="80%">
 *Simulated asset paths converging to steady state*
 
 **Policy Function at Selected Grid Points**

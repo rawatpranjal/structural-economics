@@ -62,17 +62,17 @@ derivatives, and simulated annealing accepts occasional uphill moves to search m
 
 The same objective can make algorithms look very different. Local methods move quickly once their local model is useful. Global search explores the box before settling near one of the modes.
 
-![Optimizer paths over negative log-density contours](figures/optimizer-paths.png)
+<img src="figures/optimizer-paths.png" alt="Optimizer paths over negative log-density contours" width="80%">
 *Optimizer paths over negative log-density contours*
 
 Fast convergence is conditional on being in a good basin and having a stable local approximation. A low iteration count is not the same thing as a global guarantee.
 
-![Objective gaps along recorded optimizer paths](figures/convergence.png)
+<img src="figures/convergence.png" alt="Objective gaps along recorded optimizer paths" width="80%">
 *Objective gaps along recorded optimizer paths*
 
 A local optimizer does not just solve an objective; it solves an objective from a starting point. Multi-start checks are a cheap diagnostic for multimodality.
 
-![BFGS solutions from different starting points](figures/basin-map.png)
+<img src="figures/basin-map.png" alt="BFGS solutions from different starting points" width="80%">
 *BFGS solutions from different starting points*
 
 All local methods start at the same point; dual annealing searches over a box.

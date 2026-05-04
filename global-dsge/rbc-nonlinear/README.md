@@ -47,19 +47,19 @@ For comparison, we also compute the log-linearized solution using the method of 
 
 **Asymmetric responses:** Negative TFP shocks produce larger capital declines than positive shocks produce capital increases, reflecting the concavity of the value function in capital.
 
-![Policy functions: nonlinear VFI (solid) vs log-linear (dashed) at low, median, and high TFP](figures/policy-functions.png)
+<img src="figures/policy-functions.png" alt="Policy functions: nonlinear VFI (solid) vs log-linear (dashed) at low, median, and high TFP" width="80%">
 *Policy functions: nonlinear VFI (solid) vs log-linear (dashed) at low, median, and high TFP*
 
-![Value function over the (K, z) state space](figures/value-function.png)
+<img src="figures/value-function.png" alt="Value function over the (K, z) state space" width="80%">
 *Value function over the (K, z) state space*
 
-![Nonlinear minus linearized policy: positive K' difference shows precautionary savings](figures/nonlinear-difference.png)
+<img src="figures/nonlinear-difference.png" alt="Nonlinear minus linearized policy: positive K' difference shows precautionary savings" width="80%">
 *Nonlinear minus linearized policy: positive K' difference shows precautionary savings*
 
-![Asymmetric impulse responses to positive vs negative TFP shocks (nonlinear effects)](figures/asymmetric-irf.png)
+<img src="figures/asymmetric-irf.png" alt="Asymmetric impulse responses to positive vs negative TFP shocks (nonlinear effects)" width="80%">
 *Asymmetric impulse responses to positive vs negative TFP shocks (nonlinear effects)*
 
-![Simulated paths: nonlinear (blue) vs linearized (red dashed)](figures/simulation.png)
+<img src="figures/simulation.png" alt="Simulated paths: nonlinear (blue) vs linearized (red dashed)" width="80%">
 *Simulated paths: nonlinear (blue) vs linearized (red dashed)*
 
 **Business Cycle Statistics (5000 periods, burn-in 500)**

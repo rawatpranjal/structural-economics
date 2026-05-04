@@ -47,13 +47,13 @@ Converged in **102 iterations** (error = 9.43e-07).
 
 ## Results
 
-![Value function: numerical VFI vs analytical solution](figures/value-function.png)
+<img src="figures/value-function.png" alt="Value function: numerical VFI vs analytical solution" width="80%">
 *Value function: numerical VFI vs analytical solution*
 
-![Capital policy function: numerical vs analytical](figures/policy-function.png)
+<img src="figures/policy-function.png" alt="Capital policy function: numerical vs analytical" width="80%">
 *Capital policy function: numerical vs analytical*
 
-![Simulation: capital and consumption converging to steady state from k0=1.00](figures/simulation.png)
+<img src="figures/simulation.png" alt="Simulation: capital and consumption converging to steady state from k0=1.00" width="80%">
 *Simulation: capital and consumption converging to steady state from k0=1.00*
 
 **Numerical vs Analytical Solution at Selected Grid Points**

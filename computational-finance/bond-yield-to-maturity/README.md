@@ -49,12 +49,12 @@ All finite instruments are converted into payment times and cash-flow amounts. F
 
 The inverse price-yield relationship is mechanical: a higher discount rate lowers the present value of the same promised cash flows. Premium and discount status depend on how the coupon compares with the market yield.
 
-![Coupon-bond price as yield changes](figures/price-yield-curve.png)
+<img src="figures/price-yield-curve.png" alt="Coupon-bond price as yield changes" width="80%">
 *Coupon-bond price as yield changes*
 
 For the same 6% coupon bond, a price below par implies a YTM above the coupon rate, while a price above par implies a YTM below the coupon rate.
 
-![Yield to maturity implied by price](figures/implied-yield-by-price.png)
+<img src="figures/implied-yield-by-price.png" alt="Yield to maturity implied by price" width="80%">
 *Yield to maturity implied by price*
 
 The same present-value equation handles different debt instruments once each one is written as a price and a sequence of promised cash flows.

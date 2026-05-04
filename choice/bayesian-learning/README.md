@@ -52,16 +52,16 @@ The value of continuing to observe signals must exceed the value of acting now.
 
 ## Results
 
-![Posterior belief P(H) over time for both true states. Beliefs converge to the truth as signals accumulate.](figures/belief-evolution.png)
+<img src="figures/belief-evolution.png" alt="Posterior belief P(H) over time for both true states. Beliefs converge to the truth as signals accumulate." width="80%">
 *Posterior belief P(H) over time for both true states. Beliefs converge to the truth as signals accumulate.*
 
-![More informative signals (further from 0.5) lead to faster learning.](figures/learning-speed.png)
+<img src="figures/learning-speed.png" alt="More informative signals (further from 0.5) lead to faster learning." width="80%">
 *More informative signals (further from 0.5) lead to faster learning.*
 
-![ROC curves for Bayesian and ML classifiers. Bayes achieves the theoretical optimum; ML approaches it asymptotically.](figures/roc-comparison.png)
+<img src="figures/roc-comparison.png" alt="ROC curves for Bayesian and ML classifiers. Bayes achieves the theoretical optimum; ML approaches it asymptotically." width="80%">
 *ROC curves for Bayesian and ML classifiers. Bayes achieves the theoretical optimum; ML approaches it asymptotically.*
 
-![Optimal stopping regions: the agent invests when beliefs are high enough, abstains when low enough, and continues observing in between.](figures/stopping-boundary.png)
+<img src="figures/stopping-boundary.png" alt="Optimal stopping regions: the agent invests when beliefs are high enough, abstains when low enough, and continues observing in between." width="80%">
 *Optimal stopping regions: the agent invests when beliefs are high enough, abstains when low enough, and continues observing in between.*
 
 **Classification Accuracy: Bayesian vs ML at Different Horizons**

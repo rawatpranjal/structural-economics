@@ -1,0 +1,13 @@
+Observation,Violation participation,Exact HM action,Greedy action,Chosen q1,Rational q1 before corruption
+1,0,keep,keep,2.64,2.64
+2,2,keep,keep,2.60,2.60
+3,5,keep,keep,5.94,2.73
+4,6,remove,remove,2.73,5.94
+5,0,keep,keep,5.24,5.24
+6,0,keep,keep,5.03,5.03
+7,0,keep,keep,6.20,6.20
+8,0,keep,keep,4.33,4.33
+9,2,keep,keep,3.10,3.10
+10,0,keep,keep,5.21,5.21
+11,0,keep,keep,3.82,3.82
+12,3,keep,keep,3.42,3.42

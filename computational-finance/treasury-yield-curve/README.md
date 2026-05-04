@@ -50,17 +50,17 @@ Dates are ordered from January to December 1990, and each daily row is treated a
 
 A yield curve is a cross-section: it compares yields across maturities on the same date. Here the curve generally slopes upward during 1990, but the level and slope move over the year.
 
-![Selected Treasury yield curves](figures/yield-curve-snapshots.png)
+<img src="figures/yield-curve-snapshots.png" alt="Selected Treasury yield curves" width="80%">
 *Selected Treasury yield curves*
 
 Time-series movement is different from curve shape. A maturity can rise or fall over time even when the cross-sectional curve remains upward sloping.
 
-![Selected maturity yields over time](figures/yields-over-time.png)
+<img src="figures/yields-over-time.png" alt="Selected maturity yields over time" width="80%">
 *Selected maturity yields over time*
 
 Spreads summarize curve shape in one number. They are useful descriptors, but their interpretation depends on expectations, risk premia, and measurement.
 
-![Treasury term spreads](figures/term-spreads.png)
+<img src="figures/term-spreads.png" alt="Treasury term spreads" width="80%">
 *Treasury term spreads*
 
 **Selected curve snapshots**

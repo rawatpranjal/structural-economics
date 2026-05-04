@@ -43,12 +43,12 @@ For each precision value $\lambda$, follow the symmetric QRE branch by solving $
 
 At zero precision, players randomize 50-50. As precision rises, the logit fixed point moves toward the symmetric mixed Nash entry probability.
 
-![QRE entry probabilities approach the symmetric mixed Nash benchmark](figures/qre-path.png)
+<img src="figures/qre-path.png" alt="QRE entry probabilities approach the symmetric mixed Nash benchmark" width="80%">
 *QRE entry probabilities approach the symmetric mixed Nash benchmark*
 
 The fixed point is where the noisy best-response curve crosses the 45-degree line.
 
-![Logit QRE is a fixed point of noisy best responses](figures/fixed-point-map.png)
+<img src="figures/fixed-point-map.png" alt="Logit QRE is a fixed point of noisy best responses" width="80%">
 *Logit QRE is a fixed point of noisy best responses*
 
 **QRE Summary**

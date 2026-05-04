@@ -53,12 +53,12 @@ Random long-only portfolios are simulated from a Dirichlet distribution and assi
 
 Random portfolios fill the feasible long-only region. The analytic frontier shows the best risk-return tradeoff when short positions are allowed by the formula.
 
-![Simulated portfolios and analytic frontier](figures/frontier.png)
+<img src="figures/frontier.png" alt="Simulated portfolios and analytic frontier" width="80%">
 *Simulated portfolios and analytic frontier*
 
 The unconstrained tangency portfolio can use negative or levered positions. That is a mathematical frontier object, not a recommendation.
 
-![Weights for selected portfolios](figures/portfolio-weights.png)
+<img src="figures/portfolio-weights.png" alt="Weights for selected portfolios" width="80%">
 *Weights for selected portfolios*
 
 **Selected portfolio summaries**

@@ -46,13 +46,13 @@ Converged in **271 iterations** (error = 9.81e-07).
 
 ## Results
 
-![Equilibrium asset price as a function of endowment](figures/asset-price-function.png)
+<img src="figures/asset-price-function.png" alt="Equilibrium asset price as a function of endowment" width="80%">
 *Equilibrium asset price as a function of endowment*
 
-![Simulated endowment and asset price over 100 periods (dual y-axis)](figures/simulation-paths.png)
+<img src="figures/simulation-paths.png" alt="Simulated endowment and asset price over 100 periods (dual y-axis)" width="80%">
 *Simulated endowment and asset price over 100 periods (dual y-axis)*
 
-![Asset price function for different levels of risk aversion gamma](figures/comparative-statics-gamma.png)
+<img src="figures/comparative-statics-gamma.png" alt="Asset price function for different levels of risk aversion gamma" width="80%">
 *Asset price function for different levels of risk aversion gamma*
 
 **Price-Dividend Ratio at Selected Endowment Levels**
