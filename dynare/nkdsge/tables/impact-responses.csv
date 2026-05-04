@@ -1,4 +1,4 @@
-Variable,"Impact (monetary, %)","Impact (demand, %)"
-Output gap,-82.030,74.928
-Inflation,-48.731,108.069
-Nominal rate,16.650,171.470
+Variable,Monetary shock impact,Demand shock impact
+Output gap,-0.820,0.749
+Inflation,-0.487,1.081
+Nominal rate,0.166,1.715

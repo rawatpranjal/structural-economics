@@ -1,94 +1,132 @@
-# New Keynesian DSGE and Taylor Rule
+# New Keynesian Monetary Shocks and Determinacy
 
-> The canonical 3-equation New Keynesian model: IS curve, Phillips curve, and Taylor rule.
+> Sticky prices, the IS curve, Phillips curve, and Taylor rule in a three-equation DSGE model.
 
 ## Overview
 
-The New Keynesian model is the foundation of modern monetary policy analysis. It augments the frictionless RBC framework with nominal rigidities (sticky prices) that give monetary policy real effects.
+The question is why a central bank can move real activity when households and firms understand the policy rule. In this small New Keynesian model the answer is sticky prices. A surprise increase in the nominal interest rate raises the real rate before prices fully adjust, so demand falls. The Phillips curve then translates the weaker output gap into lower inflation.
 
-The model reduces to three equations: (1) a dynamic IS curve relating the output gap to expected future output and the real interest rate, (2) a New Keynesian Phillips curve linking inflation to expected future inflation and the output gap, and (3) a Taylor rule describing how the central bank sets the nominal interest rate in response to inflation and output deviations.
+The tutorial keeps the object deliberately small: an output gap $y_t$, inflation $\pi_t$, a nominal policy rate $i_t$, and one persistent shock at a time. The `model.mod` file gives the Dynare-style three-equation block. The Python code solves the same log-linear system directly, which makes the expectations algebra and the Taylor-rule determinacy condition easy to inspect.
 
-This implementation parses the Dynare `model.mod` specification and solves the system analytically via the method of undetermined coefficients.
+Compared with the [RBC Dynare tutorial](../rbc/), propagation here does not come from slow capital accumulation. It comes from the interaction between forward-looking demand, sticky-price inflation, and a policy rule that leans against inflation.
 
 ## Equations
 
-**From `model.mod` (Dynare syntax):**
+All variables are deviations from the zero-inflation steady state. Let $y_t$ be
+the output gap, $\pi_t$ inflation, $i_t$ the nominal policy rate, and $r^n_t$ the
+natural real rate. The three equations are
+
+$$
+y_t =
+\mathbb{E}_t y_{t+1} - \frac{1}{\sigma}
+\left(i_t-\mathbb{E}_t\pi_{t+1}-r^n_t\right),
+$$
+
+$$
+\pi_t = \beta \mathbb{E}_t \pi_{t+1}+\kappa y_t,
+$$
+
+$$
+i_t = \phi_\pi \pi_t+\phi_y y_t+v_t.
+$$
+
+The monetary-policy disturbance follows
+
+$$
+v_t=\rho_v v_{t-1}+\varepsilon^v_t,
+$$
+
+and the demand experiment treats the natural-rate term as
+
+$$
+r^n_t=d_t,\qquad d_t=\rho_d d_{t-1}+\varepsilon^d_t.
+$$
+
+The Dynare file writes the same core block as
+
+```text
+y = y(+1) - sigma^(-1)*(i - pi(+1) - rho)
+pi = beta*pi(+1) + k*y
+i = rho + phi_pi*pi + phi_y*y + e
 ```
-y = y(+1) - sigma^(-1)*(i - pi(+1) - rho)      [Dynamic IS curve]
-pi = beta*pi(+1) + k*y                           [NK Phillips curve]
-i = rho + phi_pi*pi + phi_y*y + e                [Taylor rule]
-```
 
-**Standard form (log-linearized):**
-
-$$\hat{y}_t = \mathbb{E}_t[\hat{y}_{t+1}] - \frac{1}{\sigma}\left(i_t - \mathbb{E}_t[\pi_{t+1}] - r^n\right)$$
-
-$$\pi_t = \beta \, \mathbb{E}_t[\pi_{t+1}] + \kappa \, \hat{y}_t$$
-
-$$i_t = r^n + \phi_\pi \pi_t + \phi_y \hat{y}_t + v_t$$
-
-where $\hat{y}_t$ is the output gap, $\pi_t$ is inflation, $i_t$ is the nominal
-interest rate, $r^n$ is the natural rate, and $v_t$ is a monetary policy shock.
+The Python report uses $v_t$ for the Taylor-rule shock and $d_t$ for the
+natural-rate shifter so the two impulse responses can be read separately.
 
 ## Model Setup
 
-| Parameter | Value | Description |
-|-----------|-------|-------------|
-| $\sigma$    | 1.0 | Inverse EIS |
-| $\beta$     | 0.99 | Discount factor |
-| $\phi_\pi$  | 1.5 | Taylor rule: inflation |
-| $\phi_y$    | 0.125 | Taylor rule: output gap |
-| $\kappa$    | 0.3 | Phillips curve slope |
-| $\rho_v$    | 0.5 | Monetary shock persistence |
-| $\rho_d$    | 0.8 | Demand shock persistence |
+| Primitive | Value | Role |
+|---|---:|---|
+| $\sigma$ | 1 | Inverse EIS in the IS curve |
+| $\beta$ | 0.99 | Quarterly discount factor |
+| $\kappa$ | 0.3 | Slope of the New Keynesian Phillips curve |
+| $\phi_\pi$ | 1.5 | Taylor-rule response to inflation |
+| $\phi_y$ | 0.125 | Taylor-rule response to the output gap |
+| $\rho_v$ | 0.5 | Persistence of the policy shock |
+| $\rho_d$ | 0.8 | Persistence of the demand shock |
+| Shock innovation | 0.010 | One-percentage-point innovation at date 0 |
+| IRF horizon | 40 quarters | Periods shown in each impulse response |
 
-*Note:* The original `model.mod` uses $\phi_\pi = 0.33$ and $\kappa = 0.95$, which violates the Taylor principle and yields a very steep Phillips curve. We use standard Gali (2015) values for pedagogical clarity.
+The source `model.mod` uses $\phi_\pi=0.33$ and $\kappa=0.95$. This report uses a standard determinate calibration, $\phi_\pi=1.5$ and $\kappa=0.3$, because the economic point is monetary transmission under a stable Taylor rule. The contrast is useful: when policy fails to lean hard enough against inflation, the forward-looking system no longer selects a unique stable path.
 
 ## Solution Method
 
-**Method of undetermined coefficients:** We guess that endogenous variables are linear in the exogenous state:
+For either shock, write the scalar state as $s_t=\rho_s s_{t-1}+\varepsilon_t$. Because the model is already log-linear, the rational-expectations solution is linear in that state:
 
-$$\hat{y}_t = \psi_y v_t, \quad \pi_t = \psi_\pi v_t$$
+$$y_t=\psi_y s_t,\qquad \pi_t=\psi_\pi s_t. $$
 
-Substituting into the three equations and matching coefficients yields a system of two equations in two unknowns ($\psi_y$, $\psi_\pi$), which we solve analytically.
+The Phillips curve gives
 
-This is valid when the Taylor principle ($\phi_\pi > 1$ in many calibrations, or more precisely the Blanchard-Kahn conditions) ensures a unique stable equilibrium. With $\phi_\pi = 1.5$ and $\kappa = 0.3$, the model has a unique rational expectations equilibrium.
+$$\psi_\pi=\frac{\kappa\psi_y}{1-\beta\rho_s}. $$
+
+The IS curve and Taylor rule then pin down $\psi_y$. For a monetary-policy shock, the right-hand side is negative because $v_t$ raises the policy rate. For a demand shock, the right-hand side is positive because $d_t$ raises the natural rate:
+
+$$\psi_y\left[(1-\rho_s)+\frac{\phi_y}{\sigma}+\frac{(\phi_\pi-\rho_s)\kappa}{\sigma(1-\beta\rho_s)}\right]= b_s,$$
+
+where $b_s=-1/\sigma$ for $s_t=v_t$ and $b_s=1$ for $s_t=d_t$.
+
+```text
+Algorithm: New Keynesian impulse responses
+Inputs: beta, sigma, kappa, phi_pi, phi_y, rho_s, shock eps_0, horizon T
+Outputs: paths for y_t, pi_t, i_t, and the shock state s_t
+
+1. Pick the shock experiment: monetary policy v_t or natural-rate demand d_t.
+2. Guess y_t = psi_y s_t and pi_t = psi_pi s_t.
+3. Use the Phillips curve to express psi_pi in terms of psi_y.
+4. Substitute both coefficients into the IS curve and Taylor rule.
+5. Match coefficients on s_t to solve for psi_y, then recover psi_pi.
+6. Recover the policy-rate coefficient psi_i from the Taylor rule.
+7. Set s_0 = eps_0 and iterate s_t = rho_s s_{t-1} for t = 1,...,T.
+8. Plot y_t = psi_y s_t, pi_t = psi_pi s_t, and i_t = psi_i s_t.
+```
+
+There is no finer-grid benchmark to add here. Within this tutorial's log-linear model, coefficient matching is the exact solution. Approximation error would enter only if we replaced the three-equation block with a nonlinear price-setting model and then compared a local perturbation to a global or perfect-foresight solution.
 
 ## Results
 
-<img src="figures/irf-monetary-shock.png" alt="Impulse responses to a contractionary monetary policy shock (1% increase in the policy rate)" width="80%">
-*Impulse responses to a contractionary monetary policy shock (1% increase in the policy rate)*
+The monetary shock is a wedge in the Taylor rule, not the total policy-rate response. On impact the wedge is one percentage point, but the systematic part of the rule partly offsets it because expected output and inflation fall. The real rate still rises, demand contracts, and inflation declines with the output gap. Persistence in $v_t$ controls how slowly the economy returns to steady state.
 
-<img src="figures/irf-demand-shock.png" alt="Impulse responses to a positive demand shock (1% increase in natural rate)" width="80%">
-*Impulse responses to a positive demand shock (1% increase in natural rate)*
+<img src="figures/irf-monetary-shock.png" alt="Impulse responses to a one-percentage-point contractionary monetary-policy shock" width="80%">
 
-<img src="figures/model-equations.png" alt="The three core equations of the New Keynesian model" width="80%">
-*The three core equations of the New Keynesian model*
+A positive natural-rate shock pushes current demand up at the same nominal rate. Output and inflation therefore rise together. The Taylor rule raises the policy rate in response, which dampens but does not eliminate the expansion because the shock is persistent and agents expect demand pressure to continue.
 
-**Impact Responses to Unit Shocks**
+<img src="figures/irf-demand-shock.png" alt="Impulse responses to a one-percentage-point natural-rate demand shock" width="80%">
 
-| Variable     |   Impact (monetary, %) |   Impact (demand, %) |
-|:-------------|-----------------------:|---------------------:|
-| Output gap   |                -82.03  |               74.928 |
-| Inflation    |                -48.731 |              108.069 |
-| Nominal rate |                 16.65  |              171.47  |
+The impact table gives the signs and scale without asking the reader to read them off the figure. Output is in percent deviations; inflation and the policy rate are in quarterly percentage points. Monetary and demand shocks move output and inflation in opposite directions across experiments because they enter different equations.
+
+**Impact Responses to One-Percentage-Point Shocks**
+
+| Variable     |   Monetary shock impact |   Demand shock impact |
+|:-------------|------------------------:|----------------------:|
+| Output gap   |                  -0.82  |                 0.749 |
+| Inflation    |                  -0.487 |                 1.081 |
+| Nominal rate |                   0.166 |                 1.715 |
 
 ## Takeaway
 
-The New Keynesian model illustrates how nominal rigidities give monetary policy real effects and create a fundamental policy trade-off.
+The three-equation New Keynesian model is compact, but it already separates two central ideas. First, sticky prices let a nominal policy surprise move the real rate and therefore current demand. Second, determinacy is not a numerical detail: with forward-looking inflation, the Taylor rule has to make expected inflation costly enough for the model to select one stable path.
 
-**Key insights:**
-- A contractionary monetary shock (positive $v_t$) raises the nominal rate, which with sticky prices increases the real rate. The higher real rate reduces demand via the IS curve, lowering both output and inflation.
-- The Phillips curve slope $\kappa$ governs the output-inflation trade-off: a flatter curve means larger output costs of disinflation.
-- The Taylor rule parameters determine whether equilibrium is unique: the Taylor principle ($\phi_\pi > 1$) is often needed for determinacy.
-- Demand shocks raise output, inflation, and the interest rate simultaneously, while supply shocks create a trade-off between output and inflation stabilization.
-- The model's forward-looking nature (expectations of future output and inflation enter today's equations) is what makes rational expectations essential.
-
-## Reproduce
-
-```bash
-python run.py
-```
+The policy-shock and demand-shock experiments are deliberately symmetric in the solution method but not in the economics. A policy wedge contracts demand and inflation. A natural-rate shock expands both, with the central bank leaning back through the Taylor rule. For a supply or cost-push shock, the same block would show the sharper output-inflation stabilization trade-off.
 
 ## References
 

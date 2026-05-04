@@ -67,7 +67,7 @@ These examples show DSGE shock propagation and Dynare-style model files wrapped 
 | | Tutorial | What it teaches | Method | Key Insight |
 |:---:|---|---|---|---|
 | <img src="dynare/rbc/figures/thumb.png" width="192"> | [**RBC TFP Shocks and Capital Propagation**](dynare/rbc/) | How a persistent productivity shock is split across consumption, investment, and capital | First-order perturbation + nonlinear transition check | Investment jumps while consumption and capital adjust gradually |
-| <img src="dynare/nkdsge/figures/thumb.png" width="192"> | [**New Keynesian DSGE and Taylor Rule**](dynare/nkdsge/) | IS curve, Phillips curve, monetary policy, and determinacy | Undetermined coefficients | The Taylor principle requires $\phi_\pi > 1$ |
+| <img src="dynare/nkdsge/figures/thumb.png" width="192"> | [**New Keynesian Monetary Shocks and Determinacy**](dynare/nkdsge/) | How sticky prices turn policy and demand shocks into output and inflation dynamics | Undetermined coefficients | A Taylor rule that leans against inflation selects a stable forward-looking path |
 | <img src="dynare/assetNews/figures/thumb.png" width="192"> | [**Asset Pricing with News Shocks**](dynare/assetNews/) | Anticipated shocks in a present-value asset-pricing model | Dynare + simulation | Prices move before dividends when news arrives |
 
 ### Global Nonlinear DSGE
