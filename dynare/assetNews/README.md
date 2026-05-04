@@ -1,106 +1,155 @@
-# Asset Pricing with News Shocks
+# Lucas-Tree News Shocks and Stochastic Discounting
 
-> A Lucas-tree model where agents receive advance signals (news) about future dividend changes, generating distinct price dynamics from anticipated vs unanticipated shocks.
+> Anticipated dividend news in a representative-agent asset-pricing model where cash-flow news also changes marginal utility.
 
 ## Overview
 
-In standard asset pricing models, shocks are unanticipated --- agents learn about dividend changes only when they occur. The **news shock** framework extends this by allowing agents to receive signals about future fundamentals before they materialize.
+A news shock separates two dates that are often collapsed in simple impulse responses: the date when agents learn something and the date when the cash flow actually changes. In this Lucas-tree example, a signal $n_t$ arrives today and shifts next period's dividend. A surprise shock $z_t$ instead moves today's dividend immediately.
 
-This creates a striking distinction:
-- **Surprise shocks:** Dividends and prices move together on impact.
-- **News shocks:** Prices jump immediately when news arrives, but dividends don't change until later. This generates a disconnect between current fundamentals and asset prices --- a pattern often observed in financial markets.
-
-The model is parsed from the Dynare `model.mod` file and solved analytically using the present-value pricing formula under CRRA preferences.
+The important economic wrinkle is that the dividend is also aggregate consumption. Good dividend news raises future payoffs, but it also says that future marginal utility will be lower. With the calibration in `model.mod`, $\gamma=2$ makes this discount-rate channel slightly stronger on impact than the cash-flow channel. The point of the tutorial is therefore sharper than "prices move before dividends": anticipated shocks are priced before they realize, and the sign depends on the stochastic discount factor.
 
 ## Equations
 
-**From `model.mod` (Dynare syntax):**
-```
+Let $d_t$ be the tree dividend and the representative household's consumption,
+and define $x_t=\log d_t$. The Dynare file writes the dividend process as
+
+```text
 d = exp(rho*log(d(-1)) + sigma1*n(-1) + sigma2*z)
-p*d^(-gamma) = beta*d(+1)^(-gamma)*(p(+1)+d(+1))
 ```
 
-**Interpretation:**
+or, in log deviations,
 
-$$\log d_t = \rho \log d_{t-1} + \sigma_1 n_{t-1} + \sigma_2 z_t$$
+$$
+x_t = \rho x_{t-1} + \sigma_1 n_{t-1} + \sigma_2 z_t.
+$$
 
-$$p_t \cdot d_t^{-\gamma} = \beta \, \mathbb{E}_t \left[ d_{t+1}^{-\gamma} (p_{t+1} + d_{t+1}) \right]$$
+The surprise innovation $z_t$ is contemporaneous. The news innovation $n_t$ is
+known at date $t$ but enters dividends at date $t+1$. The asset-pricing equation is
 
-where $d_t$ is the dividend, $p_t$ is the asset price, $z_t$ is a **surprise shock**
-(contemporaneous), and $n_t$ is a **news shock** (affects dividends one period later).
+$$
+p_t d_t^{-\gamma}
+=
+\beta \mathbb{E}_t\left[
+d_{t+1}^{-\gamma}(p_{t+1}+d_{t+1})
+\right],
+$$
 
-The pricing equation is the Euler equation with CRRA marginal utility: the price
-equals the expected discounted value of future dividends and capital gains, weighted
-by the stochastic discount factor $\beta (d_{t+1}/d_t)^{-\gamma}$.
+which is equivalently
+
+$$
+p_t = \mathbb{E}_t\left[
+M_{t+1}(p_{t+1}+d_{t+1})
+\right],
+\qquad
+M_{t+1}=\beta\left(\frac{d_{t+1}}{d_t}\right)^{-\gamma}.
+$$
+
+At the deterministic steady state $d=1$,
+
+$$
+p = \beta(p+1), \qquad p=\frac{\beta}{1-\beta}=99.00.
+$$
+
+Write $q_t=\log(p_t/p)$. A first-order expansion of the Euler equation gives
+
+$$
+q_t =
+\gamma x_t + \beta\mathbb{E}_t q_{t+1}
++(1-\beta-\gamma)\mathbb{E}_t x_{t+1}.
+$$
+
+Since $\mathbb{E}_t x_{t+1}=\rho x_t+\sigma_1 n_t$, the linear solution has
+the form
+
+$$
+q_t = A x_t + B n_t,
+$$
+
+with
+
+$$
+A=\frac{\gamma+\rho(1-\beta-\gamma)}{1-\beta\rho},
+\qquad
+B=\sigma_1\left(\beta A+1-\beta-\gamma\right).
+$$
+
+For this calibration, $A=1.917$ and $B=-0.009$.
 
 ## Model Setup
 
-| Parameter | Value | Description |
-|-----------|-------|-------------|
-| $\beta$    | 0.99 | Discount factor |
-| $\gamma$   | 2.0 | Risk aversion (CRRA) |
-| $\rho$     | 0.9 | Dividend persistence |
-| $\sigma_1$ | 0.1 | News shock std. dev. |
-| $\sigma_2$ | 0.1 | Surprise shock std. dev. |
+| Primitive | Value | Role |
+|---|---:|---|
+| $\beta$ | 0.99 | Quarterly discount factor |
+| $\gamma$ | 2.0 | CRRA coefficient in marginal utility |
+| $\rho$ | 0.9 | Persistence of log dividends |
+| $\sigma_1$ | 0.1 | Effect of a unit news innovation on next period's log dividend |
+| $\sigma_2$ | 0.1 | Effect of a unit surprise innovation on today's log dividend |
+| IRF horizon | 40 quarters | Periods shown in the impulse-response figures |
 
-**Steady state:** $d^{*} = 1.0$, $p^{*} = 99.00$, $p/d = 99.00$, $R^{*} = 1.0101$
+| Steady-state object | Value |
+|---|---:|
+| Dividend $d$ | 1.000 |
+| Asset price $p$ | 99.000 |
+| Price-dividend ratio $p/d$ | 99.000 |
+| Gross return $1/\beta$ | 1.0101 |
 
 ## Solution Method
 
-**Present-value pricing:** Under rational expectations, the asset price equals the present discounted value of all future dividends:
+The impulse responses use log deviations from steady state. The first-order solution is the closed-form pricing rule above. The comparison line is an exact nonlinear perfect-foresight transition for the same realized dividend path, computed by backward recursion on the level Euler equation. It is not a separate stochastic model; it is a local-solution check along the same one-shock experiment.
 
-$$p_t = \sum_{j=1}^{\infty} \beta^j \, \mathbb{E}_t \left[ \frac{d_{t+j}^{1-\gamma}}{d_t^{-\gamma}} \right]$$
+```text
+Algorithm: Lucas-tree news and surprise IRFs
+Inputs: beta, gamma, rho, sigma1, sigma2, shock type, horizon T
+Outputs: x_t, q_t, p_t, and the price-dividend ratio
 
-For log-linearized dividends following an AR(1) with both surprise and news components, the IRFs are computed by tracing the expected path of dividends and discounting.
+1. Compute the steady state d=1 and p=beta/(1-beta).
+2. Linearize the Euler equation in x_t=log d_t and q_t=log(p_t/p).
+3. Use E_t x_{t+1}=rho x_t + sigma1 n_t to solve q_t=A x_t+B n_t.
+4. For a surprise shock, set x_0=sigma2 and n_t=0 for all t.
+5. For a news shock, set n_0=1, x_0=0, and let x_1=sigma1.
+6. Iterate x_t=rho x_{t-1} after the shock has entered dividends.
+7. Recover the first-order price response q_t=A x_t+B n_t.
+8. For the nonlinear benchmark, extend the same x_t path far into the
+   future and solve p_t=beta(d_{t+1}/d_t)^(-gamma)(p_{t+1}+d_{t+1})
+   backward from the terminal steady-state price.
+```
 
-**Key mechanism:** News shocks create a *wedge* between current fundamentals and prices. When $n_0 = 1$ (positive news arrives at $t=0$), the price jumps immediately even though $d_0$ is unchanged, because agents rationally anticipate higher future dividends.
+The sign of $B$ is the key diagnostic. Here $B<0$: a positive signal about future dividends slightly lowers today's price because the cash flow arrives in a future high-consumption state and is discounted at lower marginal utility.
 
 ## Results
 
-The key difference is timing: under a surprise shock (blue), dividends and prices jump simultaneously at t=0. Under a news shock (red dashed), the price jumps at t=0 when the signal arrives but dividends remain flat until t=1. This one-period lead of prices over fundamentals is the hallmark of forward-looking asset pricing with anticipated shocks.
+A surprise shock moves dividends immediately, so the price response is mostly a magnified version of the current dividend state. The nonlinear benchmark is nearly indistinguishable from the first-order rule at this scale. A news shock does something different: the dividend is still at steady state on impact, but the price moves because agents already know $x_1$ will be higher. In this calibration that impact movement is slightly negative, not positive, because the marginal-utility effect dominates until the dividend actually realizes.
 
-<img src="figures/irf-surprise-vs-news.png" alt="Comparison of impulse responses to surprise (unanticipated) vs news (anticipated) dividend shocks" width="80%">
-*Comparison of impulse responses to surprise (unanticipated) vs news (anticipated) dividend shocks*
+<img src="figures/irf-surprise-vs-news.png" alt="Dividend and asset-price impulse responses under surprise and news shocks" width="80%">
 
-In the left panel, the price and dividend shaded areas overlap, showing that prices are driven by concurrent fundamentals. In the right panel, the price (red) leads the dividend (blue) by exactly one period. This disconnect between current cash flows and asset valuations is what makes news shocks a compelling explanation for observed price-fundamental puzzles in financial markets.
+The date-0 news response can be read as three forces. Higher expected future prices raise today's value, and the next dividend payoff adds a small positive term. The stochastic discount factor moves the other way: future dividends are paid in a high-consumption state, where marginal utility is lower. With $\gamma=2$, that discounting term is just large enough to make the net impact negative.
 
-<img src="figures/price-dynamics.png" alt="Detailed view: surprise shocks move prices and dividends together; news shocks cause prices to lead dividends" width="80%">
-*Detailed view: surprise shocks move prices and dividends together; news shocks cause prices to lead dividends*
+<img src="figures/price-dynamics.png" alt="Decomposition of the date-0 price response to a positive news shock" width="80%">
 
-With both shock types active simultaneously, the price series is smoother and more persistent than dividends because prices aggregate information about future cash flows. Price movements that precede dividend changes reflect the news component, while co-movements reflect the surprise component.
+In the simulated path, prices mostly track persistent dividends because the coefficient on the current dividend state is large. News still matters at the dates when signals arrive: it enters the price rule immediately through $B n_t$ and then enters the dividend process one period later through $\sigma_1 n_t$.
 
-<img src="figures/simulated-paths.png" alt="Simulated dividend and asset price paths with both surprise and news shocks" width="80%">
-*Simulated dividend and asset price paths with both surprise and news shocks*
+<img src="figures/simulated-paths.png" alt="Simulated first-order dividend and asset-price paths with surprise and news innovations" width="80%">
 
-The critical row is the dividend at t=0: it is nonzero for the surprise shock but exactly zero for the news shock, confirming that news moves prices without any change in current fundamentals. The t=1 column for the news shock shows when the anticipated dividend change finally materializes.
+The impact table is in percent log deviations. The news experiment has zero dividend movement at date 0 by construction, yet the price and price-dividend ratio already move. The date-1 column shows the delayed cash-flow realization. The nonlinear benchmark is close to the first-order solution, so the sign change is economic rather than a plotting artifact.
 
-**Impact Responses: Surprise vs News Shocks**
+**Impact and Realization Responses**
 
-| Variable    |   Surprise shock (t=0) |   News shock (t=0) |   News shock (t=1) |
-|:------------|-----------------------:|-------------------:|-------------------:|
-| Dividend    |                 0.1    |             0      |             0.1    |
-| Asset price |                 0.8174 |             0.9083 |             0.8174 |
-| Return      |                 0.1    |             0.099  |             0.001  |
+| Object                                   |   Surprise t=0 |   News t=0 |   News t=1 |
+|:-----------------------------------------|---------------:|-----------:|-----------:|
+| Dividend log deviation                   |         10     |      0     |     10     |
+| Price log deviation, first order         |         19.174 |     -0.917 |     19.174 |
+| Price log deviation, nonlinear benchmark |         19.191 |     -0.897 |     19.191 |
+| Price-dividend ratio log deviation       |          9.174 |     -0.917 |      9.174 |
 
 ## Takeaway
 
-News shocks create a fundamental distinction in asset pricing dynamics that helps explain observed financial market behavior.
+News shocks are about information timing, not mechanically about higher prices. The Lucas-tree Euler equation prices a future dividend with the future marginal utility of consumption. If the dividend is paid in a state where consumption is high, the stochastic discount factor can offset the cash-flow effect. In this calibration, positive dividend news moves the price before the dividend, but the impact sign is slightly negative.
 
-**Key insights:**
-- **Surprise shocks** move dividends and prices simultaneously --- the classic textbook response where asset prices reflect concurrent changes in fundamentals.
-- **News shocks** cause prices to *lead* fundamentals: the price jumps at $t=0$ when news arrives, but dividends don't change until $t=1$. This generates a disconnect between prices and current cash flows.
-- This price-fundamental disconnect is ubiquitous in financial data. Stock prices routinely move on earnings guidance, policy announcements, and other forward-looking information before the underlying cash flows materialize.
-- The magnitude of the anticipation effect depends on dividend persistence ($\rho$) and the discount rate: more persistent dividend processes and lower discount rates amplify the news effect because future cash flows are worth more.
-- Risk aversion ($\gamma$) affects the *level* of asset prices (risk premia) but the *qualitative* difference between surprise and news responses persists across all $\gamma > 0$.
-
-## Reproduce
-
-```bash
-python run.py
-```
+That makes this tutorial a useful companion to the [Lucas-tree dynamic-programming asset-pricing tutorial](../../dynamic-programming/asset-pricing/): both are about pricing payoffs with marginal utility, while this one isolates the timing distinction between surprise and anticipated shocks. The [Dynare RBC tutorial](../rbc/) uses the same local-solution logic for real quantities rather than asset prices.
 
 ## References
 
 - Lucas, R. (1978). Asset Prices in an Exchange Economy. *Econometrica*, 46(6), 1429-1445.
+- Cochrane, J. (2005). *Asset Pricing*. Princeton University Press.
 - Beaudry, P. and Portier, F. (2006). Stock Prices, News, and Economic Fluctuations. *American Economic Review*, 96(4), 1293-1307.
 - Schmitt-Grohe, S. and Uribe, M. (2012). What's News in Business Cycles. *Econometrica*, 80(6), 2733-2764.

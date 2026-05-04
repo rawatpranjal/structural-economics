@@ -1,4 +1,5 @@
-Variable,Surprise shock (t=0),News shock (t=0),News shock (t=1)
-Dividend,0.1000,0.0000,0.1000
-Asset price,0.8174,0.9083,0.8174
-Return,0.1000,0.0990,0.0010
+Object,Surprise t=0,News t=0,News t=1
+Dividend log deviation,10.000,0.000,10.000
+"Price log deviation, first order",19.174,-0.917,19.174
+"Price log deviation, nonlinear benchmark",19.191,-0.897,19.191
+Price-dividend ratio log deviation,9.174,-0.917,9.174
