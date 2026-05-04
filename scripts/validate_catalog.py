@@ -10,6 +10,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DISPLAY_MATH_BAD_PREFIX = re.compile(r"^\s*[+*-]\s+")
 TABLE_SEPARATOR_CELL = re.compile(r":?-{3,}:?")
+FRAGILE_MATH_DELIMITERS = (
+    "\\left" + "{",
+    "\\left" + "\\{",
+    "\\right" + "}",
+    "\\right" + "\\}",
+)
 
 
 def catalog_links() -> set[Path]:
@@ -139,6 +145,20 @@ def markdown_table_errors() -> list[str]:
     return errors
 
 
+def fragile_math_delimiter_errors() -> list[str]:
+    """Reject LaTeX delimiter forms that GitHub Markdown often misrenders."""
+    errors = []
+    for path in active_text_files():
+        rel = path.relative_to(ROOT)
+        for lineno, line in enumerate(path.read_text(errors="replace").splitlines(), start=1):
+            for delimiter in FRAGILE_MATH_DELIMITERS:
+                if delimiter in line:
+                    errors.append(
+                        f"{rel}:{lineno} uses fragile math delimiter {delimiter}; use bracket delimiters instead"
+                    )
+    return errors
+
+
 def validate() -> int:
     errors = []
     links = catalog_links()
@@ -164,6 +184,7 @@ def validate() -> int:
 
     errors.extend(display_math_errors())
     errors.extend(markdown_table_errors())
+    errors.extend(fragile_math_delimiter_errors())
 
     if errors:
         print("Catalog validation failed:")

@@ -10,7 +10,7 @@ This is a partial-equilibrium model: the interest rate $r$ is exogenous. Agents 
 
 ## Equations
 
-$$V(a, y) = \max_{c \ge 0} \left\{ u(c) + \beta \, \mathbb{E}\left[ V(a', y') \right] \right\}$$
+$$V(a, y) = \max_{c \ge 0} \bigl[ u(c) + \beta \, \mathbb{E}\left[ V(a', y') \right] \bigr]$$
 
 subject to: $c + a' = Ra + y$, $\quad a' \ge 0$, $\quad y \sim F(y)$ IID.
 

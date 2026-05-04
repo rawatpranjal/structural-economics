@@ -13,7 +13,7 @@ This tutorial uses Chebyshev polynomials to approximate the capital policy in a 
 The planner chooses next-period capital:
 
 $$
-V(k) = \max_{k'} \left\{\log(c) + \beta V(k')\right\},
+V(k) = \max_{k'} \bigl[\log(c) + \beta V(k')\bigr],
 \qquad
 c = A k^\alpha - k'.
 $$

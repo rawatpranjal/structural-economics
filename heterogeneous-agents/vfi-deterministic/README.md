@@ -10,7 +10,7 @@ Despite its simplicity, this model introduces the core mechanics of HA models: d
 
 ## Equations
 
-$$V(a) = \max_{a' \in [\underline{a},\, \bar{a}]} \left\{ u(c) + \beta \, V(a') \right\}$$
+$$V(a) = \max_{a' \in [\underline{a},\, \bar{a}]} \bigl[ u(c) + \beta \, V(a') \bigr]$$
 
 subject to the budget constraint:
 
@@ -41,7 +41,7 @@ of relative risk aversion.
 
 **Value Function Iteration (VFI):** Starting from an initial guess $V_0(a) = u(ra + y) / (1 - \beta)$, we iterate on the Bellman equation:
 
-$$V_{n+1}(a) = \max_{a' \in [\underline{a},\, \bar{a}]} \left\{ u(Ra + y - a') + \beta \, V_n(a') \right\}$$
+$$V_{n+1}(a) = \max_{a' \in [\underline{a},\, \bar{a}]} \bigl[ u(Ra + y - a') + \beta \, V_n(a') \bigr]$$
 
 The maximization is performed by evaluating all feasible savings choices on the asset grid (discrete search). Convergence is declared when $\|V_{n+1} - V_n\|_\infty < 10^{-6}$.
 

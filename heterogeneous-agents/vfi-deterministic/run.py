@@ -151,7 +151,7 @@ def main():
 
     report.add_equations(
         r"""
-$$V(a) = \max_{a' \in [\underline{a},\, \bar{a}]} \left\{ u(c) + \beta \, V(a') \right\}$$
+$$V(a) = \max_{a' \in [\underline{a},\, \bar{a}]} \bigl[ u(c) + \beta \, V(a') \bigr]$$
 
 subject to the budget constraint:
 

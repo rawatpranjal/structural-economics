@@ -100,7 +100,7 @@ $$
 
 The best response is
 $$
-BR_i(q_j) = \max\left\{0, \frac{a-c-bq_j}{2b}\right\}.
+BR_i(q_j) = \max\bigl[0, \frac{a-c-bq_j}{2b}\bigr].
 $$
 
 The symmetric Nash equilibrium solves $q^* = BR(q^*)$:

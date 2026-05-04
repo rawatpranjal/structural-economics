@@ -204,7 +204,7 @@ def main():
 
     report.add_equations(
         r"""
-$$V(w) = \max\left\{ \frac{w}{1-\beta},\; b + \beta \, \mathbb{E}[V(w')] \right\}$$
+$$V(w) = \max\bigl[ \frac{w}{1-\beta},\; b + \beta \, \mathbb{E}[V(w')] \bigr]$$
 
 where $w/(1-\beta)$ is the lifetime value of accepting wage $w$ forever, and
 $b + \beta \, \mathbb{E}[V(w')]$ is the value of rejecting (collecting benefit $b$

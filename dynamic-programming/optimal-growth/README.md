@@ -10,7 +10,7 @@ Unlike the cake-eating problem, capital is *productive* here: saving today yield
 
 ## Equations
 
-$$V(k) = \max_{0 \le k' \le F(k)} \left\{ u(F(k) - k') + \beta \, V(k') \right\}$$
+$$V(k) = \max_{0 \le k' \le F(k)} \bigl[ u(F(k) - k') + \beta \, V(k') \bigr]$$
 
 where $k$ is capital, $k'$ is next-period capital, $c = F(k) - k'$ is consumption,
 $F(k) = Ak^\alpha$ is the production function, and $\beta \in (0,1)$ is the discount factor.
@@ -39,7 +39,7 @@ $$V(k) = E + F \ln(k), \qquad E = \frac{\ln(A(1-\alpha\beta)) + \frac{\beta\alph
 
 **Value Function Iteration (VFI):** Starting from an initial guess $V_0(k) = u(F(k))$, we iterate on the Bellman equation:
 
-$$V_{n+1}(k) = \max_{0 \le k' \le F(k)} \left\{ u(F(k) - k') + \beta \, V_n(k') \right\}$$
+$$V_{n+1}(k) = \max_{0 \le k' \le F(k)} \bigl[ u(F(k) - k') + \beta \, V_n(k') \bigr]$$
 
 until $\|V_{n+1} - V_n\|_\infty < 10^{-6}$. At each state, we search over a fine grid of $k'$ values and interpolate the continuation value between grid points. The analytical solution provides boundary extrapolation for $k'$ values outside the grid range.
 

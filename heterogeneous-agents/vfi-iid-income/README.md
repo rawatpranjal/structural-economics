@@ -10,7 +10,7 @@ Unlike the deterministic case, agents face *uninsurable* income risk: they canno
 
 ## Equations
 
-$$V(a, y) = \max_{c \ge 0} \left\{ u(c) + \beta \, \mathbb{E}\left[ V(a', y') \right] \right\}$$
+$$V(a, y) = \max_{c \ge 0} \bigl[ u(c) + \beta \, \mathbb{E}\left[ V(a', y') \right] \bigr]$$
 
 subject to:
 
@@ -46,7 +46,7 @@ $$\mathbb{E}[V(a', y')] = \sum_{j=1}^{n_y} V(a', y_j) \cdot \pi_j$$
 
 **Value Function Iteration (VFI):** We iterate on the Bellman equation:
 
-$$V_{n+1}(a, y) = \max_{a' \ge \underline{a}} \left\{ u(Ra + y - a') + \beta \sum_{j} V_n(a', y_j) \pi_j \right\}$$
+$$V_{n+1}(a, y) = \max_{a' \ge \underline{a}} \bigl[ u(Ra + y - a') + \beta \sum_{j} V_n(a', y_j) \pi_j \bigr]$$
 
 until $\|V_{n+1} - V_n\|_\infty < 10^{-6}$. Because income is IID, the expected continuation value $\mathbb{E}[V(a', y')]$ depends only on $a'$ (not the current income state), which simplifies computation.
 

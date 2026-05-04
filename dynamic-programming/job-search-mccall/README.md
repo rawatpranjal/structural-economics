@@ -10,7 +10,7 @@ The key question: how selective should the worker be? The answer is a simple **r
 
 ## Equations
 
-$$V(w) = \max\left\{ \frac{w}{1-\beta},\; b + \beta \, \mathbb{E}[V(w')] \right\}$$
+$$V(w) = \max\bigl[ \frac{w}{1-\beta},\; b + \beta \, \mathbb{E}[V(w')] \bigr]$$
 
 where $w/(1-\beta)$ is the lifetime value of accepting wage $w$ forever, and
 $b + \beta \, \mathbb{E}[V(w')]$ is the value of rejecting (collecting benefit $b$
@@ -35,7 +35,7 @@ The optimal policy is a threshold rule: accept if $w \ge w^*$, reject otherwise.
 
 **Value Function Iteration (VFI):** Starting from an initial guess $V_0(w) = w/(1-\beta)$ (accept everything), we iterate on the Bellman equation:
 
-$$V_{n+1}(w) = \max\left\{ \frac{w}{1-\beta},\; b + \beta \sum_{w'} p(w') V_n(w') \right\}$$
+$$V_{n+1}(w) = \max\bigl[ \frac{w}{1-\beta},\; b + \beta \sum_{w'} p(w') V_n(w') \bigr]$$
 
 The continuation value $b + \beta \, \mathbb{E}[V(w')]$ is the same for all wages, which makes the McCall model particularly clean: each iteration requires only a single dot product to compute the expected value, then an elementwise max.
 

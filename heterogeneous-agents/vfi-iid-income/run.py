@@ -237,7 +237,7 @@ def main():
 
     report.add_equations(
         r"""
-$$V(a, y) = \max_{c \ge 0} \left\{ u(c) + \beta \, \mathbb{E}\left[ V(a', y') \right] \right\}$$
+$$V(a, y) = \max_{c \ge 0} \bigl[ u(c) + \beta \, \mathbb{E}\left[ V(a', y') \right] \bigr]$$
 
 subject to:
 

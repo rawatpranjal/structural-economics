@@ -314,7 +314,7 @@ def main():
 
     report.add_equations(
         r"""
-$$V(k, z) = \max_{k', l} \left\{ \ln(c) + \phi \ln(1-l) + \beta \, \mathbb{E}\left[ V(k', z') \,|\, z \right] \right\}$$
+$$V(k, z) = \max_{k', l} \bigl[ \ln(c) + \phi \ln(1-l) + \beta \, \mathbb{E}\left[ V(k', z') \,|\, z \right] \bigr]$$
 
 subject to the budget constraint:
 

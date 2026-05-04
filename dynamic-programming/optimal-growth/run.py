@@ -178,7 +178,7 @@ def main():
 
     report.add_equations(
         r"""
-$$V(k) = \max_{0 \le k' \le F(k)} \left\{ u(F(k) - k') + \beta \, V(k') \right\}$$
+$$V(k) = \max_{0 \le k' \le F(k)} \bigl[ u(F(k) - k') + \beta \, V(k') \bigr]$$
 
 where $k$ is capital, $k'$ is next-period capital, $c = F(k) - k'$ is consumption,
 $F(k) = Ak^\alpha$ is the production function, and $\beta \in (0,1)$ is the discount factor.

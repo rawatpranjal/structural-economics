@@ -389,7 +389,7 @@ def main():
 
     report.add_equations(r"""
 **HJB equation:**
-$$\rho \, V(k) = \max_{c} \left\{ u(c) + V'(k) \left[ f(k) - \delta k - c \right] \right\}$$
+$$\rho \, V(k) = \max_{c} \bigl[ u(c) + V'(k) \left[ f(k) - \delta k - c \right] \bigr]$$
 
 **FOC:** $u'(c) = V'(k) \implies c^*(k) = \left( V'(k) \right)^{-1/\sigma}$
 

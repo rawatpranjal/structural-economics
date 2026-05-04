@@ -153,7 +153,7 @@ def main():
 
     report.add_equations(r"""
 **HJB equation:**
-$$\rho V(a) = \max_c \left\{ u(c) + V'(a)(y + ra - c) \right\}$$
+$$\rho V(a) = \max_c \bigl[ u(c) + V'(a)(y + ra - c) \bigr]$$
 
 **FOC:** $u'(c) = V'(a)$, so $c^*(a) = (V'(a))^{-1/\sigma}$
 

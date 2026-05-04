@@ -10,7 +10,7 @@ Global methods capture nonlinear effects that perturbation methods miss: precaut
 
 ## Equations
 
-$$V(K, z) = \max_{c, K'} \left\{ \frac{c^{1-\sigma}}{1-\sigma} + \beta \, \mathbb{E}\left[V(K', z')\right] \right\}$$
+$$V(K, z) = \max_{c, K'} \bigl[ \frac{c^{1-\sigma}}{1-\sigma} + \beta \, \mathbb{E}\left[V(K', z')\right] \bigr]$$
 
 subject to:
 $$c + K' = z K^\alpha + (1-\delta) K$$

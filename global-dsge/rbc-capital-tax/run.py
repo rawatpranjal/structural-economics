@@ -273,7 +273,7 @@ def main():
 
     report.add_equations(
         r"""
-$$V(K, z) = \max_{c, K'} \left\{ u(c) + \beta \, \mathbb{E}\left[V(K', z')\right] \right\}$$
+$$V(K, z) = \max_{c, K'} \bigl[ u(c) + \beta \, \mathbb{E}\left[V(K', z')\right] \bigr]$$
 
 **Budget constraint (with lump-sum rebate):**
 $$c + K' = z K^\alpha + (1-\delta) K$$

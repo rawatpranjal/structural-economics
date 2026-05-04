@@ -359,7 +359,7 @@ def main():
         r"""
 **Household problem:**
 
-$$V(a, z) = \max_{c \ge 0} \left\{ u(c) + \beta \, \mathbb{E}\left[V(a', z') \mid z\right] \right\}$$
+$$V(a, z) = \max_{c \ge 0} \bigl[ u(c) + \beta \, \mathbb{E}\left[V(a', z') \mid z\right] \bigr]$$
 
 $$c + a' = (1+r) \, a + w \, z, \quad a' \ge \underline{a}$$
 

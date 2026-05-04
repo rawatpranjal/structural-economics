@@ -13,7 +13,7 @@ We solve the household problem using the Endogenous Grid Points (EGP) method, wh
 ## Equations
 
 **Household problem:**
-$$V(a, y) = \max_{c, a'} \left\{ u(c) + \beta \, \mathbb{E}[V(a', y')] \right\}$$
+$$V(a, y) = \max_{c, a'} \bigl[ u(c) + \beta \, \mathbb{E}[V(a', y')] \bigr]$$
 $$\text{s.t.} \quad c + a' = (1+r)a + wy, \quad a' \ge 0$$
 
 **EGP Euler equation inversion:**

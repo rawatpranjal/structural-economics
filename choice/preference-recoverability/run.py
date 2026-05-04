@@ -172,7 +172,7 @@ def main():
 $$u_t - u_s \leq \lambda_s \, p_s \cdot (x_t - x_s) \quad \forall \, t, s$$
 
 **Recovered utility at any bundle** $x$:
-$$\hat{U}(x) = \min_s \left\{ u_s + \lambda_s \, p_s \cdot (x - x_s) \right\}$$
+$$\hat{U}(x) = \min_s \bigl[ u_s + \lambda_s \, p_s \cdot (x - x_s) \bigr]$$
 
 This is a piecewise-linear, concave function that passes through all observed points.
 

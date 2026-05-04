@@ -12,7 +12,7 @@ The synthetic data is constructed to reproduce the most important stylized facts
 
 **Hodrick-Prescott Filter:**
 
-$$\min_{\{\tau_t\}} \left\{ \sum_{t=1}^{T} (y_t - \tau_t)^2 + \lambda \sum_{t=2}^{T-1} [(\tau_{t+1} - \tau_t) - (\tau_t - \tau_{t-1})]^2 \right\}$$
+$$\min_{\{\tau_t\}} \bigl[ \sum_{t=1}^{T} (y_t - \tau_t)^2 + \lambda \sum_{t=2}^{T-1} [(\tau_{t+1} - \tau_t) - (\tau_t - \tau_{t-1})]^2 \bigr]$$
 
 where $y_t$ is the observed series, $\tau_t$ is the trend component, and $\lambda = 1600$
 for quarterly data (Hodrick and Prescott, 1997).

@@ -10,7 +10,7 @@ This model introduces the core machinery of dynamic programming: Bellman equatio
 
 ## Equations
 
-$$V(W) = \max_{0 \le c \le W} \left\{ u(c) + \beta \, V(W - c) \right\}$$
+$$V(W) = \max_{0 \le c \le W} \bigl[ u(c) + \beta \, V(W - c) \bigr]$$
 
 where $W$ is the remaining cake, $c$ is consumption, and $\beta \in (0,1)$ is the
 discount factor.
@@ -34,7 +34,7 @@ $$c^*(W) = (1-\beta) W, \qquad W' = \beta W$$
 
 **Value Function Iteration (VFI):** Starting from an initial guess $V_0(W) = u(W)$, we iterate on the Bellman equation:
 
-$$V_{n+1}(W) = \max_{0 \le c \le W} \left\{ u(c) + \beta \, V_n(W-c) \right\}$$
+$$V_{n+1}(W) = \max_{0 \le c \le W} \bigl[ u(c) + \beta \, V_n(W-c) \bigr]$$
 
 until $\|V_{n+1} - V_n\|_\infty < 10^{-6}$. The Bellman operator is a contraction mapping (by the Blackwell sufficient conditions), guaranteeing convergence to the unique fixed point.
 

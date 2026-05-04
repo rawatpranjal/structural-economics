@@ -447,7 +447,7 @@ def main():
         r"""
 **Household problem (IID income):**
 
-$$V(a) = \mathbb{E}_y \left[ \max_{a' \ge \underline{a}} \left\{ u(Ra + y - a') + \beta \, V(a') \right\} \right]$$
+$$V(a) = \mathbb{E}_y \left[ \max_{a' \ge \underline{a}} \bigl[ u(Ra + y - a') + \beta \, V(a') \bigr] \right]$$
 
 **Envelope condition (the key equation):**
 

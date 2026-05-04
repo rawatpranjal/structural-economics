@@ -142,7 +142,7 @@ def main():
 
     report.add_equations(
         r"""
-$$V(W) = \max_{0 \le c \le W} \left\{ u(c) + \beta \, V(W - c) \right\}$$
+$$V(W) = \max_{0 \le c \le W} \bigl[ u(c) + \beta \, V(W - c) \bigr]$$
 
 where $W$ is the remaining cake, $c$ is consumption, and $\beta \in (0,1)$ is the
 discount factor.

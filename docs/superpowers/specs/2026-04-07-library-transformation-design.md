@@ -197,7 +197,7 @@ Every auto-generated README follows this structure:
 Brief context: what problem, why it matters, key reference paper.
 
 ## Equations
-$$V(a,z) = \max_{c,a'} \left\{ u(c) + \beta \mathbb{E}[V(a',z') | z] \right\}$$
+$$V(a,z) = \max_{c,a'} \bigl[ u(c) + \beta \mathbb{E}[V(a',z') | z] \bigr]$$
 Subject to: budget constraint, borrowing limit, etc.
 
 ## Model Setup
@@ -333,7 +333,7 @@ def main():
     )
     report.add_overview("""...""")
     report.add_equations(r"""
-$$V(W) = \max_{0 \le c \le W} \left\{ u(c) + \beta V(W - c) \right\}$$
+$$V(W) = \max_{0 \le c \le W} \bigl[ u(c) + \beta V(W - c) \bigr]$$
 where $W$ is remaining cake, $c$ is consumption, $\beta$ is the discount factor.
 """)
     # ... figures, tables, takeaway

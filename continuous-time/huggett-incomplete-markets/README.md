@@ -9,7 +9,7 @@ The Huggett (1993) model is a foundational heterogeneous-agent model in which a 
 ## Equations
 
 **HJB equation:**
-$$\rho V_i(a) = \max_{c} \left\{ \frac{c^{1-\sigma}}{1-\sigma} + V_i'(a)(z_i + ra - c) \right\} + \lambda_i \left[ V_j(a) - V_i(a) \right]$$
+$$\rho V_i(a) = \max_{c} \bigl[ \frac{c^{1-\sigma}}{1-\sigma} + V_i'(a)(z_i + ra - c) \bigr] + \lambda_i \left[ V_j(a) - V_i(a) \right]$$
 
 **Optimal consumption (FOC):** $c_i(a) = \left( V_i'(a) \right)^{-1/\sigma}$
 

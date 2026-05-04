@@ -10,7 +10,7 @@ This implementation solves the full model with endogenous labor supply using val
 
 ## Equations
 
-$$V(k, z) = \max_{k', l} \left\{ \ln(c) + \phi \ln(1-l) + \beta \, \mathbb{E}\left[ V(k', z') \,|\, z \right] \right\}$$
+$$V(k, z) = \max_{k', l} \bigl[ \ln(c) + \phi \ln(1-l) + \beta \, \mathbb{E}\left[ V(k', z') \,|\, z \right] \bigr]$$
 
 subject to the budget constraint:
 
@@ -42,7 +42,7 @@ $$P = \begin{pmatrix} 0.95 & 0.05 \\ 0.05 & 0.95 \end{pmatrix}$$
 
 Starting from $V_0 = 0$, iterate:
 
-$$V_{n+1}(k, z) = \max_{k', l} \left\{ \ln(c) + \phi \ln(1-l) + \beta \sum_{z'} P(z'|z) V_n(k', z') \right\}$$
+$$V_{n+1}(k, z) = \max_{k', l} \bigl[ \ln(c) + \phi \ln(1-l) + \beta \sum_{z'} P(z'|z) V_n(k', z') \bigr]$$
 
 until $\|V_{n+1} - V_n\|_\infty < 1e-05$.
 

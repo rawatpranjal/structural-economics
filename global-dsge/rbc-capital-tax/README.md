@@ -10,7 +10,7 @@ We solve globally for five tax rates (0% to 40%) and compare the resulting stead
 
 ## Equations
 
-$$V(K, z) = \max_{c, K'} \left\{ u(c) + \beta \, \mathbb{E}\left[V(K', z')\right] \right\}$$
+$$V(K, z) = \max_{c, K'} \bigl[ u(c) + \beta \, \mathbb{E}\left[V(K', z')\right] \bigr]$$
 
 **Budget constraint (with lump-sum rebate):**
 $$c + K' = z K^\alpha + (1-\delta) K$$
