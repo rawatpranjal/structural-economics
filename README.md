@@ -9,16 +9,14 @@ Executable examples for applied structural and computational economics after the
 ## Contents
 
 - [Quick Start](#quick-start)
-- [How to Use This Library](#how-to-use-this-library)
 - [Dynamic Programming](#dynamic-programming)
 - [Macroeconomics](#macroeconomics)
 - [Industrial Organization](#industrial-organization)
 - [Choice and Demand](#choice-and-demand)
-- [Game Theory](#game-theory)
+- [Computational Game Theory](#computational-game-theory)
 - [Time Series and Data](#time-series-and-data)
 - [Computational Finance](#computational-finance)
 - [Computational Methods](#computational-methods)
-- [Structure](#structure)
 - [Other Code Repositories](#other-code-repositories)
 - [License](#license)
 
@@ -30,16 +28,6 @@ cd dynamic-programming/cake-eating
 python run.py
 # -> generates README.md + figures/ + tables/
 ```
-
----
-
-## How to Use This Library
-
-The catalog is organized by economic subject first and numerical method second. Start with the section closest to the question you care about, then use the method column to see how the computation is being done.
-
-Each tutorial is meant to be small enough to read in one sitting. The folder contains one executable `run.py`, a generated `README.md`, figures, and optional tables. Running `python run.py` inside a tutorial folder regenerates the local report and outputs.
-
----
 
 ## Dynamic Programming
 
@@ -149,7 +137,7 @@ Choice and demand stays focused on choice theory, revealed preference, Bayesian 
 | <img src="choice/bayesian-learning/figures/thumb.png" width="192"> | [**Bayesian Learning from Sequential Signals**](choice/bayesian-learning/) | Belief updating and optimal classification | Bayes' rule | Rational learning converges toward the Bayes classifier |
 | <img src="choice/nested-logit/figures/thumb.png" width="192"> | [**Nested Logit Demand and Within-Nest Substitution**](choice/nested-logit/) | Grouped products and stronger same-nest substitution | Berry inversion | Same-nest substitution can be much larger than cross-nest substitution |
 
-## Game Theory
+## Computational Game Theory
 
 This section covers equilibrium concepts directly, before they are embedded in IO or macro models. It starts with small normal-form games, then moves to dynamics, auctions, and noisy equilibrium.
 
@@ -195,56 +183,21 @@ These tutorials are useful as standalone references when optimization or samplin
 | <img src="computational-methods/kalman-filter/figures/thumb.png" width="192"> | [**Kalman Filtering Hidden States**](computational-methods/kalman-filter/) | Recursive signal extraction in linear Gaussian systems | Kalman filter | Prediction and updating deliver states, uncertainty, and likelihood together |
 | <img src="computational-methods/particle-filter/figures/thumb.png" width="192"> | [**Particle Filtering and Degeneracy**](computational-methods/particle-filter/) | Simulation-based filtering when analytic updates are unavailable | Sequential Monte Carlo | Proposal design controls particle collapse and Monte Carlo error |
 
----
-
-## Structure
-
-Each model folder is self-contained:
-
-```
-topic-area/
-  model-name/
-    run.py          # Single script: model + solve + generate report
-    README.md       # Auto-generated: equations, solutions, figures, takeaways
-    figures/        # PNG plots (value functions, policies, simulations)
-    tables/         # CSV data (comparison tables, statistics)
-```
-
-Shared utilities live in `lib/`:
-
-```
-lib/
-  grids.py          # Asset/state grid construction
-  discretize.py     # Tauchen, Rouwenhorst for AR(1) processes
-  interpolate.py    # Linear interpolation (JAX-compatible)
-  vfi.py            # Generic VFI solver
-  plotting.py       # Consistent matplotlib academic style
-  output.py         # ModelReport class (auto-generates README.md)
-```
-
-Catalog checks live in `scripts/`:
-
-```
-python scripts/validate_catalog.py
-```
-
-Original files are preserved in `_legacy/`.
-
 ## Other Code Repositories
 
-- [QuantEcon](https://github.com/QuantEcon)
-- [Dynamic Structural Econometrics (DSE 2023)](https://github.com/dseconf/DSE2023)
-- [Chris Conlon Grad IO](https://github.com/chrisconlon/Grad-IO)
-- [EconRL](https://github.com/SimonHashtag/EconRL)
-- [CompEcon](https://github.com/fediskhakov/CompEcon)
-- [CompEcon Fall 2017](https://github.com/ScPo-CompEcon/CoursePack)
-- [EmpiricalIO](https://github.com/kohei-kawaguchi/EmpiricalIO)
-- [Quantitative Macro Models](https://github.com/hessjacob/Quantitative-Macro-Models)
-- [Archive of Empirical Dynamic Programming Research](https://github.com/CForg/Archive-of-Empirical-Dynamic-Programming-Research)
-- [Dynamical Systems](https://github.com/JuliaDynamics/DynamicalSystems.jl)
-- [Heterogeneous Agents Bayes](https://github.com/BASEforHANK)
-- [Kalman and Bayesian Filters in Python](https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python)
-- [OpenSourceEcon CompMethods](https://github.com/OpenSourceEcon/CompMethods)
+- [QuantEcon](https://github.com/QuantEcon) - Open-source lectures and libraries for quantitative economics, founded and led by Thomas J. Sargent and John Stachurski.
+- [Dynamic Structural Econometrics (DSE 2023)](https://github.com/dseconf/DSE2023) - University of Lausanne summer-school and conference materials on deep learning for solving and estimating dynamic models; contributors include Simon Scheidegger, John Rust, John Stachurski, Fedor Iskhakov, Bertel Schjerning, Jesus Fernandez-Villaverde, and others.
+- [Chris Conlon Grad IO](https://github.com/chrisconlon/Grad-IO) - Chris Conlon's first PhD course in empirical industrial organization, covering demand, BLP, welfare, conduct, dynamic discrete choice, and entry.
+- [EconRL](https://github.com/SimonHashtag/EconRL) - Simon G. Haastert's curated bibliography of economics and finance papers using reinforcement learning.
+- [CompEcon](https://github.com/fediskhakov/CompEcon) - Fedor Iskhakov's Foundations of Computational Economics course materials.
+- [CompEcon Fall 2017](https://github.com/ScPo-CompEcon/CoursePack) - Florian Oswald's Sciences Po computational economics course pack, with Julia notebooks, slides, and assignments.
+- [EmpiricalIO](https://github.com/kohei-kawaguchi/EmpiricalIO) - Kohei Kawaguchi's empirical industrial organization lecture notes, assignments, and R code.
+- [Quantitative Macro Models](https://github.com/hessjacob/Quantitative-Macro-Models) - Jacob Hess's Python/Numba implementations of heterogeneous-agent macro, firm dynamics, Aiyagari, Hopenhayn, Restuccia-Rogerson, and related models.
+- [Archive of Empirical Dynamic Programming Research](https://github.com/CForg/Archive-of-Empirical-Dynamic-Programming-Research) - Christopher Ferrall's archive of published papers and replication materials for empirical dynamic programming and dynamic structural estimation.
+- [Dynamical Systems](https://github.com/JuliaDynamics/DynamicalSystems.jl) - JuliaDynamics' general-purpose Julia library for nonlinear dynamics and time-series analysis, led by George Datseris.
+- [Heterogeneous Agents Bayes](https://github.com/BASEforHANK) - BASEforHANK Julia toolboxes for Bayesian solution and estimation of HANK models, based on work by Christian Bayer, Benjamin Born, and Ralph Luetticke.
+- [Kalman and Bayesian Filters in Python](https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python) - Roger Labbe's interactive Python/Jupyter book on Kalman filters, Bayesian filters, and state estimation.
+- [OpenSourceEcon CompMethods](https://github.com/OpenSourceEcon/CompMethods) - Richard W. Evans's executable Jupyter Book, *Computational Methods for Economists using Python*.
 
 ## License
 
