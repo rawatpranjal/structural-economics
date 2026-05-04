@@ -1,89 +1,100 @@
-# Lucas Asset Pricing with Risk Aversion
+# Lucas Tree Asset Prices and the Stochastic Discount Factor
 
-> Equilibrium asset prices in a pure exchange economy with a representative agent.
+> A representative-agent exchange economy where dividend risk is priced by marginal utility.
 
 ## Overview
 
-The Lucas (1978) tree model is the foundational framework for understanding how asset prices are determined in general equilibrium. A representative agent owns a tree that produces a stochastic endowment (dividend) each period. Since the agent cannot trade in equilibrium, consumption must equal the endowment, and the asset price adjusts to make the agent willing to hold the tree.
+This tutorial studies the Lucas tree, the cleanest setting in which asset prices are equilibrium objects rather than exogenous returns. A representative household owns a claim to the single tree. The tree pays the stochastic endowment $y_t$ each period, and because the household is representative, aggregate consumption must equal the dividend: $c_t=y_t$.
 
-This model shows that asset prices are determined by the marginal rate of substitution between current and future consumption, weighted by future dividends. Risk aversion plays a central role: more risk-averse agents demand higher compensation for holding risky assets, lowering equilibrium prices.
+That market-clearing restriction is what makes the example useful. The quantity allocation is pinned down, so all of the economics appears in the state-contingent price of the claim. The price must make the household willing to hold the tree after valuing tomorrow's payoff with the stochastic discount factor $\beta u'(y_{t+1})/u'(y_t)$. Compared with the [income-risk savings problem](../consumption-savings/), the state is still a persistent endowment process, but there is no saving policy to choose; prices absorb the intertemporal risk.
 
 ## Equations
 
-$$V(y) = u(y) + \beta \, \mathbb{E}\left[ V(y') \mid y \right]$$
+Let $x_t=\log y_t$ follow
+$$x_{t+1}=\rho x_t+\varepsilon_{t+1}, \qquad
+\varepsilon_{t+1}\sim \mathcal{N}(0,\sigma^2),$$
+and let the representative household have CRRA utility
+$$u(c)=\frac{c^{1-\gamma}}{1-\gamma}, \qquad u'(c)=c^{-\gamma}.$$
 
-**Euler equation (asset pricing):**
-$$p(y) = \beta \, \mathbb{E}\left[ \frac{u'(y')}{u'(y)} \left( p(y') + y' \right) \mid y \right]$$
+In equilibrium $c_t=y_t$. A claim to the tree pays dividend $y_{t+1}$ and resale
+value $p(y_{t+1})$ next period, so the Euler equation is
+$$p(y_t)=\beta\,\mathbb{E}\left[
+\frac{u'(y_{t+1})}{u'(y_t)}
+\left(p(y_{t+1})+y_{t+1}\right)
+\mid y_t
+\right].$$
 
-where $y$ is the endowment (= dividend = consumption in equilibrium).
-
-**Endowment process (AR(1) in logs):**
-$$\log y' = \rho \, \log y + z, \qquad z \sim \mathcal{N}(0, \sigma^2)$$
-
-**Pricing kernel transformation:** Define $f(y) = u'(y) \cdot p(y)$, then:
-$$f(y) = \beta \, \mathbb{E}\left[ f(y') + u'(y') \cdot y' \right]$$
-
-This is a contraction mapping in $f$, solved by iteration. The asset price is recovered as $p(y) = f(y) / u'(y)$.
+Define the marginal-utility-scaled price
+$$f(y)=u'(y)p(y).$$
+Multiplying the Euler equation by $u'(y_t)$ gives the linear fixed point
+$$f(y)=\beta\,\mathbb{E}\left[f(y')+u'(y')y'\mid y\right].$$
+After solving for $f$, recover the asset price from $p(y)=f(y)/u'(y)$ and the
+price-dividend ratio from $p(y)/y$.
 
 ## Model Setup
 
-| Parameter | Value | Description |
-|-----------|-------|-------------|
-| $\beta$  | 0.95 | Discount factor |
-| $\rho$   | 0.9 | Persistence of log-endowment |
-| $\gamma$ | 2.0 | CRRA risk aversion |
-| $\sigma$ | 0.1 | Std dev of endowment shock |
-| Grid points | 100 | Endowment grid |
-| MC draws | 100 | For expectation approximation |
+| Primitive | Value | Role |
+|---|---:|---|
+| $\beta$ | 0.95 | Discount factor |
+| $\rho$ | 0.90 | Persistence of log dividends |
+| $\sigma$ | 0.10 | Innovation standard deviation in log dividends |
+| $\gamma$ | 2.0 | Baseline CRRA risk aversion |
+| Coarse grid | 120 log-endowment nodes | Tutorial solution |
+| Quadrature | 21 Gauss-Hermite nodes | Conditional expectation |
+| Benchmark | 900 grid nodes, 45 quadrature nodes | Fine-grid comparison |
+| Stopping rule | $\|f_{n+1}-f_n\|_\infty < 10^{-9}$ | Fixed-point tolerance |
 
 ## Solution Method
 
-**Value Function Iteration on Pricing Kernel:** We iterate on the transformed Euler equation $f(y) = \beta \, \mathbb{E}[f(y') + u'(y') y']$ using Monte Carlo integration with 100 fixed draws for the expectation. The operator is a contraction mapping under standard conditions (bounded, discounted), guaranteeing convergence.
+The computation iterates directly on the scaled price $f$. This is not a household-choice Bellman equation: there is no policy function because market clearing sets $c=y$. The fixed point is still a contraction with modulus $\beta$, and the interpolation step only approximates the conditional expectation over next-period dividends.
 
-Starting from $f_0 = 0$, we iterate until $\|f_{n+1} - f_n\|_\infty < 10^{-6}$.
+```text
+Inputs: beta, rho, sigma, gamma, log-endowment grid X, quadrature nodes eps_j, weights w_j
+Initialize f_0(x_i) = 0 on X
+For n = 0, 1, 2, ...:
+    For each current state x_i:
+        For each quadrature shock eps_j:
+            x_ij' = rho x_i + eps_j
+            y_ij' = exp(x_ij')
+            interpolate f_n(x_ij') from the grid X
+        Set f_{n+1}(x_i) = beta sum_j w_j [f_n(x_ij') + (y_ij')^(1-gamma)]
+    Stop when max_i |f_{n+1}(x_i)-f_n(x_i)| is below tolerance
+Output: p(exp(x_i)) = f(x_i) exp(gamma x_i)
+```
 
-Converged in **271 iterations** (error = 9.81e-07).
+The baseline solution converged in **405 iterations** with final sup-norm error **9.76e-10**. A finer grid and more quadrature nodes provide a numerical benchmark for the plotted state range.
 
 ## Results
 
-<img src="figures/asset-price-function.png" alt="Equilibrium asset price as a function of endowment" width="80%">
-*Equilibrium asset price as a function of endowment*
+The equilibrium price is increasing over the central dividend states. The dashed line is a fine-grid quadrature benchmark; the lower panel shows that the coarse tutorial solution stays within 0.011% of that benchmark on this range. The benchmark is numerical rather than analytic, but it is a useful check that the visible curvature is economic rather than a coarse-grid artifact.
 
-<img src="figures/simulation-paths.png" alt="Simulated endowment and asset price over 100 periods (dual y-axis)" width="80%">
-*Simulated endowment and asset price over 100 periods (dual y-axis)*
+<img src="figures/asset-price-function.png" alt="Lucas tree price function compared with a fine-grid benchmark" width="80%">
 
-<img src="figures/comparative-statics-gamma.png" alt="Asset price function for different levels of risk aversion gamma" width="80%">
-*Asset price function for different levels of risk aversion gamma*
+Along a simulated path, prices move with dividends because persistent high dividends raise expected future payoffs. The price series is more forward looking than the dividend itself: it capitalizes not only today's payment but also the continuation value implied by the Markov process.
 
-**Price-Dividend Ratio at Selected Endowment Levels**
+<img src="figures/simulation-paths.png" alt="Simulated dividend and price path normalized to the initial period" width="80%">
 
-|     y |    p(y) |   p(y)/y |   p/y (gamma=0.5) |   p/y (gamma=1.0) |   p/y (gamma=2.0) |   p/y (gamma=5.0) |
-|------:|--------:|---------:|------------------:|------------------:|------------------:|------------------:|
-| 0.578 |  7.9558 |  13.7739 |           22.698  |                19 |           13.7739 |            6.7619 |
-| 0.773 | 12.9185 |  16.7131 |           20.4821 |                19 |           16.7131 |           13.4544 |
-| 0.968 | 18.8767 |  19.4942 |           18.9423 |                19 |           19.4942 |           24.734  |
-| 1.179 | 26.3669 |  22.3692 |           17.7084 |                19 |           22.3692 |           44.2008 |
-| 1.374 | 34.2888 |  24.954  |           16.811  |                19 |           24.954  |           71.4008 |
-| 1.584 | 43.8352 |  27.6655 |           16.0248 |                19 |           27.6655 |          113.442  |
-| 1.78  | 53.6349 |  30.1348 |           15.4128 |                19 |           30.1348 |          167.356  |
-| 1.99  | 65.2685 |  32.7945 |           14.835  |                19 |           32.7945 |          245.835  |
+Risk aversion changes the slope of the price-dividend ratio, not just its level. With log utility ($\gamma=1$), $p(y)/y=\beta/(1-\beta)$ is constant. When $\gamma>1$, high current dividends predict mean reversion toward lower future consumption, so future payoffs receive larger marginal-utility weights and the ratio rises with the current state.
+
+<img src="figures/comparative-statics-gamma.png" alt="Price-dividend ratios under alternative CRRA risk aversion values" width="80%">
+
+The selected states make the log-utility benchmark visible: the $\gamma=1$ price-dividend ratio is 19 at every $y$. Departures from log utility tilt this ratio across the state space because the stochastic discount factor interacts with mean reversion in dividends.
+
+**Selected Price-Dividend Ratios**
+
+|     y |   p(y), gamma=2 |   p/y, gamma=0.5 |   p/y, gamma=1 |   p/y, gamma=2 |   p/y, gamma=5 |
+|------:|----------------:|-----------------:|---------------:|---------------:|---------------:|
+| 0.504 |           6.221 |           24.302 |             19 |         12.334 |          5.208 |
+| 0.624 |           8.815 |           22.534 |             19 |         14.137 |          8.09  |
+| 0.786 |          12.949 |           20.772 |             19 |         16.477 |         14.075 |
+| 0.99  |          19.105 |           19.167 |             19 |         19.29  |         26.323 |
+| 1.248 |          28.308 |           17.706 |             19 |         22.679 |         52.398 |
+| 1.573 |          42.114 |           16.373 |             19 |         26.771 |        109.637 |
+| 1.983 |          62.894 |           15.157 |             19 |         31.724 |        238.292 |
 
 ## Takeaway
 
-The Lucas tree model reveals how equilibrium asset prices emerge from the interaction of time preference, risk aversion, and the stochastic properties of dividends.
-
-**Key insights:**
-- Asset prices are *increasing* in the endowment level: when income is high, the agent is wealthy and willing to pay more for the asset (wealth effect).
-- The price-dividend ratio *varies* with the level of risk aversion $\gamma$. Higher risk aversion lowers prices because the agent demands greater compensation for bearing dividend risk (precautionary effect).
-- With low risk aversion ($\gamma < 1$), the substitution effect dominates: prices are high because the agent is relatively indifferent between consumption today and tomorrow.
-- Asset prices comove positively with endowment in the simulation, reflecting the procyclical nature of asset valuations in this model.
-- The pricing kernel transformation $f(y) = u'(y) p(y)$ converts the Euler equation into a standard contraction mapping, making VFI straightforward and guaranteed to converge.
-
-## Reproduce
-
-```bash
-python run.py
-```
+The Lucas tree turns a simple market-clearing allocation into a state-price problem. Once $c_t=y_t$, the asset price is the expected discounted payoff using marginal utility as the deflator. The useful computational trick is to solve for $f(y)=u'(y)p(y)$, which makes the Euler equation linear and contractive. Economically, the exercise shows why the price-dividend ratio is a valuation object: it records how persistence, discounting, and risk aversion transform a dividend process into an equilibrium claim price.
 
 ## References
 
