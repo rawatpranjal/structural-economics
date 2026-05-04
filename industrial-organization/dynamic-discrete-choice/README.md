@@ -4,7 +4,7 @@
 
 ## Overview
 
-Dynamic discrete choice models are used when agents make repeated discrete decisions and today's action changes tomorrow's state. The canonical example is Rust's bus engine replacement problem. A bus operator observes mileage and chooses whether to replace the engine. Replacement is costly today but resets future mileage and reduces future maintenance costs.
+Dynamic discrete choice models are used when agents make repeated discrete decisions and today's action changes tomorrow's state. The canonical example is Rust's bus engine replacement problem. A bus operator observes mileage and chooses whether to replace the engine. In this normalization, replacement gives up the current keep payoff but resets future mileage and reduces future maintenance costs.
 
 This tutorial solves the model, simulates panel data, and estimates the payoff parameters two ways: full-solution maximum likelihood and a Hotz-Miller conditional-choice-probability estimator.
 

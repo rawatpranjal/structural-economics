@@ -179,9 +179,10 @@ standard deviation is **{true_std:.4f}**.
         "Stationary distributions implied by 7-state discretizations",
         fig1,
         description=(
-            "Rouwenhorst places more mass near the center but keeps wider tail support. "
-            "Tauchen uses evenly spaced cutoffs over the chosen width. The discrete-normal "
-            "grid matches a one-period normal distribution rather than an AR(1) transition."
+            "Rouwenhorst places more mass near the center and preserves the target variance. "
+            "Tauchen uses the wider evenly spaced support implied by the chosen width. The "
+            "discrete-normal grid matches a one-period normal distribution rather than an "
+            "AR(1) transition."
         ),
     )
 
@@ -205,7 +206,7 @@ standard deviation is **{true_std:.4f}**.
         "Moment errors relative to the continuous AR(1)",
         fig2,
         description=(
-            "For highly persistent shocks, Tauchen can miss persistence on coarse grids. "
+            "For highly persistent shocks, Tauchen can distort persistence on coarse grids. "
             "Rouwenhorst is designed to preserve the persistence parameter more tightly."
         ),
     )

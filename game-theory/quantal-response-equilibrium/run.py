@@ -134,11 +134,12 @@ choices put more weight on higher-payoff actions.
         "|---|---:|---:|\n"
         "| **Row Enter** | -1, -1 | 2, 0 |\n"
         "| **Row Stay Out** | 0, 2 | 0, 0 |\n\n"
-        "The exact mixed Nash equilibrium has each player entering with probability $2/3$."
+        "The exact game also has two asymmetric pure Nash equilibria. Its symmetric mixed "
+        "Nash equilibrium has each player entering with probability $2/3$."
     )
 
     report.add_solution_method(
-        "For each precision value $\\lambda$, solve the symmetric fixed-point equation "
+        "For each precision value $\\lambda$, follow the symmetric QRE branch by solving "
         "$p = QBR(p; \\lambda)$ by bisection on the residual $p - QBR(p; \\lambda)$. "
         "This keeps the implementation low-code while avoiding the cycling that naive "
         "iteration can produce at high precision."
@@ -154,11 +155,11 @@ choices put more weight on higher-payoff actions.
     ax.legend()
     report.add_figure(
         "figures/qre-path.png",
-        "QRE entry probabilities approach the mixed Nash benchmark",
+        "QRE entry probabilities approach the symmetric mixed Nash benchmark",
         fig,
         description=(
             "At zero precision, players randomize 50-50. As precision rises, the logit fixed "
-            "point moves toward the exact mixed Nash entry probability."
+            "point moves toward the symmetric mixed Nash entry probability."
         ),
     )
 

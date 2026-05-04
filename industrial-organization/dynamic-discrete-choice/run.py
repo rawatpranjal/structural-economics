@@ -19,7 +19,7 @@ from scipy.special import expit, logsumexp
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import save_thumbnail, setup_style
 
 
 EULER_GAMMA = 0.5772156649015329
@@ -246,8 +246,9 @@ def main() -> None:
         "Dynamic discrete choice models are used when agents make repeated discrete "
         "decisions and today's action changes tomorrow's state. The canonical example "
         "is Rust's bus engine replacement problem. A bus operator observes mileage and "
-        "chooses whether to replace the engine. Replacement is costly today but resets "
-        "future mileage and reduces future maintenance costs.\n\n"
+        "chooses whether to replace the engine. In this normalization, replacement gives "
+        "up the current keep payoff but resets future mileage and reduces future maintenance "
+        "costs.\n\n"
         "This tutorial solves the model, simulates panel data, and estimates the payoff "
         "parameters two ways: full-solution maximum likelihood and a Hotz-Miller "
         "conditional-choice-probability estimator."
@@ -407,6 +408,7 @@ $$P(a=1 \mid x) =
         "Aguirregabiria, V. and Mira, P. (2010). Dynamic discrete choice structural models: A survey. Journal of Econometrics.",
     ])
     report.write()
+    save_thumbnail("figures/estimated-policies.png", "figures/thumb.png")
 
 
 if __name__ == "__main__":

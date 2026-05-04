@@ -33,18 +33,18 @@ The example is a two-player entry game. Each player chooses Enter or Stay Out.
 | **Row Enter** | -1, -1 | 2, 0 |
 | **Row Stay Out** | 0, 2 | 0, 0 |
 
-The exact mixed Nash equilibrium has each player entering with probability $2/3$.
+The exact game also has two asymmetric pure Nash equilibria. Its symmetric mixed Nash equilibrium has each player entering with probability $2/3$.
 
 ## Solution Method
 
-For each precision value $\lambda$, solve the symmetric fixed-point equation $p = QBR(p; \lambda)$ by bisection on the residual $p - QBR(p; \lambda)$. This keeps the implementation low-code while avoiding the cycling that naive iteration can produce at high precision.
+For each precision value $\lambda$, follow the symmetric QRE branch by solving $p = QBR(p; \lambda)$ by bisection on the residual $p - QBR(p; \lambda)$. This keeps the implementation low-code while avoiding the cycling that naive iteration can produce at high precision.
 
 ## Results
 
-At zero precision, players randomize 50-50. As precision rises, the logit fixed point moves toward the exact mixed Nash entry probability.
+At zero precision, players randomize 50-50. As precision rises, the logit fixed point moves toward the symmetric mixed Nash entry probability.
 
-![QRE entry probabilities approach the mixed Nash benchmark](figures/qre-path.png)
-*QRE entry probabilities approach the mixed Nash benchmark*
+![QRE entry probabilities approach the symmetric mixed Nash benchmark](figures/qre-path.png)
+*QRE entry probabilities approach the symmetric mixed Nash benchmark*
 
 The fixed point is where the noisy best-response curve crosses the 45-degree line.
 
