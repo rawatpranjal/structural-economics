@@ -10,7 +10,6 @@ Reference: Stokey, Lucas, and Prescott (1989), Ch. 2 & 4.
 import sys
 from pathlib import Path
 
-import jax
 import jax.numpy as jnp
 import numpy as np
 import matplotlib.pyplot as plt
@@ -18,12 +17,11 @@ import pandas as pd
 
 # Add repo root to path for lib/ imports
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.grids import uniform_grid
-from lib.plotting import setup_style, save_figure
+from lib.plotting import setup_style
 from lib.output import ModelReport
 
 
-def main():
+def main() -> None:
     # =========================================================================
     # Parameters
     # =========================================================================
@@ -76,18 +74,11 @@ def main():
         return alpha * beta * A * np.maximum(k, 1e-15) ** alpha
 
     # =========================================================================
-    # Interpolation with analytical boundary extrapolation
+    # Interpolation on the capital grid
     # =========================================================================
     def v_interp(kprime, v_np):
-        """Interpolate V with analytical boundary below grid minimum."""
-        result = np.interp(kprime, k_grid_np, v_np)
-        below = kprime < k_grid_np[0]
-        if np.any(below):
-            result[below] = analytical_v(kprime[below])
-        above = kprime > k_grid_np[-1]
-        if np.any(above):
-            result[above] = analytical_v(kprime[above])
-        return result
+        """Interpolate the current value-function guess at off-grid choices."""
+        return np.interp(kprime, k_grid_np, v_np)
 
     # =========================================================================
     # Solve via VFI with continuous optimization
@@ -103,9 +94,11 @@ def main():
         for ik in range(n_grid):
             k = k_grid_np[ik]
             output = f_np(k)
-            # k' must be in [small positive, output - small positive] for c > 0
-            kp_max = output * 0.9999
-            kp_grid = np.linspace(1e-8, kp_max, n_kprime)
+            # k' must keep consumption positive. The analytical optimum is
+            # interior for this calibration, so the state grid covers the choice
+            # region used by the maximization.
+            kp_max = min(output * 0.9999, k_max)
+            kp_grid = np.linspace(k_min, kp_max, n_kprime)
             consumption = output - kp_grid
             values = u_np(consumption) + beta * v_interp(kp_grid, v)
             best = np.argmax(values)
@@ -147,13 +140,32 @@ def main():
         capital_path[t + 1] = kp
     output_path = A * capital_path ** alpha
     consumption_path = output_path - np.concatenate([capital_path[1:], [np.nan]])
+
+    capital_path_exact = np.zeros(T_sim)
+    capital_path_exact[0] = k0
+    for t in range(T_sim - 1):
+        capital_path_exact[t + 1] = analytical_policy(capital_path_exact[t])
+    output_path_exact = A * capital_path_exact ** alpha
+    consumption_path_exact = output_path_exact - np.concatenate([capital_path_exact[1:], [np.nan]])
+
     capital_path = jnp.array(capital_path)
     output_path = jnp.array(output_path)
     consumption_path = jnp.array(consumption_path)
+    capital_path_exact = jnp.array(capital_path_exact)
+    consumption_path_exact = jnp.array(consumption_path_exact)
 
     print(f"\n  Steady state capital (analytical): kss = {kss:.4f}")
     print(f"  Final capital in simulation:       k_T = {float(capital_path[-1]):.4f}")
     print(f"  Optimal savings rate:              s   = alpha*beta = {alpha*beta:.2f}")
+
+    valid_start = max(1, n_grid // 10)
+    value_error = np.asarray(v_star - v_analytical)
+    policy_error = np.asarray(policy_kprime_jnp - policy_kprime_analytical)
+    consumption_error = np.asarray(consumption_policy - consumption_analytical)
+    max_value_error = float(np.max(np.abs(value_error[valid_start:])))
+    max_policy_error = float(np.max(np.abs(policy_error[valid_start:])))
+    max_consumption_error = float(np.max(np.abs(consumption_error[valid_start:])))
+    max_path_error = float(np.max(np.abs(np.asarray(capital_path - capital_path_exact))))
 
     # =========================================================================
     # Generate Report
@@ -162,141 +174,230 @@ def main():
 
     report = ModelReport(
         "Optimal Growth by Value Function Iteration",
-        "The Ramsey-Cass-Koopmans model: optimal consumption and capital accumulation with a Cobb-Douglas production technology.",
+        "Productive capital, Euler logic, and the transition to the Ramsey steady state.",
+        include_reproduce=False,
+        show_figure_captions=False,
     )
 
     report.add_overview(
-        "The neoclassical optimal growth model (Ramsey-Cass-Koopmans) is a foundational "
-        "model in macroeconomics. A representative agent chooses consumption each period "
-        "to maximize discounted lifetime utility, subject to a production technology that "
-        "transforms capital into output.\n\n"
-        "Unlike the cake-eating problem, capital is *productive* here: saving today yields "
-        "more output tomorrow via the production function $F(k) = Ak^\\alpha$. This creates "
-        "a non-trivial steady state where the economy converges regardless of its initial "
-        "capital stock."
+        "Optimal growth adds one economic force that is absent from "
+        "[cake eating](../cake-eating/): the state is productive. A planner who carries "
+        "capital into tomorrow gives up current consumption, but that capital raises future "
+        "output through a Cobb-Douglas technology. The policy problem is therefore not just "
+        "resource depletion; it is intertemporal investment.\n\n"
+        "This deterministic log-utility version is deliberately transparent. It has a closed "
+        "form, so value function iteration can be judged against the true value function, "
+        "policy function, and transition path. The same Bellman equation logic reappears in "
+        "[RBC](../rbc/) and [Aiyagari](../aiyagari/) models once shocks and equilibrium prices "
+        "are added."
     )
 
     report.add_equations(
         r"""
-$$V(k) = \max_{0 \le k' \le F(k)} \bigl[ u(F(k) - k') + \beta \, V(k') \bigr]$$
+Let $k_t$ be capital at the start of period $t$. Output is
 
-where $k$ is capital, $k'$ is next-period capital, $c = F(k) - k'$ is consumption,
-$F(k) = Ak^\alpha$ is the production function, and $\beta \in (0,1)$ is the discount factor.
+$$y_t = A k_t^\alpha, \qquad A>0,\quad \alpha \in (0,1).$$
 
-**Log utility:** $u(c) = \ln(c)$
+The tutorial uses the full-depreciation resource constraint
 
-**Analytical solution:**
-$$V(k) = E + F \ln(k), \qquad E = \frac{\ln(A(1-\alpha\beta)) + \frac{\beta\alpha\ln(A\alpha\beta)}{1-\alpha\beta}}{1-\beta}, \quad F = \frac{\alpha}{1-\alpha\beta}$$
+$$c_t + k_{t+1} = A k_t^\alpha, \qquad c_t>0,\quad k_{t+1}\geq 0.$$
 
-**Optimal policy:** $k'(k) = \alpha \beta A k^\alpha$ (save fraction $\alpha\beta$ of output)
+The planner maximizes discounted log utility,
 
-**Steady state:** $k_{ss} = (\alpha \beta A)^{1/(1-\alpha)}$
+$$\sum_{t=0}^{\infty} \beta^t \log c_t, \qquad \beta \in (0,1).$$
+
+The Bellman equation is
+
+$$V(k) = \max_{0 < k' < A k^\alpha}
+\left[\log(Ak^\alpha-k')+\beta V(k')\right].$$
+
+The policy function is $g(k)=k'$. For log utility and Cobb-Douglas production,
+the exact solution is
+
+$$g(k)=\alpha\beta A k^\alpha,\qquad
+c^*(k)=(1-\alpha\beta)A k^\alpha.$$
+
+The value function is affine in $\log k$:
+
+$$V(k)=E+B\log k,\qquad B=\frac{\alpha}{1-\alpha\beta},$$
+
+where
+
+$$E=\frac{\log(A(1-\alpha\beta))
++\frac{\beta\alpha}{1-\alpha\beta}\log(A\alpha\beta)}{1-\beta}.$$
+
+The steady state solves $k=g(k)$:
+
+$$k_{ss}=(\alpha\beta A)^{1/(1-\alpha)}.$$
 """
     )
 
     report.add_model_setup(
         f"| Parameter | Value | Description |\n"
         f"|-----------|-------|-------------|\n"
-        f"| $\\alpha$  | {alpha} | Capital share (Cobb-Douglas) |\n"
+        f"| $\\alpha$  | {alpha} | Capital share in $Ak^\\alpha$ |\n"
         f"| $A$       | {A} | Total factor productivity |\n"
         f"| $\\beta$   | {beta} | Discount factor |\n"
         f"| $k_{{ss}}$ | {kss:.4f} | Steady state capital |\n"
-        f"| Grid points | {n_grid} | Uniform spacing |\n"
-        f"| $k \\in$   | [{k_min}, {k_max:.2f}] | Capital range |"
+        f"| $c_{{ss}}$ | {A * kss ** alpha - kss:.4f} | Steady state consumption |\n"
+        f"| Capital grid | {n_grid} points | Uniform grid for $k$ |\n"
+        f"| Choice grid | {n_kprime} points | Candidate values for $k'$ in each Bellman update |\n"
+        f"| $k \\in$   | [{k_min}, {k_max:.2f}] | Capital range |\n"
+        f"| Tolerance | {tol:.0e} | Sup-norm convergence criterion |\n"
+        f"| Simulation periods | {T_sim} | Transition-path horizon |"
     )
 
     report.add_solution_method(
-        "**Value Function Iteration (VFI):** Starting from an initial guess "
-        "$V_0(k) = u(F(k))$, we iterate on the Bellman equation:\n\n"
-        "$$V_{n+1}(k) = \\max_{0 \\le k' \\le F(k)} \\left\\{ u(F(k) - k') + \\beta \\, V_n(k') \\right\\}$$\n\n"
-        "until $\\|V_{n+1} - V_n\\|_\\infty < 10^{-6}$. At each state, we search over a fine "
-        "grid of $k'$ values and interpolate the continuation value between grid points. "
-        "The analytical solution provides boundary extrapolation for $k'$ values outside the "
-        f"grid range.\n\n"
-        f"Converged in **{info['iterations']} iterations** (error = {info['error']:.2e})."
+        "The numerical solution approximates $V(k)$ on a grid. For each capital state, "
+        "the solver searches over feasible next-period capital, interpolates the current "
+        "continuation-value guess at off-grid choices, and applies the Bellman operator. "
+        "The closed-form policy is not used to choose the maximizer; it is held out as a "
+        "ground-truth diagnostic.\n\n"
+        "```text\n"
+        "Algorithm: grid VFI for deterministic optimal growth\n"
+        "Input: capital grid K, primitives A, alpha, beta, utility u(c)=log c, tolerance epsilon\n"
+        "Output: value function V and capital policy g(k)\n"
+        "Initialize V_0(k_i) = log(A k_i^alpha) for each k_i in K\n"
+        "repeat for n = 0, 1, 2, ...:\n"
+        "    for each capital state k_i:\n"
+        "        y_i = A k_i^alpha\n"
+        "        build candidate choices k' in [k_min, min(y_i, k_max)]\n"
+        "        c = y_i - k'\n"
+        "        continuation = interpolate V_n at k'\n"
+        "        choose k' that maximizes log(c) + beta * continuation\n"
+        "        record V_{n+1}(k_i) and g(k_i)\n"
+        "    error = max_i |V_{n+1}(k_i) - V_n(k_i)|\n"
+        "until error < epsilon\n"
+        "```\n\n"
+        "The Bellman operator is a contraction under the usual bounded-state numerical "
+        "approximation. Here it converged in "
+        f"**{info['iterations']} iterations** with sup-norm error **{info['error']:.2e}**."
     )
 
     # --- Figure 1: Value Function ---
     fig1, ax1 = plt.subplots()
     ax1.plot(k_grid, v_star, "b-", linewidth=2, label="Numerical (VFI)")
-    ax1.plot(k_grid, v_analytical, "r--", linewidth=1.5, label="Analytical")
+    ax1.plot(k_grid, v_analytical, "r--", linewidth=1.5, label="Exact")
     ax1.axvline(kss, color="gray", linestyle=":", linewidth=1, alpha=0.7, label=f"$k_{{ss}} = {kss:.2f}$")
     ax1.set_xlabel("Capital $k$")
     ax1.set_ylabel("$V(k)$")
     ax1.set_title("Value Function")
     ax1.legend()
-    report.add_figure("figures/value-function.png", "Value function: numerical VFI vs analytical solution", fig1,
-        description="The value function is concave and increasing in capital, reflecting the productive nature of savings. "
-        "The vertical line at the steady state marks where the marginal value of additional capital equals the marginal cost of foregone consumption.")
+    report.add_results(
+        "The value function is increasing and concave because capital relaxes the resource "
+        "constraint, but with diminishing marginal product. The exact log-linear value "
+        "function gives a direct error check. Outside the bottom decile of the grid, the "
+        f"largest value-function deviation is **{max_value_error:.2e}**."
+    )
+    report.add_figure(
+        "figures/value-function.png",
+        "Value function: numerical VFI vs exact log-Cobb-Douglas solution",
+        fig1,
+        description=(
+            "The numerical and exact value functions are visually indistinguishable over "
+            "most of the economically relevant state space. The vertical line marks the "
+            "steady state, not a kink in preferences or technology."
+        ),
+    )
 
     # --- Figure 2: Policy Function ---
     fig2, ax2 = plt.subplots()
     ax2.plot(k_grid, policy_kprime_jnp, "b-", linewidth=2, label="Numerical $k'(k)$")
-    ax2.plot(k_grid, policy_kprime_analytical, "r--", linewidth=1.5, label="Analytical $\\alpha\\beta F(k)$")
+    ax2.plot(k_grid, policy_kprime_analytical, "r--", linewidth=1.5, label="Exact $\\alpha\\beta A k^\\alpha$")
     ax2.plot(k_grid, k_grid, "k:", linewidth=0.8, alpha=0.5, label="45-degree line")
     ax2.axvline(kss, color="gray", linestyle=":", linewidth=1, alpha=0.7, label=f"$k_{{ss}}$")
     ax2.set_xlabel("Capital $k$")
     ax2.set_ylabel("Next-period capital $k'$")
     ax2.set_title("Capital Policy Function")
     ax2.legend()
-    report.add_figure("figures/policy-function.png", "Capital policy function: numerical vs analytical", fig2,
-        description="The policy function crosses the 45-degree line at the steady state: below it the agent accumulates capital, "
-        "above it capital decumulates. This crossing is the graphical signature of a stable steady state.")
+    report.add_results(
+        "The policy function is the main economic object. Below $k_{ss}$, the policy lies "
+        "above the 45-degree line, so the economy accumulates capital. Above $k_{ss}$, it "
+        "lies below the line, so capital is run down. The largest policy deviation from "
+        f"the exact rule outside the bottom decile is **{max_policy_error:.2e}**; the "
+        f"corresponding consumption-policy deviation is **{max_consumption_error:.2e}**."
+    )
+    report.add_figure(
+        "figures/policy-function.png",
+        "Capital policy function: numerical VFI vs exact savings rule",
+        fig2,
+        description=(
+            "The crossing with the 45-degree line is the steady state. The exact policy is "
+            "$g(k)=\\alpha\\beta A k^\\alpha$, so this calibration saves "
+            f"**{alpha * beta:.1%}** of output each period."
+        ),
+    )
 
     # --- Figure 3: Simulation ---
     fig3, (ax3a, ax3b) = plt.subplots(1, 2, figsize=(12, 5))
     periods = jnp.arange(T_sim)
 
-    ax3a.plot(periods, capital_path, "b-o", markersize=3, linewidth=1.5)
-    ax3a.axhline(kss, color="r", linestyle="--", linewidth=1, alpha=0.7, label=f"$k_{{ss}} = {kss:.2f}$")
+    ax3a.plot(periods, capital_path, "b-o", markersize=3, linewidth=1.5, label="Numerical")
+    ax3a.plot(periods, capital_path_exact, "r--", linewidth=1.5, label="Exact")
+    ax3a.axhline(kss, color="gray", linestyle=":", linewidth=1, alpha=0.7, label=f"$k_{{ss}} = {kss:.2f}$")
     ax3a.set_xlabel("Period")
     ax3a.set_ylabel("Capital $k_t$")
     ax3a.set_title("Capital Dynamics")
     ax3a.legend()
 
-    ax3b.plot(periods[:-1], consumption_path[:-1], "r-o", markersize=3, linewidth=1.5)
+    ax3b.plot(periods[:-1], consumption_path[:-1], "b-o", markersize=3, linewidth=1.5, label="Numerical")
+    ax3b.plot(periods[:-1], consumption_path_exact[:-1], "r--", linewidth=1.5, label="Exact")
     css = A * kss ** alpha - kss  # Steady state consumption
-    ax3b.axhline(css, color="b", linestyle="--", linewidth=1, alpha=0.7, label=f"$c_{{ss}} = {css:.2f}$")
+    ax3b.axhline(css, color="gray", linestyle=":", linewidth=1, alpha=0.7, label=f"$c_{{ss}} = {css:.2f}$")
     ax3b.set_xlabel("Period")
     ax3b.set_ylabel("Consumption $c_t$")
     ax3b.set_title("Consumption Over Time")
     ax3b.legend()
     fig3.tight_layout()
-    report.add_figure("figures/simulation.png", f"Simulation: capital and consumption converging to steady state from k0={k0:.2f}", fig3,
-        description="Starting from well below steady state, the economy rapidly accumulates capital as high marginal returns incentivize saving. "
-        "Consumption rises monotonically along the transition path, since the Euler equation ensures consumption never jumps discontinuously.")
+    report.add_results(
+        "The transition path starts from one tenth of steady-state capital. High marginal "
+        "product makes investment attractive, so capital rises quickly and then approaches "
+        "the fixed point more slowly. The largest numerical capital-path deviation from the "
+        f"exact transition over the simulation is **{max_path_error:.2e}**."
+    )
+    report.add_figure(
+        "figures/simulation.png",
+        f"Transition path from k0={k0:.2f}",
+        fig3,
+        description=(
+            "Capital and consumption both rise along this low-capital transition. The exact "
+            "path makes clear that the visible dynamics are economic convergence, while the "
+            "numerical gap is a grid-search approximation error."
+        ),
+    )
 
     # --- Table: Numerical vs Analytical ---
-    valid_start = max(1, n_grid // 10)  # Skip bottom 10% of grid
     sample_idx = np.linspace(valid_start, n_grid - 1, 8, dtype=int)
     table_data = {
         "k": [f"{float(k_grid[i]):.3f}" for i in sample_idx],
         "V(k) numerical": [f"{float(v_star[i]):.4f}" for i in sample_idx],
-        "V(k) analytical": [f"{float(v_analytical[i]):.4f}" for i in sample_idx],
+        "V(k) exact": [f"{float(v_analytical[i]):.4f}" for i in sample_idx],
+        "V error": [f"{float(value_error[i]):.2e}" for i in sample_idx],
         "k' numerical": [f"{float(policy_kprime_jnp[i]):.4f}" for i in sample_idx],
-        "k' analytical": [f"{float(policy_kprime_analytical[i]):.4f}" for i in sample_idx],
+        "k' exact": [f"{float(policy_kprime_analytical[i]):.4f}" for i in sample_idx],
+        "k' error": [f"{float(policy_error[i]):.2e}" for i in sample_idx],
     }
     df = pd.DataFrame(table_data)
-    report.add_table("tables/comparison.csv", "Numerical vs Analytical Solution at Selected Grid Points", df,
-        description="The tight match between numerical and analytical solutions validates the VFI implementation. "
-        "Any discrepancies at the grid boundaries reflect interpolation limitations near the edges of the state space.")
+    report.add_table(
+        "tables/comparison.csv",
+        "Numerical vs exact solution at selected capital states",
+        df,
+        description=(
+            "The table reports pointwise approximation errors. The value-function errors are "
+            "small relative to the value level, and the policy errors are the relevant "
+            "diagnostic because policies determine simulated allocations."
+        ),
+    )
 
     report.add_takeaway(
-        "The neoclassical growth model reveals how productive capital creates a "
-        "non-trivial steady state, unlike the cake-eating problem where the resource "
-        "monotonically declines.\n\n"
-        "**Key insights:**\n"
-        f"- Capital converges to the steady state $k_{{ss}} = {kss:.2f}$ regardless of "
-        "initial conditions. The economy self-corrects: low capital means high marginal "
-        "product, incentivizing saving.\n"
-        f"- The optimal savings rate is $\\alpha\\beta = {alpha*beta:.2f}$. More patient agents "
-        "(higher $\\beta$) or more capital-intensive technologies (higher $\\alpha$) lead to "
-        "greater capital accumulation.\n"
-        "- The policy function $k'(k) = \\alpha\\beta F(k)$ shows that the agent saves a "
-        "constant fraction of *output* (not wealth), reflecting the log utility / "
-        "Cobb-Douglas structure.\n"
-        "- VFI converges reliably because the Bellman operator is a contraction mapping. "
-        "The analytical solution provides an exact benchmark for validation."
+        "Optimal growth changes the cake-eating logic by making saving productive. The "
+        "state still summarizes the future, but now carrying resources forward raises "
+        "tomorrow's feasible set. With log utility and full-depreciation Cobb-Douglas "
+        f"production, the exact rule saves $\\alpha\\beta={alpha * beta:.2f}$ of output and "
+        f"drives capital toward $k_{{ss}}={kss:.2f}$. VFI recovers that policy closely, which "
+        "is why this example is a useful bridge from closed-form dynamic programming to "
+        "stochastic growth models where the benchmark has to be replaced by Euler errors, "
+        "simulation moments, or equilibrium residuals."
     )
 
     report.add_references([
