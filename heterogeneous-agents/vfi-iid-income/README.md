@@ -1,116 +1,143 @@
-# IID Income Risk by VFI
+# IID Income Risk and Buffer-Stock Saving
 
-> Consumption-savings problem with uninsurable IID income shocks and a borrowing constraint.
+> A partial-equilibrium household savings problem with uninsurable IID income shocks.
 
 ## Overview
 
-This model solves the canonical incomplete-markets consumption-savings problem where agents face IID income risk. Each period, the agent receives a random income draw from a discretized normal distribution and must decide how much to consume and how much to save in a risk-free asset.
+The deterministic savings problem has no reason to hold a buffer stock when $\beta R<1$: assets are eventually spent down to the borrowing limit. This tutorial changes only one economic object. Labor income is now random, uninsurable, and independent over time.
 
-Unlike the deterministic case, agents face *uninsurable* income risk: they cannot write state-contingent contracts. This creates a **precautionary savings motive** -- agents save more than they would under certainty as a buffer against bad income realizations. The borrowing constraint further amplifies this motive by preventing agents from smoothing consumption via debt.
+That small change is enough to make assets useful. A household with low wealth is exposed to bad income draws because it cannot borrow below $\underline a=0$. Saving is therefore not about financing retirement or aggregate capital accumulation here; it is self-insurance against the next income draw. The IID assumption keeps the expectation simple, so the tutorial isolates the buffer-stock motive before the later [endogenous-grid method](../endogenous-grid-points/) changes the solver and the persistent-income tutorial in [Dynamic Programming](../../dynamic-programming/consumption-savings/) changes the shock process.
 
 ## Equations
 
-$$V(a, y) = \max_{c \ge 0} \bigl[ u(c) + \beta \, \mathbb{E}\left[ V(a', y') \right] \bigr]$$
+At the beginning of a period the household has assets $a \in A$ and receives
+income $y_j$ from a finite IID distribution with probabilities $\pi_j$. It
+chooses next-period assets $a' \in A$:
 
-subject to:
+$$
+V(a,y_j) =
+\max_{a' \in A}
+\{u(Ra+y_j-a') + \beta \sum_{\ell=1}^{n_y} \pi_{\ell} V(a',y_{\ell})\}.
+$$
 
-$$a' = R \cdot a + y - c, \qquad a' \ge \underline{a}$$
+The budget identity and borrowing constraint are
 
-where $a$ is assets, $y$ is income (IID), $R = 1+r$ is the gross interest rate,
-and $\underline{a}$ is the borrowing limit.
+$$
+c = Ra + y_j - a',
+\qquad
+c>0,
+\qquad
+a' \geq \underline a.
+$$
 
-**CRRA utility:** $u(c) = \frac{c^{1-\gamma}}{1-\gamma}$
+Preferences are CRRA,
 
-**IID income:** $y \sim \mathcal{N}(\mu, \sigma^2)$, discretized to 5 points.
+$$
+u(c)=
+\begin{cases}
+\dfrac{c^{1-\gamma}-1}{1-\gamma}, & \gamma \neq 1,\\[4pt]
+\log c, & \gamma = 1.
+\end{cases}
+$$
 
-Since income is IID, the expectation simplifies:
-$$\mathbb{E}[V(a', y')] = \sum_{j=1}^{n_y} V(a', y_j) \cdot \pi_j$$
+Current income affects cash on hand. Because income is IID, it does not affect
+beliefs about next period's income: the same probability vector $\pi$ is used
+from every current income state.
 
 ## Model Setup
 
-| Parameter | Value | Description |
-|-----------|-------|-------------|
-| $\gamma$ | 2 | CRRA risk aversion |
+| Parameter | Value | Role |
+|---|---:|---|
+| $\gamma$ | 2.0 | CRRA risk aversion |
 | $\beta$ | 0.95 | Discount factor |
-| $r$ | 0.03 | Interest rate |
+| $r$ | 0.03 | Net risk-free return |
+| $\beta R$ | 0.9785 | Patience-return product |
 | $\mu_y$ | 1.0 | Mean income |
-| $\sigma_y$ | 0.2 | Std dev of income |
-| $n_y$ | 5 | Income grid points |
-| $n_a$ | 1000 | Asset grid points |
-| $a_{\max}$ | 20.0 | Maximum assets |
-| $\underline{a}$ | 0.0 | Borrowing limit |
-| $N_{sim}$ | 100 | Simulated agents |
-| $T_{sim}$ | 500 | Simulation periods |
+| $\sigma_y$ | 0.2 | Income standard deviation |
+| $n_y$ | 5 | IID income states |
+| $\underline a$ | 0.0 | Borrowing limit |
+| $\bar a$ | 20.0 | Upper asset-grid bound |
+| Asset grid | 550 points | Exponential spacing near the constraint |
+| Refined grid | 1300 points | Policy-function accuracy check |
 
 ## Solution Method
 
-**Value Function Iteration (VFI):** We iterate on the Bellman equation:
+The code uses direct grid VFI. For each state $(a,y_j)$ it evaluates the lifetime value of every feasible next-asset choice. The only shortcut is an economic one: IID income means the continuation value depends on $a'$ but not on current income once the expectation over $y'$ has been taken.
 
-$$V_{n+1}(a, y) = \max_{a' \ge \underline{a}} \bigl[ u(Ra + y - a') + \beta \sum_{j} V_n(a', y_j) \pi_j \bigr]$$
+```text
+Input: asset grid A, income states y_j with probabilities pi_j, primitives beta, R, gamma
+Initialize V_0(a,y_j), for example from consuming interest income plus current y_j
+For n = 0, 1, 2, ...:
+    Compute EV_n(a') = sum_j pi_j V_n(a', y_j) for each candidate a'
+    For each current asset a in A and current income y_j:
+        For each candidate next asset a' in A:
+            Set c = R a + y_j - a'
+            If c <= 0, mark the choice infeasible
+            Otherwise compute u(c) + beta EV_n(a')
+        Store the maximizing next asset g(a,y_j) and value V_{n+1}(a,y_j)
+    Stop when max_{a,j} |V_{n+1}(a,y_j) - V_n(a,y_j)| < epsilon
+Output: value function V, savings policy g, consumption policy c(a,y_j)
+```
 
-until $\|V_{n+1} - V_n\|_\infty < 10^{-6}$. Because income is IID, the expected continuation value $\mathbb{E}[V(a', y')]$ depends only on $a'$ (not the current income state), which simplifies computation.
+After solving the policy, the stationary distribution is computed from the finite-state transition matrix implied by $g(a,y_j)$ and the IID income probabilities. The simulated paths are only used to visualize household-level asset histories.
 
-We search over the asset grid for the optimal savings choice at each state $(a, y)$, exploiting the fact that consumption is residual: $c = Ra + y - a'$.
-
-Converged in **204 iterations** (error = 9.76e-07).
+The main grid converged in **204 iterations** with sup-norm error 9.77e-07. A refined 1300-point grid gives a median-income consumption policy within 1.737e-02 over $a\leq 5$; the corresponding next-asset gap is 1.737e-02.
 
 ## Results
 
-<img src="figures/value-functions.png" alt="Value functions for each income state -- higher income shifts V up" width="80%">
-*Value functions for each income state -- higher income shifts V up*
+The value functions are ordered by current income because high income raises current resources. The more interesting feature is that the gaps shrink with wealth: once assets are high, the current income draw is a smaller part of lifetime resources.
 
-<img src="figures/consumption-policy.png" alt="Consumption policy: agents with higher income consume more at every asset level" width="80%">
-*Consumption policy: agents with higher income consume more at every asset level*
+<img src="figures/value-functions.png" alt="Value functions by IID income state" width="80%">
 
-<img src="figures/savings-policy.png" alt="Net savings: low-income agents dissave, high-income agents accumulate" width="80%">
-*Net savings: low-income agents dissave, high-income agents accumulate*
+The consumption policy shows the buffer-stock mechanism directly. Low-wealth households consume a large share of cash on hand but do not behave as in the deterministic benchmark: even around the borrowing limit, a middle-income household saves a little because tomorrow's income may be bad. The dashed line is the refined-grid reference for the middle income state and nearly overlays the main-grid policy on the plotted range.
 
-<img src="figures/simulated-paths.png" alt="Simulated asset paths and mean convergence across agents" width="80%">
-*Simulated asset paths and mean convergence across agents*
+<img src="figures/consumption-policy.png" alt="Consumption policy with refined-grid reference" width="80%">
 
-**Consumption and Savings Policy at Selected Asset Grid Points**
+Net saving makes the insurance role of assets clearer than consumption alone. After a low income draw, the household runs down wealth. After a high draw, it rebuilds the buffer. The zero line is not a common steady state for all income states; with IID shocks the policy is state contingent even though the shock has no persistence.
 
-|   Assets (a) |   c*(a, Low y) |   c*(a, Mid y) |   c*(a, High y) |   a'(a, Low y) |   a'(a, Mid y) |   a'(a, High y) |
-|-------------:|---------------:|---------------:|----------------:|---------------:|---------------:|----------------:|
-|         0    |         0.6133 |         0.9199 |          1.0264 |         0      |         0.0801 |          0.3604 |
-|         0.5  |         0.9686 |         1.0551 |          1.1015 |         0.1602 |         0.4605 |          0.8008 |
-|         1    |         1.0637 |         1.1101 |          1.1565 |         0.5806 |         0.9209 |          1.2613 |
-|         2    |         1.1738 |         1.2002 |          1.2466 |         1.5015 |         1.8619 |          2.2022 |
-|         5.01 |         1.384  |         1.4104 |          1.4368 |         4.3844 |         4.7447 |          5.1051 |
-|         9.99 |         1.6537 |         1.6601 |          1.6864 |         9.2492 |         9.6296 |          9.99   |
-|        14.99 |         1.8839 |         1.9103 |          1.9167 |        14.1742 |        14.5345 |         14.9149 |
-|        20    |         2.1142 |         2.1205 |          2.1469 |        19.0991 |        19.4795 |         19.8398 |
+<img src="figures/savings-policy.png" alt="Net saving by current income state" width="80%">
 
-**Cross-Sectional Asset Distribution (Final Period)**
+The path simulation starts all households at the borrowing limit. Individual histories move with income draws, while the cross-sectional mean settles near the invariant mean computed from the policy. The point is not aggregate risk; it is the stationary cross section produced by idiosyncratic self-insurance.
+
+<img src="figures/simulated-paths.png" alt="Simulated asset paths and convergence toward invariant mean" width="80%">
+
+The selected grid points emphasize the economically active region near the borrowing constraint. At $a=0$, the low-income household is constrained, but the middle- and high-income households still choose positive next-period assets because the next draw may be worse.
+
+**Selected Policy Values**
+
+|   Assets a |   c^{*}(a, low y) |   c^{*}(a, middle y) |   c^{*}(a, high y) |   g(a, low y) |   g(a, middle y) |   g(a, high y) |
+|-----------:|------------------:|---------------------:|-------------------:|--------------:|-----------------:|---------------:|
+|      0     |            0.6133 |               0.9284 |             1.0258 |        0      |           0.0716 |         0.3609 |
+|      0.1   |            0.7167 |               0.9594 |             1.0487 |        0      |           0.144  |         0.4414 |
+|      0.248 |            0.8683 |               1.0015 |             1.0686 |        0      |           0.2535 |         0.5731 |
+|      0.504 |            0.9675 |               1.0518 |             1.1032 |        0.1653 |           0.4677 |         0.8031 |
+|      0.996 |            1.0663 |               1.1161 |             1.1607 |        0.5731 |           0.9101 |         1.2522 |
+|      2.004 |            1.1877 |               1.2207 |             1.2523 |        1.4899 |           1.8436 |         2.1988 |
+|      5.007 |            1.3868 |               1.4062 |             1.4496 |        4.3833 |           4.7506 |         5.0939 |
+
+The distribution is right-skewed, but it is not the persistent-income wealth distribution from an Aiyagari model. With IID risk the buffer is modest: many households remain close to the constraint, and high assets are rare. The statistics below use the exact invariant distribution of the discrete policy, not terminal-period Monte Carlo noise.
+
+**Invariant Asset Distribution**
 
 | Statistic                        | Value   |
 |:---------------------------------|:--------|
-| Mean assets / mean income        | 0.357   |
-| Fraction at borrowing constraint | 10.0%   |
-| 10th percentile                  | 0.055   |
-| 50th percentile (median)         | 0.329   |
-| 90th percentile                  | 0.700   |
-| 99th percentile                  | 0.844   |
+| Mean assets / mean income        | 0.388   |
+| Fraction at borrowing constraint | 5.7%    |
+| 10th percentile                  | 0.068   |
+| 50th percentile                  | 0.349   |
+| 90th percentile                  | 0.754   |
+| 99th percentile                  | 1.150   |
+| Distribution iteration error     | 9.7e-14 |
 
 ## Takeaway
 
-IID income risk fundamentally changes savings behavior compared to the deterministic case.
+IID income risk is the cleanest way to see the buffer-stock motive. The deterministic model says an impatient household should move back to the asset floor. Adding uninsurable income shocks overturns that conclusion: assets now pay an insurance return by protecting consumption after bad draws.
 
-**Key insights:**
-- **Precautionary savings:** Agents save *more* than they would under certainty as a buffer against bad income draws. The concavity of the value function (risk aversion) means agents are more hurt by low consumption than they are helped by high consumption, so they self-insure through asset accumulation.
-- **Borrowing constraint binds:** A positive fraction of agents are at the borrowing limit in any period. These constrained agents cannot smooth consumption when hit by low income, creating welfare losses.
-- **Wealth inequality:** Even with IID (no persistent) income shocks, the stationary asset distribution is right-skewed -- a few agents accumulate substantial wealth while many remain near the constraint.
-- **IID simplification:** Because income is IID, the expected continuation value $\mathbb{E}[V(a', y')]$ depends only on $a'$, not the current income state. This makes the problem computationally simpler than the AR(1) case where the full state is $(a, y)$ with persistent transitions.
-
-## Reproduce
-
-```bash
-python run.py
-```
+The IID assumption also matters. Current income changes cash on hand and hence today's policy, but it does not change tomorrow's income distribution. Persistent income risk makes the state richer and the distribution more dispersed; the economic object here is the simpler benchmark that separates risk from persistence.
 
 ## References
 
-- Kaplan, G. (2017). *Heterogeneous Agent Models: Lecture Notes*.
 - Deaton, A. (1991). Saving and Liquidity Constraints. *Econometrica*, 59(5), 1221-1248.
 - Carroll, C. (1997). Buffer-Stock Saving and the Life Cycle/Permanent Income Hypothesis. *Quarterly Journal of Economics*, 112(1), 1-55.
-- Aiyagari, S.R. (1994). Uninsured Idiosyncratic Risk and Aggregate Saving. *Quarterly Journal of Economics*, 109(3), 659-684.
+- Aiyagari, S. R. (1994). Uninsured Idiosyncratic Risk and Aggregate Saving. *Quarterly Journal of Economics*, 109(3), 659-684.
+- Kaplan, G. (2017). *Heterogeneous Agent Models: Codes*. Lecture notes.

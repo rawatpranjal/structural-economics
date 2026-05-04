@@ -1,7 +1,8 @@
 Statistic,Value
-Mean assets / mean income,0.357
-Fraction at borrowing constraint,10.0%
-10th percentile,0.055
-50th percentile (median),0.329
-90th percentile,0.700
-99th percentile,0.844
+Mean assets / mean income,0.388
+Fraction at borrowing constraint,5.7%
+10th percentile,0.068
+50th percentile,0.349
+90th percentile,0.754
+99th percentile,1.150
+Distribution iteration error,9.7e-14

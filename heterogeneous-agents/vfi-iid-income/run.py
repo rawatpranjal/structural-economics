@@ -1,469 +1,653 @@
 #!/usr/bin/env python3
-"""VFI with IID Income Risk: Precautionary Savings Under Uncertainty.
+"""IID income risk and buffer-stock saving by grid VFI.
 
-Solves the infinite-horizon consumption-savings problem with IID income shocks
-using value function iteration. Agents face uninsurable income risk and choose
-how much to save in a risk-free asset subject to a borrowing constraint.
-
-Reference: Greg Kaplan (2017), Heterogeneous Agent Models lecture notes.
+The tutorial solves a partial-equilibrium household problem with uninsurable
+IID income shocks. It is the next step after the deterministic household
+problem: the same borrowing constraint now creates a precautionary asset buffer.
 """
 import sys
 from pathlib import Path
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
-from scipy.stats import norm
 from scipy.optimize import fsolve
+from scipy.stats import norm
 
-# Add repo root to path for lib/ imports
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.plotting import setup_style, save_figure
+from lib.grids import exponential_grid
 from lib.output import ModelReport
+from lib.plotting import setup_style
 
 
-def discrete_normal_np(n, mu, sigma, width):
-    """Equally spaced approximation to normal distribution (pure NumPy).
+def crra_utility(c: np.ndarray, gamma: float) -> np.ndarray:
+    """CRRA utility on positive consumption."""
+    if gamma == 1.0:
+        return np.log(c)
+    return (c ** (1.0 - gamma) - 1.0) / (1.0 - gamma)
 
-    Returns:
-        error: Approximation error in standard deviation.
-        grid: (n, 1) array of grid points.
-        probs: (n, 1) array of probabilities.
-    """
-    x = np.linspace(mu - width * sigma, mu + width * sigma, n).reshape(n, 1)
+
+def discrete_normal_np(
+    n: int,
+    mu: float,
+    sigma: float,
+    width: float,
+) -> tuple[float, np.ndarray, np.ndarray]:
+    """Equally spaced approximation to a normal distribution."""
+    grid = np.linspace(mu - width * sigma, mu + width * sigma, n)
     if n == 2:
-        p = 0.5 * np.ones((n, 1))
+        probs = 0.5 * np.ones(n)
     else:
-        p = np.zeros((n, 1))
-        p[0] = norm.cdf(x[0, 0] + 0.5 * (x[1, 0] - x[0, 0]), mu, sigma)
+        probs = np.zeros(n)
+        half_steps = 0.5 * np.diff(grid)
+        probs[0] = norm.cdf(grid[0] + half_steps[0], mu, sigma)
         for i in range(1, n - 1):
-            p[i] = (norm.cdf(x[i, 0] + 0.5 * (x[i + 1, 0] - x[i, 0]), mu, sigma)
-                     - norm.cdf(x[i, 0] - 0.5 * (x[i, 0] - x[i - 1, 0]), mu, sigma))
-        p[n - 1] = 1 - np.sum(p[:n - 1])
+            right = grid[i] + half_steps[i]
+            left = grid[i] - half_steps[i - 1]
+            probs[i] = norm.cdf(right, mu, sigma) - norm.cdf(left, mu, sigma)
+        probs[-1] = 1.0 - np.sum(probs[:-1])
 
-    ex = float((x.T @ p)[0, 0])
-    sdx = float(np.sqrt(((x.T ** 2) @ p - ex ** 2)[0, 0]))
-    error = sdx - sigma
-    return error, x, p
+    mean = float(grid @ probs)
+    sd = float(np.sqrt((grid ** 2) @ probs - mean ** 2))
+    return sd - sigma, grid, probs
 
 
-def main():
-    # =========================================================================
-    # Parameters
-    # =========================================================================
-    # Preferences
-    risk_aver = 2       # CRRA coefficient
-    beta = 0.95         # Discount factor
+def build_income_grid(
+    n_income: int,
+    mean_income: float,
+    sd_income: float,
+) -> tuple[np.ndarray, np.ndarray, float]:
+    """Choose normal-grid width so the discrete standard deviation matches."""
 
-    # Returns
-    r = 0.03            # Interest rate
-    R = 1 + r           # Gross return
+    def objective(width: np.ndarray) -> float:
+        error, _, _ = discrete_normal_np(
+            n_income, mean_income, sd_income, float(width[0])
+        )
+        return error
 
-    # Income risk: discretized N(mu, sigma^2)
-    mu_y = 1.0          # Mean income
-    sd_y = 0.2          # Std dev of income
-    ny = 5              # Number of income grid points
+    width = float(fsolve(objective, np.array([2.0]))[0])
+    _, income_grid, income_probs = discrete_normal_np(
+        n_income, mean_income, sd_income, width
+    )
+    return income_grid, income_probs, width
 
-    # Asset grid
-    na = 1000           # Asset grid points
-    amax = 20.0         # Maximum assets
-    borrow_lim = 0.0    # Borrowing limit
 
-    # Computation
-    max_iter = 1000
-    tol_iter = 1.0e-6
+def solve_iid_income_vfi(
+    asset_grid: np.ndarray,
+    income_grid: np.ndarray,
+    income_probs: np.ndarray,
+    beta: float,
+    gross_return: float,
+    gamma: float,
+    tol: float,
+    max_iter: int,
+    label: str,
+    verbose: bool = False,
+) -> dict[str, np.ndarray | float | int | bool]:
+    """Solve the discrete-grid IID income fluctuation problem by VFI."""
+    n_asset = len(asset_grid)
+    n_income = len(income_grid)
+    cash_on_hand = gross_return * asset_grid[:, None] + income_grid[None, :]
 
-    # Simulation
-    Nsim = 100          # Number of simulated agents
-    Tsim = 500          # Simulation periods
+    maintenance_consumption = (gross_return - 1.0) * asset_grid[:, None] + income_grid[None, :]
+    value = crra_utility(maintenance_consumption, gamma) / (1.0 - beta)
+    policy_idx = np.zeros((n_asset, n_income), dtype=int)
+    row_idx = np.arange(n_asset)
+    error = np.inf
 
-    # =========================================================================
-    # Random draws (fixed seed for reproducibility)
-    # =========================================================================
-    np.random.seed(2024)
-    yrand = np.random.rand(Nsim, Tsim)
+    if verbose:
+        print(f"\nStarting {label} VFI with {n_asset} asset grid points...")
 
-    # =========================================================================
-    # Grids
-    # =========================================================================
-    # Asset grid (linear)
-    agrid = np.linspace(borrow_lim, amax, na).reshape(na, 1)
-
-    # Income grid: discretize normal distribution
-    # Use scipy fsolve to find the optimal width parameter
-    def width_objective(w):
-        w_scalar = float(np.asarray(w).flat[0])
-        err, _, _ = discrete_normal_np(ny, mu_y, sd_y, w_scalar)
-        return err
-
-    width = float(fsolve(width_objective, 2.0)[0])
-    _, ygrid, ydist = discrete_normal_np(ny, mu_y, sd_y, width)
-    ycumdist = np.cumsum(ydist)
-
-    print(f"Income grid: {ygrid.flatten()}")
-    print(f"Income probs: {ydist.flatten()}")
-    print(f"Width parameter: {width:.4f}")
-
-    # =========================================================================
-    # Utility function
-    # =========================================================================
-    if risk_aver == 1:
-        u = lambda c: np.log(c)
-    else:
-        u = lambda c: (c ** (1 - risk_aver) - 1) / (1 - risk_aver)
-
-    # =========================================================================
-    # Initialize value function
-    # =========================================================================
-    V = np.zeros((na, ny))
-    for iy in range(ny):
-        V[:, iy] = u(r * agrid[:, 0] + ygrid[iy, 0]) / (1 - beta)
-
-    # =========================================================================
-    # Value Function Iteration
-    # =========================================================================
-    print("\n--- Value Function Iteration ---")
     for iteration in range(1, max_iter + 1):
-        Vlast = V.copy()
-        V = np.zeros((na, ny))
-        sav = np.zeros((na, ny))
-        savind = np.zeros((na, ny), dtype=int)
-        con = np.zeros((na, ny))
+        value_next = np.empty_like(value)
+        policy_idx_next = np.empty_like(policy_idx)
+        expected_value = value @ income_probs
 
-        # Expected continuation value: EV(a') = sum_y' V(a', y') * prob(y')
-        EV = Vlast @ ydist  # (na, 1)
+        for iy, _ in enumerate(income_grid):
+            consumption = cash_on_hand[:, [iy]] - asset_grid[None, :]
+            feasible = consumption > 1e-12
+            values = (
+                crra_utility(np.maximum(consumption, 1e-12), gamma)
+                + beta * expected_value[None, :]
+            )
+            values[~feasible] = -np.inf
+            best = np.argmax(values, axis=1)
+            value_next[:, iy] = values[row_idx, best]
+            policy_idx_next[:, iy] = best
 
-        for ia in range(na):
-            for iy in range(ny):
-                cash = R * agrid[ia, 0] + ygrid[iy, 0]
-                # Consumption for each possible savings choice
-                c_candidate = cash - agrid[:, 0]
-                # Value of each savings choice
-                Vchoice = u(np.maximum(c_candidate, 1.0e-10)) + beta * EV[:, 0]
-                V[ia, iy] = np.max(Vchoice)
-                savind[ia, iy] = np.argmax(Vchoice)
-                sav[ia, iy] = agrid[savind[ia, iy], 0]
-                con[ia, iy] = cash - sav[ia, iy]
+        error = float(np.max(np.abs(value_next - value)))
+        value = value_next
+        policy_idx = policy_idx_next
 
-        error = np.max(np.abs(V - Vlast))
-        if iteration % 25 == 0:
-            print(f"  VFI iteration {iteration:4d}, error = {error:.2e}")
+        if verbose and (iteration % 50 == 0 or error < tol):
+            print(f"  {label} iteration {iteration:4d}, error = {error:.2e}")
+        if error < tol:
+            break
+    else:
+        if verbose:
+            print(f"  {label} did NOT converge after {max_iter} iterations")
 
-        if error < tol_iter:
-            print(f"  VFI converged in {iteration} iterations (error = {error:.2e})")
+    policy_assets = asset_grid[policy_idx]
+    policy_consumption = cash_on_hand - policy_assets
+
+    return {
+        "value": value,
+        "policy_idx": policy_idx,
+        "policy_assets": policy_assets,
+        "policy_consumption": policy_consumption,
+        "iterations": iteration,
+        "converged": error < tol,
+        "error": error,
+    }
+
+
+def stationary_distribution(
+    policy_idx: np.ndarray,
+    income_probs: np.ndarray,
+    tol: float = 1e-13,
+    max_iter: int = 20_000,
+) -> tuple[np.ndarray, int, float]:
+    """Invariant distribution over asset and income states."""
+    n_asset, n_income = policy_idx.shape
+    dist = np.zeros((n_asset, n_income))
+    dist[0, :] = income_probs
+    error = np.inf
+
+    for iteration in range(1, max_iter + 1):
+        dist_next = np.zeros_like(dist)
+        for iy in range(n_income):
+            mass_by_next_asset = np.bincount(
+                policy_idx[:, iy],
+                weights=dist[:, iy],
+                minlength=n_asset,
+            )
+            dist_next += mass_by_next_asset[:, None] * income_probs[None, :]
+        error = float(np.max(np.abs(dist_next - dist)))
+        dist = dist_next
+        if error < tol:
             break
 
-    info = {"iterations": iteration, "converged": error < tol_iter, "error": error}
+    return dist, iteration, error
 
-    # =========================================================================
-    # Simulate
-    # =========================================================================
-    print("\n--- Simulation ---")
-    yindsim = np.zeros((Nsim, Tsim), dtype=int)
-    aindsim = np.zeros((Nsim, Tsim), dtype=int)
 
-    # Initial assets: start at zero (borrowing constraint)
-    aindsim[:, 0] = 0
+def weighted_quantile(
+    values: np.ndarray,
+    weights: np.ndarray,
+    quantiles: list[float],
+) -> np.ndarray:
+    """Weighted quantiles for a discrete distribution."""
+    order = np.argsort(values)
+    values_sorted = values[order]
+    weights_sorted = weights[order]
+    cumulative = np.cumsum(weights_sorted)
+    cumulative = cumulative / cumulative[-1]
+    return np.interp(quantiles, cumulative, values_sorted)
 
-    for it in range(Tsim):
-        if (it + 1) % 100 == 0:
-            print(f"  Simulating period {it + 1}/{Tsim}")
 
-        # Income realization from IID draws
-        yindsim[yrand[:, it] <= ycumdist[0], it] = 0
-        for iy in range(1, ny):
-            yindsim[
-                np.logical_and(
-                    yrand[:, it] > ycumdist[iy - 1],
-                    yrand[:, it] <= ycumdist[iy],
-                ),
-                it,
-            ] = iy
+def simulate_panel(
+    policy_idx: np.ndarray,
+    asset_grid: np.ndarray,
+    income_grid: np.ndarray,
+    income_probs: np.ndarray,
+    periods: int,
+    n_agents: int,
+    seed: int,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Simulate asset and income paths using the discrete policy."""
+    rng = np.random.default_rng(seed)
+    draws = rng.random((n_agents, periods))
+    income_cdf = np.cumsum(income_probs)
+    income_idx = np.searchsorted(income_cdf, draws, side="right")
+    asset_idx = np.zeros((n_agents, periods), dtype=int)
 
-        # Asset choice for next period
-        if it < Tsim - 1:
-            for iy in range(ny):
-                mask = yindsim[:, it] == iy
-                aindsim[mask, it + 1] = savind[aindsim[mask, it], iy]
+    for t in range(periods - 1):
+        asset_idx[:, t + 1] = policy_idx[asset_idx[:, t], income_idx[:, t]]
 
-    # Map indices to values
-    asim = agrid[aindsim, 0]  # (Nsim, Tsim)
-    ysim = ygrid[yindsim, 0]  # (Nsim, Tsim)
-    csim = np.zeros_like(asim)
-    for it in range(Tsim):
-        for i in range(Nsim):
-            csim[i, it] = con[aindsim[i, it], yindsim[i, it]]
+    assets = asset_grid[asset_idx]
+    income = income_grid[income_idx]
+    return assets, income
 
-    # Summary statistics from final period
-    a_final = asim[:, -1]
-    y_final = ysim[:, -1]
-    ay_final = a_final / np.mean(y_final)
-    mean_assets = np.mean(ay_final)
-    frac_constrained = np.sum(a_final == borrow_lim) / Nsim * 100
-    pct_10 = np.quantile(ay_final, 0.1)
-    pct_50 = np.quantile(ay_final, 0.5)
-    pct_90 = np.quantile(ay_final, 0.9)
-    pct_99 = np.quantile(ay_final, 0.99)
 
-    print(f"\n--- Simulation Statistics (final period) ---")
-    print(f"  Mean assets (relative to mean income): {mean_assets:.3f}")
+def main() -> None:
+    # Preferences, returns, and income risk
+    gamma = 2.0
+    beta = 0.95
+    r = 0.03
+    gross_return = 1.0 + r
+    beta_r = beta * gross_return
+
+    mean_income = 1.0
+    sd_income = 0.2
+    n_income = 5
+
+    # Assets and computation
+    borrowing_limit = 0.0
+    asset_max = 20.0
+    n_asset = 550
+    n_asset_refined = 1300
+    tol = 1e-6
+    max_iter = 2000
+
+    # Simulation is used for paths. Distribution statistics come from the
+    # invariant distribution induced by the discrete policy.
+    n_agents = 200
+    periods = 500
+
+    income_grid, income_probs, width = build_income_grid(
+        n_income, mean_income, sd_income
+    )
+    print(f"Income grid: {income_grid}")
+    print(f"Income probabilities: {income_probs}")
+    print(f"Normal-grid width parameter: {width:.4f}")
+
+    asset_grid = np.asarray(
+        exponential_grid(borrowing_limit, asset_max, n_asset, density=3.0),
+        dtype=float,
+    )
+    asset_grid_refined = np.asarray(
+        exponential_grid(borrowing_limit, asset_max, n_asset_refined, density=3.0),
+        dtype=float,
+    )
+
+    solution = solve_iid_income_vfi(
+        asset_grid,
+        income_grid,
+        income_probs,
+        beta,
+        gross_return,
+        gamma,
+        tol,
+        max_iter,
+        label="main-grid",
+        verbose=True,
+    )
+    refined_solution = solve_iid_income_vfi(
+        asset_grid_refined,
+        income_grid,
+        income_probs,
+        beta,
+        gross_return,
+        gamma,
+        tol,
+        max_iter,
+        label="refined-grid",
+        verbose=True,
+    )
+
+    value = np.asarray(solution["value"])
+    policy_idx = np.asarray(solution["policy_idx"], dtype=int)
+    policy_assets = np.asarray(solution["policy_assets"])
+    policy_consumption = np.asarray(solution["policy_consumption"])
+    savings_policy = policy_assets - asset_grid[:, None]
+
+    refined_policy_consumption = np.asarray(refined_solution["policy_consumption"])
+    refined_policy_assets = np.asarray(refined_solution["policy_assets"])
+    mid_income_idx = n_income // 2
+    refined_c_mid = np.interp(
+        asset_grid,
+        asset_grid_refined,
+        refined_policy_consumption[:, mid_income_idx],
+    )
+    refined_a_mid = np.interp(
+        asset_grid,
+        asset_grid_refined,
+        refined_policy_assets[:, mid_income_idx],
+    )
+    visible = asset_grid <= 5.0
+    max_consumption_gap = float(
+        np.max(np.abs(policy_consumption[visible, mid_income_idx] - refined_c_mid[visible]))
+    )
+    max_savings_gap = float(
+        np.max(np.abs(policy_assets[visible, mid_income_idx] - refined_a_mid[visible]))
+    )
+
+    dist, dist_iterations, dist_error = stationary_distribution(
+        policy_idx, income_probs
+    )
+    asset_dist = dist.sum(axis=1)
+    mean_assets = float(asset_grid @ asset_dist)
+    frac_constrained = float(asset_dist[0] * 100.0)
+    pct_10, pct_50, pct_90, pct_99 = weighted_quantile(
+        asset_grid / mean_income,
+        asset_dist,
+        [0.10, 0.50, 0.90, 0.99],
+    )
+
+    assets_sim, _ = simulate_panel(
+        policy_idx,
+        asset_grid,
+        income_grid,
+        income_probs,
+        periods=periods,
+        n_agents=n_agents,
+        seed=2024,
+    )
+    final_sim_mean = float(np.mean(assets_sim[:, -1]))
+
+    print("\nStationary distribution from discrete policy:")
+    print(f"  Iterations: {dist_iterations}, error = {dist_error:.2e}")
+    print(f"  Mean assets / mean income: {mean_assets / mean_income:.3f}")
     print(f"  Fraction at borrowing constraint: {frac_constrained:.1f}%")
-    print(f"  10th percentile: {pct_10:.3f}")
-    print(f"  50th percentile: {pct_50:.3f}")
-    print(f"  90th percentile: {pct_90:.3f}")
-    print(f"  99th percentile: {pct_99:.3f}")
+    print(f"  Simulated final mean assets: {final_sim_mean:.3f}")
 
-    # =========================================================================
-    # Generate Report
-    # =========================================================================
     setup_style()
 
     report = ModelReport(
-        "IID Income Risk by VFI",
-        "Consumption-savings problem with uninsurable IID income shocks and a borrowing constraint.",
+        "IID Income Risk and Buffer-Stock Saving",
+        "A partial-equilibrium household savings problem with uninsurable IID income shocks.",
+        include_reproduce=False,
+        show_figure_captions=False,
     )
 
     report.add_overview(
-        "This model solves the canonical incomplete-markets consumption-savings problem "
-        "where agents face IID income risk. Each period, the agent receives a random "
-        "income draw from a discretized normal distribution and must decide how much to "
-        "consume and how much to save in a risk-free asset.\n\n"
-        "Unlike the deterministic case, agents face *uninsurable* income risk: they cannot "
-        "write state-contingent contracts. This creates a **precautionary savings motive** -- "
-        "agents save more than they would under certainty as a buffer against bad income "
-        "realizations. The borrowing constraint further amplifies this motive by preventing "
-        "agents from smoothing consumption via debt."
+        "The deterministic savings problem has no reason to hold a buffer stock when "
+        "$\\beta R<1$: assets are eventually spent down to the borrowing limit. This "
+        "tutorial changes only one economic object. Labor income is now random, "
+        "uninsurable, and independent over time.\n\n"
+        "That small change is enough to make assets useful. A household with low wealth "
+        "is exposed to bad income draws because it cannot borrow below "
+        "$\\underline a=0$. Saving is therefore not about financing retirement or "
+        "aggregate capital accumulation here; it is self-insurance against the next "
+        "income draw. The IID assumption keeps the expectation simple, so the tutorial "
+        "isolates the buffer-stock motive before the later "
+        "[endogenous-grid method](../endogenous-grid-points/) changes the solver and "
+        "the persistent-income tutorial in "
+        "[Dynamic Programming](../../dynamic-programming/consumption-savings/) changes "
+        "the shock process."
     )
 
     report.add_equations(
         r"""
-$$V(a, y) = \max_{c \ge 0} \bigl[ u(c) + \beta \, \mathbb{E}\left[ V(a', y') \right] \bigr]$$
+At the beginning of a period the household has assets $a \in A$ and receives
+income $y_j$ from a finite IID distribution with probabilities $\pi_j$. It
+chooses next-period assets $a' \in A$:
 
-subject to:
+$$
+V(a,y_j) =
+\max_{a' \in A}
+\{u(Ra+y_j-a') + \beta \sum_{\ell=1}^{n_y} \pi_{\ell} V(a',y_{\ell})\}.
+$$
 
-$$a' = R \cdot a + y - c, \qquad a' \ge \underline{a}$$
+The budget identity and borrowing constraint are
 
-where $a$ is assets, $y$ is income (IID), $R = 1+r$ is the gross interest rate,
-and $\underline{a}$ is the borrowing limit.
+$$
+c = Ra + y_j - a',
+\qquad
+c>0,
+\qquad
+a' \geq \underline a.
+$$
 
-**CRRA utility:** $u(c) = \frac{c^{1-\gamma}}{1-\gamma}$
+Preferences are CRRA,
 
-**IID income:** $y \sim \mathcal{N}(\mu, \sigma^2)$, discretized to 5 points.
+$$
+u(c)=
+\begin{cases}
+\dfrac{c^{1-\gamma}-1}{1-\gamma}, & \gamma \neq 1,\\[4pt]
+\log c, & \gamma = 1.
+\end{cases}
+$$
 
-Since income is IID, the expectation simplifies:
-$$\mathbb{E}[V(a', y')] = \sum_{j=1}^{n_y} V(a', y_j) \cdot \pi_j$$
+Current income affects cash on hand. Because income is IID, it does not affect
+beliefs about next period's income: the same probability vector $\pi$ is used
+from every current income state.
 """
     )
 
     report.add_model_setup(
-        f"| Parameter | Value | Description |\n"
-        f"|-----------|-------|-------------|\n"
-        f"| $\\gamma$ | {risk_aver} | CRRA risk aversion |\n"
-        f"| $\\beta$ | {beta} | Discount factor |\n"
-        f"| $r$ | {r} | Interest rate |\n"
-        f"| $\\mu_y$ | {mu_y} | Mean income |\n"
-        f"| $\\sigma_y$ | {sd_y} | Std dev of income |\n"
-        f"| $n_y$ | {ny} | Income grid points |\n"
-        f"| $n_a$ | {na} | Asset grid points |\n"
-        f"| $a_{{\\max}}$ | {amax} | Maximum assets |\n"
-        f"| $\\underline{{a}}$ | {borrow_lim} | Borrowing limit |\n"
-        f"| $N_{{sim}}$ | {Nsim} | Simulated agents |\n"
-        f"| $T_{{sim}}$ | {Tsim} | Simulation periods |"
+        f"| Parameter | Value | Role |\n"
+        f"|---|---:|---|\n"
+        f"| $\\gamma$ | {gamma:.1f} | CRRA risk aversion |\n"
+        f"| $\\beta$ | {beta:.2f} | Discount factor |\n"
+        f"| $r$ | {r:.2f} | Net risk-free return |\n"
+        f"| $\\beta R$ | {beta_r:.4f} | Patience-return product |\n"
+        f"| $\\mu_y$ | {mean_income:.1f} | Mean income |\n"
+        f"| $\\sigma_y$ | {sd_income:.1f} | Income standard deviation |\n"
+        f"| $n_y$ | {n_income} | IID income states |\n"
+        f"| $\\underline a$ | {borrowing_limit:.1f} | Borrowing limit |\n"
+        f"| $\\bar a$ | {asset_max:.1f} | Upper asset-grid bound |\n"
+        f"| Asset grid | {n_asset} points | Exponential spacing near the constraint |\n"
+        f"| Refined grid | {n_asset_refined} points | Policy-function accuracy check |"
     )
 
     report.add_solution_method(
-        "**Value Function Iteration (VFI):** We iterate on the Bellman equation:\n\n"
-        "$$V_{n+1}(a, y) = \\max_{a' \\ge \\underline{a}} "
-        "\\left\\{ u(Ra + y - a') + \\beta \\sum_{j} V_n(a', y_j) \\pi_j \\right\\}$$\n\n"
-        "until $\\|V_{n+1} - V_n\\|_\\infty < 10^{-6}$. Because income is IID, the "
-        "expected continuation value $\\mathbb{E}[V(a', y')]$ depends only on $a'$ "
-        "(not the current income state), which simplifies computation.\n\n"
-        "We search over the asset grid for the optimal savings choice at each state "
-        "$(a, y)$, exploiting the fact that consumption is residual: $c = Ra + y - a'$.\n\n"
-        f"Converged in **{info['iterations']} iterations** (error = {info['error']:.2e})."
+        "The code uses direct grid VFI. For each state $(a,y_j)$ it evaluates the "
+        "lifetime value of every feasible next-asset choice. The only shortcut is an "
+        "economic one: IID income means the continuation value depends on $a'$ but not "
+        "on current income once the expectation over $y'$ has been taken.\n\n"
+        "```text\n"
+        "Input: asset grid A, income states y_j with probabilities pi_j, primitives beta, R, gamma\n"
+        "Initialize V_0(a,y_j), for example from consuming interest income plus current y_j\n"
+        "For n = 0, 1, 2, ...:\n"
+        "    Compute EV_n(a') = sum_j pi_j V_n(a', y_j) for each candidate a'\n"
+        "    For each current asset a in A and current income y_j:\n"
+        "        For each candidate next asset a' in A:\n"
+        "            Set c = R a + y_j - a'\n"
+        "            If c <= 0, mark the choice infeasible\n"
+        "            Otherwise compute u(c) + beta EV_n(a')\n"
+        "        Store the maximizing next asset g(a,y_j) and value V_{n+1}(a,y_j)\n"
+        "    Stop when max_{a,j} |V_{n+1}(a,y_j) - V_n(a,y_j)| < epsilon\n"
+        "Output: value function V, savings policy g, consumption policy c(a,y_j)\n"
+        "```\n\n"
+        "After solving the policy, the stationary distribution is computed from the "
+        "finite-state transition matrix implied by $g(a,y_j)$ and the IID income "
+        "probabilities. The simulated paths are only used to visualize household-level "
+        "asset histories.\n\n"
+        f"The main grid converged in **{int(solution['iterations'])} iterations** "
+        f"with sup-norm error {float(solution['error']):.2e}. A refined "
+        f"{n_asset_refined}-point grid gives a median-income consumption policy within "
+        f"{max_consumption_gap:.3e} over $a\\leq 5$; the corresponding next-asset gap is "
+        f"{max_savings_gap:.3e}."
     )
 
-    # --- Figure 1: Value Functions ---
+    report.add_results(
+        "The value functions are ordered by current income because high income raises "
+        "current resources. The more interesting feature is that the gaps shrink with "
+        "wealth: once assets are high, the current income draw is a smaller part of "
+        "lifetime resources."
+    )
+
     fig1, ax1 = plt.subplots()
-    colors = plt.cm.viridis(np.linspace(0.1, 0.9, ny))
-    for iy in range(ny):
+    colors = plt.cm.viridis(np.linspace(0.1, 0.9, n_income))
+    for iy in range(n_income):
         ax1.plot(
-            agrid[:, 0], V[:, iy],
-            color=colors[iy], linewidth=2,
-            label=f"$y = {ygrid[iy, 0]:.2f}$",
+            asset_grid,
+            value[:, iy],
+            color=colors[iy],
+            linewidth=2,
+            label=f"$y = {income_grid[iy]:.2f}$",
         )
     ax1.set_xlabel("Assets $a$")
-    ax1.set_ylabel("$V(a, y)$")
-    ax1.set_title("Value Functions by Income State")
-    ax1.legend()
+    ax1.set_ylabel("$V(a,y)$")
+    ax1.set_title("Value Functions")
     ax1.set_xlim(0, 5)
+    ax1.legend()
     report.add_figure(
         "figures/value-functions.png",
-        "Value functions for each income state -- higher income shifts V up",
+        "Value functions by IID income state",
         fig1,
-        description="Higher current income shifts the value function up because the agent has more "
-        "resources available. The gap between curves narrows at high asset levels, where wealth "
-        "dominates current income in determining lifetime welfare.",
+        description="",
     )
 
-    # --- Figure 2: Consumption Policy ---
+    report.add_results(
+        "The consumption policy shows the buffer-stock mechanism directly. Low-wealth "
+        "households consume a large share of cash on hand but do not behave as in the "
+        "deterministic benchmark: even around the borrowing limit, a middle-income "
+        "household saves a little because tomorrow's income may be bad. The dashed line "
+        "is the refined-grid reference for the middle income state and nearly overlays "
+        "the main-grid policy on the plotted range."
+    )
+
     fig2, ax2 = plt.subplots()
-    for iy in [0, ny // 2, ny - 1]:
+    for iy in [0, mid_income_idx, n_income - 1]:
         ax2.plot(
-            agrid[:, 0], con[:, iy],
+            asset_grid,
+            policy_consumption[:, iy],
             linewidth=2,
-            label=f"$y = {ygrid[iy, 0]:.2f}$",
+            label=f"$y = {income_grid[iy]:.2f}$",
         )
-    ax2.plot(agrid[:, 0], agrid[:, 0], "k:", linewidth=0.8, alpha=0.5, label="45-degree line")
+    ax2.plot(
+        asset_grid,
+        refined_c_mid,
+        "k--",
+        linewidth=1.3,
+        label="refined grid, middle $y$",
+    )
     ax2.set_xlabel("Assets $a$")
-    ax2.set_ylabel("Consumption $c$")
-    ax2.set_title("Consumption Policy Function")
-    ax2.legend()
+    ax2.set_ylabel("Consumption $c^{*}(a,y)$")
+    ax2.set_title("Consumption Policy")
     ax2.set_xlim(0, 5)
+    ax2.legend()
     report.add_figure(
         "figures/consumption-policy.png",
-        "Consumption policy: agents with higher income consume more at every asset level",
+        "Consumption policy with refined-grid reference",
         fig2,
-        description="The consumption function is concave in assets, reflecting the precautionary "
-        "savings motive: low-wealth agents have a high marginal propensity to consume, while "
-        "wealthy agents save most of any additional dollar.",
+        description="",
     )
 
-    # --- Figure 3: Savings Policy ---
+    report.add_results(
+        "Net saving makes the insurance role of assets clearer than consumption alone. "
+        "After a low income draw, the household runs down wealth. After a high draw, it "
+        "rebuilds the buffer. The zero line is not a common steady state for all income "
+        "states; with IID shocks the policy is state contingent even though the shock has "
+        "no persistence."
+    )
+
     fig3, ax3 = plt.subplots()
-    for iy in [0, ny // 2, ny - 1]:
+    for iy in [0, mid_income_idx, n_income - 1]:
         ax3.plot(
-            agrid[:, 0], sav[:, iy] - agrid[:, 0],
+            asset_grid,
+            savings_policy[:, iy],
             linewidth=2,
-            label=f"$y = {ygrid[iy, 0]:.2f}$",
+            label=f"$y = {income_grid[iy]:.2f}$",
         )
     ax3.axhline(0, color="k", linewidth=0.8, alpha=0.5)
     ax3.set_xlabel("Assets $a$")
-    ax3.set_ylabel("Net savings $a' - a$")
-    ax3.set_title("Savings Policy Function")
-    ax3.legend()
+    ax3.set_ylabel("Net saving $a' - a$")
+    ax3.set_title("Savings Policy")
     ax3.set_xlim(0, 5)
+    ax3.legend()
     report.add_figure(
         "figures/savings-policy.png",
-        "Net savings: low-income agents dissave, high-income agents accumulate",
+        "Net saving by current income state",
         fig3,
-        description="The zero crossing of each curve marks the target asset level for that income "
-        "state. Unlike the deterministic model, the target depends on current income: agents "
-        "hit by low income run down their buffer stock, while those with high income rebuild it.",
+        description="",
     )
 
-    # --- Figure 4: Simulated Asset Paths ---
-    fig4, (ax4a, ax4b) = plt.subplots(1, 2, figsize=(12, 5))
+    report.add_results(
+        "The path simulation starts all households at the borrowing limit. Individual "
+        "histories move with income draws, while the cross-sectional mean settles near "
+        "the invariant mean computed from the policy. The point is not aggregate risk; "
+        "it is the stationary cross section produced by idiosyncratic self-insurance."
+    )
 
-    # Panel A: Individual paths (first 10 agents)
-    n_show = min(10, Nsim)
-    for i in range(n_show):
-        ax4a.plot(range(Tsim), asim[i, :], linewidth=0.5, alpha=0.6)
-    ax4a.plot(range(Tsim), np.mean(asim, axis=0), "k-", linewidth=2, label="Mean")
+    fig4, (ax4a, ax4b) = plt.subplots(1, 2, figsize=(12, 5))
+    for i in range(min(20, n_agents)):
+        ax4a.plot(range(periods), assets_sim[i, :], linewidth=0.6, alpha=0.55)
+    ax4a.axhline(mean_assets, color="k", linewidth=1.5, label="invariant mean")
     ax4a.set_xlabel("Period")
     ax4a.set_ylabel("Assets $a_t$")
-    ax4a.set_title("Simulated Asset Paths")
+    ax4a.set_title("Simulated Asset Histories")
+    ax4a.set_xlim(0, periods)
     ax4a.legend()
 
-    # Panel B: Mean asset convergence
-    ax4b.plot(range(Tsim), np.mean(asim, axis=0), "b-", linewidth=2)
+    ax4b.plot(range(periods), np.mean(assets_sim, axis=0), linewidth=2)
+    ax4b.axhline(mean_assets, color="k", linewidth=1.5, linestyle="--")
     ax4b.set_xlabel("Period")
     ax4b.set_ylabel("Mean assets")
-    ax4b.set_title("Mean Asset Convergence")
+    ax4b.set_title("Cross-Sectional Mean")
     fig4.tight_layout()
     report.add_figure(
         "figures/simulated-paths.png",
-        "Simulated asset paths and mean convergence across agents",
+        "Simulated asset paths and convergence toward invariant mean",
         fig4,
-        description="Individual paths fluctuate around the buffer stock target as agents are hit "
-        "by income shocks, but the cross-sectional mean converges to a stationary level. "
-        "The dispersion across paths reflects the wealth inequality generated by uninsurable risk.",
+        description="",
     )
 
-    # --- Table: Policy values at selected grid points ---
-    # Pick asset levels that span the interesting range
-    a_select = [0.0, 0.5, 1.0, 2.0, 5.0, 10.0, 15.0, 20.0]
-    a_indices = [np.argmin(np.abs(agrid[:, 0] - a)) for a in a_select]
-
+    a_select = [0.0, 0.1, 0.25, 0.5, 1.0, 2.0, 5.0]
+    a_indices = [int(np.argmin(np.abs(asset_grid - a))) for a in a_select]
     table_data = {
-        "Assets (a)": [f"{agrid[i, 0]:.2f}" for i in a_indices],
+        "Assets a": [f"{asset_grid[i]:.3f}" for i in a_indices],
     }
-    # Add consumption policy for lowest, middle, and highest income
-    for iy, label in [(0, "Low y"), (ny // 2, "Mid y"), (ny - 1, "High y")]:
-        table_data[f"c*(a, {label})"] = [f"{con[i, iy]:.4f}" for i in a_indices]
-    for iy, label in [(0, "Low y"), (ny // 2, "Mid y"), (ny - 1, "High y")]:
-        table_data[f"a'(a, {label})"] = [f"{sav[i, iy]:.4f}" for i in a_indices]
+    for iy, label in [(0, "low y"), (mid_income_idx, "middle y"), (n_income - 1, "high y")]:
+        table_data[f"c^{{*}}(a, {label})"] = [
+            f"{policy_consumption[i, iy]:.4f}" for i in a_indices
+        ]
+    for iy, label in [(0, "low y"), (mid_income_idx, "middle y"), (n_income - 1, "high y")]:
+        table_data[f"g(a, {label})"] = [
+            f"{policy_assets[i, iy]:.4f}" for i in a_indices
+        ]
 
-    df = pd.DataFrame(table_data)
+    policy_table = pd.DataFrame(table_data)
     report.add_table(
         "tables/policy-values.csv",
-        "Consumption and Savings Policy at Selected Asset Grid Points",
-        df,
-        description="Compare consumption across income states at each asset level: the gap "
-        "between high-income and low-income consumption shrinks as assets increase, showing "
-        "that wealthy agents can better smooth consumption across income realizations.",
+        "Selected Policy Values",
+        policy_table,
+        description="The selected grid points emphasize the economically active region near "
+        "the borrowing constraint. At $a=0$, the low-income household is constrained, "
+        "but the middle- and high-income households still choose positive next-period "
+        "assets because the next draw may be worse.",
     )
 
-    # --- Simulation statistics table ---
-    stats_data = {
-        "Statistic": [
-            "Mean assets / mean income",
-            "Fraction at borrowing constraint",
-            "10th percentile",
-            "50th percentile (median)",
-            "90th percentile",
-            "99th percentile",
-        ],
-        "Value": [
-            f"{mean_assets:.3f}",
-            f"{frac_constrained:.1f}%",
-            f"{pct_10:.3f}",
-            f"{pct_50:.3f}",
-            f"{pct_90:.3f}",
-            f"{pct_99:.3f}",
-        ],
-    }
-    df_stats = pd.DataFrame(stats_data)
+    stats_table = pd.DataFrame(
+        {
+            "Statistic": [
+                "Mean assets / mean income",
+                "Fraction at borrowing constraint",
+                "10th percentile",
+                "50th percentile",
+                "90th percentile",
+                "99th percentile",
+                "Distribution iteration error",
+            ],
+            "Value": [
+                f"{mean_assets / mean_income:.3f}",
+                f"{frac_constrained:.1f}%",
+                f"{pct_10:.3f}",
+                f"{pct_50:.3f}",
+                f"{pct_90:.3f}",
+                f"{pct_99:.3f}",
+                f"{dist_error:.1e}",
+            ],
+        }
+    )
     report.add_table(
         "tables/simulation-stats.csv",
-        "Cross-Sectional Asset Distribution (Final Period)",
-        df_stats,
-        description="The right-skewed distribution is evident from the gap between mean and median "
-        "wealth. Even with IID income shocks, a nontrivial fraction of agents are at the "
-        "borrowing constraint, unable to smooth consumption against bad draws.",
+        "Invariant Asset Distribution",
+        stats_table,
+        description="The distribution is right-skewed, but it is not the persistent-income "
+        "wealth distribution from an Aiyagari model. With IID risk the buffer is modest: "
+        "many households remain close to the constraint, and high assets are rare. The "
+        "statistics below use the exact invariant distribution of the discrete policy, "
+        "not terminal-period Monte Carlo noise.",
     )
 
     report.add_takeaway(
-        "IID income risk fundamentally changes savings behavior compared to the "
-        "deterministic case.\n\n"
-        "**Key insights:**\n"
-        "- **Precautionary savings:** Agents save *more* than they would under certainty "
-        "as a buffer against bad income draws. The concavity of the value function (risk "
-        "aversion) means agents are more hurt by low consumption than they are helped by "
-        "high consumption, so they self-insure through asset accumulation.\n"
-        "- **Borrowing constraint binds:** A positive fraction of agents are at the "
-        "borrowing limit in any period. These constrained agents cannot smooth consumption "
-        "when hit by low income, creating welfare losses.\n"
-        "- **Wealth inequality:** Even with IID (no persistent) income shocks, the "
-        "stationary asset distribution is right-skewed -- a few agents accumulate "
-        "substantial wealth while many remain near the constraint.\n"
-        "- **IID simplification:** Because income is IID, the expected continuation value "
-        "$\\mathbb{E}[V(a', y')]$ depends only on $a'$, not the current income state. "
-        "This makes the problem computationally simpler than the AR(1) case where the "
-        "full state is $(a, y)$ with persistent transitions."
+        "IID income risk is the cleanest way to see the buffer-stock motive. The "
+        "deterministic model says an impatient household should move back to the asset "
+        "floor. Adding uninsurable income shocks overturns that conclusion: assets now "
+        "pay an insurance return by protecting consumption after bad draws.\n\n"
+        "The IID assumption also matters. Current income changes cash on hand and hence "
+        "today's policy, but it does not change tomorrow's income distribution. Persistent "
+        "income risk makes the state richer and the distribution more dispersed; the "
+        "economic object here is the simpler benchmark that separates risk from "
+        "persistence."
     )
 
     report.add_references([
-        "Kaplan, G. (2017). *Heterogeneous Agent Models: Lecture Notes*.",
         "Deaton, A. (1991). Saving and Liquidity Constraints. *Econometrica*, 59(5), 1221-1248.",
         "Carroll, C. (1997). Buffer-Stock Saving and the Life Cycle/Permanent Income Hypothesis. "
         "*Quarterly Journal of Economics*, 112(1), 1-55.",
-        "Aiyagari, S.R. (1994). Uninsured Idiosyncratic Risk and Aggregate Saving. "
+        "Aiyagari, S. R. (1994). Uninsured Idiosyncratic Risk and Aggregate Saving. "
         "*Quarterly Journal of Economics*, 109(3), 659-684.",
+        "Kaplan, G. (2017). *Heterogeneous Agent Models: Codes*. Lecture notes.",
     ])
 
     report.write("README.md")
-    print(f"\nGenerated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
+    print(
+        f"\nGenerated: README.md + {len(report._figures)} figures "
+        f"+ {len(report._tables)} tables"
+    )
 
 
 if __name__ == "__main__":
