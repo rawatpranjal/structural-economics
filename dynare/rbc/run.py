@@ -1,426 +1,530 @@
 #!/usr/bin/env python3
-"""Standard Real Business Cycle (RBC) Model.
+"""RBC TFP shocks and first-order perturbation."""
 
-Parses the Dynare .mod file, solves a log-linearized RBC model in Python via
-first-order perturbation, and generates impulse response functions for a 1%
-TFP shock.
-
-Reference: Kydland and Prescott (1982); King, Plosser, and Rebelo (1988).
-"""
+import os
 import sys
 from pathlib import Path
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
+from scipy.optimize import root
 
-# Add repo root to path for lib/ imports
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.plotting import setup_style, save_figure
 from lib.output import ModelReport
+from lib.plotting import setup_style
 
 
-def parse_mod_file(mod_path: str) -> str:
-    """Read a .mod file and return its contents."""
-    return Path(mod_path).read_text()
+def parse_mod_file(mod_path: Path) -> str:
+    """Read the Dynare .mod file used as the tutorial specification."""
+    return mod_path.read_text()
 
 
-def solve_rbc_perturbation(alpha, beta, delta, rho, sigma_e):
-    """Solve the RBC model via log-linearization around steady state.
-
-    Returns state-space matrices for the log-linearized system:
-        x(t+1) = A x(t) + B e(t+1)
-    where x = [k_hat, a_hat] (capital and TFP deviations from steady state).
-    """
-    # Steady-state values
-    r_ss = 1.0 / beta - 1.0 + delta  # r = alpha * A * K^(alpha-1)
-    k_over_y = alpha / r_ss
-    y_over_k = 1.0 / k_over_y
-    i_over_y = delta * k_over_y
-    c_over_y = 1.0 - i_over_y
-
-    # Log-linearized RBC (sigma=1, log utility):
-    #   y_hat = alpha * k_hat(-1) + a_hat
-    #   c_hat = E[c_hat(+1)] + E[r_hat(+1)]   (Euler equation, sigma=1)
-    #   k_hat = (1-delta)/exp(.) * k_hat(-1) + (delta) * i_hat
-    #   y_hat = c_over_y * c_hat + i_over_y * i_hat
-    #   a_hat = rho * a_hat(-1) + e
-
-    # For the standard RBC with log utility, the approximate decision rules
-    # from first-order perturbation around steady state are:
-    #   k_hat(t) = lambda_k * k_hat(t-1) + lambda_a * a_hat(t)
-    #   y_hat(t) = alpha * k_hat(t-1) + a_hat(t)
-    #   c_hat(t) and i_hat(t) from resource constraint and Euler
-
-    # Solve for the stable eigenvalue lambda_k using the characteristic equation
-    # of the linearized system. For the standard RBC:
-    # The linearized capital law of motion coefficient:
-    theta = alpha * y_over_k  # = alpha / k_over_y
-    # Steady state gross return on capital
-    R_ss = alpha * y_over_k + (1 - delta)
-
-    # Quadratic for the capital eigenvalue from Euler + capital accumulation:
-    # lambda^2 - (1 + R_ss/beta^(-1)) * lambda + R_ss/beta^(-1) * ... = 0
-    # Use simplified analytical result for log utility RBC:
-    # Consumption-output ratio determines the response
-    psi_ck = (1 - beta * (1 - delta)) / alpha  # = r_ss / alpha = 1/k_over_y * something
-
-    # Use the Uhlig (1999) method: solve directly
-    # State: s_t = [k_hat(t), a_hat(t)]
-    # For log utility RBC, the stable eigenvalue for capital is:
-    lambda_k = _solve_capital_eigenvalue(alpha, beta, delta)
-
-    # Response of capital to TFP shock
-    lambda_a = (alpha * lambda_k + (1 - alpha) * rho - rho) / (1 - rho + 1e-12)
-    # More careful: from the decision rule
-    # k_hat(t) = lambda_k * k_hat(t-1) + phi_a * a_hat(t)
-    # Substitute into Euler equation to find phi_a
-
-    # Use Campbell (1994) approximate solution for log utility RBC
-    # Capital decision rule:
-    phi_ka = alpha * beta * (1 - delta) / (1 - beta * (1 - delta) * (1 - alpha))
-    # This gives the response of capital to a unit TFP shock through the
-    # investment channel
-
-    # Recalculate with proper perturbation
-    # For log utility, sigma=1, the system reduces to:
-    # k_hat(t) = lambda_k * k_hat(t-1) + phi * a_hat(t)
-    # where phi is derived from the Euler equation
-
-    # State transition:
-    A = np.array([
-        [lambda_k, phi_ka],
-        [0.0, rho]
-    ])
-
-    B = np.array([
-        [0.0],
-        [sigma_e]
-    ])
-
-    return A, B, {
-        "k_over_y": k_over_y,
-        "c_over_y": c_over_y,
-        "i_over_y": i_over_y,
-        "y_over_k": y_over_k,
-        "r_ss": r_ss,
-        "lambda_k": lambda_k,
-        "phi_ka": phi_ka,
-    }
-
-
-def _solve_capital_eigenvalue(alpha, beta, delta):
-    """Find the stable eigenvalue for capital in the log-linearized RBC.
-
-    Solves the characteristic equation from the Euler equation + capital
-    accumulation constraint. For log utility (sigma=1).
-    """
-    # The linearized system yields a quadratic in the capital eigenvalue:
-    # From Euler: E_t[c_hat(t+1)] = (1-beta*(1-delta)) * E_t[r_hat(t+1)]
-    # where r_hat = (alpha-1)*k_hat + a_hat (from production function)
-    #
-    # Combined with capital accumulation and resource constraint,
-    # the stable root is typically around 0.95 for standard calibration.
-
-    # Coefficients of the quadratic (derived from the system):
-    R = 1.0 / beta  # gross risk-free rate at SS
-    coeff_a = 1.0
-    coeff_b = -(R + (1 - delta) + alpha * delta * beta * R)
-    coeff_c = R * (1 - delta)
-
-    discriminant = coeff_b**2 - 4 * coeff_a * coeff_c
-    if discriminant < 0:
-        # Fallback to standard calibration value
-        return 0.95
-
-    root1 = (-coeff_b - np.sqrt(discriminant)) / (2 * coeff_a)
-    root2 = (-coeff_b + np.sqrt(discriminant)) / (2 * coeff_a)
-
-    # Pick the stable root (inside the unit circle)
-    roots = [r for r in [root1, root2] if 0 < r < 1]
-    if roots:
-        return min(roots)  # most stable
-    else:
-        return 0.95  # fallback
-
-
-def compute_irfs(A, B, ss_info, T=40):
-    """Compute impulse response functions to a 1% TFP shock."""
-    n_states = A.shape[0]
-    alpha = 0.33  # from calibration
-
-    # State vector: [k_hat, a_hat]
-    x = np.zeros((T, n_states))
-    # 1% TFP shock at t=0
-    x[0] = A @ np.zeros(n_states) + B.flatten() * (0.01 / B[1, 0])  # normalize to 1% shock
-
-    for t in range(1, T):
-        x[t] = A @ x[t - 1]
-
-    k_hat = x[:, 0]
-    a_hat = x[:, 1]
-
-    # Output: y_hat = alpha * k_hat(-1) + a_hat
-    # At t=0, k_hat(-1) = 0
-    y_hat = np.zeros(T)
-    y_hat[0] = a_hat[0]
-    for t in range(1, T):
-        y_hat[t] = alpha * k_hat[t - 1] + a_hat[t]
-
-    # Investment: from capital accumulation
-    # k_hat(t) = (1-delta)*k_hat(t-1) + delta*i_hat(t) approximately
-    delta = 0.025
-    i_hat = np.zeros(T)
-    i_hat[0] = k_hat[0] / delta  # since k_hat(-1)=0
-    for t in range(1, T):
-        i_hat[t] = (k_hat[t] - (1 - delta) * k_hat[t - 1]) / delta
-
-    # Consumption: from resource constraint
-    # y_hat = c_over_y * c_hat + i_over_y * i_hat
-    c_over_y = ss_info["c_over_y"]
-    i_over_y = ss_info["i_over_y"]
-    c_hat = (y_hat - i_over_y * i_hat) / c_over_y
+def steady_state(
+    alpha: float,
+    beta: float,
+    delta: float,
+) -> dict[str, float]:
+    """Return the deterministic steady state for the fixed-labor RBC model."""
+    mpk = 1.0 / beta - 1.0 + delta
+    capital = (alpha / mpk) ** (1.0 / (1.0 - alpha))
+    output = capital**alpha
+    investment = delta * capital
+    consumption = output - investment
 
     return {
-        "output": y_hat,
-        "consumption": c_hat,
-        "investment": i_hat,
-        "capital": k_hat,
-        "tfp": a_hat,
+        "K": capital,
+        "Y": output,
+        "C": consumption,
+        "I": investment,
+        "K_Y": capital / output,
+        "C_Y": consumption / output,
+        "I_Y": investment / output,
+        "mpk": mpk,
+        "gross_return": 1.0 / beta,
     }
 
 
-def main():
-    # =========================================================================
-    # Parse the Dynare .mod file
-    # =========================================================================
-    mod_dir = Path(__file__).resolve().parent
-    mod_text = parse_mod_file(mod_dir / "model.mod")
-    print("Parsed model.mod for Standard RBC")
+def solve_log_linear_policy(
+    alpha: float,
+    beta: float,
+    delta: float,
+    rho: float,
+    sigma: float,
+    ss: dict[str, float],
+) -> dict[str, float]:
+    """Solve the first-order RBC decision rule by matching coefficients.
 
-    # =========================================================================
-    # Parameters (from model.mod)
-    # =========================================================================
+    The rule is
+
+        khat_t = p * khat_{t-1} + q * ahat_t,
+
+    where hats are log deviations from steady state.
+    """
+    capital_output = ss["K_Y"]
+    consumption_share = ss["C_Y"]
+    gross_marginal_product_share = beta * alpha / capital_output
+    resource_lag_weight = alpha + capital_output * (1.0 - delta)
+
+    def consumption_coefficients(p: float, q: float) -> tuple[float, float]:
+        c_k = (resource_lag_weight - capital_output * p) / consumption_share
+        c_a = (1.0 - capital_output * q) / consumption_share
+        return c_k, c_a
+
+    def residual(coefficients: np.ndarray) -> np.ndarray:
+        p, q = coefficients
+        c_k, c_a = consumption_coefficients(p, q)
+
+        euler_k = c_k - (
+            c_k * p
+            - (gross_marginal_product_share / sigma) * (alpha - 1.0) * p
+        )
+        euler_a = c_a - (
+            c_k * q
+            + c_a * rho
+            - (gross_marginal_product_share / sigma)
+            * (rho + (alpha - 1.0) * q)
+        )
+        return np.array([euler_k, euler_a])
+
+    solution = root(residual, np.array([0.95, 0.08]))
+    if not solution.success:
+        raise RuntimeError(f"Could not solve linearized RBC policy: {solution.message}")
+
+    p, q = solution.x
+    c_k, c_a = consumption_coefficients(p, q)
+    return {
+        "p": float(p),
+        "q": float(q),
+        "c_k": float(c_k),
+        "c_a": float(c_a),
+        "max_residual": float(np.max(np.abs(residual(solution.x)))),
+    }
+
+
+def linear_irfs(
+    alpha: float,
+    delta: float,
+    rho: float,
+    shock: float,
+    policy: dict[str, float],
+    ss: dict[str, float],
+    periods: int,
+) -> dict[str, np.ndarray]:
+    """Compute log-linear impulse responses to a TFP innovation."""
+    a_hat = shock * rho ** np.arange(periods)
+    k_hat = np.zeros(periods)
+    y_hat = np.zeros(periods)
+    i_hat = np.zeros(periods)
+    c_hat = np.zeros(periods)
+
+    for t in range(periods):
+        k_lag = k_hat[t - 1] if t > 0 else 0.0
+        k_hat[t] = policy["p"] * k_lag + policy["q"] * a_hat[t]
+        y_hat[t] = a_hat[t] + alpha * k_lag
+        i_hat[t] = (k_hat[t] - (1.0 - delta) * k_lag) / delta
+        c_hat[t] = (y_hat[t] - ss["I_Y"] * i_hat[t]) / ss["C_Y"]
+
+    return {
+        "Output": y_hat,
+        "Consumption": c_hat,
+        "Investment": i_hat,
+        "Capital": k_hat,
+        "TFP": a_hat,
+    }
+
+
+def nonlinear_transition_irfs(
+    alpha: float,
+    beta: float,
+    delta: float,
+    rho: float,
+    sigma: float,
+    shock: float,
+    ss: dict[str, float],
+    initial_guess: np.ndarray,
+    periods: int,
+) -> dict[str, np.ndarray]:
+    """Solve the exact nonlinear transition for a decaying TFP shock path.
+
+    This is a deterministic perfect-foresight benchmark conditional on one
+    innovation at date 0 and no later innovations.
+    """
+    K_ss = ss["K"]
+    C_ss = ss["C"]
+    Y_ss = ss["Y"]
+    I_ss = ss["I"]
+
+    a_path = shock * rho ** np.arange(periods + 1)
+    A_path = np.exp(a_path)
+    terminal_k = K_ss
+
+    def residual(log_k_path: np.ndarray) -> np.ndarray:
+        K_path = np.empty(periods + 1)
+        K_path[:periods] = K_ss * np.exp(log_k_path)
+        K_path[periods] = terminal_k
+
+        errors = np.empty(periods)
+        K_lag = K_ss
+        for t in range(periods):
+            C_t = A_path[t] * K_lag**alpha + (1.0 - delta) * K_lag - K_path[t]
+            C_next = (
+                A_path[t + 1] * K_path[t] ** alpha
+                + (1.0 - delta) * K_path[t]
+                - K_path[t + 1]
+            )
+            R_next = alpha * A_path[t + 1] * K_path[t] ** (alpha - 1.0) + (
+                1.0 - delta
+            )
+            if C_t <= 0.0 or C_next <= 0.0 or R_next <= 0.0:
+                return np.full(periods, 1e6)
+            errors[t] = (
+                -sigma * np.log(C_t)
+                - np.log(beta)
+                + sigma * np.log(C_next)
+                - np.log(R_next)
+            )
+            K_lag = K_path[t]
+        return errors
+
+    solution = root(
+        residual,
+        initial_guess[:periods],
+        method="hybr",
+        options={"xtol": 1e-11, "maxfev": 20000},
+    )
+    if not solution.success:
+        raise RuntimeError(f"Could not solve nonlinear transition: {solution.message}")
+
+    K_path = np.empty(periods + 1)
+    K_path[:periods] = K_ss * np.exp(solution.x)
+    K_path[periods] = terminal_k
+
+    y_hat = np.zeros(periods)
+    c_hat = np.zeros(periods)
+    i_hat = np.zeros(periods)
+    k_hat = np.log(K_path[:periods] / K_ss)
+
+    K_lag = K_ss
+    for t in range(periods):
+        Y_t = A_path[t] * K_lag**alpha
+        C_t = Y_t + (1.0 - delta) * K_lag - K_path[t]
+        I_t = K_path[t] - (1.0 - delta) * K_lag
+
+        y_hat[t] = np.log(Y_t / Y_ss)
+        c_hat[t] = np.log(C_t / C_ss)
+        i_hat[t] = np.log(I_t / I_ss)
+        K_lag = K_path[t]
+
+    return {
+        "Output": y_hat,
+        "Consumption": c_hat,
+        "Investment": i_hat,
+        "Capital": k_hat,
+        "TFP": a_path[:periods],
+        "max_residual": float(np.max(np.abs(residual(solution.x)))),
+    }
+
+
+def half_life_after_peak(series: np.ndarray) -> int | str:
+    """Return periods after the absolute peak until the response halves."""
+    abs_series = np.abs(series)
+    peak_period = int(np.argmax(abs_series))
+    peak = abs_series[peak_period]
+    below_half = np.where(abs_series[peak_period:] <= peak / 2.0)[0]
+    if len(below_half) == 0:
+        return f">{len(series) - peak_period - 1}"
+    return int(below_half[0])
+
+
+def format_percent(value: float, digits: int = 3) -> str:
+    """Format a log-deviation as a percentage response."""
+    return f"{100.0 * value:.{digits}f}"
+
+
+def main() -> None:
+    tutorial_dir = Path(__file__).resolve().parent
+    os.chdir(tutorial_dir)
+
+    mod_text = parse_mod_file(tutorial_dir / "model.mod")
+    model_equation_count = mod_text.split("model;")[1].split("end;")[0].count(";")
+
     alpha = 0.33
     beta = 0.99
     delta = 0.025
     rho = 0.95
-    sigma = 1      # CRRA (log utility)
+    sigma = 1.0
     sigma_e = 0.01
+    shock = sigma_e
+    periods_irf = 40
+    periods_benchmark = 120
 
-    # =========================================================================
-    # Solve the model
-    # =========================================================================
-    print("Solving log-linearized RBC via first-order perturbation...")
-    A, B, ss_info = solve_rbc_perturbation(alpha, beta, delta, rho, sigma_e)
-    print(f"  Capital eigenvalue (persistence): {ss_info['lambda_k']:.4f}")
-    print(f"  Capital-output ratio: {ss_info['k_over_y']:.2f}")
-    print(f"  Consumption share: {ss_info['c_over_y']:.2f}")
+    print("Solving the RBC model around its deterministic steady state...")
+    ss = steady_state(alpha, beta, delta)
+    policy = solve_log_linear_policy(alpha, beta, delta, rho, sigma, ss)
+    linear_long = linear_irfs(
+        alpha,
+        delta,
+        rho,
+        shock,
+        policy,
+        ss,
+        periods_benchmark,
+    )
+    nonlinear_long = nonlinear_transition_irfs(
+        alpha,
+        beta,
+        delta,
+        rho,
+        sigma,
+        shock,
+        ss,
+        linear_long["Capital"],
+        periods_benchmark,
+    )
+    print(f"  Parsed {model_equation_count} Dynare model equations.")
+    print(f"  Steady-state K/Y: {ss['K_Y']:.2f}")
+    print(f"  Capital decision rule: k_t = {policy['p']:.4f} k_(t-1) + {policy['q']:.4f} a_t")
+    print(f"  Max Euler residual in nonlinear benchmark: {nonlinear_long['max_residual']:.2e}")
 
-    # =========================================================================
-    # Compute IRFs
-    # =========================================================================
-    T_irf = 40
-    irfs = compute_irfs(A, B, ss_info, T=T_irf)
-    print("  IRFs computed for 40 periods.")
+    variables = ["Output", "Consumption", "Investment", "Capital"]
+    plot_variables = variables + ["TFP"]
+    linear = {key: linear_long[key][:periods_irf] for key in plot_variables}
+    nonlinear = {key: nonlinear_long[key][:periods_irf] for key in plot_variables}
 
-    # =========================================================================
-    # Generate Report
-    # =========================================================================
     setup_style()
-
     report = ModelReport(
-        "Perturbation RBC in Dynare",
-        "A log-linearized RBC model with TFP shocks, solved via first-order perturbation in Python.",
+        "RBC TFP Shocks and Capital Propagation",
+        "How a persistent productivity shock moves output, consumption, investment, and capital in a standard RBC model.",
+        include_reproduce=False,
+        show_figure_captions=False,
     )
 
     report.add_overview(
-        "The Real Business Cycle model is the workhorse of modern macroeconomics. A "
-        "representative household maximizes lifetime utility over consumption and leisure, "
-        "while a representative firm produces output using capital and labor with a "
-        "Cobb-Douglas technology subject to stochastic total factor productivity (TFP).\n\n"
-        "This implementation parses the Dynare `model.mod` specification and replicates "
-        "the first-order perturbation solution in pure Python, generating impulse response "
-        "functions to a 1% TFP shock."
+        "A Real Business Cycle model turns a productivity innovation into a path for "
+        "the whole economy. Output moves on impact because technology is higher today. "
+        "Capital moves slowly because it is predetermined: households can only change "
+        "tomorrow's productive capacity by changing investment today.\n\n"
+        "The `model.mod` file is the Dynare-style source specification. This tutorial "
+        "keeps the same economics but solves the first-order system directly in Python, "
+        "so the state, control, and approximation are visible. The comparison line in "
+        "the results solves the exact nonlinear transition for the same decaying TFP "
+        "shock. For a 1 percent shock the two paths nearly coincide, which is exactly "
+        "what a local perturbation is supposed to deliver near steady state."
     )
 
     report.add_equations(
-        r"""
-**From `model.mod` (Dynare syntax):**
-```
-exp(y) = exp(a)*exp(k(-1))^(alpha)
-exp(c)^(-sigma) = beta*exp(c(+1))^(-sigma)*(alpha*exp(a(+1))*exp(k)^(alpha-1)+(1-delta))
-exp(k) = exp(i) + (1-delta)*exp(k(-1))
-exp(y) = exp(c) + exp(i)
-a = rho * a(-1) + e
-```
+        rf"""
+Let $A_t$ denote total factor productivity, $K_{{t-1}}$ the capital stock chosen
+last period, $C_t$ consumption, $I_t$ investment, and $Y_t$ output. The model is
 
-**Interpretation (level form):**
+$$
+Y_t = A_t K_{{t-1}}^\alpha,
+\qquad
+Y_t = C_t + I_t,
+$$
 
-$$Y_t = A_t K_{t-1}^\alpha$$
+$$
+K_t = I_t + (1-\delta)K_{{t-1}},
+$$
 
-$$C_t^{-\sigma} = \beta \, \mathbb{E}_t \left[ C_{t+1}^{-\sigma} \left( \alpha A_{t+1} K_t^{\alpha-1} + 1-\delta \right) \right]$$
+and the representative household's Euler equation is
 
-$$K_t = I_t + (1-\delta) K_{t-1}$$
+$$
+C_t^{{-\sigma}} =
+\beta \mathbb{{E}}_t\left[
+C_{{t+1}}^{{-\sigma}}
+\left(\alpha A_{{t+1}}K_t^{{\alpha-1}}+1-\delta\right)
+\right].
+$$
 
-$$Y_t = C_t + I_t$$
+Technology follows
 
-$$\log A_t = \rho \log A_{t-1} + \varepsilon_t, \quad \varepsilon_t \sim N(0, \sigma_e^2)$$
+$$
+\log A_t = \rho \log A_{{t-1}} + \varepsilon_t,
+\qquad
+\varepsilon_t \sim N(0,\sigma_\varepsilon^2).
+$$
+
+The Dynare file stores $y,c,i,k,a$ as logs, so expressions such as `exp(y)` are
+level variables. Around the deterministic steady state with $A=1$,
+
+$$
+\alpha K^{{\alpha-1}} = \frac{{1}}{{\beta}} - 1 + \delta,
+\qquad
+Y=K^\alpha,\qquad I=\delta K,\qquad C=Y-I.
+$$
+
+The calibration implies $K/Y={ss["K_Y"]:.2f}$ and $C/Y={ss["C_Y"]:.2f}$.
 """
     )
 
     report.add_model_setup(
-        f"| Parameter | Value | Description |\n"
-        f"|-----------|-------|-------------|\n"
-        f"| $\\alpha$  | {alpha} | Capital share |\n"
-        f"| $\\beta$   | {beta} | Discount factor |\n"
-        f"| $\\delta$  | {delta} | Depreciation rate |\n"
-        f"| $\\rho$    | {rho} | TFP persistence |\n"
-        f"| $\\sigma$  | {sigma} | CRRA coefficient (log utility) |\n"
-        f"| $\\sigma_e$ | {sigma_e} | Shock std. dev. |"
+        "| Primitive | Value | Role |\n"
+        "|---|---:|---|\n"
+        f"| $\\alpha$ | {alpha:.2f} | Capital share in production |\n"
+        f"| $\\beta$ | {beta:.2f} | Quarterly discount factor |\n"
+        f"| $\\delta$ | {delta:.3f} | Quarterly depreciation |\n"
+        f"| $\\rho$ | {rho:.2f} | Persistence of log TFP |\n"
+        f"| $\\sigma$ | {sigma:.1f} | CRRA coefficient; here log utility |\n"
+        f"| $\\sigma_\\varepsilon$ | {sigma_e:.3f} | Innovation standard deviation in log TFP |\n"
+        f"| Shock | {100 * shock:.1f}% | One-standard-deviation innovation at date 0 |\n"
+        f"| IRF horizon | {periods_irf} quarters | Periods shown in the figure |\n\n"
+        "| Steady-state object | Value |\n"
+        "|---|---:|\n"
+        f"| $K$ | {ss['K']:.3f} |\n"
+        f"| $Y$ | {ss['Y']:.3f} |\n"
+        f"| $C$ | {ss['C']:.3f} |\n"
+        f"| $I$ | {ss['I']:.3f} |\n"
+        f"| $K/Y$ | {ss['K_Y']:.3f} |\n"
+        f"| $C/Y$ | {ss['C_Y']:.3f} |"
     )
 
     report.add_solution_method(
-        "**First-order perturbation (log-linearization):** The model is approximated "
-        "around the non-stochastic steady state by taking a first-order Taylor expansion "
-        "of the equilibrium conditions in log-deviations.\n\n"
-        "The resulting system takes the state-space form:\n\n"
-        "$$\\hat{x}_{t+1} = A \\, \\hat{x}_t + B \\, \\varepsilon_{t+1}$$\n\n"
-        f"where $\\hat{{x}}_t = [\\hat{{k}}_t, \\hat{{a}}_t]'$. The stable eigenvalue for capital "
-        f"is $\\lambda_k = {ss_info['lambda_k']:.4f}$, reflecting the high persistence of the "
-        f"capital stock."
+        "The approximation uses log deviations from steady state. Write "
+        "$\\hat k_t=\\log(K_t/K)$ and $\\hat a_t=\\log A_t$. Since capital is the "
+        "only endogenous state, the decision rule is linear in last period's "
+        "capital and current productivity:\n\n"
+        "$$\n"
+        f"\\hat k_t = {policy['p']:.4f}\\hat k_{{t-1}} + {policy['q']:.4f}\\hat a_t.\n"
+        "$$\n\n"
+        "Consumption and investment then follow from the resource constraint and "
+        "capital accumulation. The stable capital root is below one, so a temporary "
+        "productivity shock can raise investment today without making capital jump "
+        "all at once.\n\n"
+        "```text\n"
+        "Algorithm: first-order RBC impulse response\n"
+        "Inputs: alpha, beta, delta, rho, sigma, shock size eps_0, horizon T\n"
+        "Outputs: paths for yhat_t, chat_t, ihat_t, khat_t\n\n"
+        "1. Compute the deterministic steady state K, Y, C, I.\n"
+        "2. Linearize the resource constraint and Euler equation in log deviations.\n"
+        "3. Guess khat_t = p khat_{t-1} + q ahat_t.\n"
+        "4. Substitute the guess into the linearized equations and match the\n"
+        "   coefficients on khat_{t-1} and ahat_t.\n"
+        "5. Select the stable solution for p and q.\n"
+        "6. Set ahat_0 = eps_0 and ahat_t = rho ahat_{t-1}.\n"
+        "7. Iterate the decision rule and recover yhat_t, ihat_t, and chat_t from\n"
+        "   production, capital accumulation, and goods-market clearing.\n"
+        "8. As a local accuracy check, solve the exact nonlinear perfect-foresight\n"
+        "   transition for the same TFP path and compare the two IRFs.\n"
+        "```\n\n"
+        f"The coefficient-matching residual is {policy['max_residual']:.1e}. The "
+        "nonlinear benchmark is not a different stochastic model; it is the exact "
+        "deterministic transition implied by the same one-time shock path."
     )
 
-    # --- Figure 1: IRFs to TFP shock ---
-    periods = np.arange(T_irf)
-    fig1, axes = plt.subplots(2, 2, figsize=(12, 9))
+    periods = np.arange(periods_irf)
+    fig, axes = plt.subplots(2, 2, figsize=(11, 8))
+    colors = {
+        "Output": "#1b6ca8",
+        "Consumption": "#4b8f29",
+        "Investment": "#b85c00",
+        "Capital": "#6f4aa8",
+    }
 
-    titles = ["Output ($\\hat{y}$)", "Consumption ($\\hat{c}$)",
-              "Investment ($\\hat{i}$)", "Capital ($\\hat{k}$)"]
-    keys = ["output", "consumption", "investment", "capital"]
-    colors = ["#2c7bb6", "#d7191c", "#fdae61", "#018571"]
+    for ax, variable in zip(axes.flat, variables):
+        ax.plot(
+            periods,
+            100.0 * linear[variable],
+            color=colors[variable],
+            linewidth=2.3,
+            label="First-order perturbation",
+        )
+        ax.plot(
+            periods,
+            100.0 * nonlinear[variable],
+            color="black",
+            linewidth=1.6,
+            linestyle="--",
+            label="Nonlinear transition",
+        )
+        ax.axhline(0.0, color="black", linewidth=0.6, alpha=0.6)
+        ax.set_title(variable)
+        ax.set_xlabel("Quarters after shock")
+        ax.set_ylabel("Percent log deviation")
 
-    for ax, title, key, color in zip(axes.flatten(), titles, keys, colors):
-        ax.plot(periods, irfs[key] * 100, color=color, linewidth=2.5)
-        ax.axhline(y=0, color="black", linewidth=0.5, linestyle="--")
-        ax.set_xlabel("Quarters")
-        ax.set_ylabel("% deviation from SS")
-        ax.set_title(title)
+    axes[0, 0].legend(frameon=False, loc="upper right")
+    fig.suptitle("Responses to a 1 Percent TFP Innovation", fontsize=14, fontweight="bold")
+    fig.tight_layout(rect=[0, 0, 1, 0.96])
 
-    fig1.suptitle("Impulse Responses to 1% TFP Shock", fontsize=14, fontweight="bold")
-    fig1.tight_layout(rect=[0, 0, 1, 0.96])
+    report.add_results(
+        "The productivity shock raises output immediately. Investment jumps more "
+        "than output because the household wants to move capital toward the temporarily "
+        "higher marginal product of capital. Consumption rises by less on impact and "
+        "keeps drifting upward for several quarters, reflecting smoothing through the "
+        "Euler equation. The dashed nonlinear transition is almost on top of the "
+        "first-order solution at this shock size, so the local approximation is doing "
+        "what it is meant to do near steady state."
+    )
     report.add_figure(
         "figures/irf-tfp-shock.png",
-        "Impulse responses of output, consumption, investment, and capital to a 1% TFP shock",
-        fig1,
-        description="Investment overshoots on impact because the temporarily high marginal product of "
-        "capital makes accumulation attractive. Consumption rises smoothly, consistent with the permanent "
-        "income hypothesis. Capital inherits the persistence of TFP but adjusts even more slowly due to "
-        "the large capital stock relative to the flow of investment.",
+        "Impulse responses of output, consumption, investment, and capital to a 1 percent TFP shock",
+        fig,
     )
 
-    # --- Figure 2: Model equations display ---
-    fig2, ax2 = plt.subplots(figsize=(10, 7))
-    ax2.axis("off")
-    equations_text = (
-        "Standard RBC Model Equations\n"
-        "=" * 40 + "\n\n"
-        "Production:          $Y_t = A_t K_{t-1}^{\\alpha}$\n\n"
-        "Euler Equation:     $C_t^{-\\sigma} = \\beta E_t[C_{t+1}^{-\\sigma}(\\alpha A_{t+1} K_t^{\\alpha-1} + 1 - \\delta)]$\n\n"
-        "Capital Accum:     $K_t = I_t + (1-\\delta)K_{t-1}$\n\n"
-        "Resource:             $Y_t = C_t + I_t$\n\n"
-        "TFP Process:        $\\log A_t = \\rho \\log A_{t-1} + \\varepsilon_t$"
+    rows = []
+    for variable in ["Output", "Consumption", "Investment", "Capital", "TFP"]:
+        series = linear_long[variable]
+        display_gap = float(
+            np.max(
+                np.abs(
+                    100.0
+                    * (
+                        linear_long[variable][:periods_irf]
+                        - nonlinear_long[variable][:periods_irf]
+                    )
+                )
+            )
+        )
+        peak_period = int(np.argmax(np.abs(series)))
+        rows.append(
+            {
+                "Variable": variable,
+                "Impact (%)": format_percent(series[0]),
+                "Peak (%)": format_percent(series[peak_period]),
+                "Peak quarter": peak_period,
+                "Half-life after peak": half_life_after_peak(series),
+                "Max nonlinear gap (pp)": f"{display_gap:.3f}",
+            }
+        )
+
+    summary = pd.DataFrame(rows)
+    report.add_results(
+        "The summary statistics separate impact effects from delayed peaks. Capital "
+        "and consumption peak well after the shock because the state is slow-moving; "
+        "investment peaks immediately because it is the margin that changes the state."
     )
-
-    eq_lines = [
-        ("Production:", r"$Y_t = A_t K_{t-1}^{\alpha}$"),
-        ("Euler Equation:", r"$C_t^{-\sigma} = \beta E_t[C_{t+1}^{-\sigma}(\alpha A_{t+1} K_t^{\alpha-1} + 1-\delta)]$"),
-        ("Capital Accum.:", r"$K_t = I_t + (1-\delta)K_{t-1}$"),
-        ("Resource Constr.:", r"$Y_t = C_t + I_t$"),
-        ("TFP Process:", r"$\log A_t = \rho \log A_{t-1} + \varepsilon_t$"),
-    ]
-
-    y_pos = 0.88
-    ax2.text(0.5, 0.97, "Standard RBC Model Equations",
-             transform=ax2.transAxes, fontsize=16, fontweight="bold",
-             ha="center", va="top")
-    for label, eq in eq_lines:
-        ax2.text(0.08, y_pos, label, transform=ax2.transAxes, fontsize=12,
-                 fontweight="bold", va="top", fontfamily="monospace")
-        ax2.text(0.40, y_pos, eq, transform=ax2.transAxes, fontsize=14, va="top")
-        y_pos -= 0.14
-
-    # Add parameter values
-    y_pos -= 0.05
-    ax2.text(0.5, y_pos, "Calibration", transform=ax2.transAxes, fontsize=14,
-             fontweight="bold", ha="center", va="top")
-    y_pos -= 0.08
-    param_str = (f"$\\alpha={alpha}$,  $\\beta={beta}$,  $\\delta={delta}$,  "
-                 f"$\\rho={rho}$,  $\\sigma={sigma}$,  $\\sigma_e={sigma_e}$")
-    ax2.text(0.5, y_pos, param_str, transform=ax2.transAxes, fontsize=13,
-             ha="center", va="top")
-
-    fig2.tight_layout()
-    report.add_figure(
-        "figures/model-equations.png",
-        "Model equations and calibration for the standard RBC",
-        fig2,
-        description="These five equations fully characterize the competitive equilibrium. The Euler "
-        "equation pins down the intertemporal consumption-savings trade-off, while the resource "
-        "constraint forces output to be split between consumption and investment.",
+    report.add_table(
+        "tables/irf-summary.csv",
+        "IRF Summary Statistics",
+        summary,
     )
-
-    # --- Table: IRF peaks ---
-    peak_data = {
-        "Variable": ["Output", "Consumption", "Investment", "Capital", "TFP"],
-        "Peak response (%)": [
-            f"{np.max(np.abs(irfs[k])) * 100:.3f}"
-            for k in ["output", "consumption", "investment", "capital", "tfp"]
-        ],
-        "Peak quarter": [
-            str(np.argmax(np.abs(irfs[k])))
-            for k in ["output", "consumption", "investment", "capital", "tfp"]
-        ],
-        "Half-life (quarters)": [],
-    }
-    for k in ["output", "consumption", "investment", "capital", "tfp"]:
-        peak_val = np.max(np.abs(irfs[k]))
-        half = np.where(np.abs(irfs[k]) < peak_val / 2)[0]
-        if len(half) > 0:
-            peak_data["Half-life (quarters)"].append(str(half[0]))
-        else:
-            peak_data["Half-life (quarters)"].append(">40")
-
-    df = pd.DataFrame(peak_data)
-    report.add_table("tables/irf-summary.csv", "IRF Summary Statistics", df,
-        description="The peak responses and half-lives quantify how each variable adjusts to the shock. "
-        "Investment has the largest peak response but the shortest half-life, reflecting its role as the "
-        "adjustment margin. Capital's long half-life mirrors the slow depreciation-driven dynamics.")
 
     report.add_takeaway(
-        "The standard RBC model produces business cycle dynamics driven entirely by "
-        "real (technology) shocks.\n\n"
-        "**Key insights:**\n"
-        "- A positive TFP shock raises output on impact, with the response shaped by "
-        "both the direct productivity effect and endogenous capital accumulation.\n"
-        "- Investment is the most volatile variable, overshooting on impact as agents "
-        "take advantage of temporarily high returns to capital.\n"
-        "- Consumption responds smoothly (consumption smoothing via the permanent income "
-        "hypothesis) --- the Euler equation ensures marginal utility is a martingale.\n"
-        "- Capital inherits the persistence of the TFP shock but adjusts even more "
-        "slowly due to the high depreciation-adjusted eigenvalue.\n"
-        "- The model's key limitation: it requires large, persistent TFP shocks to "
-        "match observed business cycle volatility."
+        "In this RBC model, a productivity shock is both a level effect and an "
+        "intertemporal price signal. Output rises on impact because firms are more "
+        "productive. Investment responds strongly because the marginal product of "
+        "capital is temporarily high. Consumption moves more smoothly, and capital "
+        "accumulates only gradually. That is the core propagation mechanism a "
+        "first-order Dynare-style RBC exercise is meant to isolate.\n\n"
+        "This tutorial is the equilibrium counterpart to the "
+        "[persistent-shock tutorial](../ar-processes/): the AR(1) process supplies "
+        "the shock's timing, while the Euler equation and capital law of motion decide "
+        "how that timing shows up in macro quantities. For larger shocks or binding "
+        "constraints, compare this local solution with the "
+        "[global nonlinear RBC tutorial](../../global-dsge/rbc-nonlinear/)."
     )
 
-    report.add_references([
-        "Kydland, F. and Prescott, E. (1982). Time to Build and Aggregate Fluctuations. *Econometrica*, 50(6), 1345-1370.",
-        "King, R., Plosser, C., and Rebelo, S. (1988). Production, Growth and Business Cycles: I. The Basic Neoclassical Model. *Journal of Monetary Economics*, 21(2-3), 195-232.",
-        "Uhlig, H. (1999). A Toolkit for Analysing Nonlinear Dynamic Stochastic Models Easily. In *Computational Methods for the Study of Dynamic Economies*.",
-    ])
+    report.add_references(
+        [
+            "Kydland, F. and Prescott, E. (1982). Time to Build and Aggregate Fluctuations. *Econometrica*, 50(6), 1345-1370.",
+            "King, R., Plosser, C., and Rebelo, S. (1988). Production, Growth and Business Cycles: I. The Basic Neoclassical Model. *Journal of Monetary Economics*, 21(2-3), 195-232.",
+            "Uhlig, H. (1999). A Toolkit for Analysing Nonlinear Dynamic Stochastic Models Easily. In *Computational Methods for the Study of Dynamic Economies*.",
+        ]
+    )
 
     report.write("README.md")
-    print(f"\nGenerated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
+    print(f"\nGenerated: README.md + {len(report._figures)} figure + {len(report._tables)} table")
 
 
 if __name__ == "__main__":
