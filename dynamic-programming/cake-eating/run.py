@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 """Cake-Eating Problem: Optimal Consumption of a Finite Resource.
 
-Solves the infinite-horizon cake-eating problem using value function iteration
-with JAX. This is the simplest dynamic programming problem: how to optimally
-consume a non-renewable resource over time.
+Solves the infinite-horizon cake-eating problem by value function iteration.
+The log-utility case has a closed-form solution, so the numerical value and
+policy functions can be checked against an exact economic benchmark.
 
 Reference: Stokey, Lucas, and Prescott (1989), Ch. 4.
 """
 import sys
 from pathlib import Path
 
-import jax
 import jax.numpy as jnp
 import numpy as np
 import matplotlib.pyplot as plt
@@ -18,12 +17,11 @@ import pandas as pd
 
 # Add repo root to path for lib/ imports
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.grids import uniform_grid
-from lib.plotting import setup_style, save_figure
+from lib.plotting import setup_style
 from lib.output import ModelReport
 
 
-def main():
+def main() -> None:
     # =========================================================================
     # Parameters
     # =========================================================================
@@ -44,7 +42,6 @@ def main():
     # =========================================================================
     # Utility function
     # =========================================================================
-    u_np = np.log if sigma == 1.0 else (lambda c: c ** (1 - sigma) / (1 - sigma))
     u_vec = lambda c: np.log(np.maximum(c, 1e-15))
 
     # =========================================================================
@@ -107,7 +104,7 @@ def main():
     consumption_analytical = (1 - beta) * w_grid  # c = (1-beta) * W
 
     # =========================================================================
-    # Simulate cake path
+    # Simulate cake and consumption paths
     # =========================================================================
     T_sim = 30
     cake_path = jnp.zeros(T_sim)
@@ -116,10 +113,18 @@ def main():
         # Interpolate policy
         w_prime = jnp.interp(cake_path[t], w_grid, policy_cake)
         cake_path = cake_path.at[t + 1].set(w_prime)
-    consumption_path = jnp.concatenate([
-        cake_path[:-1] - cake_path[1:],
-        jnp.array([0.0]),
-    ])
+    consumption_path = jnp.interp(cake_path, w_grid, consumption_policy)
+
+    periods = jnp.arange(T_sim)
+    cake_path_analytical = (beta ** periods) * w_max
+    consumption_path_analytical = (1 - beta) * cake_path_analytical
+
+    valid_start = max(1, n_grid // 10)  # skip the bottom where interpolation/extrapolation is hardest
+    value_error = np.asarray(v_star - v_analytical)
+    policy_error = np.asarray(consumption_policy - consumption_analytical)
+    max_value_error = float(np.max(np.abs(value_error[valid_start:])))
+    max_policy_error = float(np.max(np.abs(policy_error[valid_start:])))
+    max_path_error = float(np.max(np.abs(np.asarray(cake_path - cake_path_analytical))))
 
     # =========================================================================
     # Generate Report
@@ -129,29 +134,55 @@ def main():
     report = ModelReport(
         "Finite-Resource Cake Eating",
         "Optimal consumption of a finite, non-renewable resource over an infinite horizon.",
+        include_reproduce=False,
+        show_figure_captions=False,
     )
 
     report.add_overview(
-        "The cake-eating problem is the simplest dynamic programming model. An agent "
-        "has a cake of size $W$ and must decide how much to eat each period. The cake "
-        "does not grow — any portion not consumed today is saved for tomorrow. The agent "
-        "discounts the future at rate $\\beta$ and has CRRA utility over consumption.\n\n"
-        "This model introduces the core machinery of dynamic programming: Bellman equations, "
-        "value function iteration, and policy functions."
+        "The cake-eating problem is a finite-resource allocation problem. An agent starts "
+        "with wealth, or cake, and chooses how much to consume today versus how much to "
+        "carry forward. There is no production, income, or uncertainty. Saving one more "
+        "unit only preserves that unit for tomorrow, so the model isolates the shadow "
+        "value of remaining wealth.\n\n"
+        "This stripped-down environment is useful because log utility gives an exact "
+        "benchmark: the agent consumes a constant share of wealth each period. The same "
+        "Bellman-equation logic carries into [optimal growth](../optimal-growth/), "
+        "[consumption-savings](../consumption-savings/), and the later heterogeneous-agent "
+        "savings tutorials, where resources also move through time but the state space is "
+        "larger and the benchmark is no longer closed form."
     )
 
     report.add_equations(
         r"""
-$$V(W) = \max_{0 \le c \le W} \bigl[ u(c) + \beta \, V(W - c) \bigr]$$
+Let $W_t$ be cake or wealth at the start of period $t$. The agent chooses
+consumption $c_t \in [0,W_t]$, and unconsumed cake becomes next period's state:
 
-where $W$ is the remaining cake, $c$ is consumption, and $\beta \in (0,1)$ is the
-discount factor.
+$$W_{t+1}=W_t-c_t.$$
 
-**CRRA utility:** $u(c) = \frac{c^{1-\sigma}}{1-\sigma}$, with $u(c) = \ln(c)$ when $\sigma = 1$.
+Lifetime utility is
 
-**Analytical solution (log utility):**
+$$\sum_{t=0}^{\infty} \beta^t u(c_t), \qquad \beta \in (0,1).$$
+
+With CRRA preferences,
+
+$$u(c) = \frac{c^{1-\sigma}}{1-\sigma}, \qquad
+u(c)=\log c \text{ when } \sigma=1.$$
+
+The value function $V(W)$ solves
+
+$$V(W) = \max_{0 \le c \le W} \bigl[ u(c) + \beta V(W-c) \bigr].$$
+
+The consumption policy is $c^*(W)$ and the next-wealth policy is
+$g(W)=W-c^*(W)$. In the log-utility case, the closed-form solution is
+
 $$V(W) = \frac{\ln((1-\beta) W)}{1-\beta} + \frac{\beta \ln \beta}{(1-\beta)^2}$$
-$$c^*(W) = (1-\beta) W, \qquad W' = \beta W$$
+
+and
+
+$$c^*(W) = (1-\beta) W, \qquad g(W)=\beta W.$$
+
+The marginal value of cake is the shadow value of an extra unit of wealth:
+$V'(W)=1/((1-\beta)W)$ under log utility.
 """
     )
 
@@ -159,19 +190,38 @@ $$c^*(W) = (1-\beta) W, \qquad W' = \beta W$$
         f"| Parameter | Value | Description |\n"
         f"|-----------|-------|-------------|\n"
         f"| $\\beta$  | {beta} | Discount factor |\n"
-        f"| $\\sigma$ | {sigma} | CRRA coefficient |\n"
-        f"| Grid points | {n_grid} | Uniform spacing |\n"
-        f"| $W \\in$  | [{w_min}, {w_max}] | Cake size range |"
+        f"| $\\sigma$ | {sigma} | CRRA coefficient; $1$ gives log utility |\n"
+        f"| Wealth grid | {n_grid} points | Uniform grid for $W$ |\n"
+        f"| Consumption grid | {n_cons} points | Feasible choices inside each Bellman update |\n"
+        f"| $W \\in$  | [{w_min}, {w_max}] | Cake size range |\n"
+        f"| Tolerance | {tol:.0e} | Sup-norm convergence criterion |\n"
+        f"| Simulation periods | {T_sim} | Depletion-path horizon |"
     )
 
     report.add_solution_method(
-        "**Value Function Iteration (VFI):** Starting from an initial guess "
-        "$V_0(W) = u(W)$, we iterate on the Bellman equation:\n\n"
-        "$$V_{n+1}(W) = \\max_{0 \\le c \\le W} \\left\\{ u(c) + \\beta \\, V_n(W-c) \\right\\}$$\n\n"
-        "until $\\|V_{n+1} - V_n\\|_\\infty < 10^{-6}$. The Bellman operator is a contraction "
-        "mapping (by the Blackwell sufficient conditions), guaranteeing convergence to the "
-        f"unique fixed point.\n\n"
-        f"Converged in **{info['iterations']} iterations** (error = {info['error']:.2e})."
+        "The numerical problem approximates $V(W)$ on a grid and searches over feasible "
+        "consumption choices. The continuation value $V_n(W-c)$ is interpolated because "
+        "next period's wealth usually does not land exactly on the grid.\n\n"
+        "```text\n"
+        "Algorithm: cake-eating value function iteration\n"
+        "Input: wealth grid W, discount factor beta, utility u, tolerance epsilon\n"
+        "Output: value function V and consumption policy c*(W)\n"
+        "Initialize V_0(W) = u(W)\n"
+        "repeat for n = 0, 1, 2, ...:\n"
+        "    for each wealth state W_i:\n"
+        "        build feasible choices c in [0, W_i]\n"
+        "        W_next = W_i - c\n"
+        "        continuation = interpolate V_n at W_next\n"
+        "        choose c that maximizes u(c) + beta * continuation\n"
+        "        record V_{n+1}(W_i) and c*(W_i)\n"
+        "    error = max_i |V_{n+1}(W_i) - V_n(W_i)|\n"
+        "until error < epsilon\n"
+        "```\n\n"
+        "The Bellman operator is a contraction, so this fixed-point iteration converges "
+        "to the unique value function. Here it converged in "
+        f"**{info['iterations']} iterations** with sup-norm error **{info['error']:.2e}**. "
+        "The closed-form log solution is not used to solve the model; it is used afterward "
+        "as ground truth."
     )
 
     # --- Figure 1: Value Function ---
@@ -182,9 +232,21 @@ $$c^*(W) = (1-\beta) W, \qquad W' = \beta W$$
     ax1.set_ylabel("$V(W)$")
     ax1.set_title("Value Function")
     ax1.legend()
-    report.add_figure("figures/value-function.png", "Value function: numerical VFI vs analytical solution", fig1,
-        description="The near-perfect overlap between numerical and analytical curves validates the VFI implementation. "
-        "The concavity of V(W) reflects diminishing marginal utility: additional cake is worth less when you already have a lot.")
+    report.add_results(
+        "The first diagnostic compares the computed value function with the log-utility "
+        "ground truth. Concavity means extra cake has high value when the stock is low and "
+        "lower value when the stock is already large. The largest value-function deviation "
+        f"outside the bottom decile of the grid is **{max_value_error:.2e}**."
+    )
+    report.add_figure(
+        "figures/value-function.png",
+        "Value function: numerical VFI vs analytical solution",
+        fig1,
+        description=(
+            "The numerical and analytical value functions nearly overlap. The remaining "
+            "gap is a grid and interpolation error, not an economic disagreement."
+        ),
+    )
 
     # --- Figure 2: Policy Function ---
     fig2, ax2 = plt.subplots()
@@ -195,55 +257,86 @@ $$c^*(W) = (1-\beta) W, \qquad W' = \beta W$$
     ax2.set_ylabel("Consumption $c$")
     ax2.set_title("Consumption Policy Function")
     ax2.legend()
-    report.add_figure("figures/policy-function.png", "Consumption policy: numerical vs analytical", fig2,
-        description="The optimal policy is linear in cake size: the agent always eats fraction (1-beta) of the remaining cake. "
-        "The policy lies well below the 45-degree line, confirming the agent never consumes everything in a single period.")
+    report.add_results(
+        "The policy function is the economic object of interest. Under log utility, the "
+        "agent consumes a constant share $(1-\\beta)$ of current wealth. With "
+        f"$\\beta={beta}$, that share is **{1 - beta:.1%}**. The largest policy deviation "
+        f"outside the bottom decile is **{max_policy_error:.2e}**."
+    )
+    report.add_figure(
+        "figures/policy-function.png",
+        "Consumption policy: numerical vs analytical",
+        fig2,
+        description=(
+            "The numerical policy tracks the analytical straight line. Small departures "
+            "come from the finite consumption grid and interpolation of the continuation value."
+        ),
+    )
 
     # --- Figure 3: Simulation ---
     fig3, (ax3a, ax3b) = plt.subplots(1, 2, figsize=(12, 5))
-    periods = jnp.arange(T_sim)
-    ax3a.plot(periods, cake_path, "b-o", markersize=3, linewidth=1.5)
+    ax3a.plot(periods, cake_path, "b-o", markersize=3, linewidth=1.5, label="Numerical")
+    ax3a.plot(periods, cake_path_analytical, "k--", linewidth=1.5, label="Analytical")
     ax3a.set_xlabel("Period")
     ax3a.set_ylabel("Cake remaining $W_t$")
     ax3a.set_title("Cake Depletion Over Time")
+    ax3a.legend()
 
-    ax3b.plot(periods, consumption_path, "r-o", markersize=3, linewidth=1.5)
+    ax3b.plot(periods, consumption_path, "r-o", markersize=3, linewidth=1.5, label="Numerical")
+    ax3b.plot(periods, consumption_path_analytical, "k--", linewidth=1.5, label="Analytical")
     ax3b.set_xlabel("Period")
     ax3b.set_ylabel("Consumption $c_t$")
     ax3b.set_title("Consumption Over Time")
+    ax3b.legend()
     fig3.tight_layout()
-    report.add_figure("figures/simulation.png", "Simulation: cake depletion and consumption paths starting from W=1", fig3,
-        description="Both paths decay geometrically at rate beta, illustrating the constant-fraction rule. "
-        "The cake is never fully exhausted but asymptotically approaches zero -- the patient agent always preserves a sliver for the future.")
+    report.add_results(
+        "Simulating the policy shows the resource-allocation logic over time. The analytical "
+        "path is $W_t=\\beta^t W_0$ and $c_t=(1-\\beta)W_t$. The largest numerical "
+        f"depletion-path deviation over the simulation is **{max_path_error:.2e}**."
+    )
+    report.add_figure(
+        "figures/simulation.png",
+        "Simulation: cake depletion and consumption paths starting from W=1",
+        fig3,
+        description=(
+            "Both wealth and consumption shrink geometrically. The analytical path makes "
+            "the numerical error visible as a diagnostic of grid resolution rather than a "
+            "separate economic effect."
+        ),
+    )
 
     # --- Table: Numerical vs Analytical (skip poorly-approximated bottom) ---
-    valid_start = max(1, n_grid // 10)  # Skip bottom 10% of grid
     sample_idx = jnp.linspace(valid_start, n_grid - 1, 8, dtype=jnp.int32)
     table_data = {
         "W": [f"{float(w_grid[i]):.3f}" for i in sample_idx],
         "V(W) numerical": [f"{float(v_star[i]):.4f}" for i in sample_idx],
         "V(W) analytical": [f"{float(v_analytical[i]):.4f}" for i in sample_idx],
+        "V error": [f"{float(v_star[i] - v_analytical[i]):.2e}" for i in sample_idx],
         "c* numerical": [f"{float(consumption_policy[i]):.4f}" for i in sample_idx],
         "c* analytical": [f"{float(consumption_analytical[i]):.4f}" for i in sample_idx],
+        "c* error": [f"{float(consumption_policy[i] - consumption_analytical[i]):.2e}" for i in sample_idx],
     }
     df = pd.DataFrame(table_data)
-    report.add_table("tables/comparison.csv", "Numerical vs Analytical Solution at Selected Grid Points", df,
-        description="The close agreement between numerical and analytical values across the grid confirms "
-        "that VFI has converged to the true solution, providing a reliability benchmark for more complex models.")
+    report.add_table(
+        "tables/comparison.csv",
+        "Numerical vs analytical solution at selected grid points",
+        df,
+        description=(
+            "The table reports pointwise errors at selected wealth states. This is the "
+            "main benefit of the cake-eating benchmark: the numerical approximation can be "
+            "audited directly before moving to models without closed forms."
+        ),
+    )
 
     report.add_takeaway(
-        "The cake-eating problem reveals the fundamental trade-off in intertemporal "
-        "optimization: consuming today yields immediate utility, but saving preserves "
-        "options for the future.\n\n"
-        "**Key insights:**\n"
-        "- The optimal policy is *linear* in wealth: consume a fixed fraction $(1-\\beta)$ "
-        "each period. More patient agents (higher $\\beta$) consume less today.\n"
-        "- The cake shrinks geometrically: $W_t = \\beta^t W_0$. The resource is never "
-        "fully exhausted in finite time but asymptotically approaches zero.\n"
-        "- VFI converges reliably because the Bellman operator is a contraction mapping — "
-        "this is the workhorse method for solving dynamic programs.\n"
-        "- The analytical solution provides a benchmark for validating numerical methods. "
-        "Any VFI implementation should be tested against this known solution first."
+        "Cake eating turns dynamic programming into one clean resource-allocation lesson: "
+        "the state is remaining wealth, the control is current consumption, and the "
+        "policy trades off current utility against the shadow value of wealth tomorrow. "
+        "With log utility, the ground truth is simple: consume the constant share "
+        "$(1-\\beta)$ and carry forward $\\beta W$. The small numerical gaps shown above "
+        "are grid and interpolation diagnostics. In optimal-growth and consumption-savings "
+        "models, the same Bellman logic remains, but production, income risk, and borrowing "
+        "constraints remove this closed-form safety check."
     )
 
     report.add_references([
