@@ -1,10 +1,19 @@
-Statistic,EEI,VFI,EGP
-Iterations to converge,149,203,151
-Wall-clock time (s),8.07,0.30,0.15
-Mean assets (rel. to income),0.4118,---,---
-Fraction constrained (%),3.1,---,---
-Mean MPC,0.2184,---,---
-Theoretical MPC limit,0.0413,---,---
-10th percentile wealth,0.074,---,---
-50th percentile wealth,0.376,---,---
-90th percentile wealth,0.793,---,---
+Statistic,Value
+EEI iterations,149
+EEI wall-clock time (s),7.79
+Same-grid EGP iterations,151
+Same-grid EGP wall-clock time (s),0.16
+Same-grid VFI iterations,203
+Same-grid VFI wall-clock time (s),0.30
+Fine-grid reference points,600
+Fine-grid reference iterations,140
+Fine-grid reference wall-clock time (s),1.89
+"Max consumption gap vs reference, a <= 20",1.09e-02
+"Max next-asset gap vs reference, a <= 20",1.09e-02
+Mean assets / mean income,0.4118
+Fraction at borrowing limit,3.1%
+"Mean MPC, 0.10 transfer",0.2184
+Perfect-foresight MPC limit,0.0413
+10th percentile wealth,0.074
+50th percentile wealth,0.376
+90th percentile wealth,0.793
