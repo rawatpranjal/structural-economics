@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""Phase Diagrams for Continuous-Time Economic Models.
+"""Ramsey phase diagrams and the stable arm.
 
-Visualizes the dynamics of the Ramsey optimal growth model in the (k, c) phase
-plane: nullclines, vector fields, saddle paths, and steady states.
+The tutorial studies the continuous-time Ramsey-Cass-Koopmans planner in the
+(k, c) plane. It plots nullclines, the local linearization, and a nonlinear
+stable-arm reference obtained by integrating the Ramsey ODE backward from the
+steady state.
 
 Reference: Barro and Sala-i-Martin (2004), "Economic Growth," Ch. 2.
 """
@@ -15,287 +17,476 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.plotting import setup_style, save_figure
+from lib.plotting import setup_style
 from lib.output import ModelReport
 
 
 def main():
-    # =========================================================================
-    # Parameters (Ramsey-Cass-Koopmans model)
-    # =========================================================================
-    alpha = 0.3      # Capital share
-    delta = 0.05     # Depreciation rate
-    rho = 0.04       # Discount rate (time preference)
-    sigma = 2.0      # Inverse elasticity of intertemporal substitution
-    A = 1.0          # TFP
+    alpha = 0.3
+    delta = 0.05
+    rho = 0.04
+    sigma = 2.0
+    A = 1.0
 
-    # Production function and its derivative
-    f = lambda k: A * k ** alpha
-    f_prime = lambda k: alpha * A * k ** (alpha - 1)
+    def f(k):
+        return A * k ** alpha
 
-    # Steady state
-    k_ss = ((alpha * A) / (rho + delta)) ** (1 / (1 - alpha))
-    c_ss = f(k_ss) - delta * k_ss
+    def f_prime(k):
+        return alpha * A * k ** (alpha - 1)
 
-    print(f"Steady state: k* = {k_ss:.4f}, c* = {c_ss:.4f}")
+    def f_second(k):
+        return alpha * (alpha - 1) * A * k ** (alpha - 2)
 
-    # =========================================================================
-    # Phase diagram system: dk/dt = f(k) - delta*k - c
-    #                       dc/dt = (1/sigma)*(f'(k) - delta - rho)*c
-    # =========================================================================
     def dynamics(t, y):
         k, c = y
-        k = max(k, 1e-10)
-        c = max(c, 1e-10)
-        dk = f(k) - delta * k - c
-        dc = (1 / sigma) * (f_prime(k) - delta - rho) * c
-        return [dk, dc]
+        k_safe = max(k, 1e-10)
+        c_safe = max(c, 1e-10)
+        dk = f(k_safe) - delta * k_safe - c_safe
+        dc = (f_prime(k_safe) - delta - rho) * c_safe / sigma
+        return np.array([dk, dc])
 
-    # =========================================================================
-    # Nullclines
-    # =========================================================================
-    k_range = np.linspace(0.1, k_ss * 2.5, 300)
-    # dk/dt = 0 nullcline: c = f(k) - delta*k
+    k_ss = ((alpha * A) / (rho + delta)) ** (1 / (1 - alpha))
+    c_ss = f(k_ss) - delta * k_ss
+    y_ss = f(k_ss)
+    k_gr = ((alpha * A) / delta) ** (1 / (1 - alpha))
+    c_gr = f(k_gr) - delta * k_gr
+
+    jacobian = np.array([
+        [f_prime(k_ss) - delta, -1.0],
+        [f_second(k_ss) * c_ss / sigma, 0.0],
+    ])
+    eigvals, eigvecs = np.linalg.eig(jacobian)
+    stable_idx = int(np.argmin(eigvals.real))
+    unstable_idx = 1 - stable_idx
+    lambda_stable = float(eigvals[stable_idx].real)
+    lambda_unstable = float(eigvals[unstable_idx].real)
+    stable_vec = eigvecs[:, stable_idx].real
+    if stable_vec[0] < 0:
+        stable_vec = -stable_vec
+    slope = float(stable_vec[1] / stable_vec[0])
+
+    print(f"Steady state: k* = {k_ss:.4f}, c* = {c_ss:.4f}")
+    print(
+        "Eigenvalues: "
+        f"{lambda_stable:.4f}, {lambda_unstable:.4f} "
+        "(saddle point: one negative, one positive)"
+    )
+
+    k_min = 0.08
+    c_min = 0.02
+    k_max = k_ss * 2.45
+    c_max = c_ss * 2.25
+
+    def make_stop_events():
+        def low_k(t, y):
+            return y[0] - k_min
+
+        def low_c(t, y):
+            return y[1] - c_min
+
+        def high_k(t, y):
+            return k_max - y[0]
+
+        def high_c(t, y):
+            return c_max - y[1]
+
+        for event in (low_k, low_c, high_k, high_c):
+            event.terminal = True
+            event.direction = -1
+        return [low_k, low_c, high_k, high_c]
+
+    def trace_stable_branch(sign):
+        eps = 1e-3 * k_ss
+        y0 = np.array([k_ss + sign * eps, c_ss + sign * slope * eps])
+        sol = solve_ivp(
+            lambda t, y: -dynamics(t, y),
+            (0.0, 160.0),
+            y0,
+            max_step=0.2,
+            rtol=1e-9,
+            atol=1e-11,
+            events=make_stop_events(),
+        )
+        valid = (
+            (sol.y[0] > k_min)
+            & (sol.y[0] < k_max)
+            & (sol.y[1] > c_min)
+            & (sol.y[1] < c_max)
+        )
+        return sol.y[0][valid], sol.y[1][valid]
+
+    k_left, c_left = trace_stable_branch(-1.0)
+    k_right, c_right = trace_stable_branch(1.0)
+    k_stable = np.concatenate([k_left[::-1], np.array([k_ss]), k_right])
+    c_stable = np.concatenate([c_left[::-1], np.array([c_ss]), c_right])
+    order = np.argsort(k_stable)
+    k_stable = k_stable[order]
+    c_stable = c_stable[order]
+
+    k_range = np.linspace(k_min, k_max, 400)
     c_nullcline = f(k_range) - delta * k_range
-    # dc/dt = 0 nullcline: vertical line at k = k_ss (where f'(k) = delta + rho)
+    c_linear = c_ss + slope * (k_range - k_ss)
+    c_linear_plot = np.where(c_linear > 0, c_linear, np.nan)
 
-    # =========================================================================
-    # Vector field
-    # =========================================================================
-    k_grid = np.linspace(0.5, k_ss * 2.2, 20)
-    c_grid = np.linspace(0.1, c_ss * 2.0, 20)
+    local = (k_stable >= 0.5 * k_ss) & (k_stable <= 1.5 * k_ss)
+    linear_on_stable = c_ss + slope * (k_stable[local] - k_ss)
+    max_linear_gap = float(np.max(np.abs(c_stable[local] - linear_on_stable)))
+
+    k_grid = np.linspace(0.35, k_ss * 2.25, 22)
+    c_grid = np.linspace(0.08, c_ss * 2.05, 22)
     K, C = np.meshgrid(k_grid, c_grid)
     DK = f(K) - delta * K - C
-    DC = (1 / sigma) * (f_prime(K) - delta - rho) * C
+    DC = (f_prime(K) - delta - rho) * C / sigma
+    speed = np.sqrt(DK ** 2 + DC ** 2)
+    DK_norm = DK / (speed + 1e-12)
+    DC_norm = DC / (speed + 1e-12)
 
-    # Normalize arrows for visual clarity
-    magnitude = np.sqrt(DK ** 2 + DC ** 2)
-    DK_norm = DK / (magnitude + 1e-10)
-    DC_norm = DC / (magnitude + 1e-10)
+    left_indices = np.where(k_stable < k_ss)[0]
+    start_idx = left_indices[np.argmin(np.abs(k_stable[left_indices] - 0.4 * k_ss))]
+    k0_path = float(k_stable[start_idx])
+    c0_path = float(c_stable[start_idx])
 
-    # =========================================================================
-    # Saddle path (shooting method)
-    # =========================================================================
-    saddle_paths = []
-    # Shoot forward and backward from near the steady state
-    for direction in [-1, 1]:
-        for eps_k in np.linspace(-0.3, 0.3, 5):
-            eps_c = -eps_k * 0.5  # Approximate saddle path slope
-            k0 = k_ss + eps_k
-            c0 = c_ss + eps_c
-            if k0 <= 0 or c0 <= 0:
-                continue
-            sol = solve_ivp(
-                lambda t, y: [direction * d for d in dynamics(t, y)],
-                [0, 100], [k0, c0],
-                max_step=0.1, events=lambda t, y: min(y[0] - 0.05, y[1] - 0.05),
-                dense_output=True,
-            )
-            if sol.success and len(sol.t) > 5:
-                k_path = sol.y[0]
-                c_path = sol.y[1]
-                valid = (k_path > 0) & (c_path > 0) & (k_path < k_ss * 3) & (c_path < c_ss * 3)
-                if direction == -1:
-                    saddle_paths.append((k_path[valid][::-1], c_path[valid][::-1]))
-                else:
-                    saddle_paths.append((k_path[valid], c_path[valid]))
-
-    # Proper saddle path via linearization
-    # Jacobian at steady state
-    J11 = f_prime(k_ss) - delta  # = rho (at ss)
-    J12 = -1
-    J21 = (1 / sigma) * f_prime(k_ss) * alpha * (alpha - 1) * A * k_ss ** (alpha - 2) * c_ss / (alpha * A * k_ss ** (alpha - 1))
-    # Simplified: J21 = c_ss * (alpha-1) * f'(k_ss) / (sigma * k_ss)
-    J21_simple = c_ss * (alpha - 1) * f_prime(k_ss) / (sigma * k_ss)
-    J22 = 0  # dc/dt has no c term beyond c*(...) and at ss, (...) = 0
-
-    # Eigenvalues
-    trace = J11 + J22
-    det = J11 * J22 - J12 * J21_simple
-    lambda1 = (trace - np.sqrt(trace ** 2 - 4 * det)) / 2
-    lambda2 = (trace + np.sqrt(trace ** 2 - 4 * det)) / 2
-    print(f"Eigenvalues: {lambda1:.4f}, {lambda2:.4f} (saddle point: one negative, one positive)")
-
-    # Stable eigenvector direction
-    stable_eigvec = np.array([1, (lambda1 - J11) / J12])
-    slope = stable_eigvec[1] / stable_eigvec[0]
-
-    # Trace saddle path using stable manifold
-    n_saddle = 50
-    k_saddle_left = np.linspace(0.5, k_ss, n_saddle)
-    c_saddle_left = c_ss + slope * (k_saddle_left - k_ss)
-
-    k_saddle_right = np.linspace(k_ss, k_ss * 2, n_saddle)
-    c_saddle_right = c_ss + slope * (k_saddle_right - k_ss)
-
-    # =========================================================================
-    # Time path simulation (starting below steady state)
-    # =========================================================================
-    k0 = k_ss * 0.3
-    c0 = c_ss + slope * (k0 - k_ss)
-    sol_time = solve_ivp(dynamics, [0, 150], [k0, max(c0, 0.01)], max_step=0.2, dense_output=True)
-    t_eval = np.linspace(0, 100, 500)
+    sol_time = solve_ivp(
+        dynamics,
+        (0.0, 120.0),
+        [k0_path, c0_path],
+        max_step=0.2,
+        rtol=1e-8,
+        atol=1e-10,
+        dense_output=True,
+    )
+    t_eval = np.linspace(0.0, sol_time.t[-1], 500)
     y_eval = sol_time.sol(t_eval)
 
-    # =========================================================================
-    # Generate Report
-    # =========================================================================
+    def integrate_forward(y0, horizon=65.0):
+        sol = solve_ivp(
+            dynamics,
+            (0.0, horizon),
+            y0,
+            max_step=0.1,
+            rtol=1e-8,
+            atol=1e-10,
+            dense_output=True,
+            events=make_stop_events(),
+        )
+        t_path = np.linspace(0.0, sol.t[-1], 300)
+        y_path = sol.sol(t_path)
+        valid = (
+            (y_path[0] > k_min)
+            & (y_path[0] < k_max)
+            & (y_path[1] > c_min)
+            & (y_path[1] < c_max)
+        )
+        return y_path[0][valid], y_path[1][valid]
+
+    off_path_gap = 0.20 * c_ss
+    selection_paths = [
+        ("selected path", [k0_path, c0_path], "black"),
+        ("higher $c_0$", [k0_path, c0_path + off_path_gap], "#b23a48"),
+        ("lower $c_0$", [k0_path, max(c_min * 2, c0_path - off_path_gap)], "#246b8e"),
+    ]
+    traced_selection = [
+        (label, *integrate_forward(y0), color)
+        for label, y0, color in selection_paths
+    ]
+
     setup_style()
 
     report = ModelReport(
         "Ramsey Phase Diagrams and Saddle Paths",
-        "Continuous-time dynamics of consumption and capital with saddle-path stability.",
+        "How nullclines and the stable arm discipline consumption in continuous-time growth.",
+        include_reproduce=False,
+        show_figure_captions=False,
     )
 
     report.add_overview(
-        "Phase diagrams are the primary tool for analyzing continuous-time dynamic economic "
-        "models. The Ramsey-Cass-Koopmans model has a two-dimensional state space $(k, c)$ "
-        "with a unique steady state that is a *saddle point* — only one path (the stable "
-        "manifold) converges to it.\n\n"
-        "This module visualizes the phase plane: nullclines where $\\dot{k} = 0$ and "
-        "$\\dot{c} = 0$, the vector field showing direction of motion, and the saddle path "
-        "that the economy must follow for an interior optimum."
+        "In the Ramsey-Cass-Koopmans model, the planner chooses the whole consumption path, "
+        "but the phase diagram reduces the economic discipline to a simple question: for a "
+        "given capital stock, which initial consumption level keeps the economy feasible "
+        "and satisfies the transversality condition?\n\n"
+        "The state-control pair is $(k,c)$. The two nullclines show where capital or "
+        "consumption stops moving; their intersection is the steady state. That is not "
+        "enough to determine the optimum, because most nearby paths move away from the "
+        "steady state. The missing object is the stable arm: the one-dimensional set of "
+        "initial $(k,c)$ pairs that converges to the saddle-point steady state.\n\n"
+        "This tutorial is the geometric companion to the neighboring "
+        "[HJB growth](../hjb-growth/) and [Ramsey shooting](../ramsey-growth/) examples. "
+        "Here the method is deliberately visual: read the economic forces from the "
+        "phase plane, then use the local eigenvector and ODE integration to trace the "
+        "stable arm."
     )
 
     report.add_equations(r"""
-**Capital accumulation:**
-$$\dot{k} = f(k) - \delta k - c$$
+The planner solves
 
-**Euler equation (consumption):**
-$$\dot{c} = \frac{1}{\sigma} \left( f'(k) - \delta - \rho \right) c$$
+$$
+\max_{\{c(t)\}_{t \geq 0}}
+\int_0^\infty e^{-\rho t}\frac{c(t)^{1-\sigma}}{1-\sigma}\,dt
+\quad\text{s.t.}\quad
+\dot{k}(t)=Ak(t)^\alpha-\delta k(t)-c(t).
+$$
 
-**Nullclines:**
-- $\dot{k} = 0$: $c = f(k) - \delta k$ (hump-shaped in $k$)
-- $\dot{c} = 0$: $f'(k) = \delta + \rho$, i.e., $k = k^{*}$ (vertical line)
+The Euler equation and the resource law form the two-dimensional system
 
-**Steady state:** $k^{*} = \left(\frac{\alpha A}{\rho + \delta}\right)^{1/(1-\alpha)}$, $c^{*} = f(k^{*}) - \delta k^{*}$
+$$
+\dot{k}=f(k)-\delta k-c,
+\qquad
+\frac{\dot{c}}{c}=\frac{f'(k)-\delta-\rho}{\sigma},
+\qquad
+f(k)=Ak^\alpha .
+$$
 
-**Transversality condition** selects the saddle path as the unique optimal trajectory.
+The capital nullcline is
+
+$$
+\dot{k}=0
+\quad\Longleftrightarrow\quad
+c=f(k)-\delta k .
+$$
+
+The consumption nullcline is
+
+$$
+\dot{c}=0
+\quad\Longleftrightarrow\quad
+f'(k)=\rho+\delta
+\quad\Longleftrightarrow\quad
+k=k^{*}
+=\left(\frac{\alpha A}{\rho+\delta}\right)^{1/(1-\alpha)} .
+$$
+
+Steady-state consumption is $c^{*}=f(k^{*})-\delta k^{*}$. The golden-rule
+capital stock satisfies $f'(k_{GR})=\delta$, so with $\rho>0$ the Ramsey steady
+state lies to the left of the golden rule. The boundary condition selecting the
+planner's path is the transversality condition
+
+$$
+\lim_{t\to\infty} e^{-\rho t}u'(c(t))k(t)=0 .
+$$
 """)
 
     report.add_model_setup(
+        "The calibration keeps the economy deterministic so that every movement in the "
+        "diagram has a direct interpretation. Capital is the state, consumption is the "
+        "control, and output is Cobb-Douglas.\n\n"
         "| Parameter | Value | Description |\n"
         "|-----------|-------|-------------|\n"
-        f"| $\\alpha$ | {alpha} | Capital share |\n"
-        f"| $\\delta$ | {delta} | Depreciation rate |\n"
-        f"| $\\rho$ | {rho} | Discount rate |\n"
-        f"| $\\sigma$ | {sigma} | CRRA coefficient |\n"
-        f"| $k^{{*}}$ | {k_ss:.4f} | Steady-state capital |\n"
-        f"| $c^{{*}}$ | {c_ss:.4f} | Steady-state consumption |"
+        f"| $\\alpha$ | {alpha:.2f} | Capital share |\n"
+        f"| $\\delta$ | {delta:.2f} | Depreciation rate |\n"
+        f"| $\\rho$ | {rho:.2f} | Continuous-time discount rate |\n"
+        f"| $\\sigma$ | {sigma:.1f} | CRRA coefficient and inverse EIS |\n"
+        f"| $A$ | {A:.1f} | Total factor productivity |\n"
+        f"| $k^{{*}}$ | {k_ss:.4f} | Ramsey steady-state capital |\n"
+        f"| $c^{{*}}$ | {c_ss:.4f} | Ramsey steady-state consumption |\n"
+        f"| $k_{{GR}}$ | {k_gr:.4f} | Golden-rule capital |\n"
+        f"| $c_{{GR}}$ | {c_gr:.4f} | Golden-rule sustainable consumption |"
     )
 
     report.add_solution_method(
-        "**Linearization:** The Jacobian at the steady state has eigenvalues "
-        f"$\\lambda_1 = {lambda1:.4f}$ (stable) and $\\lambda_2 = {lambda2:.4f}$ (unstable). "
-        "This confirms the steady state is a **saddle point**.\n\n"
-        "**Saddle path:** The stable manifold is traced using the eigenvector associated "
-        f"with $\\lambda_1$. Near the steady state, the saddle path slope is approximately {slope:.4f}.\n\n"
-        "**Integration:** Time paths computed via `scipy.integrate.solve_ivp` (RK45)."
+        "The computation starts where the economics is sharpest: at the steady state. "
+        "The Jacobian of $(\\dot{k},\\dot{c})$ at $(k^{*},c^{*})$ is\n\n"
+        "$$\n"
+        "J=\n"
+        "\\begin{bmatrix}\n"
+        "f'(k^{*})-\\delta & -1 \\\\\n"
+        "c^{*}f''(k^{*})/\\sigma & 0\n"
+        "\\end{bmatrix}.\n"
+        "$$\n\n"
+        f"Its eigenvalues are $\\lambda_s={lambda_stable:.4f}$ and "
+        f"$\\lambda_u={lambda_unstable:.4f}$, so the steady state is a saddle. The "
+        f"stable eigenvector has local slope $dc/dk={slope:.4f}$. That line is a "
+        "first-order approximation. To get a nonlinear reference for the plotted "
+        "stable arm, the code integrates the full Ramsey system backward from two "
+        "nearby points on the stable eigenvector.\n\n"
+        "```text\n"
+        "Algorithm: nonlinear stable arm in the Ramsey phase plane\n"
+        "Inputs: primitives (alpha, delta, rho, sigma, A), bounds for plotted k and c\n"
+        "1. Compute (k*, c*) from f'(k*) = rho + delta and c* = f(k*) - delta k*.\n"
+        "2. Form the Jacobian J of F(k,c) = (dot{k}, dot{c}) at (k*, c*).\n"
+        "3. Let lambda_s < 0 and v_s = (1, m_s) be the stable eigenpair.\n"
+        "4. Start just below and just above the steady state along v_s.\n"
+        "5. Integrate d(k,c)/d tau = -F(k,c) away from the steady state.\n"
+        "6. Stop when the path leaves the economically relevant plotting region.\n"
+        "7. Sort the two branches by k and use them as the stable-arm reference.\n"
+        "Output: nullclines, local linear arm, nonlinear stable arm, and forward paths.\n"
+        "```\n\n"
+        "The backward integration is only a way to draw the stable arm. Forward in "
+        "economic time, points on that arm converge to the steady state; nearby "
+        "points above or below it violate the boundary condition."
     )
 
-    # --- Figure 1: Full phase diagram ---
     fig1, ax1 = plt.subplots(figsize=(9, 7))
-    ax1.quiver(K, C, DK_norm, DC_norm, magnitude, cmap="coolwarm", alpha=0.4, scale=30)
-    ax1.plot(k_range, c_nullcline, "b-", linewidth=2.5, label="$\\dot{k}=0$ nullcline")
-    ax1.axvline(k_ss, color="r", linewidth=2.5, label="$\\dot{c}=0$ nullcline")
-    ax1.plot(k_saddle_left, c_saddle_left, "k-", linewidth=3, label="Saddle path")
-    ax1.plot(k_saddle_right, c_saddle_right, "k-", linewidth=3)
+    ax1.quiver(
+        K,
+        C,
+        DK_norm,
+        DC_norm,
+        speed,
+        cmap="viridis",
+        alpha=0.45,
+        scale=32,
+        width=0.003,
+    )
+    ax1.plot(k_range, c_nullcline, color="#1f77b4", linewidth=2.5, label="$\\dot{k}=0$")
+    ax1.axvline(k_ss, color="#c44e52", linewidth=2.5, label="$\\dot{c}=0$")
+    ax1.axvline(k_gr, color="#55a868", linestyle=":", linewidth=2.0, label="$k_{GR}$")
+    ax1.plot(k_range, c_linear_plot, color="0.35", linestyle="--", linewidth=2.0,
+             label="local linear arm")
+    ax1.plot(k_stable, c_stable, color="black", linewidth=3.0, label="nonlinear stable arm")
     ax1.plot(k_ss, c_ss, "ko", markersize=12, zorder=5)
-    ax1.annotate(f"$k^{{*}}={k_ss:.2f}, c^{{*}}={c_ss:.2f}$", (k_ss, c_ss),
-                 textcoords="offset points", xytext=(15, -20), fontsize=10)
+    ax1.annotate(
+        f"$(k^{{*}},c^{{*}})=({k_ss:.2f},{c_ss:.2f})$",
+        (k_ss, c_ss),
+        textcoords="offset points",
+        xytext=(12, -24),
+        fontsize=10,
+    )
     ax1.set_xlabel("Capital $k$")
     ax1.set_ylabel("Consumption $c$")
-    ax1.set_title("Phase Diagram: Ramsey Optimal Growth Model")
-    ax1.set_xlim(0, k_ss * 2.5)
-    ax1.set_ylim(0, c_ss * 2.2)
+    ax1.set_title("Ramsey Phase Plane")
+    ax1.set_xlim(0, k_max)
+    ax1.set_ylim(0, c_max)
     ax1.legend(loc="upper right")
-    report.add_figure("figures/phase-diagram.png",
-                      "Phase diagram with nullclines, vector field, and saddle path", fig1,
-        description="The phase diagram reveals the saddle-point structure of the Ramsey model. "
-        "Only one consumption level for each initial capital stock places the economy on the "
-        "stable arm. The vector field shows that off the saddle path, trajectories diverge "
-        "toward either zero capital or infinite over-accumulation.")
+    fig1.tight_layout()
+    report.add_figure(
+        "figures/phase-diagram.png",
+        "Ramsey phase plane with nullclines, local linear arm, and nonlinear stable arm",
+        fig1,
+        description=(
+            "The phase plane separates two jobs that are often blurred together. The "
+            "blue curve and red line give sign information: below net output, capital "
+            "accumulates; left of $k^{*}$, consumption grows because the marginal product "
+            "is high. The black curve is stronger than a direction field. It is the "
+            "stable arm, so for each capital stock on the plotted branch it gives the "
+            "initial consumption level consistent with convergence and the transversality "
+            "condition. The dashed line shows why linearization is useful near the steady "
+            f"state but not a global solution; over $k \\in [0.5k^{{*}},1.5k^{{*}}]$ its largest "
+            f"consumption gap from the nonlinear reference is {max_linear_gap:.3f}."
+        ),
+    )
 
-    # --- Figure 2: Time paths ---
     fig2, (ax2a, ax2b) = plt.subplots(1, 2, figsize=(12, 5))
     valid = (y_eval[0] > 0) & (y_eval[1] > 0)
     t_valid = t_eval[valid]
-    ax2a.plot(t_valid, y_eval[0][valid], "b-", linewidth=2)
-    ax2a.axhline(k_ss, color="k", linestyle="--", alpha=0.5, label=f"$k^{{*}}={k_ss:.2f}$")
+    ax2a.plot(t_valid, y_eval[0][valid], color="#1f77b4", linewidth=2.2)
+    ax2a.axhline(k_ss, color="k", linestyle="--", alpha=0.55, label=f"$k^{{*}}={k_ss:.2f}$")
     ax2a.set_xlabel("Time")
     ax2a.set_ylabel("Capital $k(t)$")
-    ax2a.set_title("Capital Transition to Steady State")
+    ax2a.set_title("Capital Along the Stable Arm")
     ax2a.legend()
 
-    ax2b.plot(t_valid, y_eval[1][valid], "r-", linewidth=2)
-    ax2b.axhline(c_ss, color="k", linestyle="--", alpha=0.5, label=f"$c^{{*}}={c_ss:.2f}$")
+    ax2b.plot(t_valid, y_eval[1][valid], color="#c44e52", linewidth=2.2)
+    ax2b.axhline(c_ss, color="k", linestyle="--", alpha=0.55, label=f"$c^{{*}}={c_ss:.2f}$")
     ax2b.set_xlabel("Time")
     ax2b.set_ylabel("Consumption $c(t)$")
-    ax2b.set_title("Consumption Transition to Steady State")
+    ax2b.set_title("Consumption Along the Stable Arm")
     ax2b.legend()
     fig2.tight_layout()
-    report.add_figure("figures/time-paths.png",
-                      "Capital and consumption converge to steady state along the saddle path", fig2,
-        description="Starting from below steady-state capital, the economy invests heavily "
-        "early on (low consumption) and gradually increases consumption as capital "
-        "approaches k*. The speed of convergence is governed by the stable eigenvalue "
-        "of the linearized system.")
+    report.add_figure(
+        "figures/time-paths.png",
+        "Capital and consumption converge to the Ramsey steady state along the stable arm",
+        fig2,
+        description=(
+            "Starting below steady-state capital, the selected path keeps consumption low "
+            "enough for investment to be high. As capital approaches $k^{*}$, the marginal "
+            "product falls, investment slows, and consumption rises toward $c^{*}$. The "
+            f"local stable eigenvalue implies a half-life of about "
+            f"$\\ln(2)/|\\lambda_s|={np.log(2)/abs(lambda_stable):.1f}$ time units near "
+            "the steady state; the early part of the transition is nonlinear."
+        ),
+    )
 
-    # --- Figure 3: Four quadrant dynamics ---
-    fig3, axes = plt.subplots(2, 2, figsize=(10, 8))
-    regions = [
-        ("$k < k^{*}, c > c_{null}$\n(↙ diverge)", k_ss * 0.5, c_ss * 1.5),
-        ("$k > k^{*}, c > c_{null}$\n(↖ diverge)", k_ss * 1.5, c_ss * 1.5),
-        ("$k < k^{*}, c < c_{null}$\n(↗ converge)", k_ss * 0.5, c_ss * 0.5),
-        ("$k > k^{*}, c < c_{null}$\n(↘ diverge)", k_ss * 1.5, c_ss * 0.3),
-    ]
-    for ax, (label, k0_r, c0_r) in zip(axes.flat, regions):
-        sol_r = solve_ivp(dynamics, [0, 30], [k0_r, c0_r], max_step=0.1, dense_output=True)
-        t_r = np.linspace(0, min(30, sol_r.t[-1]), 200)
-        y_r = sol_r.sol(t_r)
-        ax.plot(y_r[0], y_r[1], "b-", linewidth=2)
-        ax.plot(y_r[0][0], y_r[1][0], "go", markersize=8)
-        ax.plot(k_ss, c_ss, "ko", markersize=8)
-        ax.plot(k_range, c_nullcline, "b--", alpha=0.3)
-        ax.axvline(k_ss, color="r", alpha=0.3, linestyle="--")
-        ax.set_title(label, fontsize=10)
-        ax.set_xlim(0, k_ss * 3)
-        ax.set_ylim(0, c_ss * 2.5)
-    fig3.suptitle("Trajectories from Different Starting Regions", fontsize=13)
+    fig3, ax3 = plt.subplots(figsize=(9, 6.5))
+    ax3.plot(k_range, c_nullcline, color="#1f77b4", linestyle="--", linewidth=1.8,
+             label="$\\dot{k}=0$")
+    ax3.axvline(k_ss, color="#c44e52", linestyle="--", linewidth=1.8,
+                label="$\\dot{c}=0$")
+    ax3.plot(k_stable, c_stable, color="0.55", linewidth=2.2, label="stable arm")
+    for label, k_path, c_path, color in traced_selection:
+        ax3.plot(k_path, c_path, color=color, linewidth=2.3, label=label)
+        ax3.plot(k_path[0], c_path[0], marker="o", color=color, markersize=7)
+    ax3.plot(k_ss, c_ss, "ko", markersize=9)
+    ax3.set_xlabel("Capital $k$")
+    ax3.set_ylabel("Consumption $c$")
+    ax3.set_title("Initial Consumption Selects the Ramsey Path")
+    ax3.set_xlim(0, k_max)
+    ax3.set_ylim(0, c_max)
+    ax3.legend(loc="upper right")
     fig3.tight_layout()
-    report.add_figure("figures/four-regions.png",
-                      "Only trajectories starting on the saddle path converge to steady state", fig3,
-        description="Each panel shows a trajectory starting in one of the four quadrants defined "
-        "by the nullclines. In three of the four regions the path diverges, violating either "
-        "feasibility or the transversality condition. Only the saddle-path quadrant produces "
-        "a convergent, economically valid solution.")
+    report.add_figure(
+        "figures/path-selection.png",
+        "Forward trajectories from the same initial capital but different initial consumption",
+        fig3,
+        description=(
+            "Holding initial capital fixed makes the saddle-path logic explicit. A higher "
+            "initial consumption choice starts above the stable arm and runs capital down. "
+            "A lower choice starts below it and accumulates too much capital relative to "
+            "the present-value boundary condition. The planner's choice is not simply "
+            "the direction indicated by the nullclines; it is the one initial consumption "
+            "level that puts the economy on the stable arm."
+        ),
+    )
 
-    # --- Table ---
     df = pd.DataFrame({
-        "Quantity": ["$k^{*}$", "$c^{*}$", "$y^{*}$", "$r^{*}$", "$\\lambda_1$", "$\\lambda_2$"],
-        "Value": [f"{k_ss:.4f}", f"{c_ss:.4f}", f"{f(k_ss):.4f}",
-                  f"{f_prime(k_ss)-delta:.4f}", f"{lambda1:.4f}", f"{lambda2:.4f}"],
-        "Description": ["Steady-state capital", "Steady-state consumption",
-                        "Steady-state output", "Net interest rate (= rho at ss)",
-                        "Stable eigenvalue", "Unstable eigenvalue"],
+        "Quantity": [
+            "$k^{*}$",
+            "$c^{*}$",
+            "$y^{*}$",
+            "$r^{*}=f'(k^{*})-\\delta$",
+            "$k_{GR}$",
+            "$c_{GR}$",
+            "$\\lambda_s$",
+            "$\\lambda_u$",
+            "$dc/dk$ on local stable arm",
+            "Max nonlinear-linear gap",
+        ],
+        "Value": [
+            f"{k_ss:.4f}",
+            f"{c_ss:.4f}",
+            f"{y_ss:.4f}",
+            f"{f_prime(k_ss)-delta:.4f}",
+            f"{k_gr:.4f}",
+            f"{c_gr:.4f}",
+            f"{lambda_stable:.4f}",
+            f"{lambda_unstable:.4f}",
+            f"{slope:.4f}",
+            f"{max_linear_gap:.4f}",
+        ],
+        "Description": [
+            "Ramsey steady-state capital",
+            "Ramsey steady-state consumption",
+            "Steady-state output",
+            "Net return equals rho in steady state",
+            "Capital that maximizes sustainable consumption",
+            "Maximum sustainable consumption",
+            "Stable eigenvalue",
+            "Unstable eigenvalue",
+            "Consumption slope of the linearized stable arm",
+            "Largest c gap on k in [0.5 k*, 1.5 k*]",
+        ],
     })
-    report.add_table("tables/steady-state.csv", "Steady-State Values and Eigenvalues", df,
-        description="The eigenvalue pair (one negative, one positive) confirms the saddle-point "
-        "classification. The magnitude of the stable eigenvalue determines the speed of "
-        "convergence to steady state.")
+    report.add_table(
+        "tables/steady-state.csv",
+        "Steady-State and Stable-Arm Diagnostics",
+        df,
+        description=(
+            "The table keeps the main numbers auditable. The Ramsey steady state has "
+            "$r^{*}=\\rho$, while the golden-rule point has more capital because it ignores "
+            "impatience. The eigenvalue pair verifies the saddle classification. The last "
+            "row is a compact check on how far the nonlinear stable arm moves away from "
+            "the local linear approximation over the central part of the graph."
+        ),
+    )
 
     report.add_takeaway(
-        "Phase diagrams reveal the qualitative dynamics of the Ramsey model:\n\n"
-        "**Key insights:**\n"
-        "- The steady state is a **saddle point**: most trajectories diverge. Only the "
-        "saddle path (stable manifold) converges — the transversality condition selects it.\n"
-        "- Above the saddle path, agents *over-consume*, depleting capital. Below it, "
-        "they *over-save*, accumulating capital without bound.\n"
-        "- The $\\dot{k}=0$ nullcline is the golden rule line — maximum sustainable consumption. "
-        "The Ramsey steady state lies *below* the golden rule because agents are impatient ($\\rho > 0$).\n"
-        "- The **speed of convergence** depends on $|\\lambda_1|$: a half-life of "
-        f"$\\ln(2)/|\\lambda_1| \\approx {np.log(2)/abs(lambda1):.1f}$ periods for capital to "
-        "close half the gap to steady state."
+        "The phase diagram is an economic selection device. Nullclines say which way "
+        "capital and consumption move, but they do not choose the optimal initial "
+        "consumption level. The transversality condition does that by selecting the "
+        "stable arm. Linearization gives the local slope and convergence speed; backward "
+        "integration of the nonlinear ODE shows how the selected path bends away from "
+        "the steady state. That same selection problem reappears in shooting algorithms "
+        "and in HJB methods, but the phase plane makes the economics visible before the "
+        "solver takes over."
     )
 
     report.add_references([
