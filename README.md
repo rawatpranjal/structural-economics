@@ -9,6 +9,7 @@ Executable examples for applied structural and computational economics after the
 ## Contents
 
 - [Quick Start](#quick-start)
+- [How to Use This Library](#how-to-use-this-library)
 - [Dynamic Programming](#dynamic-programming)
 - [Macroeconomics](#macroeconomics)
 - [Industrial Organization](#industrial-organization)
@@ -29,6 +30,14 @@ cd dynamic-programming/cake-eating
 python run.py
 # -> generates README.md + figures/ + tables/
 ```
+
+---
+
+## How to Use This Library
+
+The catalog is organized by economic subject first and numerical method second. Start with the section closest to the question you care about, then use the method column to see how the computation is being done.
+
+Each tutorial is meant to be small enough to read in one sitting. The folder contains one executable `run.py`, a generated `README.md`, figures, and optional tables. Running `python run.py` inside a tutorial folder regenerates the local report and outputs.
 
 ---
 
