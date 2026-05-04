@@ -21,6 +21,7 @@ alrigth, now need to reivew each tutorial one at a time
   - better captions , more tailored
   - economics-first, then method
   - audience: phd level econ grad students --> no handholding
+  - limit heavy jargon; use technical terms only when they are actually needed
   - structur eis good but a bit robotic, you have liberties to change up the structure of each torpic
   - imrpove the writing of the content relating to that tutoril in the amin readme
   - better referncing within the repo to other tutorials (if needed ofc ourse)
