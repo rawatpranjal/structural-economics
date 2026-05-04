@@ -1,0 +1,5 @@
+State,Firm 1 policy,Firm 2 policy,Firm 1 value,Firm 2 value
+"(0,0)",Invest,Invest,60.03,60.03
+"(1,2)",Invest,Invest,58.87,78.59
+"(2,1)",Invest,Invest,78.59,58.87
+"(4,4)",Wait,Wait,78.52,78.52

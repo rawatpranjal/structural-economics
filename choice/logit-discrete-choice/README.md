@@ -4,9 +4,9 @@
 
 ## Overview
 
-The multinomial logit model is the workhorse of discrete choice analysis in industrial organization. Consumers choose among $J$ differentiated products to maximize utility, which depends on observed product characteristics (price, quality) and an unobserved idiosyncratic taste shock drawn from a Type I Extreme Value distribution.
+The multinomial logit model is the workhorse of discrete choice analysis. Consumers choose among $J$ differentiated products to maximize utility, which depends on observed product characteristics (price, quality) and an unobserved idiosyncratic taste shock drawn from a Type I Extreme Value distribution.
 
-This distributional assumption yields the elegant logit choice probability formula and makes maximum likelihood estimation tractable. The model is the foundation for BLP (1995) and virtually all modern demand estimation in IO.
+This distributional assumption yields the elegant logit choice probability formula and makes maximum likelihood estimation tractable. The model is a clean baseline for studying probabilistic choice and the Independence of Irrelevant Alternatives.
 
 ## Equations
 
@@ -59,12 +59,12 @@ Close agreement between predicted and observed shares validates the model specif
 ![Predicted vs actual market shares: the estimated model closely recovers observed choice frequencies](figures/market-shares.png)
 *Predicted vs actual market shares: the estimated model closely recovers observed choice frequencies*
 
-In the logit, own-price elasticity is driven by both the price level and market share through the formula $\eta_{jj} = \beta_p \, p_j (1 - s_j)$. Higher-priced products lose a larger fraction of their customers for a given percentage price increase, which has direct implications for optimal pricing and merger simulation.
+In the logit, own-price elasticity is driven by both the price level and market share through the formula $\eta_{jj} = \beta_p \, p_j (1 - s_j)$. Higher-priced products lose a larger fraction of their customers for a given percentage price increase, which makes elasticities useful for interpreting demand sensitivity.
 
 ![Own-price elasticities: higher-priced products have more elastic demand in the logit model](figures/own-price-elasticities.png)
 *Own-price elasticities: higher-priced products have more elastic demand in the logit model*
 
-The left panel shows that removing a product reallocates its share proportionally to all remaining products, regardless of similarity. The right panel confirms that pairwise share ratios are exactly preserved -- this is the IIA property, and it is the main limitation motivating the nested logit and BLP models.
+The left panel shows that removing a product reallocates its share proportionally to all remaining products, regardless of similarity. The right panel confirms that pairwise share ratios are exactly preserved -- this is the IIA property, and it is the main limitation motivating grouped and mixed-logit choice models.
 
 ![IIA property: removing an alternative does not change the ratio of choice probabilities between remaining alternatives](figures/iia-illustration.png)
 *IIA property: removing an alternative does not change the ratio of choice probabilities between remaining alternatives*
@@ -78,7 +78,7 @@ Both coefficients are estimated with high precision and are statistically signif
 | beta_price   |   -0.5 |    -0.4913 |      0.0174 |   -28.21 |         0 |
 | beta_quality |    1.2 |     1.1559 |      0.0362 |    31.94 |         0 |
 
-The IIA property is visible in the cross-elasticity columns: all off-diagonal entries in a given column are identical, meaning every rival product gains the same share when one product raises its price. This unrealistic substitution pattern is the key motivation for richer models like nested logit and BLP.
+The IIA property is visible in the cross-elasticity columns: all off-diagonal entries in a given column are identical, meaning every rival product gains the same share when one product raises its price. This unrealistic substitution pattern is the key motivation for richer grouped or mixed-logit models.
 
 **Price Elasticity Matrix (row = product whose share changes, column = product whose price changes)**
 
@@ -97,8 +97,8 @@ The multinomial logit is the workhorse of discrete choice demand estimation, but
 **Key insights:**
 - MLE recovers the true parameters precisely with N=5000 observations. The logit likelihood is globally concave, so estimation is fast and reliable.
 - Own-price elasticities depend on price level and market share: $\eta_{jj} = \beta_p \, p_j (1 - s_j)$. Higher-priced products are more elastic.
-- **Cross-elasticities are proportional to market shares**, not to product similarity. When a product is removed, its share is reallocated to all remaining products in proportion to their existing shares. This is the same substitution pattern as in symmetric Bertrand competition.
-- IIA is unrealistic: if a luxury product exits the market, the logit predicts its share goes equally (proportionally) to budget and premium products. The nested logit and mixed logit (BLP) relax this restriction.
+- **Cross-elasticities are proportional to market shares**, not to product similarity. When a product is removed, its share is reallocated to all remaining products in proportion to their existing shares, regardless of observed similarity.
+- IIA is unrealistic: if a luxury product exits the market, the logit predicts its share goes proportionally to budget and premium products. Nested and mixed-logit models relax this restriction.
 - Despite its limitations, the logit remains the starting point for demand estimation because of its computational tractability and clean closed-form expressions.
 
 ## Reproduce
@@ -111,4 +111,3 @@ python run.py
 
 - McFadden, D. (1974). Conditional Logit Analysis of Qualitative Choice Behavior. In P. Zarembka (Ed.), *Frontiers in Econometrics*. Academic Press.
 - Train, K. (2009). *Discrete Choice Methods with Simulation*. Cambridge University Press, 2nd edition.
-- Berry, S., Levinsohn, J., and Pakes, A. (1995). Automobile Prices in Market Equilibrium. *Econometrica*, 63(4), 841-890.

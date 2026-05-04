@@ -96,25 +96,30 @@ These examples cover Hamilton-Jacobi-Bellman equations, Kolmogorov Forward Equat
 
 ## Industrial Organization
 
-The IO section moves from static pricing and demand estimation into merger simulation, bargaining, collusion, entry, and dynamic choice. These tutorials are about markets with strategic firms and differentiated products, with methods introduced only when they serve the economic question.
+The IO section covers firm boundaries, vertical relationships, differentiated-products demand and pricing, production functions, merger screening, collusion, bargaining, and dynamic industry models. BLP appears once as a random-coefficients demand tool rather than as the center of the chapter.
 
 | | Tutorial | What it teaches | Method | Key Insight |
 |:---:|---|---|---|---|
+| <img src="industrial-organization/theory-of-the-firm/figures/thumb.png" width="240"> | [**Theory of the Firm: Incomplete Contracts and Hold-Up**](industrial-organization/theory-of-the-firm/) | Asset specificity, hold-up, and vertical integration | Governance comparison | Integration is most useful when contracts cannot protect specific investments |
+| <img src="industrial-organization/vertical-relationships/figures/thumb.png" width="240"> | [**Vertical Relationships and Double Marginalization**](industrial-organization/vertical-relationships/) | Wholesale pricing, two-part tariffs, and restraints | Backward induction | Marginal wholesale prices distort retail pricing |
+| <img src="industrial-organization/vertical-contracts/figures/thumb.png" width="240"> | [**Vertical Contracts and Vending Assortments**](industrial-organization/vertical-contracts/) | Rebates, slotting fees, and assortment choice | Discrete assortment search | Fixed payments can change which products are stocked |
 | <img src="industrial-organization/bertrand-logit-demand/figures/thumb.png" width="240"> | [**Bertrand Pricing with Logit Demand**](industrial-organization/bertrand-logit-demand/) | Differentiated-product pricing and merger effects | Fixed point | Mergers raise prices unless efficiencies offset them |
 | <img src="industrial-organization/logit-supply-side/figures/thumb.png" width="240"> | [**Demand Estimation and Markup Recovery**](industrial-organization/logit-supply-side/) | Recovering marginal costs from estimated demand | IV/2SLS + FOC | Demand estimates imply markups and costs |
 | <img src="industrial-organization/blp-random-coefficients/figures/thumb.png" width="240"> | [**BLP Random Coefficients Demand**](industrial-organization/blp-random-coefficients/) | Heterogeneous preferences in differentiated-product demand | Contraction mapping | Random coefficients relax IIA |
-| <img src="industrial-organization/blp-full-pipeline/figures/thumb.png" width="240"> | [**Full BLP Demand-to-Merger Pipeline**](industrial-organization/blp-full-pipeline/) | Estimation, elasticities, diversion, and counterfactual mergers | GMM + merger simulation | Substitution patterns drive merger predictions |
+| <img src="industrial-organization/production-functions-markups/figures/thumb.png" width="240"> | [**Production Functions and Markup Measurement**](industrial-organization/production-functions-markups/) | Proxy-control production estimation and markups | Control function | Markup estimates depend on output elasticities and input shares |
 | <img src="industrial-organization/effective-hhi/figures/thumb.png" width="240"> | [**Effective HHI for Merger Screening**](industrial-organization/effective-hhi/) | Concentration indices and merger screens | Index computation | $\Delta \text{HHI} = 2 s_1 s_2 \times 10000$ |
 | <img src="industrial-organization/static-games/figures/thumb.png" width="240"> | [**Static Oligopoly Games and Nash Equilibrium**](industrial-organization/static-games/) | Cournot and normal-form equilibrium logic | Nash equilibrium | Cournot output sits between monopoly and competition |
 | <img src="industrial-organization/collusion-detection/figures/thumb.png" width="240"> | [**Repeated-Game Collusion Detection**](industrial-organization/collusion-detection/) | Cartel stability and structural breaks | Repeated games | More firms make collusion harder to sustain |
+| <img src="industrial-organization/dynamic-games/figures/thumb.png" width="240"> | [**Dynamic Games and Markov-Perfect Investment**](industrial-organization/dynamic-games/) | Ericson-Pakes style quality investment | MPE value iteration | Current investment changes tomorrow's competitive state |
 | <img src="industrial-organization/dynamic-entry-exit/figures/thumb.png" width="240"> | [**Dynamic Entry and Exit in Oligopoly**](industrial-organization/dynamic-entry-exit/) | Sunk entry costs and endogenous market structure | Dynamic programming | Entry costs sustain above-competitive profits |
 | <img src="industrial-organization/dynamic-discrete-choice/figures/thumb.png" width="240"> | [**Dynamic Discrete Choice for Replacement**](industrial-organization/dynamic-discrete-choice/) | Rust-style choices, continuation values, and CCPs | Rust + CCP | Actions reveal continuation values |
+| <img src="industrial-organization/three-part-tariffs/figures/thumb.png" width="240"> | [**Three-Part Tariffs and Forward-Looking Broadband Demand**](industrial-organization/three-part-tariffs/) | Usage allowances and billing-cycle demand | Finite-horizon DP | Overage risk creates dynamic usage incentives |
 | <img src="industrial-organization/nash-in-nash/figures/thumb.png" width="240"> | [**Nash-in-Nash Vertical Bargaining**](industrial-organization/nash-in-nash/) | Bilateral negotiations between upstream and downstream firms | Nash-in-Nash | Incremental value is bargaining leverage |
 | <img src="industrial-organization/merger-simulation/figures/thumb.png" width="240"> | [**Merger Simulation Across Demand Systems**](industrial-organization/merger-simulation/) | Comparing merger predictions under alternative demand models | Multi-demand simulation | Demand model choice changes policy conclusions |
 
 ## Choice and Demand
 
-Choice and demand starts with revealed preference, then builds up parametric demand models. The progression is GARP, Afriat, logit, nested logit, and BLP, with supply-side markup recovery where it naturally belongs.
+Choice and demand stays focused on choice theory, revealed preference, Bayesian learning, and demand basics. IO supply-side methods and full counterfactual workflows live in the Industrial Organization section.
 
 | | Tutorial | What it teaches | Method | Key Insight |
 |:---:|---|---|---|---|
@@ -123,9 +128,7 @@ Choice and demand starts with revealed preference, then builds up parametric dem
 | <img src="choice/preference-recoverability/figures/thumb.png" width="240"> | [**Recovering Preferences from Finite Data**](choice/preference-recoverability/) | Bounding indifference curves without a full functional form | Afriat numbers | Data can bound preferences even without point identification |
 | <img src="choice/logit-discrete-choice/figures/thumb.png" width="240"> | [**Multinomial Logit Demand Estimation**](choice/logit-discrete-choice/) | Estimating product choice probabilities from simulated data | MLE | IIA makes substitution proportional to shares |
 | <img src="choice/bayesian-learning/figures/thumb.png" width="240"> | [**Bayesian Learning from Sequential Signals**](choice/bayesian-learning/) | Belief updating and optimal classification | Bayes' rule | Rational learning converges toward the Bayes classifier |
-| <img src="choice/logit-supply-side/figures/thumb.png" width="240"> | [**Logit Demand with Supply-Side Markups**](choice/logit-supply-side/) | Berry inversion and Bertrand first-order conditions | IV/2SLS + FOC | Demand estimates recover marginal costs |
 | <img src="choice/nested-logit/figures/thumb.png" width="240"> | [**Nested Logit Demand and Within-Nest Substitution**](choice/nested-logit/) | Grouped products and stronger same-nest substitution | Berry inversion | Same-nest substitution can be much larger than cross-nest substitution |
-| <img src="choice/blp-full-pipeline/figures/thumb.png" width="240"> | [**BLP Random Coefficients Choice Pipeline**](choice/blp-full-pipeline/) | Full random-coefficients demand estimation workflow | Contraction + GMM | Random coefficients create richer substitution patterns |
 
 ## Game Theory
 
@@ -162,7 +165,7 @@ These tutorials convert the old computational-finance notebooks into short, repr
 
 ## Computational Methods
 
-Methods are now at the bottom because they are support tools for the subject areas above. These tutorials are still useful as standalone references when optimization or sampling is the bottleneck.
+These tutorials are useful as standalone references when optimization or sampling is the bottleneck.
 
 | | Tutorial | What it teaches | Method | Key Insight |
 |:---:|---|---|---|---|

@@ -212,14 +212,14 @@ def main():
     )
 
     report.add_overview(
-        "The multinomial logit model is the workhorse of discrete choice analysis in "
-        "industrial organization. Consumers choose among $J$ differentiated products to "
+        "The multinomial logit model is the workhorse of discrete choice analysis. "
+        "Consumers choose among $J$ differentiated products to "
         "maximize utility, which depends on observed product characteristics (price, quality) "
         "and an unobserved idiosyncratic taste shock drawn from a Type I Extreme Value "
         "distribution.\n\n"
         "This distributional assumption yields the elegant logit choice probability formula "
-        "and makes maximum likelihood estimation tractable. The model is the foundation for "
-        "BLP (1995) and virtually all modern demand estimation in IO."
+        "and makes maximum likelihood estimation tractable. The model is a clean baseline "
+        "for studying probabilistic choice and the Independence of Irrelevant Alternatives."
     )
 
     report.add_equations(
@@ -335,7 +335,7 @@ $$\eta_{jk} = -\beta_{\text{price}} \, p_k \, s_k$$
                        fig3,
                        description="In the logit, own-price elasticity is driven by both the price level and market share through the formula "
                        "$\\eta_{jj} = \\beta_p \\, p_j (1 - s_j)$. Higher-priced products lose a larger fraction of their customers for a given percentage price increase, "
-                       "which has direct implications for optimal pricing and merger simulation.")
+                       "which makes elasticities useful for interpreting demand sensitivity.")
 
     # --- Figure 4: IIA Illustration ---
     fig4, (ax4a, ax4b) = plt.subplots(1, 2, figsize=(13, 5))
@@ -377,7 +377,7 @@ $$\eta_{jk} = -\beta_{\text{price}} \, p_k \, s_k$$
                        "IIA property: removing an alternative does not change the ratio of choice probabilities between remaining alternatives",
                        fig4,
                        description="The left panel shows that removing a product reallocates its share proportionally to all remaining products, regardless of similarity. "
-                       "The right panel confirms that pairwise share ratios are exactly preserved -- this is the IIA property, and it is the main limitation motivating the nested logit and BLP models.")
+                       "The right panel confirms that pairwise share ratios are exactly preserved -- this is the IIA property, and it is the main limitation motivating grouped and mixed-logit choice models.")
 
     # --- Table: Estimation Results ---
     table_data = {
@@ -405,7 +405,7 @@ $$\eta_{jk} = -\beta_{\text{price}} \, p_k \, s_k$$
                       "Price Elasticity Matrix (row = product whose share changes, column = product whose price changes)",
                       df_elas,
                       description="The IIA property is visible in the cross-elasticity columns: all off-diagonal entries in a given column are identical, meaning every rival product "
-                      "gains the same share when one product raises its price. This unrealistic substitution pattern is the key motivation for richer models like nested logit and BLP.")
+                      "gains the same share when one product raises its price. This unrealistic substitution pattern is the key motivation for richer grouped or mixed-logit models.")
 
     report.add_takeaway(
         "The multinomial logit is the workhorse of discrete choice demand estimation, "
@@ -418,11 +418,10 @@ $$\eta_{jk} = -\beta_{\text{price}} \, p_k \, s_k$$
         "$\\eta_{jj} = \\beta_p \\, p_j (1 - s_j)$. Higher-priced products are more elastic.\n"
         "- **Cross-elasticities are proportional to market shares**, not to product similarity. "
         "When a product is removed, its share is reallocated to all remaining products in "
-        "proportion to their existing shares. This is the same substitution pattern as in "
-        "symmetric Bertrand competition.\n"
+        "proportion to their existing shares, regardless of observed similarity.\n"
         "- IIA is unrealistic: if a luxury product exits the market, the logit predicts its "
-        "share goes equally (proportionally) to budget and premium products. The nested logit "
-        "and mixed logit (BLP) relax this restriction.\n"
+        "share goes proportionally to budget and premium products. Nested and mixed-logit "
+        "models relax this restriction.\n"
         "- Despite its limitations, the logit remains the starting point for demand estimation "
         "because of its computational tractability and clean closed-form expressions."
     )
@@ -430,7 +429,6 @@ $$\eta_{jk} = -\beta_{\text{price}} \, p_k \, s_k$$
     report.add_references([
         "McFadden, D. (1974). Conditional Logit Analysis of Qualitative Choice Behavior. In P. Zarembka (Ed.), *Frontiers in Econometrics*. Academic Press.",
         "Train, K. (2009). *Discrete Choice Methods with Simulation*. Cambridge University Press, 2nd edition.",
-        "Berry, S., Levinsohn, J., and Pakes, A. (1995). Automobile Prices in Market Equilibrium. *Econometrica*, 63(4), 841-890.",
     ])
 
     report.write("README.md")

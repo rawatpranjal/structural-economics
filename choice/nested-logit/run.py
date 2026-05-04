@@ -56,8 +56,8 @@ def generate_product_data(n_markets: int = 30) -> pd.DataFrame:
         cost_shock = np.random.normal(0, 0.3)
         for j in range(len(products["product_id"])):
             mc = products["marginal_cost_base"][j] + cost_shock + np.random.normal(0, 0.1)
-            markup = np.random.uniform(0.3, 0.8)
-            price = mc * (1 + markup)
+            price_factor = np.random.uniform(0.3, 0.8)
+            price = mc * (1 + price_factor)
             rows.append({
                 "market_id": t,
                 "product_id": products["product_id"][j],
@@ -534,8 +534,8 @@ def main():
         "parameter $\\sigma \\in [0,1)$ controls the degree of within-nest correlation:\n"
         "- $\\sigma = 0$: collapses to plain logit (IIA holds)\n"
         "- $\\sigma \\to 1$: products within a nest are perfect substitutes\n\n"
-        "This is the first step in the Berry (1994) hierarchy: logit $\\to$ nested logit "
-        "$\\to$ random-coefficients logit (BLP)."
+        "This makes nested logit a compact demand model for correlated alternatives "
+        "while keeping the share equation easy to estimate."
     )
 
     report.add_equations(r"""
@@ -572,8 +572,8 @@ rival characteristics, number of products in nest, and same-nest rival character
         "instruments for **both** price and within-nest share:\n\n"
         "| Instrument | Targets | Rationale |\n"
         "|------------|---------|----------|\n"
-        "| Cost shifter | Price | Supply-side variation |\n"
-        "| Rival sugar (all) | Price | BLP-style characteristic sum |\n"
+        "| Cost shifter | Price | Cost variation |\n"
+        "| Rival sugar (all) | Price | Characteristic sum |\n"
         "| Number of products in nest | $\\ln s_{j\\mid g}$ | Affects within-nest competition |\n"
         "| Same-nest rival sugar | $\\ln s_{j\\mid g}$ | Within-nest characteristic variation |"
     )
@@ -599,8 +599,8 @@ rival characteristics, number of products in nest, and same-nest rival character
         "Nested logit sends more customers to Store-Frosted (same nest).",
         fig2,
         description="Under IIA (blue bars), all rivals gain equally from Choco-Bombs' price increase regardless of product similarity. "
-        "The nested logit (green/red bars) correctly predicts that Store-Frosted -- another sugary cereal -- absorbs the lion's share of switching customers. "
-        "This distinction matters enormously for merger analysis: if two sugary cereals merge, the nested logit predicts a much larger price increase.",
+        "The nested logit (green/red bars) predicts that Store-Frosted -- another sugary cereal -- absorbs the lion's share of switching customers. "
+        "The point is demand-side substitution: observed groups can concentrate switching toward closer alternatives.",
     )
 
     # --- Figure 3: Diversion ratios ---
@@ -610,8 +610,8 @@ rival characteristics, number of products in nest, and same-nest rival character
         "Diversion ratios: fraction of Choco-Bombs' lost sales captured by each rival. "
         "Nested logit predicts much higher diversion to same-nest products.",
         fig3,
-        description="Diversion ratios are the key input to merger simulation: they determine the upward pricing pressure (UPP) when two products merge. "
-        "The nested logit concentrates diversion within the sugary nest, producing a more realistic prediction of post-merger pricing than the flat diversion pattern implied by plain logit.",
+        description="Diversion ratios summarize where customers go after one product becomes less attractive. "
+        "The nested logit concentrates switching within the sugary nest instead of spreading it flatly by market share.",
     )
 
     # --- Figure 4: Sigma effect ---
@@ -657,11 +657,11 @@ rival characteristics, number of products in nest, and same-nest rival character
         "elasticities. When Choco-Bombs raises its price, customers primarily "
         "switch to Store-Frosted (also sugary), not to Fiber-Bran.\n"
         "- The plain logit gets the overall price sensitivity roughly right but "
-        "completely misses the substitution pattern -- this matters for merger "
-        "analysis and targeted pricing.\n"
+        "completely misses the substitution pattern -- this matters for product "
+        "positioning and targeted pricing.\n"
         "- Estimation requires instruments for **both** price and the within-nest "
-        "share $\\ln s_{j|g}$, since both are endogenous. Standard BLP-style "
-        "instruments (rival characteristics, nest size) serve this purpose."
+        "share $\\ln s_{j|g}$, since both are endogenous. Rival characteristics "
+        "and nest size serve this purpose in the synthetic example."
     )
 
     report.add_references([

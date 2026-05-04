@@ -10,7 +10,7 @@ The **nested logit** fixes this by grouping products into nests (e.g., sugary vs
 - $\sigma = 0$: collapses to plain logit (IIA holds)
 - $\sigma \to 1$: products within a nest are perfect substitutes
 
-This is the first step in the Berry (1994) hierarchy: logit $\to$ nested logit $\to$ random-coefficients logit (BLP).
+This makes nested logit a compact demand model for correlated alternatives while keeping the share equation easy to estimate.
 
 ## Equations
 
@@ -47,8 +47,8 @@ The nested logit introduces a second endogenous variable, $\ln s_{j|g}$, because
 
 | Instrument | Targets | Rationale |
 |------------|---------|----------|
-| Cost shifter | Price | Supply-side variation |
-| Rival sugar (all) | Price | BLP-style characteristic sum |
+| Cost shifter | Price | Cost variation |
+| Rival sugar (all) | Price | Characteristic sum |
 | Number of products in nest | $\ln s_{j\mid g}$ | Affects within-nest competition |
 | Same-nest rival sugar | $\ln s_{j\mid g}$ | Within-nest characteristic variation |
 
@@ -59,12 +59,12 @@ The gold-outlined blocks mark within-nest product pairs. Cross-elasticities insi
 ![Nested logit elasticity matrix with nest blocks highlighted. Same-nest cross-elasticities (inside gold boxes) are higher than cross-nest elasticities.](figures/elasticity-heatmap.png)
 *Nested logit elasticity matrix with nest blocks highlighted. Same-nest cross-elasticities (inside gold boxes) are higher than cross-nest elasticities.*
 
-Under IIA (blue bars), all rivals gain equally from Choco-Bombs' price increase regardless of product similarity. The nested logit (green/red bars) correctly predicts that Store-Frosted -- another sugary cereal -- absorbs the lion's share of switching customers. This distinction matters enormously for merger analysis: if two sugary cereals merge, the nested logit predicts a much larger price increase.
+Under IIA (blue bars), all rivals gain equally from Choco-Bombs' price increase regardless of product similarity. The nested logit (green/red bars) predicts that Store-Frosted -- another sugary cereal -- absorbs the lion's share of switching customers. The point is demand-side substitution: observed groups can concentrate switching toward closer alternatives.
 
 ![Logit vs nested logit cross-elasticities when Choco-Bombs raises its price. Nested logit sends more customers to Store-Frosted (same nest).](figures/cross-elasticity-comparison.png)
 *Logit vs nested logit cross-elasticities when Choco-Bombs raises its price. Nested logit sends more customers to Store-Frosted (same nest).*
 
-Diversion ratios are the key input to merger simulation: they determine the upward pricing pressure (UPP) when two products merge. The nested logit concentrates diversion within the sugary nest, producing a more realistic prediction of post-merger pricing than the flat diversion pattern implied by plain logit.
+Diversion ratios summarize where customers go after one product becomes less attractive. The nested logit concentrates switching within the sugary nest instead of spreading it flatly by market share.
 
 ![Diversion ratios: fraction of Choco-Bombs' lost sales captured by each rival. Nested logit predicts much higher diversion to same-nest products.](figures/diversion-ratios.png)
 *Diversion ratios: fraction of Choco-Bombs' lost sales captured by each rival. Nested logit predicts much higher diversion to same-nest products.*
@@ -92,8 +92,8 @@ The nested logit is the simplest departure from the IIA assumption. By grouping 
 **Key insights:**
 - The nesting parameter $\sigma$ controls within-nest correlation. We estimated $\hat{\sigma} = 0.913$ vs the true value of 0.7, confirming that products within a nest are closer substitutes.
 - Same-nest cross-price elasticities are **higher** than cross-nest elasticities. When Choco-Bombs raises its price, customers primarily switch to Store-Frosted (also sugary), not to Fiber-Bran.
-- The plain logit gets the overall price sensitivity roughly right but completely misses the substitution pattern -- this matters for merger analysis and targeted pricing.
-- Estimation requires instruments for **both** price and the within-nest share $\ln s_{j|g}$, since both are endogenous. Standard BLP-style instruments (rival characteristics, nest size) serve this purpose.
+- The plain logit gets the overall price sensitivity roughly right but completely misses the substitution pattern -- this matters for product positioning and targeted pricing.
+- Estimation requires instruments for **both** price and the within-nest share $\ln s_{j|g}$, since both are endogenous. Rival characteristics and nest size serve this purpose in the synthetic example.
 
 ## Reproduce
 

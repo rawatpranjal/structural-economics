@@ -1,0 +1,10 @@
+Specificity,Regime,Incentive share,Investment,Surplus,Efficiency ratio
+0.0,Spot contract,0.72,2.88,7.35,91.9%
+0.5,Spot contract,0.44,1.78,5.50,68.7%
+1.0,Spot contract,0.17,0.68,2.43,30.4%
+0.0,Long-term contract,0.72,2.88,6.99,87.4%
+0.5,Long-term contract,0.59,2.38,6.29,78.7%
+1.0,Long-term contract,0.47,1.88,5.34,66.8%
+0.0,Vertical integration,0.74,2.96,6.41,80.1%
+0.5,Vertical integration,0.72,2.90,6.52,81.5%
+1.0,Vertical integration,0.71,2.84,6.63,82.8%
