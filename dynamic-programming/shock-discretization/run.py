@@ -113,7 +113,7 @@ def main() -> None:
 
     setup_style()
     report = ModelReport(
-        "Shock Discretization",
+        "Discretizing Persistent Shocks",
         "Finite-state approximations to continuous productivity and income shocks.",
     )
 
@@ -257,9 +257,9 @@ standard deviation is **{true_std:.4f}**.
     )
 
     report.add_references([
-        "Tauchen, G. (1986). Finite state Markov-chain approximations to univariate and vector autoregressions. Economics Letters.",
-        "Rouwenhorst, K. G. (1995). Asset pricing implications of equilibrium business cycle models. In Frontiers of Business Cycle Research.",
-        "Kopecky, K. A. and Suen, R. M. H. (2010). Finite state Markov-chain approximations to highly persistent processes. Review of Economic Dynamics.",
+        "[Tauchen, G. (1986). Finite State Markov-Chain Approximations to Univariate and Vector Autoregressions. *Economics Letters*, 20(2), 177-181.](https://doi.org/10.1016/0165-1765%2886%2990168-0)",
+        "[Rouwenhorst, K. G. (1995). Asset Pricing Implications of Equilibrium Business Cycle Models. In T. Cooley (ed.), *Frontiers of Business Cycle Research*. Princeton University Press.](https://doi.org/10.1515/9780691218052-014)",
+        "[Kopecky, K. A. and Suen, R. M. H. (2010). Finite State Markov-Chain Approximations to Highly Persistent Processes. *Review of Economic Dynamics*, 13(3), 701-714.](https://doi.org/10.1016/j.red.2009.07.002)",
     ])
     report.write()
 

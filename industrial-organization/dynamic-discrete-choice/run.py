@@ -238,7 +238,7 @@ def main() -> None:
 
     setup_style()
     report = ModelReport(
-        "Dynamic Discrete Choice",
+        "Dynamic Discrete Choice for Replacement",
         "Rust-style bus engine replacement with full-solution and CCP estimation.",
     )
 
@@ -403,9 +403,9 @@ $$P(a=1 \mid x) =
     )
 
     report.add_references([
-        "Rust, J. (1987). Optimal replacement of GMC bus engines: An empirical model of Harold Zurcher. Econometrica.",
-        "Hotz, V. J. and Miller, R. A. (1993). Conditional choice probabilities and the estimation of dynamic models. Review of Economic Studies.",
-        "Aguirregabiria, V. and Mira, P. (2010). Dynamic discrete choice structural models: A survey. Journal of Econometrics.",
+        "[Rust, J. (1987). Optimal Replacement of GMC Bus Engines: An Empirical Model of Harold Zurcher. *Econometrica*, 55(5), 999-1033.](https://doi.org/10.2307/1911259)",
+        "[Hotz, V. J. and Miller, R. A. (1993). Conditional Choice Probabilities and the Estimation of Dynamic Models. *Review of Economic Studies*, 60(3), 497-529.](https://doi.org/10.2307/2298122)",
+        "[Aguirregabiria, V. and Mira, P. (2010). Dynamic Discrete Choice Structural Models: A Survey. *Journal of Econometrics*, 156(1), 38-67.](https://doi.org/10.1016/j.jeconom.2009.09.007)",
     ])
     report.write()
     save_thumbnail("figures/estimated-policies.png", "figures/thumb.png")

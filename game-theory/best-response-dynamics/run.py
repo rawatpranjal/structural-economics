@@ -77,7 +77,7 @@ def main() -> None:
 
     setup_style()
     report = ModelReport(
-        "Best-Response Dynamics",
+        "Cournot Best-Response Dynamics",
         "Solving a Cournot game by iterating best responses.",
     )
 
@@ -209,9 +209,10 @@ $$
     )
 
     report.add_references([
-        "Cournot, A. A. (1838). *Researches into the Mathematical Principles of the Theory of Wealth*.",
-        "Fudenberg, D. and Tirole, J. (1991). *Game Theory*. MIT Press.",
-        "Vives, X. (1999). *Oligopoly Pricing: Old Ideas and New Tools*. MIT Press.",
+        "[Cournot, A. A. (1838/1897). *Researches into the Mathematical Principles of the Theory of Wealth*. English translation.](https://openlibrary.org/books/OL5428468M/Researches_into_the_mathematical_principles_of_the_theory_of_wealth_1838.)",
+        "[Fudenberg, D. and Levine, D. K. (1998). *The Theory of Learning in Games*. MIT Press.](https://mitpress.mit.edu/9780262061940/the-theory-of-learning-in-games/)",
+        "[Fudenberg, D. and Tirole, J. (1991). *Game Theory*. MIT Press.](https://mitpress.mit.edu/9780262061414/game-theory/)",
+        "[Vives, X. (1999). *Oligopoly Pricing: Old Ideas and New Tools*. MIT Press.](https://mitpress.mit.edu/9780262720403/oligopoly-pricing/)",
     ])
 
     report.write("README.md")

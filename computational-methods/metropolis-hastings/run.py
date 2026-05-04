@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """Random-walk Metropolis-Hastings for a bimodal target.
 
-This is a Python tutorial version of the course homework MATLAB example. The
-target is a mixture of two bivariate normals, which makes proposal tuning and
-mode switching visible in trace plots and diagnostics.
+This tutorial samples from a mixture of two bivariate normals, which makes
+proposal tuning and mode switching visible in trace plots and diagnostics.
 """
 
 import sys
@@ -162,7 +161,7 @@ def main() -> None:
         )
 
     report = ModelReport(
-        "Metropolis-Hastings Sampling",
+        "Metropolis-Hastings Sampling Diagnostics",
         "Random-walk MCMC, proposal tuning, and mixing diagnostics on a bimodal target.",
     )
 
@@ -170,9 +169,10 @@ def main() -> None:
         "Metropolis-Hastings turns a density that is easy to evaluate into draws from that "
         "density. The algorithm is simple: propose a move, compare the target density at the "
         "new and old locations, and sometimes accept a worse move so the chain keeps exploring.\n\n"
-        "This tutorial uses the bimodal mixture from the course homework. It is intentionally "
-        "small enough to plot. Small proposals have high acceptance but move slowly. Large "
-        "proposals jump farther but are often rejected. Useful MCMC lives between those extremes."
+        "This tutorial uses the same bimodal mixture as the optimization example. It is "
+        "intentionally small enough to plot. Small proposals have high acceptance but move "
+        "slowly. Large proposals jump farther but are often rejected. Useful MCMC lives "
+        "between those extremes."
     )
 
     report.add_equations(
@@ -327,9 +327,9 @@ $$
 
     report.add_references(
         [
-            "Chang, M. ECON 609 Problem Set 1: Metropolis-Hastings sampler.",
-            "Metropolis, N. et al. (1953). Equation of state calculations by fast computing machines. Journal of Chemical Physics.",
-            "Hastings, W. K. (1970). Monte Carlo sampling methods using Markov chains and their applications. Biometrika.",
+            "[Metropolis, N. et al. (1953). Equation of State Calculations by Fast Computing Machines. *Journal of Chemical Physics*, 21(6), 1087-1092.](https://doi.org/10.1063/1.1699114)",
+            "[Hastings, W. K. (1970). Monte Carlo Sampling Methods Using Markov Chains and Their Applications. *Biometrika*, 57(1), 97-109.](https://doi.org/10.1093/biomet/57.1.97)",
+            "[Chib, S. and Greenberg, E. (1995). Understanding the Metropolis-Hastings Algorithm. *The American Statistician*, 49(4), 327-335.](https://doi.org/10.1080/00031305.1995.10476177)",
         ]
     )
 

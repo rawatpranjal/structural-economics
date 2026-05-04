@@ -1,4 +1,4 @@
-# Normal-Form Games
+# Normal-Form Games and Mixed Equilibrium
 
 > Nash equilibria by enumeration and 2x2 indifference conditions.
 
@@ -77,5 +77,6 @@ python run.py
 
 ## References
 
-- Nash, J. (1950). Equilibrium Points in N-Person Games. *Proceedings of the National Academy of Sciences*, 36(1).
-- Osborne, M. and Rubinstein, A. (1994). *A Course in Game Theory*. MIT Press.
+- [Nash, J. (1950). Equilibrium Points in N-Person Games. *Proceedings of the National Academy of Sciences*, 36(1), 48-49.](https://doi.org/10.1073/pnas.36.1.48)
+- [Osborne, M. and Rubinstein, A. (1994). *A Course in Game Theory*. MIT Press.](https://mitpress.mit.edu/9780262650403/a-course-in-game-theory)
+- [Lemke, C. E. and Howson, J. T. (1964). Equilibrium Points of Bimatrix Games. *SIAM Journal on Applied Mathematics*, 12(2), 413-423.](https://doi.org/10.1137/0112033)

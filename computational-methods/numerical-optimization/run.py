@@ -297,7 +297,7 @@ def main() -> None:
         )
 
     report = ModelReport(
-        "Numerical Optimization",
+        "Optimization Methods for Economic Objectives",
         "Local, derivative-free, and stochastic search on a multimodal objective.",
     )
 
@@ -471,9 +471,9 @@ derivatives, and simulated annealing accepts occasional uphill moves to search m
 
     report.add_references(
         [
-            "Chang, M. ECON 609 lecture slides: Optimization.",
-            "Nocedal, J., and Wright, S. J. (2006). Numerical Optimization. Springer.",
-            "Virtanen, P. et al. (2020). SciPy 1.0: Fundamental algorithms for scientific computing in Python. Nature Methods.",
+            "[Nocedal, J., and Wright, S. J. (2006). *Numerical Optimization*, 2nd ed. Springer.](https://doi.org/10.1007/978-0-387-40065-5)",
+            "[Goffe, W. L., Ferrier, G. D., and Rogers, J. (1994). Global Optimization of Statistical Functions with Simulated Annealing. *Journal of Econometrics*, 60(1-2), 65-99.](https://doi.org/10.1016/0304-4076(94)90038-8)",
+            "[Virtanen, P. et al. (2020). SciPy 1.0: Fundamental Algorithms for Scientific Computing in Python. *Nature Methods*, 17, 261-272.](https://doi.org/10.1038/s41592-019-0686-2)",
         ]
     )
 
