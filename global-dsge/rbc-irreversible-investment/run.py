@@ -299,7 +299,7 @@ def main():
     neg_dz = dz < 0
 
     asym_data = {
-        "": ["Positive dz", "Negative dz", "Ratio |neg/pos|"],
+        "": ["Positive dz", "Negative dz", "Ratio abs(neg/pos)"],
         "std(dY) Irr %": [
             f"{100*np.std(dY_irr[pos_dz]):.3f}",
             f"{100*np.std(dY_irr[neg_dz]):.3f}",
@@ -521,7 +521,7 @@ When $\mu > 0$, the constraint binds: the agent would like to disinvest but cann
 
     df_asym = pd.DataFrame(asym_data)
     report.add_table("tables/asymmetry.csv", "Asymmetric Responses to Positive vs Negative TFP Changes", df_asym,
-        description="The ratio |neg/pos| exceeding 1.0 for the irreversible model confirms that output "
+        description="The negative-to-positive response ratio exceeding 1.0 for the irreversible model confirms that output "
         "growth is more volatile in downturns than in expansions. The standard model shows a ratio "
         "near 1.0, as expected for a symmetric linear system.")
 

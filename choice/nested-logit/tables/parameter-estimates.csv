@@ -1,5 +1,5 @@
 Parameter,True,Logit,Nested Logit
-alpha,1.500,1.605,1.468
-beta_sugar,0.300,0.413,0.277
-beta_const,1.000,-0.198,1.568
+alpha,1.500,1.649,1.455
+beta_sugar,0.300,0.404,0.279
+beta_const,1.000,-0.034,1.518
 sigma,0.700,---,0.913

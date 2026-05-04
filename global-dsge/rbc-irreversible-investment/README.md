@@ -51,26 +51,32 @@ Irreversible model converged in **49** iterations. Standard model converged in *
 
 ## Results
 
-**Constraint binding frequency:** The irreversibility constraint binds in 0.0% of simulated periods. It binds more often when capital is high relative to TFP (upper-left region of the state space).
-
-**Asymmetric business cycles:** The irreversibility constraint amplifies contractions: when TFP falls, the agent cannot reduce the capital stock quickly enough, leading to excess capital and depressed returns. In contrast, expansions are unconstrained and look similar to the standard model.
-
-**Welfare cost:** The value function under irreversibility is everywhere weakly below the unconstrained value, with the largest gaps occurring where the constraint binds.
+Look for the kink where the irreversible investment policy meets the I=0 line: to the right of this kink (high K, low z), the constraint binds and investment is pinned at zero. The standard model's dashed lines pass freely below zero, showing the disinvestment that irreversibility prevents.
 
 ![Investment and consumption policies: irreversible (solid) vs standard (dashed). Red line marks the I=0 constraint.](figures/policy-functions.png)
 *Investment and consumption policies: irreversible (solid) vs standard (dashed). Red line marks the I=0 constraint.*
 
+The constraint binds in the upper-left region where capital is high relative to productivity. In these states the agent would prefer to sell capital but cannot, creating a capital overhang that depresses returns and prolongs recessions.
+
 ![Region where the irreversibility constraint binds (red). High K + low z = binding.](figures/binding-region.png)
 *Region where the irreversibility constraint binds (red). High K + low z = binding.*
+
+The shaded periods in the investment panel show when the constraint binds. During these episodes, capital cannot adjust downward, so consumption must absorb all of the output decline, making consumption more volatile in contractions than the standard model predicts.
 
 ![Simulated paths comparing irreversible (blue) vs standard (red) RBC. Shaded regions mark binding constraint.](figures/simulation.png)
 *Simulated paths comparing irreversible (blue) vs standard (red) RBC. Shaded regions mark binding constraint.*
 
+The left panel shows the mass point at I=0 created by the constraint, which is absent in the symmetric standard-model distribution. The right panel's negative skewness in output growth under irreversibility formalizes the intuition that recessions are sharper than expansions when capital adjustment is one-sided.
+
 ![Investment truncated at zero (left). Output growth shows negative skewness under irreversibility (right).](figures/asymmetric-distributions.png)
 *Investment truncated at zero (left). Output growth shows negative skewness under irreversibility (right).*
 
+The value difference is zero where the constraint never binds (lower-right) and most negative where it binds tightly (upper-left). This surface maps the welfare cost of irreversibility across the state space, showing that the cost is concentrated in high-capital, low-productivity states.
+
 ![Welfare cost: V_irr - V_std everywhere non-positive. Dashed line marks binding region boundary.](figures/value-difference.png)
 *Welfare cost: V_irr - V_std everywhere non-positive. Dashed line marks binding region boundary.*
+
+Compare std(I)/std(Y) across models: irreversibility truncates the investment distribution, altering relative volatilities and the consumption-output correlation.
 
 **Business Cycle Statistics (5000 periods, burn-in 500)**
 
@@ -79,13 +85,21 @@ Irreversible model converged in **49** iterations. Standard model converged in *
 | Irreversible |      3.804 |            1.34 |           0.207 |       0.999 |   37.6138 |      0.2548 |
 | Standard RBC |      3.804 |            1.34 |           0.207 |       0.999 |   37.6138 |      0.2548 |
 
+The negative-to-positive response ratio exceeding 1.0 for the irreversible model confirms that output growth is more volatile in downturns than in expansions. The standard model shows a ratio near 1.0, as expected for a symmetric linear system.
+
 **Asymmetric Responses to Positive vs Negative TFP Changes**
 
-|                 |   std(dY) Irr % |   std(dY) Std % |
-|:----------------|----------------:|----------------:|
-| Positive dz     |               0 |               0 |
-| Negative dz     |               0 |               0 |
-| Ratio |neg/pos| |               0 |               0 |
+|                    |   std(dY) Irr % |   std(dY) Std % |
+|:-------------------|----------------:|----------------:|
+| Positive dz        |               0 |               0 |
+| Negative dz        |               0 |               0 |
+| Ratio abs(neg/pos) |               0 |               0 |
+
+**Constraint binding frequency:** The irreversibility constraint binds in 0.0% of simulated periods. It binds more often when capital is high relative to TFP (upper-left region of the state space).
+
+**Asymmetric business cycles:** The irreversibility constraint amplifies contractions: when TFP falls, the agent cannot reduce the capital stock quickly enough, leading to excess capital and depressed returns. In contrast, expansions are unconstrained and look similar to the standard model.
+
+**Welfare cost:** The value function under irreversibility is everywhere weakly below the unconstrained value, with the largest gaps occurring where the constraint binds.
 
 ## Takeaway
 

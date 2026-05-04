@@ -9,6 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DISPLAY_MATH_BAD_PREFIX = re.compile(r"^\s*[+*-]\s+")
+TABLE_SEPARATOR_CELL = re.compile(r":?-{3,}:?")
 
 
 def catalog_links() -> set[Path]:
@@ -94,6 +95,50 @@ def display_math_errors() -> list[str]:
     return errors
 
 
+def count_unescaped_pipes(line: str) -> int:
+    """Count Markdown table separators, ignoring escaped literal pipes."""
+    return len(re.findall(r"(?<!\\)\|", line))
+
+
+def is_markdown_table_separator(line: str) -> bool:
+    """Return whether a line looks like a Markdown table separator row."""
+    if "|" not in line:
+        return False
+    cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+    return len(cells) >= 2 and all(TABLE_SEPARATOR_CELL.fullmatch(cell) for cell in cells)
+
+
+def markdown_table_errors() -> list[str]:
+    """Find table rows whose unescaped pipes would break GitHub rendering."""
+    errors = []
+    for path in active_text_files():
+        if path.suffix != ".md":
+            continue
+        rel = path.relative_to(ROOT)
+        lines = path.read_text(errors="replace").splitlines()
+        in_fence = False
+        i = 0
+        while i < len(lines):
+            if lines[i].strip().startswith("```"):
+                in_fence = not in_fence
+                i += 1
+                continue
+            if not in_fence and i + 1 < len(lines) and is_markdown_table_separator(lines[i + 1]):
+                expected = count_unescaped_pipes(lines[i])
+                j = i
+                while j < len(lines) and lines[j].lstrip().startswith("|"):
+                    actual = count_unescaped_pipes(lines[j])
+                    if actual != expected:
+                        errors.append(
+                            f"{rel}:{j + 1} Markdown table row has {actual} unescaped pipes; expected {expected}"
+                        )
+                    j += 1
+                i = j
+                continue
+            i += 1
+    return errors
+
+
 def validate() -> int:
     errors = []
     links = catalog_links()
@@ -118,6 +163,7 @@ def validate() -> int:
         errors.append(f"Active checkpoint directory outside _legacy: {rel}")
 
     errors.extend(display_math_errors())
+    errors.extend(markdown_table_errors())
 
     if errors:
         print("Catalog validation failed:")

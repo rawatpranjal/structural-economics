@@ -574,8 +574,8 @@ rival characteristics, number of products in nest, and same-nest rival character
         "|------------|---------|----------|\n"
         "| Cost shifter | Price | Supply-side variation |\n"
         "| Rival sugar (all) | Price | BLP-style characteristic sum |\n"
-        "| Number of products in nest | $\\ln s_{j|g}$ | Affects within-nest competition |\n"
-        "| Same-nest rival sugar | $\\ln s_{j|g}$ | Within-nest characteristic variation |"
+        "| Number of products in nest | $\\ln s_{j\\mid g}$ | Affects within-nest competition |\n"
+        "| Same-nest rival sugar | $\\ln s_{j\\mid g}$ | Within-nest characteristic variation |"
     )
 
     # --- Figure 1: Elasticity heatmap ---

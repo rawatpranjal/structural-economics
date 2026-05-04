@@ -1,5 +1,7 @@
 # After Quant Econ
 
+[QuantEcon](https://quantecon.org/) is the starting point; this repo continues with executable structural and computational economics examples.
+
 Executable examples for applied structural and computational economics after the Quant Econ foundations. Every model is self-contained, runs with `python run.py`, and produces a documented report with equations, solutions, visualizations, and takeaways.
 
 **Built with:** Python, JAX, NumPy, SciPy, Matplotlib | **License:** MIT
@@ -152,6 +154,8 @@ Methods are now at the bottom because they are support tools for the subject are
 | | Tutorial | What it teaches | Method | Key Insight |
 |:---:|---|---|---|---|
 | <img src="computational-methods/numerical-optimization/figures/thumb.png" width="240"> | [**Optimization Methods for Economic Objectives**](computational-methods/numerical-optimization/) | Local, derivative-free, and stochastic search | Newton + BFGS + annealing | Starting points and multimodality decide what optimizers find |
+| <img src="computational-methods/projection-methods/figures/thumb.png" width="240"> | [**Projection Methods with Chebyshev Polynomials**](computational-methods/projection-methods/) | Approximating policy functions with basis coefficients | Chebyshev collocation | Euler errors reveal whether a smooth approximation is actually accurate |
+| <img src="computational-methods/perturbation-linearization/figures/thumb.png" width="240"> | [**Perturbation and Linearization**](computational-methods/perturbation-linearization/) | Local Taylor approximations and nonlinear impulse responses | Taylor expansion | Linearization is fast, but higher-order terms capture curvature and asymmetry |
 | <img src="computational-methods/metropolis-hastings/figures/thumb.png" width="240"> | [**Metropolis-Hastings Sampling Diagnostics**](computational-methods/metropolis-hastings/) | Random-walk MCMC tuning and diagnostics | Random-walk MCMC | Proposal tuning trades off acceptance and exploration |
 | <img src="computational-methods/kalman-filter/figures/thumb.png" width="240"> | [**Kalman Filtering Hidden States**](computational-methods/kalman-filter/) | Recursive signal extraction in linear Gaussian systems | Kalman filter | Prediction and updating deliver states, uncertainty, and likelihood together |
 | <img src="computational-methods/particle-filter/figures/thumb.png" width="240"> | [**Particle Filtering and Degeneracy**](computational-methods/particle-filter/) | Simulation-based filtering when analytic updates are unavailable | Sequential Monte Carlo | Proposal design controls particle collapse and Monte Carlo error |

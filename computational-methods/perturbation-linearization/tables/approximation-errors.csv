@@ -1,0 +1,7 @@
+Order,Domain,Max map error,Median map error,Positive IRF RMSE,Negative IRF RMSE
+1,local abs(x) <= 0.20,2.45e-02,4.33e-03,1.16e-02,1.17e-02
+1,wide abs(x) <= 0.60,3.80e-01,2.89e-02,1.16e-02,1.17e-02
+2,local abs(x) <= 0.20,6.79e-03,7.93e-04,5.01e-03,2.03e-03
+2,wide abs(x) <= 0.60,2.18e-01,2.14e-02,5.01e-03,2.03e-03
+3,local abs(x) <= 0.20,5.42e-04,3.47e-05,3.15e-04,1.25e-04
+3,wide abs(x) <= 0.60,4.54e-02,2.86e-03,3.15e-04,1.25e-04
