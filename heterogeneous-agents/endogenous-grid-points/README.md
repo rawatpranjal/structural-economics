@@ -1,101 +1,158 @@
-# Endogenous Grid Method for Income Risk
+# Buffer-Stock Saving by Endogenous Grid Points
 
-> Carroll's (2006) endogenous grid points method for solving the standard incomplete-markets consumption-savings problem.
+> Euler-equation inversion for a partial-equilibrium income-risk household problem.
 
 ## Overview
 
-The Endogenous Grid Points (EGP) method solves the household savings problem under income uncertainty using a computational trick that eliminates the expensive inner maximization of standard VFI. Instead of searching for optimal consumption at each asset grid point, EGP inverts the Euler equation: given a grid on *savings* $a'$, it computes the *implied* current assets $a$ that are consistent with choosing that level of savings.
+The economic problem is familiar from the preceding [IID income-risk VFI tutorial](../vfi-iid-income/): an impatient household faces uninsurable labor-income risk and cannot borrow below $\underline a=0$. Assets are valuable because they insure consumption against bad future income draws.
 
-This is a partial-equilibrium model: the interest rate $r$ is exogenous. Agents face IID income risk, cannot borrow, and self-insure through precautionary savings.
+This tutorial changes the computation, not the economics. Standard VFI asks, at each current asset level, which next asset choice gives the highest value. Endogenous grid points (EGP) reverse that question. Start from a grid for next-period assets $a'$, use the Euler equation to infer the consumption that would make that choice optimal, and then recover the current asset level that could finance it. The result is the same kind of consumption and saving policy, but without an inner maximization over $a'$.
+
+The next step in the section, [Fast Aiyagari Equilibrium by EGP](../egp-aiyagari/), puts this speedup inside a general-equilibrium capital-market clearing loop.
 
 ## Equations
 
-$$V(a, y) = \max_{c \ge 0} \bigl[ u(c) + \beta \, \mathbb{E}\left[ V(a', y') \right] \bigr]$$
+At the beginning of a period the household has assets $a \in A$ and receives
+income $y_j$ from an IID discrete distribution with probabilities $\pi_j$. It
+chooses next-period assets $a'=g(a,y_j)$ and consumption $c(a,y_j)$:
 
-subject to: $c + a' = Ra + y$, $\quad a' \ge 0$, $\quad y \sim F(y)$ IID.
+$$
+V(a,y_j) =
+\max_{a' \geq \underline a}
+\Bigl[
+u(Ra+y_j-a') + \beta \sum_{\ell=1}^{n_y}
+\pi_\ell V(a',y_\ell)
+\Bigr].
+$$
 
-**Euler equation:** $u'(c) = \beta R \, \mathbb{E}\left[ u'(c'(a', y')) \right]$ (with equality when $a' > 0$).
+The budget identity is
 
-**EGP insight:** Fix a grid $\{a'_j\}$. For each $a'_j$:
-1. Compute RHS: $\mu_j = \beta R \sum_{k} u'(c(a'_j, y_k)) \pi_k$
-2. Invert: $c_j = (u')^{-1}(\mu_j)$
-3. Recover implied assets: $a_j = (c_j + a'_j - y) / R$
+$$
+c(a,y_j) = Ra+y_j-g(a,y_j),
+\qquad R=1+r.
+$$
 
-This gives pairs $(a_j, a'_j)$ — the **endogenous grid** — from which we interpolate the savings policy on the original exogenous grid.
+Preferences are CRRA, so marginal utility is
+
+$$
+u'(c)=c^{-\gamma},
+\qquad
+(u')^{-1}(\mu)=\mu^{-1/\gamma}.
+$$
+
+For an interior next-asset choice, the Euler equation is
+
+$$
+u'(c(a,y_j))
+=
+\beta R
+\sum_{\ell=1}^{n_y}
+\pi_\ell
+u'\!\left(c(g(a,y_j),y_\ell)\right).
+$$
+
+At the borrowing limit the Euler equation becomes an inequality:
+$u'(c(a,y_j)) \geq \beta R \sum_\ell \pi_\ell u'(c(\underline a,y_\ell))$.
+The inequality is the economic reason that constrained households can have
+very high MPCs.
 
 ## Model Setup
 
-| Parameter | Value | Description |
-|-----------|-------|-------------|
-| $\gamma$ | 2 | CRRA risk aversion |
-| $\beta$  | 0.95 | Discount factor |
-| $r$      | 0.03 | Interest rate |
-| $\mu_y$  | 1.0 | Mean income |
-| $\sigma_y$ | 0.2 | Std dev of income |
-| $n_y$    | 5 | Income grid points |
-| $n_a$    | 50 | Asset grid points |
-| $a_{\max}$ | 50 | Maximum assets |
-| $N_{sim}$ | 50,000 | Simulated agents |
-| $T_{sim}$ | 500 | Simulation periods |
+| Parameter | Value | Role |
+|---|---:|---|
+| $\gamma$ | 2.0 | CRRA risk aversion |
+| $\beta$ | 0.95 | Discount factor |
+| $r$ | 0.03 | Net risk-free return |
+| $\beta R$ | 0.9785 | Patience-return product |
+| $\mu_y$ | 1.0 | Mean labor income |
+| $\sigma_y$ | 0.2 | Income standard deviation |
+| $n_y$ | 5 | IID income states |
+| $\underline a$ | 0.0 | Borrowing limit |
+| $\bar a$ | 20.0 | Upper asset-grid bound |
+| Main asset grid | 120 points | Exponential spacing near the constraint |
+| Reference grid | 900 points | Fine-grid EGP policy check |
+| Simulation | 50,000 households, 550 periods | Terminal cross section |
 
 ## Solution Method
 
-**Endogenous Grid Points (Carroll, 2006):** Instead of iterating on the value function with an inner maximization, EGP iterates on the *Euler equation*. At each iteration:
+EGP is useful here because the control is next-period assets and the Euler
+equation pins down current marginal utility. The algorithm keeps the asset grid
+for $a'$ fixed, but the implied current assets are endogenous.
 
-1. Compute expected marginal utility $\mathbb{E}[u'(c')]$ using the current consumption function and the IID income distribution.
-2. Apply the Euler equation to get today's consumption: $c = (u')^{-1}(\beta R \, \mathbb{E}[u'(c')])$.
-3. Use the budget constraint to find the **implied** current assets: $a = (c + a' - y)/R$.
-4. Interpolate from the endogenous grid $(a, a')$ back to the exogenous grid.
+```text
+Input: asset grid A for next assets, income states y_j, probabilities pi_j,
+       primitives beta, R, gamma, borrowing limit a_min
+Initialize c_0(a_i, y_j), for example from consuming current income plus interest
+For n = 0, 1, 2, ...:
+    For each candidate next asset a_i' in A:
+        Compute expected marginal utility
+            M_i = sum_j pi_j u'(c_n(a_i', y_j))
+        Invert the Euler equation
+            c_i = (u')^{-1}(beta R M_i)
+    For each current income y_j:
+        Map each candidate next asset back to current assets
+            a_ij^endo = (c_i + a_i' - y_j) / R
+        Interpolate the pairs (a_ij^endo, a_i') onto the exogenous asset grid A
+        If an exogenous asset lies below the first endogenous point, set a' = a_min
+        Recover c_{n+1}(a,y_j) = R a + y_j - g_{n+1}(a,y_j)
+    Stop when max_{a,j} |c_{n+1}(a,y_j) - c_n(a,y_j)| < epsilon
+Output: consumption policy c, next-asset policy g
+```
 
-This avoids all root-finding and grid search in the inner loop, making EGP significantly faster than VFI — typically by an order of magnitude.
-
-Converged in **151 iterations** (tolerance = 1e-06).
+The main grid converged in **103 EGP iterations**
+with consumption sup-norm error 9.77e-07. A
+900-point reference solve gives a maximum consumption-policy gap
+of 4.26e-04 over $a \leq 5$; the corresponding
+next-asset gap is 4.26e-04. These are grid and interpolation errors,
+not a separate economic wedge.
 
 ## Results
 
-<img src="figures/consumption-policy.png" alt="Consumption policy by income state: higher income shifts the policy up" width="80%">
-*Consumption policy by income state: higher income shifts the policy up*
+The consumption policy has the same buffer-stock shape as in the VFI solution. Low-wealth households consume a large share of cash on hand, but the policy is not the deterministic spend-down rule because future income may be bad. The dashed curves are the fine-grid EGP reference for the lowest and highest income states; on the economically relevant range they lie almost on top of the main-grid policy.
 
-<img src="figures/savings-policy.png" alt="Net savings (a'-a) by income state: low-income agents dissave, high-income agents accumulate" width="80%">
-*Net savings (a'-a) by income state: low-income agents dissave, high-income agents accumulate*
+<img src="figures/consumption-policy.png" alt="Consumption policy with fine-grid EGP reference" width="80%">
 
-<img src="figures/wealth-distribution.png" alt="Simulated stationary wealth distribution with right skew and mass at the constraint" width="80%">
-*Simulated stationary wealth distribution with right skew and mass at the constraint*
+Net saving separates income states more sharply. A bad draw pushes the household toward the borrowing limit; a good draw rebuilds the buffer. The zero line should not be read as a single steady state. With IID risk, the household keeps moving across asset states as income draws arrive.
 
-<img src="figures/mpc-distribution.png" alt="MPC distribution: constrained agents have MPC near 1, wealthy agents approach the theoretical limit" width="80%">
-*MPC distribution: constrained agents have MPC near 1, wealthy agents approach the theoretical limit*
+<img src="figures/savings-policy.png" alt="Net saving policy with fine-grid EGP reference" width="80%">
 
-**Summary Statistics from Simulated Stationary Distribution**
+The method itself is visible in the low-income endogenous grid. For each candidate $a'$, the Euler equation delivers consumption, and the budget constraint delivers the current asset level that would rationalize that choice. Current assets below the first endogenous point cannot support the Euler interior solution, so the borrowing constraint supplies the policy there.
 
-| Statistic                    | Value   |
-|:-----------------------------|:--------|
-| Mean assets                  | 0.406   |
-| Mean consumption             | 1.013   |
-| Gini coefficient (wealth)    | 0.381   |
-| Average MPC (large transfer) | 0.221   |
-| Average MPC (small transfer) | 0.244   |
-| Fraction constrained         | 3.1%    |
-| Theoretical MPC limit        | 0.0413  |
+<img src="figures/endogenous-grid.png" alt="Endogenous current asset grid for the low income state" width="80%">
+
+The terminal simulated cross section is right-skewed but modest in scale. This is still the IID income benchmark, not a persistent-income Aiyagari distribution. The point is the local buffer: many households stay close to the constraint, while favorable sequences of draws create the right tail.
+
+<img src="figures/wealth-distribution.png" alt="Simulated terminal wealth distribution" width="80%">
+
+MPC heterogeneity is the main economic object produced by the policy. Households near the constraint have high MPCs because extra resources relax today's liquidity problem. Wealthier households are closer to the perfect-foresight limiting MPC, 0.041, because a small transfer is mostly saved.
+
+<img src="figures/mpc-distribution.png" alt="Distribution of marginal propensities to consume" width="80%">
+
+The table combines the simulated stationary cross section with the fine-grid policy check. The high average MPC is an economic result; the small policy gaps are numerical diagnostics for the EGP interpolation.
+
+**Simulation and Accuracy Summary**
+
+| Statistic                            | Value    |
+|:-------------------------------------|:---------|
+| Mean assets                          | 0.388    |
+| Mean consumption                     | 1.012    |
+| Wealth Gini                          | 0.389    |
+| Average MPC, 0.10 transfer           | 0.228    |
+| Average local MPC                    | 0.252    |
+| Fraction at borrowing limit          | 5.1%     |
+| Consumption gap vs fine grid, a <= 5 | 4.26e-04 |
+| Savings gap vs fine grid, a <= 5     | 4.26e-04 |
+| Perfect-foresight MPC limit          | 0.0413   |
 
 ## Takeaway
 
-The EGP method demonstrates that clever reformulation of the optimality conditions can yield dramatic computational gains without any approximation error. By inverting the Euler equation, we avoid the costly inner maximization of standard VFI.
+EGP is not a different household model. It is a cleaner way to compute the same Euler-equation policy when the control is next-period assets and the constraint is simple. In this income-risk problem, reversing the grid turns the costly VFI search over $a'$ into interpolation from an endogenous current asset grid.
 
-**Key insights:**
-- **Speed:** EGP converges in the same number of iterations as VFI but each iteration is much cheaper — no root-finding or grid search over consumption.
-- **Precautionary savings:** Under income uncertainty, agents accumulate a buffer stock of wealth even though $\beta R < 1$. The borrowing constraint and prudence motive (convex marginal utility) drive this behavior.
-- **Wealth inequality:** The stationary distribution is right-skewed with a mass point at the borrowing constraint. Constrained agents have MPC near 1, while wealthy agents have MPC near the theoretical lower bound $R(\beta R)^{-1/\gamma} - 1 \approx 0.041$.
-- **MPC heterogeneity:** The average MPC is well above the representative-agent benchmark, driven by the large fraction of constrained or near-constrained households. This has important implications for fiscal policy: transfers are more stimulative when targeted at low-wealth households.
-
-## Reproduce
-
-```bash
-python run.py
-```
+The economics remain buffer-stock economics: bad income draws push households toward the borrowing limit, good draws rebuild assets, and MPCs are high for liquidity-constrained households. The computational gain matters because the same household problem is usually solved repeatedly inside equilibrium or estimation loops.
 
 ## References
 
-- Carroll, C. D. (2006). "The Method of Endogenous Gridpoints for Solving Dynamic Stochastic Optimization Problems." *Economics Letters*, 91(3), 312-320.
-- Deaton, A. (1991). "Saving and Liquidity Constraints." *Econometrica*, 59(5), 1221-1248.
-- Carroll, C. D. (1997). "Buffer-Stock Saving and the Life Cycle/Permanent Income Hypothesis." *Quarterly Journal of Economics*, 112(1), 1-55.
-- Kaplan, G. and Violante, G. L. (2022). "The Marginal Propensity to Consume in Heterogeneous Agent Models." *Annual Review of Economics*, 14, 747-775.
+- Carroll, C. D. (2006). The Method of Endogenous Gridpoints for Solving Dynamic Stochastic Optimization Problems. *Economics Letters*, 91(3), 312-320.
+- Deaton, A. (1991). Saving and Liquidity Constraints. *Econometrica*, 59(5), 1221-1248.
+- Carroll, C. D. (1997). Buffer-Stock Saving and the Life Cycle/Permanent Income Hypothesis. *Quarterly Journal of Economics*, 112(1), 1-55.
+- Kaplan, G. and Violante, G. L. (2022). The Marginal Propensity to Consume in Heterogeneous Agent Models. *Annual Review of Economics*, 14, 747-775.

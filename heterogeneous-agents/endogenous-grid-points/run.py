@@ -1,475 +1,739 @@
 #!/usr/bin/env python3
-"""Endogenous Grid Points (EGP) Method with IID Income.
+"""Endogenous grid points for an income-risk saving problem.
 
-Solves the standard incomplete-markets savings problem using Carroll's (2006)
-Endogenous Grid Points method. Instead of iterating on the value function with
-an expensive inner maximization, EGP iterates on the Euler equation: given a
-grid on SAVINGS (a'), it finds the IMPLIED current assets (a) from the first-
-order condition. This avoids root-finding or grid search entirely, making EGP
-much faster than standard VFI.
-
-Reference: Carroll, C. D. (2006). "The Method of Endogenous Gridpoints for
-Solving Dynamic Stochastic Optimization Problems." Economics Letters, 91(3).
+The tutorial uses the same partial-equilibrium IID income-risk problem as the
+nearby VFI example, but solves the household policy by Euler-equation inversion.
 """
+
 import sys
 from pathlib import Path
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
-from scipy.optimize import fsolve
 from scipy.interpolate import interp1d
+from scipy.optimize import fsolve
 from scipy.stats import norm
 
-# Add repo root to path for lib/ imports
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.plotting import setup_style, save_figure
+from lib.grids import exponential_grid
 from lib.output import ModelReport
+from lib.plotting import setup_style
 
 
-def main():
-    # =========================================================================
-    # Parameters
-    # =========================================================================
-    # Preferences
-    risk_aver = 2       # CRRA coefficient
-    beta = 0.95         # Discount factor
+def marginal_utility(consumption: np.ndarray, gamma: float) -> np.ndarray:
+    """CRRA marginal utility."""
+    return consumption ** (-gamma)
 
-    # Returns
-    r = 0.03            # Interest rate
-    R = 1 + r           # Gross return
 
-    # Income risk: discretized N(mu, sigma^2)
-    mu_y = 1.0          # Mean income
-    sd_y = 0.2          # Std dev of income
-    ny = 5              # Number of income states
+def inverse_marginal_utility(mu: np.ndarray, gamma: float) -> np.ndarray:
+    """Inverse CRRA marginal utility."""
+    return mu ** (-1.0 / gamma)
 
-    # Asset grid
-    na = 50             # Number of asset grid points
-    amax = 50           # Maximum assets
-    borrow_lim = 0      # Borrowing limit
-    agrid_par = 0.5     # Grid curvature (1 = linear, <1 = more points near 0)
 
-    # Computation
-    max_iter = 1000     # Max Euler equation iterations
-    tol_iter = 1.0e-6   # Convergence tolerance
+def discrete_normal_np(
+    n: int,
+    mu: float,
+    sigma: float,
+    width: float,
+) -> tuple[float, np.ndarray, np.ndarray]:
+    """Equally spaced approximation to a normal distribution."""
+    grid = np.linspace(mu - width * sigma, mu + width * sigma, n)
+    if n == 2:
+        probs = 0.5 * np.ones(n)
+    else:
+        probs = np.zeros(n)
+        half_steps = 0.5 * np.diff(grid)
+        probs[0] = norm.cdf(grid[0] + half_steps[0], mu, sigma)
+        for i in range(1, n - 1):
+            right = grid[i] + half_steps[i]
+            left = grid[i] - half_steps[i - 1]
+            probs[i] = norm.cdf(right, mu, sigma) - norm.cdf(left, mu, sigma)
+        probs[-1] = 1.0 - np.sum(probs[:-1])
 
-    # Simulation
-    Nsim = 50000        # Number of simulated agents
-    Tsim = 500          # Simulation periods
+    mean = float(grid @ probs)
+    sd = float(np.sqrt((grid ** 2) @ probs - mean ** 2))
+    return sd - sigma, grid, probs
 
-    # MPC amounts
-    mpc_amount_small = 1.0e-10  # Approximate theoretical MPC
-    mpc_amount_large = 0.10     # ~$500 transfer
 
-    # =========================================================================
-    # Random draws (fixed seed for reproducibility)
-    # =========================================================================
-    np.random.seed(2020)
-    yrand = np.random.rand(Nsim, Tsim)
+def build_income_grid(
+    n_income: int,
+    mean_income: float,
+    sd_income: float,
+) -> tuple[np.ndarray, np.ndarray, float]:
+    """Choose normal-grid width so the discrete standard deviation matches."""
 
-    # =========================================================================
-    # Asset grid (curved: denser near borrowing limit)
-    # =========================================================================
-    agrid = np.linspace(0, 1, na).reshape(na, 1)
-    agrid = agrid ** (1 / agrid_par)
-    agrid = borrow_lim + (amax - borrow_lim) * agrid
+    def objective(width: np.ndarray) -> float:
+        error, _, _ = discrete_normal_np(
+            n_income, mean_income, sd_income, float(width[0])
+        )
+        return error
 
-    # =========================================================================
-    # Income grid: discretize normal distribution
-    # =========================================================================
-    # Inline discrete_normal using numpy/scipy (avoids JAX scalar conversion
-    # issues when called inside fsolve).
-    def discrete_normal_np(n, mu, sigma, width):
-        """Equally spaced approximation to N(mu, sigma^2). Returns (error, grid, probs)."""
-        x = np.linspace(mu - width * sigma, mu + width * sigma, n).reshape(n, 1)
-        if n == 2:
-            p = 0.5 * np.ones((n, 1))
-        else:
-            p = np.zeros((n, 1))
-            p[0] = norm.cdf(x[0] + 0.5 * (x[1] - x[0]), mu, sigma)
-            for i in range(1, n - 1):
-                p[i] = (norm.cdf(x[i] + 0.5 * (x[i + 1] - x[i]), mu, sigma)
-                        - norm.cdf(x[i] - 0.5 * (x[i] - x[i - 1]), mu, sigma))
-            p[n - 1] = 1 - np.sum(p[:n - 1])
-        ex = x.T @ p
-        sdx = np.sqrt((x.T ** 2) @ p - ex ** 2)
-        error = float((sdx - sigma).item())
-        return error, x, p
+    width = float(fsolve(objective, np.array([2.0]))[0])
+    _, income_grid, income_probs = discrete_normal_np(
+        n_income, mean_income, sd_income, width
+    )
+    return income_grid, income_probs, width
 
-    width = fsolve(lambda w: discrete_normal_np(ny, mu_y, sd_y, w)[0], 2.0)[0]
-    _, ygrid, ydist = discrete_normal_np(ny, mu_y, sd_y, width)  # (ny,1) each
-    ycumdist = np.cumsum(ydist)
 
-    # =========================================================================
-    # Utility function (CRRA) and its derivatives
-    # =========================================================================
-    u = lambda c: (c ** (1 - risk_aver) - 1) / (1 - risk_aver)
-    u1 = lambda c: c ** (-risk_aver)               # Marginal utility
-    u1inv = lambda mu: mu ** (-1 / risk_aver)       # Inverse marginal utility
+def solve_egp(
+    asset_grid: np.ndarray,
+    income_grid: np.ndarray,
+    income_probs: np.ndarray,
+    beta: float,
+    gross_return: float,
+    gamma: float,
+    borrowing_limit: float,
+    tol: float,
+    max_iter: int,
+    label: str,
+    verbose: bool = False,
+) -> dict[str, np.ndarray | float | int | bool]:
+    """Solve the IID income fluctuation problem by endogenous grid points."""
+    n_asset = len(asset_grid)
+    n_income = len(income_grid)
+    consumption = (gross_return - 1.0) * asset_grid[:, None] + income_grid[None, :]
+    policy_assets = np.zeros((n_asset, n_income))
+    endogenous_assets = np.zeros((n_asset, n_income))
+    error = np.inf
 
-    # =========================================================================
-    # Initialize consumption function: consume all cash-on-hand
-    # =========================================================================
-    con = np.zeros((na, ny))
-    for iy in range(ny):
-        con[:, iy] = (r * agrid + ygrid[iy])[:, 0]
-
-    # =========================================================================
-    # Iterate on Euler equation with Endogenous Grid Points
-    # =========================================================================
-    # The key insight: given a grid on SAVINGS (a'), the Euler equation
-    #   u'(c) = beta * R * E[u'(c')]
-    # pins down consumption c, and the budget constraint
-    #   a = (c + a' - y) / R
-    # gives the IMPLIED current assets. No maximization needed!
-    print("EGP: Iterating on Euler equation...")
-    sav = np.zeros((na, ny))
+    if verbose:
+        print(f"\nStarting {label} EGP with {n_asset} asset grid points...")
 
     for iteration in range(1, max_iter + 1):
-        conlast = con.copy()
+        consumption_old = consumption.copy()
 
-        # Expected marginal utility tomorrow (using IID income)
-        # conlast is c(a', y') for each (a', y'). Since income is IID,
-        # E[u'(c')] = sum over y' of u'(c(a', y')) * prob(y')
-        emuc = u1(conlast) @ ydist             # (na, 1)
-        muc_today = beta * R * emuc             # Euler equation RHS
-        con_today = u1inv(muc_today)            # Implied consumption today
+        expected_mu = marginal_utility(consumption_old, gamma) @ income_probs
+        euler_mu = beta * gross_return * expected_mu
+        consumption_at_next_asset = inverse_marginal_utility(euler_mu, gamma)
 
-        # For each income state, find implied current assets
-        for iy in range(ny):
-            # Endogenous grid: what assets TODAY imply choosing each a' point?
-            # Budget: c + a' = R*a + y  =>  a = (c + a' - y) / R
-            ass_implied = ((con_today + agrid - ygrid[iy]) / R)[:, 0]
+        for iy, income in enumerate(income_grid):
+            implied_assets = (
+                consumption_at_next_asset + asset_grid - income
+            ) / gross_return
+            endogenous_assets[:, iy] = implied_assets
 
-            # Now interpolate: for each EXOGENOUS grid point a, find savings a'
-            for ia in range(na):
-                if agrid[ia] < ass_implied[0]:
-                    # Borrowing constraint binds: agent wants to borrow
-                    # but cannot, so saves at the limit
-                    sav[ia, iy] = borrow_lim
-                else:
-                    # Interpolate endogenous grid -> exogenous grid
-                    sav[ia, iy] = np.interp(agrid[ia, 0], ass_implied, agrid[:, 0])
+            policy = np.interp(asset_grid, implied_assets, asset_grid)
+            policy[asset_grid <= implied_assets[0]] = borrowing_limit
+            policy_assets[:, iy] = np.clip(policy, borrowing_limit, asset_grid[-1])
+            consumption[:, iy] = (
+                gross_return * asset_grid + income - policy_assets[:, iy]
+            )
 
-            # Back out consumption from budget constraint
-            con[:, iy] = (R * agrid + ygrid[iy])[:, 0] - sav[:, iy]
+        error = float(np.max(np.abs(consumption - consumption_old)))
+        if verbose and (iteration % 50 == 0 or error < tol):
+            print(f"  {label} iteration {iteration:4d}, error = {error:.2e}")
+        if error < tol:
+            break
+    else:
+        if verbose:
+            print(f"  {label} did NOT converge after {max_iter} iterations")
 
-        cdiff = np.max(np.abs(con - conlast))
-        if iteration % 50 == 0 or cdiff <= tol_iter:
-            print(f"  Iteration {iteration:4d}, max consumption change = {cdiff:.2e}")
-        if cdiff <= tol_iter:
-            print(f"  Converged in {iteration} iterations (tol = {tol_iter:.0e})")
+    return {
+        "consumption": consumption,
+        "policy_assets": policy_assets,
+        "endogenous_assets": endogenous_assets,
+        "iterations": iteration,
+        "converged": error < tol,
+        "error": error,
+    }
+
+
+def simulate_terminal_cross_section(
+    asset_grid: np.ndarray,
+    policy_assets: np.ndarray,
+    income_probs: np.ndarray,
+    n_agents: int,
+    periods: int,
+    seed: int,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Simulate the terminal asset and income states under the policy."""
+    rng = np.random.default_rng(seed)
+    income_cdf = np.cumsum(income_probs)
+    assets = np.zeros(n_agents)
+    income_idx = np.zeros(n_agents, dtype=int)
+
+    for t in range(periods):
+        income_idx = np.searchsorted(income_cdf, rng.random(n_agents), side="right")
+        if t == periods - 1:
             break
 
-    n_iterations = iteration
+        assets_next = np.empty_like(assets)
+        for iy in range(len(income_probs)):
+            mask = income_idx == iy
+            assets_next[mask] = np.interp(
+                assets[mask], asset_grid, policy_assets[:, iy]
+            )
+        assets = assets_next
 
-    # =========================================================================
-    # Simulate panel of agents
-    # =========================================================================
-    print("\nSimulating panel of agents...")
-    yindsim = np.zeros((Nsim, Tsim), dtype=int)
-    asim = np.zeros((Nsim, Tsim))
+    return assets, income_idx
 
-    # Build interpolating functions for savings policy
-    savinterp = []
-    for iy in range(ny):
-        savinterp.append(interp1d(agrid[:, 0], sav[:, iy], kind='linear'))
 
-    for it in range(Tsim):
-        if (it + 1) % 100 == 0:
-            print(f"  Simulating period {it + 1}/{Tsim}")
+def gini(x: np.ndarray) -> float:
+    """Gini coefficient for a nonnegative vector."""
+    x_sorted = np.sort(np.asarray(x, dtype=float))
+    total = np.sum(x_sorted)
+    if total <= 0:
+        return 0.0
+    n = len(x_sorted)
+    weights = np.arange(1, n + 1)
+    return float((2.0 * weights @ x_sorted) / (n * total) - (n + 1.0) / n)
 
-        # Draw income states from CDF
-        yindsim[yrand[:, it] <= ycumdist[0], it] = 0
-        for iy in range(1, ny):
-            yindsim[
-                np.logical_and(yrand[:, it] > ycumdist[iy - 1],
-                               yrand[:, it] <= ycumdist[iy]), it
-            ] = iy
 
-        # Asset choice for next period
-        if it < Tsim - 1:
-            for iy in range(ny):
-                mask = yindsim[:, it] == iy
-                asim[mask, it + 1] = savinterp[iy](asim[mask, it])
+def policy_gap_against_reference(
+    asset_grid: np.ndarray,
+    policy: np.ndarray,
+    reference_grid: np.ndarray,
+    reference_policy: np.ndarray,
+    upper_asset: float,
+) -> float:
+    """Maximum absolute policy gap on the economically active asset range."""
+    visible = asset_grid <= upper_asset
+    gaps = []
+    for iy in range(policy.shape[1]):
+        reference_on_main_grid = np.interp(
+            asset_grid[visible], reference_grid, reference_policy[:, iy]
+        )
+        gaps.append(np.max(np.abs(policy[visible, iy] - reference_on_main_grid)))
+    return float(np.max(gaps))
 
-    # Actual income values
-    ysim = ygrid[yindsim]
 
-    # =========================================================================
-    # Compute MPCs
-    # =========================================================================
-    print("\nComputing MPCs...")
-    mpclim = R * ((beta * R) ** (-1 / risk_aver)) - 1  # Theoretical lower bound
+def main() -> None:
+    # Preferences, returns, and income risk
+    gamma = 2.0
+    beta = 0.95
+    r = 0.03
+    gross_return = 1.0 + r
+    beta_r = beta * gross_return
 
-    coninterp = []
-    mpc_small = np.zeros((na, ny))
-    mpc_large = np.zeros((na, ny))
+    mean_income = 1.0
+    sd_income = 0.2
+    n_income = 5
 
-    for iy in range(ny):
-        coninterp.append(interp1d(agrid[:, 0], con[:, iy], kind='linear',
-                                  fill_value='extrapolate'))
-        mpc_small[:, iy] = (coninterp[iy](agrid[:, 0] + mpc_amount_small) - con[:, iy]) / mpc_amount_small
-        mpc_large[:, iy] = (coninterp[iy](agrid[:, 0] + mpc_amount_large) - con[:, iy]) / mpc_amount_large
+    # Assets and computation
+    borrowing_limit = 0.0
+    asset_max = 20.0
+    n_asset = 120
+    n_asset_refined = 900
+    tol = 1e-6
+    max_iter = 1000
+    accuracy_asset_max = 5.0
 
-    # Simulated MPCs (at terminal period)
-    mpc_sim_small = np.zeros(Nsim)
-    mpc_sim_large = np.zeros(Nsim)
-    for iy in range(ny):
-        mask = yindsim[:, Tsim - 1] == iy
-        a_terminal = asim[mask, Tsim - 1]
-        mpc_sim_small[mask] = (coninterp[iy](a_terminal + mpc_amount_small)
-                               - coninterp[iy](a_terminal)) / mpc_amount_small
-        mpc_sim_large[mask] = (coninterp[iy](a_terminal + mpc_amount_large)
-                               - coninterp[iy](a_terminal)) / mpc_amount_large
+    # Simulation for the stationary cross section
+    n_agents = 50_000
+    periods = 550
+    seed = 2020
 
-    # =========================================================================
-    # Compute summary statistics
-    # =========================================================================
-    # Use terminal period for cross-sectional statistics
-    a_final = asim[:, Tsim - 1]
-    y_final = ysim[:, Tsim - 1, 0]  # squeeze the trailing dimension
-    c_final = np.zeros(Nsim)
-    for iy in range(ny):
-        mask = yindsim[:, Tsim - 1] == iy
-        c_final[mask] = coninterp[iy](a_final[mask])
+    income_grid, income_probs, width = build_income_grid(
+        n_income, mean_income, sd_income
+    )
+    print(f"Income grid: {income_grid}")
+    print(f"Income probabilities: {income_probs}")
+    print(f"Normal-grid width parameter: {width:.4f}")
 
-    mean_assets = np.mean(a_final)
-    mean_cons = np.mean(c_final)
-    mean_mpc = np.mean(mpc_sim_large)
-    frac_constrained = np.mean(a_final <= borrow_lim + 1e-6) * 100
+    asset_grid = np.asarray(
+        exponential_grid(borrowing_limit, asset_max, n_asset, density=3.0),
+        dtype=float,
+    )
+    asset_grid_refined = np.asarray(
+        exponential_grid(
+            borrowing_limit, asset_max, n_asset_refined, density=3.0
+        ),
+        dtype=float,
+    )
 
-    # Gini coefficient for wealth
-    def gini(x):
-        x_sorted = np.sort(x)
-        n = len(x_sorted)
-        cumx = np.cumsum(x_sorted)
-        return (n + 1 - 2 * np.sum(cumx) / cumx[-1]) / n if cumx[-1] > 0 else 0.0
+    solution = solve_egp(
+        asset_grid,
+        income_grid,
+        income_probs,
+        beta,
+        gross_return,
+        gamma,
+        borrowing_limit,
+        tol,
+        max_iter,
+        label="main-grid",
+        verbose=True,
+    )
+    refined_solution = solve_egp(
+        asset_grid_refined,
+        income_grid,
+        income_probs,
+        beta,
+        gross_return,
+        gamma,
+        borrowing_limit,
+        tol,
+        max_iter,
+        label="refined-grid",
+        verbose=True,
+    )
 
-    gini_wealth = gini(a_final)
+    consumption = np.asarray(solution["consumption"])
+    policy_assets = np.asarray(solution["policy_assets"])
+    endogenous_assets = np.asarray(solution["endogenous_assets"])
+    refined_consumption = np.asarray(refined_solution["consumption"])
+    refined_policy_assets = np.asarray(refined_solution["policy_assets"])
 
-    print(f"\n  Mean assets:              {mean_assets:.3f}")
-    print(f"  Mean consumption:         {mean_cons:.3f}")
+    consumption_gap = policy_gap_against_reference(
+        asset_grid,
+        consumption,
+        asset_grid_refined,
+        refined_consumption,
+        upper_asset=accuracy_asset_max,
+    )
+    savings_gap = policy_gap_against_reference(
+        asset_grid,
+        policy_assets,
+        asset_grid_refined,
+        refined_policy_assets,
+        upper_asset=accuracy_asset_max,
+    )
+
+    final_assets, final_income_idx = simulate_terminal_cross_section(
+        asset_grid,
+        policy_assets,
+        income_probs,
+        n_agents=n_agents,
+        periods=periods,
+        seed=seed,
+    )
+
+    con_interp = [
+        interp1d(
+            asset_grid,
+            consumption[:, iy],
+            kind="linear",
+            bounds_error=False,
+            fill_value="extrapolate",
+        )
+        for iy in range(n_income)
+    ]
+
+    final_consumption = np.zeros(n_agents)
+    mpc_small = np.zeros(n_agents)
+    mpc_large = np.zeros(n_agents)
+    transfer_small = 1.0e-6
+    transfer_large = 0.10
+    for iy in range(n_income):
+        mask = final_income_idx == iy
+        assets_iy = final_assets[mask]
+        final_consumption[mask] = con_interp[iy](assets_iy)
+        mpc_small[mask] = (
+            con_interp[iy](assets_iy + transfer_small) - con_interp[iy](assets_iy)
+        ) / transfer_small
+        mpc_large[mask] = (
+            con_interp[iy](assets_iy + transfer_large) - con_interp[iy](assets_iy)
+        ) / transfer_large
+
+    mean_assets = float(np.mean(final_assets))
+    mean_consumption = float(np.mean(final_consumption))
+    gini_wealth = gini(final_assets)
+    mean_mpc_small = float(np.mean(mpc_small))
+    mean_mpc_large = float(np.mean(mpc_large))
+    frac_constrained = float(np.mean(final_assets <= borrowing_limit + 1e-8) * 100.0)
+    mpclim = gross_return * (beta_r ** (-1.0 / gamma)) - 1.0
+
+    print("\nStationary cross section from simulation:")
+    print(f"  Mean assets:              {mean_assets:.3f}")
+    print(f"  Mean consumption:         {mean_consumption:.3f}")
     print(f"  Gini (wealth):            {gini_wealth:.3f}")
-    print(f"  Average MPC:              {mean_mpc:.3f}")
+    print(f"  Average MPC, large shock: {mean_mpc_large:.3f}")
     print(f"  Fraction constrained:     {frac_constrained:.1f}%")
     print(f"  Theoretical MPC limit:    {mpclim:.4f}")
+    print(f"  Consumption gap vs fine grid on a <= {accuracy_asset_max:g}: {consumption_gap:.2e}")
+    print(f"  Savings gap vs fine grid on a <= {accuracy_asset_max:g}: {savings_gap:.2e}")
 
-    # =========================================================================
-    # Generate Report
-    # =========================================================================
     setup_style()
 
     report = ModelReport(
-        "Endogenous Grid Method for Income Risk",
-        "Carroll's (2006) endogenous grid points method for solving the "
-        "standard incomplete-markets consumption-savings problem.",
+        "Buffer-Stock Saving by Endogenous Grid Points",
+        "Euler-equation inversion for a partial-equilibrium income-risk household problem.",
+        include_reproduce=False,
+        show_figure_captions=False,
     )
 
     report.add_overview(
-        "The Endogenous Grid Points (EGP) method solves the household savings problem "
-        "under income uncertainty using a computational trick that eliminates the "
-        "expensive inner maximization of standard VFI. Instead of searching for optimal "
-        "consumption at each asset grid point, EGP inverts the Euler equation: given a "
-        "grid on *savings* $a'$, it computes the *implied* current assets $a$ that are "
-        "consistent with choosing that level of savings.\n\n"
-        "This is a partial-equilibrium model: the interest rate $r$ is exogenous. Agents "
-        "face IID income risk, cannot borrow, and self-insure through precautionary savings."
+        "The economic problem is familiar from the preceding "
+        "[IID income-risk VFI tutorial](../vfi-iid-income/): an impatient household "
+        "faces uninsurable labor-income risk and cannot borrow below "
+        "$\\underline a=0$. Assets are valuable because they insure consumption "
+        "against bad future income draws.\n\n"
+        "This tutorial changes the computation, not the economics. Standard VFI "
+        "asks, at each current asset level, which next asset choice gives the highest "
+        "value. Endogenous grid points (EGP) reverse that question. Start from a grid "
+        "for next-period assets $a'$, use the Euler equation to infer the consumption "
+        "that would make that choice optimal, and then recover the current asset level "
+        "that could finance it. The result is the same kind of consumption and saving "
+        "policy, but without an inner maximization over $a'$.\n\n"
+        "The next step in the section, "
+        "[Fast Aiyagari Equilibrium by EGP](../egp-aiyagari/), puts this speedup "
+        "inside a general-equilibrium capital-market clearing loop."
     )
 
     report.add_equations(
         r"""
-$$V(a, y) = \max_{c \ge 0} \bigl[ u(c) + \beta \, \mathbb{E}\left[ V(a', y') \right] \bigr]$$
+At the beginning of a period the household has assets $a \in A$ and receives
+income $y_j$ from an IID discrete distribution with probabilities $\pi_j$. It
+chooses next-period assets $a'=g(a,y_j)$ and consumption $c(a,y_j)$:
 
-subject to: $c + a' = Ra + y$, $\quad a' \ge 0$, $\quad y \sim F(y)$ IID.
+$$
+V(a,y_j) =
+\max_{a' \geq \underline a}
+\Bigl[
+u(Ra+y_j-a') + \beta \sum_{\ell=1}^{n_y}
+\pi_\ell V(a',y_\ell)
+\Bigr].
+$$
 
-**Euler equation:** $u'(c) = \beta R \, \mathbb{E}\left[ u'(c'(a', y')) \right]$ (with equality when $a' > 0$).
+The budget identity is
 
-**EGP insight:** Fix a grid $\{a'_j\}$. For each $a'_j$:
-1. Compute RHS: $\mu_j = \beta R \sum_{k} u'(c(a'_j, y_k)) \pi_k$
-2. Invert: $c_j = (u')^{-1}(\mu_j)$
-3. Recover implied assets: $a_j = (c_j + a'_j - y) / R$
+$$
+c(a,y_j) = Ra+y_j-g(a,y_j),
+\qquad R=1+r.
+$$
 
-This gives pairs $(a_j, a'_j)$ — the **endogenous grid** — from which we interpolate the savings policy on the original exogenous grid.
+Preferences are CRRA, so marginal utility is
+
+$$
+u'(c)=c^{-\gamma},
+\qquad
+(u')^{-1}(\mu)=\mu^{-1/\gamma}.
+$$
+
+For an interior next-asset choice, the Euler equation is
+
+$$
+u'(c(a,y_j))
+=
+\beta R
+\sum_{\ell=1}^{n_y}
+\pi_\ell
+u'\!\left(c(g(a,y_j),y_\ell)\right).
+$$
+
+At the borrowing limit the Euler equation becomes an inequality:
+$u'(c(a,y_j)) \geq \beta R \sum_\ell \pi_\ell u'(c(\underline a,y_\ell))$.
+The inequality is the economic reason that constrained households can have
+very high MPCs.
 """
     )
 
     report.add_model_setup(
-        f"| Parameter | Value | Description |\n"
-        f"|-----------|-------|-------------|\n"
-        f"| $\\gamma$ | {risk_aver} | CRRA risk aversion |\n"
-        f"| $\\beta$  | {beta} | Discount factor |\n"
-        f"| $r$      | {r} | Interest rate |\n"
-        f"| $\\mu_y$  | {mu_y} | Mean income |\n"
-        f"| $\\sigma_y$ | {sd_y} | Std dev of income |\n"
-        f"| $n_y$    | {ny} | Income grid points |\n"
-        f"| $n_a$    | {na} | Asset grid points |\n"
-        f"| $a_{{\\max}}$ | {amax} | Maximum assets |\n"
-        f"| $N_{{sim}}$ | {Nsim:,} | Simulated agents |\n"
-        f"| $T_{{sim}}$ | {Tsim} | Simulation periods |"
+        f"| Parameter | Value | Role |\n"
+        f"|---|---:|---|\n"
+        f"| $\\gamma$ | {gamma:.1f} | CRRA risk aversion |\n"
+        f"| $\\beta$ | {beta:.2f} | Discount factor |\n"
+        f"| $r$ | {r:.2f} | Net risk-free return |\n"
+        f"| $\\beta R$ | {beta_r:.4f} | Patience-return product |\n"
+        f"| $\\mu_y$ | {mean_income:.1f} | Mean labor income |\n"
+        f"| $\\sigma_y$ | {sd_income:.1f} | Income standard deviation |\n"
+        f"| $n_y$ | {n_income} | IID income states |\n"
+        f"| $\\underline a$ | {borrowing_limit:.1f} | Borrowing limit |\n"
+        f"| $\\bar a$ | {asset_max:.1f} | Upper asset-grid bound |\n"
+        f"| Main asset grid | {n_asset} points | Exponential spacing near the constraint |\n"
+        f"| Reference grid | {n_asset_refined} points | Fine-grid EGP policy check |\n"
+        f"| Simulation | {n_agents:,} households, {periods} periods | Terminal cross section |"
     )
 
     report.add_solution_method(
-        "**Endogenous Grid Points (Carroll, 2006):** Instead of iterating on the "
-        "value function with an inner maximization, EGP iterates on the *Euler equation*. "
-        "At each iteration:\n\n"
-        "1. Compute expected marginal utility $\\mathbb{E}[u'(c')]$ using the current "
-        "consumption function and the IID income distribution.\n"
-        "2. Apply the Euler equation to get today's consumption: "
-        "$c = (u')^{-1}(\\beta R \\, \\mathbb{E}[u'(c')])$.\n"
-        "3. Use the budget constraint to find the **implied** current assets: "
-        "$a = (c + a' - y)/R$.\n"
-        "4. Interpolate from the endogenous grid $(a, a')$ back to the exogenous grid.\n\n"
-        "This avoids all root-finding and grid search in the inner loop, making EGP "
-        "significantly faster than VFI — typically by an order of magnitude.\n\n"
-        f"Converged in **{n_iterations} iterations** (tolerance = {tol_iter:.0e})."
+        rf"""
+EGP is useful here because the control is next-period assets and the Euler
+equation pins down current marginal utility. The algorithm keeps the asset grid
+for $a'$ fixed, but the implied current assets are endogenous.
+
+```text
+Input: asset grid A for next assets, income states y_j, probabilities pi_j,
+       primitives beta, R, gamma, borrowing limit a_min
+Initialize c_0(a_i, y_j), for example from consuming current income plus interest
+For n = 0, 1, 2, ...:
+    For each candidate next asset a_i' in A:
+        Compute expected marginal utility
+            M_i = sum_j pi_j u'(c_n(a_i', y_j))
+        Invert the Euler equation
+            c_i = (u')^{{-1}}(beta R M_i)
+    For each current income y_j:
+        Map each candidate next asset back to current assets
+            a_ij^endo = (c_i + a_i' - y_j) / R
+        Interpolate the pairs (a_ij^endo, a_i') onto the exogenous asset grid A
+        If an exogenous asset lies below the first endogenous point, set a' = a_min
+        Recover c_{{n+1}}(a,y_j) = R a + y_j - g_{{n+1}}(a,y_j)
+    Stop when max_{{a,j}} |c_{{n+1}}(a,y_j) - c_n(a,y_j)| < epsilon
+Output: consumption policy c, next-asset policy g
+```
+
+The main grid converged in **{int(solution["iterations"])} EGP iterations**
+with consumption sup-norm error {float(solution["error"]):.2e}. A
+{n_asset_refined}-point reference solve gives a maximum consumption-policy gap
+of {consumption_gap:.2e} over $a \leq {accuracy_asset_max:g}$; the corresponding
+next-asset gap is {savings_gap:.2e}. These are grid and interpolation errors,
+not a separate economic wedge.
+"""
     )
 
-    # --- Figure 1: Consumption Policy by Income State ---
+    plot_max = 8.0
+    low = 0
+    high = n_income - 1
+
+    # Consumption policy
     fig1, ax1 = plt.subplots()
-    ax1.plot(agrid, con[:, 0], 'b-', linewidth=2, label='Lowest income')
-    ax1.plot(agrid, con[:, ny - 1], 'r-', linewidth=2, label='Highest income')
-    for iy in range(1, ny - 1):
-        ax1.plot(agrid, con[:, iy], color='gray', linewidth=0.8, alpha=0.5)
-    ax1.set_xlabel('Assets $a$')
-    ax1.set_ylabel('Consumption $c$')
-    ax1.set_title('Consumption Policy Function')
-    ax1.set_xlim(0, amax)
+    ax1.plot(asset_grid, consumption[:, low], linewidth=2, label="Lowest income")
+    ax1.plot(asset_grid, consumption[:, high], linewidth=2, label="Highest income")
+    for iy in range(1, n_income - 1):
+        ax1.plot(asset_grid, consumption[:, iy], color="gray", linewidth=0.8, alpha=0.45)
+    ax1.plot(
+        asset_grid_refined,
+        refined_consumption[:, low],
+        color="black",
+        linestyle="--",
+        linewidth=1.2,
+        label="Fine-grid reference",
+    )
+    ax1.plot(
+        asset_grid_refined,
+        refined_consumption[:, high],
+        color="black",
+        linestyle="--",
+        linewidth=1.2,
+    )
+    ax1.set_xlabel("Assets $a$")
+    ax1.set_ylabel("Consumption $c(a,y)$")
+    ax1.set_title("Consumption Policy")
+    ax1.set_xlim(0, plot_max)
     ax1.legend()
+
+    report.add_results(
+        "The consumption policy has the same buffer-stock shape as in the VFI "
+        "solution. Low-wealth households consume a large share of cash on hand, "
+        "but the policy is not the deterministic spend-down rule because future "
+        "income may be bad. The dashed curves are the fine-grid EGP reference for "
+        "the lowest and highest income states; on the economically relevant range "
+        "they lie almost on top of the main-grid policy."
+    )
     report.add_figure(
         "figures/consumption-policy.png",
-        "Consumption policy by income state: higher income shifts the policy up",
+        "Consumption policy with fine-grid EGP reference",
         fig1,
-        description="The kink at low asset levels marks where the borrowing constraint binds: "
-        "constrained agents consume all available cash-on-hand. Above the kink, the Euler "
-        "equation holds with equality and consumption rises smoothly with wealth.",
     )
 
-    # --- Figure 2: Savings Policy ---
+    # Savings policy
     fig2, ax2 = plt.subplots()
-    ax2.plot(agrid, sav[:, 0] - agrid[:, 0], 'b-', linewidth=2, label='Lowest income')
-    ax2.plot(agrid, sav[:, ny - 1] - agrid[:, 0], 'r-', linewidth=2, label='Highest income')
-    ax2.axhline(0, color='k', linewidth=0.5)
-    ax2.set_xlabel('Assets $a$')
-    ax2.set_ylabel("Net savings $a' - a$")
-    ax2.set_title('Savings Policy Function')
-    ax2.set_xlim(0, amax)
+    ax2.plot(
+        asset_grid,
+        policy_assets[:, low] - asset_grid,
+        linewidth=2,
+        label="Lowest income",
+    )
+    ax2.plot(
+        asset_grid,
+        policy_assets[:, high] - asset_grid,
+        linewidth=2,
+        label="Highest income",
+    )
+    for iy in range(1, n_income - 1):
+        ax2.plot(
+            asset_grid,
+            policy_assets[:, iy] - asset_grid,
+            color="gray",
+            linewidth=0.8,
+            alpha=0.45,
+        )
+    ax2.plot(
+        asset_grid_refined,
+        refined_policy_assets[:, low] - asset_grid_refined,
+        color="black",
+        linestyle="--",
+        linewidth=1.2,
+        label="Fine-grid reference",
+    )
+    ax2.plot(
+        asset_grid_refined,
+        refined_policy_assets[:, high] - asset_grid_refined,
+        color="black",
+        linestyle="--",
+        linewidth=1.2,
+    )
+    ax2.axhline(0.0, color="black", linewidth=0.8)
+    ax2.set_xlabel("Assets $a$")
+    ax2.set_ylabel("Net saving $g(a,y)-a$")
+    ax2.set_title("Net Saving Policy")
+    ax2.set_xlim(0, plot_max)
     ax2.legend()
+
+    report.add_results(
+        "Net saving separates income states more sharply. A bad draw pushes the "
+        "household toward the borrowing limit; a good draw rebuilds the buffer. "
+        "The zero line should not be read as a single steady state. With IID risk, "
+        "the household keeps moving across asset states as income draws arrive."
+    )
     report.add_figure(
         "figures/savings-policy.png",
-        "Net savings (a'-a) by income state: low-income agents dissave, high-income agents accumulate",
+        "Net saving policy with fine-grid EGP reference",
         fig2,
-        description="The flat region at the left where net savings equals negative current assets "
-        "corresponds to constrained agents choosing the borrowing limit. The smooth curvature "
-        "beyond that point is resolved without any root-finding, thanks to the EGP inversion.",
     )
 
-    # --- Figure 3: Wealth Distribution ---
+    # Endogenous grid map for the low income state
     fig3, ax3 = plt.subplots()
-    ax3.hist(a_final, bins=100, density=True, color='steelblue', edgecolor='black',
-             linewidth=0.3, alpha=0.8)
-    ax3.set_xlabel('Assets $a$')
-    ax3.set_ylabel('Density')
-    ax3.set_title('Stationary Wealth Distribution')
-    ax3.axvline(mean_assets, color='red', linestyle='--', linewidth=1.5,
-                label=f'Mean = {mean_assets:.2f}')
+    ax3.plot(
+        asset_grid,
+        endogenous_assets[:, low],
+        linewidth=2,
+        label="Endogenous current assets",
+    )
+    ax3.plot(asset_grid, asset_grid, color="black", linestyle=":", linewidth=1.2)
+    ax3.axhline(borrowing_limit, color="black", linewidth=0.8)
+    ax3.set_xlabel("Candidate next assets $a'$")
+    ax3.set_ylabel("Implied current assets $a^{endo}$")
+    ax3.set_title("Endogenous Grid for Low Income")
+    ax3.set_xlim(0, plot_max)
+    ax3.set_ylim(-0.5, plot_max)
     ax3.legend()
+
+    report.add_results(
+        "The method itself is visible in the low-income endogenous grid. For each "
+        "candidate $a'$, the Euler equation delivers consumption, and the budget "
+        "constraint delivers the current asset level that would rationalize that "
+        "choice. Current assets below the first endogenous point cannot support the "
+        "Euler interior solution, so the borrowing constraint supplies the policy there."
+    )
+    report.add_figure(
+        "figures/endogenous-grid.png",
+        "Endogenous current asset grid for the low income state",
+        fig3,
+    )
+
+    # Wealth distribution
+    fig4, ax4 = plt.subplots()
+    upper_hist = float(max(2.0, np.quantile(final_assets, 0.995)))
+    ax4.hist(
+        final_assets,
+        bins=90,
+        density=True,
+        color="steelblue",
+        edgecolor="black",
+        linewidth=0.25,
+        alpha=0.85,
+    )
+    ax4.axvline(mean_assets, color="darkred", linestyle="--", linewidth=1.4,
+                label=f"Mean = {mean_assets:.2f}")
+    ax4.set_xlabel("Assets $a$")
+    ax4.set_ylabel("Density")
+    ax4.set_title("Simulated Stationary Wealth Distribution")
+    ax4.set_xlim(0, upper_hist)
+    ax4.legend()
+
+    report.add_results(
+        "The terminal simulated cross section is right-skewed but modest in scale. "
+        "This is still the IID income benchmark, not a persistent-income Aiyagari "
+        "distribution. The point is the local buffer: many households stay close to "
+        "the constraint, while favorable sequences of draws create the right tail."
+    )
     report.add_figure(
         "figures/wealth-distribution.png",
-        "Simulated stationary wealth distribution with right skew and mass at the constraint",
-        fig3,
-        description="The spike near zero reflects agents who have been hit by bad income draws and "
-        "are at or near the borrowing constraint. The long right tail captures agents who have "
-        "accumulated a large buffer stock through a run of favorable income realizations.",
+        "Simulated terminal wealth distribution",
+        fig4,
     )
 
-    # --- Figure 4: MPC Distribution ---
-    fig4, ax4 = plt.subplots()
-    ax4.hist(mpc_sim_large, bins=np.linspace(0, 1.5, 76), density=True,
-             color='steelblue', edgecolor='black', linewidth=0.3, alpha=0.8)
-    ax4.axvline(mpclim, color='red', linestyle=':', linewidth=1.5,
-                label=f'Theoretical limit = {mpclim:.3f}')
-    ax4.axvline(mean_mpc, color='orange', linestyle='--', linewidth=1.5,
-                label=f'Mean MPC = {mean_mpc:.3f}')
-    ax4.set_xlabel('MPC')
-    ax4.set_ylabel('Density')
-    ax4.set_title('Marginal Propensity to Consume Distribution')
-    ax4.set_xlim(0, 1.5)
-    ax4.legend()
+    # MPC distribution
+    fig5, ax5 = plt.subplots()
+    ax5.hist(
+        mpc_large,
+        bins=np.linspace(0, 1.05, 70),
+        density=True,
+        color="steelblue",
+        edgecolor="black",
+        linewidth=0.25,
+        alpha=0.85,
+    )
+    ax5.axvline(mpclim, color="darkred", linestyle=":", linewidth=1.5,
+                label=f"Perfect-foresight limit = {mpclim:.3f}")
+    ax5.axvline(mean_mpc_large, color="darkorange", linestyle="--", linewidth=1.5,
+                label=f"Mean = {mean_mpc_large:.3f}")
+    ax5.set_xlabel("MPC out of a 0.10 transfer")
+    ax5.set_ylabel("Density")
+    ax5.set_title("Marginal Propensity to Consume")
+    ax5.set_xlim(0, 1.05)
+    ax5.legend()
+
+    report.add_results(
+        "MPC heterogeneity is the main economic object produced by the policy. "
+        "Households near the constraint have high MPCs because extra resources relax "
+        "today's liquidity problem. Wealthier households are closer to the "
+        f"perfect-foresight limiting MPC, {mpclim:.3f}, because a small transfer is "
+        "mostly saved."
+    )
     report.add_figure(
         "figures/mpc-distribution.png",
-        "MPC distribution: constrained agents have MPC near 1, wealthy agents approach the theoretical limit",
-        fig4,
-        description="MPC heterogeneity is the central policy-relevant prediction of incomplete-markets "
-        "models. Constrained households spend nearly every additional dollar, while wealthy "
-        "households save most of it. This matters for fiscal multipliers and transfer targeting.",
+        "Distribution of marginal propensities to consume",
+        fig5,
     )
 
-    # --- Table: Summary Statistics ---
     table_data = {
         "Statistic": [
             "Mean assets",
             "Mean consumption",
-            "Gini coefficient (wealth)",
-            "Average MPC (large transfer)",
-            "Average MPC (small transfer)",
-            "Fraction constrained",
-            "Theoretical MPC limit",
+            "Wealth Gini",
+            "Average MPC, 0.10 transfer",
+            "Average local MPC",
+            "Fraction at borrowing limit",
+            "Consumption gap vs fine grid, a <= 5",
+            "Savings gap vs fine grid, a <= 5",
+            "Perfect-foresight MPC limit",
         ],
         "Value": [
             f"{mean_assets:.3f}",
-            f"{mean_cons:.3f}",
+            f"{mean_consumption:.3f}",
             f"{gini_wealth:.3f}",
-            f"{mean_mpc:.3f}",
-            f"{np.mean(mpc_sim_small):.3f}",
+            f"{mean_mpc_large:.3f}",
+            f"{mean_mpc_small:.3f}",
             f"{frac_constrained:.1f}%",
+            f"{consumption_gap:.2e}",
+            f"{savings_gap:.2e}",
             f"{mpclim:.4f}",
         ],
     }
     df = pd.DataFrame(table_data)
     report.add_table(
         "tables/summary-statistics.csv",
-        "Summary Statistics from Simulated Stationary Distribution",
+        "Simulation and Accuracy Summary",
         df,
-        description="The average MPC well above the theoretical lower bound reflects the large "
-        "mass of constrained and near-constrained agents. The Gini coefficient captures "
-        "the substantial wealth inequality generated by even IID income risk.",
+        description=(
+            "The table combines the simulated stationary cross section with the "
+            "fine-grid policy check. The high average MPC is an economic result; "
+            "the small policy gaps are numerical diagnostics for the EGP interpolation."
+        ),
     )
 
     report.add_takeaway(
-        "The EGP method demonstrates that clever reformulation of the optimality "
-        "conditions can yield dramatic computational gains without any approximation "
-        "error. By inverting the Euler equation, we avoid the costly inner maximization "
-        "of standard VFI.\n\n"
-        "**Key insights:**\n"
-        "- **Speed:** EGP converges in the same number of iterations as VFI but each "
-        "iteration is much cheaper — no root-finding or grid search over consumption.\n"
-        "- **Precautionary savings:** Under income uncertainty, agents accumulate a "
-        "buffer stock of wealth even though $\\beta R < 1$. The borrowing constraint "
-        "and prudence motive (convex marginal utility) drive this behavior.\n"
-        "- **Wealth inequality:** The stationary distribution is right-skewed with a "
-        "mass point at the borrowing constraint. Constrained agents have MPC near 1, "
-        "while wealthy agents have MPC near the theoretical lower bound "
-        f"$R(\\beta R)^{{-1/\\gamma}} - 1 \\approx {mpclim:.3f}$.\n"
-        "- **MPC heterogeneity:** The average MPC is well above the representative-agent "
-        "benchmark, driven by the large fraction of constrained or near-constrained "
-        "households. This has important implications for fiscal policy: transfers are "
-        "more stimulative when targeted at low-wealth households."
+        "EGP is not a different household model. It is a cleaner way to compute the "
+        "same Euler-equation policy when the control is next-period assets and the "
+        "constraint is simple. In this income-risk problem, reversing the grid turns "
+        "the costly VFI search over $a'$ into interpolation from an endogenous current "
+        "asset grid.\n\n"
+        "The economics remain buffer-stock economics: bad income draws push households "
+        "toward the borrowing limit, good draws rebuild assets, and MPCs are high for "
+        "liquidity-constrained households. The computational gain matters because the "
+        "same household problem is usually solved repeatedly inside equilibrium or "
+        "estimation loops."
     )
 
-    report.add_references([
-        "Carroll, C. D. (2006). \"The Method of Endogenous Gridpoints for Solving "
-        "Dynamic Stochastic Optimization Problems.\" *Economics Letters*, 91(3), 312-320.",
-        "Deaton, A. (1991). \"Saving and Liquidity Constraints.\" *Econometrica*, 59(5), 1221-1248.",
-        "Carroll, C. D. (1997). \"Buffer-Stock Saving and the Life Cycle/Permanent Income "
-        "Hypothesis.\" *Quarterly Journal of Economics*, 112(1), 1-55.",
-        "Kaplan, G. and Violante, G. L. (2022). \"The Marginal Propensity to Consume in "
-        "Heterogeneous Agent Models.\" *Annual Review of Economics*, 14, 747-775.",
-    ])
+    report.add_references(
+        [
+            "Carroll, C. D. (2006). The Method of Endogenous Gridpoints for Solving "
+            "Dynamic Stochastic Optimization Problems. *Economics Letters*, 91(3), 312-320.",
+            "Deaton, A. (1991). Saving and Liquidity Constraints. *Econometrica*, 59(5), 1221-1248.",
+            "Carroll, C. D. (1997). Buffer-Stock Saving and the Life Cycle/Permanent Income "
+            "Hypothesis. *Quarterly Journal of Economics*, 112(1), 1-55.",
+            "Kaplan, G. and Violante, G. L. (2022). The Marginal Propensity to Consume in "
+            "Heterogeneous Agent Models. *Annual Review of Economics*, 14, 747-775.",
+        ]
+    )
 
     report.write("README.md")
-    print(f"\nGenerated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
+    print(
+        f"\nGenerated: README.md + {len(report._figures)} figures + "
+        f"{len(report._tables)} tables"
+    )
 
 
 if __name__ == "__main__":
