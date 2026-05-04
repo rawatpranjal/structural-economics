@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Kalman filtering for a linear Gaussian state-space model.
 
-The tutorial uses the two-state signal extraction exercise from the course
-problem sets. The hidden state is observed only through a noisy scalar signal,
-so the Kalman filter shows how prediction, updating, uncertainty, and likelihood
-evaluation fit together.
+The tutorial uses a two-state signal extraction model. The hidden state is
+observed only through a noisy scalar signal, so the Kalman filter shows how
+prediction, updating, uncertainty, and likelihood evaluation fit together.
 """
 
 import sys
@@ -311,9 +310,8 @@ $$
 
     report.add_references(
         [
-            "Chang, M. ECON 609 Problem Set 1: Kalman Filter.",
-            "Kalman, R. E. (1960). A new approach to linear filtering and prediction problems. Journal of Basic Engineering.",
-            "Durbin, J., and Koopman, S. J. (2012). Time Series Analysis by State Space Methods. Oxford University Press.",
+            "[Kalman, R. E. (1960). A New Approach to Linear Filtering and Prediction Problems. *Journal of Basic Engineering*, 82(1), 35-45.](https://doi.org/10.1115/1.3662552)",
+            "[Durbin, J. and Koopman, S. J. (2012). *Time Series Analysis by State Space Methods*, 2nd ed. Oxford University Press.](https://doi.org/10.1093/acprof:oso/9780199641178.001.0001)",
         ]
     )
 
