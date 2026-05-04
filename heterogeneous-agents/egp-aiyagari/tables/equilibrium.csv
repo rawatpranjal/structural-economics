@@ -1,5 +1,7 @@
 Statistic,Value
 Interest rate r,0.040776
+No-risk Euler rate 1/beta - 1,0.041667
+Gap: 1/beta - 1 - r,0.000891
 Wage w,1.1830
 Aggregate capital K,2.9758
 Output Y,0.9984
@@ -11,3 +13,7 @@ Fraction constrained,0.0018
 50th percentile wealth,1.3835
 90th percentile wealth,7.8450
 99th percentile wealth,24.3085
+GE iterations,49
+Final EGP iterations,11
+"Reference-grid c gap, a <= 15",6.80e-04
+"Reference-grid savings gap, a <= 15",6.80e-04

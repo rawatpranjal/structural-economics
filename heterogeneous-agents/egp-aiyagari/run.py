@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
-"""EGP-Aiyagari: Endogenous Grid Points with Aiyagari General Equilibrium.
+"""Aiyagari general equilibrium solved with Endogenous Grid Points.
 
-Solves the Aiyagari (1994) heterogeneous-agent model using the Endogenous Grid
-Points (EGP) method of Carroll (2006) for the inner household problem, embedded
-in an iterative loop over the capital-labor ratio to clear the capital market.
+The model is Aiyagari (1994): households face uninsurable idiosyncratic labor
+income risk, save in a risk-free asset, and supply capital to a competitive
+firm. The equilibrium interest rate clears the capital market.
 
-The EGP method inverts the Euler equation to find today's assets as a function
-of tomorrow's assets, avoiding the costly root-finding step of VFI. This speed
-advantage makes EGP the preferred inner solver for GE loops.
+The code solves the household problem with the Endogenous Grid Points (EGP)
+method of Carroll (2006). EGP keeps the economics of the Euler equation front
+and center: choose a grid for tomorrow's assets, infer today's consumption from
+marginal utility, and then map back to the current asset grid. That makes the
+household block cheap enough to solve repeatedly inside the market-clearing
+loop.
 
 References:
     Aiyagari (1994), "Uninsured Idiosyncratic Risk and Aggregate Saving", QJE.
@@ -326,6 +329,37 @@ def main():
         mpc_sim[i_agent] = (c1 - c0) / epsilon_a
     mean_mpc = float(np.mean(mpc_sim))
 
+    # Finer-grid reference at the final equilibrium prices. This is not a
+    # separate GE solve; it checks the household-policy approximation that feeds
+    # the displayed equilibrium.
+    na_ref = 400
+    agrid_ref = np.linspace(0, 1, na_ref) ** (1 / agrid_par)
+    agrid_ref = borrow_lim + (amax - borrow_lim) * agrid_ref
+    con_ref_init = np.zeros((na_ref, ny))
+    for iy in range(ny):
+        con_ref_init[:, iy] = np.maximum(
+            r_eq * agrid_ref + w_eq * yscale * ygrid[iy, 0], 1e-10)
+
+    con_ref, sav_ref, ref_it, ref_err = solve_egp_inner(
+        agrid_ref, ygrid, ydist, na_ref, ny, beta, R_eq, w_eq, yscale,
+        risk_aver, borrow_lim, con_ref_init, max_iter, tol_iter)
+
+    con_ref_on_main = np.column_stack([
+        np.interp(agrid_flat, agrid_ref, con_ref[:, iy])
+        for iy in range(ny)
+    ])
+    sav_ref_on_main = np.column_stack([
+        np.interp(agrid_flat, agrid_ref, sav_ref[:, iy])
+        for iy in range(ny)
+    ])
+    ref_mask = agrid_flat <= 15.0
+    consumption_ref_gap = float(np.max(np.abs(
+        con[ref_mask, :] - con_ref_on_main[ref_mask, :])))
+    savings_ref_gap = float(np.max(np.abs(
+        sav[ref_mask, :] - sav_ref_on_main[ref_mask, :])))
+    impatience_rate = 1.0 / beta - 1.0
+    interest_gap = impatience_rate - r_eq
+
     print(f"\n{'=' * 60}")
     print("Equilibrium Results")
     print(f"{'=' * 60}")
@@ -336,6 +370,7 @@ def main():
     print(f"  Wealth Gini      = {gini_w:.4f}")
     print(f"  Mean MPC         = {mean_mpc:.4f}")
     print(f"  Frac constrained = {frac_constrained:.4f}")
+    print(f"  Fine-grid c gap  = {consumption_ref_gap:.2e}")
 
     # =========================================================================
     # Generate Report
@@ -343,91 +378,183 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "Fast Aiyagari Equilibrium by EGP",
-        "Aiyagari (1994) general equilibrium with Endogenous Grid Points for the household problem.",
+        "Aiyagari Equilibrium with Endogenous Grid Points",
+        "Capital-market clearing in an incomplete-markets economy with an EGP household block.",
+        include_reproduce=False,
+        show_figure_captions=False,
     )
 
     report.add_overview(
-        "The Aiyagari model is the workhorse framework for studying how idiosyncratic "
-        "income risk and incomplete markets shape the wealth distribution and aggregate "
-        "capital accumulation in general equilibrium.\n\n"
-        "Households face uninsurable IID income shocks and self-insure by accumulating "
-        "a risk-free asset (capital). A representative firm rents capital and labor in "
-        "competitive factor markets. The equilibrium interest rate clears the capital "
-        "market: aggregate household savings must equal the firm's capital demand.\n\n"
-        "We solve the household problem using the Endogenous Grid Points (EGP) method, "
-        "which is dramatically faster than VFI because it avoids root-finding. This "
-        "speed advantage is critical in the GE loop, where the household problem must "
-        "be solved many times at different interest rates."
+        "Aiyagari (1994) turns the buffer-stock household problem into a general "
+        "equilibrium model. A continuum of households faces uninsurable labor-income "
+        "risk, saves in capital, and rents that capital to a competitive firm. The "
+        "interest rate is no longer a primitive. It is the price that makes aggregate "
+        "household saving equal the firm's desired capital stock.\n\n"
+        "Relative to the preceding [EGP household tutorial](../endogenous-grid-points/), "
+        "the economic change is market clearing. Relative to the "
+        "[VFI Aiyagari tutorial](../../dynamic-programming/aiyagari/), the computation "
+        "changes inside the household block. Endogenous Grid Points keep the Euler "
+        "equation solution fast enough that we can solve the household problem many "
+        "times while searching for the equilibrium capital-labor ratio."
     )
 
     report.add_equations(
         r"""
-**Household problem:**
-$$V(a, y) = \max_{c, a'} \bigl[ u(c) + \beta \, \mathbb{E}[V(a', y')] \bigr]$$
-$$\text{s.t.} \quad c + a' = (1+r)a + wy, \quad a' \ge 0$$
+Households begin the period with assets $a\geq \underline a=0$ and labor
+efficiency $e_j$. Income is IID with probabilities $\pi_j$. For prices
+$(r,w)$ and gross return $R=1+r$,
 
-**EGP Euler equation inversion:**
-$$u'(c_t) = \beta (1+r) \, \mathbb{E}[u'(c_{t+1})]$$
-$$c_t = (u')^{-1}\left(\beta (1+r) \, \mathbb{E}[u'(c_{t+1})]\right)$$
-$$a_t = \frac{c_t + a_{t+1} - wy}{1+r} \quad \text{(endogenous grid)}$$
+$$
+V(a,e_j)=
+\max_{a'\geq 0}
+\Bigl[
+u(Ra+w e_j-a')
++\beta \sum_{\ell=1}^{n_y}\pi_{\ell}V(a',e_{\ell})
+\Bigr],
+$$
 
-**Firm problem:**
-$$r = \alpha K^{\alpha-1} L^{1-\alpha} - \delta, \qquad w = (1-\alpha) K^{\alpha} L^{-\alpha}$$
+with budget identity
 
-**Capital market clearing:**
-$$\int a \, d\mu(a, y) = K$$
+$$
+c(a,e_j)=Ra+w e_j-g(a,e_j),
+\qquad
+u(c)=\frac{c^{1-\gamma}-1}{1-\gamma}.
+$$
+
+For an interior choice, the Euler equation is
+
+$$
+u'(c(a,e_j))
+=
+\beta R
+\sum_{\ell=1}^{n_y}
+\pi_{\ell}u'\!\left(c(g(a,e_j),e_{\ell})\right).
+$$
+
+EGP inverts this equation at candidate next assets $a'_i$:
+
+$$
+c_i =
+\left[
+\beta R
+\sum_{\ell=1}^{n_y}
+\pi_{\ell}u'\!\left(c(a'_i,e_{\ell})\right)
+\right]^{-1/\gamma},
+\qquad
+a^{endo}_{ij}=\frac{c_i+a'_i-w e_j}{R}.
+$$
+
+If the current exogenous asset grid lies below the first endogenous point, the
+borrowing constraint binds and $g(a,e_j)=0$.
+
+The firm has Cobb-Douglas technology
+
+$$
+Y=K^\alpha L^{1-\alpha},
+\qquad
+r(k)=\alpha k^{\alpha-1}-\delta,
+\qquad
+w(k)=(1-\alpha)k^\alpha,
+$$
+
+where $k=K/L$. Given the invariant household distribution $\mu_k$, capital
+market clearing requires
+
+$$
+K^s(k)
+=
+\int g(a,e_j)\,d\mu_k(a,e_j)
+=
+kL.
+$$
 """
     )
 
     report.add_model_setup(
-        f"| Parameter | Value | Description |\n"
-        f"|-----------|-------|-------------|\n"
-        f"| $\\beta$  | {beta} | Discount factor |\n"
-        f"| $\\sigma$ | {risk_aver} | CRRA risk aversion |\n"
+        "The exercise uses IID income risk to keep the income process from becoming "
+        "the main object. The raw income states are a five-point normal approximation. "
+        "For each candidate capital-labor ratio $k$, the code rescales efficiency "
+        "units so aggregate output is normalized near one; this normalization changes "
+        "units, not the market-clearing logic.\n\n"
+        f"| Primitive | Value | Role |\n"
+        f"|---|---:|---|\n"
+        f"| $\\beta$ | {beta} | Discount factor |\n"
+        f"| $\\gamma$ | {risk_aver} | CRRA risk aversion |\n"
         f"| $\\alpha$ | {alpha} | Capital share |\n"
         f"| $\\delta$ | {delta} | Depreciation rate |\n"
-        f"| $\\mu_y$  | {mu_y} | Mean income |\n"
-        f"| $\\sigma_y$ | {sd_y} | Std dev of income |\n"
-        f"| Income states | {ny} | IID normal discretization |\n"
-        f"| Asset grid | {na} points | $a \\in [{borrow_lim}, {amax}]$ |"
+        f"| $\\mu_y$ | {mu_y} | Mean raw labor income |\n"
+        f"| $\\sigma_y$ | {sd_y} | Raw income standard deviation |\n"
+        f"| $n_y$ | {ny} | IID income states |\n"
+        f"| $\\underline a$ | {borrow_lim} | Borrowing limit |\n"
+        f"| $\\bar a$ | {amax} | Upper asset-grid bound |\n"
+        f"| Main asset grid | {na} points | Exponential spacing near $\\underline a$ |\n"
+        f"| Reference asset grid | {na_ref} points | Policy check at final prices |\n"
+        f"| Simulation | {Nsim:,} households, {Tsim} periods | Terminal cross section for $\\mu_k$ |"
     )
 
     report.add_solution_method(
-        "**Two-loop structure:**\n\n"
-        "1. **Outer loop (K/L ratio iteration):** Starting from an initial guess for the "
-        "capital-labor ratio, compute prices ($r$, $w$), solve the household problem, "
-        "simulate the economy, and update the K/L ratio with dampening toward the "
-        "simulated aggregate.\n\n"
-        "2. **Inner loop (EGP):** For given prices, iterate on the Euler equation using "
-        "the endogenous grid points method. Instead of searching for optimal savings at "
-        "each grid point (as in VFI), EGP inverts the Euler equation to find the "
-        "*current* assets that rationalize each *future* asset choice. This avoids "
-        "root-finding entirely.\n\n"
-        f"The inner EGP loop converged in **{egp_iters} iterations**. "
-        f"The outer K/L iteration converged in **{ge_iters} iterations** "
-        f"(tolerance = {tol_ge:.0e})."
+        "There are two fixed points. For a candidate $k=K/L$, prices determine a "
+        "household saving rule. That rule induces a stationary distribution and hence "
+        "aggregate capital supply. General equilibrium is the $k$ for which this "
+        "supply equals the firm's implied capital demand.\n\n"
+        "```text\n"
+        "Input: asset grid A, income states e_j with probabilities pi_j,\n"
+        "       primitives beta, gamma, alpha, delta, borrowing limit a_min\n"
+        "Initialize a capital-labor ratio k_0\n"
+        "For m = 0, 1, 2, ...:\n"
+        "    Compute prices r_m = alpha k_m^(alpha-1) - delta and w_m = (1-alpha) k_m^alpha\n"
+        "    Solve the household problem by EGP:\n"
+        "        Initialize c_0(a,e_j)\n"
+        "        For n = 0, 1, 2, ...:\n"
+        "            For each candidate next asset a_i' in A:\n"
+        "                M_i = sum_j pi_j u'(c_n(a_i',e_j))\n"
+        "                c_i = (beta (1+r_m) M_i)^(-1/gamma)\n"
+        "            For each current income e_j:\n"
+        "                a_ij^endo = (c_i + a_i' - w_m e_j) / (1+r_m)\n"
+        "                Interpolate (a_ij^endo, a_i') back to the exogenous grid A\n"
+        "                Use a' = a_min below the first endogenous point\n"
+        "                Recover c_{n+1}(a,e_j) from the budget constraint\n"
+        "            Stop when max_{a,j} |c_{n+1}(a,e_j)-c_n(a,e_j)| < epsilon\n"
+        "    Simulate households forward under the saving rule to approximate mu_m\n"
+        "    Set K_m^s = mean terminal assets and L_m = mean labor efficiency\n"
+        "    Update k_{m+1} = (1-lambda) k_m + lambda K_m^s/L_m\n"
+        "    Stop when |K_m^s/L_m / k_m - 1| < tolerance\n"
+        "Output: equilibrium prices, policy functions, and simulated wealth distribution\n"
+        "```\n\n"
+        "The run converged to the displayed equilibrium in "
+        f"**{ge_iters}** damped market-clearing iterations. At the final prices, "
+        f"the main EGP solve took **{egp_iters}** iterations. A {na_ref}-point "
+        "asset-grid check at those same prices gives a maximum consumption-policy "
+        f"gap of **{consumption_ref_gap:.2e}** over $a\\leq 15$."
     )
 
     # --- Figure 1: Consumption policy at equilibrium ---
     fig1, ax1 = plt.subplots()
     xlim_plot = min(15, amax)
     mask_plot = agrid_flat <= xlim_plot
+    mask_ref_plot = agrid_ref <= xlim_plot
     colors = plt.cm.viridis(np.linspace(0.1, 0.9, ny))
     for iy in range(ny):
         label = f"y = {ygrid[iy, 0]:.2f} (p = {ydist[iy, 0]:.3f})"
         ax1.plot(agrid_flat[mask_plot], con[mask_plot, iy], color=colors[iy],
                  linewidth=2, label=label)
+        if iy in (0, ny - 1):
+            ref_label = f"{na_ref}-grid ref., y = {ygrid[iy, 0]:.2f}"
+            ax1.plot(agrid_ref[mask_ref_plot], con_ref[mask_ref_plot, iy],
+                     color=colors[iy], linewidth=1.5, linestyle='--',
+                     label=ref_label)
     ax1.set_xlabel("Assets $a$")
     ax1.set_ylabel("Consumption $c$")
-    ax1.set_title("Consumption Policy at Equilibrium")
+    ax1.set_title("Equilibrium Consumption Policy")
     ax1.legend(fontsize=8)
     report.add_figure("figures/consumption-policy.png",
-                      "Consumption policy functions at equilibrium for each income state",
+                      "Equilibrium consumption policy with fine-grid reference",
                       fig1,
-        description="At the equilibrium interest rate, low-income agents consume less and "
-        "save more aggressively as a precaution. The spread across income states reflects "
-        "the degree of consumption insurance: wider gaps mean less smoothing.")
+        description="The equilibrium policy is still a buffer-stock rule. Low-income "
+        "households consume less at a given asset level because a bad draw both lowers "
+        "current resources and raises the value of keeping assets for self-insurance. "
+        "The dashed reference curves solve the same household problem on a finer asset "
+        f"grid; over $a\\leq 15$ the largest consumption gap is {consumption_ref_gap:.2e}.")
 
     # --- Figure 2: Capital supply vs demand ---
     fig2, ax2 = plt.subplots()
@@ -436,18 +563,21 @@ $$\int a \, d\mu(a, y) = K$$
     ax2.plot(Kd_plot, r_plot_vals, 'r-s', linewidth=2, markersize=4,
              label='Capital demand (firm FOC)')
     ax2.axhline(r_eq, color='gray', linestyle='--', linewidth=1, alpha=0.7,
-                label=f'$r^{*} = {r_eq:.4f}$')
+                label=f'$r^{{*}} = {r_eq:.4f}$')
+    ax2.axhline(impatience_rate, color='black', linestyle=':', linewidth=1.2,
+                alpha=0.8, label=r'$1/\beta - 1$')
     ax2.set_xlabel("Capital $K$")
     ax2.set_ylabel("Interest rate $r$")
-    ax2.set_title("Capital Market: Supply vs Demand")
+    ax2.set_title("Capital Market Clearing")
     ax2.legend()
     report.add_figure("figures/capital-supply-demand.png",
                       "Capital supply (household savings) and demand (firm FOC) as functions of r",
                       fig2,
-        description="The intersection determines the general equilibrium. Capital supply slopes "
-        "upward because higher interest rates reward saving, while capital demand slopes "
-        "downward from the firm's diminishing marginal product. The equilibrium r* lies "
-        "below 1/beta - 1 due to precautionary savings demand.")
+        description="The crossing is the equilibrium price of capital. Household capital "
+        "supply rises with the return, while firm demand falls with the marginal product "
+        "of capital. The dotted line marks the no-risk Euler benchmark $1/\\beta-1$; "
+        "the incomplete-markets equilibrium lies below it because households want a "
+        "precautionary buffer.")
 
     # --- Figure 3: Wealth distribution ---
     fig3, ax3 = plt.subplots()
@@ -465,9 +595,11 @@ $$\int a \, d\mu(a, y) = K$$
     report.add_figure("figures/wealth-distribution.png",
                       "Stationary wealth distribution in equilibrium",
                       fig3,
-        description="The distribution emerges endogenously from the interaction of idiosyncratic "
-        "risk and the equilibrium interest rate. The gap between mean and median wealth "
-        "reflects concentration at the top, a robust feature of Aiyagari-type models.")
+        description="The terminal simulated cross section approximates the invariant "
+        "wealth distribution under the equilibrium policy. The mass near low assets is "
+        "the borrowing constraint and bad income draws at work; the right tail comes "
+        "from households with long favorable income histories. This IID calibration "
+        "keeps the tail modest relative to persistent-income Aiyagari models.")
 
     # --- Figure 4: Lorenz curve ---
     fig4, ax4 = plt.subplots()
@@ -483,15 +615,18 @@ $$\int a \, d\mu(a, y) = K$$
     report.add_figure("figures/lorenz-curve.png",
                       f"Lorenz curve for wealth distribution (Gini = {gini_w:.3f})",
                       fig4,
-        description="The area between the Lorenz curve and the 45-degree line measures wealth "
-        "inequality. The Gini coefficient from this IID income model is moderate; persistent "
-        "income shocks (AR(1)) would generate substantially more inequality and a more bowed "
-        "Lorenz curve.")
+        description="The Lorenz curve summarizes the same distribution in inequality "
+        "terms. A Gini around this level should be read as the inequality generated by "
+        "borrowing limits plus IID income risk, not as a full empirical wealth model. "
+        "Persistent earnings risk, lifecycle structure, and heterogeneous returns would "
+        "all move this object.")
 
     # --- Table: Equilibrium statistics ---
     table_data = {
         "Statistic": [
             "Interest rate r",
+            "No-risk Euler rate 1/beta - 1",
+            "Gap: 1/beta - 1 - r",
             "Wage w",
             "Aggregate capital K",
             "Output Y",
@@ -503,9 +638,15 @@ $$\int a \, d\mu(a, y) = K$$
             "50th percentile wealth",
             "90th percentile wealth",
             "99th percentile wealth",
+            "GE iterations",
+            "Final EGP iterations",
+            "Reference-grid c gap, a <= 15",
+            "Reference-grid savings gap, a <= 15",
         ],
         "Value": [
             f"{r_eq:.6f}",
+            f"{impatience_rate:.6f}",
+            f"{interest_gap:.6f}",
             f"{w_eq:.4f}",
             f"{K_eq:.4f}",
             f"{Y_eq:.4f}",
@@ -517,31 +658,31 @@ $$\int a \, d\mu(a, y) = K$$
             f"{pct_50:.4f}",
             f"{pct_90:.4f}",
             f"{pct_99:.4f}",
+            f"{ge_iters:d}",
+            f"{egp_iters:d}",
+            f"{consumption_ref_gap:.2e}",
+            f"{savings_ref_gap:.2e}",
         ],
     }
     df = pd.DataFrame(table_data)
-    report.add_table("tables/equilibrium.csv", "Equilibrium Statistics", df,
-        description="The equilibrium interest rate below 1/beta - 1 is the signature result of "
-        "Aiyagari (1994): precautionary savings motives push aggregate capital above the "
-        "representative-agent level, depressing the return on capital.")
+    report.add_table("tables/equilibrium.csv", "Equilibrium and Accuracy Checks", df,
+        description="The table puts the economic objects and numerical checks together. "
+        "The interest-rate gap is the main Aiyagari mechanism in this calibration. "
+        "The fine-grid gaps are fixed-price household-policy diagnostics, so they "
+        "check the EGP approximation rather than re-solving the full equilibrium.")
 
     report.add_takeaway(
-        "The Aiyagari model demonstrates how precautionary savings demand from "
-        "uninsurable income risk drives the equilibrium interest rate below the "
-        "rate of time preference ($r^{*} < 1/\\beta - 1$).\n\n"
-        "**Key insights:**\n"
-        "- Households over-accumulate assets as a buffer against bad income shocks. "
-        "This *precautionary savings motive* pushes the capital stock above the "
-        "representative-agent level and the interest rate below $1/\\beta - 1$.\n"
-        "- The wealth distribution is right-skewed and exhibits a Gini coefficient "
-        f"of {gini_w:.3f}. The borrowing constraint binds for {frac_constrained*100:.1f}% "
-        "of households.\n"
-        "- The EGP method makes the GE loop feasible: each inner solve takes only "
-        f"{egp_iters} Euler-equation iterations (vs. hundreds with VFI), "
-        "enabling rapid iteration over the capital-labor ratio.\n"
-        "- The mean MPC out of a small windfall is "
-        f"{mean_mpc:.3f}, reflecting the heterogeneity in marginal propensities to consume "
-        "across the wealth distribution."
+        "The economic lesson is the Aiyagari interest-rate result: uninsurable income "
+        "risk creates aggregate precautionary saving, so the clearing return on capital "
+        f"is {r_eq:.4f}, below the no-risk Euler benchmark {impatience_rate:.4f}. "
+        "The same policy generates a right-skewed wealth distribution and heterogeneous "
+        f"MPCs, with a mean windfall MPC of {mean_mpc:.3f} in the simulated cross "
+        "section.\n\n"
+        "The computational lesson is narrower but important. EGP does not change the "
+        "equilibrium concept. It changes the cost of the household block by replacing "
+        "a search over next assets with Euler-equation inversion and interpolation. "
+        "That is why this version is the natural bridge from partial-equilibrium "
+        "buffer-stock saving to repeated general-equilibrium market clearing."
     )
 
     report.add_references([
