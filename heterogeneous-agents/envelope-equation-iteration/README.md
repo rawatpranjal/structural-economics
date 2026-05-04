@@ -1,4 +1,4 @@
-# Envelope Equation Iteration (EEI)
+# Envelope Equation Iteration for Savings
 
 > Solving the income-fluctuation problem by iterating on the envelope condition V'(a) = R * u'(c*(a)).
 

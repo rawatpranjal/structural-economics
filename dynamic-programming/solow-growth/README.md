@@ -1,4 +1,4 @@
-# Solow Growth Model
+# Solow Growth with Exogenous Saving
 
 > Deterministic simulation of the neoclassical growth model with exogenous savings, technology growth, and population growth.
 

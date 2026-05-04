@@ -343,7 +343,7 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "EGP-Aiyagari Model",
+        "Fast Aiyagari Equilibrium by EGP",
         "Aiyagari (1994) general equilibrium with Endogenous Grid Points for the household problem.",
     )
 

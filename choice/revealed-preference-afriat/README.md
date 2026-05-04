@@ -1,4 +1,4 @@
-# Revealed Preference and Afriat Inequalities
+# Revealed Preference via Afriat
 
 > Testing whether observed consumption data is consistent with utility maximization.
 

@@ -319,7 +319,7 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "Dynamic Entry and Exit",
+        "Dynamic Entry and Exit in Oligopoly",
         "Firm turnover and market structure in an oligopolistic industry with sunk entry costs.",
     )
 

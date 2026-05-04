@@ -228,7 +228,7 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "Numerical ODE Methods for Economics",
+        "Economic ODEs and Phase Diagrams",
         "Solving continuous-time economic models as systems of ordinary differential equations.",
     )
 

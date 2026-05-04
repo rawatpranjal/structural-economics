@@ -1,4 +1,4 @@
-# BLP Full Pipeline: Random Coefficients Demand Estimation
+# Full BLP Demand-to-Merger Pipeline
 
 > The gold standard for demand estimation in industrial organization. Random coefficients allow rich substitution patterns that matter enormously for merger analysis.
 

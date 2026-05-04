@@ -369,7 +369,7 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "Continuous-Time Neoclassical Growth (HJB)",
+        "Continuous-Time Growth by HJB",
         "Neoclassical growth model solved via the Hamilton-Jacobi-Bellman "
         "equation using upwind finite differences.",
     )

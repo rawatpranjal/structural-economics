@@ -1,4 +1,4 @@
-# Finite Difference Methods for HJB Equations
+# Finite-Difference HJB Methods
 
 > Upwind finite difference scheme for continuous-time consumption-savings.
 

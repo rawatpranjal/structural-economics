@@ -308,7 +308,7 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "Huggett (1993) Incomplete Markets Model (Continuous Time)",
+        "Continuous-Time Huggett Incomplete Markets",
         "Stationary equilibrium of a heterogeneous-agent economy with "
         "idiosyncratic income risk, borrowing constraints, and a single bond.",
     )

@@ -542,7 +542,7 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "Merger Simulation with Multiple Demand Systems",
+        "Merger Simulation Across Demand Systems",
         "Comparing merger effects across logit, linear, and log-linear demand to show how "
         "functional form assumptions drive antitrust policy conclusions.",
     )

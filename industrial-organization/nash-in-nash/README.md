@@ -1,4 +1,4 @@
-# Nash-in-Nash Bargaining
+# Nash-in-Nash Vertical Bargaining
 
 > Bilateral negotiations in vertical markets between upstream suppliers and downstream firms.
 

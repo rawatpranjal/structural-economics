@@ -1,4 +1,4 @@
-# Phase Diagrams: Ramsey Optimal Growth
+# Ramsey Phase Diagrams and Saddle Paths
 
 > Continuous-time dynamics of consumption and capital with saddle-path stability.
 

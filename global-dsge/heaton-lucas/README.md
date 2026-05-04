@@ -1,4 +1,4 @@
-# Heaton-Lucas (1996): Incomplete Markets via STPFI
+# Heaton-Lucas Incomplete Markets via STPFI
 
 > Two agents trade equity and bonds with constraints, solved via STPFI with JAX autodiff. Direct translation of HL1996.gmod.
 

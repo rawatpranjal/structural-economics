@@ -1,4 +1,4 @@
-# Endogenous Grid Points (EGP) with IID Income
+# Endogenous Grid Method for Income Risk
 
 > Carroll's (2006) endogenous grid points method for solving the standard incomplete-markets consumption-savings problem.
 

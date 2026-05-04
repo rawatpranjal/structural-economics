@@ -1,4 +1,4 @@
-# AR Process Dynamics
+# AR Processes and Shock Propagation
 
 > Impulse responses, simulated paths, and spectral properties of AR(1) and multiplier-accelerator models from Dynare.
 

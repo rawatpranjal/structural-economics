@@ -1,4 +1,4 @@
-# FRED Macroeconomic Data Analysis
+# FRED-Style Business Cycle Facts
 
 > Business cycle statistics from synthetic macroeconomic data mimicking FRED series.
 

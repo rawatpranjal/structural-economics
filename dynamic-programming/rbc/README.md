@@ -1,4 +1,4 @@
-# Real Business Cycle Model
+# Real Business Cycles with Capital Accumulation
 
 > Aggregate TFP shocks drive business cycles through optimal responses of consumption, investment, and labor supply (Kydland and Prescott, 1982).
 

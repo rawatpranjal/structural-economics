@@ -264,7 +264,7 @@ def main():
     # Generate Report
     # =========================================================================
     report = ModelReport(
-        "Collusion Detection",
+        "Repeated-Game Collusion Detection",
         "Cartel stability analysis using repeated Cournot games and structural break detection.",
     )
 

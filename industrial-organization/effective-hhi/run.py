@@ -244,7 +244,7 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "Effective HHI: Market Concentration and Merger Analysis",
+        "Effective HHI for Merger Screening",
         "The Herfindahl-Hirschman Index as the standard antitrust screening tool "
         "for market concentration and merger review.",
     )

@@ -1,4 +1,4 @@
-# Consumption-Savings with Income Shocks
+# Precautionary Saving with Income Risk
 
 > Optimal saving and consumption under Markovian income uncertainty (Bewley/Aiyagari).
 

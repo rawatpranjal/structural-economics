@@ -1,4 +1,4 @@
-# Neoclassical Optimal Growth Model
+# Optimal Growth by Value Function Iteration
 
 > The Ramsey-Cass-Koopmans model: optimal consumption and capital accumulation with a Cobb-Douglas production technology.
 

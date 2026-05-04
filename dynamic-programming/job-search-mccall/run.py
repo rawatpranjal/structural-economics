@@ -185,7 +185,7 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "McCall Job Search Model",
+        "McCall Job Search and Reservation Wages",
         "Optimal sequential search by an unemployed worker drawing wage offers "
         "from a known distribution.",
     )

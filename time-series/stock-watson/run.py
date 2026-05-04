@@ -271,7 +271,7 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "Stock-Watson Diffusion Index / Factor Model",
+        "Stock-Watson Factor Forecasting",
         "Principal component estimation of common factors from a large panel, with "
         "factor-augmented forecasting.",
     )

@@ -1,4 +1,4 @@
-# BLP Random Coefficients Logit
+# BLP Random Coefficients Demand
 
 > Demand estimation with heterogeneous consumer preferences via Berry, Levinsohn, and Pakes (1995).
 

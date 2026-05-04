@@ -1,0 +1,3 @@
+Method,Particles,PF RMSE vs Kalman,Mean ESS,Loglike sd
+bootstrap,500,0.0273,121.8292,0.6914
+optimal,500,0.0100,492.6356,0.0397

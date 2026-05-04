@@ -114,7 +114,7 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "Diamond-Mortensen-Pissarides Model",
+        "Search and Matching Unemployment",
         "Equilibrium search and matching model of unemployment with aggregate productivity shocks.",
     )
 

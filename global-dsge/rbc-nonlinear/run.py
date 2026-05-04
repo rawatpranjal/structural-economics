@@ -346,7 +346,7 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "RBC Model: Global Nonlinear Solution",
+        "Nonlinear RBC by Global VFI",
         "Standard RBC solved globally via VFI on a 2D grid, compared to log-linearized perturbation.",
     )
 

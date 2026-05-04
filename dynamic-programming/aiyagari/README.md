@@ -1,4 +1,4 @@
-# Aiyagari (1994) General Equilibrium
+# Aiyagari Incomplete-Markets Equilibrium
 
 > Stationary equilibrium with heterogeneous agents, uninsurable income risk, and borrowing constraints.
 

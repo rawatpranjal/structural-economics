@@ -1,4 +1,4 @@
-# Bertrand-Nash Pricing with Logit Demand
+# Bertrand Pricing with Logit Demand
 
 > Differentiated product oligopoly pricing, calibration, and merger simulation.
 

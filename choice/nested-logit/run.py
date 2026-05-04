@@ -518,7 +518,7 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "Nested Logit Demand Model",
+        "Nested Logit Demand and Within-Nest Substitution",
         "The simplest fix for the IIA problem: grouping products into nests "
         "so that closer substitutes have higher cross-price elasticities.",
     )

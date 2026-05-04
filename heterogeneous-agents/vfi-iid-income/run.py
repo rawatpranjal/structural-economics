@@ -219,7 +219,7 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "VFI with IID Income Risk",
+        "IID Income Risk by VFI",
         "Consumption-savings problem with uninsurable IID income shocks and a borrowing constraint.",
     )
 

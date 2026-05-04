@@ -135,7 +135,7 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "Static Games and Nash Equilibrium",
+        "Static Oligopoly Games and Nash Equilibrium",
         "Pure and mixed strategy Nash equilibria in normal-form games with applications to IO.",
     )
 

@@ -1,4 +1,4 @@
-# Ramsey-Cass-Koopmans Growth Model
+# Ramsey Growth by Shooting
 
 > Optimal saving and consumption in the neoclassical growth model, solved via the shooting method.
 

@@ -311,7 +311,7 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "Bayesian Learning",
+        "Bayesian Learning from Sequential Signals",
         "How rational agents update beliefs from sequential signals under uncertainty.",
     )
 

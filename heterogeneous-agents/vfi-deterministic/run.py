@@ -134,7 +134,7 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "Deterministic VFI Consumption-Savings",
+        "Deterministic Consumption-Savings by VFI",
         "Infinite-horizon savings problem with deterministic income, solved by value function iteration on a discrete asset grid.",
     )
 

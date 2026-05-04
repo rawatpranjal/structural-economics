@@ -127,7 +127,7 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "Cake-Eating Problem",
+        "Finite-Resource Cake Eating",
         "Optimal consumption of a finite, non-renewable resource over an infinite horizon.",
     )
 

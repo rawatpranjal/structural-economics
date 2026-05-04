@@ -379,7 +379,7 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "GARP Testing via Warshall's Algorithm",
+        "GARP Testing with Warshall Closure",
         "Testing the Generalized Axiom of Revealed Preference using transitive closure.",
     )
 

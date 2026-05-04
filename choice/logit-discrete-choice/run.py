@@ -207,7 +207,7 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "Logit Discrete Choice Model",
+        "Multinomial Logit Demand Estimation",
         "Maximum likelihood estimation of a multinomial logit demand model with simulated consumer choice data.",
     )
 

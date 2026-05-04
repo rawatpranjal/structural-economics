@@ -129,7 +129,7 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "Continuous-Time Cake Eating",
+        "Continuous-Time Cake Eating by Pontryagin",
         "Optimal consumption of a finite resource in continuous time via Pontryagin's maximum principle.",
     )
 

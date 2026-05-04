@@ -1,4 +1,4 @@
-# New Keynesian DSGE Model
+# New Keynesian DSGE and Taylor Rule
 
 > The canonical 3-equation New Keynesian model: IS curve, Phillips curve, and Taylor rule.
 

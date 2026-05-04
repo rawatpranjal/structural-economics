@@ -153,7 +153,7 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "Preference Recoverability",
+        "Recovering Preferences from Finite Data",
         "Bounding utility functions and indifference curves from revealed preference data.",
     )
 

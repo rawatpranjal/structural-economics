@@ -1,4 +1,4 @@
-# Logit Demand with Supply-Side Markup Recovery
+# Demand Estimation and Markup Recovery
 
 > Berry (1994) inversion + Bertrand-Nash FOC to recover marginal costs without accounting data.
 

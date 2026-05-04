@@ -1,4 +1,4 @@
-# Standard Real Business Cycle (RBC) Model
+# Perturbation RBC in Dynare
 
 > A log-linearized RBC model with TFP shocks, solved via first-order perturbation in Python.
 

@@ -1,4 +1,4 @@
-# Lucas Asset Pricing
+# Lucas Asset Pricing with Risk Aversion
 
 > Equilibrium asset prices in a pure exchange economy with a representative agent.
 
