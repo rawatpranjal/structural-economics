@@ -1,6 +1,6 @@
-Variable,Mean,Std Dev,"Corr(x, z)"
-Productivity z,1.0008,0.0210,1.0000
-Unemployment u,0.0649,0.0014,-0.9393
-Vacancies v,0.0649,0.0009,0.8649
-Tightness theta,1.0014,0.0327,1.0000
-v/u ratio,1.0014,0.0327,1.0000
+Variable,Mean,Std. log dev.,Std./Std. z,Corr. with z
+Productivity z,0.9976,0.0216,1.00,1.000
+Unemployment u,0.0651,0.0243,1.13,-0.940
+Vacancies v,0.0648,0.0166,0.77,0.866
+Tightness theta,0.9959,0.0372,1.72,1.000
+"Tightness theta, log-linear",0.9965,0.0336,1.55,1.000
