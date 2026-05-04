@@ -15,10 +15,18 @@ python run.py
 
 ---
 
+## Computational Methods
+
+| | Model | Method | Key Insight |
+|:---:|---|---|---|
+| <img src="computational-methods/numerical-optimization/figures/thumb.png" width="120"> | [**Numerical Optimization**](computational-methods/numerical-optimization/) | Newton + BFGS + Annealing | Local methods are fast, but starting points and multimodality decide what they find |
+| <img src="computational-methods/metropolis-hastings/figures/thumb.png" width="120"> | [**Metropolis-Hastings**](computational-methods/metropolis-hastings/) | Random-walk MCMC | Proposal tuning controls the tradeoff between acceptance and exploration |
+
 ## Dynamic Programming
 
 | | Model | Method | Key Insight |
 |:---:|---|---|---|
+| <img src="dynamic-programming/shock-discretization/figures/thumb.png" width="120"> | [**Shock Discretization**](dynamic-programming/shock-discretization/) | Tauchen + Rouwenhorst | Finite-state grids are part of the model, not harmless preprocessing |
 | <img src="dynamic-programming/cake-eating/figures/thumb.png" width="120"> | [**Cake Eating**](dynamic-programming/cake-eating/) | Value Function Iteration | Optimal depletion: consume fraction $(1-\beta)$ each period |
 | <img src="dynamic-programming/optimal-growth/figures/thumb.png" width="120"> | [**Optimal Growth**](dynamic-programming/optimal-growth/) | VFI | Capital converges to steady state $k_{ss} = (\alpha\beta A)^{1/(1-\alpha)}$ |
 | <img src="dynamic-programming/solow-growth/figures/thumb.png" width="120"> | [**Solow Growth**](dynamic-programming/solow-growth/) | Simulation | Exogenous savings drives long-run output per capita |
@@ -45,13 +53,25 @@ python run.py
 | | Model | Method | Key Insight |
 |:---:|---|---|---|
 | <img src="industrial-organization/bertrand-logit-demand/figures/thumb.png" width="120"> | [**Bertrand-Nash Logit**](industrial-organization/bertrand-logit-demand/) | Fixed point | Mergers raise prices; cost efficiencies can offset |
+| <img src="industrial-organization/logit-supply-side/figures/thumb.png" width="120"> | [**Logit + Supply Side**](industrial-organization/logit-supply-side/) | IV/2SLS + FOC | Demand estimates recover markups and marginal costs |
 | <img src="industrial-organization/blp-random-coefficients/figures/thumb.png" width="120"> | [**BLP Random Coefficients**](industrial-organization/blp-random-coefficients/) | Contraction mapping | Heterogeneous preferences relax IIA |
+| <img src="industrial-organization/blp-full-pipeline/figures/thumb.png" width="120"> | [**BLP Full Pipeline**](industrial-organization/blp-full-pipeline/) | GMM + merger simulation | Random coefficients change diversion and merger effects |
 | <img src="industrial-organization/effective-hhi/figures/thumb.png" width="120"> | [**Effective HHI**](industrial-organization/effective-hhi/) | Index computation | $\Delta \text{HHI} = 2 s_1 s_2 \times 10000$ for merger screening |
 | <img src="industrial-organization/static-games/figures/thumb.png" width="120"> | [**Static Games**](industrial-organization/static-games/) | Nash equilibrium | Cournot output between monopoly and competition |
 | <img src="industrial-organization/collusion-detection/figures/thumb.png" width="120"> | [**Collusion Detection**](industrial-organization/collusion-detection/) | Repeated games | $\delta^* = 9/17$ for duopoly; more firms = harder to collude |
 | <img src="industrial-organization/dynamic-entry-exit/figures/thumb.png" width="120"> | [**Dynamic Entry/Exit**](industrial-organization/dynamic-entry-exit/) | Dynamic programming | Entry costs sustain above-competitive profits |
+| <img src="industrial-organization/dynamic-discrete-choice/figures/thumb.png" width="120"> | [**Dynamic Discrete Choice**](industrial-organization/dynamic-discrete-choice/) | Rust + CCP | Choices reveal continuation values when actions move future states |
 | <img src="industrial-organization/nash-in-nash/figures/thumb.png" width="120"> | [**Nash-in-Nash**](industrial-organization/nash-in-nash/) | Bilateral bargaining | Incremental value = leverage in vertical markets |
 | <img src="industrial-organization/merger-simulation/figures/thumb.png" width="120"> | [**Merger Simulation**](industrial-organization/merger-simulation/) | Multi-demand | Demand model choice drives policy conclusions |
+
+## Game Theory
+
+| | Model | Method | Key Insight |
+|:---:|---|---|---|
+| <img src="game-theory/normal-form-games/figures/thumb.png" width="120"> | [**Normal-Form Games**](game-theory/normal-form-games/) | Enumeration + indifference | Small games are equilibrium checks, not black-box solver problems |
+| <img src="game-theory/best-response-dynamics/figures/thumb.png" width="120"> | [**Best-Response Dynamics**](game-theory/best-response-dynamics/) | Fixed-point iteration | Nash equilibrium is a fixed point of best responses |
+| <img src="game-theory/first-price-auctions/figures/thumb.png" width="120"> | [**First-Price Auctions**](game-theory/first-price-auctions/) | Bayesian Nash | Bid shading trades off surplus against win probability |
+| <img src="game-theory/quantal-response-equilibrium/figures/thumb.png" width="120"> | [**Quantal Response Equilibrium**](game-theory/quantal-response-equilibrium/) | Logit fixed point | Noisy best responses bridge finite games and stochastic choice |
 
 ## Choice & Demand
 
@@ -101,6 +121,7 @@ python run.py
 | <img src="global-dsge/rbc-nonlinear/figures/thumb.png" width="120"> | [**RBC Nonlinear**](global-dsge/rbc-nonlinear/) | Global VFI | Asymmetric responses: recessions are sharper than expansions |
 | <img src="global-dsge/rbc-capital-tax/figures/thumb.png" width="120"> | [**RBC Capital Tax**](global-dsge/rbc-capital-tax/) | Global VFI | Laffer curve: revenue peaks then falls with tax rate |
 | <img src="global-dsge/rbc-irreversible-investment/figures/thumb.png" width="120"> | [**Irreversible Investment**](global-dsge/rbc-irreversible-investment/) | VFI + constraint | Occasionally binding constraint amplifies downturns |
+| <img src="global-dsge/heaton-lucas/figures/thumb.png" width="120"> | [**Heaton-Lucas**](global-dsge/heaton-lucas/) | STPFI | Trading constraints create asset-pricing kinks and risk premia |
 
 ## Time Series
 
@@ -134,6 +155,12 @@ lib/
   vfi.py            # Generic VFI solver
   plotting.py       # Consistent matplotlib academic style
   output.py         # ModelReport class (auto-generates README.md)
+```
+
+Catalog checks live in `scripts/`:
+
+```
+python scripts/validate_catalog.py
 ```
 
 Original files are preserved in `_legacy/`.

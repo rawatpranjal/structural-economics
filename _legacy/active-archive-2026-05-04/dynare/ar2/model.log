@@ -1,0 +1,78 @@
+Starting Dynare (version 5.3).
+Calling Dynare with arguments: none
+Starting preprocessing of the model file ...
+Found 4 equation(s).
+Evaluating expressions...done
+Computing static model derivatives (order 1).
+Computing dynamic model derivatives (order 1).
+Processing outputs ...
+done
+Preprocessing completed.
+
+
+STEADY-STATE RESULTS:
+
+C 		 4
+Y 		 5
+I 		 0
+G 		 1
+
+EIGENVALUES:
+         Modulus             Real        Imaginary
+
+          0.3456           0.3456                0
+          0.6944           0.6944                0
+             0.9              0.9                0
+
+
+There are 0 eigenvalue(s) larger than 1 in modulus 
+for 0 forward-looking variable(s)
+
+The rank condition is verified.
+
+
+MODEL SUMMARY
+
+  Number of variables:         4
+  Number of stochastic shocks: 1
+  Number of state variables:   3
+  Number of jumpers:           0
+  Number of static variables:  1
+
+
+MATRIX OF COVARIANCE OF EXOGENOUS SHOCKS
+Variables           e
+e            0.000100
+
+POLICY AND TRANSITION FUNCTIONS
+                                   C               Y               I               G
+Constant                    4.000000        5.000000               0        1.000000
+C(-1)                              0       -0.300000       -0.300000               0
+Y(-1)                       0.800000        1.040000        0.240000               0
+G(-1)                              0        0.900000               0        0.900000
+e                                  0        1.000000               0        1.000000
+
+
+MOMENTS OF SIMULATED VARIABLES
+VARIABLE              MEAN       STD. DEV.        VARIANCE        SKEWNESS        KURTOSIS
+C                 4.059076        0.089975        0.008096        1.083224       -0.270622
+Y                 5.073781        0.112513        0.012659        1.082863       -0.271679
+I                 0.000076        0.004633        0.000021       -0.117630        1.174931
+G                 1.014629        0.026078        0.000680        0.773563       -0.566534
+
+
+CORRELATION OF SIMULATED VARIABLES
+VARIABLE         C       Y       I       G
+C           1.0000  0.9847  0.0774  0.7845
+Y           0.9847  1.0000  0.2145  0.8789
+I           0.0774  0.2145  1.0000  0.4806
+G           0.7845  0.8789  0.4806  1.0000
+
+
+AUTOCORRELATION OF SIMULATED VARIABLES
+VARIABLE         1       2       3       4       5
+C           0.9756  0.9384  0.8873  0.8283  0.7664
+Y           0.9750  0.9370  0.8848  0.8263  0.7651
+I           0.7823  0.5018  0.2640  0.0986  0.0751
+G           0.8940  0.7995  0.7023  0.6160  0.5800
+Total computing time : 0h00m08s

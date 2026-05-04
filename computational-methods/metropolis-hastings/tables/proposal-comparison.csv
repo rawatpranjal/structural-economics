@@ -1,0 +1,4 @@
+Proposal step,Acceptance rate,Mode switches,Mean error,ESS theta1,ESS theta2
+0.15,0.918,71,0.374,24,23
+0.6,0.699,319,0.255,120,118
+2.0,0.304,689,0.048,467,494

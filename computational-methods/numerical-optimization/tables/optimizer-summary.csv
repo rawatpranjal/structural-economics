@@ -1,0 +1,5 @@
+Method,Start,Solution,Mode,Objective,Distance to mode,Iterations,Success
+Newton,"(3.00, -2.50)","(1.49, 1.49)",upper-right,2.38467,1.082e-02,38,True
+BFGS,"(3.00, -2.50)","(1.49, 1.49)",upper-right,2.38467,1.082e-02,7,True
+Nelder-Mead,"(3.00, -2.50)","(-1.49, -1.49)",lower-left,2.38467,1.082e-02,74,True
+Dual annealing,"box [-5,5]^2","(-1.49, -1.49)",lower-left,2.38467,1.082e-02,80,True

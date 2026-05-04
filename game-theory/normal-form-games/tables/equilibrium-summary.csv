@@ -1,0 +1,5 @@
+Game,Pure Nash,Interior mixed Nash,Indifference residual
+Prisoner's Dilemma,"(Defect, Defect)",None,
+Matching Pennies,None,"p=0.500, q=0.500",0.0e+00
+Battle of the Sexes,"(Opera, Opera), (Football, Football)","p=0.600, q=0.400",2.2e-16
+Stag Hunt,"(Stag, Stag), (Hare, Hare)","p=0.667, q=0.667",4.4e-16

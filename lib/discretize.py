@@ -102,23 +102,24 @@ def discrete_normal(n: int, mu: float, sigma: float, width: float = 3.0) -> tupl
         probs: (n, 1) array of probabilities.
     """
     grid = jnp.linspace(mu - width * sigma, mu + width * sigma, n).reshape(n, 1)
+    grid_flat = grid[:, 0]
 
     if n == 2:
         probs = 0.5 * jnp.ones((n, 1))
     else:
         probs = jnp.zeros((n, 1))
         probs = probs.at[0, 0].set(
-            norm.cdf(float(grid[0] + 0.5 * (grid[1] - grid[0])), mu, sigma)
+            norm.cdf(float(grid_flat[0] + 0.5 * (grid_flat[1] - grid_flat[0])), mu, sigma)
         )
         for i in range(1, n - 1):
             probs = probs.at[i, 0].set(
-                norm.cdf(float(grid[i] + 0.5 * (grid[i + 1] - grid[i])), mu, sigma)
-                - norm.cdf(float(grid[i] - 0.5 * (grid[i] - grid[i - 1])), mu, sigma)
+                norm.cdf(float(grid_flat[i] + 0.5 * (grid_flat[i + 1] - grid_flat[i])), mu, sigma)
+                - norm.cdf(float(grid_flat[i] - 0.5 * (grid_flat[i] - grid_flat[i - 1])), mu, sigma)
             )
         probs = probs.at[n - 1, 0].set(1 - float(probs[:n - 1, 0].sum()))
 
-    ex = float(grid.T @ probs)
-    sdx = float(jnp.sqrt((grid.T**2) @ probs - ex**2))
+    ex = float((grid.T @ probs)[0, 0])
+    sdx = float(jnp.sqrt(((grid.T**2) @ probs)[0, 0] - ex**2))
     error = sdx - sigma
 
     return error, grid, probs

@@ -1,0 +1,5 @@
+Bidders,Bid function,Bid shading at v=1,Expected revenue
+2,b(v)=1/2 v,0.500,0.333
+3,b(v)=2/3 v,0.333,0.500
+5,b(v)=4/5 v,0.200,0.667
+10,b(v)=9/10 v,0.100,0.818

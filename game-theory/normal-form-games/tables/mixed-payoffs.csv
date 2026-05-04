@@ -1,0 +1,4 @@
+Game,Row payoff,Column payoff,p,q
+Matching Pennies,0.000,0.000,0.500,0.500
+Battle of the Sexes,1.200,1.200,0.600,0.400
+Stag Hunt,2.667,2.667,0.667,0.667
