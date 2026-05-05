@@ -237,7 +237,7 @@ def parse_args() -> argparse.Namespace:
         "--start-index",
         type=int,
         default=DEFAULT_START_INDEX,
-        help="1-based catalog position to start from; defaults to 33.",
+        help=f"1-based catalog position to start from; defaults to {DEFAULT_START_INDEX}.",
     )
     parser.add_argument(
         "--codex-bin",
