@@ -159,9 +159,9 @@ def main() -> None:
 
     report.add_overview(
         "A normal-form game is the payoff table behind many richer models. Before adding "
-        "states, prices, or private information, Nash equilibrium is just a set of "
-        "no-profitable-deviation restrictions on that table. This tutorial keeps the games "
-        "small enough that those restrictions can be inspected directly.\n\n"
+        "states, prices, or private information, Nash equilibrium is a set of "
+        "no-profitable-deviation restrictions on that table. The games here are small "
+        "enough that those restrictions can be inspected directly.\n\n"
         "The point is not to showcase a solver. Pure equilibria come from checking every "
         "action profile. Interior mixed equilibria in 2x2 games come from the two "
         "indifference equations that make randomization optimal. The same logic is the "
@@ -216,9 +216,9 @@ residual is the maximum absolute gap in these two indifference equations.
 """)
 
     report.add_model_setup(
-        "The tutorial uses four canonical 2x2 games. Each payoff table is small enough "
-        "that the economic tension is visible in the cells, but the equilibrium patterns "
-        "are different enough to separate dominance, zero-sum mixing, and coordination.\n\n"
+        "Four canonical 2x2 games are used. Each payoff table is small enough that the "
+        "economic tension is visible in the cells, and the equilibrium patterns differ "
+        "enough to separate dominance, zero-sum mixing, and coordination.\n\n"
         "| Game | Actions | What the payoffs isolate |\n"
         "|---|---|---|\n"
         "| Prisoner's Dilemma | Cooperate/Defect | Individual incentives overturn the efficient profile. |\n"
@@ -241,18 +241,18 @@ residual is the maximum absolute gap in these two indifference equations.
         "4. Keep the mixed candidate only when p and q lie in [0,1].\n"
         "5. Recompute both expected-payoff gaps and report the largest absolute residual.\n"
         "```\n\n"
-        "This residual is the useful diagnostic. A profile or mixed strategy is not "
-        "interesting because an algorithm named it; it is interesting because no player "
-        "can improve by changing only its own action."
+        "This residual is the diagnostic. A profile or mixed strategy is not interesting "
+        "because an algorithm named it; it is interesting because no player can improve "
+        "by changing only its own action."
     )
 
     report.add_results(
         "The first figure colors each pure action profile by the largest profitable "
         "unilateral deviation. A zero-deviation cell is a pure Nash equilibrium, so the "
-        "black outlines are not decorative markers; they are exactly the cells where the "
+        "black outlines are not decorative markers; they are the cells where the "
         "equilibrium inequalities bind. This also separates efficiency from equilibrium. "
         "In Prisoner's Dilemma, mutual cooperation has higher joint payoff than mutual "
-        "defection, but it is not stable against a one-player deviation."
+        "defection, but is not stable against a one-player deviation."
     )
 
     max_gain = max(
@@ -388,8 +388,8 @@ residual is the maximum absolute gap in these two indifference equations.
         "For finite static games, Nash equilibrium is best read as a residual condition. "
         "Pure equilibria are zero-deviation cells in the payoff table. Interior mixed "
         "equilibria choose probabilities that make opponents indifferent across the "
-        "actions they use. This direct calculation is the right benchmark before moving "
-        "to fixed-point iteration, noisy response, or dynamic games where the same "
+        "actions they use. This direct calculation is the benchmark before moving to "
+        "fixed-point iteration, noisy response, or dynamic games where the same "
         "no-deviation logic is harder to see."
     )
 

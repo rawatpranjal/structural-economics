@@ -566,7 +566,7 @@ not a separate economic wedge.
     report.add_results(
         "Net saving separates income states more sharply. A bad draw pushes the "
         "household toward the borrowing limit; a good draw rebuilds the buffer. "
-        "The zero line should not be read as a single steady state. With IID risk, "
+        "The zero line should not be read as a single steady state: with IID risk, "
         "the household keeps moving across asset states as income draws arrive."
     )
     report.add_figure(
@@ -628,8 +628,8 @@ not a separate economic wedge.
     report.add_results(
         "The terminal simulated cross section is right-skewed but modest in scale. "
         "This is still the IID income benchmark, not a persistent-income Aiyagari "
-        "distribution. The point is the local buffer: many households stay close to "
-        "the constraint, while favorable sequences of draws create the right tail."
+        "distribution. Many households stay close to the constraint, while favorable "
+        "sequences of draws create the right tail."
     )
     report.add_figure(
         "figures/wealth-distribution.png",
@@ -659,7 +659,7 @@ not a separate economic wedge.
     ax5.legend()
 
     report.add_results(
-        "MPC heterogeneity is the main economic object produced by the policy. "
+        "MPC heterogeneity is the economic object produced by the policy. "
         "Households near the constraint have high MPCs because extra resources relax "
         "today's liquidity problem. Wealthier households are closer to the "
         f"perfect-foresight limiting MPC, {mpclim:.3f}, because a small transfer is "
@@ -713,7 +713,7 @@ not a separate economic wedge.
         "constraint is simple. In this income-risk problem, reversing the grid turns "
         "the costly VFI search over $a'$ into interpolation from an endogenous current "
         "asset grid.\n\n"
-        "The economics remain buffer-stock economics: bad income draws push households "
+        "The economics is still buffer-stock economics: bad income draws push households "
         "toward the borrowing limit, good draws rebuild assets, and MPCs are high for "
         "liquidity-constrained households. The computational gain matters because the "
         "same household problem is usually solved repeatedly inside equilibrium or "

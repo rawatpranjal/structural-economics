@@ -186,7 +186,7 @@ def main() -> None:
         "That compression is useful, but it is also easy to overread. YTM is an internal "
         "rate for a stated cash-flow schedule, not a statement about realized holding-period "
         "returns, reinvestment rates, default, taxes, or calls. This tutorial keeps the "
-        "cash flows deterministic so the economic object is clean. The data-rich term-"
+        "cash flows deterministic so the economic object stays clean. The data-rich term-"
         "structure analogue is the [Treasury yield curve](../treasury-yield-curve/); "
         "predictability questions appear later in the [Fama-Bliss-style regression](../fama-bliss-forward-regression/)."
     )
@@ -250,8 +250,8 @@ $$
     report.add_solution_method(
         "Once the dated cash flows are fixed, pricing is analytic. The only numerical "
         "step is the one-dimensional inversion from price to yield. The code evaluates "
-        "the present-value gap and uses a bracketing root finder; the sign change matters "
-        "because it preserves the economic monotonicity of price in yield.\n\n"
+        "the present-value gap and uses a bracketing root finder; the sign change preserves "
+        "the economic monotonicity of price in yield.\n\n"
         "```text\n"
         "Algorithm: yield to maturity for a promised cash-flow claim\n"
         "Input: price P, payment dates tau_m, payments C_m, yield bracket [y_low, y_high]\n"
@@ -267,7 +267,7 @@ $$
         "```\n\n"
         "The plotted price-yield curves are not simulations. They are exact present values "
         "for a fixed coupon schedule evaluated over a grid of yields. For the YTM examples, "
-        "the residual $PV(y^{*})-P$ is the relevant numerical check."
+        "the residual $PV(y^{*})-P$ is the numerical check."
     )
 
     yields = np.linspace(0.005, 0.14, 180)
@@ -282,7 +282,7 @@ $$
     ax1.legend()
     report.add_results(
         "Holding the promised payments fixed, a higher discount rate lowers the price. "
-        "The par line helps separate premium from discount bonds. A 6% coupon bond sells "
+        "The par line separates premium from discount bonds. A 6% coupon bond sells "
         "at par when the market yield is 6%; if the required yield is higher, the same "
         "cash-flow claim must trade below par."
     )
@@ -291,7 +291,7 @@ $$
         "Price-yield schedule for 10-year coupon bonds",
         fig1,
         description=(
-            "Coupon rate shifts the level of promised payments, but the inverse price-yield "
+            "Coupon rate shifts the level of promised payments. The inverse price-yield "
             "relationship is common across the three schedules."
         ),
     )
@@ -333,17 +333,17 @@ $$
         summary,
         description=(
             "The table applies the same price equation across debt instruments. Closed-form "
-            "cases and root-solved cases are mixed deliberately: the common object is the "
+            "cases and root-solved cases are mixed deliberately; the common object is the "
             "present-value residual, which is essentially zero at the reported yield."
         ),
     )
 
     report.add_takeaway(
         "Yield to maturity is best read as an implied discount rate for a promised cash-flow "
-        "schedule. It is useful because it puts loans, discount bonds, coupon bonds, and "
-        "annuities into a common present-value language. The cost is compression: one yield "
-        "hides the timing of payments and says little by itself about realized returns when "
-        "reinvestment, default, calls, taxes, or interim sale prices matter."
+        "schedule. It puts loans, discount bonds, coupon bonds, and annuities into a common "
+        "present-value language. The cost is compression: one yield hides the timing of "
+        "payments and says little by itself about realized returns when reinvestment, "
+        "default, calls, taxes, or interim sale prices matter."
     )
     report.add_references(
         [

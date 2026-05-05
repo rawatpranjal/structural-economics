@@ -341,7 +341,7 @@ def main() -> None:
         "cyclic arbitrage. The money-pump interpretation asks how much budget slack an "
         "outside trader could extract by repeatedly moving the consumer around the "
         "revealed-preference cycle.\n\n"
-        "The example keeps the economic object deliberately small: three observed choices, "
+        "The example keeps the economic object small: three observed choices, "
         "three bundles, and own expenditure normalized to one. In the severe case the "
         "consumer chooses A when B was 18 percent cheaper, chooses B when C was 24 percent "
         "cheaper, and chooses C when A was 8 percent cheaper. GARP says this cannot come "
@@ -387,10 +387,10 @@ $$\operatorname{MPI} = \max_C \bar w(C).$$
 
     report.add_solution_method(
         "The first step is still the revealed-preference test: compare every chosen bundle "
-        "with every other bundle at the same prices. The extra step is to put weights on "
-        "strict revealed-preference arcs and solve a maximum mean-cycle problem. Karp's "
+        "with every other bundle at the same prices. The extra step puts weights on "
+        "strict revealed-preference arcs and solves a maximum mean-cycle problem. Karp's "
         "dynamic program is exact for this finite graph. The script also enumerates cycles "
-        "only because the graph has three nodes, which gives a transparent benchmark for "
+        "because the graph has three nodes, which gives a transparent benchmark for "
         "the plotted examples.\n\n"
         "```text\n"
         "Inputs: prices p_i, bundles x_i, tolerance eps\n"
@@ -411,7 +411,7 @@ $$\operatorname{MPI} = \max_C \bar w(C).$$
         "GARP Rejection and Money Pump Severity",
         summary,
         description=(
-            "The first column of interest is the GARP rejection: it is the same yes/no "
+            "The GARP rejection column gives the same yes/no "
             "answer for all three inconsistent datasets. The severity columns show why "
             "that is not enough. In this small graph, direct enumeration gives the same "
             "cycle mean as Karp's dynamic program."
@@ -436,16 +436,16 @@ $$\operatorname{MPI} = \max_C \bar w(C).$$
         "GARP is binary, while the Money Pump Index ranks the severity of failures.",
         fig2,
         description=(
-            "The left panel deliberately throws away magnitude. The right panel keeps it: "
+            "The left panel throws away magnitude by design. The right panel keeps it: "
             "small, medium, and severe cycles all fail the same rationalizability test, "
-            "but the average slack available to a trader is very different. The black "
+            "but the average slack available to a trader differs sharply. The black "
             "diamonds are the exact cycle means obtained by enumeration in this three-node "
             "example."
         ),
     )
 
     report.add_takeaway(
-        "The Money Pump Index is useful because it keeps the economic content of a "
+        "The Money Pump Index keeps the economic content of a "
         "revealed-preference failure in view. GARP asks whether the finite dataset is "
         "rationalizable. MPI asks how much expenditure is exposed by the worst cycle. "
         "That makes it a complement to the "

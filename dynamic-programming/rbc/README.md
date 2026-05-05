@@ -109,7 +109,7 @@ The capital policy is the main intertemporal object. Where $g_k(k,z)$ lies above
 
 <img src="figures/capital-policy.png" alt="Capital policy by TFP state" width="80%">
 
-A simulated path makes the mechanism less abstract. Output jumps when TFP switches, while consumption moves less because the household smooths marginal utility. The gap between output and consumption is investment, so investment takes much of the adjustment when productivity changes.
+Output jumps when TFP switches, while consumption moves less because the household smooths marginal utility. The gap between output and consumption is investment, so investment takes much of the adjustment when productivity changes.
 
 <img src="figures/simulation.png" alt="Simulated output, consumption, and TFP paths" width="80%">
 
@@ -131,7 +131,7 @@ The table reports model moments, not empirical estimates. They are the standard 
 
 ## Takeaway
 
-In this finite-state RBC economy, the technology shock is the impulse, but the capital and labor policies decide the propagation. Investment is the volatile margin, with relative standard deviation **4.12**, while consumption is smoother at **0.34**. Labor is strongly procyclical ($\mathrm{corr}(L,Y)$ = **0.94**), and capital is highly persistent (autocorr = **0.95**) because it moves only through accumulated investment. The useful lesson is not that this small calibration is a complete quantitative business-cycle model; it is that a Bellman equation over aggregate capital and TFP can produce the canonical RBC moment comparisons without leaving the nonlinear policy functions.
+In this finite-state RBC economy, the technology shock is the impulse, but the capital and labor policies decide the propagation. Investment is the volatile margin, with relative standard deviation **4.12**, while consumption is smoother at **0.34**. Labor is strongly procyclical ($\mathrm{corr}(L,Y)$ = **0.94**), and capital is highly persistent (autocorr = **0.95**) because it moves only through accumulated investment. This small calibration is not a complete quantitative business-cycle model. It shows that a Bellman equation over aggregate capital and TFP can produce the canonical RBC moment comparisons without leaving the nonlinear policy functions.
 
 ## References
 

@@ -6,7 +6,7 @@
 
 In many dynamic economic models the object of interest is a policy function, not a table of values on a grid. Projection methods approximate that function directly. A small vector of coefficients stands in for the whole decision rule, and the model's equilibrium conditions determine those coefficients.
 
-The economic environment here is the deterministic growth problem with log utility and full depreciation. That special case has a closed-form capital policy, which makes it a clean benchmark for projection. The tutorial therefore focuses on what the Chebyshev approximation is doing: matching Euler equations at collocation nodes, then checking whether the implied policy is accurate away from those nodes.
+The economic environment here is the deterministic growth problem with log utility and full depreciation. That special case has a closed-form capital policy, which makes it a clean benchmark for projection. The focus is on what the Chebyshev approximation is doing: matching Euler equations at collocation nodes, then checking whether the implied policy is accurate away from those nodes.
 
 ## Equations
 
@@ -75,11 +75,11 @@ Output: projected policy g(k; theta) and Euler-error diagnostics
 7. Evaluate policy errors and Euler errors on a dense grid
 ```
 
-The closed-form policy is used only as a benchmark for this tutorial. In a model without a closed form, the same workflow would lean on residuals, simulated paths, and sensitivity to basis order.
+The closed-form policy is used only as a benchmark here. In a model without a closed form, the same workflow would lean on residuals, simulated paths, and sensitivity to basis order.
 
 ## Results
 
-Chebyshev polynomials oscillate in a controlled way over the approximation interval. They are popular because they approximate smooth functions accurately with few terms.
+Chebyshev polynomials oscillate in a controlled way over the approximation interval. They approximate smooth functions accurately with few terms.
 
 <img src="figures/chebyshev-basis.png" alt="Chebyshev basis functions on [-1,1]" width="80%">
 
@@ -87,7 +87,7 @@ More basis terms allow the projected policy to follow the curvature of the true 
 
 <img src="figures/policy-functions.png" alt="Projected policy functions against the closed-form policy" width="80%">
 
-Euler errors are the main diagnostic. They ask whether the approximated policy satisfies the model's optimality condition away from the collocation nodes.
+Euler errors are the main diagnostic. They check whether the approximated policy satisfies the model's optimality condition away from the collocation nodes.
 
 <img src="figures/euler-errors.png" alt="Euler equation errors by approximation order" width="80%">
 
@@ -110,7 +110,7 @@ With 8 Chebyshev terms, the maximum Euler error on the dense grid is 5.57e-04. T
 
 ## Takeaway
 
-Projection is attractive when the policy function is smooth and the state space is too large for a crude lookup table. The cost is diagnostic discipline. Matching Euler equations at collocation nodes is not by itself a proof of accuracy; the approximation must also behave well on a dense grid and along economically relevant simulated paths.
+Projection works well when the policy function is smooth and the state space is too large for a crude lookup table. The cost is diagnostic discipline. Matching Euler equations at collocation nodes is not by itself a proof of accuracy; the approximation must also behave well on a dense grid and along economically relevant simulated paths.
 
 ## References
 

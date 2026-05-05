@@ -250,13 +250,13 @@ def main() -> None:
     report.add_overview(
         "Passing GARP is only the first revealed-preference question. Once the choices "
         "are rationalizable, the natural next question is what they say about the "
-        "preference ordering itself. The answer is deliberately set-valued: finite "
+        "preference ordering itself. The answer is set-valued by construction: finite "
         "budgets do not identify a unique demand system, but they do restrict the "
         "utility functions that could have generated the data.\n\n"
-        "This tutorial starts from the same object as "
+        "The starting object is the same as in "
         "[Afriat's revealed-preference test](../revealed-preference-afriat/): a finite "
         "sample of prices $p_t$ and chosen bundles $x_t$. Instead of stopping at "
-        "pass/fail rationalizability, it constructs Afriat numbers and uses them to "
+        "pass/fail rationalizability, the tutorial constructs Afriat numbers and uses them to "
         "draw a concave utility index that exactly rationalizes the observed choices. "
         "Because the synthetic data come from a Cobb-Douglas consumer, the true "
         "indifference curve is available as a diagnostic; the Afriat construction does "
@@ -345,8 +345,8 @@ $$
         "       U_hat((y_1,y_2)) >= u_k.\n"
         "```\n\n"
         "A more general implementation could leave the $\\lambda_t$ values as "
-        "additional linear-programming variables. Here the fixed normalization keeps "
-        "the tutorial focused on recoverability rather than on the many equivalent "
+        "additional linear-programming variables. The fixed normalization here keeps "
+        "the focus on recoverability rather than on the many equivalent "
         "ordinal scalings of the same revealed-preference information."
     )
 
@@ -498,7 +498,7 @@ $$
     )
 
     report.add_takeaway(
-        "Preference recoverability is useful precisely because it does not pretend that "
+        "Preference recoverability is useful because it does not pretend that "
         "finite data identify a unique utility function. Afriat numbers give a concrete "
         "rationalizing utility index and a way to draw local upper-contour restrictions "
         "from observed budgets. The Cobb-Douglas overlay shows the right interpretation: "

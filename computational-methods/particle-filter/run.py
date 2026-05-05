@@ -344,11 +344,11 @@ def main() -> None:
         "question but represent the posterior distribution with weighted simulated states. The "
         "economic object is still the filtered state distribution; the computational issue is "
         "whether the particles are placed where the likelihood is informative.\n\n"
-        "This tutorial deliberately keeps the model linear and Gaussian, so the Kalman filter "
-        "provides a benchmark. That lets us isolate particle error without changing the state "
-        "space model. The bootstrap filter simulates from the transition equation and then "
-        "weights by the observation density. The conditionally optimal filter uses the current "
-        "observation inside the proposal, reducing weight degeneracy when measurements are sharp."
+        "The model below is kept linear and Gaussian so the Kalman filter provides a benchmark. "
+        "That isolates particle error without changing the state-space model. The bootstrap "
+        "filter simulates from the transition equation and then weights by the observation "
+        "density. The conditionally optimal filter uses the current observation inside the "
+        "proposal, reducing weight degeneracy when measurements are sharp."
     )
 
     report.add_equations(
@@ -461,7 +461,7 @@ $$
         fig2,
         description=(
             "Effective sample size falls when a few particles receive most of the weight. The "
-            "conditionally optimal proposal usually preserves more useful particles because it "
+            "conditionally optimal proposal usually retains more useful particles because it "
             "looks at the observation before drawing the new state."
         ),
     )
@@ -565,7 +565,7 @@ $$
         "with weighted simulations. That flexibility has a cost: particle placement matters. "
         "When observations are very informative or contaminated by outliers, naive bootstrap "
         "particles can collapse onto a few high-weight draws. Better proposals, more particles, "
-        "and outlier-robust measurement models are practical responses, but the first warning "
+        "and outlier-robust measurement models are practical responses, and the first warning "
         "usually appears in ESS and repeated-run Monte Carlo error."
     )
 

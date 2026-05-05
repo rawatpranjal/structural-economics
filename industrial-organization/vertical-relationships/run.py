@@ -104,13 +104,12 @@ def main() -> None:
         "linear wholesale price, the upstream margin becomes part of the retailer's "
         "marginal cost, so the downstream firm adds another margin on top of it. The "
         "channel then under-sells relative to an integrated firm.\n\n"
-        "The small model below keeps the demand side deliberately simple so the "
-        "contract logic is visible. A two-part tariff uses a low per-unit wholesale "
-        "price to restore the downstream pricing incentive, then uses a fixed fee to "
-        "move profit upstream. Resale price maintenance instead controls the retail "
-        "price directly. These mechanisms are the pricing counterpart to the "
-        "firm-boundary problem in [theory of the firm](../theory-of-the-firm/) and a "
-        "simpler precursor to the assortment contracts in "
+        "Demand is simple so the contract logic stays visible. A two-part tariff uses a "
+        "low per-unit wholesale price to restore the downstream pricing incentive, then "
+        "uses a fixed fee to move profit upstream. Resale price maintenance instead "
+        "controls the retail price directly. These mechanisms are the pricing counterpart "
+        "to the firm-boundary problem in [theory of the firm](../theory-of-the-firm/) and "
+        "a simpler precursor to the assortment contracts in "
         "[vertical contracts](../vertical-contracts/)."
     )
 
@@ -164,9 +163,9 @@ can then be chosen so the downstream participation constraint binds.
 
     report.add_solution_method(
         "The solution is backward induction with closed-form first-order conditions. "
-        "The computational step is mainly accounting: evaluate each contract using "
-        "the same demand curve, then compare price, quantity, channel profit, and "
-        "consumer surplus to the integrated benchmark.\n\n"
+        "The computation is mainly accounting: evaluate each contract using the same "
+        "demand curve, then compare price, quantity, channel profit, and consumer "
+        "surplus to the integrated benchmark.\n\n"
         "```text\n"
         "Inputs: demand q(p)=a-bp, costs c_M and c_R, contract set K\n"
         "\n"
@@ -187,7 +186,7 @@ can then be chosen so the downstream participation constraint binds.
         "Outputs: contract outcomes and pass-through curve p_R(w)\n"
         "```\n\n"
         "The integrated solution is the analytic ground truth for the channel's "
-        "joint-profit problem. The figures use that benchmark to show what is lost "
+        "joint-profit problem. The figures use that benchmark to mark what is lost "
         "under the separated linear contract and what the alternative contracts "
         "restore."
     )
@@ -297,12 +296,11 @@ can then be chosen so the downstream participation constraint binds.
     )
 
     report.add_takeaway(
-        "The useful distinction is between marginal incentives and transfers. A high "
-        "wholesale price changes the downstream pricing first-order condition, so it "
-        "creates a real quantity distortion. A fixed fee moves profit without changing "
-        "the retailer's marginal cost. That is why nonlinear pricing can remove double "
-        "marginalization while still letting the upstream firm extract the channel's "
-        "profit."
+        "Distinguish marginal incentives from transfers. A high wholesale price changes "
+        "the downstream pricing first-order condition, so it creates a real quantity "
+        "distortion. A fixed fee moves profit without changing the retailer's marginal "
+        "cost. Nonlinear pricing can therefore remove double marginalization while still "
+        "letting the upstream firm extract the channel's profit."
     )
 
     report.add_references([

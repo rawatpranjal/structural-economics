@@ -166,9 +166,9 @@ def main() -> None:
         "of the business cycle, an econometrician may observe prices but not latent demand, and "
         "a forecaster may want the persistent component of a volatile series. The Kalman filter "
         "is the canonical linear-Gaussian answer to that signal-extraction problem.\n\n"
-        "This tutorial uses a two-state model observed through one noisy scalar signal. Each "
-        "period has two economically distinct steps: predict the latent state using the law of "
-        "motion, then update that prediction using the surprise in the new observation. The same "
+        "The model below has two states observed through one noisy scalar signal. Each period "
+        "has two economically distinct steps: predict the latent state using the law of motion, "
+        "then update that prediction using the surprise in the new observation. The same "
         "recursion gives filtered states, posterior uncertainty, forecast innovations, Kalman "
         "gains, and the likelihood."
     )
@@ -217,7 +217,7 @@ density of $\nu_t$ under variance $S_t$.
         "The code simulates the hidden state and observed signal, then runs the Kalman filter "
         "from an initial state known to be zero. At each date it stores the one-step-ahead "
         "prediction, the filtered state mean, posterior covariance, Kalman gain, innovation, "
-        "and log likelihood increment.\n\n"
+        "and log-likelihood increment.\n\n"
         "```text\n"
         "Algorithm: Kalman filtering in a linear Gaussian state-space model\n"
         "Input: observations y_t, transition Phi, loading Psi, covariances Q and R\n"
@@ -233,9 +233,9 @@ density of $\nu_t$ under variance $S_t$.
         "    update covariance:  P_{t|t} = P_{t|t-1} - K_t Psi P_{t|t-1}\n"
         "    add log p(nu_t; 0, S_t) to the likelihood\n"
         "```\n\n"
-        "The figures make the recursion concrete: the raw observation is noisy, the filtered "
-        "states are smoother than the signal, and uncertainty changes with the information in "
-        "the state equation and measurement equation."
+        "The figures show the recursion: the raw observation is noisy, the filtered states are "
+        "smoother than the signal, and uncertainty changes with the information in the state "
+        "equation and measurement equation."
     )
 
     fig1, axes1 = plt.subplots(3, 1, figsize=(9, 7.4), sharex=True)
@@ -283,7 +283,7 @@ density of $\nu_t$ under variance $S_t$.
         "Kalman filtered states with credible bands",
         fig2,
         description=(
-            "The posterior covariance is not a side product. It tells us how uncertain the "
+            "The posterior covariance is not a side product. It records how uncertain the "
             "filter is about each latent state after seeing data through period t."
         ),
     )
@@ -307,7 +307,7 @@ density of $\nu_t$ under variance $S_t$.
         fig3,
         description=(
             "The innovation is the surprise in the new observation. The Kalman gain converts "
-            "that surprise into a state update, with weights pinned down by signal and state noise."
+            "that surprise into a state update, with weights set by signal and state noise."
         ),
     )
 
@@ -327,11 +327,10 @@ density of $\nu_t$ under variance $S_t$.
     )
 
     report.add_takeaway(
-        "The Kalman filter is more than a smoother. It is a disciplined accounting system for "
-        "uncertainty: prior state uncertainty, measurement noise, forecast surprises, posterior "
-        "uncertainty, and likelihood update together. That is why the same recursion is useful "
-        "for nowcasting, forecasting, latent-state estimation, and maximum-likelihood estimation "
-        "of linear Gaussian models."
+        "The Kalman filter is more than a smoother. It is an accounting system for uncertainty: "
+        "prior state uncertainty, measurement noise, forecast surprises, posterior uncertainty, "
+        "and likelihood update together. The same recursion serves nowcasting, forecasting, "
+        "latent-state estimation, and maximum-likelihood estimation of linear Gaussian models."
     )
 
     report.add_references(

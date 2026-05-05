@@ -183,14 +183,14 @@ def main() -> None:
     )
 
     report.add_overview(
-        "A large share of macroeconomic dynamics comes from a simple question: after "
+        "Much of macroeconomic dynamics turns on a simple question: after "
         "a shock hits, how much of it is still economically relevant next period, "
         "next year, or a decade later? The AR(1) law of motion is the standard way "
         "to put that persistence into a model. In the "
         "[RBC TFP-shock tutorial](../../dynare/rbc/), it drives technology. In the "
         "[New Keynesian tutorial](../../dynare/nkdsge/), the same idea is used for "
         "policy and demand disturbances.\n\n"
-        "This tutorial isolates the propagation mechanism before embedding it in a "
+        "Here the propagation mechanism is isolated before embedding it in a "
         "larger equilibrium system. The first model is a scalar AR(1). The second is "
         "Samuelson's multiplier-accelerator model, where persistent government "
         "spending moves income, income moves consumption with a lag, and investment "
@@ -260,8 +260,8 @@ $$
     report.add_solution_method(
         "Both systems are backward-looking, so solving them means forward iteration "
         "rather than a rational-expectations fixed point. The economic content is "
-        "still useful: the AR(1) coefficient chooses the horizon of a disturbance, "
-        "while the multiplier-accelerator equations decide how that disturbance "
+        "still useful: the AR(1) coefficient sets the horizon of a disturbance, "
+        "while the multiplier-accelerator equations determine how that disturbance "
         "moves income components.\n\n"
         "For the AR(1), the main population objects are available in closed form:\n\n"
         f"$$E[x_t]=0, \\qquad "
@@ -304,10 +304,10 @@ $$
         "Exact AR(1) impulse responses by persistence",
         fig1,
         description=(
-            "The first plot is the exact response $\\rho^h$ to a unit innovation. "
-            "Moving $\\rho$ from 0.5 to 0.9 is not a cosmetic change: it turns a "
+            "The plot shows the exact response $\\rho^h$ to a unit innovation. "
+            "Moving $\\rho$ from 0.5 to 0.9 is not cosmetic: it turns a "
             "one-period half-life into roughly seven periods. At $\\rho=0.99$, the "
-            "shock is effectively a slow-moving state for any short macro sample."
+            "shock acts as a slow-moving state for any short macro sample."
         ),
     )
 
@@ -335,7 +335,7 @@ $$
             "copy it. Lagged consumption keeps demand elevated after the shock, while "
             "investment reacts to the change in consumption. The accelerator channel "
             "therefore matters most around turning points, when consumption growth "
-            "starts to fade."
+            "fades."
         ),
     )
 
@@ -369,10 +369,10 @@ $$
         "Simulated AR(1) and multiplier-accelerator paths",
         fig3,
         description=(
-            "The simulated AR(1) path is shown against its analytic two-standard-"
+            "The simulated AR(1) path is plotted against its analytic two-standard-"
             "deviation band, so the finite sample can be read against the population "
             "benchmark. In the multiplier-accelerator panel, income and consumption "
-            "move together but not simultaneously: lagged consumption is the economic "
+            "move together but not simultaneously: lagged consumption supplies the "
             "memory that carries government spending shocks forward."
         ),
     )
@@ -400,7 +400,7 @@ $$
         fig4,
         description=(
             "The left panel is a built-in accuracy check: the simulated AR(1) "
-            "autocorrelations should track $\\rho^k$, with remaining gaps coming from "
+            "autocorrelations should track $\\rho^k$, with remaining gaps from "
             "finite-sample noise. The right panel shows that the multiplier-"
             "accelerator economy creates additional serial correlation in income "
             "because government spending is filtered through lagged consumption."
@@ -421,7 +421,7 @@ $$
         "Exact AR(1) spectral density by persistence",
         fig5,
         description=(
-            "The frequency-domain view says the same thing in a different language. "
+            "The frequency-domain view restates the same point in a different language. "
             "High persistence shifts variance toward low frequencies, so the state "
             "looks like a slow cycle or trend over short samples. This is why the "
             "choice of $\\rho$ in a DSGE shock process affects business-cycle timing, "
@@ -467,7 +467,7 @@ $$
         ar_summary,
         description=(
             "The analytic benchmarks make the calibration stakes explicit. Holding "
-            "$\\sigma$ fixed, raising $\\rho$ increases both the variance of the state "
+            "$\\sigma$ fixed, raising $\\rho$ raises both the variance of the state "
             "and the amount of time a shock remains economically relevant."
         ),
     )
@@ -477,7 +477,7 @@ $$
         "$\\rho=0.9$, a shock still has about half of its initial effect after "
         f"{ar1_half_life:.1f} periods; with $\\rho=0.99$, the same calculation gives "
         f"{np.log(0.5) / np.log(0.99):.1f} periods. Once that process enters a macro "
-        "model, other equilibrium or accounting equations decide how the persistent "
+        "model, other equilibrium or accounting equations determine how the persistent "
         "state appears in observables.\n\n"
         "The multiplier-accelerator example is deliberately simpler than the RBC and "
         "New Keynesian tutorials, but it is useful for the same reason: it separates "

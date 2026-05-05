@@ -6,7 +6,7 @@
 
 Residential broadband contracts often combine three instruments: a fixed fee, an included data allowance, and a per-GB overage price. The allowance is not just a nonlinear price schedule. It creates a state variable inside the month. A GB used on day 3 lowers the remaining allowance on day 4, so the relevant marginal price includes the option value of keeping data for later.
 
-The tutorial keeps the demand side deliberately small. A consumer solves a finite-horizon usage problem within the billing cycle, then heterogeneous types choose among a low-fee metered plan, a middle three-part plan, and an unlimited plan. The dynamic-choice logic is close to the continuation-value reasoning in [bus replacement](../dynamic-discrete-choice/), while the fixed-fee role connects to the two-part-tariff discussion in [vertical relationships](../vertical-relationships/).
+The demand side here is small. A consumer solves a finite-horizon usage problem within the billing cycle, then heterogeneous types choose among a low-fee metered plan, a middle three-part plan, and an unlimited plan. The dynamic-choice logic is close to the continuation-value reasoning in [bus replacement](../dynamic-discrete-choice/), while the fixed-fee role connects to the two-part-tariff discussion in [vertical relationships](../vertical-relationships/).
 
 ## Equations
 
@@ -89,7 +89,7 @@ The focal policy uses a 0.5 GB grid. For the billing-cycle path, the same model 
 
 ## Results
 
-The policy surface shows the shadow price of the remaining allowance. Early in the month, a consumer near the cap cuts usage because each GB raises the chance of paying overage charges later. Near the end of the cycle, the same remaining allowance has less option value, so the policy relaxes.
+The shadow price of the remaining allowance. Early in the month, a consumer near the cap cuts usage because each GB raises the chance of paying overage charges later. Near the end of the cycle, the same remaining allowance has less option value, so the policy relaxes.
 
 <img src="figures/usage-policy.png" alt="Daily usage policy by day and remaining allowance" width="80%">
 
@@ -97,7 +97,7 @@ The simulated path stays close to the allowance without treating it as a hard co
 
 <img src="figures/billing-cycle-usage.png" alt="Billing-cycle usage under the baseline grid and a finer-grid benchmark" width="80%">
 
-Plan choice is a sorting problem. Low-usage types choose the low fixed fee, middle types value the allowance, and high-usage types pay for unlimited access. The circled points are the contracts selected by the discrete type distribution.
+Plan choice as a sorting problem. Low-usage types choose the low fixed fee, middle types value the allowance, and high-usage types pay for unlimited access. The circled points are the contracts selected by the discrete type distribution.
 
 <img src="figures/plan-comparison.png" alt="Net consumer value by type and plan" width="80%">
 
@@ -111,7 +111,7 @@ Plan choice is a sorting problem. Low-usage types choose the low fixed fee, midd
 
 ## Takeaway
 
-A three-part tariff changes demand before the cap is actually hit. The allowance has a shadow value because it can be spent later in the billing cycle, so a forward-looking consumer reacts to expected overage risk rather than only to the current marginal price. Across types, the same contract menu sorts consumers by usage intensity: low types avoid the fixed fee, middle types buy the allowance, and high types choose unlimited access. The numerical benchmark check suggests that the focal path is not driven by the coarse grid: net consumer value differs from the finer-grid solution by **0.408**, about **0.4%** of the baseline value.
+A three-part tariff changes demand before the cap is reached. The allowance has a shadow value because it can be spent later in the billing cycle, so a forward-looking consumer reacts to expected overage risk rather than only to the current marginal price. The contract menu sorts consumers by usage intensity: low types avoid the fixed fee, middle types buy the allowance, and high types choose unlimited access. The numerical benchmark check suggests that the focal path is not driven by the coarse grid: net consumer value differs from the finer-grid solution by **0.408**, about **0.4%** of the baseline value.
 
 ## References
 

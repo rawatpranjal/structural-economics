@@ -209,16 +209,15 @@ def main() -> None:
     )
 
     report.add_overview(
-        "This tutorial studies the Lucas tree, the cleanest setting in which asset "
+        "This tutorial studies the Lucas tree, a setting in which asset "
         "prices are equilibrium objects rather than exogenous returns. A representative "
         "household owns a claim to the single tree. The tree pays the stochastic "
         "endowment $y_t$ each period, and because the household is representative, "
         "aggregate consumption must equal the dividend: $c_t=y_t$.\n\n"
-        "That market-clearing restriction is what makes the example useful. The "
-        "quantity allocation is pinned down, so all of the economics appears in the "
-        "state-contingent price of the claim. The price must make the household willing "
-        "to hold the tree after valuing tomorrow's payoff with the stochastic discount "
-        "factor $\\beta u'(y_{t+1})/u'(y_t)$. Compared with the "
+        "Market clearing pins down the quantity allocation, so all of the economics "
+        "appears in the state-contingent price of the claim. The price must make the "
+        "household willing to hold the tree after valuing tomorrow's payoff with the "
+        "stochastic discount factor $\\beta u'(y_{t+1})/u'(y_t)$. Compared with the "
         "[income-risk savings problem](../consumption-savings/), the state is still "
         "a persistent endowment process, but there is no saving policy to choose; prices "
         "absorb the intertemporal risk."
@@ -421,12 +420,11 @@ price-dividend ratio from $p(y)/y$.
     )
 
     report.add_takeaway(
-        "The Lucas tree turns a simple market-clearing allocation into a state-price "
+        "The Lucas tree turns a market-clearing allocation into a state-price "
         "problem. Once $c_t=y_t$, the asset price is the expected discounted payoff "
-        "using marginal utility as the deflator. The useful computational trick is "
-        "to solve for $f(y)=u'(y)p(y)$, which makes the Euler equation linear and "
-        "contractive. Economically, the exercise shows why the price-dividend ratio "
-        "is a valuation object: it records how persistence, discounting, and risk "
+        "using marginal utility as the deflator. Solving for $f(y)=u'(y)p(y)$ makes "
+        "the Euler equation linear and contractive. The price-dividend ratio is a "
+        "valuation object: it records how persistence, discounting, and risk "
         "aversion transform a dividend process into an equilibrium claim price."
     )
 

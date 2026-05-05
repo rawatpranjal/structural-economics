@@ -170,10 +170,10 @@ def main() -> None:
         "a nonlinear price schedule. It creates a state variable inside the month. A GB "
         "used on day 3 lowers the remaining allowance on day 4, so the relevant marginal "
         "price includes the option value of keeping data for later.\n\n"
-        "The tutorial keeps the demand side deliberately small. A consumer solves a "
-        "finite-horizon usage problem within the billing cycle, then heterogeneous types "
-        "choose among a low-fee metered plan, a middle three-part plan, and an unlimited "
-        "plan. The dynamic-choice logic is close to the continuation-value reasoning in "
+        "The demand side here is small. A consumer solves a finite-horizon usage problem "
+        "within the billing cycle, then heterogeneous types choose among a low-fee metered "
+        "plan, a middle three-part plan, and an unlimited plan. The dynamic-choice logic is "
+        "close to the continuation-value reasoning in "
         "[bus replacement](../dynamic-discrete-choice/), while the fixed-fee role connects "
         "to the two-part-tariff discussion in "
         "[vertical relationships](../vertical-relationships/)."
@@ -280,10 +280,10 @@ d_i=\arg\max_k W_i(k).$$
         "Daily usage policy by day and remaining allowance",
         fig1,
         description=(
-            "The policy surface shows the shadow price of the remaining allowance. Early in "
-            "the month, a consumer near the cap cuts usage because each GB raises the chance "
-            "of paying overage charges later. Near the end of the cycle, the same remaining "
-            "allowance has less option value, so the policy relaxes."
+            "The shadow price of the remaining allowance. Early in the month, a consumer "
+            "near the cap cuts usage because each GB raises the chance of paying overage "
+            "charges later. Near the end of the cycle, the same remaining allowance has "
+            "less option value, so the policy relaxes."
         ),
     )
 
@@ -339,9 +339,10 @@ d_i=\arg\max_k W_i(k).$$
         "Net consumer value by type and plan",
         fig3,
         description=(
-            "Plan choice is a sorting problem. Low-usage types choose the low fixed fee, "
-            "middle types value the allowance, and high-usage types pay for unlimited access. "
-            "The circled points are the contracts selected by the discrete type distribution."
+            "Plan choice as a sorting problem. Low-usage types choose the low fixed fee, "
+            "middle types value the allowance, and high-usage types pay for unlimited "
+            "access. The circled points are the contracts selected by the discrete type "
+            "distribution."
         ),
     )
 
@@ -351,15 +352,15 @@ d_i=\arg\max_k W_i(k).$$
     report.add_table("tables/plan-summary.csv", "Plan-choice summary across consumer types", table)
 
     report.add_takeaway(
-        "A three-part tariff changes demand before the cap is actually hit. The allowance "
-        "has a shadow value because it can be spent later in the billing cycle, so a "
-        "forward-looking consumer reacts to expected overage risk rather than only to the "
-        "current marginal price. Across types, the same contract menu sorts consumers by "
-        "usage intensity: low types avoid the fixed fee, middle types buy the allowance, "
-        "and high types choose unlimited access. The numerical benchmark check suggests "
-        f"that the focal path is not driven by the coarse grid: net consumer value differs "
-        f"from the finer-grid solution by **{consumer_value_gap:.3f}**, about "
-        f"**{consumer_value_relative_gap:.1%}** of the baseline value."
+        "A three-part tariff changes demand before the cap is reached. The allowance has a "
+        "shadow value because it can be spent later in the billing cycle, so a forward-looking "
+        "consumer reacts to expected overage risk rather than only to the current marginal "
+        "price. The contract menu sorts consumers by usage intensity: low types avoid the "
+        "fixed fee, middle types buy the allowance, and high types choose unlimited access. "
+        f"The numerical benchmark check suggests that the focal path is not driven by the "
+        f"coarse grid: net consumer value differs from the finer-grid solution by "
+        f"**{consumer_value_gap:.3f}**, about **{consumer_value_relative_gap:.1%}** of the "
+        "baseline value."
     )
 
     report.add_references([

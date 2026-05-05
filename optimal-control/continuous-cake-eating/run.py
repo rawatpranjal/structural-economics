@@ -120,12 +120,11 @@ def main():
         "[Finite-Resource Cake Eating](../../dynamic-programming/cake-eating/). Here the "
         "same economics is written in continuous time, so the central object is the path "
         "$c(t)$ rather than a sequence of grid choices.\n\n"
-        "The economic tradeoff is simple but useful. Consuming more now lowers the stock "
-        "available later, while CRRA utility rewards smoothing. Pontryagin's maximum "
-        "principle turns that tradeoff into a shadow price for the remaining cake. Because "
-        "the cake itself does not enter utility except through feasible consumption, the "
-        "present-value shadow price is constant and consumption declines smoothly rather "
-        "than dropping to zero in finite time."
+        "Consuming more now lowers the stock available later, while CRRA utility rewards "
+        "smoothing. Pontryagin's maximum principle turns that tradeoff into a shadow price "
+        "for the remaining cake. Because the cake itself does not enter utility except "
+        "through feasible consumption, the present-value shadow price is constant and "
+        "consumption declines smoothly rather than dropping to zero in finite time."
     )
 
     report.add_equations(
@@ -173,11 +172,11 @@ the present-value costate is flat.
     )
 
     report.add_solution_method(
-        "Pontryagin's principle is doing one economic job here: it attaches a price "
-        "to relaxing the stock constraint by one unit. The planner chooses $c(t)$ so "
-        "that discounted marginal utility equals that price at every instant. Since "
-        "$W$ has no direct payoff, the present-value price does not drift; all movement "
-        "in consumption comes from discounting and curvature.\n\n"
+        "Pontryagin's principle attaches a price to relaxing the stock constraint by "
+        "one unit. The planner chooses $c(t)$ so that discounted marginal utility "
+        "equals that price at every instant. Since $W$ has no direct payoff, the "
+        "present-value price does not drift; all movement in consumption comes from "
+        "discounting and curvature.\n\n"
         "```text\n"
         "Inputs: rho, sigma, W0, evaluation grid {t_m}\n"
         "1. Write the present-value Hamiltonian H = exp(-rho t) u(c) - lambda c.\n"
@@ -191,8 +190,8 @@ the present-value costate is flat.
         "The ODE integration is a numerical check, not the source of the solution. It "
         "integrates $\\dot{W}=-c$ and $\\dot{c}=-(\\rho/\\sigma)c$ from the analytical "
         "initial condition and compares the resulting path with the exact one. The "
-        "period-one discrete path is included as a nearby benchmark for the dynamic "
-        "programming version of the same allocation problem.\n\n"
+        "period-one discrete path is a nearby benchmark for the dynamic programming "
+        "version of the same allocation problem.\n\n"
         f"**Verification:** Max absolute error in $W(t)$: {max_W_error:.2e}, "
         f"in $c(t)$: {max_c_error:.2e}."
     )
@@ -219,7 +218,7 @@ the present-value costate is flat.
         description="Consumption starts at $(\\rho/\\sigma)W_0$ and then falls at the "
         "constant proportional rate $\\rho/\\sigma$. The black markers show that direct "
         "ODE integration recovers the exact path. The stepped line is the period-one "
-        "discrete allocation, included to connect this continuous-time problem to the "
+        "discrete allocation, which connects this continuous-time problem to the "
         "finite-resource dynamic-programming tutorial."
     )
 
@@ -266,8 +265,8 @@ the present-value costate is flat.
         "Present-value and current-value shadow prices for cake",
         fig3,
         description="The present-value costate is flat because the resource stock has no "
-        "direct payoff term. In current-value units, however, the shadow price rises at "
-        "rate $\\rho$: one unit of cake left for a later date is scarce in utility terms "
+        "direct payoff term. In current-value units the shadow price rises at rate "
+        "$\\rho$: one unit of cake left for a later date is scarce in utility terms "
         "even though its discounted value is equalized along the optimum."
     )
 
@@ -288,16 +287,16 @@ the present-value costate is flat.
         "tables/comparison.csv",
         "Selected Checks Against the Exact Continuous-Time Path",
         df,
-        description="The exact solution gives a useful benchmark for the numerical ODE path. "
+        description="The exact solution is a benchmark for the numerical ODE path. "
         "The small errors below are solver error, not approximation error from a grid over "
         "choices."
     )
 
     report.add_takeaway(
-        "The tutorial's main lesson is that the costate is not just formal machinery. "
-        "It is the intertemporal price of the remaining resource. In this problem the "
-        "present-value price is constant, so optimality requires a declining consumption "
-        "path that keeps discounted marginal utility equal across dates.\n\n"
+        "The costate is the intertemporal price of the remaining resource, not just "
+        "formal machinery. In this problem the present-value price is constant, so "
+        "optimality requires a declining consumption path that keeps discounted marginal "
+        "utility equal across dates.\n\n"
         "Higher impatience raises the depletion rate, while higher risk aversion slows it "
         "through the smoothing motive. The continuous-time formulation also clarifies what "
         "the discrete cake-eating Bellman problem is approximating: a smooth shadow-price "

@@ -377,9 +377,9 @@ def main():
         "observed. Each signal is noisy, so no single draw settles the question. What matters "
         "for choice is the posterior probability that the project is good, not the full signal "
         "history.\n\n"
-        "The tutorial uses the two-state urn model because it makes that compression exact. "
+        "The two-state urn model makes that compression exact. "
         "Nature chooses state $H$ or $L$, signals arrive sequentially, and the agent updates "
-        "$p_t=\\Pr(H \\mid s_1,\\ldots,s_t)$. The posterior is then fed into a finite-horizon "
+        "$p_t=\\Pr(H \\mid s_1,\\ldots,s_t)$. The posterior then feeds into a finite-horizon "
         "stopping problem: invest when confidence is high, reject when confidence is low, and "
         "continue sampling when information still has option value.\n\n"
         "Within the choice section, this is a belief-state example rather than a demand model. "
@@ -520,7 +520,7 @@ $$V_t(p)=\max[A(p),\ C_t(p)].$$
         "Posterior belief P(H) over time, with exact conditional means overlaid.",
         fig1,
         description=(
-            "The first figure separates pathwise uncertainty from the law of large numbers. "
+            "The figure separates pathwise uncertainty from the law of large numbers. "
             "Light traces are individual histories, the solid curve is the mean across the "
             f"{n_paths} simulated paths, and the dashed curve integrates the posterior exactly "
             "over the binomial signal distribution. With a good project, evidence drifts "
@@ -542,9 +542,9 @@ $$V_t(p)=\max[A(p),\ C_t(p)].$$
         "Mean number of signals needed to reach a 95 percent posterior belief.",
         fig2,
         description=(
-            "The next figure varies signal quality while holding the prior fixed. As $p_H$ "
+            "Signal quality varies while the prior is held fixed. As $p_H$ "
             "moves away from one half, each draw carries a larger likelihood-ratio increment. "
-            "Learning is therefore highly nonlinear in signal precision: weak signals can leave "
+            "Learning is nonlinear in signal precision: weak signals can leave "
             "the firm undecided for most of the horizon, while precise signals settle the "
             "investment case quickly."
         ),
@@ -568,10 +568,10 @@ $$V_t(p)=\max[A(p),\ C_t(p)].$$
         "ROC curves for the Bayes rule and a trained logistic classifier.",
         fig3,
         description=(
-            "The classifier comparison is intentionally favorable to Bayes: the likelihoods used "
+            "The classifier comparison is favorable to Bayes by construction: the likelihoods used "
             "by the Bayesian rule are the true likelihoods. Logistic regression sees simulated "
-            "histories and learns a very similar monotone rule in the red-signal count. The near "
-            "overlap is the point. In this experiment, machine learning recovers the same "
+            "histories and learns a similar monotone rule in the red-signal count. The near "
+            "overlap is the point. Machine learning recovers the same "
             "sufficient statistic rather than discovering a different economic object."
         ),
     )
@@ -633,15 +633,15 @@ $$V_t(p)=\max[A(p),\ C_t(p)].$$
     )
 
     report.add_takeaway(
-        "Bayesian learning is useful here because it reduces a long signal history to the "
-        "posterior belief that is relevant for choice. The same object classifies the state, "
+        "Bayesian learning reduces a long signal history to the "
+        "posterior belief relevant for choice. The same object classifies the state, "
         "sets the stopping boundary, and prices the value of one more signal.\n\n"
-        "The important comparison is not Bayes versus machine learning as slogans. In this "
+        "The relevant comparison is not Bayes versus machine learning as slogans. In this "
         "controlled experiment the likelihood is known, so Bayes is the population benchmark. "
         "A trained classifier can learn the same likelihood-ratio rule from data, but the "
         "economic state variable remains the posterior belief. Once that state is in hand, "
         "the investment decision is a standard dynamic choice problem: act at extreme beliefs, "
-        "wait in the middle, and recognize that the waiting region collapses as the deadline "
+        "wait in the middle, and accept that the waiting region collapses as the deadline "
         "approaches."
     )
 

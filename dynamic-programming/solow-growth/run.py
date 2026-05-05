@@ -258,7 +258,7 @@ per raw worker grows with $A_t$ along the balanced-growth path.
     ax1.set_title("Solow Diagram in Effective-Labor Units")
     ax1.legend()
     report.add_results(
-        "The first figure is the analytical Solow diagram. The curved schedule is "
+        "The Solow diagram has two curves. The curved schedule is "
         "actual investment per effective worker, $s k^\\alpha$. The line is the "
         "investment required to offset depreciation, population growth, and "
         "technology growth, $\\Delta k$. Their intersection is not estimated from "

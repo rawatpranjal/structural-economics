@@ -6,7 +6,7 @@
 
 Weak-form efficiency is a restriction on conditional predictability. Once the expected-return model is fixed, information already in past prices should not forecast the next excess return. With the offline data available here, the closest clean object is not a full bond return but the daily change in the ten-year Treasury constant-maturity yield.
 
-The tutorial should therefore be read as a random-walk diagnostic for yield changes, not as a trading strategy or a replication of CRSP-style return tests. The [Treasury yield-curve tutorial](../treasury-yield-curve/) explains the CMT data object; the [Fama-Bliss-style regression](../fama-bliss-forward-regression/) asks a more structured term-premium predictability question.
+The tutorial should therefore be read as a random-walk diagnostic for yield changes, not as a trading strategy or a replication of CRSP-style return tests. The [Treasury yield-curve tutorial](../treasury-yield-curve/) explains the CMT data object. The [Fama-Bliss-style regression](../fama-bliss-forward-regression/) asks a more structured term-premium predictability question.
 
 ## Equations
 
@@ -77,7 +77,7 @@ returns, and measurement.
 
 ## Solution Method
 
-The computation keeps the economic null visible. First form daily yield changes. Then ask three versions of the same question: do lagged changes forecast the next change, do autocorrelations drift away from zero, and does multi-day variance scale linearly with the horizon? The variance-ratio diagnostic follows the Lo-MacKinlay idea, but this tutorial reports the transparent ratio rather than the full heteroskedasticity-robust test statistic.
+The computation keeps the economic null visible. First form daily yield changes. Then ask three versions of the same question: do lagged changes forecast the next change, do autocorrelations drift away from zero, and does multi-day variance scale linearly with the horizon? The variance-ratio diagnostic follows Lo and MacKinlay, but this tutorial reports the transparent ratio rather than the full heteroskedasticity-robust test statistic.
 
 ```text
 Algorithm: weak-form diagnostics for Treasury yield changes
@@ -96,11 +96,11 @@ Compare rho_hat_k with zero and VR_hat(q) with one
 Read deviations as random-walk diagnostics, not as arbitrage profits
 ```
 
-The reference lines in the figures are the random-walk benchmarks: zero autocorrelation, a rough finite-sample band of $\pm 2/\sqrt{T}$, and a variance ratio of one. Those are the right ground-truth objects for this diagnostic exercise; adding a finer grid would not turn CMT yield changes into realized holding-period returns.
+The reference lines in the figures are the random-walk benchmarks: zero autocorrelation, a rough finite-sample band of $\pm 2/\sqrt{T}$, and a variance ratio of one. Those are the ground-truth objects for this diagnostic exercise; adding a finer grid would not turn CMT yield changes into realized holding-period returns.
 
 ## Results
 
-The autocorrelation plot asks whether lagged yield changes contain useful forecast content. Most bars sit near zero. A few lags cross the rough $\pm 2/\sqrt{T}$ band of **0.127**, which is enough to flag serial-dependence diagnostics but not enough, by itself, to establish an exploitable market inefficiency.
+The autocorrelation plot asks whether lagged yield changes contain forecast content. Most bars sit near zero. A few lags cross the rough $\pm 2/\sqrt{T}$ band of **0.127**, enough to flag serial dependence but not enough, by itself, to establish an exploitable market inefficiency.
 
 <img src="figures/autocorrelations.png" alt="Autocorrelations of daily ten-year Treasury yield changes" width="80%">
 
@@ -125,7 +125,7 @@ The table keeps the magnitudes auditable. The one-lag slope is positive but smal
 
 ## Takeaway
 
-Weak-form tests are useful because they make the no-predictability restriction concrete. In this static CMT sample, daily ten-year yield changes show mild short-run persistence, but the economic interpretation remains narrow: the null bundles market efficiency with the expected-return model, the choice of yield changes rather than bond returns, and the finite 1990 sample.
+Weak-form tests make the no-predictability restriction concrete. In this static CMT sample, daily ten-year yield changes show mild short-run persistence, but the economic interpretation remains narrow: the null bundles market efficiency with the expected-return model, the choice of yield changes rather than bond returns, and the finite 1990 sample.
 
 ## References
 

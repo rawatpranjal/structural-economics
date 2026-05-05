@@ -6,7 +6,7 @@
 
 Persistent productivity or income risk usually enters a Bellman equation through a finite Markov chain. That chain is not just a numerical convenience. Its grid points and transition probabilities determine continuation values, so they can change precautionary behavior, asset prices, equilibrium distributions, and the curvature of policy functions.
 
-This tutorial compares Tauchen, Rouwenhorst, and a discrete-normal quadrature. The point is to see how one target AR(1) can lead to different grids, transition matrices, and stationary distributions. The same issue appears downstream in the consumption-savings, RBC, and Aiyagari tutorials, where the shock process feeds directly into household choices or equilibrium objects.
+This tutorial compares Tauchen, Rouwenhorst, and a discrete-normal quadrature. One target AR(1) can lead to different grids, transition matrices, and stationary distributions. The same issue appears downstream in the consumption-savings, RBC, and Aiyagari tutorials, where the shock process feeds directly into household choices or equilibrium objects.
 
 ## Equations
 
@@ -105,7 +105,7 @@ return grid z and probabilities p; there is no transition matrix
 
 ## Results
 
-Start with the stationary probabilities. They show where the finite chain spends time in the long run. Even when methods target the same continuous process, they can place mass on different support points, which changes the states used inside continuation-value calculations.
+The stationary probabilities show where the finite chain spends time in the long run. Even when methods target the same continuous process, they can place mass on different support points, which changes the states used inside continuation-value calculations.
 
 Rouwenhorst places more mass near the center while preserving the target variance. Tauchen uses the wider evenly spaced support implied by the chosen width. The discrete-normal grid matches a one-period normal distribution rather than a persistent transition law.
 

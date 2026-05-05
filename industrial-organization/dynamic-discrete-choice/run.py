@@ -246,8 +246,8 @@ def main() -> None:
     )
 
     report.add_overview(
-        "Engine replacement is a clean dynamic discrete choice problem because the action "
-        "is discrete, but the cost of that action is paid through future states. A bus "
+        "Engine replacement is a clean dynamic discrete choice problem: the action is "
+        "discrete, but the cost of that action is paid through future states. A bus "
         "operator who keeps an old engine receives the current keep payoff and lets mileage "
         "drift upward. Replacing the engine sacrifices that current keep payoff but resets "
         "the bus toward a low-mileage state. The replacement hazard therefore summarizes "
@@ -391,8 +391,8 @@ with $\Lambda(z)=1/(1+\exp(-z))$.
     ax1b.legend()
     fig1.tight_layout()
     report.add_results(
-        "The first object to inspect is not the parameter vector; it is the replacement "
-        "hazard. The keep value starts high because a low-mileage engine is still useful. "
+        "The first object to inspect is the replacement hazard, not the parameter vector. "
+        "The keep value starts high because a low-mileage engine is still useful. "
         "As mileage rises, the keep payoff falls and replacement becomes a way to buy a "
         "better future state. The first-stage logit follows the true hazard where the "
         "simulated panel has mass, but it is only an approximation to the dynamic policy."
@@ -447,7 +447,7 @@ with $\Lambda(z)=1/(1+\exp(-z))$.
         "ground-truth reference. Both estimators recover the economically important shape: "
         "replacement is rare for fresh engines and rises sharply once mileage makes keeping "
         "the engine costly. The remaining disagreement is largest in sparsely visited "
-        "states, so it should be read as finite-sample and first-stage approximation error, "
+        "states; it should be read as finite-sample and first-stage approximation error, "
         "not as a different economic mechanism."
     )
     report.add_figure(
@@ -505,8 +505,8 @@ with $\Lambda(z)=1/(1+\exp(-z))$.
         moments,
         description=(
             "The moments summarize the simulated panel and the numerical solve. The high-mileage "
-            "share is useful because it tells us how much likelihood information is available "
-            "where the replacement probability is already near one."
+            "share indicates how much likelihood information is available in the region where "
+            "the replacement probability is already near one."
         ),
     )
 

@@ -6,9 +6,9 @@
 
 Before a structural macro model is estimated or simulated, the researcher has to decide what the data object is. Quarterly GDP growth, inflation, unemployment, and the policy rate are not yet business-cycle facts; they become facts only after a trend-cycle convention and a set of moments are chosen.
 
-This tutorial keeps that measurement step small and explicit. It uses a synthetic panel with FRED-style units, so the example is reproducible without an API key or changing data release. The maintained co-movement is familiar: output and unemployment move in opposite directions, inflation and slack move against each other, and the funds rate comoves with inflation. The exercise then asks how much of that structure is visible in a finite 50-year quarterly sample.
+Here that measurement step is kept small and explicit. A synthetic panel with FRED-style units keeps the example reproducible without an API key or changing data release. The maintained co-movement is familiar: output and unemployment move in opposite directions, inflation and slack move against each other, and the funds rate comoves with inflation. The exercise then asks how much of that structure is visible in a finite 50-year quarterly sample.
 
-The tutorial is a bridge between the scalar persistence logic in [Persistent Shocks](../ar-processes/) and the larger-panel forecasting problem in [Stock-Watson Factor Forecasting](../stock-watson/).
+The tutorial bridges the scalar persistence logic in [Persistent Shocks](../ar-processes/) and the larger-panel forecasting problem in [Stock-Watson Factor Forecasting](../stock-watson/).
 
 ## Equations
 
@@ -108,23 +108,23 @@ Outputs: cycles c_t, moment table M, Okun slope beta_O
    long-sample benchmark for the finite 50-year run.
 ```
 
-The key interpretive step is step 2. A positive GDP-growth cycle means output growth is above its smooth trend; a positive unemployment cycle means labor market slack is above trend. The signs should therefore be read by variable, not as a generic good-versus-bad cycle.
+The interpretive step is step 2. A positive GDP-growth cycle means output growth is above its smooth trend; a positive unemployment cycle means labor market slack is above trend. The signs should therefore be read by variable, not as a generic good-versus-bad cycle.
 
 ## Results
 
-The raw panel shows the object a macroeconomist would start from: rates and growth rates in their observed units. GDP growth is noisy, while unemployment and the funds rate move more slowly. That difference matters because the HP filter will treat high-frequency movement and slow adjustment differently.
+The raw panel shows the object a macroeconomist would start from: rates and growth rates in their observed units. GDP growth is noisy, while unemployment and the funds rate move more slowly. That difference matters because the HP filter treats high-frequency movement and slow adjustment differently.
 
 <img src="figures/time-series.png" alt="Quarterly FRED-style macro series before detrending." width="80%">
 
-After detrending, the comparison is in deviations from each series' own smooth path. This is the measurement convention behind the moment table. It is useful, but it is not innocuous: trend-cycle choices can change the size and persistence of measured fluctuations.
+After detrending, the comparison is in deviations from each series' own smooth path. This is the measurement convention behind the moment table. It is useful, but not innocuous: trend-cycle choices can change the size and persistence of measured fluctuations.
 
 <img src="figures/hp-cycles.png" alt="HP-filtered cyclical components for the four macro series." width="80%">
 
-The Okun scatter is where the economic content is easiest to see. Output above trend is associated with unemployment below trend. The dashed line is a 5,000-quarter simulation from the same DGP, so it is a numerical benchmark for the finite sample rather than a claim about historical U.S. data. The 50-year sample correlation is -0.423; the long-sample benchmark is -0.450.
+The Okun scatter makes the economic content easiest to see. Output above trend is associated with unemployment below trend. The dashed line is a 5,000-quarter simulation from the same DGP, so it is a numerical benchmark for the finite sample rather than a claim about historical U.S. data. The 50-year sample correlation is -0.423; the long-sample benchmark is -0.450.
 
 <img src="figures/okuns-law.png" alt="Okun relationship with finite-sample and long-sample regression lines." width="80%">
 
-The correlation matrix is a compact target, not a causal model. A structural RBC or New Keynesian model would have to explain why these variables comove; a reduced-form VAR would instead summarize the same object dynamically. Here the matrix is enough to check whether the synthetic panel delivers the signs built into the calibration.
+The correlation matrix is a compact target, not a causal model. A structural RBC or New Keynesian model would have to explain why these variables comove; a reduced-form VAR would instead summarize the same object dynamically. Here the matrix suffices to check whether the synthetic panel delivers the signs built into the calibration.
 
 <img src="figures/cross-correlation.png" alt="Cross-correlation matrix of HP-filtered cyclical components." width="80%">
 
@@ -141,7 +141,7 @@ The table separates the finite 50-year sample from the long-sample benchmark. Th
 
 ## Takeaway
 
-Business-cycle measurement is already a modeling choice. In this run, the HP-filtered panel recovers the intended signs: GDP growth and unemployment move against each other, with an Okun slope of -0.142 in the 50-year sample, and unemployment is the most persistent cycle. The long-sample benchmark makes the finite-sample point explicit: the measured moments are close to the DGP's implications, but not identical. That is the right way to read these moments before using them as targets for a DSGE, RBC, or reduced-form forecasting exercise.
+Business-cycle measurement is already a modeling choice. In this run, the HP-filtered panel recovers the intended signs: GDP growth and unemployment move against each other, with an Okun slope of -0.142 in the 50-year sample, and unemployment is the most persistent cycle. The long-sample benchmark makes the finite-sample point explicit: the measured moments are close to the DGP's implications, but not identical. That is how to read these moments before using them as targets for a DSGE, RBC, or reduced-form forecasting exercise.
 
 ## References
 

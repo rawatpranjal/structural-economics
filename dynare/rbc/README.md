@@ -6,7 +6,7 @@
 
 A Real Business Cycle model turns a productivity innovation into a path for the whole economy. Output moves on impact because technology is higher today. Capital moves slowly because it is predetermined: households can only change tomorrow's productive capacity by changing investment today.
 
-The `model.mod` file is the Dynare-style source specification. This tutorial keeps the same economics but solves the first-order system directly in Python, so the state, control, and approximation are visible. The comparison line in the results solves the exact nonlinear transition for the same decaying TFP shock. For a 1 percent shock the two paths nearly coincide, which is exactly what a local perturbation is supposed to deliver near steady state.
+The `model.mod` file is the Dynare-style source specification. This tutorial keeps the same economics but solves the first-order system directly in Python, so the state, control, and approximation are visible. The comparison line in the results solves the exact nonlinear transition for the same decaying TFP shock. For a 1 percent shock the two paths nearly coincide, which is what a local perturbation is supposed to deliver near steady state.
 
 ## Equations
 
@@ -102,11 +102,11 @@ Outputs: paths for yhat_t, chat_t, ihat_t, khat_t
    transition for the same TFP path and compare the two IRFs.
 ```
 
-The coefficient-matching residual is 2.9e-15. The nonlinear benchmark is not a different stochastic model; it is the exact deterministic transition implied by the same one-time shock path.
+The coefficient-matching residual is 2.9e-15. The nonlinear benchmark is not a different stochastic model. It is the exact deterministic transition implied by the same one-time shock path.
 
 ## Results
 
-The productivity shock raises output immediately. Investment jumps more than output because the household wants to move capital toward the temporarily higher marginal product of capital. Consumption rises by less on impact and keeps drifting upward for several quarters, reflecting smoothing through the Euler equation. The dashed nonlinear transition is almost on top of the first-order solution at this shock size, so the local approximation is doing what it is meant to do near steady state.
+The productivity shock raises output immediately. Investment jumps more than output because the household wants to move capital toward the temporarily higher marginal product of capital. Consumption rises by less on impact and keeps drifting upward for several quarters, reflecting smoothing through the Euler equation. The dashed nonlinear transition sits almost on top of the first-order solution at this shock size, so the local approximation is doing what it is meant to do near steady state.
 
 <img src="figures/irf-tfp-shock.png" alt="Impulse responses of output, consumption, investment, and capital to a 1 percent TFP shock" width="80%">
 
@@ -124,7 +124,7 @@ The summary statistics separate impact effects from delayed peaks. Capital and c
 
 ## Takeaway
 
-In this RBC model, a productivity shock is both a level effect and an intertemporal price signal. Output rises on impact because firms are more productive. Investment responds strongly because the marginal product of capital is temporarily high. Consumption moves more smoothly, and capital accumulates only gradually. That is the core propagation mechanism a first-order Dynare-style RBC exercise is meant to isolate.
+In this RBC model, a productivity shock is both a level effect and an intertemporal price signal. Output rises on impact because firms are more productive. Investment responds strongly because the marginal product of capital is temporarily high. Consumption moves more smoothly, and capital accumulates only gradually. That is the propagation mechanism a first-order Dynare-style RBC exercise is meant to isolate.
 
 This tutorial is the equilibrium counterpart to the [persistent-shock tutorial](../../time-series/ar-processes/): the AR(1) process supplies the shock's timing, while the Euler equation and capital law of motion decide how that timing shows up in macro quantities. For a global Bellman version of the same RBC mechanism, compare this local solution with the [dynamic-programming RBC tutorial](../../dynamic-programming/rbc/).
 

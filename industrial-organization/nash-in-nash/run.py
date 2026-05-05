@@ -190,12 +190,12 @@ def main() -> None:
         "the outside option. Nash-in-Nash bargaining turns that lost demand into a transfer: "
         "the hospital is paid for the incremental value it brings to the insurer, net of the "
         "hospital's cost of serving those enrollees.\n\n"
-        "The point of the example is not that every hospital merger raises payments. It is "
-        "to show the object that empirical IO papers compute. A bilateral disagreement "
-        "removes one link and leaves all other links in place. A system-level merger changes "
-        "that disagreement point: the insurer may lose the whole system, not just one "
-        "hospital. That distinction is why Nash-in-Nash is a vertical-market model rather "
-        "than a generic Nash equilibrium calculation.\n\n"
+        "Not every hospital merger raises payments; the example is meant to make the object "
+        "that empirical IO papers compute concrete. A bilateral disagreement removes one link "
+        "and leaves all other links in place. A system-level merger changes that disagreement "
+        "point: the insurer may lose the whole system, not just one hospital. That distinction "
+        "is why Nash-in-Nash is a vertical-market model rather than a generic Nash equilibrium "
+        "calculation.\n\n"
         "Premiums are held fixed to keep the bargaining object clean. The "
         "[vertical relationships](../vertical-relationships/) tutorial studies double "
         "marginalization in a simpler channel model, while "
@@ -337,8 +337,8 @@ is the system-level per-enrollee transfer.
     report.add_results(
         "The bilateral transfers are not arbitrary markups over hospital cost. They come from "
         "the enrollment loss created by a specific broken link. Dropping Hospital 1 hurts "
-        "more than dropping Hospital 2 because the first hospital has higher network value; "
-        "Insurer 2's higher premium also raises the dollar value of lost enrollment."
+        "more than dropping Hospital 2 because Hospital 1 has higher network value; Insurer "
+        "2's higher premium also raises the dollar value of lost enrollment."
     )
     report.add_figure(
         "figures/negotiated-prices.png",
@@ -457,12 +457,11 @@ is the system-level per-enrollee transfer.
     )
 
     report.add_takeaway(
-        "Nash-in-Nash bargaining is useful because it maps a vertical contract into an "
-        "observable counterfactual: what does the insurer lose if this agreement fails while "
-        "the rest of the contracting network remains intact? The answer is not just market "
-        "share or hospital cost. It depends on substitution across insurers, the hospital's "
-        "incremental network value, and the ownership structure that defines the relevant "
-        "outside option."
+        "Nash-in-Nash bargaining maps a vertical contract into an observable counterfactual: "
+        "what does the insurer lose if this agreement fails while the rest of the contracting "
+        "network remains intact? The answer is not just market share or hospital cost. It "
+        "depends on substitution across insurers, the hospital's incremental network value, "
+        "and the ownership structure that defines the relevant outside option."
     )
 
     report.add_references(

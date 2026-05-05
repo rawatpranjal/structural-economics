@@ -464,7 +464,7 @@ $$\frac{\phi}{1-l} =
     axes3[1].set_title("Productivity Shocks")
     fig3.tight_layout()
     report.add_figure("figures/simulation.png", "Simulated output, consumption, and TFP paths", fig3,
-        description="A simulated path makes the mechanism less abstract. Output jumps when TFP switches, while consumption moves less "
+        description="Output jumps when TFP switches, while consumption moves less "
         "because the household smooths marginal utility. The gap between output and consumption is investment, so investment takes "
         "much of the adjustment when productivity changes.")
 
@@ -528,9 +528,9 @@ $$\frac{\phi}{1-l} =
         f"smoother at **{rel_c:.2f}**. Labor is strongly procyclical "
         f"($\\mathrm{{corr}}(L,Y)$ = **{corr_ly:.2f}**), and capital is highly persistent "
         f"(autocorr = **{ac_k:.2f}**) because it moves only through accumulated investment. "
-        "The useful lesson is not that this small calibration is a complete quantitative "
-        "business-cycle model; it is that a Bellman equation over aggregate capital and TFP "
-        "can produce the canonical RBC moment comparisons without leaving the nonlinear policy functions."
+        "This small calibration is not a complete quantitative business-cycle model. It "
+        "shows that a Bellman equation over aggregate capital and TFP can produce the "
+        "canonical RBC moment comparisons without leaving the nonlinear policy functions."
     )
 
     report.add_references([

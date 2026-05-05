@@ -139,8 +139,8 @@ def main() -> None:
         "The first-order case is the familiar linearization. It is fast and gives transparent "
         "impulse responses, but it removes curvature and makes positive and negative shocks "
         "mirror images. Higher-order perturbations add curvature and asymmetry while remaining "
-        "local. This tutorial keeps the exact nonlinear transition rule available so the cost of "
-        "that locality is visible."
+        "local. The exact nonlinear transition rule is kept available below so the cost of that "
+        "locality is visible."
     )
 
     report.add_equations(
@@ -235,8 +235,8 @@ $$
         "Approximation error by distance from the expansion point",
         fig2,
         description=(
-            "Higher order terms reduce local error, but no finite Taylor expansion is a global "
-            "solution. The relevant question is how far the model travels from the steady state."
+            "Higher-order terms reduce local error, but no finite Taylor expansion is a global "
+            "solution. The question that matters is how far the model travels from the steady state."
         ),
     )
 
@@ -309,7 +309,7 @@ $$
         "Linearization is often enough for small deviations, but its symmetry is a substantive "
         "restriction. Higher-order perturbation adds curvature without solving the full global "
         "model. The practical discipline is to check where the simulated or impulse-response "
-        "path actually goes; local approximations are only as credible as the neighborhood they "
+        "path actually goes. Local approximations are only as credible as the neighborhood they "
         "are asked to cover."
     )
 

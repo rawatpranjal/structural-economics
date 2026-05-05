@@ -309,12 +309,12 @@ def main() -> None:
         "likelihood over parameters. The economic object is the parameter vector, not the "
         "optimizer. The optimizer matters because the criterion may be flat, curved unevenly, "
         "or have several empirically plausible optima.\n\n"
-        "This tutorial uses a two-dimensional negative log likelihood built from a mixture of "
-        "two Gaussian regimes. The two regimes have equal weight, so the objective has two "
-        "equally good modes. That symmetry is artificial, but useful: it separates the "
-        "economic warning from implementation detail. A local method answers 'where does this "
-        "starting value lead?' while a global or multi-start procedure asks whether the answer "
-        "is stable across the surface."
+        "The objective below is a two-dimensional negative log likelihood built from a mixture "
+        "of two Gaussian regimes. The two regimes have equal weight, so the objective has two "
+        "equally good modes. That symmetry is artificial, but useful: it separates the economic "
+        "warning from implementation detail. A local method answers 'where does this starting "
+        "value lead?' while a global or multi-start procedure asks whether the answer is stable "
+        "across the surface."
     )
 
     report.add_equations(
@@ -363,9 +363,9 @@ one local basin of attraction.
     )
 
     report.add_solution_method(
-        "All methods see the same criterion $f(\\theta)$. The comparison is deliberately "
-        "controlled: Newton, BFGS, and Nelder-Mead start from the same off-diagonal point, "
-        "while dual annealing searches over the full box before a local polish.\n\n"
+        "All methods see the same criterion $f(\\theta)$. The comparison is controlled: Newton, "
+        "BFGS, and Nelder-Mead start from the same off-diagonal point, while dual annealing "
+        "searches over the full box before a local polish.\n\n"
         "```text\n"
         "Algorithm: optimizer diagnostics for a multimodal criterion\n"
         "Input: objective f(theta), starting value theta_0, search box B\n"
@@ -380,7 +380,7 @@ one local basin of attraction.
         "5. Treat instability across starts as evidence about the criterion, not just code\n"
         "```\n\n"
         "The analytic component means provide a ground-truth diagnostic for this example. In "
-        "empirical work the same role is played by multi-start checks, profile likelihoods, "
+        "empirical work that role falls to multi-start checks, profile likelihoods, "
         "moment-residual plots, or economically motivated restrictions."
     )
 
@@ -416,7 +416,7 @@ one local basin of attraction.
         fig1,
         description=(
             "The same objective can make algorithms look very different. Local methods move "
-            "quickly once their local model is useful. Global search explores the box before "
+            "quickly once their local model is accurate. Global search explores the box before "
             "settling near one of the modes."
         ),
     )
@@ -479,9 +479,9 @@ one local basin of attraction.
     report.add_results(
         f"The best objective found is {best_objective:.5f}. Because the two mixture weights are "
         "equal, the criterion has two equally good estimates near the two component means. The "
-        "important comparison is not which label wins, but how much each method depends on "
-        "local geometry and initialization. The basin map makes that dependence visible: BFGS "
-        "is fast, but its answer is conditional on the initial guess."
+        "useful comparison is not which label wins, but how much each method depends on local "
+        "geometry and initialization. The basin map makes that dependence visible: BFGS is fast, "
+        "but its answer is conditional on the initial guess."
     )
 
     report.add_takeaway(
@@ -489,7 +489,7 @@ one local basin of attraction.
         "optimizer is only as credible as the criterion around it and the starting-value checks "
         "behind it. Smooth, well-identified problems reward derivative-based methods. Rough or "
         "multimodal criteria call for multi-start runs, diagnostics, and sometimes a global "
-        "search pass before interpreting the estimate economically."
+        "search pass before the estimate is interpreted economically."
     )
 
     report.add_references(

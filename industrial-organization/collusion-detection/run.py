@@ -210,7 +210,7 @@ def main():
         "question is whether the future value of the relationship is large enough to "
         "make that deviation unattractive.\n\n"
         "The tutorial uses symmetric Cournot demand because the incentive constraint is "
-        "closed form. It then adds a stylized price path with competitive, cartel, and "
+        "closed form, then adds a stylized price path with competitive, cartel, and "
         "post-detection regimes, so the price screen can be read against exact Nash and "
         "monopoly benchmarks. The neighboring [HHI tutorial](../effective-hhi/) is a "
         "static concentration screen; this one asks whether firms can sustain a "
@@ -323,9 +323,9 @@ detection. The reported margin is $m_t=(P_t-c)/P_t$.
         "figures/profits-by-regime.png",
         "Per-firm Nash, collusive, and deviation profits by firm count",
         fig1,
-        description="The payoff plot separates the two sides of the incentive constraint. "
+        description="The two sides of the incentive constraint are visible directly. "
         "The distance from $\\pi^M$ up to $\\pi^D$ is the short-run gain from cheating. "
-        "The distance from $\\pi^N$ up to $\\pi^M$ is the per-period rent that is lost "
+        "The distance from $\\pi^N$ up to $\\pi^M$ is the per-period rent lost "
         "after punishment. Adding members dilutes the monopoly rent faster than it "
         "shrinks the deviation opportunity.",
     )
@@ -363,9 +363,9 @@ detection. The reported margin is $m_t=(P_t-c)/P_t$.
         fig2,
         description=f"The threshold curve is exact for the linear Cournot model. "
         f"At $\\delta={delta_reference:.1f}$, the last sustainable symmetric market has "
-        f"{max_n_delta} firms; adding one more member pushes the deviation constraint "
-        "above the reference discount factor. This is Stigler's coordination problem "
-        "written as an incentive constraint.",
+        f"{max_n_delta} firms; adding one more pushes the deviation constraint "
+        "above the reference discount factor. Stigler's coordination problem rewritten "
+        "as an incentive constraint.",
     )
 
     # --- Figure 3: Simulated price series with structural break ---
@@ -390,7 +390,7 @@ detection. The reported margin is $m_t=(P_t-c)/P_t$.
         "figures/price-series-structural-break.png",
         "Stylized price series with Nash and monopoly reference prices",
         fig3,
-        description="The price path deliberately gives the analyst the ground truth. Before "
+        description="The simulated price path is constructed with known regimes. Before "
         "the cartel, prices fluctuate around the exact Nash benchmark. During the cartel, "
         "they move toward the monopoly benchmark, and after detection they return to Nash. "
         "Real applications replace these clean reference lines with estimated costs, demand, "
@@ -448,16 +448,15 @@ detection. The reported margin is $m_t=(P_t-c)/P_t$.
 
     # --- Economic takeaway ---
     report.add_takeaway(
-        "The repeated-game calculation turns the usual cartel story into a single "
-        "discipline condition. The short-run deviation gain is always positive; the "
-        "question is whether future collusive rents are valuable enough to deter it. "
+        "The repeated-game calculation reduces the cartel story to a single discipline "
+        "condition. The short-run deviation gain is always positive; the question is "
+        "whether future collusive rents are valuable enough to deter it. "
         f"In the duopoly, $\\delta^{{*}}={delta_star_2:.4f}$; with ten symmetric firms, "
-        f"$\\delta^{{*}}={critical_discount_factor(10, a, c):.4f}$; with "
-        f"$\\delta={delta_reference:.1f}$, the exact cutoff is {max_n_delta} firms. "
-        "Price and margin breaks are therefore screens, not verdicts. They say where "
-        "to look before bringing in the market facts that matter in practice: costs, "
-        "demand shocks, monitoring, communication, capacity, procurement rules, and "
-        "the legal record."
+        f"$\\delta^{{*}}={critical_discount_factor(10, a, c):.4f}$; at "
+        f"$\\delta={delta_reference:.1f}$, the cutoff is {max_n_delta} firms. "
+        "Price and margin breaks are screens, not verdicts. They say where to look "
+        "before bringing in costs, demand shocks, monitoring, communication, capacity, "
+        "procurement rules, and the legal record."
     )
 
     report.add_references([

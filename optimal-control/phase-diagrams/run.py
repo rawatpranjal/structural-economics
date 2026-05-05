@@ -211,9 +211,8 @@ def main():
         "initial $(k,c)$ pairs that converges to the saddle-point steady state.\n\n"
         "This tutorial is the geometric companion to the neighboring "
         "[HJB growth](../hjb-growth/) and [Ramsey shooting](../ramsey-growth/) examples. "
-        "Here the method is deliberately visual: read the economic forces from the "
-        "phase plane, then use the local eigenvector and ODE integration to trace the "
-        "stable arm."
+        "The method here is visual: read the economic forces from the phase plane, "
+        "then use the local eigenvector and ODE integration to trace the stable arm."
     )
 
     report.add_equations(r"""
@@ -283,7 +282,7 @@ $$
     )
 
     report.add_solution_method(
-        "The computation starts where the economics is sharpest: at the steady state. "
+        "The computation starts at the steady state, where the economics is sharpest. "
         "The Jacobian of $(\\dot{k},\\dot{c})$ at $(k^{*},c^{*})$ is\n\n"
         "$$\n"
         "J=\n"
@@ -310,7 +309,7 @@ $$
         "7. Sort the two branches by k and use them as the stable-arm reference.\n"
         "Output: nullclines, local linear arm, nonlinear stable arm, and forward paths.\n"
         "```\n\n"
-        "The backward integration is only a way to draw the stable arm. Forward in "
+        "The backward integration is a way to draw the stable arm. Forward in "
         "economic time, points on that arm converge to the steady state; nearby "
         "points above or below it violate the boundary condition."
     )
@@ -359,8 +358,8 @@ $$
             "is high. The black curve is stronger than a direction field. It is the "
             "stable arm, so for each capital stock on the plotted branch it gives the "
             "initial consumption level consistent with convergence and the transversality "
-            "condition. The dashed line shows why linearization is useful near the steady "
-            f"state but not a global solution; over $k \\in [0.5k^{{*}},1.5k^{{*}}]$ its largest "
+            "condition. The dashed line shows that linearization works near the steady "
+            f"state but not as a global solution; over $k \\in [0.5k^{{*}},1.5k^{{*}}]$ its largest "
             f"consumption gap from the nonlinear reference is {max_linear_gap:.3f}."
         ),
     )
@@ -421,8 +420,8 @@ $$
             "Holding initial capital fixed makes the saddle-path logic explicit. A higher "
             "initial consumption choice starts above the stable arm and runs capital down. "
             "A lower choice starts below it and accumulates too much capital relative to "
-            "the present-value boundary condition. The planner's choice is not simply "
-            "the direction indicated by the nullclines; it is the one initial consumption "
+            "the present-value boundary condition. The planner's choice is not the "
+            "direction indicated by the nullclines; it is the one initial consumption "
             "level that puts the economy on the stable arm."
         ),
     )
@@ -473,8 +472,8 @@ $$
             "The table keeps the main numbers auditable. The Ramsey steady state has "
             "$r^{*}=\\rho$, while the golden-rule point has more capital because it ignores "
             "impatience. The eigenvalue pair verifies the saddle classification. The last "
-            "row is a compact check on how far the nonlinear stable arm moves away from "
-            "the local linear approximation over the central part of the graph."
+            "row records how far the nonlinear stable arm moves away from the local "
+            "linear approximation over the central part of the graph."
         ),
     )
 
@@ -484,7 +483,7 @@ $$
         "consumption level. The transversality condition does that by selecting the "
         "stable arm. Linearization gives the local slope and convergence speed; backward "
         "integration of the nonlinear ODE shows how the selected path bends away from "
-        "the steady state. That same selection problem reappears in shooting algorithms "
+        "the steady state. The same selection problem reappears in shooting algorithms "
         "and in HJB methods, but the phase plane makes the economics visible before the "
         "solver takes over."
     )

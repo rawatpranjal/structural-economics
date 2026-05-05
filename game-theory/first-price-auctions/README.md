@@ -6,7 +6,7 @@
 
 A first-price sealed-bid auction is a pricing problem under private information. A bidder knows its own value, knows the distribution of rival values, and pays its own bid when it wins. Lowering the bid raises surplus conditional on winning, but also lowers the chance of being the highest bidder.
 
-The uniform independent-private-values case is useful because that tradeoff has an exact symmetric Bayesian Nash equilibrium. The numerical part of the tutorial is therefore not a black-box equilibrium search. It is a unilateral-deviation check: if rivals use the exact bid rule, a grid best response should return the same bid. That is the Bayesian-game analogue of the no-deviation checks in [normal-form games](../normal-form-games/), with types replacing payoff-table cells.
+The uniform independent-private-values case has an exact symmetric Bayesian Nash equilibrium, so the numerical part is not a black-box equilibrium search. It is a unilateral-deviation check: if rivals use the exact bid rule, a grid best response should return the same bid. That is the Bayesian-game analogue of the no-deviation checks in [normal-form games](../normal-form-games/), with types replacing payoff-table cells.
 
 ## Equations
 
@@ -73,7 +73,7 @@ auction.
 
 ## Solution Method
 
-The closed-form bid rule is the economic solution. The grid calculation is a diagnostic for strategic optimality: it asks whether any type wants to move away from the proposed bid when all other bidders use the same rule.
+The closed-form bid rule is the economic solution. The grid calculation is a diagnostic for strategic optimality: it asks whether any type wants to move away from the proposed bid when other bidders use the same rule.
 
 ```text
 Algorithm: first-price bid rule and unilateral-deviation check
@@ -91,7 +91,7 @@ The residual is a no-profitable-deviation diagnostic. A small value means the fi
 
 ## Results
 
-The bid functions make the central comparative static visible. With two bidders, the equilibrium bid is only one half of value. As the number of rivals rises, the cost of shading increases because a small reduction in the bid gives up more win probability. The dashed 45-degree line is truthful bidding, not the first-price equilibrium except in the limit as competition becomes very large.
+The bid functions make the central comparative static visible. With two bidders, the equilibrium bid is one half of value. As the number of rivals rises, the cost of shading increases because a small reduction in the bid gives up more win probability. The dashed 45-degree line is truthful bidding, not the first-price equilibrium except in the limit of large competition.
 
 <img src="figures/bid-functions.png" alt="Equilibrium first-price bid functions by bidder count" width="80%">
 
@@ -125,7 +125,7 @@ The table keeps the analytic equilibrium separate from the grid diagnostic. Resi
 
 ## Takeaway
 
-The first-price auction turns private information into bid shading. In the uniform symmetric benchmark, the equilibrium bid is a constant fraction of value, and that fraction rises with competition. The grid best-response calculation is useful because it verifies the economic restriction that defines Bayesian Nash equilibrium: no type has a profitable unilateral deviation given the strategy used by rival types.
+The first-price auction turns private information into bid shading. In the uniform symmetric benchmark, the equilibrium bid is a constant fraction of value, and that fraction rises with competition. The grid best-response calculation verifies the economic restriction that defines Bayesian Nash equilibrium: no type has a profitable unilateral deviation given the strategy used by rival types.
 
 ## References
 

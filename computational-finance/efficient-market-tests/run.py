@@ -100,7 +100,7 @@ def main() -> None:
         "The tutorial should therefore be read as a random-walk diagnostic for yield "
         "changes, not as a trading strategy or a replication of CRSP-style return tests. "
         "The [Treasury yield-curve tutorial](../treasury-yield-curve/) explains the CMT "
-        "data object; the [Fama-Bliss-style regression](../fama-bliss-forward-regression/) "
+        "data object. The [Fama-Bliss-style regression](../fama-bliss-forward-regression/) "
         "asks a more structured term-premium predictability question."
     )
 
@@ -177,8 +177,8 @@ returns, and measurement.
         "The computation keeps the economic null visible. First form daily yield changes. "
         "Then ask three versions of the same question: do lagged changes forecast the next "
         "change, do autocorrelations drift away from zero, and does multi-day variance scale "
-        "linearly with the horizon? The variance-ratio diagnostic follows the Lo-MacKinlay "
-        "idea, but this tutorial reports the transparent ratio rather than the full "
+        "linearly with the horizon? The variance-ratio diagnostic follows Lo and MacKinlay, "
+        "but this tutorial reports the transparent ratio rather than the full "
         "heteroskedasticity-robust test statistic.\n\n"
         "```text\n"
         "Algorithm: weak-form diagnostics for Treasury yield changes\n"
@@ -198,8 +198,8 @@ returns, and measurement.
         "```\n\n"
         "The reference lines in the figures are the random-walk benchmarks: zero "
         "autocorrelation, a rough finite-sample band of $\pm 2/\sqrt{T}$, and a variance "
-        "ratio of one. Those are the right ground-truth objects for this diagnostic "
-        "exercise; adding a finer grid would not turn CMT yield changes into realized "
+        "ratio of one. Those are the ground-truth objects for this diagnostic exercise; "
+        "adding a finer grid would not turn CMT yield changes into realized "
         "holding-period returns."
     )
 
@@ -218,10 +218,10 @@ returns, and measurement.
         "Autocorrelations of daily ten-year Treasury yield changes",
         fig1,
         description=(
-            "The autocorrelation plot asks whether lagged yield changes contain useful "
-            "forecast content. Most bars sit near zero. A few lags cross the rough "
-            f"$\\pm 2/\\sqrt{{T}}$ band of **{band:.3f}**, which is enough to flag "
-            "serial-dependence diagnostics but not enough, by itself, to establish an "
+            "The autocorrelation plot asks whether lagged yield changes contain forecast "
+            "content. Most bars sit near zero. A few lags cross the rough "
+            f"$\\pm 2/\\sqrt{{T}}$ band of **{band:.3f}**, enough to flag "
+            "serial dependence but not enough, by itself, to establish an "
             "exploitable market inefficiency."
         ),
     )
@@ -261,11 +261,11 @@ returns, and measurement.
     )
 
     report.add_takeaway(
-        "Weak-form tests are useful because they make the no-predictability restriction "
-        "concrete. In this static CMT sample, daily ten-year yield changes show mild "
-        "short-run persistence, but the economic interpretation remains narrow: the null "
-        "bundles market efficiency with the expected-return model, the choice of yield "
-        "changes rather than bond returns, and the finite 1990 sample."
+        "Weak-form tests make the no-predictability restriction concrete. In this static CMT "
+        "sample, daily ten-year yield changes show mild short-run persistence, but the "
+        "economic interpretation remains narrow: the null bundles market efficiency with the "
+        "expected-return model, the choice of yield changes rather than bond returns, and "
+        "the finite 1990 sample."
     )
     report.add_references(
         [

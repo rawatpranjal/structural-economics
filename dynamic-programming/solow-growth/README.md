@@ -92,7 +92,7 @@ With this calibration, the local convergence factor around $k^{\ast}$ is **0.941
 
 ## Results
 
-The first figure is the analytical Solow diagram. The curved schedule is actual investment per effective worker, $s k^\alpha$. The line is the investment required to offset depreciation, population growth, and technology growth, $\Delta k$. Their intersection is not estimated from the simulation; it is the exact $k^{\ast}=4.309$ implied by the primitives.
+The Solow diagram has two curves. The curved schedule is actual investment per effective worker, $s k^\alpha$. The line is the investment required to offset depreciation, population growth, and technology growth, $\Delta k$. Their intersection is not estimated from the simulation; it is the exact $k^{\ast}=4.309$ implied by the primitives.
 
 Because $k_0=1.000$ lies to the left of the intersection, the economy begins with investment above break-even investment. Capital per effective worker therefore rises.
 

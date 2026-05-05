@@ -89,12 +89,12 @@ def main() -> None:
         "A bidder knows its own value, knows the distribution of rival values, and pays its "
         "own bid when it wins. Lowering the bid raises surplus conditional on winning, but "
         "also lowers the chance of being the highest bidder.\n\n"
-        "The uniform independent-private-values case is useful because that tradeoff has an "
-        "exact symmetric Bayesian Nash equilibrium. The numerical part of the tutorial is "
-        "therefore not a black-box equilibrium search. It is a unilateral-deviation check: "
-        "if rivals use the exact bid rule, a grid best response should return the same bid. "
-        "That is the Bayesian-game analogue of the no-deviation checks in "
-        "[normal-form games](../normal-form-games/), with types replacing payoff-table cells."
+        "The uniform independent-private-values case has an exact symmetric Bayesian Nash "
+        "equilibrium, so the numerical part is not a black-box equilibrium search. It is a "
+        "unilateral-deviation check: if rivals use the exact bid rule, a grid best response "
+        "should return the same bid. That is the Bayesian-game analogue of the no-deviation "
+        "checks in [normal-form games](../normal-form-games/), with types replacing "
+        "payoff-table cells."
     )
 
     report.add_equations(r"""
@@ -163,7 +163,7 @@ auction.
     report.add_solution_method(
         "The closed-form bid rule is the economic solution. The grid calculation is a "
         "diagnostic for strategic optimality: it asks whether any type wants to move away "
-        "from the proposed bid when all other bidders use the same rule.\n\n"
+        "from the proposed bid when other bidders use the same rule.\n\n"
         "```text\n"
         "Algorithm: first-price bid rule and unilateral-deviation check\n"
         "Inputs: bidder count n, type grid V, bid grid B(v) on [0,v]\n"
@@ -188,10 +188,10 @@ auction.
     ax.legend()
     report.add_results(
         "The bid functions make the central comparative static visible. With two bidders, "
-        "the equilibrium bid is only one half of value. As the number of rivals rises, the "
-        "cost of shading increases because a small reduction in the bid gives up more win "
+        "the equilibrium bid is one half of value. As the number of rivals rises, the cost "
+        "of shading increases because a small reduction in the bid gives up more win "
         "probability. The dashed 45-degree line is truthful bidding, not the first-price "
-        "equilibrium except in the limit as competition becomes very large."
+        "equilibrium except in the limit of large competition."
     )
     report.add_figure(
         "figures/bid-functions.png",
@@ -272,9 +272,9 @@ auction.
     report.add_takeaway(
         "The first-price auction turns private information into bid shading. In the uniform "
         "symmetric benchmark, the equilibrium bid is a constant fraction of value, and that "
-        "fraction rises with competition. The grid best-response calculation is useful because "
-        "it verifies the economic restriction that defines Bayesian Nash equilibrium: no type "
-        "has a profitable unilateral deviation given the strategy used by rival types."
+        "fraction rises with competition. The grid best-response calculation verifies the "
+        "economic restriction that defines Bayesian Nash equilibrium: no type has a profitable "
+        "unilateral deviation given the strategy used by rival types."
     )
 
     report.add_references([

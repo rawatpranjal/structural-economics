@@ -113,7 +113,7 @@ The parameter grid separates two margins. Increasing $b$ improves the payoff fro
 
 ## Takeaway
 
-The McCall model is useful because it turns unemployment duration into a reservation-price problem. The worker rejects low offers not because the current benefit is large by itself, but because rejecting preserves a valuable claim on future wage draws. In this calibration the right tail is important enough that the cutoff can sit above the mean offer, a point the finite-grid and continuous benchmarks make explicit. The same acceptance-threshold logic is the partial-equilibrium core of larger search models with matching frictions, endogenous vacancies, and equilibrium wage determination.
+The McCall model recasts unemployment duration as a reservation-price problem. The worker rejects low offers not because the current benefit is large by itself, but because rejecting preserves a claim on future wage draws. In this calibration the right tail is important enough that the cutoff can sit above the mean offer, a point the finite-grid and continuous benchmarks make explicit. The same acceptance-threshold logic is the partial-equilibrium core of larger search models with matching frictions, endogenous vacancies, and equilibrium wage determination.
 
 ## References
 

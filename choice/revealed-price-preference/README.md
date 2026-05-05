@@ -6,7 +6,7 @@
 
 Many revealed-preference exercises ask whether observed bundles could have come from one stable utility ordering. Sometimes the empirical object is different. A researcher may want to compare tax schedules, tariffs, insurance menus, or other price regimes and ask whether the data rank those regimes consistently.
 
-Revealed price preference keeps the same price-quantity observations $(p^t,x^t)$, but it reverses the object of comparison. GARP asks whether the chosen bundles can be ordered. GAPP asks whether the observed price vectors can be ordered by the bundles they make cheap. A price vector $p^s$ is better than $p^t$ for observation $t$ if it would have made the bundle actually chosen under $p^t$ weakly cheaper. The tutorial uses small deterministic panels to show that bundle rationalizability and price-regime rationalizability are distinct restrictions, not two descriptions of the same test.
+Revealed price preference keeps the same price-quantity observations $(p^t,x^t)$ but reverses the object of comparison. GARP asks whether the chosen bundles can be ordered. GAPP asks whether the observed price vectors can be ordered by the bundles they make cheap. A price vector $p^s$ is better than $p^t$ for observation $t$ if it would have made the bundle actually chosen under $p^t$ weakly cheaper. Small deterministic panels in the tutorial show that bundle rationalizability and price-regime rationalizability are distinct restrictions, not two descriptions of the same test.
 
 ## Equations
 
@@ -73,7 +73,7 @@ Output: pass/fail GAPP decision and violating price-vector pairs
 6. The data pass GAPP exactly when the violation set is empty.
 ```
 
-The script also runs ordinary bundle GARP on the same observations. That side-by-side comparison is deliberate: if the empirical question is about price regimes, a clean bundle-rationalizability test can miss the restriction that matters.
+The script also runs ordinary bundle GARP on the same observations. The side-by-side comparison matters: if the empirical question is about price regimes, a clean bundle-rationalizability test can miss the restriction that matters.
 
 ## Results
 
@@ -102,7 +102,7 @@ Across the four deterministic panels, GARP and GAPP separate cleanly. The same p
 
 ## Takeaway
 
-Revealed price preference is useful when the economic question is about price regimes rather than about the chosen bundles themselves. GARP asks whether a stable utility ordering can rationalize choices over bundles. GAPP asks whether observed price vectors can be ranked consistently by the bundles they make affordable. Since the two tests can disagree on the same finite data, the right diagnostic depends on which object the empirical exercise is trying to compare. After a standard [Afriat test](../revealed-preference-afriat/), this tutorial is the natural dual check for applications where prices, tariffs, or schedules are the object of welfare comparison.
+Revealed price preference is useful when the economic question is about price regimes rather than about the chosen bundles themselves. GARP asks whether a stable utility ordering can rationalize choices over bundles. GAPP asks whether observed price vectors can be ranked consistently by the bundles they make affordable. Since the two tests can disagree on the same finite data, the right diagnostic depends on which object the empirical exercise is comparing. After a standard [Afriat test](../revealed-preference-afriat/), this tutorial is the dual check for applications where prices, tariffs, or schedules are the object of welfare comparison.
 
 ## References
 

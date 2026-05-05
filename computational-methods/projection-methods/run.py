@@ -214,9 +214,9 @@ def main() -> None:
         "equilibrium conditions determine those coefficients.\n\n"
         "The economic environment here is the deterministic growth problem with log utility "
         "and full depreciation. That special case has a closed-form capital policy, which makes "
-        "it a clean benchmark for projection. The tutorial therefore focuses on what the "
-        "Chebyshev approximation is doing: matching Euler equations at collocation nodes, then "
-        "checking whether the implied policy is accurate away from those nodes."
+        "it a clean benchmark for projection. The focus is on what the Chebyshev approximation "
+        "is doing: matching Euler equations at collocation nodes, then checking whether the "
+        "implied policy is accurate away from those nodes."
     )
 
     report.add_equations(
@@ -288,9 +288,9 @@ For this calibration, the exact policy is $g^{*}(k)=\alpha\beta A k^\alpha$.
         "6. Choose theta so the Euler residuals R_i(theta) are near zero\n"
         "7. Evaluate policy errors and Euler errors on a dense grid\n"
         "```\n\n"
-        "The closed-form policy is used only as a benchmark for this tutorial. In a model "
-        "without a closed form, the same workflow would lean on residuals, simulated paths, "
-        "and sensitivity to basis order."
+        "The closed-form policy is used only as a benchmark here. In a model without a closed "
+        "form, the same workflow would lean on residuals, simulated paths, and sensitivity to "
+        "basis order."
     )
 
     x_plot = np.linspace(-1.0, 1.0, 300)
@@ -308,7 +308,7 @@ For this calibration, the exact policy is $g^{*}(k)=\alpha\beta A k^\alpha$.
         fig1,
         description=(
             "Chebyshev polynomials oscillate in a controlled way over the approximation interval. "
-            "They are popular because they approximate smooth functions accurately with few terms."
+            "They approximate smooth functions accurately with few terms."
         ),
     )
 
@@ -357,7 +357,7 @@ For this calibration, the exact policy is $g^{*}(k)=\alpha\beta A k^\alpha$.
         "Euler equation errors by approximation order",
         fig3,
         description=(
-            "Euler errors are the main diagnostic. They ask whether the approximated policy "
+            "Euler errors are the main diagnostic. They check whether the approximated policy "
             "satisfies the model's optimality condition away from the collocation nodes."
         ),
     )
@@ -401,7 +401,7 @@ For this calibration, the exact policy is $g^{*}(k)=\alpha\beta A k^\alpha$.
     )
 
     report.add_takeaway(
-        "Projection is attractive when the policy function is smooth and the state space is too "
+        "Projection works well when the policy function is smooth and the state space is too "
         "large for a crude lookup table. The cost is diagnostic discipline. Matching Euler "
         "equations at collocation nodes is not by itself a proof of accuracy; the approximation "
         "must also behave well on a dense grid and along economically relevant simulated paths."

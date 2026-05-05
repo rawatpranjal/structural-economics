@@ -52,7 +52,7 @@ This run checks GARP directly; the neighboring [preference-recoverability](../pr
 
 ## Solution Method
 
-The computation is a graph problem on observations. Nodes are observed bundles; directed edges record revealed weak preference. Warshall's transitive closure is enough here because the sample is small and the object of interest is reachability, not a parametric demand curve.
+The computation is a graph problem on observations. Nodes are observed bundles; directed edges record revealed weak preference. Warshall's transitive closure is enough because the sample is small and the object of interest is reachability, not a parametric demand curve.
 
 ```text
 Input: prices p_t and chosen bundles x_t for t=1,...,T
@@ -75,7 +75,7 @@ The Cobb-Douglas sample passes with 0 violations. The corrupted sample fails wit
 
 The first pair of figures plots the residual budget line for goods 1 and 2, holding the other good at its observed quantity. The projection is not the full three-good budget set, but it makes the revealed-preference comparison visible: rational data can look irregular across budgets without creating a strict cycle.
 
-In the rational benchmark, every observation comes from the same Cobb-Douglas preference vector. The chosen bundles need not line up on a smooth two-dimensional curve, because prices and income vary, but the budget comparisons do not contradict one another.
+In the rational benchmark, every observation comes from the same Cobb-Douglas preference vector. The chosen bundles need not line up on a smooth two-dimensional curve because prices and income vary, but the budget comparisons do not contradict one another.
 
 <img src="figures/budget-lines-consistent.png" alt="Budget lines and chosen bundles for the GARP-satisfying sample." width="80%">
 
@@ -120,7 +120,7 @@ The matrix records the same object algebraically. `R` is a direct budget compari
 
 Afriat's theorem turns a familiar consumer-theory restriction into a finite sample test. Passing GARP does not identify a unique utility function, and it does not say preferences are Cobb-Douglas or smooth in any parametric sense. It says something sharper and more primitive: the observed choices can be ordered by some monotone concave utility function. Failing GARP is equally sharp, because no utility function in that class can rationalize the full dataset.
 
-That makes this tutorial the entry point for the revealed-preference sequence. Use [preference recoverability](../preference-recoverability/) when the data pass and the question is what utility or welfare bounds are implied. Use [Houtman-Maks](../houtman-maks-rational-subsets/) and the [money pump index](../money-pump-index/) when the data fail and the question is which observations drive the failure or how severe the cycle is.
+This tutorial is the entry point for the revealed-preference sequence. Use [preference recoverability](../preference-recoverability/) when the data pass and the question is what utility or welfare bounds are implied. Use [Houtman-Maks](../houtman-maks-rational-subsets/) and the [money pump index](../money-pump-index/) when the data fail and the question is which observations drive the failure or how severe the cycle is.
 
 ## References
 

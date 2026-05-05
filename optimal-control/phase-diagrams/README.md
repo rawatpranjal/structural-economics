@@ -8,7 +8,7 @@ In the Ramsey-Cass-Koopmans model, the planner chooses the whole consumption pat
 
 The state-control pair is $(k,c)$. The two nullclines show where capital or consumption stops moving; their intersection is the steady state. That is not enough to determine the optimum, because most nearby paths move away from the steady state. The missing object is the stable arm: the one-dimensional set of initial $(k,c)$ pairs that converges to the saddle-point steady state.
 
-This tutorial is the geometric companion to the neighboring [HJB growth](../hjb-growth/) and [Ramsey shooting](../ramsey-growth/) examples. Here the method is deliberately visual: read the economic forces from the phase plane, then use the local eigenvector and ODE integration to trace the stable arm.
+This tutorial is the geometric companion to the neighboring [HJB growth](../hjb-growth/) and [Ramsey shooting](../ramsey-growth/) examples. The method here is visual: read the economic forces from the phase plane, then use the local eigenvector and ODE integration to trace the stable arm.
 
 ## Equations
 
@@ -77,7 +77,7 @@ The calibration keeps the economy deterministic so that every movement in the di
 
 ## Solution Method
 
-The computation starts where the economics is sharpest: at the steady state. The Jacobian of $(\dot{k},\dot{c})$ at $(k^{\ast},c^{\ast})$ is
+The computation starts at the steady state, where the economics is sharpest. The Jacobian of $(\dot{k},\dot{c})$ at $(k^{\ast},c^{\ast})$ is
 
 $$
 J=
@@ -102,11 +102,11 @@ Inputs: primitives (alpha, delta, rho, sigma, A), bounds for plotted k and c
 Output: nullclines, local linear arm, nonlinear stable arm, and forward paths.
 ```
 
-The backward integration is only a way to draw the stable arm. Forward in economic time, points on that arm converge to the steady state; nearby points above or below it violate the boundary condition.
+The backward integration is a way to draw the stable arm. Forward in economic time, points on that arm converge to the steady state; nearby points above or below it violate the boundary condition.
 
 ## Results
 
-The phase plane separates two jobs that are often blurred together. The blue curve and red line give sign information: below net output, capital accumulates; left of $k^{\ast}$, consumption grows because the marginal product is high. The black curve is stronger than a direction field. It is the stable arm, so for each capital stock on the plotted branch it gives the initial consumption level consistent with convergence and the transversality condition. The dashed line shows why linearization is useful near the steady state but not a global solution; over $k \in [0.5k^{\ast},1.5k^{\ast}]$ its largest consumption gap from the nonlinear reference is 0.050.
+The phase plane separates two jobs that are often blurred together. The blue curve and red line give sign information: below net output, capital accumulates; left of $k^{\ast}$, consumption grows because the marginal product is high. The black curve is stronger than a direction field. It is the stable arm, so for each capital stock on the plotted branch it gives the initial consumption level consistent with convergence and the transversality condition. The dashed line shows that linearization works near the steady state but not as a global solution; over $k \in [0.5k^{\ast},1.5k^{\ast}]$ its largest consumption gap from the nonlinear reference is 0.050.
 
 <img src="figures/phase-diagram.png" alt="Ramsey phase plane with nullclines, local linear arm, and nonlinear stable arm" width="80%">
 
@@ -114,11 +114,11 @@ Starting below steady-state capital, the selected path keeps consumption low eno
 
 <img src="figures/time-paths.png" alt="Capital and consumption converge to the Ramsey steady state along the stable arm" width="80%">
 
-Holding initial capital fixed makes the saddle-path logic explicit. A higher initial consumption choice starts above the stable arm and runs capital down. A lower choice starts below it and accumulates too much capital relative to the present-value boundary condition. The planner's choice is not simply the direction indicated by the nullclines; it is the one initial consumption level that puts the economy on the stable arm.
+Holding initial capital fixed makes the saddle-path logic explicit. A higher initial consumption choice starts above the stable arm and runs capital down. A lower choice starts below it and accumulates too much capital relative to the present-value boundary condition. The planner's choice is not the direction indicated by the nullclines; it is the one initial consumption level that puts the economy on the stable arm.
 
 <img src="figures/path-selection.png" alt="Forward trajectories from the same initial capital but different initial consumption" width="80%">
 
-The table keeps the main numbers auditable. The Ramsey steady state has $r^{\ast}=\rho$, while the golden-rule point has more capital because it ignores impatience. The eigenvalue pair verifies the saddle classification. The last row is a compact check on how far the nonlinear stable arm moves away from the local linear approximation over the central part of the graph.
+The table keeps the main numbers auditable. The Ramsey steady state has $r^{\ast}=\rho$, while the golden-rule point has more capital because it ignores impatience. The eigenvalue pair verifies the saddle classification. The last row records how far the nonlinear stable arm moves away from the local linear approximation over the central part of the graph.
 
 **Steady-State and Stable-Arm Diagnostics**
 
@@ -137,7 +137,7 @@ The table keeps the main numbers auditable. The Ramsey steady state has $r^{\ast
 
 ## Takeaway
 
-The phase diagram is an economic selection device. Nullclines say which way capital and consumption move, but they do not choose the optimal initial consumption level. The transversality condition does that by selecting the stable arm. Linearization gives the local slope and convergence speed; backward integration of the nonlinear ODE shows how the selected path bends away from the steady state. That same selection problem reappears in shooting algorithms and in HJB methods, but the phase plane makes the economics visible before the solver takes over.
+The phase diagram is an economic selection device. Nullclines say which way capital and consumption move, but they do not choose the optimal initial consumption level. The transversality condition does that by selecting the stable arm. Linearization gives the local slope and convergence speed; backward integration of the nonlinear ODE shows how the selected path bends away from the steady state. The same selection problem reappears in shooting algorithms and in HJB methods, but the phase plane makes the economics visible before the solver takes over.
 
 ## References
 

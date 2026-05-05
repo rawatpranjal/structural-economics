@@ -112,7 +112,7 @@ The consumption policy has the same buffer-stock shape as in the VFI solution. L
 
 <img src="figures/consumption-policy.png" alt="Consumption policy with fine-grid EGP reference" width="80%">
 
-Net saving separates income states more sharply. A bad draw pushes the household toward the borrowing limit; a good draw rebuilds the buffer. The zero line should not be read as a single steady state. With IID risk, the household keeps moving across asset states as income draws arrive.
+Net saving separates income states more sharply. A bad draw pushes the household toward the borrowing limit; a good draw rebuilds the buffer. The zero line should not be read as a single steady state: with IID risk, the household keeps moving across asset states as income draws arrive.
 
 <img src="figures/savings-policy.png" alt="Net saving policy with fine-grid EGP reference" width="80%">
 
@@ -120,11 +120,11 @@ The method itself is visible in the low-income endogenous grid. For each candida
 
 <img src="figures/endogenous-grid.png" alt="Endogenous current asset grid for the low income state" width="80%">
 
-The terminal simulated cross section is right-skewed but modest in scale. This is still the IID income benchmark, not a persistent-income Aiyagari distribution. The point is the local buffer: many households stay close to the constraint, while favorable sequences of draws create the right tail.
+The terminal simulated cross section is right-skewed but modest in scale. This is still the IID income benchmark, not a persistent-income Aiyagari distribution. Many households stay close to the constraint, while favorable sequences of draws create the right tail.
 
 <img src="figures/wealth-distribution.png" alt="Simulated terminal wealth distribution" width="80%">
 
-MPC heterogeneity is the main economic object produced by the policy. Households near the constraint have high MPCs because extra resources relax today's liquidity problem. Wealthier households are closer to the perfect-foresight limiting MPC, 0.041, because a small transfer is mostly saved.
+MPC heterogeneity is the economic object produced by the policy. Households near the constraint have high MPCs because extra resources relax today's liquidity problem. Wealthier households are closer to the perfect-foresight limiting MPC, 0.041, because a small transfer is mostly saved.
 
 <img src="figures/mpc-distribution.png" alt="Distribution of marginal propensities to consume" width="80%">
 
@@ -148,7 +148,7 @@ The table combines the simulated stationary cross section with the fine-grid pol
 
 EGP is not a different household model. It is a cleaner way to compute the same Euler-equation policy when the control is next-period assets and the constraint is simple. In this income-risk problem, reversing the grid turns the costly VFI search over $a'$ into interpolation from an endogenous current asset grid.
 
-The economics remain buffer-stock economics: bad income draws push households toward the borrowing limit, good draws rebuild assets, and MPCs are high for liquidity-constrained households. The computational gain matters because the same household problem is usually solved repeatedly inside equilibrium or estimation loops.
+The economics is still buffer-stock economics: bad income draws push households toward the borrowing limit, good draws rebuild assets, and MPCs are high for liquidity-constrained households. The computational gain matters because the same household problem is usually solved repeatedly inside equilibrium or estimation loops.
 
 ## References
 

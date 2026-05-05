@@ -6,7 +6,7 @@
 
 Vertical-contract evidence often starts with availability, not only with prices. A vending operator has a small number of slots, the upstream firms want their products inside the machine, and contract terms decide how attractive each slot is to the downstream firm.
 
-This tutorial keeps the demand side deliberately small. Each product has linear retail demand and a wholesale cost. The economic action is the retailer's assortment choice: seven products must be selected from a larger catalog. The benchmark in [Vertical Relationships and Double Marginalization](../vertical-relationships/) shows how wholesale margins distort retail prices; here the same vertical logic is pushed into product availability through rebates and slotting fees.
+Demand is small. Each product has linear retail demand and a wholesale cost. The economic action is the retailer's assortment choice: seven products must be selected from a larger catalog. The benchmark in [Vertical Relationships and Double Marginalization](../vertical-relationships/) shows how wholesale margins distort retail prices; here the same vertical logic is pushed into product availability through rebates and slotting fees.
 
 ## Equations
 
@@ -68,10 +68,10 @@ The primitives are chosen so the finite assortment problem can be solved exactly
 
 ## Solution Method
 
-The key computational object is the retailer's exact finite-choice optimum. There
+The computational object is the retailer's exact finite-choice optimum. There
 are only $\binom{12}{7}=792$ feasible assortments, so the script evaluates every
 candidate rather than using a local search heuristic. The plotted choices are
-therefore the finite-catalog optimum, not a simulation approximation.
+the finite-catalog optimum, not a simulation approximation.
 
 ```text
 Inputs: product catalog J, capacity K, contract C, rebate threshold tau
@@ -90,21 +90,21 @@ choose A*_C in argmax_A Pi^D_C(A)
 repeat over rebate thresholds tau to see where the all-unit discount binds
 ```
 
-This is intentionally closer to an empirical counterfactual than to an abstract
-combinatorics exercise: the contract changes the retailer's objective, and the
-retailer responds by reallocating scarce shelf space.
+This is closer to an empirical counterfactual than to an abstract combinatorics
+exercise: the contract changes the retailer's objective, and the retailer responds
+by reallocating scarce shelf space.
 
 ## Results
 
-The first figure reads the assortment problem directly. Wholesale-only pricing leaves the retailer with four Mars products. The rebate and slotting-fee contracts both move one more scarce slot toward Mars, even though retail prices are still chosen product by product.
+Reading the assortment problem directly. Wholesale-only pricing leaves the retailer with four Mars products. The rebate and slotting-fee contracts both move one more scarce slot toward Mars, even though retail prices are still chosen product by product.
 
 <img src="figures/assortment-selection.png" alt="Assortment selected under each vertical contract" width="80%">
 
-The second figure separates the retailer's objective from total upstream profit. Slotting fees raise the retailer's payoff mechanically because they are transfers into the downstream objective. Upstream profit falls in this calibration, which is the cost of buying placement.
+Separating the retailer's objective from total upstream profit. Slotting fees raise the retailer's payoff mechanically because they are transfers into the downstream objective. Upstream profit falls in this calibration; that is the cost of buying placement.
 
 <img src="figures/profit-incidence.png" alt="Retailer and upstream payoffs by contract" width="80%">
 
-The threshold exercise shows why rebate design is not monotone. A low target gives away margin on products the retailer would have stocked anyway. A high target may not move the assortment. The useful region is where the threshold changes the exact assortment optimum relative to the wholesale-only benchmark.
+Rebate design is not monotone in the target. A low target gives away margin on products the retailer would have stocked anyway. A high target may not move the assortment. The useful region is where the threshold changes the exact assortment optimum relative to the wholesale-only benchmark.
 
 <img src="figures/rebate-thresholds.png" alt="Mars slots and upstream profit as the all-unit discount threshold changes" width="80%">
 
@@ -120,7 +120,7 @@ The table collects the same objects behind the figures. Average retail prices mo
 
 ## Takeaway
 
-A vertical contract can matter even when the observed retail-price effect is small. All-unit discounts and slotting fees change the downstream firm's objective over scarce product slots, so the main empirical object is often the joint distribution of prices, availability, and transfers rather than prices alone.
+A vertical contract can matter even when the observed retail-price effect is small. All-unit discounts and slotting fees change the downstream firm's objective over scarce product slots, so the relevant empirical object is often the joint distribution of prices, availability, and transfers rather than prices alone.
 
 ## References
 

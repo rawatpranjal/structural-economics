@@ -272,16 +272,16 @@ def main():
     )
 
     report.add_overview(
-        "Capital income taxation is a clean way to separate aggregate feasibility from "
+        "Capital income taxation separates aggregate feasibility from "
         "private incentives. The government taxes capital income at rate $\\tau_k$ and "
         "rebates the proceeds lump-sum. The representative economy still has the same "
         "resource constraint, but households save against an after-tax marginal product "
-        "of capital. The distortion is therefore entirely intertemporal: current "
+        "of capital. The distortion is entirely intertemporal: current "
         "consumption becomes cheaper relative to future consumption.\n\n"
         "This tutorial is a tax-wedge companion to the global "
         "[RBC capital and labor](../../dynamic-programming/rbc/) example and the local "
-        "[Dynare RBC](../../dynare/rbc/) impulse-response example. Here the point is not "
-        "shock propagation per se. The point is how a permanent wedge moves the exact "
+        "[Dynare RBC](../../dynare/rbc/) impulse-response example. The point is not "
+        "shock propagation per se, but how a permanent wedge moves the exact "
         "deterministic steady state, the nonlinear capital policy, and simulated "
         "investment behavior."
     )
@@ -344,8 +344,8 @@ tax revenue $T_{ss}=\tau_k \alpha Y_{ss}$.
         "The computation uses the resource-feasible Bellman problem to get a stable "
         "global policy on the $(z,K)$ grid, then refines consumption with the after-tax "
         "Euler equation. The first step is a good initializer because the rebate leaves "
-        "the aggregate resource constraint unchanged. The second step is where the "
-        "capital-tax wedge enters.\n\n"
+        "the aggregate resource constraint unchanged. The second step introduces the "
+        "capital-tax wedge.\n\n"
         "```text\n"
         "Algorithm: global policy iteration with a capital-tax wedge\n"
         "Input: tax rate tau_k, grids K and Z, transition matrix P, primitives beta, alpha, sigma, delta\n"
@@ -370,7 +370,7 @@ tax revenue $T_{ss}=\tau_k \alpha Y_{ss}$.
         "until the consumption policy update is below epsilon\n"
         "Simulate all tax regimes on the same productivity path\n"
         "```\n\n"
-        "The exact deterministic steady state is used as a ground-truth benchmark for "
+        "The exact deterministic steady state serves as a ground-truth benchmark for "
         "the long-run comparisons. The stochastic policy functions are numerical, and "
         "the table below separates the exact steady states from simulated means. Across "
         f"the five tax regimes, VFI used at most **{max(sol['iterations'] for sol in solutions.values())}** "
@@ -423,7 +423,7 @@ tax revenue $T_{ss}=\tau_k \alpha Y_{ss}$.
     report.add_figure("figures/steady-state-tax.png", "Exact steady-state levels and losses by capital tax rate", fig1,
         description="The first comparison is analytical rather than simulated. Capital falls with "
         "$(1-\\tau_k)^{1/(1-\\alpha)}$, so the tax rate is amplified by the capital share. Output and "
-        "consumption move less than capital, but the whole economy is operating from a lower productive base.")
+        "consumption move less than capital, but the economy operates from a lower productive base.")
 
     # --- Figure 2: Policy functions across tax rates ---
     fig2, (ax2a, ax2b) = plt.subplots(1, 2, figsize=(13, 5))
@@ -523,7 +523,7 @@ tax revenue $T_{ss}=\tau_k \alpha Y_{ss}$.
         "prices saving with $(1-\\tau_k)MPK$ rather than $MPK$, the economy carries less capital "
         "into every productivity state. The exact steady state is the cleanest way to see the "
         "long-run loss; the global policy functions show how the same force operates away from "
-        "the steady state. This is the useful lesson for nearby DSGE applications: fiscal wedges "
+        "the steady state. The lesson for nearby DSGE applications is that fiscal wedges "
         "can be revenue-neutral in resources and still large in allocation."
     )
 

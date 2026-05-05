@@ -8,7 +8,7 @@ A demand model has to answer two questions after a price change: how many buyers
 
 Nested logit keeps the closed-form share machinery but lets the researcher declare product groups. In this cereal market, Choco-Bombs and Store-Frosted are sugary cereals; Fiber-Bran and Granola-Crunch are healthy cereals. The nesting parameter $\sigma \in [0,1)$ governs how much extra substitution stays inside a group. At $\sigma=0$ the model is plain logit. As $\sigma$ rises, a price increase for a sugary cereal sends more buyers to the other sugary cereal rather than to the whole market in proportion to shares.
 
-The example is intentionally small. The goal is to make the substitution matrix and the IV estimation equation transparent before moving to richer random-coefficients demand models such as [BLP](../../industrial-organization/blp-random-coefficients/).
+The example is small by design, so the substitution matrix and the IV estimation equation stay transparent before the move to richer random-coefficients demand models such as [BLP](../../industrial-organization/blp-random-coefficients/).
 
 ## Equations
 
@@ -117,7 +117,7 @@ Rows are the products whose shares respond; columns are the prices that move. Th
 
 <img src="figures/elasticity-heatmap.png" alt="Nested logit elasticity matrix with nest blocks highlighted. Same-nest cross-elasticities (inside gold boxes) are higher than cross-nest elasticities." width="80%">
 
-The blue bars show the plain-logit restriction: the cross response is driven by Choco-Bombs' share and does not know which rival is closest. The green and red bars use the 2SLS nested-logit estimates, while the hatched bars show the true synthetic nested-logit benchmark. The estimate overstates the strength of nesting in this small IV design, but it recovers the main economic ranking: Store-Frosted is the close substitute.
+The blue bars show the plain-logit restriction: the cross response is driven by Choco-Bombs' share and does not know which rival is closest. The green and red bars use the 2SLS nested-logit estimates; the hatched bars show the true synthetic nested-logit benchmark. The estimate overstates the strength of nesting in this small IV design, but it recovers the economic ranking: Store-Frosted is the close substitute.
 
 <img src="figures/cross-elasticity-comparison.png" alt="Cross-elasticities when Choco-Bombs raises its price: plain logit, fitted nested logit, and the true synthetic nested-logit benchmark." width="80%">
 
@@ -142,7 +142,7 @@ The table separates model misspecification from finite-sample IV noise. Plain lo
 
 ## Takeaway
 
-Nested logit is useful when the researcher can defend a product grouping and wants a substitution matrix that is richer than plain logit but still easy to estimate. The economic content is the diversion pattern: a price increase for one sugary cereal mainly sends buyers to another sugary cereal. The cost is that the nests are maintained structure. If the important notion of closeness is consumer-specific rather than group-specific, the next step is a random-coefficients model rather than more polishing of the same nested specification.
+Nested logit is useful when the researcher can defend a product grouping and wants a substitution matrix richer than plain logit but still easy to estimate. The economic content is the diversion pattern: a price increase for one sugary cereal mainly sends buyers to another sugary cereal. The cost is that the nests are maintained structure. If the relevant notion of closeness is consumer-specific rather than group-specific, the next step is a random-coefficients model rather than more polishing of the same nested specification.
 
 ## References
 

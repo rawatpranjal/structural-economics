@@ -116,10 +116,10 @@ def main() -> None:
         "problem is not just estimating a technology parameter. If productive firms choose "
         "more labor and materials, OLS attributes part of productivity to those inputs, and "
         "that bias flows directly into markup estimates.\n\n"
-        "This tutorial keeps the data synthetic so the truth is visible. A Cobb-Douglas panel "
-        "generates output, flexible input choices, investment, productivity, and markups. The "
-        "exercise compares a naive production regression with a transparent investment-proxy "
-        "control, then applies the De Loecker-Warzynski markup formula. It complements "
+        "The data are synthetic so the truth is visible. A Cobb-Douglas panel generates "
+        "output, flexible input choices, investment, productivity, and markups. The exercise "
+        "compares a naive production regression with a transparent investment-proxy control, "
+        "then applies the De Loecker-Warzynski markup formula. It complements "
         "[Logit Demand and Markup Recovery](../logit-supply-side/): that tutorial recovers "
         "markups from demand and pricing FOCs, while this one recovers them from production "
         "elasticities and input shares."
@@ -231,11 +231,11 @@ the mapping from production-elasticity bias to markup bias is observable.
         "figures/production-estimates.png",
         "True and estimated output elasticities",
         fig1,
-        description="The first figure shows why the production-function step matters for IO "
-        "markups. OLS overstates the flexible-input elasticities because high-productivity "
-        "firms choose more inputs. The proxy-control estimate is not a new economic object; "
-        "it is a correction for the omitted productivity state, and in this simulation it "
-        "moves the materials elasticity close to its true value.",
+        description="Why the production-function step matters for IO markups. OLS overstates "
+        "the flexible-input elasticities because high-productivity firms choose more inputs. "
+        "The proxy-control estimate is not a new economic object; it is a correction for the "
+        "omitted productivity state, and in this simulation it moves the materials elasticity "
+        "close to its true value.",
     )
 
     fig2, ax2 = plt.subplots(figsize=(8, 5))
@@ -250,10 +250,10 @@ the mapping from production-elasticity bias to markup bias is observable.
         "figures/markup-distribution.png",
         "True and estimated markup distributions",
         fig2,
-        description="The second figure pushes the coefficient bias through the markup formula. "
-        "The OLS-implied distribution is too far to the right because the materials elasticity "
-        "is inflated. The proxy-control markups stay much closer to the truth, though they "
-        "still inherit noise from the expenditure share and the proxy.",
+        description="Pushing the coefficient bias through the markup formula. The OLS-implied "
+        "distribution is too far to the right because the materials elasticity is inflated. "
+        "The proxy-control markups stay much closer to the truth, though they still inherit "
+        "noise from the expenditure share and the proxy.",
     )
 
     fig3, ax3 = plt.subplots(figsize=(8, 5))
@@ -270,11 +270,11 @@ the mapping from production-elasticity bias to markup bias is observable.
         "figures/productivity-markups.png",
         "Estimated markups rise with productivity in the simulated panel",
         fig3,
-        description="The third figure uses the simulated truth to check the markup gradient, "
-        "not just the level. More productive firms have lower materials shares in this design, "
-        "so true markups rise with productivity. The recovered quintile means trace that "
-        "gradient fairly closely; the scatter reminds us that firm-level markups are noisy "
-        "objects even when the production elasticity is well estimated.",
+        description="The simulated truth lets us check the markup gradient, not just the level. "
+        "More productive firms have lower materials shares in this design, so true markups "
+        "rise with productivity. The recovered quintile means trace that gradient fairly "
+        "closely; the scatter is a reminder that firm-level markups are noisy even when the "
+        "production elasticity is well estimated.",
     )
 
     table = estimates.copy()
@@ -315,7 +315,7 @@ the mapping from production-elasticity bias to markup bias is observable.
     report.add_takeaway(
         "The markup estimate is only as credible as the production elasticity and the "
         "variable-input share behind it. In this controlled panel, correcting for productivity "
-        "substantially reduces the markup error; in real IO work, the analogous scrutiny falls "
+        "substantially reduces the markup error. In real IO work, the analogous scrutiny falls "
         "on the proxy monotonicity, the timing of input choices, and whether revenue data are "
         "being mistaken for physical output."
     )

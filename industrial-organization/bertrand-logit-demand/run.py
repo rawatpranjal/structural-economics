@@ -221,12 +221,12 @@ def main():
         "Before a merger, Firm 1 does not care that a price increase on Product 1 sends some "
         "consumers to Product 2. After common ownership, those diverted sales are partly "
         "recaptured by the same firm, so the old price vector is no longer optimal.\n\n"
-        "This tutorial calibrates a small logit demand system from pre-merger prices, shares, "
-        "and one margin. It then changes the ownership matrix and solves the Bertrand-Nash "
-        "pricing equations again. The exercise is intentionally narrow: it shows how demand, "
-        "diversion, markups, and marginal-cost efficiencies combine in the basic unilateral "
-        "effects calculation. The later [BLP random coefficients](../blp-random-coefficients/) "
-        "tutorial relaxes the logit substitution pattern; [merger simulation across demand "
+        "The tutorial calibrates a small logit demand system from pre-merger prices, shares, "
+        "and one margin, then changes the ownership matrix and solves the Bertrand-Nash "
+        "pricing equations again. Demand, diversion, markups, and marginal-cost efficiencies "
+        "all enter the basic unilateral-effects calculation. "
+        "[BLP random coefficients](../blp-random-coefficients/) "
+        "relaxes the logit substitution pattern; [merger simulation across demand "
         "systems](../merger-simulation/) compares the consequences of that modeling choice."
     )
 
@@ -343,12 +343,11 @@ up to the usual income constant.
         "Equilibrium prices under alternative ownership",
         fig1,
         description=(
-            "The price comparison shows the unilateral effect directly. Common ownership of "
-            "Products 1 and 2 raises both of their prices because the merged firm now values "
-            "sales recaptured by its partner product. Products 3 and 4 also move up because "
-            "prices are strategic complements. The cost-saving scenario lowers the merged "
-            "products' marginal costs, but it does not mechanically restore the pre-merger "
-            "equilibrium."
+            "Common ownership of Products 1 and 2 raises both of their prices because the "
+            "merged firm now values sales recaptured by its partner product. Products 3 and 4 "
+            "also move up because prices are strategic complements. The cost-saving scenario "
+            "lowers the merged products' marginal costs, but does not mechanically restore "
+            "the pre-merger equilibrium."
         ),
     )
 
@@ -372,10 +371,9 @@ up to the usual income constant.
         "Market shares and the outside option",
         fig2,
         description=(
-            "The share shifts explain where the price effect goes. The merged products lose "
-            "some volume after their prices rise. Part of that volume moves to rival inside "
-            "products, and part leaves the inside market altogether through the outside good. "
-            "That outside option matters because it limits how much price pressure can be "
+            "The merged products lose volume after their prices rise. Part of that volume "
+            "moves to rival inside products, and part leaves the inside market through the "
+            "outside good. The outside option limits how much price pressure can be "
             "internalized by any set of firms."
         ),
     )
@@ -407,10 +405,9 @@ up to the usual income constant.
         fig3,
         description=(
             "Rows are products losing a marginal sale; columns are products that receive it. "
-            "The logit restriction is visible: the larger-share products absorb more diverted "
-            "sales from every other product. That is convenient for a first merger exercise, "
-            "but it is also exactly why richer demand systems are needed when closeness of "
-            "substitution is central."
+            "Under logit, larger-share products absorb more diverted sales from every other "
+            "product. That is convenient for a first merger exercise, but it is also why "
+            "richer demand systems are needed when closeness of substitution is central."
         ),
     )
 
@@ -450,11 +447,10 @@ up to the usual income constant.
         "Merger simulation outcomes",
         df,
         description=(
-            "The table keeps the equilibrium accounting in one place. HHI is computed using "
-            "inside-good firm shares, so it captures the ownership change rather than the "
-            "outside option. Consumer surplus is reported as a change from the pre-merger "
-            "calibration. The FOC residuals are included because a merger simulation is only "
-            "as credible as the solved post-merger pricing equations."
+            "HHI is computed on inside-good firm shares, so it captures the ownership change "
+            "rather than the outside option. Consumer surplus is reported as a change from "
+            "the pre-merger calibration. The FOC residuals are included because a merger "
+            "simulation is only as credible as the solved post-merger pricing equations."
         ),
     )
 
@@ -463,8 +459,8 @@ up to the usual income constant.
         "The basic merger calculation is not an HHI calculation with a price effect attached. "
         "It is a pricing first-order condition with a different ownership matrix. A merger "
         "raises prices when diverted sales are valuable enough to the common owner; marginal-cost "
-        "efficiencies push the other way. In simple logit, diversion is easy to compute but tightly "
-        "restricted by IIA, so the exercise is best read as the clean benchmark before richer "
+        "efficiencies push the other way. Under simple logit, diversion is easy to compute but "
+        "tightly restricted by IIA, so the exercise reads as a clean benchmark before richer "
         "demand estimates and product-specific substitution patterns are introduced."
     )
 

@@ -4,9 +4,9 @@
 
 ## Overview
 
-Capital income taxation is a clean way to separate aggregate feasibility from private incentives. The government taxes capital income at rate $\tau_k$ and rebates the proceeds lump-sum. The representative economy still has the same resource constraint, but households save against an after-tax marginal product of capital. The distortion is therefore entirely intertemporal: current consumption becomes cheaper relative to future consumption.
+Capital income taxation separates aggregate feasibility from private incentives. The government taxes capital income at rate $\tau_k$ and rebates the proceeds lump-sum. The representative economy still has the same resource constraint, but households save against an after-tax marginal product of capital. The distortion is entirely intertemporal: current consumption becomes cheaper relative to future consumption.
 
-This tutorial is a tax-wedge companion to the global [RBC capital and labor](../../dynamic-programming/rbc/) example and the local [Dynare RBC](../../dynare/rbc/) impulse-response example. Here the point is not shock propagation per se. The point is how a permanent wedge moves the exact deterministic steady state, the nonlinear capital policy, and simulated investment behavior.
+This tutorial is a tax-wedge companion to the global [RBC capital and labor](../../dynamic-programming/rbc/) example and the local [Dynare RBC](../../dynare/rbc/) impulse-response example. The point is not shock propagation per se, but how a permanent wedge moves the exact deterministic steady state, the nonlinear capital policy, and simulated investment behavior.
 
 ## Equations
 
@@ -62,7 +62,7 @@ tax revenue $T_{ss}=\tau_k \alpha Y_{ss}$.
 
 ## Solution Method
 
-The computation uses the resource-feasible Bellman problem to get a stable global policy on the $(z,K)$ grid, then refines consumption with the after-tax Euler equation. The first step is a good initializer because the rebate leaves the aggregate resource constraint unchanged. The second step is where the capital-tax wedge enters.
+The computation uses the resource-feasible Bellman problem to get a stable global policy on the $(z,K)$ grid, then refines consumption with the after-tax Euler equation. The first step is a good initializer because the rebate leaves the aggregate resource constraint unchanged. The second step introduces the capital-tax wedge.
 
 ```text
 Algorithm: global policy iteration with a capital-tax wedge
@@ -89,13 +89,13 @@ until the consumption policy update is below epsilon
 Simulate all tax regimes on the same productivity path
 ```
 
-The exact deterministic steady state is used as a ground-truth benchmark for the long-run comparisons. The stochastic policy functions are numerical, and the table below separates the exact steady states from simulated means. Across the five tax regimes, VFI used at most **49** outer iterations and the Euler refinement used at most **223** iterations.
+The exact deterministic steady state serves as a ground-truth benchmark for the long-run comparisons. The stochastic policy functions are numerical, and the table below separates the exact steady states from simulated means. Across the five tax regimes, VFI used at most **49** outer iterations and the Euler refinement used at most **223** iterations.
 
 ## Results
 
 The exact steady-state formulas already show the size of the distortion. At $\tau_k=30\%$, deterministic capital is 42.7% below the no-tax value, output is 18.2% lower, and consumption is 9.7% lower. Consumption falls less because a lower capital stock also reduces replacement investment. The simulations use the same productivity sequence for every tax rate, so the level differences across paths are the tax wedge, not different shock histories.
 
-The first comparison is analytical rather than simulated. Capital falls with $(1-\tau_k)^{1/(1-\alpha)}$, so the tax rate is amplified by the capital share. Output and consumption move less than capital, but the whole economy is operating from a lower productive base.
+The first comparison is analytical rather than simulated. Capital falls with $(1-\tau_k)^{1/(1-\alpha)}$, so the tax rate is amplified by the capital share. Output and consumption move less than capital, but the economy operates from a lower productive base.
 
 <img src="figures/steady-state-tax.png" alt="Exact steady-state levels and losses by capital tax rate" width="80%">
 
@@ -125,7 +125,7 @@ The table keeps the closed-form steady-state benchmark separate from the simulat
 
 ## Takeaway
 
-The rebate closes the government budget, not the intertemporal wedge. Once the household prices saving with $(1-\tau_k)MPK$ rather than $MPK$, the economy carries less capital into every productivity state. The exact steady state is the cleanest way to see the long-run loss; the global policy functions show how the same force operates away from the steady state. This is the useful lesson for nearby DSGE applications: fiscal wedges can be revenue-neutral in resources and still large in allocation.
+The rebate closes the government budget, not the intertemporal wedge. Once the household prices saving with $(1-\tau_k)MPK$ rather than $MPK$, the economy carries less capital into every productivity state. The exact steady state is the cleanest way to see the long-run loss; the global policy functions show how the same force operates away from the steady state. The lesson for nearby DSGE applications is that fiscal wedges can be revenue-neutral in resources and still large in allocation.
 
 ## References
 

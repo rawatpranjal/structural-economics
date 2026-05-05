@@ -578,7 +578,7 @@ def main():
         "the merger, Firm 1 ignores sales that Product 1 loses to Firm 2's products. After the "
         "merger, those diverted sales stay inside the merged portfolio, so the old price vector "
         "no longer satisfies the pricing first-order conditions.\n\n"
-        "The hard part is that diversion is not observed directly. This tutorial takes one "
+        "The hard part is that diversion is not observed directly. The tutorial takes one "
         "pre-merger market and calibrates three demand systems to the same shares, prices, and "
         "margins: logit, linear, and log-linear demand. It then changes ownership and solves "
         "the post-merger Bertrand-Nash prices. The exercise is not an estimator; it is a "
@@ -735,10 +735,10 @@ solving a new equilibrium.
         "Pre- vs post-merger prices across three demand systems. Merging products (1-4) "
         "see larger price increases; the magnitude depends heavily on the demand model.",
         fig1,
-        description="The price comparison is the unilateral effect in levels. Products 1-4 are "
-        "inside the merged portfolio, so their post-merger prices move the most. The logit and "
-        "log-linear systems give roughly double-digit average increases for the merging "
-        "products, while the linear system is more muted under this cross-slope calibration.",
+        description="The unilateral effect in levels. Products 1-4 are inside the merged "
+        "portfolio, so their post-merger prices move the most. The logit and log-linear "
+        "systems give roughly double-digit average increases for the merging products, while "
+        "the linear system is more muted under this cross-slope calibration.",
     )
 
     # -----------------------------------------------------------------
@@ -769,8 +769,8 @@ solving a new equilibrium.
         fig2,
         description="The welfare accounting separates the transfer from consumers to firms "
         "from the deadweight component. Consumers lose in every demand system here. Producer "
-        "surplus rises, but not enough to offset the consumer loss, so total surplus falls in "
-        "this calibration.",
+        "surplus rises, but not enough to offset the consumer loss, so total surplus falls "
+        "under this calibration.",
     )
 
     # -----------------------------------------------------------------
@@ -820,11 +820,10 @@ solving a new equilibrium.
         "GUPPI screen versus solved equilibrium price effects, with product-level UPP for "
         "the products that become newly co-owned.",
         fig3,
-        description="GUPPI is useful precisely because it is local: it uses observed margins "
-        "and diversion before solving a counterfactual equilibrium. The left panel treats the "
-        "solved post-merger price increase as the benchmark. The gap is the pass-through, "
-        "curvature, and strategic-pricing content that a first-order screen cannot carry by "
-        "itself.",
+        description="GUPPI is local: it uses observed margins and diversion before solving a "
+        "counterfactual equilibrium. The left panel treats the solved post-merger price "
+        "increase as the benchmark. The gap is the pass-through, curvature, and "
+        "strategic-pricing content that a first-order screen cannot carry by itself.",
     )
 
     # -----------------------------------------------------------------
@@ -942,10 +941,10 @@ solving a new equilibrium.
 
     df = pd.DataFrame(table_data)
     report.add_table("tables/merger-effects.csv", "Merger Effects and Screen Diagnostics", df,
-        description="The table keeps the screens and the solved equilibrium in the same place. "
-        "Average actual price increases are from the post-merger FOC solution. GUPPI and CMCR "
-        "are local screens. The break-even efficiency column comes from re-solving the pricing "
-        "equilibrium on a finer cost-reduction grid.")
+        description="Screens and solved equilibrium in the same place. Average actual price "
+        "increases are from the post-merger FOC solution. GUPPI and CMCR are local screens. "
+        "The break-even efficiency column comes from re-solving the pricing equilibrium on a "
+        "finer cost-reduction grid.")
 
     # -----------------------------------------------------------------
     # Takeaway
@@ -956,10 +955,10 @@ solving a new equilibrium.
         "calibration, all three demand systems predict higher prices and lower consumer "
         "surplus, but they disagree on magnitudes, on the relation between GUPPI and solved "
         "price effects, and on the efficiency needed to offset the merger.\n\n"
-        "The practical lesson is to treat UPP, GUPPI, and CMCR as screens, not as substitutes "
-        "for a solved pricing model. The screen tells the analyst where unilateral pressure "
-        "comes from. The equilibrium calculation tells how that pressure is mediated by "
-        "pass-through, demand curvature, rivals' prices, and claimed marginal-cost efficiencies."
+        "UPP, GUPPI, and CMCR are screens, not substitutes for a solved pricing model. The "
+        "screen indicates where unilateral pressure comes from. The equilibrium calculation "
+        "indicates how that pressure is mediated by pass-through, demand curvature, rivals' "
+        "prices, and claimed marginal-cost efficiencies."
     )
 
     report.add_references([

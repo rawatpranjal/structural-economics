@@ -139,10 +139,10 @@ def main() -> None:
         "the market price. The Nash quantity is not the joint-profit maximum and "
         "not the competitive quantity. It is the point where each firm is already "
         "choosing its optimal quantity given the other firm's quantity.\n\n"
-        "The tutorial keeps two solution views side by side. The first is the "
-        "closed-form first-order condition. The second iterates best responses and "
-        "reports a fixed-point residual. The iteration is useful because larger "
-        "games usually do not have a one-line equilibrium formula."
+        "Two solution views run side by side. The first is the closed-form first-order "
+        "condition. The second iterates best responses and reports a fixed-point residual. "
+        "The iteration matters because larger games usually do not have a one-line "
+        "equilibrium formula."
     )
 
     report.add_equations(
@@ -265,8 +265,8 @@ price equal to marginal cost.
 
     report.add_results(
         "The residual falls quickly because this linear duopoly has a stable "
-        "best-response map after damping. Reporting this residual keeps the numerical "
-        "exercise tied to the economic definition of equilibrium."
+        "best-response map after damping. Reporting it ties the numerical exercise to "
+        "the economic definition of equilibrium."
     )
     report.add_figure(
         "figures/residuals.png",

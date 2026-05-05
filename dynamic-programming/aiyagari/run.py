@@ -641,9 +641,9 @@ $$
     )
 
     report.add_takeaway(
-        "The useful lesson is that incomplete markets turn a household precautionary motive "
-        "into an aggregate price effect. With no insurance against persistent income risk, "
-        "households want buffer assets; in equilibrium those assets are the economy's capital "
+        "Incomplete markets turn a household precautionary motive into an aggregate price "
+        "effect. With no insurance against persistent income risk, households want buffer "
+        "assets; in equilibrium those assets are the economy's capital "
         f"stock. The result is $r^{{*}}={r_eq:.4f}$, below $1/\\beta-1={impatience_rate:.4f}$, "
         "and a right-skewed wealth distribution generated without ex ante heterogeneity. "
         "Faster algorithms can change the cost of the computation, but they do not change "

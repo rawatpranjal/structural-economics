@@ -156,7 +156,7 @@ def main() -> None:
         "The Ramsey-Cass-Koopmans model asks how much output a planner should consume "
         "today and how much should be invested for future production. Capital $k(0)$ is "
         "inherited from the past, but consumption can jump at date zero. The economic "
-        "selection problem is therefore sharp: for a given $k_0$, which $c_0$ is consistent "
+        "selection problem is sharp: for a given $k_0$, which $c_0$ is consistent "
         "with optimal intertemporal saving?\n\n"
         "Most initial consumption choices are wrong. If $c_0$ is too high, the economy runs "
         "capital down too aggressively and violates feasibility. If it is too low, the "
@@ -166,7 +166,7 @@ def main() -> None:
         "This tutorial is the algorithmic companion to the neighboring "
         "[Ramsey phase-diagram](../phase-diagrams/) example and the HJB formulation in "
         "[HJB growth](../hjb-growth/). The model is the same; the numerical representation "
-        "is different."
+        "differs."
     )
 
     report.add_equations(
@@ -223,8 +223,8 @@ by choosing $c_0$ so that the path is near $(k^{{*}},c^{{*}})$ at a long termina
     )
 
     report.add_model_setup(
-        "The calibration is deterministic and deliberately close to textbook growth "
-        "examples. The terminal date is a numerical device used to approximate the "
+        "The calibration is deterministic and stays close to textbook growth examples. "
+        "The terminal date is a numerical device used to approximate the "
         "infinite-horizon transversality condition; it is not an economic horizon.\n\n"
         f"| Object | Value | Role |\n"
         f"|---|---:|---|\n"
@@ -307,7 +307,7 @@ by choosing $c_0$ so that the path is near $(k^{{*}},c^{{*}})$ at a long termina
             "line is $k^{*}$, where $\\dot{c}=0$. Each colored path starts from a different "
             "$k_0$ and uses the $c_0$ found by shooting. Below $k^{*}$, consumption starts low "
             "enough for investment to build capital. Above $k^{*}$, consumption starts above "
-            "net output, so capital is deliberately run down."
+            "net output, so capital is run down."
         ),
     )
 
@@ -339,8 +339,8 @@ by choosing $c_0$ so that the path is near $(k^{{*}},c^{{*}})$ at a long termina
             "The time paths make the saving logic easier to read. A capital-poor economy "
             "keeps consumption below output and lets capital rise; a capital-rich economy "
             "consumes more than current net output and moves down. Consumption is not fixed "
-            "at a constant saving rate. It moves according to the Euler equation as the "
-            "marginal product of capital changes along the transition."
+            "at a constant saving rate. It moves with the Euler equation as the marginal "
+            "product of capital changes along the transition."
         ),
     )
 
@@ -405,20 +405,20 @@ by choosing $c_0$ so that the path is near $(k^{{*}},c^{{*}})$ at a long termina
             "The table records the jump variable selected by the root search. The consumption "
             "ratio is below one when the planner is building capital and above one when the "
             "planner is running capital down. The last column is the finite-horizon shooting "
-            "residual, kept visible so the boundary-condition approximation is auditable."
+            "residual, left visible so the boundary-condition approximation is auditable."
         ),
     )
 
     report.add_takeaway(
-        "The Ramsey shooting problem is a clean example of how economics and numerics line up. "
-        "History fixes $k_0$, but optimality selects $c_0$. The root search is finding the "
+        "Ramsey shooting is a clean example of how economics and numerics line up. "
+        "History fixes $k_0$, but optimality selects $c_0$. The root search finds the "
         "initial consumption level that keeps the path feasible and satisfies the "
         "transversality condition.\n\n"
-        "The exercise also shows why saddle-path systems are easy to state but delicate to "
-        "compute. A small error in $c_0$ sends the economy toward capital exhaustion or "
-        "overaccumulation. Once the correct path is selected, the model delivers the usual "
-        "Ramsey logic: invest when capital is scarce, decumulate when capital is abundant, and "
-        "converge toward the modified golden-rule point $f'(k^{*})=\\rho+\\delta$."
+        "Saddle-path systems are easy to state but delicate to compute. A small error in "
+        "$c_0$ sends the economy toward capital exhaustion or overaccumulation. Once the "
+        "correct path is selected, the model delivers the standard Ramsey logic: invest "
+        "when capital is scarce, decumulate when capital is abundant, and converge toward "
+        "the modified golden-rule point $f'(k^{*})=\\rho+\\delta$."
     )
 
     report.add_references([

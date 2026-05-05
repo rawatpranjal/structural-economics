@@ -139,7 +139,7 @@ def main() -> None:
         "change precautionary behavior, asset prices, equilibrium distributions, and the "
         "curvature of policy functions.\n\n"
         "This tutorial compares Tauchen, Rouwenhorst, and a discrete-normal quadrature. "
-        "The point is to see how one target AR(1) can lead to different grids, transition "
+        "One target AR(1) can lead to different grids, transition "
         "matrices, and stationary distributions. "
         "The same issue appears downstream in the consumption-savings, RBC, and Aiyagari "
         "tutorials, where the shock process feeds directly into household choices or "
@@ -256,7 +256,7 @@ $\sigma_\epsilon={sigma_eps}$, the target unconditional standard deviation is
     ax1.set_title("Stationary Mass by Approximation")
     ax1.legend()
     report.add_results(
-        "Start with the stationary probabilities. They show where the finite chain spends "
+        "The stationary probabilities show where the finite chain spends "
         "time in the long run. Even when methods target the same continuous process, they can "
         "place mass on different support points, which changes the states used inside "
         "continuation-value calculations."

@@ -76,7 +76,7 @@ The Bellman operator is a contraction, so this fixed-point iteration converges t
 
 ## Results
 
-The first diagnostic compares the computed value function with the log-utility ground truth. Concavity means extra cake has high value when the stock is low and lower value when the stock is already large. The largest value-function deviation outside the bottom decile of the grid is **2.52e-02**.
+The computed value function can be compared with the log-utility ground truth. Concavity means extra cake has high value when the stock is low and lower value when the stock is already large. The largest value-function deviation outside the bottom decile of the grid is **2.52e-02**.
 
 The numerical and analytical value functions nearly overlap. The remaining gap is a grid and interpolation error, not an economic disagreement.
 
@@ -88,13 +88,13 @@ The numerical policy tracks the analytical straight line. Small departures come 
 
 <img src="figures/policy-function.png" alt="Consumption policy: numerical vs analytical" width="80%">
 
-Simulating the policy shows the resource-allocation logic over time. The analytical path is $W_t=\beta^t W_0$ and $c_t=(1-\beta)W_t$. The largest numerical depletion-path deviation over the simulation is **1.25e-03**.
+The simulated policy traces the resource path over time. The analytical path is $W_t=\beta^t W_0$ and $c_t=(1-\beta)W_t$. The largest numerical depletion-path deviation over the simulation is **1.25e-03**.
 
 Both wealth and consumption shrink geometrically. The analytical path makes the numerical error visible as a diagnostic of grid resolution rather than a separate economic effect.
 
 <img src="figures/simulation.png" alt="Simulation: cake depletion and consumption paths starting from W=1" width="80%">
 
-The table reports pointwise errors at selected wealth states. This is the main benefit of the cake-eating benchmark: the numerical approximation can be audited directly before moving to models without closed forms.
+The table reports pointwise errors at selected wealth states. The cake-eating benchmark allows the numerical approximation to be audited directly before moving to models without closed forms.
 
 **Numerical vs analytical solution at selected grid points**
 
@@ -111,7 +111,7 @@ The table reports pointwise errors at selected wealth states. This is the main b
 
 ## Takeaway
 
-Cake eating turns dynamic programming into one clean resource-allocation lesson: the state is remaining wealth, the control is current consumption, and the policy trades off current utility against the shadow value of wealth tomorrow. With log utility, the ground truth is simple: consume the constant share $(1-\beta)$ and carry forward $\beta W$. The small numerical gaps shown above are grid and interpolation diagnostics. In optimal-growth and consumption-savings models, the same Bellman logic remains, but production, income risk, and borrowing constraints remove this closed-form safety check.
+Cake eating reduces dynamic programming to a resource-allocation problem: the state is remaining wealth, the control is current consumption, and the policy trades off current utility against the shadow value of wealth tomorrow. With log utility, the agent consumes the constant share $(1-\beta)$ and carries forward $\beta W$. The small numerical gaps shown above are grid and interpolation diagnostics. In optimal-growth and consumption-savings models, the same Bellman logic remains, but production, income risk, and borrowing constraints remove this closed-form safety check.
 
 ## References
 

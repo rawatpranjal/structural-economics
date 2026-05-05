@@ -399,7 +399,7 @@ def main():
         "choice follows from the first-order condition. The numerical problem is "
         "therefore not a search over consumption; it is a problem of computing the "
         "right derivative of the value function along the capital drift.\n\n"
-        "The tutorial uses the implicit upwind scheme from continuous-time macro. "
+        "The implicit upwind scheme from continuous-time macro is used here. "
         "The same economic dynamics also appear in the neighboring "
         "[Ramsey phase-diagram](../phase-diagrams/) and "
         "[Ramsey shooting](../ramsey-growth/) tutorials; here the focus is the HJB "
@@ -461,7 +461,7 @@ $$
 """)
 
     report.add_model_setup(
-        "The calibration is intentionally small: one capital state, Cobb-Douglas "
+        "The calibration is small by design: one capital state, Cobb-Douglas "
         "technology, CRRA utility, and no shocks. The baseline HJB grid is used for "
         "the reported policy functions. A finer HJB grid is solved only as a "
         "same-model reference for the figures; it is not a different economic model.\n\n"
@@ -485,7 +485,7 @@ $$
         "the algorithm computes two candidate marginal values, turns each into a "
         "consumption rule, and then chooses the derivative from the side that is "
         "upwind relative to the implied capital drift. The derivative and the policy "
-        "are therefore chosen together, which is the main numerical discipline in the "
+        "are chosen together, which is the main numerical discipline in the "
         "continuous-time formulation.\n\n"
         "```text\n"
         "Inputs: grid {k_i}, primitives (rho, sigma, alpha, delta, A), tolerance eps\n"
@@ -507,12 +507,12 @@ $$
         "```\n\n"
         "The linear solve is sparse and tridiagonal. The large pseudo-time step "
         "$\\Delta=1000$ is a numerical device, not an economic period length; it "
-        "stabilizes the fixed-point update while leaving the continuous-time HJB "
-        "as the target equation.\n\n"
+        "stabilizes the fixed-point update while leaving the continuous-time HJB as "
+        "the target equation.\n\n"
         f"The baseline continuous-time HJB converged in **{info_ct['iterations']} "
         f"iterations** (change = {info_ct['error']:.2e}). The fine-grid HJB reference "
         f"converged in **{info_ref['iterations']} iterations** (change = "
-        f"{info_ref['error']:.2e}). A coarse discrete-time VFI check, included only "
+        f"{info_ref['error']:.2e}). A coarse discrete-time VFI check, used only "
         f"for orientation, converged in **{info_dt['iterations']} iterations** "
         f"(error = {info_dt['error']:.2e})."
     )
@@ -590,11 +590,11 @@ $$
         "figures/savings-policy.png",
         "Capital drift with accumulation below steady state and decumulation above it",
         fig3,
-        description="The drift $s(k)=\\dot{k}$ is the object that determines both economic "
-        "transitions and the upwind derivative. Positive drift means the economy moves "
-        "toward higher capital; negative drift means it moves back down. The zero "
-        "crossing is the Ramsey steady state, and the fine-grid line shows that the "
-        "baseline grid locates it accurately.",
+        description="The drift $s(k)=\\dot{k}$ determines both economic transitions and "
+        "the upwind derivative. Positive drift means the economy moves toward higher "
+        "capital; negative drift means it moves back down. The zero crossing is the "
+        "Ramsey steady state, and the fine-grid line shows that the baseline grid "
+        "locates it accurately.",
     )
 
     # --- Figure 4: Transition Dynamics ---
@@ -614,7 +614,7 @@ $$
         "figures/transition-dynamics.png",
         "Transition dynamics k(t) from different initial conditions converging to steady state",
         fig4,
-        description="Integrating the policy-implied law of motion gives the familiar "
+        description="Integrating the policy-implied law of motion produces the standard "
         "convergence picture. Low-capital economies invest because marginal product is "
         "high; high-capital economies consume more than net output and move down. The "
         "single-state planner has a unique stable path back to $k_{ss}$.",
@@ -682,7 +682,7 @@ $$
         "tables/steady-state.csv",
         "Steady-State Values and HJB Diagnostics",
         df,
-        description="The steady state has a closed-form target, so it is a useful check on "
+        description="The steady state has a closed-form target, which provides a check on "
         "the finite-difference solution. The baseline grid locates the zero drift within "
         "one grid step, and the finer grid tightens that comparison without changing the "
         "economic calculation.",
@@ -695,10 +695,10 @@ $$
         "HJB turns this logic into a derivative problem. Once $V'(k)$ is approximated "
         "from the correct side, consumption follows from the FOC and the remaining step "
         "is a sparse linear solve.\n\n"
-        "This is why the upwind choice matters. It is not a cosmetic numerical detail; "
-        "it encodes the direction of capital movement. That same idea becomes central in "
-        "continuous-time heterogeneous-agent models, where the HJB policy and the forward "
-        "equation for the distribution have to use compatible drift directions."
+        "The upwind choice is not a cosmetic numerical detail; it encodes the direction "
+        "of capital movement. That same idea becomes central in continuous-time "
+        "heterogeneous-agent models, where the HJB policy and the forward equation for "
+        "the distribution have to use compatible drift directions."
     )
 
     report.add_references([

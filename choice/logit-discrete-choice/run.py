@@ -228,13 +228,13 @@ def main() -> None:
 
     report.add_overview(
         "A product-choice model is a disciplined way to turn prices, characteristics, "
-        "and observed purchases into demand primitives. Here the market is deliberately "
-        "small: five products differ only in price and quality, and each consumer buys "
+        "and observed purchases into demand primitives. The market here is small: "
+        "five products differ only in price and quality, and each consumer buys "
         "the product with the highest utility draw.\n\n"
-        "The plain logit is the benchmark because the Type I extreme-value taste shock "
+        "Plain logit is the benchmark because the Type I extreme-value taste shock "
         "gives closed-form choice probabilities. That convenience also gives the model "
         "its sharp economic restriction: substitution depends on existing market shares, "
-        "not on product similarity. This tutorial estimates the coefficients, compares "
+        "not on product similarity. The tutorial estimates the coefficients, compares "
         "the fitted shares with the known data-generating model, and then makes the "
         "Independence of Irrelevant Alternatives (IIA) visible."
     )
@@ -334,7 +334,7 @@ which does not depend on any third product.
                        fig1,
                        description="The contour plot shows the whole estimation problem in two dimensions. "
                        "The likelihood has one peak, and the MLE sits close to the true coefficients used to generate the data. "
-                       "Sampling noise keeps the estimate from landing exactly on the star, but the gap is small with 5,000 choices.")
+                       "Sampling noise keeps the estimate from landing exactly on the star, but the gap is small at 5,000 choices.")
 
     # --- Figure 2: Predicted vs Actual Market Shares ---
     fig2, ax2 = plt.subplots(figsize=(8, 5))
@@ -352,8 +352,8 @@ which does not depend on any third product.
     report.add_figure("figures/market-shares.png",
                        "Observed, fitted, and true logit market shares",
                        fig2,
-                       description="Observed shares are finite-sample frequencies, while the green bars are the population shares from the data-generating logit. "
-                       "The fitted shares mostly sit between those two objects, which is what we should expect when the model is correctly specified.")
+                       description="Observed shares are finite-sample frequencies; the green bars are the population shares from the data-generating logit. "
+                       "The fitted shares mostly sit between those two objects, which is what correct specification predicts.")
 
     # --- Figure 3: Own-Price Elasticities ---
     fig3, ax3 = plt.subplots(figsize=(8, 5))
@@ -416,7 +416,7 @@ which does not depend on any third product.
                        "IIA reallocation after removing one alternative",
                        fig4,
                        description="When Product 3 is removed, the remaining products do not become closer or farther apart in the model. "
-                       "Their probabilities are simply renormalized, so the pairwise odds ratios in the right panel stay fixed. "
+                       "Their probabilities are renormalized, so the pairwise odds ratios in the right panel stay fixed. "
                        "This is the IIA restriction that the nested-logit tutorial relaxes by grouping similar products.")
 
     # --- Table: Estimation Results ---
@@ -451,7 +451,7 @@ which does not depend on any third product.
         "coefficients to shares is transparent and the likelihood is easy to optimize. "
         "The same structure makes its substitution patterns too rigid: once shares are "
         "known, cross-price responses are pinned down by IIA rather than by economic "
-        "similarity. That is why nested logit and mixed logit are natural next models, "
+        "similarity. Nested logit and mixed logit are the natural next models, "
         "not cosmetic complications."
     )
 

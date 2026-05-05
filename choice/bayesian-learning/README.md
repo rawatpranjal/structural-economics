@@ -6,7 +6,7 @@
 
 A firm is deciding whether to invest in a project whose quality is not directly observed. Each signal is noisy, so no single draw settles the question. What matters for choice is the posterior probability that the project is good, not the full signal history.
 
-The tutorial uses the two-state urn model because it makes that compression exact. Nature chooses state $H$ or $L$, signals arrive sequentially, and the agent updates $p_t=\Pr(H \mid s_1,\ldots,s_t)$. The posterior is then fed into a finite-horizon stopping problem: invest when confidence is high, reject when confidence is low, and continue sampling when information still has option value.
+The two-state urn model makes that compression exact. Nature chooses state $H$ or $L$, signals arrive sequentially, and the agent updates $p_t=\Pr(H \mid s_1,\ldots,s_t)$. The posterior then feeds into a finite-horizon stopping problem: invest when confidence is high, reject when confidence is low, and continue sampling when information still has option value.
 
 Within the choice section, this is a belief-state example rather than a demand model. It complements [plain logit demand](../logit-discrete-choice/) because both rely on log odds, but here the probability is a posterior about an unknown state rather than a market share.
 
@@ -97,15 +97,15 @@ The sufficient statistic for classification is the red-signal count $k_T$. For t
 
 ## Results
 
-The first figure separates pathwise uncertainty from the law of large numbers. Light traces are individual histories, the solid curve is the mean across the 200 simulated paths, and the dashed curve integrates the posterior exactly over the binomial signal distribution. With a good project, evidence drifts toward one; with a bad project, it drifts toward zero. The early dispersion is not numerical error. It is the information problem.
+The figure separates pathwise uncertainty from the law of large numbers. Light traces are individual histories, the solid curve is the mean across the 200 simulated paths, and the dashed curve integrates the posterior exactly over the binomial signal distribution. With a good project, evidence drifts toward one; with a bad project, it drifts toward zero. The early dispersion is not numerical error. It is the information problem.
 
 <img src="figures/belief-evolution.png" alt="Posterior belief P(H) over time, with exact conditional means overlaid." width="80%">
 
-The next figure varies signal quality while holding the prior fixed. As $p_H$ moves away from one half, each draw carries a larger likelihood-ratio increment. Learning is therefore highly nonlinear in signal precision: weak signals can leave the firm undecided for most of the horizon, while precise signals settle the investment case quickly.
+Signal quality varies while the prior is held fixed. As $p_H$ moves away from one half, each draw carries a larger likelihood-ratio increment. Learning is nonlinear in signal precision: weak signals can leave the firm undecided for most of the horizon, while precise signals settle the investment case quickly.
 
 <img src="figures/learning-speed.png" alt="Mean number of signals needed to reach a 95 percent posterior belief." width="80%">
 
-The classifier comparison is intentionally favorable to Bayes: the likelihoods used by the Bayesian rule are the true likelihoods. Logistic regression sees simulated histories and learns a very similar monotone rule in the red-signal count. The near overlap is the point. In this experiment, machine learning recovers the same sufficient statistic rather than discovering a different economic object.
+The classifier comparison is favorable to Bayes by construction: the likelihoods used by the Bayesian rule are the true likelihoods. Logistic regression sees simulated histories and learns a similar monotone rule in the red-signal count. The near overlap is the point. Machine learning recovers the same sufficient statistic rather than discovering a different economic object.
 
 <img src="figures/roc-comparison.png" alt="ROC curves for the Bayes rule and a trained logistic classifier." width="80%">
 
@@ -127,9 +127,9 @@ The table separates the population benchmark from finite-sample evaluation. The 
 
 ## Takeaway
 
-Bayesian learning is useful here because it reduces a long signal history to the posterior belief that is relevant for choice. The same object classifies the state, sets the stopping boundary, and prices the value of one more signal.
+Bayesian learning reduces a long signal history to the posterior belief relevant for choice. The same object classifies the state, sets the stopping boundary, and prices the value of one more signal.
 
-The important comparison is not Bayes versus machine learning as slogans. In this controlled experiment the likelihood is known, so Bayes is the population benchmark. A trained classifier can learn the same likelihood-ratio rule from data, but the economic state variable remains the posterior belief. Once that state is in hand, the investment decision is a standard dynamic choice problem: act at extreme beliefs, wait in the middle, and recognize that the waiting region collapses as the deadline approaches.
+The relevant comparison is not Bayes versus machine learning as slogans. In this controlled experiment the likelihood is known, so Bayes is the population benchmark. A trained classifier can learn the same likelihood-ratio rule from data, but the economic state variable remains the posterior belief. Once that state is in hand, the investment decision is a standard dynamic choice problem: act at extreme beliefs, wait in the middle, and accept that the waiting region collapses as the deadline approaches.
 
 ## References
 

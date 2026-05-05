@@ -172,12 +172,12 @@ def main() -> None:
         "but not integrated analytically. Metropolis-Hastings turns that density into dependent "
         "draws. The draws are useful only if the chain explores the economically relevant parts "
         "of the posterior in the finite run actually used for inference.\n\n"
-        "This tutorial uses a two-mode posterior over a parameter vector $\\theta$. The target is "
-        "small enough to plot, but it carries the same practical problem as larger models: a "
-        "proposal scale can look acceptable by one diagnostic and fail by another. Small "
-        "proposals accept often but move slowly. Large proposals jump farther but spend time "
-        "being rejected. The point is not to chase a universal acceptance rate; it is to diagnose "
-        "mixing for the posterior at hand."
+        "The target below is a two-mode posterior over a parameter vector $\\theta$. It is small "
+        "enough to plot, but it carries the same practical problem as larger models: a proposal "
+        "scale can look acceptable by one diagnostic and fail by another. Small proposals accept "
+        "often but move slowly. Large proposals jump farther but spend time being rejected. The "
+        "point is not to chase a universal acceptance rate; it is to diagnose mixing for the "
+        "posterior at hand."
     )
 
     report.add_equations(
@@ -240,7 +240,7 @@ $$
         "```\n\n"
         "The true mixture mean is known here, so the posterior mean error is a ground-truth "
         "diagnostic. In empirical applications, trace plots, multiple chains, posterior moments, "
-        "and economically meaningful functionals play the same role."
+        "and economically meaningful functionals serve the same role."
     )
 
     x_grid, y_grid, density = make_density_grid()
@@ -287,7 +287,7 @@ $$
         "Trace plots for the middle-step random-walk chain",
         fig2,
         description=(
-            "Trace plots reveal whether the chain has left its starting point, whether it moves "
+            "Trace plots show whether the chain has left its starting point, whether it moves "
             "between modes, and whether the retained draws are still highly persistent."
         ),
     )
@@ -344,7 +344,7 @@ $$
         "Metropolis-Hastings is correct asymptotically under weak conditions, but finite-run "
         "Bayesian inference depends on mixing. Acceptance rates, trace plots, cumulative means, "
         "mode switching, and autocorrelation diagnose different failures. A sampler can target "
-        "the right posterior in theory and still give weak empirical inference if it explores "
+        "the right posterior in theory and still produce weak empirical inference if it explores "
         "that posterior too slowly."
     )
 

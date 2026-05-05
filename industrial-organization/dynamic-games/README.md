@@ -4,9 +4,9 @@
 
 ## Overview
 
-Dynamic IO starts from a simple observation: a firm's current action can change the future state of competition. Quality investment is the clean example here. A firm pays a cost today for a chance to move up a quality ladder, which affects future market shares, rival incentives, and the value of being ahead.
+Dynamic IO starts from one observation: a firm's current action can change the future state of competition. Quality investment is the clean example. A firm pays a cost today for a chance to move up a quality ladder, which affects future market shares, rival incentives, and the value of being ahead.
 
-The model is a deliberately small two-firm Ericson-Pakes style game. The state is the pair of quality levels, each firm chooses whether to invest, and strategies are Markov perfect: they condition on the payoff-relevant state rather than the full history. The companion tutorials on [dynamic entry and exit](../dynamic-entry-exit/) and [dynamic discrete choice](../dynamic-discrete-choice/) use similar continuation-value logic without this simultaneous strategic investment margin.
+The model is a small two-firm Ericson-Pakes style game. The state is the pair of quality levels, each firm chooses whether to invest, and strategies are Markov perfect: they condition on the payoff-relevant state rather than the full history. The companion tutorials on [dynamic entry and exit](../dynamic-entry-exit/) and [dynamic discrete choice](../dynamic-discrete-choice/) use similar continuation-value logic without this simultaneous strategic investment margin.
 
 ## Equations
 
@@ -86,7 +86,7 @@ There is no closed-form benchmark for this strategic dynamic game. The relevant 
 
 ## Results
 
-The policy is simple in this calibration: firm 1 invests at every interior quality state and waits only at the top rung. The rival's quality still matters for values, but not enough here to overturn the incentive to climb until the ladder cap binds.
+The policy is simple in this calibration: firm 1 invests at every interior quality state and waits only at the top rung. Rival quality still affects values, but not enough here to overturn the incentive to climb until the ladder cap binds.
 
 <img src="figures/investment-policy.png" alt="Firm 1 investment policy over the quality state space" width="80%">
 
@@ -94,7 +94,7 @@ The diagonal is symmetric, while off-diagonal states price the value of a qualit
 
 <img src="figures/value-advantage.png" alt="Value advantage across states" width="80%">
 
-The simulated path shows the policy as a stochastic industry process. Investment periods are marked by light vertical lines; leadership persists, but depreciation and catch-up investment keep the identity of the high-quality firm from being fixed forever.
+The simulated path shows the policy as a stochastic industry process. Investment periods are marked by light vertical lines; leadership persists, but depreciation and catch-up investment keep the identity of the high-quality firm from being fixed permanently.
 
 <img src="figures/simulated-quality-path.png" alt="Simulated quality paths under Markov-perfect policies" width="80%">
 
@@ -111,7 +111,7 @@ The selected states show the economic content of the equilibrium: symmetric stat
 
 ## Takeaway
 
-A dynamic game turns an IO counterfactual into a state-transition problem. The object is not just today's price, entry decision, or investment choice; it is the mapping from industry states into actions and continuation values. In this quality-ladder example, the ladder cap pins down where investment stops, while off-diagonal states show why leadership is valuable before the cap is reached.
+A dynamic game turns an IO counterfactual into a state-transition problem. The object is not just today's price, entry decision, or investment choice; it is the mapping from industry states into actions and continuation values. In the quality-ladder example, the cap pins down where investment stops, and off-diagonal states show why leadership is valuable before the cap is reached.
 
 ## References
 

@@ -6,7 +6,7 @@
 
 Cournot competition is a small static game with a large economic lesson: market power comes from each firm's recognition that its own output moves the market price. The Nash quantity is not the joint-profit maximum and not the competitive quantity. It is the point where each firm is already choosing its optimal quantity given the other firm's quantity.
 
-The tutorial keeps two solution views side by side. The first is the closed-form first-order condition. The second iterates best responses and reports a fixed-point residual. The iteration is useful because larger games usually do not have a one-line equilibrium formula.
+Two solution views run side by side. The first is the closed-form first-order condition. The second iterates best responses and reports a fixed-point residual. The iteration matters because larger games usually do not have a one-line equilibrium formula.
 
 ## Equations
 
@@ -83,7 +83,7 @@ The best-response curves cross at the Nash quantity. The joint-monopoly split is
 
 <img src="figures/cournot-best-response.png" alt="Cournot best-response curves and damped iteration paths" width="80%">
 
-The residual falls quickly because this linear duopoly has a stable best-response map after damping. Reporting this residual keeps the numerical exercise tied to the economic definition of equilibrium.
+The residual falls quickly because this linear duopoly has a stable best-response map after damping. Reporting it ties the numerical exercise to the economic definition of equilibrium.
 
 <img src="figures/residuals.png" alt="Fixed-point residuals for damped best-response iteration" width="80%">
 

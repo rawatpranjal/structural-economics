@@ -6,7 +6,7 @@
 
 Macroeconomic models are often solved near a deterministic steady state. The local object is a law of motion for deviations from that point: after a productivity, demand, or policy shock, how does the state return toward its steady value? Perturbation methods approximate that law of motion with a Taylor expansion.
 
-The first-order case is the familiar linearization. It is fast and gives transparent impulse responses, but it removes curvature and makes positive and negative shocks mirror images. Higher-order perturbations add curvature and asymmetry while remaining local. This tutorial keeps the exact nonlinear transition rule available so the cost of that locality is visible.
+The first-order case is the familiar linearization. It is fast and gives transparent impulse responses, but it removes curvature and makes positive and negative shocks mirror images. Higher-order perturbations add curvature and asymmetry while remaining local. The exact nonlinear transition rule is kept available below so the cost of that locality is visible.
 
 ## Equations
 
@@ -68,7 +68,7 @@ All approximations agree at the steady state. Differences grow as the state move
 
 <img src="figures/local-approximations.png" alt="Taylor approximations around the steady state" width="80%">
 
-Higher order terms reduce local error, but no finite Taylor expansion is a global solution. The relevant question is how far the model travels from the steady state.
+Higher-order terms reduce local error, but no finite Taylor expansion is a global solution. The question that matters is how far the model travels from the steady state.
 
 <img src="figures/local-errors.png" alt="Approximation error by distance from the expansion point" width="80%">
 
@@ -97,7 +97,7 @@ The first-order approximation is accurate very close to the steady state, but it
 
 ## Takeaway
 
-Linearization is often enough for small deviations, but its symmetry is a substantive restriction. Higher-order perturbation adds curvature without solving the full global model. The practical discipline is to check where the simulated or impulse-response path actually goes; local approximations are only as credible as the neighborhood they are asked to cover.
+Linearization is often enough for small deviations, but its symmetry is a substantive restriction. Higher-order perturbation adds curvature without solving the full global model. The practical discipline is to check where the simulated or impulse-response path actually goes. Local approximations are only as credible as the neighborhood they are asked to cover.
 
 ## References
 

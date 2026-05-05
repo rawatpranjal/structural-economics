@@ -6,7 +6,7 @@
 
 Structural estimation often reduces to minimizing a sample criterion or maximizing a likelihood over parameters. The economic object is the parameter vector, not the optimizer. The optimizer matters because the criterion may be flat, curved unevenly, or have several empirically plausible optima.
 
-This tutorial uses a two-dimensional negative log likelihood built from a mixture of two Gaussian regimes. The two regimes have equal weight, so the objective has two equally good modes. That symmetry is artificial, but useful: it separates the economic warning from implementation detail. A local method answers 'where does this starting value lead?' while a global or multi-start procedure asks whether the answer is stable across the surface.
+The objective below is a two-dimensional negative log likelihood built from a mixture of two Gaussian regimes. The two regimes have equal weight, so the objective has two equally good modes. That symmetry is artificial, but useful: it separates the economic warning from implementation detail. A local method answers 'where does this starting value lead?' while a global or multi-start procedure asks whether the answer is stable across the surface.
 
 ## Equations
 
@@ -53,7 +53,7 @@ one local basin of attraction.
 
 ## Solution Method
 
-All methods see the same criterion $f(\theta)$. The comparison is deliberately controlled: Newton, BFGS, and Nelder-Mead start from the same off-diagonal point, while dual annealing searches over the full box before a local polish.
+All methods see the same criterion $f(\theta)$. The comparison is controlled: Newton, BFGS, and Nelder-Mead start from the same off-diagonal point, while dual annealing searches over the full box before a local polish.
 
 ```text
 Algorithm: optimizer diagnostics for a multimodal criterion
@@ -69,11 +69,11 @@ Output: candidate estimates, paths, basin diagnostics
 5. Treat instability across starts as evidence about the criterion, not just code
 ```
 
-The analytic component means provide a ground-truth diagnostic for this example. In empirical work the same role is played by multi-start checks, profile likelihoods, moment-residual plots, or economically motivated restrictions.
+The analytic component means provide a ground-truth diagnostic for this example. In empirical work that role falls to multi-start checks, profile likelihoods, moment-residual plots, or economically motivated restrictions.
 
 ## Results
 
-The same objective can make algorithms look very different. Local methods move quickly once their local model is useful. Global search explores the box before settling near one of the modes.
+The same objective can make algorithms look very different. Local methods move quickly once their local model is accurate. Global search explores the box before settling near one of the modes.
 
 <img src="figures/optimizer-paths.png" alt="Optimizer paths over negative log-density contours" width="80%">
 
@@ -96,11 +96,11 @@ All local methods start at the same point; dual annealing searches over a box.
 | Nelder-Mead    | (3.00, -2.50) | (-1.49, -1.49) | lower-left  |     2.38467 |            0.01082 |           74 | True      |
 | Dual annealing | box [-5,5]^2  | (-1.49, -1.49) | lower-left  |     2.38467 |            0.01082 |           80 | True      |
 
-The best objective found is 2.38467. Because the two mixture weights are equal, the criterion has two equally good estimates near the two component means. The important comparison is not which label wins, but how much each method depends on local geometry and initialization. The basin map makes that dependence visible: BFGS is fast, but its answer is conditional on the initial guess.
+The best objective found is 2.38467. Because the two mixture weights are equal, the criterion has two equally good estimates near the two component means. The useful comparison is not which label wins, but how much each method depends on local geometry and initialization. The basin map makes that dependence visible: BFGS is fast, but its answer is conditional on the initial guess.
 
 ## Takeaway
 
-Optimization is part of the empirical specification. A point estimate from a local optimizer is only as credible as the criterion around it and the starting-value checks behind it. Smooth, well-identified problems reward derivative-based methods. Rough or multimodal criteria call for multi-start runs, diagnostics, and sometimes a global search pass before interpreting the estimate economically.
+Optimization is part of the empirical specification. A point estimate from a local optimizer is only as credible as the criterion around it and the starting-value checks behind it. Smooth, well-identified problems reward derivative-based methods. Rough or multimodal criteria call for multi-start runs, diagnostics, and sometimes a global search pass before the estimate is interpreted economically.
 
 ## References
 

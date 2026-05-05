@@ -341,12 +341,11 @@ def main():
         "Entry and exit are the dynamic margin behind many static IO objects. A market with "
         "eight firms today is not just a point on a concentration scale; it is also a state "
         "that determines incumbents' option value and entrants' willingness to sink capital. "
-        "This tutorial keeps the product market deliberately simple, using symmetric Cournot "
-        "profits, so the economics of market structure comes from the entry and exit margins "
-        "rather than from differentiated-products demand.\n\n"
+        "The product market here is symmetric Cournot, so market structure responds through "
+        "the entry and exit margins rather than through differentiated-products demand.\n\n"
         "The state is the number of active firms $N_t$. Incumbents pay a fixed operating cost "
         "$f$ if they stay, while entrants pay a sunk cost $K$ before becoming incumbents. The "
-        "sunk cost is the key wedge: an incumbent may tolerate a weak current profit because "
+        "sunk cost is the wedge: an incumbent may tolerate a weak current profit because "
         "leaving means giving up the option to operate next period, whereas a potential entrant "
         "must justify the up-front cost. The companion tutorials on "
         "[dynamic games](../dynamic-games/) and "
@@ -474,8 +473,7 @@ $$
             "Incumbency value falls as additional competitors erode Cournot rents. The dashed "
             "horizontal line is the sunk entry cost: below it, a new firm would not enter even "
             "though an incumbent may still prefer to stay. The vertical line is the static "
-            "zero-flow-profit benchmark, which is useful precisely because the dynamic cutoff "
-            "does not have to coincide with it."
+            "zero-flow-profit benchmark; the dynamic cutoff does not have to coincide with it."
         ),
     )
 
@@ -560,9 +558,9 @@ $$
         description=(
             "The simulated path gives the same object in time-series form. The firm count "
             "spends most of its time near the invariant mean, while the flow panel shows the "
-            "turnover events that keep the market from being literally absorbing. With this "
-            "calibration the turnover rate is modest, so the point is the option-value "
-            "mechanism rather than a claim of large empirical churn."
+            "turnover events that keep the market from being absorbing. With this calibration "
+            "the turnover rate is modest; the figure illustrates the option-value mechanism "
+            "rather than a claim of large empirical churn."
         ),
     )
 
@@ -625,18 +623,18 @@ $$
         description=(
             "The selected states show the entry and exit cutoffs in levels. Thin markets have "
             "large incumbent values and attract entrants; crowded markets have low flow profits "
-            "and high exit risk. The middle states are economically interesting because entry "
-            "has mostly shut down before incumbents are certain to leave."
+            "and high exit risk. In the middle states, entry has mostly shut down before "
+            "incumbents are certain to leave."
         ),
     )
 
     report.add_takeaway(
-        "The economic lesson is the separation between the entry condition and the exit "
-        "condition. Static profits say when a firm covers today's operating cost; dynamic "
-        "profits say whether it is worth preserving the option to operate tomorrow. A sunk "
-        "entry cost therefore creates a band in which incumbents stay but entrants do not rush "
-        "in. That band is what makes market structure persistent in Ericson-Pakes style IO "
-        "models, even before adding firm heterogeneity, investment, or product differentiation."
+        "The entry condition and the exit condition separate. Static profits say when a firm "
+        "covers today's operating cost; dynamic profits say whether it is worth preserving the "
+        "option to operate tomorrow. A sunk entry cost creates a band in which incumbents stay "
+        "but entrants do not rush in. That band is what makes market structure persistent in "
+        "Ericson-Pakes style IO models, even before adding firm heterogeneity, investment, or "
+        "product differentiation."
     )
 
     report.add_references([

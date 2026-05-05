@@ -518,10 +518,9 @@ def main():
         "BLP replaces that representative-consumer substitution pattern with random "
         "coefficients. Consumers differ in their taste for the observed characteristic "
         "and in price sensitivity, so products that attract similar consumers become "
-        "closer substitutes. This tutorial uses a synthetic market where the true "
-        "parameters are known, estimates the nonlinear taste dispersion by GMM, and "
-        "then compares the implied elasticities with both the true DGP and a plain-logit "
-        "benchmark."
+        "closer substitutes. The tutorial uses a synthetic market with known parameters, "
+        "estimates the nonlinear taste dispersion by GMM, and compares the implied "
+        "elasticities with the true DGP and a plain-logit benchmark."
     )
 
     report.add_equations(
@@ -627,8 +626,8 @@ through $\operatorname{Cov}(p_{jt},\xi_{jt}) \ne 0$.
         "Observed and predicted market shares at estimated parameters.",
         fig1,
         description="The share fit sits on the 45-degree line because the BLP contraction "
-        "forces the model to rationalize observed shares for the chosen nonlinear "
-        "parameters. This is why a good-looking share plot is not, by itself, evidence "
+        "forces the model to rationalize observed shares at the chosen nonlinear "
+        "parameters. A good-looking share plot is therefore not, by itself, evidence "
         "that the substitution pattern is right.",
     )
 
@@ -652,8 +651,8 @@ through $\operatorname{Cov}(p_{jt},\xi_{jt}) \ne 0$.
         description=f"The true-DGP bars are available because this is a simulation. "
         f"Estimated BLP tracks the product-level pattern, with a maximum own-elasticity "
         f"error of {max_own_elast_error:.3f} in this market. Plain logit has no "
-        "consumer-specific price coefficient, so its elasticities mostly inherit price "
-        "and share differences rather than the composition of buyers.",
+        "consumer-specific price coefficient, so its elasticities inherit price and share "
+        "differences rather than the composition of buyers.",
     )
 
     # --- Figure 3: Contraction Mapping Convergence ---
@@ -710,7 +709,7 @@ through $\operatorname{Cov}(p_{jt},\xi_{jt}) \ne 0$.
         "figures/cross-price-elasticity-matrix.png",
         "Cross-price elasticity matrices for estimated BLP and plain logit in market 1.",
         fig4,
-        description="The cross-elasticity matrix is the main economic object. In the "
+        description="The cross-elasticity matrix is the main economic object here. In the "
         "plain-logit panel, every off-diagonal entry in a column is identical, so a "
         "price increase for product k sends the same proportional demand response to "
         "each rival. In the BLP panel, off-diagonal entries vary by row because products "
@@ -741,14 +740,12 @@ through $\operatorname{Cov}(p_{jt},\xi_{jt}) \ne 0$.
     )
 
     report.add_takeaway(
-        "BLP is valuable because it changes the counterfactual object, not because it "
-        "adds a more complicated optimizer. The contraction lets each candidate "
-        "$\\sigma$ fit observed shares, while the IV/GMM moments choose the amount of "
-        "heterogeneity that makes recovered unobserved quality orthogonal to excluded "
-        "instruments. Once heterogeneity is present, substitution is no longer forced "
-        "to follow existing shares. That is why the model is the natural next step "
-        "after simple logit demand, especially before using demand estimates for "
-        "mergers, markups, or welfare."
+        "BLP changes the counterfactual object, not the optimizer. The contraction lets "
+        "each candidate $\\sigma$ fit observed shares, while the IV/GMM moments choose the "
+        "amount of heterogeneity that makes recovered unobserved quality orthogonal to "
+        "excluded instruments. Once heterogeneity is present, substitution is no longer "
+        "forced to follow existing shares. That is the natural step after simple logit "
+        "demand, especially before using demand estimates for mergers, markups, or welfare."
     )
 
     report.add_references([

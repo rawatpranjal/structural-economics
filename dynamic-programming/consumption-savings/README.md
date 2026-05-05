@@ -94,7 +94,7 @@ The main grid converged in **260 iterations** with sup-norm error **9.91e-07**. 
 
 ## Results
 
-Start with the value functions. Higher current income raises lifetime utility, but the income-state gap is largest near the borrowing constraint because low-asset households cannot borrow much against future mean reversion. Farther out on the asset grid, self-insurance makes the current income state less decisive.
+Higher current income raises lifetime utility, but the income-state gap is largest near the borrowing constraint because low-asset households cannot borrow much against future mean reversion. Farther out on the asset grid, self-insurance makes the current income state less decisive.
 
 <img src="figures/value-functions.png" alt="Value functions by income state" width="80%">
 
@@ -127,7 +127,7 @@ The table gives pointwise policy values rather than a separate result. At zero a
 
 ## Takeaway
 
-The economic lesson is not that VFI can solve another Bellman equation; it is that uninsurable persistent income risk changes the shape of saving. Assets are valuable because they relax tomorrow's constraint after bad income draws. The policy therefore has high MPCs near zero assets, positive saving after favorable income shocks, and dissaving after unfavorable shocks. This partial-equilibrium object is the household block used in Aiyagari-style equilibrium models, where the same precautionary motive feeds into aggregate capital demand and the equilibrium interest rate.
+Uninsurable persistent income risk changes the shape of saving. Assets are valuable because they relax tomorrow's constraint after bad income draws. The policy therefore has high MPCs near zero assets, positive saving after favorable income shocks, and dissaving after unfavorable shocks. This partial-equilibrium object is the household block used in Aiyagari-style equilibrium models, where the same precautionary motive feeds into aggregate capital demand and the equilibrium interest rate.
 
 ## References
 

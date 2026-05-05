@@ -6,7 +6,7 @@
 
 Irreversible investment is a small change to the RBC problem with a large interpretive payoff. The household can install new capital, but installed capital cannot be converted back into consumption goods. After a bad productivity draw, the unconstrained economy may want to reduce capital faster than depreciation. The irreversible economy cannot. It carries a capital overhang until depreciation and future investment decisions bring the state back toward the usual region.
 
-This tutorial sits between the local [Dynare RBC](../../dynare/rbc/) shock-propagation example and the global [capital-tax RBC](../rbc-capital-tax/) tutorial. The lesson here is not that every period is constrained. It is that a global solution keeps track of the states where the Euler equation has a kink, which a linear solution around the steady state cannot show.
+This tutorial sits between the local [Dynare RBC](../../dynare/rbc/) shock-propagation example and the global [capital-tax RBC](../rbc-capital-tax/) tutorial. The lesson is not that every period is constrained, but that a global solution keeps track of the states where the Euler equation has a kink, which a linear solution around the steady state cannot show.
 
 ## Equations
 
@@ -65,7 +65,7 @@ With the calibration below, $K_{ss}=37.989$, $Y_{ss}=3.704$, $C_{ss}=2.754$, and
 
 ## Solution Method
 
-The computation solves two Bellman problems on the same productivity grid: a standard RBC model and the irreversible model. For the irreversible model, the grid search includes the exact lower-bound choice $K'=(1-\delta)K$ whenever that point falls between grid nodes. That detail matters because the economic kink is precisely at $I=0$.
+The computation solves two Bellman problems on the same productivity grid: a standard RBC model and the irreversible model. For the irreversible model, the grid search includes the exact lower-bound choice $K'=(1-\delta)K$ whenever that point falls between grid nodes. That detail matters because the economic kink is at $I=0$.
 
 ```text
 Algorithm: global VFI with an irreversible-investment boundary
@@ -89,11 +89,11 @@ The irreversible model converged in **49** VFI iterations; the standard comparis
 
 ## Results
 
-The policy comparison shows where irreversibility bites. At low productivity and high capital, the standard model chooses negative investment and runs capital down. The irreversible policy instead flattens at $I=0$. The dotted fine-grid line in the investment panel is a local check that the coarse-grid kink is not a plotting artifact.
+The policy comparison shows where irreversibility bites. At low productivity and high capital, the standard model chooses negative investment and runs capital down. The irreversible policy flattens at $I=0$. The dotted fine-grid line in the investment panel is a local check that the coarse-grid kink is not a plotting artifact.
 
 <img src="figures/policy-functions.png" alt="Investment and consumption policies for standard and irreversible RBC models" width="80%">
 
-The binding set is not centered at the deterministic steady state. It lives in states with too much installed capital for the current productivity level. This is why a stationary simulation can spend little time constrained while the constraint remains economically important for recession states.
+The binding set is not centered at the deterministic steady state. It lives in states with too much installed capital for the current productivity level. That is why a stationary simulation can spend little time constrained while the constraint remains economically important for recession states.
 
 <img src="figures/binding-region.png" alt="State-space region where nonnegative investment binds" width="80%">
 
@@ -101,7 +101,7 @@ The stress path starts with capital above steady state and then sends productivi
 
 <img src="figures/overhang-experiment.png" alt="Stress-path comparison after a low-productivity episode" width="80%">
 
-The value loss is concentrated near the same high-capital, low-productivity states where the boundary binds. Near the steady state the loss is small because normal replacement investment is positive; the friction is mostly an insurance problem against bad states reached with too much installed capital.
+The value loss is concentrated near the same high-capital, low-productivity states where the boundary binds. Near the steady state the loss is small because normal replacement investment is positive; the friction is largely an insurance problem against bad states reached with too much installed capital.
 
 <img src="figures/value-difference.png" alt="Value-function difference between irreversible and standard RBC models" width="80%">
 
@@ -129,11 +129,11 @@ The numerical checks separate three objects: the global state-space binding set,
 
 Taken together, the figures give the main economic message. The investment floor does not move the deterministic steady state, because replacement investment is strictly positive there. It changes the state-contingent policy. Once productivity is low enough relative to installed capital, the unconstrained Euler equation asks for disinvestment, but the feasible policy is pinned at $I=0$.
 
-The comparison with the standard RBC model should therefore be read locally. Around ordinary states, the two policies are close. In overhang states, the irreversible model has a kink, a binding multiplier, and a value loss. That is exactly the kind of object a global grid solution is meant to preserve.
+The comparison with the standard RBC model should therefore be read locally. Around ordinary states, the two policies are close. In overhang states, the irreversible model has a kink, a binding multiplier, and a value loss. That is the kind of object a global grid solution is meant to preserve.
 
 ## Takeaway
 
-Irreversibility is not a different steady-state theory of capital accumulation. It is a theory of bad states. When the economy has too much installed capital for current productivity, the standard RBC model adjusts by selling or scrapping capital immediately. The irreversible model adjusts only through depreciation and future low investment. For nearby DSGE applications, this is the practical lesson: occasionally binding constraints matter because they create state-dependent kinks, not because they necessarily bind in the average period.
+Irreversibility is not a different steady-state theory of capital accumulation. It is a theory of bad states. When the economy has too much installed capital for current productivity, the standard RBC model adjusts by selling or scrapping capital immediately. The irreversible model adjusts only through depreciation and future low investment. For nearby DSGE applications, the practical lesson is that occasionally binding constraints matter because they create state-dependent kinks, not because they necessarily bind in the average period.
 
 ## References
 

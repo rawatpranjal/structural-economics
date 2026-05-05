@@ -353,8 +353,8 @@ def main():
         "The endogenous state is agent 1's wealth share, $\\omega_1$. In a "
         "complete-markets Lucas tree, a fixed Pareto weight would summarize "
         "risk sharing. Here, constraints make the wealth share move over time, "
-        "and the price of aggregate risk changes with it. This makes the tutorial "
-        "a distributional counterpart to the [Lucas-tree pricing](../../dynamic-programming/asset-pricing/) "
+        "and the price of aggregate risk changes with it. The tutorial is a "
+        "distributional counterpart to the [Lucas-tree pricing](../../dynamic-programming/asset-pricing/) "
         "example and a global-solution companion to the "
         "[Huggett bond-market](../../heterogeneous-agents/huggett-incomplete-markets/) "
         "tutorial."
@@ -418,7 +418,7 @@ $$\omega_1'(z')=
     report.add_solution_method(
         "The hard object is the law of motion for $\\omega_1$. It is implicit "
         "because tomorrow's wealth share depends on tomorrow's price, and "
-        "tomorrow's price is itself a function of tomorrow's wealth share. "
+        "tomorrow's price is a function of tomorrow's wealth share. "
         "Simultaneous Transition and Policy Function Iteration (STPFI) handles "
         "that by solving today's policies and all shock-contingent next wealth "
         "shares in the same nonlinear system.\n\n"
@@ -446,7 +446,7 @@ $$\omega_1'(z')=
     report.add_results(
         f"The computed equity premium is state dependent: across the displayed "
         f"wealth-share grid it ranges from {eq_min:.2f}% to {eq_max:.2f}%. "
-        "Those movements are not just different shock labels. They reflect which "
+        "Those movements are not different shock labels. They reflect which "
         "agent is close to a portfolio constraint and therefore whose marginal "
         "utility receives more weight in pricing aggregate dividends."
     )
@@ -473,9 +473,9 @@ $$\omega_1'(z')=
             "The first panel reads asset prices against the distributional state. "
             "The second panel shows where the simulated economy spends its time: "
             f"the mean wealth share is {omega_mean:.3f}, with the 10th and 90th "
-            f"percentiles at {omega_p10:.3f} and {omega_p90:.3f}. The important "
-            "point is that pricing is still evaluated over the whole state space, "
-            "not only near the modal wealth shares."
+            f"percentiles at {omega_p10:.3f} and {omega_p90:.3f}. Pricing is "
+            "still evaluated over the whole state space, not only near the modal "
+            "wealth shares."
         ),
     )
 
@@ -493,7 +493,7 @@ $$\omega_1'(z')=
         "Multipliers and equity premium where constraints bind.",
         fig2,
         description=(
-            "The multiplier panels are a map of the constraint regions. For "
+            "The multiplier panels map the constraint regions. For "
             f"agent 1, the no-short-sale multiplier is positive at {no_short_share:.1f}% "
             f"of interior collocation points and the borrowing multiplier at "
             f"{borrow_share:.1f}%. The equity-premium panel repeats the pricing "
@@ -537,11 +537,10 @@ $$\omega_1'(z')=
         "Euler Residuals and Benchmark Scale",
         df,
         description=(
-            "The table should be read as a numerical diagnostic, not as a new "
-            "economic moment. This Python/JAX translation keeps the model "
-            "transparent and close to the original GDSGE file; the original C++ "
-            "benchmark gives the tighter reference scale for the equity Euler "
-            "equation."
+            "The table is a numerical diagnostic, not a new economic moment. "
+            "This Python/JAX translation keeps the model transparent and close "
+            "to the original GDSGE file; the original C++ benchmark gives the "
+            "tighter reference scale for the equity Euler equation."
         ),
     )
 
@@ -549,18 +548,18 @@ $$\omega_1'(z')=
         "The numerical status matters for interpretation. The plotted policies "
         "recover the state-dependent pricing and constraint patterns, but this "
         "coarse pedagogical run is looser than the optimized GDSGE benchmark. "
-        "For production accuracy, the natural next step would be to raise the "
-        "iteration cap, tighten damping, or run a denser grid in the original "
-        "compiled implementation rather than treating the displayed Euler errors "
-        "as final benchmark accuracy."
+        "For production accuracy, the next step is to raise the iteration cap, "
+        "tighten damping, or run a denser grid in the original compiled "
+        "implementation rather than treat the displayed Euler errors as final "
+        "benchmark accuracy."
     )
 
     report.add_takeaway(
-        "The economic lesson is that incomplete markets turn the wealth "
-        "distribution into an asset-pricing state. With moderate risk aversion, "
-        "risk premia move because constrained households cannot freely trade away "
-        "bad marginal-utility states. STPFI is useful here because it keeps the "
-        "implicit wealth-share transition and the occasionally binding portfolio "
+        "Incomplete markets turn the wealth distribution into an asset-pricing "
+        "state. With moderate risk aversion, risk premia move because "
+        "constrained households cannot freely trade away bad marginal-utility "
+        "states. STPFI is useful here because it keeps the implicit "
+        "wealth-share transition and the occasionally binding portfolio "
         "constraints inside the same global fixed point."
     )
 

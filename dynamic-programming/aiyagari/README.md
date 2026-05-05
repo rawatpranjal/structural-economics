@@ -160,7 +160,7 @@ The table separates firm capital demand from household asset supply because the 
 
 ## Takeaway
 
-The useful lesson is that incomplete markets turn a household precautionary motive into an aggregate price effect. With no insurance against persistent income risk, households want buffer assets; in equilibrium those assets are the economy's capital stock. The result is $r^{\ast}=0.0260$, below $1/\beta-1=0.0417$, and a right-skewed wealth distribution generated without ex ante heterogeneity. Faster algorithms can change the cost of the computation, but they do not change the fixed point: solve household policies, find the stationary distribution, and clear the capital market.
+Incomplete markets turn a household precautionary motive into an aggregate price effect. With no insurance against persistent income risk, households want buffer assets; in equilibrium those assets are the economy's capital stock. The result is $r^{\ast}=0.0260$, below $1/\beta-1=0.0417$, and a right-skewed wealth distribution generated without ex ante heterogeneity. Faster algorithms can change the cost of the computation, but they do not change the fixed point: solve household policies, find the stationary distribution, and clear the capital market.
 
 ## References
 

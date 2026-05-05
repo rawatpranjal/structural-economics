@@ -121,7 +121,7 @@ The table reports pointwise approximation errors. The value-function errors are 
 
 ## Takeaway
 
-Optimal growth changes the cake-eating logic by making saving productive. The state still summarizes the future, but now carrying resources forward raises tomorrow's feasible set. With log utility and full-depreciation Cobb-Douglas production, the exact rule saves $\alpha\beta=0.27$ of output and drives capital toward $k_{ss}=9.95$. VFI recovers that policy closely, which is why this example is a useful bridge from closed-form dynamic programming to stochastic growth models where the benchmark has to be replaced by Euler errors, simulation moments, or equilibrium residuals.
+Optimal growth changes the cake-eating logic by making saving productive. The state still summarizes the future, but now carrying resources forward raises tomorrow's feasible set. With log utility and full-depreciation Cobb-Douglas production, the exact rule saves $\alpha\beta=0.27$ of output and drives capital toward $k_{ss}=9.95$. VFI recovers that policy closely, bridging closed-form dynamic programming to stochastic growth models where the benchmark has to be replaced by Euler errors, simulation moments, or equilibrium residuals.
 
 ## References
 

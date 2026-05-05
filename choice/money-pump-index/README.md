@@ -6,7 +6,7 @@
 
 A GARP rejection is a statement about internal consistency, not about economic magnitude. Two datasets can both violate revealed preference, but one violation may be a nearly indifferent accounting error while another creates a large cyclic arbitrage. The money-pump interpretation asks how much budget slack an outside trader could extract by repeatedly moving the consumer around the revealed-preference cycle.
 
-The example keeps the economic object deliberately small: three observed choices, three bundles, and own expenditure normalized to one. In the severe case the consumer chooses A when B was 18 percent cheaper, chooses B when C was 24 percent cheaper, and chooses C when A was 8 percent cheaper. GARP says this cannot come from one stable utility ordering. The Money Pump Index says the exploitable cycle is worth 16.7% of expenditure per trade.
+The example keeps the economic object small: three observed choices, three bundles, and own expenditure normalized to one. In the severe case the consumer chooses A when B was 18 percent cheaper, chooses B when C was 24 percent cheaper, and chooses C when A was 8 percent cheaper. GARP says this cannot come from one stable utility ordering. The Money Pump Index says the exploitable cycle is worth 16.7% of expenditure per trade.
 
 ## Equations
 
@@ -44,7 +44,7 @@ $$\operatorname{MPI} = \max_C \bar w(C).$$
 
 ## Solution Method
 
-The first step is still the revealed-preference test: compare every chosen bundle with every other bundle at the same prices. The extra step is to put weights on strict revealed-preference arcs and solve a maximum mean-cycle problem. Karp's dynamic program is exact for this finite graph. The script also enumerates cycles only because the graph has three nodes, which gives a transparent benchmark for the plotted examples.
+The first step is still the revealed-preference test: compare every chosen bundle with every other bundle at the same prices. The extra step puts weights on strict revealed-preference arcs and solves a maximum mean-cycle problem. Karp's dynamic program is exact for this finite graph. The script also enumerates cycles because the graph has three nodes, which gives a transparent benchmark for the plotted examples.
 
 ```text
 Inputs: prices p_i, bundles x_i, tolerance eps
@@ -61,7 +61,7 @@ For the severe example, the enumerated cycle mean and Karp's MPI both equal $\op
 
 ## Results
 
-The first column of interest is the GARP rejection: it is the same yes/no answer for all three inconsistent datasets. The severity columns show why that is not enough. In this small graph, direct enumeration gives the same cycle mean as Karp's dynamic program.
+The GARP rejection column gives the same yes/no answer for all three inconsistent datasets. The severity columns show why that is not enough. In this small graph, direct enumeration gives the same cycle mean as Karp's dynamic program.
 
 **GARP Rejection and Money Pump Severity**
 
@@ -76,13 +76,13 @@ Each arrow points from a chosen bundle to another bundle that was strictly cheap
 
 <img src="figures/money-pump-cycle.png" alt="The severe revealed-preference cycle and its edge-level budget slack." width="80%">
 
-The left panel deliberately throws away magnitude. The right panel keeps it: small, medium, and severe cycles all fail the same rationalizability test, but the average slack available to a trader is very different. The black diamonds are the exact cycle means obtained by enumeration in this three-node example.
+The left panel throws away magnitude by design. The right panel keeps it: small, medium, and severe cycles all fail the same rationalizability test, but the average slack available to a trader differs sharply. The black diamonds are the exact cycle means obtained by enumeration in this three-node example.
 
 <img src="figures/mpi-severity-comparison.png" alt="GARP is binary, while the Money Pump Index ranks the severity of failures." width="80%">
 
 ## Takeaway
 
-The Money Pump Index is useful because it keeps the economic content of a revealed-preference failure in view. GARP asks whether the finite dataset is rationalizable. MPI asks how much expenditure is exposed by the worst cycle. That makes it a complement to the [Afriat test](../revealed-preference-afriat/) and to [Houtman-Maks deletion diagnostics](../houtman-maks-rational-subsets/): after rejection, one can ask whether the problem is small, large, or concentrated in a few observations.
+The Money Pump Index keeps the economic content of a revealed-preference failure in view. GARP asks whether the finite dataset is rationalizable. MPI asks how much expenditure is exposed by the worst cycle. That makes it a complement to the [Afriat test](../revealed-preference-afriat/) and to [Houtman-Maks deletion diagnostics](../houtman-maks-rational-subsets/): after rejection, one can ask whether the problem is small, large, or concentrated in a few observations.
 
 ## References
 

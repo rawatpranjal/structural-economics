@@ -379,9 +379,9 @@ def main() -> None:
         "the state back toward the usual region.\n\n"
         "This tutorial sits between the local [Dynare RBC](../../dynare/rbc/) "
         "shock-propagation example and the global [capital-tax RBC](../rbc-capital-tax/) "
-        "tutorial. The lesson here is not that every period is constrained. It is "
-        "that a global solution keeps track of the states where the Euler equation "
-        "has a kink, which a linear solution around the steady state cannot show."
+        "tutorial. The lesson is not that every period is constrained, but that a "
+        "global solution keeps track of the states where the Euler equation has a "
+        "kink, which a linear solution around the steady state cannot show."
     )
 
     equations = r"""
@@ -448,7 +448,7 @@ $I_{ss}=\delta K_{ss}>0$.
         "a standard RBC model and the irreversible model. For the irreversible model, "
         "the grid search includes the exact lower-bound choice $K'=(1-\\delta)K$ "
         "whenever that point falls between grid nodes. That detail matters because "
-        "the economic kink is precisely at $I=0$.\n\n"
+        "the economic kink is at $I=0$.\n\n"
         "```text\n"
         "Algorithm: global VFI with an irreversible-investment boundary\n"
         "Input: grids K and Z, transition matrix P, primitives beta, alpha, sigma, delta\n"
@@ -505,7 +505,7 @@ $I_{ss}=\delta K_{ss}>0$.
         description=(
             "The policy comparison shows where irreversibility bites. At low productivity and "
             "high capital, the standard model chooses negative investment and runs capital down. "
-            "The irreversible policy instead flattens at $I=0$. The dotted fine-grid line in "
+            "The irreversible policy flattens at $I=0$. The dotted fine-grid line in "
             "the investment panel is a local check that the coarse-grid kink is not a plotting artifact."
         ),
     )
@@ -538,7 +538,7 @@ $I_{ss}=\delta K_{ss}>0$.
         fig2,
         description=(
             "The binding set is not centered at the deterministic steady state. It lives in "
-            "states with too much installed capital for the current productivity level. This "
+            "states with too much installed capital for the current productivity level. That "
             "is why a stationary simulation can spend little time constrained while the "
             "constraint remains economically important for recession states."
         ),
@@ -614,7 +614,7 @@ $I_{ss}=\delta K_{ss}>0$.
         description=(
             "The value loss is concentrated near the same high-capital, low-productivity states "
             "where the boundary binds. Near the steady state the loss is small because normal "
-            "replacement investment is positive; the friction is mostly an insurance problem "
+            "replacement investment is positive; the friction is largely an insurance problem "
             "against bad states reached with too much installed capital."
         ),
     )
@@ -654,8 +654,8 @@ $I_{ss}=\delta K_{ss}>0$.
         "for disinvestment, but the feasible policy is pinned at $I=0$.\n\n"
         "The comparison with the standard RBC model should therefore be read locally. Around "
         "ordinary states, the two policies are close. In overhang states, the irreversible "
-        "model has a kink, a binding multiplier, and a value loss. That is exactly the kind "
-        "of object a global grid solution is meant to preserve."
+        "model has a kink, a binding multiplier, and a value loss. That is the kind of "
+        "object a global grid solution is meant to preserve."
     )
 
     report.add_takeaway(
@@ -663,7 +663,7 @@ $I_{ss}=\delta K_{ss}>0$.
         "It is a theory of bad states. When the economy has too much installed capital "
         "for current productivity, the standard RBC model adjusts by selling or scrapping "
         "capital immediately. The irreversible model adjusts only through depreciation and "
-        "future low investment. For nearby DSGE applications, this is the practical lesson: "
+        "future low investment. For nearby DSGE applications, the practical lesson is that "
         "occasionally binding constraints matter because they create state-dependent kinks, "
         "not because they necessarily bind in the average period."
     )

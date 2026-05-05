@@ -6,7 +6,7 @@
 
 Markup measurement links two objects that are often taught separately: a production function and the firm's first-order condition for a flexible input. The economic problem is not just estimating a technology parameter. If productive firms choose more labor and materials, OLS attributes part of productivity to those inputs, and that bias flows directly into markup estimates.
 
-This tutorial keeps the data synthetic so the truth is visible. A Cobb-Douglas panel generates output, flexible input choices, investment, productivity, and markups. The exercise compares a naive production regression with a transparent investment-proxy control, then applies the De Loecker-Warzynski markup formula. It complements [Logit Demand and Markup Recovery](../logit-supply-side/): that tutorial recovers markups from demand and pricing FOCs, while this one recovers them from production elasticities and input shares.
+The data are synthetic so the truth is visible. A Cobb-Douglas panel generates output, flexible input choices, investment, productivity, and markups. The exercise compares a naive production regression with a transparent investment-proxy control, then applies the De Loecker-Warzynski markup formula. It complements [Logit Demand and Markup Recovery](../logit-supply-side/): that tutorial recovers markups from demand and pricing FOCs, while this one recovers them from production elasticities and input shares.
 
 ## Equations
 
@@ -97,15 +97,15 @@ The markup step is mechanically simple. The identification burden sits in the el
 
 ## Results
 
-The first figure shows why the production-function step matters for IO markups. OLS overstates the flexible-input elasticities because high-productivity firms choose more inputs. The proxy-control estimate is not a new economic object; it is a correction for the omitted productivity state, and in this simulation it moves the materials elasticity close to its true value.
+Why the production-function step matters for IO markups. OLS overstates the flexible-input elasticities because high-productivity firms choose more inputs. The proxy-control estimate is not a new economic object; it is a correction for the omitted productivity state, and in this simulation it moves the materials elasticity close to its true value.
 
 <img src="figures/production-estimates.png" alt="True and estimated output elasticities" width="80%">
 
-The second figure pushes the coefficient bias through the markup formula. The OLS-implied distribution is too far to the right because the materials elasticity is inflated. The proxy-control markups stay much closer to the truth, though they still inherit noise from the expenditure share and the proxy.
+Pushing the coefficient bias through the markup formula. The OLS-implied distribution is too far to the right because the materials elasticity is inflated. The proxy-control markups stay much closer to the truth, though they still inherit noise from the expenditure share and the proxy.
 
 <img src="figures/markup-distribution.png" alt="True and estimated markup distributions" width="80%">
 
-The third figure uses the simulated truth to check the markup gradient, not just the level. More productive firms have lower materials shares in this design, so true markups rise with productivity. The recovered quintile means trace that gradient fairly closely; the scatter reminds us that firm-level markups are noisy objects even when the production elasticity is well estimated.
+The simulated truth lets us check the markup gradient, not just the level. More productive firms have lower materials shares in this design, so true markups rise with productivity. The recovered quintile means trace that gradient fairly closely; the scatter is a reminder that firm-level markups are noisy even when the production elasticity is well estimated.
 
 <img src="figures/productivity-markups.png" alt="Estimated markups rise with productivity in the simulated panel" width="80%">
 
@@ -133,7 +133,7 @@ The quintile table makes the ground-truth comparison explicit. OLS-based markups
 
 ## Takeaway
 
-The markup estimate is only as credible as the production elasticity and the variable-input share behind it. In this controlled panel, correcting for productivity substantially reduces the markup error; in real IO work, the analogous scrutiny falls on the proxy monotonicity, the timing of input choices, and whether revenue data are being mistaken for physical output.
+The markup estimate is only as credible as the production elasticity and the variable-input share behind it. In this controlled panel, correcting for productivity substantially reduces the markup error. In real IO work, the analogous scrutiny falls on the proxy monotonicity, the timing of input choices, and whether revenue data are being mistaken for physical output.
 
 ## References
 

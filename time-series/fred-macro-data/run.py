@@ -225,14 +225,14 @@ def main() -> None:
         "unemployment, and the policy rate are not yet business-cycle facts; they "
         "become facts only after a trend-cycle convention and a set of moments are "
         "chosen.\n\n"
-        "This tutorial keeps that measurement step small and explicit. It uses a "
-        "synthetic panel with FRED-style units, so the example is reproducible without "
-        "an API key or changing data release. The maintained co-movement is familiar: "
+        "Here that measurement step is kept small and explicit. A synthetic panel with "
+        "FRED-style units keeps the example reproducible without an API key or "
+        "changing data release. The maintained co-movement is familiar: "
         "output and unemployment move in opposite directions, inflation and slack move "
         "against each other, and the funds rate comoves with inflation. The exercise "
         "then asks how much of that structure is visible in a finite 50-year quarterly "
         "sample.\n\n"
-        "The tutorial is a bridge between the scalar persistence logic in "
+        "The tutorial bridges the scalar persistence logic in "
         "[Persistent Shocks](../ar-processes/) and the larger-panel forecasting "
         "problem in [Stock-Watson Factor Forecasting](../stock-watson/)."
     )
@@ -332,7 +332,7 @@ cycle.
         "5. Repeat steps 1-4 with T_B quarters and use those moments only as a\n"
         "   long-sample benchmark for the finite 50-year run.\n"
         "```\n\n"
-        "The key interpretive step is step 2. A positive GDP-growth cycle means output "
+        "The interpretive step is step 2. A positive GDP-growth cycle means output "
         "growth is above its smooth trend; a positive unemployment cycle means labor "
         "market slack is above trend. The signs should therefore be read by variable, "
         "not as a generic good-versus-bad cycle."
@@ -352,7 +352,7 @@ cycle.
         "The raw panel shows the object a macroeconomist would start from: rates and "
         "growth rates in their observed units. GDP growth is noisy, while "
         "unemployment and the funds rate move more slowly. That difference matters "
-        "because the HP filter will treat high-frequency movement and slow adjustment "
+        "because the HP filter treats high-frequency movement and slow adjustment "
         "differently."
     )
     report.add_figure(
@@ -374,7 +374,7 @@ cycle.
     report.add_results(
         "After detrending, the comparison is in deviations from each series' own "
         "smooth path. This is the measurement convention behind the moment table. It "
-        "is useful, but it is not innocuous: trend-cycle choices can change the size "
+        "is useful, but not innocuous: trend-cycle choices can change the size "
         "and persistence of measured fluctuations."
     )
     report.add_figure(
@@ -426,7 +426,7 @@ cycle.
     fig3.tight_layout()
 
     report.add_results(
-        "The Okun scatter is where the economic content is easiest to see. Output "
+        "The Okun scatter makes the economic content easiest to see. Output "
         "above trend is associated with unemployment below trend. The dashed line is "
         f"a {T_benchmark:,}-quarter simulation from the same DGP, so it is a numerical "
         "benchmark for the finite sample rather than a claim about historical U.S. "
@@ -471,7 +471,7 @@ cycle.
         "The correlation matrix is a compact target, not a causal model. A structural "
         "RBC or New Keynesian model would have to explain why these variables comove; "
         "a reduced-form VAR would instead summarize the same object dynamically. Here "
-        "the matrix is enough to check whether the synthetic panel delivers the signs "
+        "the matrix suffices to check whether the synthetic panel delivers the signs "
         "built into the calibration."
     )
     report.add_figure(
@@ -498,8 +498,8 @@ cycle.
         f"move against each other, with an Okun slope of {sample_okun_slope:.3f} in "
         "the 50-year sample, and unemployment is the most persistent cycle. The "
         "long-sample benchmark makes the finite-sample point explicit: the measured "
-        "moments are close to the DGP's implications, but not identical. That is the "
-        "right way to read these moments before using them as targets for a DSGE, "
+        "moments are close to the DGP's implications, but not identical. That is how "
+        "to read these moments before using them as targets for a DSGE, "
         "RBC, or reduced-form forecasting exercise."
     )
 

@@ -6,9 +6,9 @@
 
 A firm boundary question is usually a contracting question before it is an organizational chart question. Suppose a supplier can make an investment that is valuable mainly inside one buyer-seller relationship. If the investment is hard to describe in a court-enforceable contract, the supplier expects some of the return to be bargained away after the sunk cost has been paid. The hold-up problem is then not that trade fails mechanically; it is that the investment made before trade is too small.
 
-The tutorial uses one state variable, asset specificity $s\in[0,1]$, to make that tradeoff explicit. Spot exchange is cheap but offers weak protection when $s$ is high. A long-term contract protects more of the investment return, at a drafting and monitoring cost. Vertical integration gives stronger residual control rights, but hierarchy itself is costly. The exercise asks where each governance form maximizes total surplus.
+The tutorial uses one state variable, asset specificity $s\in[0,1]$. Spot exchange is cheap but offers weak protection when $s$ is high. A long-term contract protects more of the investment return, at a drafting and monitoring cost. Vertical integration gives stronger residual control rights, but hierarchy itself is costly. The exercise asks where each governance form maximizes total surplus.
 
-This is the firm-boundary counterpart to the downstream-pricing examples in [vertical relationships](../vertical-relationships/) and [Bertrand pricing with logit demand](../bertrand-logit-demand/): here the object is not a price equilibrium, but the allocation of control rights before relationship-specific investment is sunk.
+This is the firm-boundary counterpart to the downstream-pricing examples in [vertical relationships](../vertical-relationships/) and [Bertrand pricing with logit demand](../bertrand-logit-demand/): the object is not a price equilibrium, but the allocation of control rights before relationship-specific investment is sunk.
 
 ## Equations
 
@@ -39,7 +39,7 @@ governance costs are present.
 
 ## Model Setup
 
-The calibration is deliberately stylized. It is not estimating a boundary of the firm from data; it is making the Williamson/Grossman-Hart-Moore comparative static visible with transparent primitives.
+The calibration is stylized. It is not estimating a boundary of the firm from data; it is making the Williamson/Grossman-Hart-Moore comparative static visible with transparent primitives.
 
 | Object | Interpretation |
 |--------|----------------|
@@ -72,7 +72,7 @@ For each s in S:
 Outputs: investment schedules, surplus schedules, and governance regions
 ```
 
-In this calibration the approximate surplus-maximizing regions are: Spot contract for $s\lesssim 0.21$; Long-term contract for $0.21\lesssim s\lesssim 0.37$; Vertical integration for $s\gtrsim 0.37$. The switch points are not parameters of the model; they are the outcome of comparing the incentive gains from stronger control rights with the resource costs of writing contracts or running hierarchy.
+In this calibration the approximate surplus-maximizing regions are: Spot contract for $s\lesssim 0.21$; Long-term contract for $0.21\lesssim s\lesssim 0.37$; Vertical integration for $s\gtrsim 0.37$. The switch points are not parameters of the model; they come from comparing the incentive gains from stronger control rights with the resource costs of writing contracts or running hierarchy.
 
 ## Results
 
@@ -84,11 +84,11 @@ The surplus ranking changes because each governance form moves two objects at on
 
 <img src="figures/surplus-by-regime.png" alt="Surplus by governance regime" width="80%">
 
-The governance regions summarize the same comparison without the surplus levels. The middle interval is useful: a long-term contract can dominate both spot exchange and integration when it protects enough investment without bringing the full internal governance cost.
+The governance regions summarize the same comparison without the surplus levels. In the middle interval, a long-term contract can dominate both spot exchange and integration when it protects enough investment without bringing the full internal governance cost.
 
 <img src="figures/governance-regions.png" alt="Governance regions over asset specificity" width="80%">
 
-The table keeps the accounting transparent at three values of $s$. At low specificity, cheap market exchange wins despite underinvestment. At medium and high specificity in this calibration, integration's incentive effect is large enough to offset its governance cost.
+Three values of $s$, with the accounting in one place. At low specificity, cheap market exchange wins despite underinvestment. At medium and high specificity in this calibration, integration's incentive effect is large enough to offset its governance cost.
 
 **Governance comparison at low, medium, and high asset specificity**
 
@@ -106,7 +106,7 @@ The table keeps the accounting transparent at three values of $s$. At low specif
 
 ## Takeaway
 
-The firm boundary is not a generic preference for hierarchy. Integration is valuable when noncontractible, relationship-specific investment is important enough that stronger control rights pay for themselves. When assets are easy to redeploy, market exchange can dominate because it avoids the internal costs of hierarchy. Between those cases, a long-term contract can be the surplus-maximizing compromise.
+The firm boundary is not a generic preference for hierarchy. Integration is valuable when noncontractible, relationship-specific investment is important enough that stronger control rights pay for themselves. When assets are easy to redeploy, market exchange can dominate because it avoids the internal costs of hierarchy. Between those cases, a long-term contract is often the surplus-maximizing compromise.
 
 ## References
 

@@ -6,7 +6,7 @@
 
 In differentiated-products IO, demand is not only about fitting market shares. The substitution matrix is what turns demand estimates into merger effects, markups, and welfare calculations. The simple logit model in [logit demand and markup recovery](../logit-supply-side/) is useful because Berry inversion is transparent, but it also forces the IIA restriction: when one product changes price, all rivals gain share in proportion to their existing shares.
 
-BLP replaces that representative-consumer substitution pattern with random coefficients. Consumers differ in their taste for the observed characteristic and in price sensitivity, so products that attract similar consumers become closer substitutes. This tutorial uses a synthetic market where the true parameters are known, estimates the nonlinear taste dispersion by GMM, and then compares the implied elasticities with both the true DGP and a plain-logit benchmark.
+BLP replaces that representative-consumer substitution pattern with random coefficients. Consumers differ in their taste for the observed characteristic and in price sensitivity, so products that attract similar consumers become closer substitutes. The tutorial uses a synthetic market with known parameters, estimates the nonlinear taste dispersion by GMM, and compares the implied elasticities with the true DGP and a plain-logit benchmark.
 
 ## Equations
 
@@ -80,11 +80,11 @@ At the true nonlinear parameters, the contraction converged in **627 iterations*
 
 The estimated model matches the simulated market shares closely, which is expected because the data come from the same random-coefficients family. The more useful checks are the parameter table and the elasticity comparison: they show whether the estimator recovers the DGP objects that matter for counterfactual IO work.
 
-The share fit sits on the 45-degree line because the BLP contraction forces the model to rationalize observed shares for the chosen nonlinear parameters. This is why a good-looking share plot is not, by itself, evidence that the substitution pattern is right.
+The share fit sits on the 45-degree line because the BLP contraction forces the model to rationalize observed shares at the chosen nonlinear parameters. A good-looking share plot is therefore not, by itself, evidence that the substitution pattern is right.
 
 <img src="figures/observed-vs-predicted-shares.png" alt="Observed and predicted market shares at estimated parameters." width="80%">
 
-The true-DGP bars are available because this is a simulation. Estimated BLP tracks the product-level pattern, with a maximum own-elasticity error of 0.315 in this market. Plain logit has no consumer-specific price coefficient, so its elasticities mostly inherit price and share differences rather than the composition of buyers.
+The true-DGP bars are available because this is a simulation. Estimated BLP tracks the product-level pattern, with a maximum own-elasticity error of 0.315 in this market. Plain logit has no consumer-specific price coefficient, so its elasticities inherit price and share differences rather than the composition of buyers.
 
 <img src="figures/own-price-elasticities.png" alt="Own-price elasticities in market 1 under the true DGP, estimated BLP model, and plain logit benchmark." width="80%">
 
@@ -92,7 +92,7 @@ The inner fixed point is slow but stable. On the log scale, the update norm fall
 
 <img src="figures/contraction-convergence.png" alt="Convergence of the BLP contraction mapping." width="80%">
 
-The cross-elasticity matrix is the main economic object. In the plain-logit panel, every off-diagonal entry in a column is identical, so a price increase for product k sends the same proportional demand response to each rival. In the BLP panel, off-diagonal entries vary by row because products draw different mixtures of consumer tastes.
+The cross-elasticity matrix is the main economic object here. In the plain-logit panel, every off-diagonal entry in a column is identical, so a price increase for product k sends the same proportional demand response to each rival. In the BLP panel, off-diagonal entries vary by row because products draw different mixtures of consumer tastes.
 
 <img src="figures/cross-price-elasticity-matrix.png" alt="Cross-price elasticity matrices for estimated BLP and plain logit in market 1." width="80%">
 
@@ -110,7 +110,7 @@ Because the data are synthetic, the parameter table is an actual truth check rat
 
 ## Takeaway
 
-BLP is valuable because it changes the counterfactual object, not because it adds a more complicated optimizer. The contraction lets each candidate $\sigma$ fit observed shares, while the IV/GMM moments choose the amount of heterogeneity that makes recovered unobserved quality orthogonal to excluded instruments. Once heterogeneity is present, substitution is no longer forced to follow existing shares. That is why the model is the natural next step after simple logit demand, especially before using demand estimates for mergers, markups, or welfare.
+BLP changes the counterfactual object, not the optimizer. The contraction lets each candidate $\sigma$ fit observed shares, while the IV/GMM moments choose the amount of heterogeneity that makes recovered unobserved quality orthogonal to excluded instruments. Once heterogeneity is present, substitution is no longer forced to follow existing shares. That is the natural step after simple logit demand, especially before using demand estimates for mergers, markups, or welfare.
 
 ## References
 

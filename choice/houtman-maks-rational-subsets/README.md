@@ -6,7 +6,7 @@
 
 A GARP rejection is not automatically a rejection of economic choice theory. In household scanner data, lab choices, or administrative purchase records, the failure could come from a different decision problem, a transcription error, or one receipt that should not be pooled with the rest. The Houtman-Maks index asks how much of the sample can still be read as utility-maximizing behavior under one stable preference ordering.
 
-This tutorial uses a small synthetic demand panel where the uncorrupted choices come from Cobb-Douglas budget shares. Two chosen bundles are then swapped across receipts. The full dataset fails GARP, but the largest rationalizable core keeps 11 of 12 observations. The example is useful because the simulation gives an oracle label for the swapped rows, so the exact Houtman-Maks answer and a greedy large-sample diagnostic can be compared to a known source of contamination.
+The setup is a small synthetic demand panel where the uncorrupted choices come from Cobb-Douglas budget shares. Two chosen bundles are then swapped across receipts. The full dataset fails GARP, but the largest rationalizable core keeps 11 of 12 observations. The simulation gives an oracle label for the swapped rows, so the exact Houtman-Maks answer and a greedy large-sample diagnostic can be compared to a known source of contamination.
 
 ## Equations
 
@@ -96,7 +96,7 @@ The table separates three objects that are easy to conflate. The synthetic swap 
 |            11 |                         0 | no                   | keep              | keep            |              3.82 |              3.82 |
 |            12 |                         3 | no                   | keep              | keep            |              3.42 |              3.42 |
 
-The revealed-preference graph makes the comparison concrete. Red fill marks the exact Houtman-Maks deletion, the black x marks the greedy deletion, and gold rings mark the two receipts whose bundles were swapped in the simulation. The method does not need to remove both swapped rows: dropping one side of the conflict is enough to recover a GARP-consistent core.
+The revealed-preference graph makes the comparison concrete. Red fill marks the exact Houtman-Maks deletion, the black x marks the greedy deletion, and gold rings mark the two receipts whose bundles were swapped in the simulation. The method does not need to remove both swapped rows; dropping one side of the conflict is enough to recover a GARP-consistent core.
 
 <img src="figures/conflict-graph.png" alt="Preference conflict graph comparing exact, greedy, and synthetic corruption markers." width="80%">
 

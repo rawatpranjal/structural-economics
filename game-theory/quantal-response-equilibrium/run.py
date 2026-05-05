@@ -103,17 +103,17 @@ def main() -> None:
     )
 
     report.add_overview(
-        "Entry games are a useful place to see why quantal response equilibrium is not just "
+        "Entry games are a good place to see why quantal response equilibrium is not just "
         "a numerical trick. Exact Nash behavior says a firm enters whenever entry is a best "
         "response and mixes only when it is exactly indifferent. QRE keeps the same strategic "
         "payoff comparison, but turns the sharp best response into a smooth choice probability: "
         "better actions are chosen more often, not with probability one.\n\n"
         "The example below follows the symmetric logit-QRE branch in a two-player entry game. "
         "The exact game has two asymmetric pure Nash equilibria and one symmetric mixed Nash "
-        "equilibrium. That mixed equilibrium is the natural benchmark for the symmetric QRE "
-        "path. This makes the tutorial a direct continuation of the residual logic in "
-        "[normal-form games](../normal-form-games/): equilibrium is still a fixed point of "
-        "best responses, but the response map is probabilistic."
+        "equilibrium. That mixed equilibrium is the benchmark for the symmetric QRE path, "
+        "which continues the residual logic in [normal-form games](../normal-form-games/): "
+        "equilibrium is still a fixed point of best responses, but the response map is "
+        "probabilistic."
     )
 
     report.add_equations(r"""
@@ -173,11 +173,10 @@ $\lambda$ becomes large.
     )
 
     report.add_solution_method(
-        "For each precision value, the problem is one-dimensional because the tutorial "
-        "tracks the symmetric branch. Define the residual "
-        "$G_{\\lambda}(p)=p-QBR(p;\\lambda)$. In this entry game the residual is strictly "
-        "increasing on $[0,1]$, with opposite signs at the endpoints, so bisection gives "
-        "a transparent fixed-point solver.\n\n"
+        "Tracking the symmetric branch reduces the problem to one dimension at each "
+        "precision value. Define the residual $G_{\\lambda}(p)=p-QBR(p;\\lambda)$. In this "
+        "entry game the residual is strictly increasing on $[0,1]$, with opposite signs at "
+        "the endpoints, so bisection gives a transparent fixed-point solver.\n\n"
         "```text\n"
         "Algorithm: symmetric logit-QRE path in the entry game\n"
         "Inputs: precision grid Lambda, payoff gap Delta(p)=2-3p, tolerance epsilon\n"
@@ -190,9 +189,9 @@ $\lambda$ becomes large.
         "6. Report p(lambda), |G_lambda(p(lambda))|, and p(lambda)-p^N.\n"
         "```\n\n"
         "For larger normal-form games, QRE is a system of fixed-point equations. The "
-        "one-dimensional version here is deliberately narrow so the economic object stays "
-        "visible: a noisy entry probability that must be consistent with the noisy response "
-        "it induces in the other player."
+        "one-dimensional version here is narrow so the economic object stays visible: a "
+        "noisy entry probability that must be consistent with the noisy response it induces "
+        "in the other player."
     )
 
     fig, ax = plt.subplots()
@@ -295,9 +294,9 @@ $\lambda$ becomes large.
         "QRE keeps the equilibrium discipline of mutual consistency but relaxes the knife-edge "
         "best-response rule. In this entry game, higher precision moves the symmetric QRE toward "
         "the exact mixed Nash probability, while the fixed-point residual verifies that each "
-        "reported probability is internally consistent with logit best response. The useful "
-        "lesson is not the bisection routine itself; it is the separation between numerical "
-        "error, measured by the residual, and behavioral smoothing, measured by the gap to Nash."
+        "reported probability is internally consistent with logit best response. The lesson is "
+        "not the bisection routine itself; it is the separation between numerical error, "
+        "measured by the residual, and behavioral smoothing, measured by the gap to Nash."
     )
 
     report.add_references([

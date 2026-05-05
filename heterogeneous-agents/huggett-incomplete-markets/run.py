@@ -326,10 +326,9 @@ def main():
         "The economic force is precautionary saving. Low-income spells make the "
         "borrowing limit valuable, so households try to carry buffer wealth into bad "
         "states. In equilibrium that desired asset demand is offset by a lower risk-free "
-        "rate. The tutorial uses the continuous-time HJB/KFE representation from "
-        "Achdou et al. (2022) because it makes the two equilibrium objects explicit: "
-        "the household drift in asset space and the stationary density that drift "
-        "induces."
+        "rate. The continuous-time HJB/KFE representation from Achdou et al. (2022) "
+        "makes the two equilibrium objects explicit: the household drift in asset space "
+        "and the stationary density that drift induces."
     )
 
     report.add_equations(
@@ -543,12 +542,12 @@ HJB fixed-point tolerance and the zero-net-supply bond-market residual.
     )
 
     report.add_takeaway(
-        "The main lesson is the Huggett pricing mechanism. With incomplete insurance, "
+        "The Huggett pricing mechanism is the lesson. With incomplete insurance, "
         "households want to self-insure by holding the risk-free bond; with zero net "
         "supply, the equilibrium return must fall until aggregate desired assets are zero. "
-        "The HJB/KFE machinery is useful because it keeps the individual saving drift and "
-        "the induced wealth distribution in the same equilibrium calculation. This is the "
-        "continuous-time counterpart to the discrete-time incomplete-markets logic in the "
+        "The HJB/KFE machinery keeps the individual saving drift and the induced wealth "
+        "distribution in the same equilibrium calculation. This is the continuous-time "
+        "counterpart to the discrete-time incomplete-markets logic in the "
         "[Aiyagari saving tutorial](../../dynamic-programming/aiyagari/), but here the "
         "asset in fixed supply is a bond rather than aggregate capital."
     )

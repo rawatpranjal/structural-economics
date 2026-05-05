@@ -6,7 +6,7 @@
 
 A cartel is not just a high-price outcome. It is a dynamic incentive problem. If all firms restrict output, they share monopoly rents. If one firm quietly expands while rivals keep cooperating, it earns a one-period windfall. The question is whether the future value of the relationship is large enough to make that deviation unattractive.
 
-The tutorial uses symmetric Cournot demand because the incentive constraint is closed form. It then adds a stylized price path with competitive, cartel, and post-detection regimes, so the price screen can be read against exact Nash and monopoly benchmarks. The neighboring [HHI tutorial](../effective-hhi/) is a static concentration screen; this one asks whether firms can sustain a collusive path once repeated interaction is made explicit.
+The tutorial uses symmetric Cournot demand because the incentive constraint is closed form, then adds a stylized price path with competitive, cartel, and post-detection regimes, so the price screen can be read against exact Nash and monopoly benchmarks. The neighboring [HHI tutorial](../effective-hhi/) is a static concentration screen; this one asks whether firms can sustain a collusive path once repeated interaction is made explicit.
 
 ## Equations
 
@@ -89,15 +89,15 @@ With $\delta=0.9$, the exact threshold in this calibration allows at most 33 sym
 
 ## Results
 
-The payoff plot separates the two sides of the incentive constraint. The distance from $\pi^M$ up to $\pi^D$ is the short-run gain from cheating. The distance from $\pi^N$ up to $\pi^M$ is the per-period rent that is lost after punishment. Adding members dilutes the monopoly rent faster than it shrinks the deviation opportunity.
+The two sides of the incentive constraint are visible directly. The distance from $\pi^M$ up to $\pi^D$ is the short-run gain from cheating. The distance from $\pi^N$ up to $\pi^M$ is the per-period rent lost after punishment. Adding members dilutes the monopoly rent faster than it shrinks the deviation opportunity.
 
 <img src="figures/profits-by-regime.png" alt="Per-firm Nash, collusive, and deviation profits by firm count" width="80%">
 
-The threshold curve is exact for the linear Cournot model. At $\delta=0.9$, the last sustainable symmetric market has 33 firms; adding one more member pushes the deviation constraint above the reference discount factor. This is Stigler's coordination problem written as an incentive constraint.
+The threshold curve is exact for the linear Cournot model. At $\delta=0.9$, the last sustainable symmetric market has 33 firms; adding one more pushes the deviation constraint above the reference discount factor. Stigler's coordination problem rewritten as an incentive constraint.
 
 <img src="figures/critical-discount-factor.png" alt="Exact critical discount factor as a function of the number of firms" width="80%">
 
-The price path deliberately gives the analyst the ground truth. Before the cartel, prices fluctuate around the exact Nash benchmark. During the cartel, they move toward the monopoly benchmark, and after detection they return to Nash. Real applications replace these clean reference lines with estimated costs, demand, and counterfactual competitive prices.
+The simulated price path is constructed with known regimes. Before the cartel, prices fluctuate around the exact Nash benchmark. During the cartel, they move toward the monopoly benchmark, and after detection they return to Nash. Real applications replace these clean reference lines with estimated costs, demand, and counterfactual competitive prices.
 
 <img src="figures/price-series-structural-break.png" alt="Stylized price series with Nash and monopoly reference prices" width="80%">
 
@@ -128,7 +128,7 @@ The table reports exact payoffs and thresholds. For $\delta=0.9$, the feasibilit
 
 ## Takeaway
 
-The repeated-game calculation turns the usual cartel story into a single discipline condition. The short-run deviation gain is always positive; the question is whether future collusive rents are valuable enough to deter it. In the duopoly, $\delta^{\ast}=0.5294$; with ten symmetric firms, $\delta^{\ast}=0.7516$; with $\delta=0.9$, the exact cutoff is 33 firms. Price and margin breaks are therefore screens, not verdicts. They say where to look before bringing in the market facts that matter in practice: costs, demand shocks, monitoring, communication, capacity, procurement rules, and the legal record.
+The repeated-game calculation reduces the cartel story to a single discipline condition. The short-run deviation gain is always positive; the question is whether future collusive rents are valuable enough to deter it. In the duopoly, $\delta^{\ast}=0.5294$; with ten symmetric firms, $\delta^{\ast}=0.7516$; at $\delta=0.9$, the cutoff is 33 firms. Price and margin breaks are screens, not verdicts. They say where to look before bringing in costs, demand shocks, monitoring, communication, capacity, procurement rules, and the legal record.
 
 ## References
 

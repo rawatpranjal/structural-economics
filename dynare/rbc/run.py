@@ -309,8 +309,8 @@ def main() -> None:
         "keeps the same economics but solves the first-order system directly in Python, "
         "so the state, control, and approximation are visible. The comparison line in "
         "the results solves the exact nonlinear transition for the same decaying TFP "
-        "shock. For a 1 percent shock the two paths nearly coincide, which is exactly "
-        "what a local perturbation is supposed to deliver near steady state."
+        "shock. For a 1 percent shock the two paths nearly coincide, which is what a "
+        "local perturbation is supposed to deliver near steady state."
     )
 
     report.add_equations(
@@ -409,7 +409,7 @@ The calibration implies $K/Y={ss["K_Y"]:.2f}$ and $C/Y={ss["C_Y"]:.2f}$.
         "   transition for the same TFP path and compare the two IRFs.\n"
         "```\n\n"
         f"The coefficient-matching residual is {policy['max_residual']:.1e}. The "
-        "nonlinear benchmark is not a different stochastic model; it is the exact "
+        "nonlinear benchmark is not a different stochastic model. It is the exact "
         "deterministic transition implied by the same one-time shock path."
     )
 
@@ -452,7 +452,7 @@ The calibration implies $K/Y={ss["K_Y"]:.2f}$ and $C/Y={ss["C_Y"]:.2f}$.
         "than output because the household wants to move capital toward the temporarily "
         "higher marginal product of capital. Consumption rises by less on impact and "
         "keeps drifting upward for several quarters, reflecting smoothing through the "
-        "Euler equation. The dashed nonlinear transition is almost on top of the "
+        "Euler equation. The dashed nonlinear transition sits almost on top of the "
         "first-order solution at this shock size, so the local approximation is doing "
         "what it is meant to do near steady state."
     )
@@ -505,8 +505,8 @@ The calibration implies $K/Y={ss["K_Y"]:.2f}$ and $C/Y={ss["C_Y"]:.2f}$.
         "intertemporal price signal. Output rises on impact because firms are more "
         "productive. Investment responds strongly because the marginal product of "
         "capital is temporarily high. Consumption moves more smoothly, and capital "
-        "accumulates only gradually. That is the core propagation mechanism a "
-        "first-order Dynare-style RBC exercise is meant to isolate.\n\n"
+        "accumulates only gradually. That is the propagation mechanism a first-order "
+        "Dynare-style RBC exercise is meant to isolate.\n\n"
         "This tutorial is the equilibrium counterpart to the "
         "[persistent-shock tutorial](../../time-series/ar-processes/): the AR(1) process supplies "
         "the shock's timing, while the Euler equation and capital law of motion decide "

@@ -6,7 +6,7 @@
 
 The Markowitz problem is a compact way to ask what diversification actually buys. A portfolio's mean return is linear in the weights, but its risk is not: covariance decides whether combining assets smooths payoffs or simply repackages the same aggregate risk.
 
-The example uses four stylized annual asset classes. Random long-only portfolios make the feasible set visible, but they are only a simulation. The tutorial also computes the exact long-only frontier and the unconstrained analytic frontier, so the reader can see which features are economic restrictions and which are sampling noise from drawing many portfolios. The usual warning remains the main empirical one: a frontier is only as credible as the expected returns and covariance matrix fed into it.
+The example uses four stylized annual asset classes. Random long-only portfolios make the feasible set visible, but they are only a simulation. The tutorial also computes the exact long-only frontier and the unconstrained analytic frontier, so the reader can see which features are economic restrictions and which are sampling noise from drawing many portfolios. The usual empirical warning still applies: a frontier is only as credible as the expected returns and covariance matrix fed into it.
 
 ## Equations
 
@@ -76,7 +76,7 @@ $\Sigma^{-1}(\mu-r_f\mathbf{1})$ and normalized to sum to one.
 
 ## Solution Method
 
-The numerical work separates three objects that are often conflated. Random Dirichlet weights give a useful picture of the long-only feasible set. The unconstrained frontier comes from the Lagrange-multiplier formula above. The exact long-only frontier is computed by enumerating active asset sets; for each candidate set, the same two-constraint Markowitz problem is solved on that face of the simplex and discarded if any weight is negative.
+The numerical work separates three objects that are often conflated. Random Dirichlet weights give a picture of the long-only feasible set. The unconstrained frontier comes from the Lagrange-multiplier formula above. The exact long-only frontier is computed by enumerating active asset sets; for each candidate set, the same two-constraint Markowitz problem is solved on that face of the simplex and discarded if any weight is negative.
 
 ```text
 Algorithm: Markowitz frontier with a long-only benchmark
@@ -95,11 +95,11 @@ Compute the global minimum-variance and tangency portfolios
 Compare the best random long-only Sharpe portfolio with the exact frontier
 ```
 
-Because there are only four assets, active-set enumeration is cleaner than adding a quadratic-programming dependency. It also makes the economic constraint explicit: the long-only frontier is the lower envelope of feasible faces of the portfolio simplex.
+Because there are only four assets, active-set enumeration is cleaner than adding a quadratic-programming dependency. It also makes the economic constraint explicit. The long-only frontier is the lower envelope of feasible faces of the portfolio simplex.
 
 ## Results
 
-The random cloud is a Monte Carlo picture of the long-only simplex. Its lower-left edge is close to, but not identical to, the exact long-only frontier. The dashed unconstrained frontier extends beyond that curve because it can use short positions or leverage. That distinction is substantive: allowing negative weights changes the choice set, not just the algorithm.
+The random cloud is a Monte Carlo picture of the long-only simplex. Its lower-left edge is close to, but not identical to, the exact long-only frontier. The dashed unconstrained frontier extends beyond that curve because it can use short positions or leverage. That distinction is substantive; allowing negative weights changes the choice set, not just the algorithm.
 
 <img src="figures/frontier.png" alt="Mean-variance frontier comparison" width="80%">
 
@@ -120,7 +120,7 @@ The table reports annualized moments. The tiny difference between the analytic t
 
 ## Takeaway
 
-The mean-variance frontier is useful because it makes covariance and constraints visible in the same object. It is also fragile. Small changes in expected returns or covariances can move the tangency portfolio sharply, so the computation should be read as a disciplined mapping from inputs to portfolio tradeoffs, not as a standalone investment rule.
+The mean-variance frontier makes covariance and constraints visible in the same object. It is also fragile. Small changes in expected returns or covariances can move the tangency portfolio sharply, so the computation should be read as a disciplined mapping from inputs to portfolio tradeoffs, not as a standalone investment rule.
 
 ## References
 

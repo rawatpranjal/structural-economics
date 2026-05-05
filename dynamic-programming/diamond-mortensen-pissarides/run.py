@@ -380,9 +380,8 @@ At the baseline calibration, $A={a_coeff:.4f}$ and $B={b_coeff:.4f}$.
         "There are two computations. The report uses the nonlinear finite-state "
         "solution as a check on the log-linear tightness rule, then simulates "
         "unemployment from the nonlinear rule. The approximation gap is small "
-        "in this calibration, so the main economic point is not numerical "
-        "failure; it is that the standard surplus calibration leaves little "
-        "amplification to begin with.\n\n"
+        "in this calibration. The economic point is that the standard surplus "
+        "calibration leaves little amplification to begin with.\n\n"
         "```text\n"
         "Algorithm: log-linear DMP rule\n"
         "Input: beta, rho, sigma, chi, eta, gamma, b, z_bar\n"
@@ -496,9 +495,8 @@ At the baseline calibration, $A={a_coeff:.4f}$ and $B={b_coeff:.4f}$.
         "Nonlinear and log-linear tightness rules by productivity.",
         fig3,
         description=(
-            "The policy comparison keeps the approximation honest. Over this "
-            "shock range, the log-linear rule tracks the nonlinear free-entry "
-            "fixed point closely. The important failure is therefore economic: "
+            "Over this shock range, the log-linear rule tracks the nonlinear "
+            "free-entry fixed point closely. The failure is economic: "
             f"even the nonlinear rule moves tightness only about "
             f"{df_stats.loc[3, 'Std./Std. z']} times as much as productivity, "
             "well below the volatility of labor-market tightness emphasized by "
@@ -520,10 +518,10 @@ At the baseline calibration, $A={a_coeff:.4f}$ and $B={b_coeff:.4f}$.
     )
 
     report.add_takeaway(
-        "The DMP model gives a clean equilibrium account of the Beveridge curve: "
+        "The DMP model gives an equilibrium account of the Beveridge curve: "
         "productivity raises match surplus, vacancy posting increases, and "
         "unemployment falls through the job-finding rate. The same computation "
-        "also shows why Shimer's result is sharp. With $b=0.40$, the surplus "
+        "also makes Shimer's result sharp. With $b=0.40$, the surplus "
         "from a match is not small enough for modest productivity shocks to "
         "create large swings in vacancy creation. Changing the numerical method "
         "from a local rule to a finite-state nonlinear fixed point does not "

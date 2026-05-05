@@ -233,7 +233,7 @@ $V'(W)=1/((1-\beta)W)$ under log utility.
     ax1.set_title("Value Function")
     ax1.legend()
     report.add_results(
-        "The first diagnostic compares the computed value function with the log-utility "
+        "The computed value function can be compared with the log-utility "
         "ground truth. Concavity means extra cake has high value when the stock is low and "
         "lower value when the stock is already large. The largest value-function deviation "
         f"outside the bottom decile of the grid is **{max_value_error:.2e}**."
@@ -290,7 +290,7 @@ $V'(W)=1/((1-\beta)W)$ under log utility.
     ax3b.legend()
     fig3.tight_layout()
     report.add_results(
-        "Simulating the policy shows the resource-allocation logic over time. The analytical "
+        "The simulated policy traces the resource path over time. The analytical "
         "path is $W_t=\\beta^t W_0$ and $c_t=(1-\\beta)W_t$. The largest numerical "
         f"depletion-path deviation over the simulation is **{max_path_error:.2e}**."
     )
@@ -322,18 +322,18 @@ $V'(W)=1/((1-\beta)W)$ under log utility.
         "Numerical vs analytical solution at selected grid points",
         df,
         description=(
-            "The table reports pointwise errors at selected wealth states. This is the "
-            "main benefit of the cake-eating benchmark: the numerical approximation can be "
+            "The table reports pointwise errors at selected wealth states. The "
+            "cake-eating benchmark allows the numerical approximation to be "
             "audited directly before moving to models without closed forms."
         ),
     )
 
     report.add_takeaway(
-        "Cake eating turns dynamic programming into one clean resource-allocation lesson: "
+        "Cake eating reduces dynamic programming to a resource-allocation problem: "
         "the state is remaining wealth, the control is current consumption, and the "
         "policy trades off current utility against the shadow value of wealth tomorrow. "
-        "With log utility, the ground truth is simple: consume the constant share "
-        "$(1-\\beta)$ and carry forward $\\beta W$. The small numerical gaps shown above "
+        "With log utility, the agent consumes the constant share "
+        "$(1-\\beta)$ and carries forward $\\beta W$. The small numerical gaps shown above "
         "are grid and interpolation diagnostics. In optimal-growth and consumption-savings "
         "models, the same Bellman logic remains, but production, income risk, and borrowing "
         "constraints remove this closed-form safety check."

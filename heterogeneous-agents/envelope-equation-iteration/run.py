@@ -553,8 +553,8 @@ to consume.
     report.add_solution_method(
         "EEI keeps the Euler equation visible. The current guess is a consumption "
         "policy. The envelope equation turns that policy into a one-dimensional "
-        "marginal continuation value $W_a(a)$, and the next Euler step turns "
-        "$W_a(a)$ back into a consumption policy.\n\n"
+        "marginal continuation value $W_a(a)$, and the next Euler step turns it "
+        "back into a consumption policy.\n\n"
         "```text\n"
         "Input: asset grid A, income states y_j, probabilities pi_j,\n"
         "       primitives beta, R, gamma, borrowing limit a_min\n"
@@ -720,10 +720,10 @@ to consume.
 
     report.add_takeaway(
         "EEI is not a new savings model. It is a different fixed point for the same "
-        "incomplete-markets household problem. The economic policy remains the "
+        "incomplete-markets household problem. The economic policy is still the "
         "buffer-stock rule: low income draws push households toward the asset floor, "
         "good draws rebuild wealth, and low-wealth households have high MPCs.\n\n"
-        "The useful computational lesson is that the envelope condition can be used "
+        "The computational lesson is that the envelope condition can be used "
         "as an updating equation, not only as a theorem behind the Euler equation. "
         "By carrying $W_a(a)$ forward, EEI avoids value levels and keeps the marginal "
         "value of self-insurance in view. In this transparent implementation, EGP is "

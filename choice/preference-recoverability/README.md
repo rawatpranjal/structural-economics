@@ -4,9 +4,9 @@
 
 ## Overview
 
-Passing GARP is only the first revealed-preference question. Once the choices are rationalizable, the natural next question is what they say about the preference ordering itself. The answer is deliberately set-valued: finite budgets do not identify a unique demand system, but they do restrict the utility functions that could have generated the data.
+Passing GARP is only the first revealed-preference question. Once the choices are rationalizable, the natural next question is what they say about the preference ordering itself. The answer is set-valued by construction: finite budgets do not identify a unique demand system, but they do restrict the utility functions that could have generated the data.
 
-This tutorial starts from the same object as [Afriat's revealed-preference test](../revealed-preference-afriat/): a finite sample of prices $p_t$ and chosen bundles $x_t$. Instead of stopping at pass/fail rationalizability, it constructs Afriat numbers and uses them to draw a concave utility index that exactly rationalizes the observed choices. Because the synthetic data come from a Cobb-Douglas consumer, the true indifference curve is available as a diagnostic; the Afriat construction does not use that functional form.
+The starting object is the same as in [Afriat's revealed-preference test](../revealed-preference-afriat/): a finite sample of prices $p_t$ and chosen bundles $x_t$. Instead of stopping at pass/fail rationalizability, the tutorial constructs Afriat numbers and uses them to draw a concave utility index that exactly rationalizes the observed choices. Because the synthetic data come from a Cobb-Douglas consumer, the true indifference curve is available as a diagnostic; the Afriat construction does not use that functional form.
 
 ## Equations
 
@@ -85,7 +85,7 @@ Output: recovered utility index U_hat and contour through x_k
        U_hat((y_1,y_2)) >= u_k.
 ```
 
-A more general implementation could leave the $\lambda_t$ values as additional linear-programming variables. Here the fixed normalization keeps the tutorial focused on recoverability rather than on the many equivalent ordinal scalings of the same revealed-preference information.
+A more general implementation could leave the $\lambda_t$ values as additional linear-programming variables. The fixed normalization here keeps the focus on recoverability rather than on the many equivalent ordinal scalings of the same revealed-preference information.
 
 ## Results
 
@@ -128,7 +128,7 @@ The last column checks that the recovered utility evaluates to $u_t$ at each obs
 
 ## Takeaway
 
-Preference recoverability is useful precisely because it does not pretend that finite data identify a unique utility function. Afriat numbers give a concrete rationalizing utility index and a way to draw local upper-contour restrictions from observed budgets. The Cobb-Douglas overlay shows the right interpretation: the data discipline the preference ordering where budgets create support, while regions with little price variation remain weakly pinned down.
+Preference recoverability is useful because it does not pretend that finite data identify a unique utility function. Afriat numbers give a concrete rationalizing utility index and a way to draw local upper-contour restrictions from observed budgets. The Cobb-Douglas overlay shows the right interpretation: the data discipline the preference ordering where budgets create support, while regions with little price variation remain weakly pinned down.
 
 If the data fail GARP, this exercise should stop and the next question is which observations break rationalizability; see the [money pump index](../money-pump-index/) and [Houtman-Maks rational subsets](../houtman-maks-rational-subsets/) tutorials. If the data pass, Afriat recovery gives the nonparametric object that a later parametric demand model has to respect.
 

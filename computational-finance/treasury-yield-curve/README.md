@@ -6,7 +6,7 @@
 
 The term structure is a price system viewed across maturities. On one date, short, intermediate, and long Treasury rates summarize how markets price dollars delivered at different horizons. The first economic question is therefore not which plot to draw, but what part of the curve is moving: the common level, the long-minus-short slope, or the middle-maturity belly.
 
-This tutorial uses an offline 1990 panel of Treasury constant-maturity rates. The observations are CMT par-yield-curve rates constructed from market quotes and Treasury interpolation. They are not zero-coupon spot rates, and they are not raw transaction yields on one traded bond. The previous [bond-pricing tutorial](../bond-yield-to-maturity/) works with a single promised cash-flow claim; the later [Fama-Bliss-style regression](../fama-bliss-forward-regression/) uses term-structure spreads for predictability.
+This tutorial uses an offline 1990 panel of Treasury constant-maturity rates. The observations are CMT par-yield-curve rates constructed from market quotes and Treasury interpolation. They are not zero-coupon spot rates, and they are not raw transaction yields on one traded bond. The previous [bond-pricing tutorial](../bond-yield-to-maturity/) works with a single promised cash-flow claim. The later [Fama-Bliss-style regression](../fama-bliss-forward-regression/) uses term-structure spreads for predictability.
 
 ## Equations
 
@@ -60,7 +60,7 @@ structure.
 
 ## Solution Method
 
-The computation is deliberately descriptive. Each row is a cross-section of maturity-specific rates, and the code asks how much of the movement is level, slope, or curvature. A denser maturity grid would mostly interpolate the published CMT nodes; it would not create a ground-truth zero-coupon curve unless we added a separate term-structure model.
+The computation is deliberately descriptive. Each row is a cross-section of maturity-specific rates, and the code asks how much of the movement is level, slope, or curvature. A denser maturity grid would mostly interpolate the published CMT nodes; it would not produce a ground-truth zero-coupon curve unless a separate term-structure model were added.
 
 ```text
 Algorithm: CMT curve-shape summaries
@@ -85,15 +85,15 @@ The three selected dates make the cross-sectional object concrete. The curve was
 
 <img src="figures/yield-curve-snapshots.png" alt="Selected Treasury yield curves" width="80%">
 
-The time-series view separates calendar movement from curve shape. A maturity series can fall over the year even when the cross-section remains upward sloping on most dates. This distinction matters because statements about a yield curve are always indexed by both date and maturity.
+The time-series view separates calendar movement from curve shape. A maturity series can fall over the year even when the cross-section remains upward sloping on most dates. Statements about a yield curve are always indexed by both date and maturity.
 
 <img src="figures/yields-over-time.png" alt="Selected maturity yields over time" width="80%">
 
-The diagnostic series compress each daily curve into economically interpretable numbers. The slope carries most of the visible late-year movement. The belly measure is smaller, so in this sample the main fact is not a dramatic hump in middle maturities; it is the widening gap between short and long yields.
+The diagnostic series compress each daily curve into economically interpretable numbers. The slope carries most of the visible late-year movement. The belly measure is smaller, so in this sample the main fact is not a hump in middle maturities; it is the widening gap between short and long yields.
 
 <img src="figures/term-spreads.png" alt="Yield-curve slope and belly diagnostics" width="80%">
 
-The selected rows keep the raw CMT rates visible. They are useful as an audit trail for the plotted curves and for the slope numbers quoted above.
+The selected rows keep the raw CMT rates visible. They serve as an audit trail for the plotted curves and for the slope numbers quoted above.
 
 **Selected curve snapshots**
 
@@ -116,7 +116,7 @@ The summary statistics are descriptive moments of the 1990 panel. They should be
 
 ## Takeaway
 
-A Treasury CMT curve is a maturity cross-section, not a single interest rate. Level, slope, and curvature are useful because they discipline what we mean by curve movements before imposing a richer model. The limitation is equally important: static CMT summaries describe the term structure, but expectations, risk premia, and arbitrage-free discount factors require additional assumptions and usually different data objects.
+A Treasury CMT curve is a maturity cross-section, not a single interest rate. Level, slope, and curvature discipline what we mean by curve movements before imposing a richer model. The limitation matters: static CMT summaries describe the term structure, but expectations, risk premia, and arbitrage-free discount factors require additional assumptions and usually different data objects.
 
 ## References
 

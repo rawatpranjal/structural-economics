@@ -8,7 +8,7 @@ This is the continuous-time version of the planner's growth problem. The state i
 
 The Hamilton-Jacobi-Bellman equation gives the value of capital in units of lifetime utility. Once the marginal value $V'(k)$ is known, the consumption choice follows from the first-order condition. The numerical problem is therefore not a search over consumption; it is a problem of computing the right derivative of the value function along the capital drift.
 
-The tutorial uses the implicit upwind scheme from continuous-time macro. The same economic dynamics also appear in the neighboring [Ramsey phase-diagram](../phase-diagrams/) and [Ramsey shooting](../ramsey-growth/) tutorials; here the focus is the HJB representation and the finite-difference policy calculation.
+The implicit upwind scheme from continuous-time macro is used here. The same economic dynamics also appear in the neighboring [Ramsey phase-diagram](../phase-diagrams/) and [Ramsey shooting](../ramsey-growth/) tutorials; here the focus is the HJB representation and the finite-difference policy calculation.
 
 ## Equations
 
@@ -66,7 +66,7 @@ $$
 
 ## Model Setup
 
-The calibration is intentionally small: one capital state, Cobb-Douglas technology, CRRA utility, and no shocks. The baseline HJB grid is used for the reported policy functions. A finer HJB grid is solved only as a same-model reference for the figures; it is not a different economic model.
+The calibration is small by design: one capital state, Cobb-Douglas technology, CRRA utility, and no shocks. The baseline HJB grid is used for the reported policy functions. A finer HJB grid is solved only as a same-model reference for the figures; it is not a different economic model.
 
 | Parameter | Value | Description |
 |-----------|-------|-------------|
@@ -84,7 +84,7 @@ The calibration is intentionally small: one capital state, Cobb-Douglas technolo
 
 ## Solution Method
 
-The HJB is solved by implicit iteration in pseudo-time. Given a value guess, the algorithm computes two candidate marginal values, turns each into a consumption rule, and then chooses the derivative from the side that is upwind relative to the implied capital drift. The derivative and the policy are therefore chosen together, which is the main numerical discipline in the continuous-time formulation.
+The HJB is solved by implicit iteration in pseudo-time. Given a value guess, the algorithm computes two candidate marginal values, turns each into a consumption rule, and then chooses the derivative from the side that is upwind relative to the implied capital drift. The derivative and the policy are chosen together, which is the main numerical discipline in the continuous-time formulation.
 
 ```text
 Inputs: grid {k_i}, primitives (rho, sigma, alpha, delta, A), tolerance eps
@@ -107,7 +107,7 @@ Output: value V, consumption policy c(k), and drift s(k)=dot{k}
 
 The linear solve is sparse and tridiagonal. The large pseudo-time step $\Delta=1000$ is a numerical device, not an economic period length; it stabilizes the fixed-point update while leaving the continuous-time HJB as the target equation.
 
-The baseline continuous-time HJB converged in **16 iterations** (change = 5.34e-07). The fine-grid HJB reference converged in **14 iterations** (change = 6.94e-07). A coarse discrete-time VFI check, included only for orientation, converged in **243 iterations** (error = 9.87e-07).
+The baseline continuous-time HJB converged in **16 iterations** (change = 5.34e-07). The fine-grid HJB reference converged in **14 iterations** (change = 6.94e-07). A coarse discrete-time VFI check, used only for orientation, converged in **243 iterations** (error = 9.87e-07).
 
 ## Results
 
@@ -119,15 +119,15 @@ The consumption rule comes directly from marginal value: $c(k)=(V'(k))^{-1/\sigm
 
 <img src="figures/consumption-policy.png" alt="Consumption policy with fine-grid HJB reference and net output" width="80%">
 
-The drift $s(k)=\dot{k}$ is the object that determines both economic transitions and the upwind derivative. Positive drift means the economy moves toward higher capital; negative drift means it moves back down. The zero crossing is the Ramsey steady state, and the fine-grid line shows that the baseline grid locates it accurately.
+The drift $s(k)=\dot{k}$ determines both economic transitions and the upwind derivative. Positive drift means the economy moves toward higher capital; negative drift means it moves back down. The zero crossing is the Ramsey steady state, and the fine-grid line shows that the baseline grid locates it accurately.
 
 <img src="figures/savings-policy.png" alt="Capital drift with accumulation below steady state and decumulation above it" width="80%">
 
-Integrating the policy-implied law of motion gives the familiar convergence picture. Low-capital economies invest because marginal product is high; high-capital economies consume more than net output and move down. The single-state planner has a unique stable path back to $k_{ss}$.
+Integrating the policy-implied law of motion produces the standard convergence picture. Low-capital economies invest because marginal product is high; high-capital economies consume more than net output and move down. The single-state planner has a unique stable path back to $k_{ss}$.
 
 <img src="figures/transition-dynamics.png" alt="Transition dynamics k(t) from different initial conditions converging to steady state" width="80%">
 
-The steady state has a closed-form target, so it is a useful check on the finite-difference solution. The baseline grid locates the zero drift within one grid step, and the finer grid tightens that comparison without changing the economic calculation.
+The steady state has a closed-form target, which provides a check on the finite-difference solution. The baseline grid locates the zero drift within one grid step, and the finer grid tightens that comparison without changing the economic calculation.
 
 **Steady-State Values and HJB Diagnostics**
 
@@ -146,7 +146,7 @@ The steady state has a closed-form target, so it is a useful check on the finite
 
 The economic content is the Ramsey accumulation logic: invest when the marginal product of capital is high, consume more when capital is abundant, and converge to the point where $f'(k)=\rho+\delta$. The computational content is that the HJB turns this logic into a derivative problem. Once $V'(k)$ is approximated from the correct side, consumption follows from the FOC and the remaining step is a sparse linear solve.
 
-This is why the upwind choice matters. It is not a cosmetic numerical detail; it encodes the direction of capital movement. That same idea becomes central in continuous-time heterogeneous-agent models, where the HJB policy and the forward equation for the distribution have to use compatible drift directions.
+The upwind choice is not a cosmetic numerical detail; it encodes the direction of capital movement. That same idea becomes central in continuous-time heterogeneous-agent models, where the HJB policy and the forward equation for the distribution have to use compatible drift directions.
 
 ## References
 

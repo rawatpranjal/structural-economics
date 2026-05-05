@@ -398,13 +398,13 @@ def main():
         "the researcher observes prices, shares, product characteristics, and firm "
         "ownership, but not accounting marginal cost. The supply side uses the firm's "
         "pricing first-order condition to recover those costs from demand curvature.\n\n"
-        "This tutorial builds a synthetic cereal market with five products and three "
-        "firms. Prices are deliberately endogenous because firms charge more for "
-        "products with high unobserved quality. OLS therefore understates price "
-        "sensitivity. IV/2SLS uses cost shifters and rival-characteristic instruments "
-        "to recover demand, then the Bertrand-Nash FOC decomposes each observed price "
-        "into a markup and marginal cost. The point is not that simple logit is a rich "
-        "substitution model; the elasticity figures make its IIA restriction visible."
+        "The tutorial builds a synthetic cereal market with five products and three "
+        "firms. Prices are endogenous because firms charge more for products with high "
+        "unobserved quality. OLS therefore understates price sensitivity. IV/2SLS uses "
+        "cost shifters and rival-characteristic instruments to recover demand, then the "
+        "Bertrand-Nash FOC decomposes each observed price into a markup and marginal cost. "
+        "Simple logit is not a rich substitution model; the elasticity figures make its "
+        "IIA restriction visible."
     )
 
     report.add_equations(r"""
@@ -456,9 +456,9 @@ ownership matrix is part of the cost recovery exercise.
 
     report.add_model_setup(
         "The data are simulated so the true demand parameters and marginal costs are "
-        "known. This lets the tutorial separate two errors that are often mixed in real "
-        "applications: demand bias from endogenous prices and cost-recovery error from "
-        "using the wrong demand curvature.\n\n"
+        "known. This separates two errors that are often mixed in real applications: "
+        "demand bias from endogenous prices and cost-recovery error from using the "
+        "wrong demand curvature.\n\n"
         f"| Parameter | Value | Description |\n"
         f"|-----------|-------|-------------|\n"
         f"| $\\alpha$ | {TRUE_ALPHA} | Price sensitivity |\n"
@@ -496,8 +496,8 @@ ownership matrix is part of the cost recovery exercise.
         f"true value {TRUE_ALPHA:.3f}, because high-$\\xi$ products are both more popular "
         "and more expensive. IV/2SLS moves the estimate to "
         f"{iv['alpha']:.3f}. In market 0, the recovered marginal costs have mean absolute "
-        f"error {np.abs(est_mc - true_mc).mean():.3f} dollars. The remaining figures show "
-        "why that recovery is informative and where simple logit remains restrictive."
+        f"error {np.abs(est_mc - true_mc).mean():.3f} dollars. The remaining figures put "
+        "the recovery in context and indicate where simple logit remains restrictive."
     )
 
     # --- Figure 1: OLS vs IV parameter estimates ---
@@ -531,8 +531,8 @@ ownership matrix is part of the cost recovery exercise.
         fig1,
         description="The gap between OLS (red) and the true value (green) for alpha is "
         "the endogeneity bias: OLS understates price sensitivity because unobserved quality "
-        "raises both demand and price simultaneously. IV/2SLS (blue) recovers the correct "
-        "parameter by isolating exogenous cost-driven price variation.",
+        "raises both demand and price simultaneously. IV/2SLS (blue) recovers the parameter "
+        "by isolating exogenous cost-driven price variation.",
     )
 
     # --- Figure 2: Elasticity heatmap ---
@@ -559,9 +559,9 @@ ownership matrix is part of the cost recovery exercise.
         "the IIA limitation of the simple logit.",
         fig2,
         description="Each column of cross-elasticities is identical because the logit model "
-        "forces all products to be equally substitutable. This means that when a sugary cereal "
-        "raises its price, the model predicts equal substitution to both a similar sugary cereal "
-        "and a dissimilar fiber cereal -- an unrealistic restriction.",
+        "forces all products to be equally substitutable. When a sugary cereal raises its "
+        "price, the model predicts equal substitution to a similar sugary cereal and to a "
+        "dissimilar fiber cereal -- an unrealistic restriction.",
     )
 
     # --- Figure 3: Price decomposition (stacked bar: MC + markup) ---
@@ -601,7 +601,7 @@ ownership matrix is part of the cost recovery exercise.
         "demand slope is not exactly the true slope, but the exercise recovers the economic "
         "object needed for counterfactual pricing. Multi-product firms (Choco-Bombs and "
         "Store-Frosted, both owned by Firm 1) charge higher markups because they internalize "
-        "cannibalization between their own products.",
+        "cannibalization across their own products.",
     )
 
     # --- Figure 4: IIA demonstration (cross-elasticity bar charts) ---
@@ -633,10 +633,10 @@ ownership matrix is part of the cost recovery exercise.
         "each rival is proportional to that rival's market share -- not to how "
         "similar the products are.",
         fig4,
-        description="Within each panel, notice that all bars have the same height -- every rival "
-        "gains the same cross-elasticity regardless of product similarity. This is the IIA "
-        "property in action. The BLP random coefficients model (see blp-random-coefficients/) "
-        "breaks this restriction by allowing consumer heterogeneity.",
+        description="Within each panel, all bars have the same height -- every rival gains the "
+        "same cross-elasticity regardless of product similarity. That is the IIA property. "
+        "The BLP random coefficients model (see blp-random-coefficients/) breaks the "
+        "restriction by allowing consumer heterogeneity.",
     )
 
     # --- Table: Estimation results ---
@@ -661,13 +661,12 @@ ownership matrix is part of the cost recovery exercise.
     report.add_takeaway(
         "The supply-side object is not observed cost; it is the marginal cost that "
         "rationalizes observed prices under the estimated demand system and an ownership "
-        "matrix. That makes the demand estimate consequential: attenuating price "
-        "sensitivity also distorts markups and recovered costs. Simple logit is a clean "
+        "matrix. The demand estimate is therefore consequential: attenuating price "
+        "sensitivity also distorts markups and recovered costs. Simple logit is a useful "
         "benchmark because Berry inversion and the markup equation are transparent, but "
         "its IIA substitution pattern is too rigid for many merger and product-space "
-        "applications. The natural next step is random-coefficients demand in "
-        "[BLP](../blp-random-coefficients/), where substitution can vary with consumer "
-        "heterogeneity and product characteristics."
+        "applications. Random-coefficients demand in [BLP](../blp-random-coefficients/) "
+        "lets substitution vary with consumer heterogeneity and product characteristics."
     )
 
     report.add_references([

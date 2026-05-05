@@ -365,7 +365,7 @@ with the usual inequality when the borrowing constraint binds.
     ax1.set_title("Value by Income State")
     ax1.legend(fontsize=9)
     report.add_results(
-        "Start with the value functions. Higher current income raises lifetime utility, but "
+        "Higher current income raises lifetime utility, but "
         "the income-state gap is largest near the borrowing constraint because low-asset "
         "households cannot borrow much against future mean reversion. Farther out on the "
         "asset grid, self-insurance makes the current income state less decisive."
@@ -481,8 +481,7 @@ with the usual inequality when the borrowing constraint binds.
     )
 
     report.add_takeaway(
-        "The economic lesson is not that VFI can solve another Bellman equation; it is that "
-        "uninsurable persistent income risk changes the shape of saving. Assets are valuable "
+        "Uninsurable persistent income risk changes the shape of saving. Assets are valuable "
         "because they relax tomorrow's constraint after bad income draws. The policy therefore "
         "has high MPCs near zero assets, positive saving after favorable income shocks, and "
         "dissaving after unfavorable shocks. This partial-equilibrium object is the household "

@@ -4,9 +4,9 @@
 
 ## Overview
 
-A large share of macroeconomic dynamics comes from a simple question: after a shock hits, how much of it is still economically relevant next period, next year, or a decade later? The AR(1) law of motion is the standard way to put that persistence into a model. In the [RBC TFP-shock tutorial](../../dynare/rbc/), it drives technology. In the [New Keynesian tutorial](../../dynare/nkdsge/), the same idea is used for policy and demand disturbances.
+Much of macroeconomic dynamics turns on a simple question: after a shock hits, how much of it is still economically relevant next period, next year, or a decade later? The AR(1) law of motion is the standard way to put that persistence into a model. In the [RBC TFP-shock tutorial](../../dynare/rbc/), it drives technology. In the [New Keynesian tutorial](../../dynare/nkdsge/), the same idea is used for policy and demand disturbances.
 
-This tutorial isolates the propagation mechanism before embedding it in a larger equilibrium system. The first model is a scalar AR(1). The second is Samuelson's multiplier-accelerator model, where persistent government spending moves income, income moves consumption with a lag, and investment responds to changes in consumption.
+Here the propagation mechanism is isolated before embedding it in a larger equilibrium system. The first model is a scalar AR(1). The second is Samuelson's multiplier-accelerator model, where persistent government spending moves income, income moves consumption with a lag, and investment responds to changes in consumption.
 
 ## Equations
 
@@ -71,7 +71,7 @@ $$
 
 ## Solution Method
 
-Both systems are backward-looking, so solving them means forward iteration rather than a rational-expectations fixed point. The economic content is still useful: the AR(1) coefficient chooses the horizon of a disturbance, while the multiplier-accelerator equations decide how that disturbance moves income components.
+Both systems are backward-looking, so solving them means forward iteration rather than a rational-expectations fixed point. The economic content is still useful: the AR(1) coefficient sets the horizon of a disturbance, while the multiplier-accelerator equations determine how that disturbance moves income components.
 
 For the AR(1), the main population objects are available in closed form:
 
@@ -96,27 +96,27 @@ Outputs: AR path x_t and multiplier-accelerator paths y_t, c_t, i_t, g_t
 
 ## Results
 
-The first plot is the exact response $\rho^h$ to a unit innovation. Moving $\rho$ from 0.5 to 0.9 is not a cosmetic change: it turns a one-period half-life into roughly seven periods. At $\rho=0.99$, the shock is effectively a slow-moving state for any short macro sample.
+The plot shows the exact response $\rho^h$ to a unit innovation. Moving $\rho$ from 0.5 to 0.9 is not cosmetic: it turns a one-period half-life into roughly seven periods. At $\rho=0.99$, the shock acts as a slow-moving state for any short macro sample.
 
 <img src="figures/ar1-irfs.png" alt="Exact AR(1) impulse responses by persistence" width="80%">
 
-The government spending process is monotone, but income need not simply copy it. Lagged consumption keeps demand elevated after the shock, while investment reacts to the change in consumption. The accelerator channel therefore matters most around turning points, when consumption growth starts to fade.
+The government spending process is monotone, but income need not simply copy it. Lagged consumption keeps demand elevated after the shock, while investment reacts to the change in consumption. The accelerator channel therefore matters most around turning points, when consumption growth fades.
 
 <img src="figures/multiplier-accelerator-irfs.png" alt="Multiplier-accelerator impulse responses to a government spending shock" width="80%">
 
-The simulated AR(1) path is shown against its analytic two-standard-deviation band, so the finite sample can be read against the population benchmark. In the multiplier-accelerator panel, income and consumption move together but not simultaneously: lagged consumption is the economic memory that carries government spending shocks forward.
+The simulated AR(1) path is plotted against its analytic two-standard-deviation band, so the finite sample can be read against the population benchmark. In the multiplier-accelerator panel, income and consumption move together but not simultaneously: lagged consumption supplies the memory that carries government spending shocks forward.
 
 <img src="figures/simulated-paths.png" alt="Simulated AR(1) and multiplier-accelerator paths" width="80%">
 
-The left panel is a built-in accuracy check: the simulated AR(1) autocorrelations should track $\rho^k$, with remaining gaps coming from finite-sample noise. The right panel shows that the multiplier-accelerator economy creates additional serial correlation in income because government spending is filtered through lagged consumption.
+The left panel is a built-in accuracy check: the simulated AR(1) autocorrelations should track $\rho^k$, with remaining gaps from finite-sample noise. The right panel shows that the multiplier-accelerator economy creates additional serial correlation in income because government spending is filtered through lagged consumption.
 
 <img src="figures/autocorrelation.png" alt="Autocorrelation functions for the AR(1) and multiplier-accelerator output" width="80%">
 
-The frequency-domain view says the same thing in a different language. High persistence shifts variance toward low frequencies, so the state looks like a slow cycle or trend over short samples. This is why the choice of $\rho$ in a DSGE shock process affects business-cycle timing, not only unconditional volatility.
+The frequency-domain view restates the same point in a different language. High persistence shifts variance toward low frequencies, so the state looks like a slow cycle or trend over short samples. This is why the choice of $\rho$ in a DSGE shock process affects business-cycle timing, not only unconditional volatility.
 
 <img src="figures/spectral-density.png" alt="Exact AR(1) spectral density by persistence" width="80%">
 
-The analytic benchmarks make the calibration stakes explicit. Holding $\sigma$ fixed, raising $\rho$ increases both the variance of the state and the amount of time a shock remains economically relevant.
+The analytic benchmarks make the calibration stakes explicit. Holding $\sigma$ fixed, raising $\rho$ raises both the variance of the state and the amount of time a shock remains economically relevant.
 
 **AR(1) Analytical Benchmarks**
 
@@ -130,7 +130,7 @@ The analytic benchmarks make the calibration stakes explicit. Holding $\sigma$ f
 
 ## Takeaway
 
-An AR(1) coefficient is an economic timing assumption. With $\rho=0.9$, a shock still has about half of its initial effect after 6.6 periods; with $\rho=0.99$, the same calculation gives 69.0 periods. Once that process enters a macro model, other equilibrium or accounting equations decide how the persistent state appears in observables.
+An AR(1) coefficient is an economic timing assumption. With $\rho=0.9$, a shock still has about half of its initial effect after 6.6 periods; with $\rho=0.99$, the same calculation gives 69.0 periods. Once that process enters a macro model, other equilibrium or accounting equations determine how the persistent state appears in observables.
 
 The multiplier-accelerator example is deliberately simpler than the RBC and New Keynesian tutorials, but it is useful for the same reason: it separates the shock law from the propagation mechanism. Government spending supplies the persistent disturbance; lagged consumption and accelerator investment turn it into a richer income path.
 

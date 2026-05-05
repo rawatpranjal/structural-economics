@@ -4,9 +4,9 @@
 
 ## Overview
 
-A product-choice model is a disciplined way to turn prices, characteristics, and observed purchases into demand primitives. Here the market is deliberately small: five products differ only in price and quality, and each consumer buys the product with the highest utility draw.
+A product-choice model is a disciplined way to turn prices, characteristics, and observed purchases into demand primitives. The market here is small: five products differ only in price and quality, and each consumer buys the product with the highest utility draw.
 
-The plain logit is the benchmark because the Type I extreme-value taste shock gives closed-form choice probabilities. That convenience also gives the model its sharp economic restriction: substitution depends on existing market shares, not on product similarity. This tutorial estimates the coefficients, compares the fitted shares with the known data-generating model, and then makes the Independence of Irrelevant Alternatives (IIA) visible.
+Plain logit is the benchmark because the Type I extreme-value taste shock gives closed-form choice probabilities. That convenience also gives the model its sharp economic restriction: substitution depends on existing market shares, not on product similarity. The tutorial estimates the coefficients, compares the fitted shares with the known data-generating model, and then makes the Independence of Irrelevant Alternatives (IIA) visible.
 
 ## Equations
 
@@ -69,11 +69,11 @@ For this plain logit the likelihood is globally concave, so the two-parameter su
 
 ## Results
 
-The contour plot shows the whole estimation problem in two dimensions. The likelihood has one peak, and the MLE sits close to the true coefficients used to generate the data. Sampling noise keeps the estimate from landing exactly on the star, but the gap is small with 5,000 choices.
+The contour plot shows the whole estimation problem in two dimensions. The likelihood has one peak, and the MLE sits close to the true coefficients used to generate the data. Sampling noise keeps the estimate from landing exactly on the star, but the gap is small at 5,000 choices.
 
 <img src="figures/log-likelihood-surface.png" alt="Log-likelihood surface with true and estimated coefficients marked" width="80%">
 
-Observed shares are finite-sample frequencies, while the green bars are the population shares from the data-generating logit. The fitted shares mostly sit between those two objects, which is what we should expect when the model is correctly specified.
+Observed shares are finite-sample frequencies; the green bars are the population shares from the data-generating logit. The fitted shares mostly sit between those two objects, which is what correct specification predicts.
 
 <img src="figures/market-shares.png" alt="Observed, fitted, and true logit market shares" width="80%">
 
@@ -81,7 +81,7 @@ The own-price elasticities combine the estimated price coefficient with each pro
 
 <img src="figures/own-price-elasticities.png" alt="Own-price elasticities implied by the estimated logit" width="80%">
 
-When Product 3 is removed, the remaining products do not become closer or farther apart in the model. Their probabilities are simply renormalized, so the pairwise odds ratios in the right panel stay fixed. This is the IIA restriction that the nested-logit tutorial relaxes by grouping similar products.
+When Product 3 is removed, the remaining products do not become closer or farther apart in the model. Their probabilities are renormalized, so the pairwise odds ratios in the right panel stay fixed. This is the IIA restriction that the nested-logit tutorial relaxes by grouping similar products.
 
 <img src="figures/iia-illustration.png" alt="IIA reallocation after removing one alternative" width="80%">
 
@@ -108,7 +108,7 @@ Rows are the products whose shares change; columns are the products whose prices
 
 ## Takeaway
 
-Plain logit is a useful first demand model because the mapping from utility coefficients to shares is transparent and the likelihood is easy to optimize. The same structure makes its substitution patterns too rigid: once shares are known, cross-price responses are pinned down by IIA rather than by economic similarity. That is why nested logit and mixed logit are natural next models, not cosmetic complications.
+Plain logit is a useful first demand model because the mapping from utility coefficients to shares is transparent and the likelihood is easy to optimize. The same structure makes its substitution patterns too rigid: once shares are known, cross-price responses are pinned down by IIA rather than by economic similarity. Nested logit and mixed logit are the natural next models, not cosmetic complications.
 
 ## References
 

@@ -182,11 +182,11 @@ def main():
         "prices. A surprise increase in the nominal interest rate raises the real rate before "
         "prices fully adjust, so demand falls. The Phillips curve then translates the weaker "
         "output gap into lower inflation.\n\n"
-        "The tutorial keeps the object deliberately small: an output gap $y_t$, inflation "
-        "$\\pi_t$, a nominal policy rate $i_t$, and one persistent shock at a time. The "
-        "`model.mod` file gives the Dynare-style three-equation block. The Python code solves "
-        "the same log-linear system directly, which makes the expectations algebra and the "
-        "Taylor-rule determinacy condition easy to inspect.\n\n"
+        "The model is deliberately small: an output gap $y_t$, inflation $\\pi_t$, a nominal "
+        "policy rate $i_t$, and one persistent shock at a time. The `model.mod` file gives the "
+        "Dynare-style three-equation block. The Python code solves the same log-linear system "
+        "directly, which makes the expectations algebra and the Taylor-rule determinacy "
+        "condition easy to inspect.\n\n"
         "Compared with the [RBC Dynare tutorial](../rbc/), propagation here does not come from "
         "slow capital accumulation. It comes from the interaction between forward-looking "
         "demand, sticky-price inflation, and a policy rule that leans against inflation."
@@ -252,7 +252,7 @@ natural-rate shifter so the two impulse responses can be read separately.
         "The source `model.mod` uses $\\phi_\\pi=0.33$ and $\\kappa=0.95$. This report "
         "uses a standard determinate calibration, $\\phi_\\pi=1.5$ and $\\kappa=0.3$, "
         "because the economic point is monetary transmission under a stable Taylor "
-        "rule. The contrast is useful: when policy fails to lean hard enough against "
+        "rule. The contrast matters: when policy fails to lean hard enough against "
         "inflation, the forward-looking system no longer selects a unique stable path."
     )
 
@@ -331,8 +331,8 @@ natural-rate shifter so the two impulse responses can be read separately.
         description="The monetary shock is a wedge in the Taylor rule, not the total policy-rate response. "
         "On impact the wedge is one percentage point, but the systematic part of the rule partly offsets "
         "it because expected output and inflation fall. The real rate still rises, demand contracts, and "
-        "inflation declines with the output gap. Persistence in $v_t$ controls how slowly the economy "
-        "returns to steady state.",
+        "inflation falls with the output gap. Persistence in $v_t$ controls how slowly the economy returns "
+        "to steady state.",
     )
 
     # --- Figure 2: IRFs to demand shock ---
@@ -388,7 +388,7 @@ natural-rate shifter so the two impulse responses can be read separately.
         description="The impact table gives the signs and scale without asking the reader to read them "
         "off the figure. Output is in percent deviations; inflation and the policy rate are in quarterly "
         "percentage points. Monetary and demand shocks move output and inflation in opposite directions "
-        "across experiments because they enter different equations.",
+        "across experiments because the shocks enter different equations.",
     )
 
     report.add_takeaway(
@@ -397,11 +397,11 @@ natural-rate shifter so the two impulse responses can be read separately.
         "rate and therefore current demand. Second, determinacy is not a numerical detail: "
         "with forward-looking inflation, the Taylor rule has to make expected inflation "
         "costly enough for the model to select one stable path.\n\n"
-        "The policy-shock and demand-shock experiments are deliberately symmetric in the "
-        "solution method but not in the economics. A policy wedge contracts demand and "
-        "inflation. A natural-rate shock expands both, with the central bank leaning back "
-        "through the Taylor rule. For a supply or cost-push shock, the same block would show "
-        "the sharper output-inflation stabilization trade-off."
+        "The policy-shock and demand-shock experiments use the same solution method but "
+        "differ in their economics. A policy wedge contracts demand and inflation. A "
+        "natural-rate shock expands both, with the central bank leaning back through the "
+        "Taylor rule. For a supply or cost-push shock, the same block would show the sharper "
+        "output-inflation stabilization trade-off."
     )
 
     report.add_references([

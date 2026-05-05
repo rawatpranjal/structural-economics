@@ -143,11 +143,11 @@ def main() -> None:
     )
 
     report.add_overview(
-        "Dynamic IO starts from a simple observation: a firm's current action can change "
-        "the future state of competition. Quality investment is the clean example here. "
+        "Dynamic IO starts from one observation: a firm's current action can change "
+        "the future state of competition. Quality investment is the clean example. "
         "A firm pays a cost today for a chance to move up a quality ladder, which affects "
         "future market shares, rival incentives, and the value of being ahead.\n\n"
-        "The model is a deliberately small two-firm Ericson-Pakes style game. The state is "
+        "The model is a small two-firm Ericson-Pakes style game. The state is "
         "the pair of quality levels, each firm chooses whether to invest, and strategies "
         "are Markov perfect: they condition on the payoff-relevant state rather than the "
         "full history. The companion tutorials on "
@@ -250,9 +250,9 @@ with $V_i(\omega)=G_i(a_i^{*},a_j^{*};\omega,V)$ at every state.
         "Firm 1 investment policy over the quality state space",
         fig1,
         description="The policy is simple in this calibration: firm 1 invests at every "
-        "interior quality state and waits only at the top rung. The rival's quality still "
-        "matters for values, but not enough here to overturn the incentive to climb until "
-        "the ladder cap binds.",
+        "interior quality state and waits only at the top rung. Rival quality still affects "
+        "values, but not enough here to overturn the incentive to climb until the ladder "
+        "cap binds.",
     )
 
     fig2, ax2 = plt.subplots(figsize=(7, 6))
@@ -287,8 +287,8 @@ with $V_i(\omega)=G_i(a_i^{*},a_j^{*};\omega,V)$ at every state.
         fig3,
         description="The simulated path shows the policy as a stochastic industry process. "
         "Investment periods are marked by light vertical lines; leadership persists, but "
-        "depreciation and catch-up investment keep the identity of the high-quality firm from "
-        "being fixed forever.",
+        "depreciation and catch-up investment keep the identity of the high-quality firm "
+        "from being fixed permanently.",
     )
 
     rows = []
@@ -315,9 +315,9 @@ with $V_i(\omega)=G_i(a_i^{*},a_j^{*};\omega,V)$ at every state.
     report.add_takeaway(
         "A dynamic game turns an IO counterfactual into a state-transition problem. "
         "The object is not just today's price, entry decision, or investment choice; it "
-        "is the mapping from industry states into actions and continuation values. In this "
-        "quality-ladder example, the ladder cap pins down where investment stops, while "
-        "off-diagonal states show why leadership is valuable before the cap is reached."
+        "is the mapping from industry states into actions and continuation values. In the "
+        "quality-ladder example, the cap pins down where investment stops, and off-diagonal "
+        "states show why leadership is valuable before the cap is reached."
     )
 
     report.add_references([

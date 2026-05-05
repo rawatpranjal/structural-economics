@@ -394,8 +394,8 @@ $$k_{ss}=(\alpha\beta A)^{1/(1-\alpha)}.$$
         "state still summarizes the future, but now carrying resources forward raises "
         "tomorrow's feasible set. With log utility and full-depreciation Cobb-Douglas "
         f"production, the exact rule saves $\\alpha\\beta={alpha * beta:.2f}$ of output and "
-        f"drives capital toward $k_{{ss}}={kss:.2f}$. VFI recovers that policy closely, which "
-        "is why this example is a useful bridge from closed-form dynamic programming to "
+        f"drives capital toward $k_{{ss}}={kss:.2f}$. VFI recovers that policy closely, "
+        "bridging closed-form dynamic programming to "
         "stochastic growth models where the benchmark has to be replaced by Euler errors, "
         "simulation moments, or equilibrium residuals."
     )

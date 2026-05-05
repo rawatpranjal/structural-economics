@@ -4,9 +4,9 @@
 
 ## Overview
 
-HHI answers a narrow but important question: how concentrated is control of sales in a relevant market? It is cheap to compute, transparent to explain, and therefore useful as an early merger screen. The same simplicity is also its limitation. HHI knows ownership shares, not diversion ratios, entry, efficiencies, or demand curvature.
+HHI answers a narrow but important question: how concentrated is control of sales in a relevant market? It is cheap to compute, transparent to explain, and useful as an early merger screen. The same simplicity is its limitation. HHI knows ownership shares, not diversion ratios, entry, efficiencies, or demand curvature.
 
-This tutorial keeps that distinction explicit. The first part works through the index arithmetic, including the effective number of equal-sized firms implied by a given HHI. The second part puts the same ownership change inside a four-product Bertrand model. When products are segmented, HHI rises but prices do not move. When products substitute, common ownership changes the pricing FOC. For the fuller counterfactual exercise, compare the neighboring [merger simulation](../merger-simulation/) and [logit supply-side](../logit-supply-side/) tutorials.
+The tutorial keeps that distinction explicit. The first part works through the index arithmetic, including the effective number of equal-sized firms implied by a given HHI. The second part puts the same ownership change inside a four-product Bertrand model. When products are segmented, HHI rises but prices do not move. When products substitute, common ownership changes the pricing FOC. For the fuller counterfactual exercise, see the neighboring [merger simulation](../merger-simulation/) and [logit supply-side](../logit-supply-side/) tutorials.
 
 ## Equations
 
@@ -92,11 +92,11 @@ Outputs: HHI, effective firm count, delta-HHI, equilibrium prices
 7. Recompute firm shares and HHI under the post-merger ownership map.
 ```
 
-Step 6 is solved by root finding. In this linear example the root is a numerical way to solve a small system of first-order conditions, not the economic point of the tutorial. The economic point is that HHI is an ownership screen, while the pricing effect appears only through substitution and the Bertrand FOC.
+Step 6 is solved by root finding. In this linear example the root is a numerical way to solve a small system of first-order conditions; the economic content of the tutorial is elsewhere. HHI is an ownership screen, while the pricing effect appears only through substitution and the Bertrand FOC.
 
 ## Results
 
-The screen and the pricing model give different objects. In the segmented case, the merged products are independent, so prices and total quantity are unchanged. HHI still jumps because the two product shares are now counted under one owner. With positive cross-price substitution, common ownership also changes the pricing problem, so the merged products become more expensive.
+The screen and the pricing model give different objects. In the segmented case, the merged products are independent, so prices and total quantity are unchanged. HHI still jumps because the two product shares are now counted under one owner. With positive cross-price substitution, common ownership changes the pricing problem, so the merged products become more expensive.
 
 | Demand environment | HHI before | HHI after | $\Delta$HHI | Merged-price change | Total-output change |
 |---|---:|---:|---:|---:|---:|
@@ -111,7 +111,7 @@ The merger bars are pure index arithmetic. The same formula, $20{,}000 s_a s_b$,
 
 <img src="figures/merger-delta-hhi.png" alt="HHI before and after merger of the two largest firms across market structures" width="80%">
 
-The Lorenz curves show what the scalar index compresses. Equal firms stay on the diagonal. A dominant firm bends the curve away from the diagonal because many firms account for little output while one firm accounts for most of it. The table below turns the same share vectors into HHI and effective firm counts.
+The Lorenz curves show what the scalar index compresses. Equal firms stay on the diagonal. A dominant firm bends the curve away from the diagonal because most of the output sits with one firm and the rest accounts for little. The table below turns the same share vectors into HHI and effective firm counts.
 
 <img src="figures/lorenz-curves.png" alt="Lorenz curves: more bowed curves indicate greater concentration and higher HHI" width="80%">
 
@@ -132,7 +132,7 @@ The effective firm count makes asymmetry visible. A 70-10-10-10 market has four 
 
 ## Takeaway
 
-HHI is valuable because it is transparent: it converts shares into a concentration number and gives a closed-form delta for mergers. But the segmented-product example is the warning label. Ownership aggregation can raise HHI even when the maintained demand model implies no price effect. Once products substitute, the same ownership change works through the Bertrand FOC and prices move. In applied work, HHI should start the antitrust conversation, not end it.
+HHI is transparent: it converts shares into a concentration number and gives a closed-form delta for mergers. The segmented-product example is the warning label. Ownership aggregation can raise HHI even when the maintained demand model implies no price effect. Once products substitute, the same ownership change works through the Bertrand FOC and prices move. In applied work, HHI should start the antitrust conversation, not end it.
 
 ## References
 

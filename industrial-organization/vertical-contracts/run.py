@@ -125,12 +125,12 @@ def main() -> None:
         "A vending operator has a small number of slots, the upstream firms want their "
         "products inside the machine, and contract terms decide how attractive each slot "
         "is to the downstream firm.\n\n"
-        "This tutorial keeps the demand side deliberately small. Each product has linear "
-        "retail demand and a wholesale cost. The economic action is the retailer's "
-        "assortment choice: seven products must be selected from a larger catalog. "
-        "The benchmark in [Vertical Relationships and Double Marginalization](../vertical-relationships/) "
-        "shows how wholesale margins distort retail prices; here the same vertical "
-        "logic is pushed into product availability through rebates and slotting fees."
+        "Demand is small. Each product has linear retail demand and a wholesale cost. The "
+        "economic action is the retailer's assortment choice: seven products must be "
+        "selected from a larger catalog. The benchmark in "
+        "[Vertical Relationships and Double Marginalization](../vertical-relationships/) "
+        "shows how wholesale margins distort retail prices; here the same vertical logic "
+        "is pushed into product availability through rebates and slotting fees."
     )
 
     report.add_equations(r"""
@@ -193,10 +193,10 @@ $F_j^C(A)$.
     )
 
     report.add_solution_method(r"""
-The key computational object is the retailer's exact finite-choice optimum. There
+The computational object is the retailer's exact finite-choice optimum. There
 are only $\binom{12}{7}=792$ feasible assortments, so the script evaluates every
 candidate rather than using a local search heuristic. The plotted choices are
-therefore the finite-catalog optimum, not a simulation approximation.
+the finite-catalog optimum, not a simulation approximation.
 
 ```text
 Inputs: product catalog J, capacity K, contract C, rebate threshold tau
@@ -215,9 +215,9 @@ choose A*_C in argmax_A Pi^D_C(A)
 repeat over rebate thresholds tau to see where the all-unit discount binds
 ```
 
-This is intentionally closer to an empirical counterfactual than to an abstract
-combinatorics exercise: the contract changes the retailer's objective, and the
-retailer responds by reallocating scarce shelf space.
+This is closer to an empirical counterfactual than to an abstract combinatorics
+exercise: the contract changes the retailer's objective, and the retailer responds
+by reallocating scarce shelf space.
 """)
 
     selection_matrix = pd.DataFrame(0, index=products["Product"], columns=contracts)
@@ -241,10 +241,10 @@ retailer responds by reallocating scarce shelf space.
         "figures/assortment-selection.png",
         "Assortment selected under each vertical contract",
         fig1,
-        description="The first figure reads the assortment problem directly. Wholesale-only "
-        "pricing leaves the retailer with four Mars products. The rebate and slotting-fee "
-        "contracts both move one more scarce slot toward Mars, even though retail prices "
-        "are still chosen product by product.",
+        description="Reading the assortment problem directly. Wholesale-only pricing leaves "
+        "the retailer with four Mars products. The rebate and slotting-fee contracts both "
+        "move one more scarce slot toward Mars, even though retail prices are still chosen "
+        "product by product.",
     )
 
     fig2, ax2 = plt.subplots(figsize=(8, 5))
@@ -260,10 +260,10 @@ retailer responds by reallocating scarce shelf space.
         "figures/profit-incidence.png",
         "Retailer and upstream payoffs by contract",
         fig2,
-        description="The second figure separates the retailer's objective from total upstream "
-        "profit. Slotting fees raise the retailer's payoff mechanically because they are "
-        "transfers into the downstream objective. Upstream profit falls in this calibration, "
-        "which is the cost of buying placement.",
+        description="Separating the retailer's objective from total upstream profit. Slotting "
+        "fees raise the retailer's payoff mechanically because they are transfers into the "
+        "downstream objective. Upstream profit falls in this calibration; that is the cost "
+        "of buying placement.",
     )
 
     fig3, ax3 = plt.subplots(figsize=(8, 5))
@@ -295,10 +295,10 @@ retailer responds by reallocating scarce shelf space.
         "figures/rebate-thresholds.png",
         "Mars slots and upstream profit as the all-unit discount threshold changes",
         fig3,
-        description="The threshold exercise shows why rebate design is not monotone. A low "
-        "target gives away margin on products the retailer would have stocked anyway. A "
-        "high target may not move the assortment. The useful region is where the threshold "
-        "changes the exact assortment optimum relative to the wholesale-only benchmark.",
+        description="Rebate design is not monotone in the target. A low target gives away "
+        "margin on products the retailer would have stocked anyway. A high target may not "
+        "move the assortment. The useful region is where the threshold changes the exact "
+        "assortment optimum relative to the wholesale-only benchmark.",
     )
 
     table = outcome_df.copy()
@@ -317,7 +317,7 @@ retailer responds by reallocating scarce shelf space.
     report.add_takeaway(
         "A vertical contract can matter even when the observed retail-price effect is small. "
         "All-unit discounts and slotting fees change the downstream firm's objective over "
-        "scarce product slots, so the main empirical object is often the joint distribution "
+        "scarce product slots, so the relevant empirical object is often the joint distribution "
         "of prices, availability, and transfers rather than prices alone."
     )
 

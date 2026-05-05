@@ -82,7 +82,7 @@ to consume.
 
 ## Solution Method
 
-EEI keeps the Euler equation visible. The current guess is a consumption policy. The envelope equation turns that policy into a one-dimensional marginal continuation value $W_a(a)$, and the next Euler step turns $W_a(a)$ back into a consumption policy.
+EEI keeps the Euler equation visible. The current guess is a consumption policy. The envelope equation turns that policy into a one-dimensional marginal continuation value $W_a(a)$, and the next Euler step turns it back into a consumption policy.
 
 ```text
 Input: asset grid A, income states y_j, probabilities pi_j,
@@ -147,9 +147,9 @@ The table separates economic output from numerical diagnostics. The asset distri
 
 ## Takeaway
 
-EEI is not a new savings model. It is a different fixed point for the same incomplete-markets household problem. The economic policy remains the buffer-stock rule: low income draws push households toward the asset floor, good draws rebuild wealth, and low-wealth households have high MPCs.
+EEI is not a new savings model. It is a different fixed point for the same incomplete-markets household problem. The economic policy is still the buffer-stock rule: low income draws push households toward the asset floor, good draws rebuild wealth, and low-wealth households have high MPCs.
 
-The useful computational lesson is that the envelope condition can be used as an updating equation, not only as a theorem behind the Euler equation. By carrying $W_a(a)$ forward, EEI avoids value levels and keeps the marginal value of self-insurance in view. In this transparent implementation, EGP is faster, but EEI gives a clean way to see why the policy is governed by marginal continuation values rather than by the value function level itself.
+The computational lesson is that the envelope condition can be used as an updating equation, not only as a theorem behind the Euler equation. By carrying $W_a(a)$ forward, EEI avoids value levels and keeps the marginal value of self-insurance in view. In this transparent implementation, EGP is faster, but EEI gives a clean way to see why the policy is governed by marginal continuation values rather than by the value function level itself.
 
 ## References
 

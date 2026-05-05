@@ -296,8 +296,8 @@ def main():
         "The Stock-Watson answer is to treat the panel as noisy measurements of a small set "
         "of common economic states, then forecast with those states rather than with every "
         "series separately.\n\n"
-        "This tutorial uses a synthetic panel so the latent state is known. That makes the "
-        "exercise more than a PCA demo: we can ask whether the first principal component "
+        "A synthetic panel makes the latent state known, so the exercise goes beyond a PCA "
+        "demo: it asks whether the first principal component "
         "recovers the true common factor, whether the cross-sectional exposures are right, "
         "and how the feasible factor forecast compares with a benchmark that observes "
         "$F_t$ directly. The [FRED-style macro-data tutorial](../fred-macro-data/) builds "
@@ -373,7 +373,7 @@ with the simulated $F_t$.
     report.add_solution_method(
         "The computation has two economic tasks. First, compress the panel into a common "
         "state that summarizes aggregate co-movement. Second, ask whether that state helps "
-        "forecast a target series beyond its own lags. PCA is useful here because the "
+        "forecast a target series beyond its own lags. PCA fits this setting because the "
         "large cross-section averages down idiosyncratic noise without estimating a separate "
         "coefficient for every predictor in the forecast regression.\n\n"
         "```text\n"
@@ -417,7 +417,7 @@ with the simulated $F_t$.
                        "PCA recovers the latent factor up to a scale normalization.", fig1,
                        description=f"The first comparison uses the simulated truth. Because a factor model is invariant to sign and scale, the PCA estimate is aligned and rescaled before plotting. "
                        f"After that harmless normalization, it tracks the latent state closely: the sample correlation is {factor_corr:.4f}. "
-                       "The point is economic rather than cosmetic. With many series, the common movement is much cleaner than any single observed macro variable.")
+                       "The point is economic rather than cosmetic. With many series, the common movement is cleaner than any single observed macro variable.")
 
     # --- Figure 2: Scree plot ---
     fig2, (ax2a, ax2b) = plt.subplots(1, 2, figsize=(12, 5))
@@ -441,9 +441,9 @@ with the simulated $F_t$.
     report.add_figure("figures/scree-plot.png",
                        "Scree plot and cumulative variance explained. The sharp drop after the "
                        "first eigenvalue correctly indicates one dominant factor.", fig2,
-                       description=f"The eigenvalue pattern asks how many common states the panel is really carrying. "
+                       description=f"The eigenvalue pattern asks how many common states the panel is carrying. "
                        f"Here the answer is deliberately sharp: PC1 explains {explained_var[0]:.1%} of the standardized variance, and the next components look like residual cross-sectional noise. "
-                       "In an empirical FRED-MD application this decision would be less mechanical, but the same diagnostic disciplines the choice of factor dimension.")
+                       "In an empirical FRED-MD application the decision would be less mechanical, but the same diagnostic disciplines the choice of factor dimension.")
 
     # --- Figure 3: Factor loadings ---
     fig3, ax3 = plt.subplots(figsize=(10, 5))
@@ -461,7 +461,7 @@ with the simulated $F_t$.
                        "Standardized series-factor exposures sorted by the true exposure.",
                        fig3,
                        description=f"The second diagnostic checks the cross-section. A high-exposure series is a clean signal of the common macro state; a low-exposure series is mostly idiosyncratic. "
-                       f"The PCA exposure ranking has correlation {exposure_corr:.4f} with the true ranking, so the estimator is not only tracing the time path of $F_t$ but also recovering which series are informative about it.")
+                       f"The PCA exposure ranking has correlation {exposure_corr:.4f} with the true ranking, so the estimator traces the time path of $F_t$ and also recovers which series are informative about it.")
 
     # --- Figure 4: Forecast comparison ---
     fig4, (ax4a, ax4b) = plt.subplots(1, 2, figsize=(14, 5))
@@ -497,7 +497,7 @@ with the simulated $F_t$.
     report.add_figure("figures/forecast-comparison.png",
                        f"Forecast comparison: the PCA factor forecast reduces RMSE by {improvement:.1f}% "
                        f"relative to AR({p_ar}). Right panel shows cumulative squared errors.", fig4,
-                       description=f"The forecast exercise is the payoff. The AR({p_ar}) benchmark only knows the target's own lags. "
+                       description=f"The forecast exercise is the payoff. The AR({p_ar}) benchmark uses only the target's own lags. "
                        f"The feasible Stock-Watson regression adds the estimated diffusion index and cuts RMSE from {forecast_results['rmse_ar']:.3f} to {forecast_results['rmse_faar']:.3f}. "
                        f"The true-factor line, which uses the simulated $F_t$, reaches {true_factor_results['rmse_faar']:.3f}. "
                        "The two factor forecasts are close; the small finite-sample ordering should not be read as a structural ranking.")
@@ -512,7 +512,7 @@ with the simulated $F_t$.
     })
     report.add_table("tables/eigenvalues.csv",
                       "Top five eigenvalues and variance explained", eig_table,
-                      description="The eigenvalue table is the numerical version of the scree plot. The large first eigenvalue is the simulated common state; the small remaining eigenvalues are mostly idiosyncratic variation that should not be promoted into forecast regressors without evidence.")
+                      description="The eigenvalue table is the numerical version of the scree plot. The large first eigenvalue is the simulated common state; the remaining small eigenvalues are mostly idiosyncratic variation that should not be promoted into forecast regressors without evidence.")
 
     # Forecast comparison table
     forecast_table = pd.DataFrame({
@@ -530,7 +530,7 @@ with the simulated $F_t$.
     }).round(4)
     report.add_table("tables/forecast-comparison.csv",
                       "Out-of-sample forecast comparison", forecast_table,
-                      description="The true-factor row is useful because the data-generating process is known. In this finite sample it is a benchmark, not a guaranteed lower bound on realized RMSE: the estimated factor is built from the same panel and can pick up small sample-specific target comovement. The durable lesson is that both factor regressions dominate the own-lag forecast.")
+                      description="The true-factor row is useful because the data-generating process is known. In this finite sample it is a benchmark, not a guaranteed lower bound on realized RMSE: the estimated factor is built from the same panel and can pick up small sample-specific target comovement. The durable lesson: both factor regressions dominate the own-lag forecast.")
 
     report.add_takeaway(
         "The Stock-Watson idea is a disciplined way to use a large information set without "
@@ -538,8 +538,8 @@ with the simulated $F_t$.
         f"run, PCA recovers the common state almost exactly (factor correlation {factor_corr:.4f}) "
         f"and lowers one-step RMSE by {improvement:.1f}% relative to AR({p_ar}). The true-factor "
         f"benchmark lowers RMSE by {true_factor_improvement:.1f}%, so the feasible diffusion "
-        "index is very close to the forecast that observes the simulated common state.\n\n"
-        "The caution is equally important. PCA finds co-movement, not causality, and the "
+        "index comes close to the forecast that observes the simulated common state.\n\n"
+        "The caution matters as well. PCA finds co-movement, not causality, and the "
         "number of factors is an economic modeling choice disciplined by diagnostics. In a "
         "real macro panel, the researcher still has to choose transformations, vintages, "
         "forecast horizons, and evaluation windows before treating the factors as evidence."

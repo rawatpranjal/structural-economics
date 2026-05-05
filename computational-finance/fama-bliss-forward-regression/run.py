@@ -128,13 +128,13 @@ def main() -> None:
     )
 
     report.add_overview(
-        "Forward rates are useful because they turn the yield curve into a forecast-like "
-        "object. If long rates mainly average expected future short rates, a steep forward "
-        "curve should say something about later rate movements. If time-varying risk premia "
-        "are important, the same spread can instead predict bond returns or compensation "
-        "for bearing duration risk. The Fama-Bliss regressions sit exactly on that boundary: "
-        "they are simple predictive regressions with an economic interpretation that depends "
-        "on the maintained term-structure model.\n\n"
+        "Forward rates turn the yield curve into a forecast-like object. If long rates mainly "
+        "average expected future short rates, a steep forward curve should say something "
+        "about later rate movements. If time-varying risk premia are important, the same "
+        "spread can instead predict bond returns or compensation for bearing duration risk. "
+        "The Fama-Bliss regressions sit on that boundary: they are simple predictive "
+        "regressions with an economic interpretation that depends on the maintained "
+        "term-structure model.\n\n"
         "This page is a teaching analogue, not a replication. The [Treasury yield-curve tutorial](../treasury-yield-curve/) "
         "works with the same offline 1990 Treasury CMT panel and explains the measurement "
         "object. Here we approximate forward-rate spreads from those par-yield nodes and ask "
@@ -200,7 +200,7 @@ arbitrage-free zero-coupon forward rate.
     report.add_solution_method(
         "The estimator is deliberately transparent: build the spread implied by the current "
         "curve, line it up with a future yield change, and run OLS separately by maturity. "
-        "The important discipline is not the linear algebra. It is keeping the forecast "
+        "The discipline is not the linear algebra. It is keeping the forecast "
         "horizon, maturity, and measurement object fixed when interpreting $\\beta_n$.\n\n"
         "```text\n"
         "Algorithm: Fama-Bliss-style forward-spread regression\n"
@@ -238,9 +238,9 @@ arbitrage-free zero-coupon forward rate.
         "For the ten-year maturity, wider forward-minus-one-year spreads in this 1990 "
         f"snapshot are associated with lower subsequent ten-year yields: the estimated slope "
         f"is **{beta_10:.2f}** with $R^2={r2_10:.3f}$. The sign should not be turned into a "
-        "structural claim. It is a short-horizon relationship in one CMT panel, useful because "
-        "it shows how the Fama-Bliss object is constructed and how sensitive interpretation is "
-        "to the data object."
+        "structural claim. It is a short-horizon relationship in one CMT panel, and it shows "
+        "how the Fama-Bliss object is constructed and how sensitive interpretation is to "
+        "the data object."
     )
     report.add_figure(
         "figures/forward-regression-10y.png",
@@ -248,8 +248,8 @@ arbitrage-free zero-coupon forward rate.
         fig1,
         description=(
             "The horizontal benchmark is a zero predicted yield change. The fitted line has "
-            "visible slope, but the cloud also makes clear that this is a noisy predictive "
-            "relationship rather than a pricing identity."
+            "visible slope, but the cloud shows that this is a noisy predictive relationship "
+            "rather than a pricing identity."
         ),
     )
 
@@ -296,9 +296,9 @@ arbitrage-free zero-coupon forward rate.
         "The forward spread is an economically meaningful summary of the term structure, not "
         "just a plotted difference between two rates. In this snapshot it predicts short-run "
         "yield changes better than a no-change benchmark, but the result inherits the limits "
-        "of CMT par yields, overlapping horizons, and a single year of data. The reusable lesson "
-        "is how to map a yield curve into a predictive regression while keeping the term-"
-        "structure interpretation honest."
+        "of CMT par yields, overlapping horizons, and a single year of data. The reusable "
+        "lesson is how to map a yield curve into a predictive regression while keeping the "
+        "term-structure interpretation honest."
     )
     report.add_references(
         [

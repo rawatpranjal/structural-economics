@@ -437,7 +437,7 @@ This run checks GARP directly; the neighboring [preference-recoverability](../pr
     report.add_solution_method(
         "The computation is a graph problem on observations. Nodes are observed "
         "bundles; directed edges record revealed weak preference. Warshall's "
-        "transitive closure is enough here because the sample is small and the "
+        "transitive closure is enough because the sample is small and the "
         "object of interest is reachability, not a parametric demand curve.\n\n"
         "```text\n"
         "Input: prices p_t and chosen bundles x_t for t=1,...,T\n"
@@ -478,7 +478,7 @@ This run checks GARP directly; the neighboring [preference-recoverability](../pr
         fig1,
         description="In the rational benchmark, every observation comes from the same "
         "Cobb-Douglas preference vector. The chosen bundles need not line up on a "
-        "smooth two-dimensional curve, because prices and income vary, but the budget "
+        "smooth two-dimensional curve because prices and income vary, but the budget "
         "comparisons do not contradict one another.",
     )
 
@@ -584,7 +584,7 @@ This run checks GARP directly; the neighboring [preference-recoverability](../pr
         "ordered by some monotone concave utility function. Failing GARP is equally "
         "sharp, because no utility function in that class can rationalize the full "
         "dataset.\n\n"
-        "That makes this tutorial the entry point for the revealed-preference sequence. "
+        "This tutorial is the entry point for the revealed-preference sequence. "
         "Use [preference recoverability](../preference-recoverability/) when the data "
         "pass and the question is what utility or welfare bounds are implied. Use "
         "[Houtman-Maks](../houtman-maks-rational-subsets/) and the "
