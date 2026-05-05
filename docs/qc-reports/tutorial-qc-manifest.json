@@ -1,6 +1,6 @@
 {
   "pass_name": "quality-control-v1",
-  "updated_at": "2026-05-05T19:47:26Z",
+  "updated_at": "2026-05-05T19:53:15Z",
   "entries": [
     {
       "tutorial_path": "industrial-organization/dynamic-games/",
@@ -8,6 +8,13 @@
       "status": "complete",
       "verdict": "minor issues",
       "updated_at": "2026-05-05T19:47:26Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/dynamic-entry-exit/",
+      "report_path": "docs/qc-reports/tutorials/industrial-organization__dynamic-entry-exit.md",
+      "status": "complete",
+      "verdict": "major issues",
+      "updated_at": "2026-05-05T19:53:15Z"
     }
   ]
 }
