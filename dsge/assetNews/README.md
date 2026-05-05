@@ -11,7 +11,8 @@ The economic wrinkle is that the dividend is also aggregate consumption. Good di
 ## Equations
 
 Let $d_t$ be the tree dividend and the representative household's consumption,
-and define $x_t=\log d_t$. The Dynare file writes the dividend process as
+and define $x_t=\log d_t$. The accompanying `model.mod` spec writes the
+dividend process as
 
 ```text
 d = exp(rho*log(d(-1)) + sigma1*n(-1) + sigma2*z)
@@ -145,7 +146,7 @@ The impact table is in percent log deviations. The news experiment has zero divi
 
 News shocks are about information timing, not mechanically about higher prices. The Lucas-tree Euler equation prices a future dividend with the future marginal utility of consumption. If the dividend is paid in a state where consumption is high, the stochastic discount factor can offset the cash-flow effect. In this calibration, positive dividend news moves the price before the dividend, but the impact sign is slightly negative.
 
-That makes this tutorial a companion to the [Lucas-tree dynamic-programming asset-pricing tutorial](../../dynamic-programming/asset-pricing/): both price payoffs with marginal utility, while this one isolates the timing distinction between surprise and anticipated shocks. The [Dynare RBC tutorial](../rbc/) uses the same local-solution logic for real quantities rather than asset prices.
+That makes this tutorial a companion to the [Lucas-tree dynamic-programming asset-pricing tutorial](../../dynamic-programming/asset-pricing/): both price payoffs with marginal utility, while this one isolates the timing distinction between surprise and anticipated shocks. The [RBC tutorial](../rbc/) uses the same local-solution logic for real quantities rather than asset prices.
 
 ## References
 
@@ -153,3 +154,4 @@ That makes this tutorial a companion to the [Lucas-tree dynamic-programming asse
 - Cochrane, J. (2005). *Asset Pricing*. Princeton University Press.
 - Beaudry, P. and Portier, F. (2006). Stock Prices, News, and Economic Fluctuations. *American Economic Review*, 96(4), 1293-1307.
 - Schmitt-Grohe, S. and Uribe, M. (2012). What's News in Business Cycles. *Econometrica*, 80(6), 2733-2764.
+- Klein, P. (2000). Using the Generalized Schur Form to Solve a Multivariate Linear Rational Expectations Model. *Journal of Economic Dynamics and Control*, 24(10), 1405-1423.

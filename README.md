@@ -55,15 +55,16 @@ These tutorials focus on incomplete-markets households and equilibrium interest 
 | [<img src="heterogeneous-agents/envelope-equation-iteration/figures/thumb.png" width="160">](heterogeneous-agents/envelope-equation-iteration/figures/consumption-policy.png) | **[Envelope-Equation Iteration for Buffer-Stock Saving](heterogeneous-agents/envelope-equation-iteration/)** | Compute the same buffer-stock problem through marginal values. The example keeps the self-insurance motive in terms of the value of one more asset. |
 | [<img src="heterogeneous-agents/huggett-incomplete-markets/figures/thumb.png" width="160">](heterogeneous-agents/huggett-incomplete-markets/figures/value-function.png) | **[Huggett Equilibrium and the Risk-Free Rate](heterogeneous-agents/huggett-incomplete-markets/)** | Find the bond return that clears an incomplete-markets economy. Precautionary saving pushes the equilibrium rate below the rate of time preference. |
 
-### DSGE and Dynare
+### Linearized DSGE
 
-These examples show DSGE shock propagation in the same Python report format.
+These tutorials log-linearize a DSGE model around steady state and solve the resulting rational-expectations system. The first three use closed-form method of undetermined coefficients (cross-checked against Klein-style generalized Schur QZ to machine precision); the fourth uses QZ as the primary solver — the same algorithm Dynare implements at first order.
 
 | Preview | Tutorial | Description |
 |---|---|---|
-| [<img src="dynare/rbc/figures/thumb.png" width="160">](dynare/rbc/figures/irf-tfp-shock.png) | **[RBC TFP Shocks and Capital Propagation](dynare/rbc/)** | Follow a productivity shock through consumption, investment, and capital. The transition makes the timing of investment adjustment visible. |
-| [<img src="dynare/nkdsge/figures/thumb.png" width="160">](dynare/nkdsge/figures/irf-monetary-shock.png) | **[New Keynesian Monetary Shocks and Determinacy](dynare/nkdsge/)** | Study how sticky prices turn policy and demand shocks into output and inflation movements. The Taylor rule determines whether the forward-looking path is stable. |
-| [<img src="dynare/assetNews/figures/thumb.png" width="160">](dynare/assetNews/figures/irf-surprise-vs-news.png) | **[Lucas-Tree News Shocks and Stochastic Discounting](dynare/assetNews/)** | Price anticipated dividend news in a Lucas-tree economy. Prices can move before dividends because expected payoffs and discounting both change. |
+| [<img src="dsge/rbc/figures/thumb.png" width="160">](dsge/rbc/figures/irf-tfp-shock.png) | **[RBC TFP Shocks and Capital Propagation](dsge/rbc/)** | Follow a productivity shock through consumption, investment, and capital. The transition makes the timing of investment adjustment visible. |
+| [<img src="dsge/nkdsge/figures/thumb.png" width="160">](dsge/nkdsge/figures/irf-monetary-shock.png) | **[New Keynesian Monetary Shocks and Determinacy](dsge/nkdsge/)** | Study how sticky prices turn policy and demand shocks into output and inflation movements. The Taylor rule determines whether the forward-looking path is stable. |
+| [<img src="dsge/assetNews/figures/thumb.png" width="160">](dsge/assetNews/figures/irf-surprise-vs-news.png) | **[Lucas-Tree News Shocks and Stochastic Discounting](dsge/assetNews/)** | Price anticipated dividend news in a Lucas-tree economy. Prices can move before dividends because expected payoffs and discounting both change. |
+| [<img src="dsge/rbc-with-labor/figures/thumb.png" width="160">](dsge/rbc-with-labor/figures/irf-tfp-shock.png) | **[RBC with Endogenous Labor by Klein QZ](dsge/rbc-with-labor/)** | Solve a 4-equation rational-expectations system by generalized Schur decomposition. Endogenous labor amplifies the impact of TFP shocks; the QZ algorithm scales to larger DSGEs. |
 
 ### Global Nonlinear DSGE
 

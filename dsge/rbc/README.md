@@ -6,7 +6,7 @@
 
 A Real Business Cycle model turns a productivity innovation into a path for the whole economy. Output moves on impact because technology is higher today. Capital moves slowly because it is predetermined: households can only change tomorrow's productive capacity by changing investment today.
 
-The `model.mod` file is the Dynare-style source specification. This tutorial keeps the same economics but solves the first-order system directly in Python, so the state, control, and approximation are visible. The comparison line in the results solves the exact nonlinear transition for the same decaying TFP shock. For a 1 percent shock the two paths nearly coincide, which is what a local perturbation is supposed to deliver near steady state.
+The `model.mod` file alongside `run.py` is a textbook spec written in DSL syntax for documentation; this tutorial does not execute it. The Python code solves the first-order system directly so the state, control, and approximation are visible. The decision rule is recovered by method of undetermined coefficients and cross-checked against generalized Schur (QZ) decomposition — the same first-order algorithm used by general DSGE solvers. The comparison line in the results solves the exact nonlinear transition for the same decaying TFP shock; for a 1 percent shock the two paths nearly coincide, which is what a local perturbation is supposed to deliver near steady state.
 
 ## Equations
 
@@ -41,8 +41,9 @@ $$
 \varepsilon_t \sim N(0,\sigma_\varepsilon^2).
 $$
 
-The Dynare file stores $y,c,i,k,a$ as logs, so expressions such as `exp(y)` are
-level variables. Around the deterministic steady state with $A=1$,
+The accompanying `model.mod` spec stores $y,c,i,k,a$ as logs, so expressions
+such as `exp(y)` are level variables. Around the deterministic steady state
+with $A=1$,
 
 $$
 \alpha K^{\alpha-1} = \frac{1}{\beta} - 1 + \delta,
@@ -102,7 +103,7 @@ Outputs: paths for yhat_t, chat_t, ihat_t, khat_t
    transition for the same TFP path and compare the two IRFs.
 ```
 
-The coefficient-matching residual is 2.9e-15. The nonlinear benchmark is not a different stochastic model. It is the exact deterministic transition implied by the same one-time shock path.
+The coefficient-matching residual is 2.9e-15. As an independent check, the same linearized system is also solved by Klein's (2000) generalized Schur (QZ) decomposition — the algorithm general DSGE solvers use because it scales to many states. The two methods agree to 1.5e-15, machine precision for this problem; their stable eigenvalues are 0.9621 and 0.9500, the predetermined-state roots that drive capital and TFP propagation. The nonlinear benchmark is not a different stochastic model. It is the exact deterministic transition implied by the same one-time shock path.
 
 ## Results
 
@@ -124,7 +125,7 @@ The summary statistics separate impact effects from delayed peaks. Capital and c
 
 ## Takeaway
 
-In this RBC model, a productivity shock is both a level effect and an intertemporal price signal. Output rises on impact because firms are more productive. Investment responds strongly because the marginal product of capital is temporarily high. Consumption moves more smoothly, and capital accumulates only gradually. That is the propagation mechanism a first-order Dynare-style RBC exercise is meant to isolate.
+In this RBC model, a productivity shock is both a level effect and an intertemporal price signal. Output rises on impact because firms are more productive. Investment responds strongly because the marginal product of capital is temporarily high. Consumption moves more smoothly, and capital accumulates only gradually. That is the propagation mechanism a first-order perturbation around steady state is meant to isolate.
 
 This tutorial is the equilibrium counterpart to the [persistent-shock tutorial](../../time-series/ar-processes/): the AR(1) process supplies the shock's timing, while the Euler equation and capital law of motion decide how that timing shows up in macro quantities. For a global Bellman version of the same RBC mechanism, compare this local solution with the [dynamic-programming RBC tutorial](../../dynamic-programming/rbc/).
 
@@ -133,3 +134,4 @@ This tutorial is the equilibrium counterpart to the [persistent-shock tutorial](
 - Kydland, F. and Prescott, E. (1982). Time to Build and Aggregate Fluctuations. *Econometrica*, 50(6), 1345-1370.
 - King, R., Plosser, C., and Rebelo, S. (1988). Production, Growth and Business Cycles: I. The Basic Neoclassical Model. *Journal of Monetary Economics*, 21(2-3), 195-232.
 - Uhlig, H. (1999). A Toolkit for Analysing Nonlinear Dynamic Stochastic Models Easily. In *Computational Methods for the Study of Dynamic Economies*.
+- Klein, P. (2000). Using the Generalized Schur Form to Solve a Multivariate Linear Rational Expectations Model. *Journal of Economic Dynamics and Control*, 24(10), 1405-1423.

@@ -12,12 +12,57 @@ from scipy.optimize import root
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from lib.output import ModelReport
+from lib.perturbation import solve_klein
 from lib.plotting import setup_style
 
 
 def parse_mod_file(mod_path: Path) -> str:
-    """Read the Dynare .mod file used as the tutorial specification."""
+    """Read the model spec file. Used for documentation; not executed."""
     return mod_path.read_text()
+
+
+def klein_qz_policy(
+    alpha: float,
+    beta: float,
+    delta: float,
+    rho: float,
+    sigma: float,
+    ss: dict[str, float],
+) -> dict[str, float]:
+    """Solve the same first-order RBC system by Klein (2000) generalized Schur.
+
+    Used as a cross-check on ``solve_log_linear_policy``; for this small model
+    Klein QZ and method of undetermined coefficients must agree to machine
+    precision.
+    """
+    capital_output = ss["K_Y"]
+    consumption_share = ss["C_Y"]
+    consumption_capital = consumption_share / capital_output
+    gross_marginal_product_share = beta * alpha / capital_output
+
+    A = np.array(
+        [
+            [capital_output, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [-(alpha - 1.0) * gross_marginal_product_share, -gross_marginal_product_share, sigma],
+        ]
+    )
+    B = np.array(
+        [
+            [alpha + (1.0 - delta) * capital_output, 1.0, -consumption_share],
+            [0.0, rho, 0.0],
+            [0.0, 0.0, sigma],
+        ]
+    )
+    sol = solve_klein(A, B, n_predetermined=2)
+    return {
+        "p": float(sol.F[0, 0]),
+        "q": float(sol.F[0, 1]),
+        "c_k": float(sol.P[0, 0]),
+        "c_a": float(sol.P[0, 1]),
+        "blanchard_kahn": sol.bk_message,
+        "eigenvalues": sol.eigenvalues,
+    }
 
 
 def steady_state(
@@ -262,6 +307,8 @@ def main() -> None:
     print("Solving the RBC model around its deterministic steady state...")
     ss = steady_state(alpha, beta, delta)
     policy = solve_log_linear_policy(alpha, beta, delta, rho, sigma, ss)
+    qz = klein_qz_policy(alpha, beta, delta, rho, sigma, ss)
+    qz_diff = max(abs(policy["p"] - qz["p"]), abs(policy["q"] - qz["q"]))
     linear_long = linear_irfs(
         alpha,
         delta,
@@ -282,9 +329,10 @@ def main() -> None:
         linear_long["Capital"],
         periods_benchmark,
     )
-    print(f"  Parsed {model_equation_count} Dynare model equations.")
+    print(f"  Parsed {model_equation_count} model equations from model.mod.")
     print(f"  Steady-state K/Y: {ss['K_Y']:.2f}")
     print(f"  Capital decision rule: k_t = {policy['p']:.4f} k_(t-1) + {policy['q']:.4f} a_t")
+    print(f"  Klein QZ cross-check ({qz['blanchard_kahn']}): max abs diff = {qz_diff:.2e}")
     print(f"  Max Euler residual in nonlinear benchmark: {nonlinear_long['max_residual']:.2e}")
 
     variables = ["Output", "Consumption", "Investment", "Capital"]
@@ -305,12 +353,16 @@ def main() -> None:
         "the whole economy. Output moves on impact because technology is higher today. "
         "Capital moves slowly because it is predetermined: households can only change "
         "tomorrow's productive capacity by changing investment today.\n\n"
-        "The `model.mod` file is the Dynare-style source specification. This tutorial "
-        "keeps the same economics but solves the first-order system directly in Python, "
-        "so the state, control, and approximation are visible. The comparison line in "
-        "the results solves the exact nonlinear transition for the same decaying TFP "
-        "shock. For a 1 percent shock the two paths nearly coincide, which is what a "
-        "local perturbation is supposed to deliver near steady state."
+        "The `model.mod` file alongside `run.py` is a textbook spec written in DSL "
+        "syntax for documentation; this tutorial does not execute it. The Python code "
+        "solves the first-order system directly so the state, control, and "
+        "approximation are visible. The decision rule is recovered by method of "
+        "undetermined coefficients and cross-checked against generalized Schur (QZ) "
+        "decomposition — the same first-order algorithm used by general DSGE solvers. "
+        "The comparison line in the results solves the exact nonlinear transition for "
+        "the same decaying TFP shock; for a 1 percent shock the two paths nearly "
+        "coincide, which is what a local perturbation is supposed to deliver near "
+        "steady state."
     )
 
     report.add_equations(
@@ -346,8 +398,9 @@ $$
 \varepsilon_t \sim N(0,\sigma_\varepsilon^2).
 $$
 
-The Dynare file stores $y,c,i,k,a$ as logs, so expressions such as `exp(y)` are
-level variables. Around the deterministic steady state with $A=1$,
+The accompanying `model.mod` spec stores $y,c,i,k,a$ as logs, so expressions
+such as `exp(y)` are level variables. Around the deterministic steady state
+with $A=1$,
 
 $$
 \alpha K^{{\alpha-1}} = \frac{{1}}{{\beta}} - 1 + \delta,
@@ -408,7 +461,13 @@ The calibration implies $K/Y={ss["K_Y"]:.2f}$ and $C/Y={ss["C_Y"]:.2f}$.
         "8. As a local accuracy check, solve the exact nonlinear perfect-foresight\n"
         "   transition for the same TFP path and compare the two IRFs.\n"
         "```\n\n"
-        f"The coefficient-matching residual is {policy['max_residual']:.1e}. The "
+        f"The coefficient-matching residual is {policy['max_residual']:.1e}. As an "
+        "independent check, the same linearized system is also solved by Klein's "
+        "(2000) generalized Schur (QZ) decomposition — the algorithm general DSGE "
+        "solvers use because it scales to many states. The two methods agree to "
+        f"{qz_diff:.1e}, machine precision for this problem; their stable eigenvalues "
+        f"are {qz['eigenvalues'][0].real:.4f} and {qz['eigenvalues'][1].real:.4f}, "
+        "the predetermined-state roots that drive capital and TFP propagation. The "
         "nonlinear benchmark is not a different stochastic model. It is the exact "
         "deterministic transition implied by the same one-time shock path."
     )
@@ -506,7 +565,7 @@ The calibration implies $K/Y={ss["K_Y"]:.2f}$ and $C/Y={ss["C_Y"]:.2f}$.
         "productive. Investment responds strongly because the marginal product of "
         "capital is temporarily high. Consumption moves more smoothly, and capital "
         "accumulates only gradually. That is the propagation mechanism a first-order "
-        "Dynare-style RBC exercise is meant to isolate.\n\n"
+        "perturbation around steady state is meant to isolate.\n\n"
         "This tutorial is the equilibrium counterpart to the "
         "[persistent-shock tutorial](../../time-series/ar-processes/): the AR(1) process supplies "
         "the shock's timing, while the Euler equation and capital law of motion decide "
@@ -520,6 +579,7 @@ The calibration implies $K/Y={ss["K_Y"]:.2f}$ and $C/Y={ss["C_Y"]:.2f}$.
             "Kydland, F. and Prescott, E. (1982). Time to Build and Aggregate Fluctuations. *Econometrica*, 50(6), 1345-1370.",
             "King, R., Plosser, C., and Rebelo, S. (1988). Production, Growth and Business Cycles: I. The Basic Neoclassical Model. *Journal of Monetary Economics*, 21(2-3), 195-232.",
             "Uhlig, H. (1999). A Toolkit for Analysing Nonlinear Dynamic Stochastic Models Easily. In *Computational Methods for the Study of Dynamic Economies*.",
+            "Klein, P. (2000). Using the Generalized Schur Form to Solve a Multivariate Linear Rational Expectations Model. *Journal of Economic Dynamics and Control*, 24(10), 1405-1423.",
         ]
     )
 

@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """Lucas-tree asset pricing with news shocks.
 
-The Dynare file describes a representative-agent Lucas tree in which dividends
-are also consumption. A news shock changes the expected dividend before the
-dividend itself moves. The Python report solves the first-order pricing equation
-directly and compares it with an exact nonlinear perfect-foresight transition
-for the same deterministic shock path.
+The accompanying ``model.mod`` spec records a representative-agent Lucas tree
+in which dividends are also consumption; a news shock changes the expected
+dividend before the dividend itself moves. The spec is documentation only —
+``run.py`` does not execute it. The Python report solves the first-order
+pricing equation directly, cross-checks the linear coefficients against
+Klein (2000) generalized Schur (QZ) decomposition, and compares the linear
+response with an exact nonlinear perfect-foresight transition for the same
+deterministic shock path.
 """
 
 from __future__ import annotations
@@ -20,12 +23,13 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from lib.output import ModelReport
+from lib.perturbation import solve_klein
 from lib.plotting import setup_style
 
 
 @dataclass(frozen=True)
 class AssetNewsParams:
-    """Calibration used by the Dynare source file."""
+    """Calibration shared with the textbook ``model.mod`` spec."""
 
     beta: float = 0.99
     gamma: float = 2.0
@@ -35,9 +39,43 @@ class AssetNewsParams:
 
 
 def read_mod_file(mod_path: Path) -> str:
-    """Return the Dynare source text for documentation and sanity checks."""
+    """Return the model spec text. Documentation only; not executed."""
 
     return mod_path.read_text()
+
+
+def klein_qz_pricing(params: AssetNewsParams) -> dict[str, float]:
+    """Cross-check the linear pricing coefficients with Klein-style QZ.
+
+    State ordering ``s_t = (x_t, n_t, q_t)`` with the dividend log ``x`` and
+    the i.i.d. news draw ``n`` predetermined and the price gap ``q``
+    forward-looking.
+    """
+    beta = params.beta
+    gamma = params.gamma
+    rho = params.rho
+    sigma1 = params.sigma1
+    A = np.array(
+        [
+            [1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [(1.0 - beta - gamma), 0.0, beta],
+        ]
+    )
+    B = np.array(
+        [
+            [rho, sigma1, 0.0],
+            [0.0, 0.0, 0.0],
+            [-gamma, 0.0, 1.0],
+        ]
+    )
+    sol = solve_klein(A, B, n_predetermined=2)
+    return {
+        "A": float(sol.P[0, 0]),
+        "B": float(sol.P[0, 1]),
+        "blanchard_kahn": sol.bk_message,
+        "eigenvalues": sol.eigenvalues,
+    }
 
 
 def steady_state(params: AssetNewsParams) -> dict[str, float]:
@@ -181,11 +219,14 @@ def main() -> None:
     params = AssetNewsParams()
     ss = steady_state(params)
     coeffs = linear_price_coefficients(params)
+    qz = klein_qz_pricing(params)
+    qz_diff = max(abs(coeffs["A"] - qz["A"]), abs(coeffs["B"] - qz["B"]))
 
-    print("Parsed Dynare source for Lucas-tree news shocks.")
+    print("Read model.mod (Lucas-tree spec; not executed by run.py).")
     print(f"  Source length: {len(mod_text.splitlines())} lines")
     print(f"  Steady-state price-dividend ratio: {ss['pd_ratio']:.2f}")
     print(f"  First-order price rule: q_t = {coeffs['A']:.4f} x_t + {coeffs['B']:.4f} n_t")
+    print(f"  Klein QZ ({qz['blanchard_kahn']}): max abs diff = {qz_diff:.2e}")
 
     horizon = 40
     surprise = compute_irf(params, "surprise", horizon)
@@ -217,7 +258,8 @@ def main() -> None:
     report.add_equations(
         rf"""
 Let $d_t$ be the tree dividend and the representative household's consumption,
-and define $x_t=\log d_t$. The Dynare file writes the dividend process as
+and define $x_t=\log d_t$. The accompanying `model.mod` spec writes the
+dividend process as
 
 ```text
 d = exp(rho*log(d(-1)) + sigma1*n(-1) + sigma2*z)
@@ -540,7 +582,7 @@ For this calibration, $A={coeffs["A"]:.3f}$ and $B={coeffs["B"]:.3f}$.
         "[Lucas-tree dynamic-programming asset-pricing tutorial](../../dynamic-programming/asset-pricing/): "
         "both price payoffs with marginal utility, while this one isolates the timing "
         "distinction between surprise and anticipated shocks. The "
-        "[Dynare RBC tutorial](../rbc/) uses the same local-solution logic for real "
+        "[RBC tutorial](../rbc/) uses the same local-solution logic for real "
         "quantities rather than asset prices."
     )
 
@@ -550,6 +592,7 @@ For this calibration, $A={coeffs["A"]:.3f}$ and $B={coeffs["B"]:.3f}$.
             "Cochrane, J. (2005). *Asset Pricing*. Princeton University Press.",
             "Beaudry, P. and Portier, F. (2006). Stock Prices, News, and Economic Fluctuations. *American Economic Review*, 96(4), 1293-1307.",
             "Schmitt-Grohe, S. and Uribe, M. (2012). What's News in Business Cycles. *Econometrica*, 80(6), 2733-2764.",
+            "Klein, P. (2000). Using the Generalized Schur Form to Solve a Multivariate Linear Rational Expectations Model. *Journal of Economic Dynamics and Control*, 24(10), 1405-1423.",
         ]
     )
 

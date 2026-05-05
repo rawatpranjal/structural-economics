@@ -15,6 +15,44 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from lib.plotting import setup_style
 from lib.output import ModelReport
+from lib.perturbation import solve_klein
+
+
+def klein_qz_nk(sigma, beta, phi_pi, phi_y, kappa, rho_shock, shock_kind):
+    """Solve the same 3-equation NK system by Klein-style generalized Schur.
+
+    State ordering s = (shock, y, pi) with shock predetermined and (y, pi)
+    forward-looking. ``shock_kind`` is "monetary" (Taylor-rule shock) or
+    "demand" (natural-rate shock); the only difference is the sign and
+    placement of the shock loading in the IS curve.
+    """
+    if shock_kind == "monetary":
+        v_in_is = 1.0 / sigma
+    elif shock_kind == "demand":
+        v_in_is = -1.0
+    else:
+        raise ValueError(shock_kind)
+    A = np.array(
+        [
+            [1.0, 0.0, 0.0],
+            [0.0, 1.0, 1.0 / sigma],
+            [0.0, 0.0, beta],
+        ]
+    )
+    B = np.array(
+        [
+            [rho_shock, 0.0, 0.0],
+            [v_in_is, 1.0 + phi_y / sigma, phi_pi / sigma],
+            [0.0, -kappa, 1.0],
+        ]
+    )
+    sol = solve_klein(A, B, n_predetermined=1)
+    return {
+        "psi_y": float(sol.P[0, 0]),
+        "psi_pi": float(sol.P[1, 0]),
+        "blanchard_kahn": sol.bk_message,
+        "eigenvalues": sol.eigenvalues,
+    }
 
 
 def parse_mod_file(mod_path: str) -> str:
@@ -112,11 +150,11 @@ def compute_irfs_nk(coeffs, shock_persistence, shock_size, T=40):
 
 def main():
     # =========================================================================
-    # Parse the Dynare .mod file
+    # Read the model spec file (DSL syntax; not executed)
     # =========================================================================
     mod_dir = Path(__file__).resolve().parent
     mod_text = parse_mod_file(mod_dir / "model.mod")
-    print("Parsed model.mod for New Keynesian DSGE")
+    print("Read model.mod for New Keynesian DSGE (textbook spec; not executed by run.py)")
     stale_equation_figure = mod_dir / "figures" / "model-equations.png"
     if stale_equation_figure.exists():
         stale_equation_figure.unlink()
@@ -144,11 +182,23 @@ def main():
 
     # Monetary policy shock
     mp_sol = solve_nk_model(sigma, beta, phi_pi, phi_y, kappa, rho_v)
+    mp_qz = klein_qz_nk(sigma, beta, phi_pi, phi_y, kappa, rho_v, "monetary")
+    mp_qz_diff = max(
+        abs(mp_sol["psi_yv"] - mp_qz["psi_y"]),
+        abs(mp_sol["psi_piv"] - mp_qz["psi_pi"]),
+    )
     print(f"  Monetary shock: psi_y={mp_sol['psi_yv']:.4f}, psi_pi={mp_sol['psi_piv']:.4f}")
+    print(f"    Klein QZ ({mp_qz['blanchard_kahn']}): max abs diff = {mp_qz_diff:.2e}")
 
     # Demand shock
     d_sol = solve_nk_demand_shock(sigma, beta, phi_pi, phi_y, kappa, rho_d)
+    d_qz = klein_qz_nk(sigma, beta, phi_pi, phi_y, kappa, rho_d, "demand")
+    d_qz_diff = max(
+        abs(d_sol["psi_yd"] - d_qz["psi_y"]),
+        abs(d_sol["psi_pid"] - d_qz["psi_pi"]),
+    )
     print(f"  Demand shock:   psi_y={d_sol['psi_yd']:.4f}, psi_pi={d_sol['psi_pid']:.4f}")
+    print(f"    Klein QZ ({d_qz['blanchard_kahn']}): max abs diff = {d_qz_diff:.2e}")
 
     # =========================================================================
     # Compute IRFs
@@ -183,11 +233,13 @@ def main():
         "prices fully adjust, so demand falls. The Phillips curve then translates the weaker "
         "output gap into lower inflation.\n\n"
         "The model is deliberately small: an output gap $y_t$, inflation $\\pi_t$, a nominal "
-        "policy rate $i_t$, and one persistent shock at a time. The `model.mod` file gives the "
-        "Dynare-style three-equation block. The Python code solves the same log-linear system "
-        "directly, which makes the expectations algebra and the Taylor-rule determinacy "
-        "condition easy to inspect.\n\n"
-        "Compared with the [RBC Dynare tutorial](../rbc/), propagation here does not come from "
+        "policy rate $i_t$, and one persistent shock at a time. The `model.mod` spec sitting "
+        "alongside `run.py` records the three-equation block in DSL syntax for documentation; "
+        "the Python code solves the log-linear system directly, which makes the expectations "
+        "algebra and the Taylor-rule determinacy condition easy to inspect. The same system is "
+        "also solved by Klein (2000) generalized Schur (QZ) decomposition as a cross-check; "
+        "the two methods agree to machine precision on this problem.\n\n"
+        "Compared with the [RBC tutorial](../rbc/), propagation here does not come from "
         "slow capital accumulation. It comes from the interaction between forward-looking "
         "demand, sticky-price inflation, and a policy rule that leans against inflation."
     )
@@ -224,7 +276,7 @@ $$
 r^n_t=d_t,\qquad d_t=\rho_d d_{t-1}+\varepsilon^d_t.
 $$
 
-The Dynare file writes the same core block as
+The accompanying `model.mod` spec writes the same core block as
 
 ```text
 y = y(+1) - sigma^(-1)*(i - pi(+1) - rho)
@@ -285,10 +337,17 @@ natural-rate shifter so the two impulse responses can be read separately.
         "8. Plot y_t = psi_y s_t, pi_t = psi_pi s_t, and i_t = psi_i s_t.\n"
         "```\n\n"
         "There is no finer-grid benchmark to add here. Within this tutorial's "
-        "log-linear model, coefficient matching is the exact solution. Approximation "
-        "error would enter only if we replaced the three-equation block with a nonlinear "
-        "price-setting model and then compared a local perturbation to a global or "
-        "perfect-foresight solution."
+        "log-linear model, coefficient matching is the exact solution. As an "
+        "independent check the same system is also solved by Klein (2000) "
+        f"generalized Schur (QZ) decomposition; the two methods agree to "
+        f"{max(mp_qz_diff, d_qz_diff):.1e} on both shock experiments. The Klein "
+        "algorithm is what general DSGE solvers use because it scales to many "
+        "states; on this small model it is overkill, but the agreement establishes "
+        "that the closed-form coefficients pick out the unique stable rational-"
+        "expectations equilibrium. Approximation error would enter only if we "
+        "replaced the three-equation block with a nonlinear price-setting model "
+        "and then compared a local perturbation to a global or perfect-foresight "
+        "solution."
     )
 
     periods = np.arange(T_irf)
@@ -408,6 +467,7 @@ natural-rate shifter so the two impulse responses can be read separately.
         "Gali, J. (2015). *Monetary Policy, Inflation, and the Business Cycle*. Princeton University Press, 2nd edition.",
         "Woodford, M. (2003). *Interest and Prices: Foundations of a Theory of Monetary Policy*. Princeton University Press.",
         "Clarida, R., Gali, J., and Gertler, M. (1999). The Science of Monetary Policy: A New Keynesian Perspective. *Journal of Economic Literature*, 37(4), 1661-1707.",
+        "Klein, P. (2000). Using the Generalized Schur Form to Solve a Multivariate Linear Rational Expectations Model. *Journal of Economic Dynamics and Control*, 24(10), 1405-1423.",
     ])
 
     report.write("README.md")

@@ -6,9 +6,9 @@
 
 The question is why a central bank can move real activity when households and firms understand the policy rule. In this small New Keynesian model the answer is sticky prices. A surprise increase in the nominal interest rate raises the real rate before prices fully adjust, so demand falls. The Phillips curve then translates the weaker output gap into lower inflation.
 
-The model is deliberately small: an output gap $y_t$, inflation $\pi_t$, a nominal policy rate $i_t$, and one persistent shock at a time. The `model.mod` file gives the Dynare-style three-equation block. The Python code solves the same log-linear system directly, which makes the expectations algebra and the Taylor-rule determinacy condition easy to inspect.
+The model is deliberately small: an output gap $y_t$, inflation $\pi_t$, a nominal policy rate $i_t$, and one persistent shock at a time. The `model.mod` spec sitting alongside `run.py` records the three-equation block in DSL syntax for documentation; the Python code solves the log-linear system directly, which makes the expectations algebra and the Taylor-rule determinacy condition easy to inspect. The same system is also solved by Klein (2000) generalized Schur (QZ) decomposition as a cross-check; the two methods agree to machine precision on this problem.
 
-Compared with the [RBC Dynare tutorial](../rbc/), propagation here does not come from slow capital accumulation. It comes from the interaction between forward-looking demand, sticky-price inflation, and a policy rule that leans against inflation.
+Compared with the [RBC tutorial](../rbc/), propagation here does not come from slow capital accumulation. It comes from the interaction between forward-looking demand, sticky-price inflation, and a policy rule that leans against inflation.
 
 ## Equations
 
@@ -42,7 +42,7 @@ $$
 r^n_t=d_t,\qquad d_t=\rho_d d_{t-1}+\varepsilon^d_t.
 $$
 
-The Dynare file writes the same core block as
+The accompanying `model.mod` spec writes the same core block as
 
 ```text
 y = y(+1) - sigma^(-1)*(i - pi(+1) - rho)
@@ -100,7 +100,7 @@ Outputs: paths for y_t, pi_t, i_t, and the shock state s_t
 8. Plot y_t = psi_y s_t, pi_t = psi_pi s_t, and i_t = psi_i s_t.
 ```
 
-There is no finer-grid benchmark to add here. Within this tutorial's log-linear model, coefficient matching is the exact solution. Approximation error would enter only if we replaced the three-equation block with a nonlinear price-setting model and then compared a local perturbation to a global or perfect-foresight solution.
+There is no finer-grid benchmark to add here. Within this tutorial's log-linear model, coefficient matching is the exact solution. As an independent check the same system is also solved by Klein (2000) generalized Schur (QZ) decomposition; the two methods agree to 1.4e-15 on both shock experiments. The Klein algorithm is what general DSGE solvers use because it scales to many states; on this small model it is overkill, but the agreement establishes that the closed-form coefficients pick out the unique stable rational-expectations equilibrium. Approximation error would enter only if we replaced the three-equation block with a nonlinear price-setting model and then compared a local perturbation to a global or perfect-foresight solution.
 
 ## Results
 
@@ -133,3 +133,4 @@ The policy-shock and demand-shock experiments use the same solution method but d
 - Gali, J. (2015). *Monetary Policy, Inflation, and the Business Cycle*. Princeton University Press, 2nd edition.
 - Woodford, M. (2003). *Interest and Prices: Foundations of a Theory of Monetary Policy*. Princeton University Press.
 - Clarida, R., Gali, J., and Gertler, M. (1999). The Science of Monetary Policy: A New Keynesian Perspective. *Journal of Economic Literature*, 37(4), 1661-1707.
+- Klein, P. (2000). Using the Generalized Schur Form to Solve a Multivariate Linear Rational Expectations Model. *Journal of Economic Dynamics and Control*, 24(10), 1405-1423.

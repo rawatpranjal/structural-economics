@@ -1,3 +1,10 @@
+// ---------------------------------------------------------------------------
+// Linearized RBC - model specification.
+// This file is documentation only; run.py does not execute Dynare.
+// To run in Dynare, install via `brew install dynare` (macOS) and call
+// `dynare model.mod` from inside Octave or MATLAB. See dynare.org.
+// ---------------------------------------------------------------------------
+
 var y i c k a;
 varexo e;
 parameters alpha beta gamma sigma delta rho se;
