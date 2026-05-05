@@ -6,6 +6,8 @@ Zero-profit N (static),10.3
 Per-firm profit at E[N],0.790
 Net profit (pi - f) at E[N],0.290
 HHI at E[N],1250
-Expected exit rate,0.0028
+Expected incumbent exit probability,0.0027
+Expected exits (firms/period),0.021
 Expected entry (firms/period),0.02
-VFI iterations,718
+Max stationary simulation gap,5.42e-04
+VFI iterations,667

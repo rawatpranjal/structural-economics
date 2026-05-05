@@ -1,39 +1,65 @@
 # Dynamic Entry and Exit in Oligopoly
 
-> Firm turnover and market structure in an oligopolistic industry with sunk entry costs.
+> Sunk entry costs, exit option values, and the stationary distribution of market structure.
 
 ## Overview
 
-This model studies how firms' entry and exit decisions determine market structure over time. Each period, incumbent firms decide whether to continue operating (paying a fixed cost $f$) or exit permanently. Simultaneously, potential entrants decide whether to pay a sunk cost $K$ to enter the market. Firms compete as Cournot oligopolists, so profits depend on the number of active firms.
+Entry and exit are the dynamic margin behind many static IO objects. A market with eight firms today is not just a point on a concentration scale; it is also a state that determines incumbents' option value and entrants' willingness to sink capital. This tutorial keeps the product market deliberately simple, using symmetric Cournot profits, so the economics of market structure comes from the entry and exit margins rather than from differentiated-products demand.
 
-The model generates a stationary equilibrium with persistent heterogeneity in market structure: even in steady state, there is simultaneous entry and exit ("churning"). This captures a key empirical regularity in industrial organization -- markets exhibit substantial firm turnover despite relatively stable aggregate concentration.
+The state is the number of active firms $N_t$. Incumbents pay a fixed operating cost $f$ if they stay, while entrants pay a sunk cost $K$ before becoming incumbents. The sunk cost is the key wedge: an incumbent may tolerate a weak current profit because leaving means giving up the option to operate next period, whereas a potential entrant must justify the up-front cost. The companion tutorials on [dynamic games](../dynamic-games/) and [dynamic discrete choice](../dynamic-discrete-choice/) use the same continuation-value logic with different economic primitives.
 
 ## Equations
 
-**Per-firm Cournot profit with $N$ symmetric firms:**
+Let $N_t\in\{1,\ldots,N_{\max}\}$ denote the number of active firms at the start
+of period $t$. With inverse demand $P=a-bQ$ and constant marginal cost $c$, the
+symmetric Cournot flow profit before fixed cost is
 
-$$\pi(N) = \frac{(a - c)^2}{b \cdot (N+1)^2}$$
+$$
+\pi(N)=\frac{(a-c)^2}{b(N+1)^2}.
+$$
 
-**Incumbent's value function (with logistic idiosyncratic shock $\varepsilon$):**
+An incumbent's exit value is normalized to zero. If it stays, its deterministic
+surplus is
 
-$$V_I(N) = \sigma_\varepsilon \cdot \log\!\left(1 + \exp\!\left(\frac{\pi(N) - f + \beta \, \mathbb{E}[V_I(N')]}{\sigma_\varepsilon}\right)\right)$$
+$$
+\Delta(N)=\pi(N)-f+\beta \mathbb{E}\!\left[V(N_{t+1})\mid N_t=N,\text{ stay}\right].
+$$
 
-This is the log-sum (inclusive value) from the logit model. An incumbent stays iff
-$\pi(N) - f + \varepsilon + \beta \, \mathbb{E}[V(N')] \geq 0$; the logistic shock
-generates a smooth exit probability:
+The idiosyncratic stay shock has logistic scale $\sigma_\varepsilon$. The
+pre-shock value is the log-sum inclusive value
 
-$$p_{\text{exit}}(N) = \frac{1}{1 + \exp\!\big((\pi(N) - f + \beta \, \mathbb{E}[V(N')]) / \sigma_\varepsilon\big)}$$
+$$
+V(N)=\sigma_\varepsilon
+\log\left[1+\exp\left(\frac{\Delta(N)}{\sigma_\varepsilon}\right)\right],
+$$
 
-**Free entry condition:**
+and the incumbent exit probability is
 
-$$V_I(N') \leq K$$
+$$
+p_{\mathrm{exit}}(N)=
+\frac{1}{1+\exp\{\Delta(N)/\sigma_\varepsilon\}}.
+$$
 
-Potential entrants enter until the expected value of incumbency (in the post-entry market)
-falls below the sunk cost $K$.
+Entry is decided at the current market state, before the realized exit draws.
+Potential entrants use the expected survivor count
+$\bar S(N_t)=\mathrm{round}\{N_t[1-p_{\mathrm{exit}}(N_t)]\}$ and enter until
+the next entrant would not cover the sunk cost. Entrant $m$ enters only if its
+post-entry value $V(\bar S(N_t)+m)$ is at least $K$. Thus
 
-**Transition:**
+$$
+e(N_t)=\max\{e\geq 0: \bar S(N_t)+e\leq N_{\max}
+\ \text{and}\ V(\bar S(N_t)+m)\geq K\ \text{for all}\ m=1,\ldots,e\},
+$$
 
-$$N' = \text{Binomial survivors}(N, 1 - p_{\text{exit}}) + \text{Entrants}$$
+with $e(N_t)=0$ when the first entrant does not cover $K$.
+
+The transition law is therefore
+
+$$
+S_t\sim \mathrm{Binomial}\!\left(N_t,1-p_{\mathrm{exit}}(N_t)\right),
+\qquad
+N_{t+1}=\max\{1,\min(S_t+e(N_t),N_{\max})\}.
+$$
 
 ## Model Setup
 
@@ -47,80 +73,92 @@ $$N' = \text{Binomial survivors}(N, 1 - p_{\text{exit}}) + \text{Entrants}$$
 | $\beta$  | 0.95 | Discount factor |
 | $\sigma_\varepsilon$ | 1.0 | Logistic shock scale |
 | $N_{\max}$ | 30 | Maximum number of firms |
+| State space | $1,\ldots,30$ | Operating markets; zero-firm market entry is not modeled |
+| Simulation periods | 200 | Market path shown in the results |
 
 ## Solution Method
 
-**Dampened Value Function Iteration (VFI)** with log-sum inclusive values:
+The computation is a finite-state fixed point. Given a candidate continuation value, the code computes incumbent exit probabilities, applies a state-level free-entry cutoff based on expected survival, and updates the inclusive value. Realized exits are still stochastic, so the induced transition matrix is not deterministic. Dampening is used only to stabilize the numerical fixed point; it is not an economic friction.
 
-1. Initialize $V(N)$ for all states $N = 1, \ldots, N_{\max}$.
-2. For each state, compute the exit probability from the logistic choice model using the current $V$.
-3. Compute $\mathbb{E}[V(N')]$ by integrating over the binomial distribution of survivors (other $N-1$ incumbents), with free entry determining entrants at each realization.
-4. Update $V(N)$ using the log-sum formula with dampening factor 0.3.
-5. Iterate until $\|V_{n+1} - V_n\|_\infty < 10^{-8}$.
+```text
+Algorithm: symmetric entry-exit fixed point
+Input: state grid {1,...,N_max}, primitives (a,b,c,f,K,beta,sigma), tolerance epsilon
+Output: V(N), p_exit(N), expected entry, transition matrix P, stationary distribution mu
+Initialize V_0(N) from myopic operating values
+repeat for n = 0, 1, 2, ...:
+    for each market size N:
+        compute current Cournot profit pi(N)
+        compute p_exit(N) from the logit stay/exit rule using V_n
+        compute expected survivor count S_bar(N)
+        choose entrants e(N) by the cutoff V_n(S_bar(N)+e) >= K
+        for each possible number of rival survivors S:
+            add V_n(min{S + 1 + e(N), N_max}) to the incumbent's continuation value
+        update V_{n+1}(N) with the log-sum inclusive value
+    replace V_n by a damped average of V_n and V_{n+1}
+until max_N |V_{n+1}(N)-V_n(N)| < epsilon
+Construct P(N'|N) from binomial survival and the same state-level entry rule
+Iterate mu_{m+1}=mu_m P until mu is invariant
+```
 
-Converged in **718 iterations** (error = 9.84e-09).
-
-The stationary distribution is computed by constructing the Markov transition matrix $P(N' | N)$ and finding its invariant distribution via power iteration.
+The value iteration converged in **667 iterations** with sup-norm error **9.94e-09**. The invariant distribution solves $\mu=\mu P$ for the policy-induced Markov chain.
 
 ## Results
 
-<img src="figures/value-function.png" alt="Incumbent value function V(N): value of being an active firm as a function of market structure" width="80%">
-*Incumbent value function V(N): value of being an active firm as a function of market structure*
+Incumbency value falls as additional competitors erode Cournot rents. The dashed horizontal line is the sunk entry cost: below it, a new firm would not enter even though an incumbent may still prefer to stay. The vertical line is the static zero-flow-profit benchmark, which is useful precisely because the dynamic cutoff does not have to coincide with it.
 
-<img src="figures/entry-exit-probabilities.png" alt="Exit probability and expected entry as functions of the number of active firms" width="80%">
-*Exit probability and expected entry as functions of the number of active firms*
+<img src="figures/value-function.png" alt="Incumbent value function by number of active firms" width="80%">
 
-<img src="figures/stationary-distribution.png" alt="Stationary distribution of the number of active firms" width="80%">
-*Stationary distribution of the number of active firms*
+The two policy margins move in opposite directions. Exit risk rises with crowding because current profits are lower and continuation value is weaker. Expected entry is high when the market is thin and falls to almost zero once the post-entry value is below $K$. The gap between the two thresholds is the hysteresis region created by sunk entry.
 
-<img src="figures/simulated-market.png" alt="Simulated market: number of firms and entry/exit flows over 200 periods" width="80%">
-*Simulated market: number of firms and entry/exit flows over 200 periods*
+<img src="figures/entry-exit-probabilities.png" alt="Exit probability and expected entry by market size" width="80%">
+
+The invariant distribution is tightly centered because free entry offsets most departures from the profitable range. The black markers are a long Monte Carlo check from the same policy-induced Markov chain; their maximum distance from the invariant distribution is **5.42e-04** after burn-in.
+
+<img src="figures/stationary-distribution.png" alt="Stationary distribution of active firms" width="80%">
+
+The simulated path gives the same object in time-series form. The firm count spends most of its time near the invariant mean, while the flow panel shows the turnover events that keep the market from being literally absorbing. With this calibration the turnover rate is modest, so the point is the option-value mechanism rather than a claim of large empirical churn.
+
+<img src="figures/simulated-market.png" alt="Simulated market structure and turnover flows" width="80%">
+
+The expected market size is below the static zero-profit count because entrants must recover the sunk cost $K$, not just cover the per-period fixed cost. At the same time, incumbents still have continuation value, so the exit margin remains smooth rather than a hard static shutdown rule.
 
 **Equilibrium Statistics**
 
-| Statistic                     |     Value |
-|:------------------------------|----------:|
-| Expected number of firms E[N] |    7.98   |
-| Std. deviation of N           |    0.15   |
-| Modal number of firms         |    8      |
-| Zero-profit N (static)        |   10.3    |
-| Per-firm profit at E[N]       |    0.79   |
-| Net profit (pi - f) at E[N]   |    0.29   |
-| HHI at E[N]                   | 1250      |
-| Expected exit rate            |    0.0028 |
-| Expected entry (firms/period) |    0.02   |
-| VFI iterations                |  718      |
+| Statistic                           |       Value |
+|:------------------------------------|------------:|
+| Expected number of firms E[N]       |    7.98     |
+| Std. deviation of N                 |    0.15     |
+| Modal number of firms               |    8        |
+| Zero-profit N (static)              |   10.3      |
+| Per-firm profit at E[N]             |    0.79     |
+| Net profit (pi - f) at E[N]         |    0.29     |
+| HHI at E[N]                         | 1250        |
+| Expected incumbent exit probability |    0.0027   |
+| Expected exits (firms/period)       |    0.021    |
+| Expected entry (firms/period)       |    0.02     |
+| Max stationary simulation gap       |    0.000542 |
+| VFI iterations                      |  667        |
+
+The selected states show the entry and exit cutoffs in levels. Thin markets have large incumbent values and attract entrants; crowded markets have low flow profits and high exit risk. The middle states are economically interesting because entry has mostly shut down before incumbents are certain to leave.
 
 **Value Function and Policies at Selected Market Structures**
 
-|   N |   Profit pi(N) |   Net profit pi-f |   V(N) |   Exit prob |   Entry |
-|----:|---------------:|------------------:|-------:|------------:|--------:|
-|   1 |         16     |            15.5   | 21.067 |      0      |       7 |
-|   2 |          7.111 |             6.611 | 12.178 |      0      |       6 |
-|   3 |          4     |             3.5   |  9.067 |      0      |       5 |
-|   5 |          1.778 |             1.278 |  6.845 |      0.0004 |       3 |
-|   7 |          1     |             0.5   |  6.069 |      0.0019 |       1 |
-|  10 |          0.529 |             0.029 |  3.945 |      0.0224 |       0 |
-|  15 |          0.25  |            -0.25  |  2.477 |      0.1088 |       0 |
-|  20 |          0.145 |            -0.355 |  1.98  |      0.1785 |       0 |
-|  25 |          0.095 |            -0.405 |  1.722 |      0.2261 |       0 |
-|  30 |          0.067 |            -0.433 |  1.561 |      0.2593 |       0 |
+|   N |   Profit pi(N) |   Net profit pi-f |   V(N) |   Exit prob |   Expected entry |
+|----:|---------------:|------------------:|-------:|------------:|-----------------:|
+|   1 |         16     |            15.5   | 21.133 |      0      |                7 |
+|   2 |          7.111 |             6.611 | 12.244 |      0      |                6 |
+|   3 |          4     |             3.5   |  9.133 |      0      |                5 |
+|   5 |          1.778 |             1.278 |  6.912 |      0.0004 |                3 |
+|   7 |          1     |             0.5   |  6.138 |      0.0018 |                1 |
+|  10 |          0.529 |             0.029 |  3.96  |      0.0221 |                0 |
+|  15 |          0.25  |            -0.25  |  2.48  |      0.1085 |                0 |
+|  20 |          0.145 |            -0.355 |  1.982 |      0.1783 |                0 |
+|  25 |          0.095 |            -0.405 |  1.723 |      0.2259 |                0 |
+|  30 |          0.067 |            -0.433 |  1.562 |      0.2592 |                0 |
 
 ## Takeaway
 
-Dynamic entry/exit models explain why markets have persistent differences in concentration. Entry costs create barriers that sustain above-competitive profits, while exit occurs when negative shocks or increased competition erode incumbents' continuation values.
-
-**Key insights:**
-- The value of incumbency declines sharply with $N$: more competitors erode Cournot rents. Beyond a threshold, $V(N) \approx 0$ and firms prefer to exit.
-- The sunk cost $K$ creates hysteresis: incumbents only face the per-period cost $f$ to stay, while entrants must pay $K$ up front. This wedge between entry and exit thresholds is the source of persistence in market structure.
-- The model generates "churning" -- simultaneous entry and exit even in steady state -- because idiosyncratic shocks push some incumbents below the exit threshold while the market remains attractive enough for new entrants.
-- The stationary distribution concentrates near the free-entry equilibrium $N$, but stochastic turnover generates a non-degenerate spread around this point.
-
-## Reproduce
-
-```bash
-python run.py
-```
+The economic lesson is the separation between the entry condition and the exit condition. Static profits say when a firm covers today's operating cost; dynamic profits say whether it is worth preserving the option to operate tomorrow. A sunk entry cost therefore creates a band in which incumbents stay but entrants do not rush in. That band is what makes market structure persistent in Ericson-Pakes style IO models, even before adding firm heterogeneity, investment, or product differentiation.
 
 ## References
 
