@@ -1,27 +1,52 @@
 # Three-Part Tariffs and Forward-Looking Broadband Demand
 
-> Usage allowances, overage prices, and dynamic consumption within a billing cycle.
+> How data caps make monthly broadband demand a dynamic choice problem.
 
 ## Overview
 
-Usage-based broadband pricing is a three-part tariff: a fixed monthly fee, an included allowance, and an overage price for usage above the cap. Consumers are forward-looking within the billing cycle because using data today changes the remaining allowance tomorrow.
+Residential broadband contracts often combine three instruments: a fixed fee, an included data allowance, and a per-GB overage price. The allowance is not just a nonlinear price schedule. It creates a state variable inside the month. A GB used on day 3 lowers the remaining allowance on day 4, so the relevant marginal price includes the option value of keeping data for later.
 
-The tutorial solves a finite-horizon dynamic program for daily usage. It then lets heterogeneous consumers choose among metered, three-part, and unlimited plans.
+The tutorial keeps the demand side deliberately small. A consumer solves a finite-horizon usage problem within the billing cycle, then heterogeneous types choose among a low-fee metered plan, a middle three-part plan, and an unlimited plan. The dynamic-choice logic is close to the continuation-value reasoning in [bus replacement](../dynamic-discrete-choice/), while the fixed-fee role connects to the two-part-tariff discussion in [vertical relationships](../vertical-relationships/).
 
 ## Equations
 
-Daily utility from usage $c_t$ is:
-$$u(c_t;h) = h\log(1+c_t) - \frac{\psi}{2}c_t^2$$
+Let $t=1,\ldots,T$ index days in a billing cycle and let $C_{t-1}$ be cumulative
+usage before day $t$. Under plan $k$, the consumer pays a fixed fee $F_k$, has
+allowance $A_k$, and pays overage price $q_k$ per GB above the allowance.
 
-Cumulative usage evolves as:
-$$C_t = C_{t-1} + c_t$$
+Daily usage is $c_t \geq 0$. Type $h$ has gross daily utility
 
-The dynamic value under plan $k$ is:
-$$V_{kt}(C_{t-1}) = \max_{c_t} u(c_t;h) - p_k^{over}\Delta O_t + V_{k,t+1}(C_t)$$
+$$u(c_t;h) = h\log(1+c_t) - \frac{\psi}{2}c_t^2,$$
 
-where $\Delta O_t$ is the incremental overage usage created by today's consumption.
+with $\psi>0$. Cumulative usage follows
+
+$$C_t=C_{t-1}+c_t,\qquad C_0=0.$$
+
+The incremental overage quantity created on day $t$ is
+
+$$\Delta O_k(C_{t-1},c_t)
+=\max\{0,C_{t-1}+c_t-A_k\}-\max\{0,C_{t-1}-A_k\}.$$
+
+For a given plan and type, the within-cycle value function is
+
+$$V_{k,t}(C_{t-1};h)=
+\max_{c_t\in[0,\bar c]}
+\left[
+u(c_t;h)-q_k\Delta O_k(C_{t-1},c_t)
++V_{k,t+1}(C_t;h)
+\right],$$
+
+with terminal value $V_{k,T+1}(\cdot;h)=0$. The policy
+$g_{k,t}(C_{t-1};h)$ gives daily usage.
+
+Plan choice adds the fixed fee and the value of speed $B(s_k)$:
+
+$$W_i(k)=V_{k,1}(0;h_i)+B(s_k)-F_k,\qquad
+d_i=\arg\max_k W_i(k).$$
 
 ## Model Setup
+
+The calibration uses a 30-day billing cycle, $\psi=0.34$, daily choices $c_t\in[0,6]$, and the speed shifter $B(s_k)=2.6\log(s_k)$. Consumer heterogeneity is a small discrete type distribution; the weights are used only for plan shares and average outcomes.
 
 | Plan | Fixed fee | Allowance | Overage price | Speed |
 |------|-----------|-----------|---------------|-------|
@@ -29,26 +54,52 @@ where $\Delta O_t$ is the incremental overage usage created by today's consumpti
 | Three-part | 46 | 85 GB | 1.60 | 200 Mbps |
 | Unlimited | 52 | uncapped | 0.00 | 320 Mbps |
 
+| Taste type $h_i$ | Weight |
+|------------------|--------|
+| 3.0 | 0.10 |
+| 3.5 | 0.14 |
+| 4.0 | 0.18 |
+| 4.5 | 0.20 |
+| 5.0 | 0.17 |
+| 5.6 | 0.13 |
+| 6.2 | 0.08 |
+
 ## Solution Method
 
-Backward induction solves the monthly usage problem for each plan and consumer type. The state is cumulative usage so far in the billing cycle. The policy function shows how much to consume today as a function of the remaining allowance and days left.
+For each type-plan pair, backward induction solves the finite-horizon usage problem on a grid for cumulative monthly usage. The fixed fee is excluded from the daily Bellman recursion because it is sunk after the plan is chosen; it enters only when comparing plans. The overage price enters inside the recursion because today's usage can move the consumer closer to the cap or past it.
+
+```text
+Algorithm: finite-horizon usage and plan choice
+Input: plans (F_k, A_k, q_k, s_k), type distribution (h_i, omega_i), usage grid C
+Output: daily policies g_{k,t}(C; h_i), chosen plans d_i, plan shares
+for each type h_i and plan k:
+    set V_{k,T+1}(C; h_i) = 0 for every cumulative-usage state C
+    for t = T, T-1, ..., 1:
+        for each state C on the cumulative-usage grid:
+            for each feasible daily usage c in [0, c_bar]:
+                C_next = C + c
+                overage_increment = max(0, C_next - A_k) - max(0, C - A_k)
+                payoff = u(c; h_i) - q_k * overage_increment + V_{k,t+1}(C_next; h_i)
+            choose c that maximizes payoff and record g_{k,t}(C; h_i)
+    compute W_i(k) = V_{k,1}(0; h_i) + B(s_k) - F_k
+choose d_i = argmax_k W_i(k), then aggregate shares with weights omega_i
+```
+
+The focal policy uses a 0.5 GB grid. For the billing-cycle path, the same model is also solved on a 0.25 GB grid as a numerical benchmark.
 
 ## Results
 
-Near the allowance, consumers conserve usage early in the cycle because today's usage raises the chance of overage payments later. The constraint relaxes near the end of the month.
+The policy surface shows the shadow price of the remaining allowance. Early in the month, a consumer near the cap cuts usage because each GB raises the chance of paying overage charges later. Near the end of the cycle, the same remaining allowance has less option value, so the policy relaxes.
 
 <img src="figures/usage-policy.png" alt="Daily usage policy by day and remaining allowance" width="80%">
-*Daily usage policy by day and remaining allowance*
 
-The consumer manages usage around the allowance. Overage risk creates intertemporal substitution even though daily tastes are constant.
+The simulated path stays close to the allowance without treating it as a hard constraint. The finer-grid benchmark matches total usage within **0.00 GB**, while the largest cumulative-path gap is **3.00 GB**. The dynamics come from the nonlinear contract, not from time-varying daily tastes.
 
-<img src="figures/billing-cycle-usage.png" alt="Cumulative and daily usage under the three-part plan" width="80%">
-*Cumulative and daily usage under the three-part plan*
+<img src="figures/billing-cycle-usage.png" alt="Billing-cycle usage under the baseline grid and a finer-grid benchmark" width="80%">
 
-Heterogeneous consumers sort across contracts. Low-usage types prefer metered plans, middle types value the allowance, and high-usage types value unlimited access.
+Plan choice is a sorting problem. Low-usage types choose the low fixed fee, middle types value the allowance, and high-usage types pay for unlimited access. The circled points are the contracts selected by the discrete type distribution.
 
-<img src="figures/plan-comparison.png" alt="Plan shares, average usage, and average revenue" width="80%">
-*Plan shares, average usage, and average revenue*
+<img src="figures/plan-comparison.png" alt="Net consumer value by type and plan" width="80%">
 
 **Plan-choice summary across consumer types**
 
@@ -60,13 +111,7 @@ Heterogeneous consumers sort across contracts. Low-usage types prefer metered pl
 
 ## Takeaway
 
-The allowance makes demand dynamic. A consumer far below the cap treats usage as almost free, while a consumer near the cap faces the shadow value of preserving allowance for later. Three-part tariffs therefore affect both plan choice and within-month usage timing.
-
-## Reproduce
-
-```bash
-python run.py
-```
+A three-part tariff changes demand before the cap is actually hit. The allowance has a shadow value because it can be spent later in the billing cycle, so a forward-looking consumer reacts to expected overage risk rather than only to the current marginal price. Across types, the same contract menu sorts consumers by usage intensity: low types avoid the fixed fee, middle types buy the allowance, and high types choose unlimited access. The numerical benchmark check suggests that the focal path is not driven by the coarse grid: net consumer value differs from the finer-grid solution by **0.408**, about **0.4%** of the baseline value.
 
 ## References
 
