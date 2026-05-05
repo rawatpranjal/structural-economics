@@ -1,77 +1,117 @@
-# Fama-Bliss-Style Forward Regressions
+# Fama-Bliss Forward-Rate Predictability
 
-> A small term-structure predictability exercise using a static Treasury CMT snapshot.
+> Forward spreads, future yield changes, and the limits of a static Treasury CMT snapshot.
 
 ## Overview
 
-The expectations hypothesis links long rates and forward rates to expected future short rates, with risk premia determining how far the link is from a one-for-one prediction. Fama and Bliss use this idea to ask whether long-maturity forward rates contain information about future interest rates and bond returns.
+Forward rates are useful because they turn the yield curve into a forecast-like object. If long rates mainly average expected future short rates, a steep forward curve should say something about later rate movements. If time-varying risk premia are important, the same spread can instead predict bond returns or compensation for bearing duration risk. The Fama-Bliss regressions sit exactly on that boundary: they are simple predictive regressions with an economic interpretation that depends on the maintained term-structure model.
 
-The data here are a static 1990 Treasury CMT snapshot, not the CRSP zero-coupon bond panel needed for a full Fama-Bliss replication. The exercise approximates forward rates from observed par-yield maturities and asks whether the forward-minus-short spread predicts future yield changes over a short horizon.
+This page is a teaching analogue, not a replication. The [Treasury yield-curve tutorial](../treasury-yield-curve/) works with the same offline 1990 Treasury CMT panel and explains the measurement object. Here we approximate forward-rate spreads from those par-yield nodes and ask whether they predict twenty-trading-day changes in longer yields. The short horizon and CMT measurement make the exercise diagnostic; they do not deliver the zero-coupon bond panel used by Fama and Bliss.
 
 ## Equations
 
-Let $y_t^1$ be the one-year yield and $y_t^n$ be an $n$-year yield. Using
-continuously compounded rates, approximate the forward rate from year 1 to year
-$n$ as
+Let $Y_t^1$ be the annual effective one-year CMT yield and $Y_t^n$ be the
+annual effective CMT yield at maturity $n$. The code first maps each yield into
+a continuously compounded rate,
 
 $$
-f_t^{1,n} = \frac{n y_t^n - y_t^1}{n-1}.
+q_t^m = \log(1+Y_t^m).
 $$
 
-The predictive regression is
+For $n>1$, the forward-rate analogue from year 1 to year $n$ is
 
 $$
-y_{t+h}^n - y_t^n = \alpha_n + \beta_n (f_t^{1,n} - y_t^1) + \epsilon_{t+h}^n,
+f_t^{1,n} =
+\exp\left(\frac{n q_t^n - q_t^1}{n-1}\right)-1.
 $$
 
-with $h = 20$ trading days in this static dataset.
+The predictor is the forward-minus-short spread
+
+$$
+x_t^n = f_t^{1,n} - Y_t^1,
+$$
+
+and the dependent variable is the future yield change
+
+$$
+\Delta_h Y_{t+h}^n = Y_{t+h}^n - Y_t^n.
+$$
+
+The maturity-by-maturity predictive regression is
+
+$$
+\Delta_h Y_{t+h}^n = \alpha_n + \beta_n x_t^n + \varepsilon_{t+h}^n,
+$$
+
+with $h=20$ trading days. Because CMT rates are par-yield curve
+nodes, $f_t^{1,n}$ is an approximation to the forward-rate object, not an
+arbitrage-free zero-coupon forward rate.
 
 ## Model Setup
 
 | Object | Value |
 |--------|-------|
-| Data | Static 1990 Treasury CMT snapshot |
-| Short rate | 1-year CMT rate |
+| Data | Static 1990 Treasury CMT panel |
+| Date range | 1990-01-02 to 1990-12-31 |
+| Usable observations | 230 per maturity after the lead |
+| Short yield | 1-year CMT rate |
 | Long maturities | 2 Yr, 3 Yr, 5 Yr, 7 Yr, 10 Yr, 30 Yr |
 | Forecast horizon | 20 trading days |
-| Data limitation | CMT snapshot, not full Fama-Bliss replication |
+| Benchmark forecast | No yield change, $\Delta_h Y_{t+h}^n=0$ |
+| Data limitation | CMT par yields, not a zero-coupon Fama-Bliss panel |
 
 ## Solution Method
 
-Percentage yields are converted to decimal rates, forward rates are approximated from one-year and longer-maturity yields, and separate OLS regressions are estimated by maturity. Because the data are par-yield CMT rates and cover only one year, the results should be read as mechanics and diagnostics rather than a published-style bond-risk-premium estimate.
+The estimator is deliberately transparent: build the spread implied by the current curve, line it up with a future yield change, and run OLS separately by maturity. The important discipline is not the linear algebra. It is keeping the forecast horizon, maturity, and measurement object fixed when interpreting $\beta_n$.
+
+```text
+Algorithm: Fama-Bliss-style forward-spread regression
+Input: daily yields Y_t^1 and Y_t^n, maturity set N, horizon h
+Output: maturity-specific alpha_n, beta_n, R^2, and forecast errors
+Sort observations by date
+For each maturity n in N:
+    convert yields to q_t^m = log(1 + Y_t^m)
+    compute f_t^{1,n} = exp((n q_t^n - q_t^1) / (n - 1)) - 1
+    form x_t^n = f_t^{1,n} - Y_t^1
+    form Delta_h Y_{t+h}^n = Y_{t+h}^n - Y_t^n
+    drop the last h dates, where the future yield is unavailable
+    estimate Delta_h Y_{t+h}^n = alpha_n + beta_n x_t^n + epsilon_{t+h}^n by OLS
+    compare fitted errors with the no-change forecast Delta_h Y_{t+h}^n = 0
+Return the coefficient table and the ten-year fitted path
+```
+
+There is no ground-truth term premium in this dataset. The no-change forecast is included only as a modest benchmark: it asks whether the forward spread improves on a random-walk-style prediction for this short sample.
 
 ## Results
 
-For the ten-year maturity, the fitted slope is -0.35 and the R-squared is 0.261. The fitted relationship illustrates the regression mechanics; the short snapshot does not establish a stable term-structure premium.
+For the ten-year maturity, wider forward-minus-one-year spreads in this 1990 snapshot are associated with lower subsequent ten-year yields: the estimated slope is **-0.35** with $R^2=0.261$. The sign should not be turned into a structural claim. It is a short-horizon relationship in one CMT panel, useful because it shows how the Fama-Bliss object is constructed and how sensitive interpretation is to the data object.
+
+The horizontal benchmark is a zero predicted yield change. The fitted line has visible slope, but the cloud also makes clear that this is a noisy predictive relationship rather than a pricing identity.
 
 <img src="figures/forward-regression-10y.png" alt="Ten-year forward-spread predictability regression" width="80%">
-*Ten-year forward-spread predictability regression*
 
-A predictive regression can fit broad movement without becoming a trading rule. Overlapping horizons, short samples, and measurement choices matter.
+The fitted ten-year series does better than a flat no-change forecast in this run, with RMSE **23.74 bp** versus **27.63 bp** for the benchmark, a **14.1%** reduction. That comparison is deliberately modest. It checks whether the spread has in-sample predictive content; it is not an out-of-sample trading rule.
+
+The fitted line moves slowly because it is driven by the current curve, while realized twenty-day yield changes contain high-frequency surprises that the spread cannot absorb.
 
 <img src="figures/fitted-vs-realized.png" alt="Realized versus fitted ten-year yield changes" width="80%">
-*Realized versus fitted ten-year yield changes*
+
+Across maturities, the slopes are negative in this panel and the simple RMSE comparison favors OLS over the no-change benchmark. The pattern is suggestive, not definitive: all regressions use overlapping short-horizon changes from the same single-year CMT sample.
 
 **Forward-regression coefficients by maturity**
 
-| Maturity   |   Intercept (bp) |   Slope |   R-squared |   Obs. |
-|:-----------|-----------------:|--------:|------------:|-------:|
-| 2 Yr       |            60.92 |   -1.23 |       0.32  |    230 |
-| 3 Yr       |            53.02 |   -1.07 |       0.4   |    230 |
-| 5 Yr       |            31.77 |   -0.6  |       0.338 |    230 |
-| 7 Yr       |            26.76 |   -0.4  |       0.279 |    230 |
-| 10 Yr      |            23.77 |   -0.35 |       0.261 |    230 |
-| 30 Yr      |            20.66 |   -0.29 |       0.212 |    230 |
+| Maturity   |   Intercept (bp) |   Slope |   R-squared |   OLS RMSE (bp) |   No-change RMSE (bp) |   RMSE gain vs zero (%) |   Obs. |
+|:-----------|-----------------:|--------:|------------:|----------------:|----------------------:|------------------------:|-------:|
+| 2 Yr       |            60.92 |   -1.23 |       0.32  |           21.32 |                 26.7  |                    20.1 |    230 |
+| 3 Yr       |            53.02 |   -1.07 |       0.4   |           20.3  |                 26.82 |                    24.3 |    230 |
+| 5 Yr       |            31.77 |   -0.6  |       0.338 |           21.93 |                 27.16 |                    19.2 |    230 |
+| 7 Yr       |            26.76 |   -0.4  |       0.279 |           22.31 |                 26.32 |                    15.2 |    230 |
+| 10 Yr      |            23.77 |   -0.35 |       0.261 |           23.74 |                 27.63 |                    14.1 |    230 |
+| 30 Yr      |            20.66 |   -0.29 |       0.212 |           24.84 |                 27.99 |                    11.3 |    230 |
 
 ## Takeaway
 
-Forward rates are not just curve decoration: they can be used as predictors in term-structure regressions. But the interpretation is delicate. With this static snapshot, the result is a compact predictability exercise with clear data limits, not a full Fama-Bliss or Cochrane-Piazzesi replication.
-
-## Reproduce
-
-```bash
-python run.py
-```
+The forward spread is an economically meaningful summary of the term structure, not just a plotted difference between two rates. In this snapshot it predicts short-run yield changes better than a no-change benchmark, but the result inherits the limits of CMT par yields, overlapping horizons, and a single year of data. The reusable lesson is how to map a yield curve into a predictive regression while keeping the term-structure interpretation honest.
 
 ## References
 
