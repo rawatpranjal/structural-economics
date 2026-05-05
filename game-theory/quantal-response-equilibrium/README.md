@@ -1,81 +1,124 @@
-# Quantal Response Equilibrium
+# Entry Game QRE and Noisy Best Responses
 
-> Noisy best responses solved as a fixed point.
+> How payoff-sensitive mistakes trace a smooth path toward mixed Nash.
 
 ## Overview
 
-Quantal response equilibrium relaxes the exact best-response assumption. Players are more likely to choose actions with higher expected payoffs, but they can still make mistakes. The logit precision parameter controls how sharply choice probabilities respond to payoff differences.
+Entry games are a useful place to see why quantal response equilibrium is not just a numerical trick. Exact Nash behavior says a firm enters whenever entry is a best response and mixes only when it is exactly indifferent. QRE keeps the same strategic payoff comparison, but turns the sharp best response into a smooth choice probability: better actions are chosen more often, not with probability one.
+
+The example below follows the symmetric logit-QRE branch in a two-player entry game. The exact game has two asymmetric pure Nash equilibria and one symmetric mixed Nash equilibrium. That mixed equilibrium is the natural benchmark for the symmetric QRE path. This makes the tutorial a direct continuation of the residual logic in [normal-form games](../normal-form-games/): equilibrium is still a fixed point of best responses, but the response map is probabilistic.
 
 ## Equations
 
-For each action $a_i$, player $i$ assigns logit probability
+Each player chooses $E$ (Enter) or $O$ (Stay Out). Let $p_i$ be player $i$'s
+probability of entry. If the rival enters with probability $q$, the expected
+payoff difference between entering and staying out is
+
 $$
-\sigma_i(a_i) =
-\frac{\exp(\lambda E[u_i(a_i, a_{-i})])}
-{\sum_{a'_i}\exp(\lambda E[u_i(a'_i, a_{-i})])}.
+\Delta(q)
+= E[u_i(E,a_{-i})]-E[u_i(O,a_{-i})]
+= 2(1-q)-q
+= 2-3q.
 $$
 
-A logit quantal response equilibrium is a fixed point:
+The exact symmetric mixed Nash equilibrium sets this difference to zero:
+
 $$
-\sigma_i = QBR_i(\sigma_{-i}; \lambda)
-\qquad \text{for each player } i.
+p^{N} = \frac{2}{3}.
 $$
 
-As $\lambda \to 0$, choices approach uniform randomization. As $\lambda$ rises,
-choices put more weight on higher-payoff actions.
+Logit QRE replaces the discontinuous best response with
+
+$$
+QBR(q;\lambda)
+=
+\frac{\exp(\lambda \Delta(q))}
+     {1+\exp(\lambda \Delta(q))}
+=
+\left[1+\exp(-\lambda(2-3q))\right]^{-1}.
+$$
+
+A symmetric logit-QRE is a fixed point
+
+$$
+p = QBR(p;\lambda).
+$$
+
+The precision parameter $\lambda \geq 0$ governs how sharply payoff gaps affect
+behavior. At $\lambda=0$, the entry probability is one half regardless of
+payoffs. Along the symmetric branch, $p(\lambda)$ approaches $p^{N}=2/3$ as
+$\lambda$ becomes large.
 
 ## Model Setup
 
-The example is a two-player entry game. Each player chooses Enter or Stay Out.
+The payoff table is intentionally small. Entry is profitable when the other player stays out, but competition or congestion makes joint entry costly.
 
 | | Column Enter | Column Stay Out |
 |---|---:|---:|
 | **Row Enter** | -1, -1 | 2, 0 |
 | **Row Stay Out** | 0, 2 | 0, 0 |
 
-The exact game also has two asymmetric pure Nash equilibria. Its symmetric mixed Nash equilibrium has each player entering with probability $2/3$.
+| Object | Value | Role |
+|---|---:|---|
+| Exact pure Nash profiles | $(E,O)$ and $(O,E)$ | One entrant serves the market |
+| Symmetric mixed Nash $p^N$ | 0.6667 | Exact benchmark for the symmetric branch |
+| Precision grid | 0 to 32 | How strongly choices react to payoff gaps |
+| Focal fixed-point plot | $\lambda=4.0$ | One noisy best-response map |
 
 ## Solution Method
 
-For each precision value $\lambda$, follow the symmetric QRE branch by solving $p = QBR(p; \lambda)$ by bisection on the residual $p - QBR(p; \lambda)$. This keeps the implementation low-code while avoiding the cycling that naive iteration can produce at high precision.
+For each precision value, the problem is one-dimensional because the tutorial tracks the symmetric branch. Define the residual $G_{\lambda}(p)=p-QBR(p;\lambda)$. In this entry game the residual is strictly increasing on $[0,1]$, with opposite signs at the endpoints, so bisection gives a transparent fixed-point solver.
+
+```text
+Algorithm: symmetric logit-QRE path in the entry game
+Inputs: precision grid Lambda, payoff gap Delta(p)=2-3p, tolerance epsilon
+Outputs: QRE entry probabilities p(lambda), residuals, gaps to p^N
+
+1. Compute the exact symmetric mixed Nash benchmark p^N from Delta(p^N)=0.
+2. For each lambda in Lambda, define QBR(p;lambda) = [1+exp(-lambda Delta(p))]^{-1}.
+3. Set the initial bracket [low, high] = [0, 1].
+4. Bisect the bracket on G_lambda(p)=p-QBR(p;lambda).
+5. Stop when |G_lambda(p)| or the bracket width is below epsilon.
+6. Report p(lambda), |G_lambda(p(lambda))|, and p(lambda)-p^N.
+```
+
+For larger normal-form games, QRE is a system of fixed-point equations. The one-dimensional version here is deliberately narrow so the economic object stays visible: a noisy entry probability that must be consistent with the noisy response it induces in the other player.
 
 ## Results
 
-At zero precision, players randomize 50-50. As precision rises, the logit fixed point moves toward the symmetric mixed Nash entry probability.
+At zero precision, behavior ignores payoffs and both players enter with probability one half. As precision rises, the symmetric QRE entry probability moves upward because entry has positive expected payoff whenever the rival enters with probability below $2/3$. The dotted line is not estimated by the QRE solver; it is the exact mixed Nash probability from the indifference condition.
 
-<img src="figures/qre-path.png" alt="QRE entry probabilities approach the symmetric mixed Nash benchmark" width="80%">
-*QRE entry probabilities approach the symmetric mixed Nash benchmark*
+<img src="figures/qre-path.png" alt="Symmetric logit-QRE entry probability and exact mixed Nash benchmark" width="80%">
 
-The fixed point is where the noisy best-response curve crosses the 45-degree line.
+At $\lambda=4.0$, the noisy best-response curve is smooth but still strategic. A higher rival entry probability lowers the payoff from entering, so the response curve slopes down. The QRE is the crossing with the 45-degree line. The exact mixed Nash benchmark sits to the right because finite precision still puts weight on the lower-payoff action.
 
-<img src="figures/fixed-point-map.png" alt="Logit QRE is a fixed point of noisy best responses" width="80%">
-*Logit QRE is a fixed point of noisy best responses*
+<img src="figures/fixed-point-map.png" alt="Noisy best-response map and symmetric QRE fixed point" width="80%">
 
-**QRE Summary**
+The residual column is numerical root-finding error. The gap to Nash is economic: it is the distance between finite-precision behavior and the exact symmetric mixed equilibrium.
 
-|   Precision lambda |   Row Pr(Enter) |   Column Pr(Enter) |   Iterations |   Residual |
-|-------------------:|----------------:|-------------------:|-------------:|-----------:|
-|                  0 |          0.5    |             0.5    |            1 |   0        |
-|                  1 |          0.5712 |             0.5712 |           36 |   5.06e-13 |
-|                  2 |          0.5995 |             0.5995 |           41 |   3.84e-14 |
-|                  4 |          0.6243 |             0.6243 |           39 |   9.94e-13 |
-|                  8 |          0.6423 |             0.6423 |           41 |   9.18e-13 |
+**QRE Path Summary**
 
-**Final Fixed-Point Diagnostic**
+|   Precision lambda |   QRE Pr(Enter) |   Mixed Nash Pr(Enter) |   Gap to Nash |   Iterations |   Residual |
+|-------------------:|----------------:|-----------------------:|--------------:|-------------:|-----------:|
+|                  0 |          0.5    |                 0.6667 |       -0.1667 |            1 |   0        |
+|                  1 |          0.5712 |                 0.6667 |       -0.0955 |           36 |   5.06e-13 |
+|                  2 |          0.5995 |                 0.6667 |       -0.0672 |           41 |   3.84e-14 |
+|                  4 |          0.6243 |                 0.6667 |       -0.0423 |           39 |   9.94e-13 |
+|                  8 |          0.6423 |                 0.6667 |       -0.0244 |           41 |   9.18e-13 |
+|                 16 |          0.6535 |                 0.6667 |       -0.0132 |           41 |   1.79e-12 |
+|                 32 |          0.6598 |                 0.6667 |       -0.0069 |           41 |   4.45e-13 |
 
-|   Precision lambda |   Row Pr(Enter) |   Column Pr(Enter) |   Fixed-point residual |
-|-------------------:|----------------:|-------------------:|-----------------------:|
-|                  8 |         0.64228 |            0.64228 |               9.18e-13 |
+The high-precision endpoint is close to, but still below, the mixed Nash limit. That distinction matters: QRE at a finite precision is a behavioral model, not a failed computation of Nash.
+
+**High-Precision Diagnostic**
+
+|   Precision lambda |   QRE Pr(Enter) |   Mixed Nash Pr(Enter) |   Absolute gap |   Iterations |   Fixed-point residual |
+|-------------------:|----------------:|-----------------------:|---------------:|-------------:|-----------------------:|
+|                 32 |        0.659768 |               0.666667 |         0.0069 |           41 |               4.45e-13 |
 
 ## Takeaway
 
-QRE is useful when exact best response is too sharp or behavior is noisy. Computationally, it is just another fixed-point problem: probabilities must equal the logit best responses to the probabilities chosen by opponents. This makes it a low-code bridge between finite games and stochastic choice models.
-
-## Reproduce
-
-```bash
-python run.py
-```
+QRE keeps the equilibrium discipline of mutual consistency but relaxes the knife-edge best-response rule. In this entry game, higher precision moves the symmetric QRE toward the exact mixed Nash probability, while the fixed-point residual verifies that each reported probability is internally consistent with logit best response. The useful lesson is not the bisection routine itself; it is the separation between numerical error, measured by the residual, and behavioral smoothing, measured by the gap to Nash.
 
 ## References
 
