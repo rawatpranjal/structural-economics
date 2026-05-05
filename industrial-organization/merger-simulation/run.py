@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
-"""Merger Simulation with Multiple Demand Systems.
+"""Differentiated-products merger simulation under multiple demand systems.
 
 Compares merger price effects, welfare, and screening metrics (UPP, GUPPI, CMCR)
-across logit, linear, and log-linear demand specifications. The choice of demand
-model matters enormously for merger analysis: logit overstates substitution to
-the outside good, linear demand understates it, and different functional forms
-lead to very different policy conclusions.
+across logit, linear, and log-linear demand specifications calibrated to the
+same pre-merger market.
 
 Reference: Werden and Froeb (1994), Farrell and Shapiro (2010).
 """
@@ -335,6 +333,23 @@ def producer_surplus(p: np.ndarray, q: np.ndarray, mc: np.ndarray) -> float:
     return np.sum((p - mc) * q)
 
 
+def fmt_vector(values: np.ndarray, digits: int = 2) -> str:
+    """Format a short numeric vector for generated markdown tables."""
+    return "[" + ", ".join(f"{float(v):.{digits}f}" for v in values) + "]"
+
+
+def first_zero_crossing(x: np.ndarray, y: list[float]) -> float:
+    """Linearly interpolate the first x value where y crosses zero."""
+    y_arr = np.asarray(y, dtype=float)
+    for i in range(1, len(x)):
+        if (y_arr[i - 1] >= 0 and y_arr[i] <= 0) or (y_arr[i - 1] <= 0 and y_arr[i] >= 0):
+            if np.isclose(y_arr[i], y_arr[i - 1]):
+                return float(x[i])
+            weight = -y_arr[i - 1] / (y_arr[i] - y_arr[i - 1])
+            return float(x[i - 1] + weight * (x[i] - x[i - 1]))
+    return float("nan")
+
+
 # =========================================================================
 # Main
 # =========================================================================
@@ -350,14 +365,13 @@ def main():
     p2f_pre = np.array([1, 1, 2, 2, 3, 3])  # Firm 1: {0,1}, Firm 2: {2,3}, Firm 3: {4,5}
     M = 1.0  # Market size normalization
 
-    product_names = [f"Prod {j+1}" for j in range(J)]
-    firm_names_pre = ["Firm 1", "Firm 1", "Firm 2", "Firm 2", "Firm 3", "Firm 3"]
+    product_names = [f"P{j+1}" for j in range(J)]
 
     # Post-merger: Firm 1 acquires Firm 2
     p2f_post = np.array([1, 1, 1, 1, 3, 3])
 
     print("=" * 70)
-    print("MERGER SIMULATION: Multi-Demand-System Comparison")
+    print("MERGER SIMULATION: Demand Systems and Functional Form")
     print("=" * 70)
     print(f"Products: {J}, Firms pre-merger: 3, Firms post-merger: 2")
     print(f"Merger: Firm 1 acquires Firm 2")
@@ -479,6 +493,17 @@ def main():
     print(f"  Log-linear post-merger prices: {p_post_loglinear}")
     print()
 
+    foc_post_logit = foc_logit(
+        p_post_logit, cal_logit['mc'], cal_logit['alpha'], cal_logit['xi'], omega_post
+    )
+    foc_post_linear = foc_linear(
+        p_post_linear, cal_linear['mc'], cal_linear['a'], cal_linear['B'], omega_post
+    )
+    foc_post_loglinear = foc_loglinear(
+        p_post_loglinear, cal_loglinear['mc'], cal_loglinear['a_ll'],
+        cal_loglinear['E'], omega_post
+    )
+
     # Price changes
     dp_logit = (p_post_logit - prices_obs) / prices_obs * 100
     dp_linear = (p_post_linear - prices_obs) / prices_obs * 100
@@ -542,80 +567,141 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "Merger Simulation Across Demand Systems",
-        "Comparing merger effects across logit, linear, and log-linear demand to show how "
-        "functional form assumptions drive antitrust policy conclusions.",
+        "Differentiated-Products Merger Simulation",
+        "Demand curvature, diversion, and efficiency screens in a calibrated merger exercise.",
+        include_reproduce=False,
+        show_figure_captions=False,
     )
 
     report.add_overview(
-        "Horizontal merger analysis in differentiated product markets hinges on the assumed "
-        "demand system. This model calibrates three demand specifications --- logit, linear, "
-        "and log-linear --- to identical pre-merger data, then simulates the same merger "
-        "(Firm 1 acquires Firm 2) under each. The results diverge, illustrating a central "
-        "challenge in structural merger analysis.\n\n"
-        "**Why demand form matters:**\n"
-        "- **Logit** imposes the IIA property: substitution to the outside good is proportional "
-        "to share, which overstates escape to non-purchase and can understate price effects "
-        "among close substitutes.\n"
-        "- **Linear demand** has bounded quantities and a choke price, implying substitution "
-        "patterns that differ qualitatively from discrete choice.\n"
-        "- **Log-linear (constant elasticity)** demand has no choke price --- demand never "
-        "reaches zero --- and often predicts the largest price increases because margins are "
-        "sensitive to elasticity.\n\n"
-        "We also compute standard antitrust screening metrics: UPP (Upward Pricing Pressure), "
-        "GUPPI (Gross Upward Pricing Pressure Index), and CMCR (Compensating Marginal Cost "
-        "Reduction), all of which vary across demand systems."
+        "A differentiated-products merger changes the objective of the pricing firms. Before "
+        "the merger, Firm 1 ignores sales that Product 1 loses to Firm 2's products. After the "
+        "merger, those diverted sales stay inside the merged portfolio, so the old price vector "
+        "no longer satisfies the pricing first-order conditions.\n\n"
+        "The hard part is that diversion is not observed directly. This tutorial takes one "
+        "pre-merger market and calibrates three demand systems to the same shares, prices, and "
+        "margins: logit, linear, and log-linear demand. It then changes ownership and solves "
+        "the post-merger Bertrand-Nash prices. The exercise is not an estimator; it is a "
+        "controlled way to see how demand curvature and substitution assumptions move the "
+        "same antitrust counterfactual.\n\n"
+        "The logit-only [Bertrand pricing](../bertrand-logit-demand/) tutorial isolates the "
+        "ownership matrix in one demand model. The [BLP random coefficients](../blp-random-coefficients/) "
+        "tutorial shows how richer substitution patterns can be estimated. Here the object is "
+        "the gap between quick screens such as GUPPI or CMCR and the solved post-merger "
+        "equilibrium."
     )
 
     report.add_equations(r"""
-**Bertrand-Nash FOC (general):**
-$$q_j + \sum_{k \in \mathcal{F}_f} \frac{\partial q_k}{\partial p_j} (p_k - c_k) = 0 \quad \forall j \in \mathcal{F}_f$$
+There are $J$ inside products. Product $j$ has price $p_j$, marginal cost
+$c_j$, quantity or share $q_j(p)$, and owner $f(j)$. The ownership matrix is
 
-In matrix form: $\mathbf{q} + (\Omega \circ \mathbf{J}') (\mathbf{p} - \mathbf{c}) = 0$ where $\mathbf{J} = \partial \mathbf{q} / \partial \mathbf{p}'$.
+$$
+\Omega_{jk}=\mathbf 1\{f(j)=f(k)\}.
+$$
 
-**Logit:** $s_j = \frac{\exp(\xi_j + \alpha p_j)}{1 + \sum_k \exp(\xi_k + \alpha p_k)}$
+For a multi-product Bertrand firm, the pricing equation is
 
-**Linear:** $q_j = a_j - \sum_k B_{jk} p_k$
+$$
+0=q_j(p)+\sum_{k=1}^J
+\Omega_{jk}(p_k-c_k)\frac{\partial q_k(p)}{\partial p_j},
+\qquad j=1,\ldots,J .
+$$
 
-**Log-linear:** $\ln q_j = a_j + \sum_k E_{jk} \ln p_k$
+With $\Delta_{kj}(p)=\partial q_k(p)/\partial p_j$, the vector equation is
 
-**Diversion ratio:** $D_{j \to k} = -\frac{\partial q_k / \partial p_j}{\partial q_j / \partial p_j}$
+$$
+q(p)+(\Omega\circ \Delta(p)') (p-c)=0.
+$$
 
-**UPP:** $\text{UPP}_j = \sum_{k \text{ newly co-owned}} D_{j \to k} \cdot (p_k - c_k)$
+The three demand systems are calibrated to the same observed market:
 
-**GUPPI:** $\text{GUPPI}_j = \text{UPP}_j / p_j$
+$$
+s_j^{L}(p)=
+\frac{\exp(\xi_j+\alpha p_j)}
+{1+\sum_{\ell=1}^J \exp(\xi_\ell+\alpha p_\ell)},
+\qquad \alpha<0,
+$$
 
-**CMCR:** $\text{CMCR}_j = \text{UPP}_j / c_j$ --- marginal cost reduction needed to offset pricing pressure.
+$$
+q_j^{A}(p)=a_j-\sum_{k=1}^J B_{jk}p_k,
+$$
+
+and
+
+$$
+\log q_j^{E}(p)=a_j^E+\sum_{k=1}^J E_{jk}\log p_k .
+$$
+
+The local diversion ratio from product $j$ to product $k$ is
+
+$$
+D_{j\to k}=
+-\frac{\partial q_k(p)/\partial p_j}
+{\partial q_j(p)/\partial p_j}, \qquad j\neq k.
+$$
+
+For products that become newly co-owned after the merger,
+
+$$
+UPP_j=\sum_{k:\Omega^{post}_{jk}=1,\ \Omega^{pre}_{jk}=0}
+D_{j\to k}(p_k-c_k),
+$$
+
+with
+
+$$
+GUPPI_j=\frac{UPP_j}{p_j},
+\qquad
+CMCR_j=\frac{UPP_j}{c_j}.
+$$
+
+GUPPI is a first-order screen for upward pricing pressure. CMCR reports the
+product-level marginal-cost reduction that would offset that pressure before
+solving a new equilibrium.
 """)
 
     report.add_model_setup(
         "| Parameter | Value | Description |\n"
         "|-----------|-------|-------------|\n"
         f"| Products $J$ | {J} | 3 firms, 2 products each |\n"
-        f"| Shares | {list(shares_obs)} | Pre-merger market shares |\n"
-        f"| Prices | {list(prices_obs)} | Pre-merger prices |\n"
-        f"| Margins | {list(margins_obs)} | Price-cost margins |\n"
-        f"| Outside share | {1-np.sum(shares_obs):.2f} | Logit outside good |\n"
+        f"| Shares | {fmt_vector(shares_obs)} | Pre-merger inside shares |\n"
+        f"| Prices | {fmt_vector(prices_obs)} | Pre-merger prices |\n"
+        f"| Margins | {fmt_vector(margins_obs)} | Price-cost margins |\n"
+        f"| Outside share | {1-np.sum(shares_obs):.2f} | Outside option in the logit demand system |\n"
         f"| $\\alpha$ (logit) | {cal_logit['alpha']:.4f} | Calibrated price coefficient |\n"
-        "| Cross-price ratio (linear) | 0.10 | Cross-slope / geometric mean of own-slopes |\n"
-        "| Cross elasticity (log-linear) | 0.15 | Symmetric cross-price elasticities |\n"
-        "| Merger | Firm 1 + Firm 2 | Products 1-4 under common ownership |"
+        "| Linear cross-slope ratio | 0.10 | Cross-slope relative to geometric mean own-slope |\n"
+        "| Log-linear cross elasticity | 0.15 | Maintained symmetric cross-price elasticity |\n"
+        "| Merger | Firm 1 buys Firm 2 | Products 1-4 move under common ownership |\n"
+        "| Benchmark | Solved post-merger FOC | Full equilibrium used to judge first-order screens |"
     )
 
     report.add_solution_method(
-        "**Step 1: Calibrate** each demand system from the same observed data (shares, prices, "
-        "margins). The FOC is inverted to recover marginal costs, and demand parameters are "
-        "chosen to match observed equilibrium.\n\n"
-        f"**Step 2: Verify** FOC residuals at pre-merger prices "
-        f"(logit: {np.max(np.abs(foc_check_logit)):.1e}, "
-        f"linear: {np.max(np.abs(foc_check_linear)):.1e}, "
-        f"log-linear: {np.max(np.abs(foc_check_loglinear)):.1e}).\n\n"
-        "**Step 3: Screen** using UPP, GUPPI, and CMCR --- first-order approximations to "
-        "merger harm that do not require solving the full post-merger equilibrium.\n\n"
-        "**Step 4: Simulate** by changing the ownership matrix $\\Omega$ and solving the new "
-        "Bertrand-Nash equilibrium via `scipy.optimize.fsolve`.\n\n"
-        "**Step 5: Evaluate** welfare changes: consumer surplus (CS), producer surplus (PS), "
-        "and total welfare ($W = CS + PS$)."
+        "The computation has to keep two objects separate. Calibration rationalizes the "
+        "observed pre-merger market under a chosen demand system. Simulation then holds that "
+        "demand system fixed, changes only ownership, and solves a new price equilibrium.\n\n"
+        "```text\n"
+        "Algorithm: calibrated merger simulation\n"
+        "Input: observed shares q, prices p, margins m, pre- and post-merger owners f(j)\n"
+        "Output: screening metrics, post-merger prices, and welfare changes\n"
+        "Build Omega_pre and Omega_post from owner labels\n"
+        "for each demand system d in {logit, linear, log-linear}:\n"
+        "    choose demand parameters so q_d(p_obs) matches observed shares\n"
+        "    recover marginal costs c_d from the pre-merger pricing FOC\n"
+        "    evaluate Delta_d(p_obs) and diversion ratios D_d\n"
+        "    compute UPP, GUPPI, and CMCR for newly co-owned products\n"
+        "    solve q_d(p) + (Omega_post .* Delta_d(p)') (p - c_d) = 0\n"
+        "    compare solved price changes with the first-order screens\n"
+        "    compute changes in consumer surplus, producer surplus, and total surplus\n"
+        "for a grid of merger efficiencies:\n"
+        "    reduce costs on the merging products, re-solve the post-merger FOC,\n"
+        "    and interpolate the cost reduction where average merged-product prices stop rising\n"
+        "```\n\n"
+        f"The pre-merger FOC residuals are small by construction "
+        f"(logit {np.max(np.abs(foc_check_logit)):.1e}, "
+        f"linear {np.max(np.abs(foc_check_linear)):.1e}, "
+        f"log-linear {np.max(np.abs(foc_check_loglinear)):.1e}). "
+        "The important comparison below is between first-order screens and the solved "
+        "post-merger equilibrium, not between three separately estimated demand models."
     )
 
     # -----------------------------------------------------------------
@@ -649,11 +735,10 @@ In matrix form: $\mathbf{q} + (\Omega \circ \mathbf{J}') (\mathbf{p} - \mathbf{c
         "Pre- vs post-merger prices across three demand systems. Merging products (1-4) "
         "see larger price increases; the magnitude depends heavily on the demand model.",
         fig1,
-        description="The same merger produces very different price predictions depending on "
-        "the demand functional form. Logit's IIA property channels substitution to the outside "
-        "good, dampening price increases. Log-linear (constant elasticity) demand typically "
-        "predicts the largest effects because margins are highly sensitive to the elasticity "
-        "parameter.",
+        description="The price comparison is the unilateral effect in levels. Products 1-4 are "
+        "inside the merged portfolio, so their post-merger prices move the most. The logit and "
+        "log-linear systems give roughly double-digit average increases for the merging "
+        "products, while the linear system is more muted under this cross-slope calibration.",
     )
 
     # -----------------------------------------------------------------
@@ -682,64 +767,75 @@ In matrix form: $\mathbf{q} + (\Omega \circ \mathbf{J}') (\mathbf{p} - \mathbf{c
         "Welfare decomposition across demand systems: consumers lose, producers may gain, "
         "and the net effect depends on the demand model.",
         fig2,
-        description="Consumer surplus always falls after a price-increasing merger, but "
-        "producer surplus may rise as merged firms capture higher margins. Whether total "
-        "welfare falls depends on the curvature of demand -- another reason why functional "
-        "form choice is the most consequential modeling decision in merger analysis.",
+        description="The welfare accounting separates the transfer from consumers to firms "
+        "from the deadweight component. Consumers lose in every demand system here. Producer "
+        "surplus rises, but not enough to offset the consumer loss, so total surplus falls in "
+        "this calibration.",
     )
 
     # -----------------------------------------------------------------
-    # Figure 3: UPP and GUPPI by product
+    # Figure 3: Screening metrics vs solved equilibrium
     # -----------------------------------------------------------------
     fig3, (ax3a, ax3b) = plt.subplots(1, 2, figsize=(14, 5))
-    x3 = np.arange(J)
-    bar_w3 = 0.25
     model_colors = ["steelblue", "coral", "seagreen"]
+    dp_by_model = {"Logit": dp_logit, "Linear": dp_linear, "Log-linear": dp_loglinear}
+    guppi_by_model = {"Logit": guppi_logit, "Linear": guppi_linear, "Log-linear": guppi_loglinear}
+    upp_by_model = {"Logit": upp_logit, "Linear": upp_linear, "Log-linear": upp_loglinear}
 
-    # UPP
-    for idx, (label, upp_vals) in enumerate(zip(demand_labels,
-            [upp_logit, upp_linear, upp_loglinear])):
-        ax3a.bar(x3 + idx * bar_w3, upp_vals, bar_w3, label=label, color=model_colors[idx])
-    ax3a.set_xlabel("Product")
-    ax3a.set_ylabel("UPP")
-    ax3a.set_title("Upward Pricing Pressure by Product")
-    ax3a.set_xticks(x3 + bar_w3)
-    ax3a.set_xticklabels(product_names, fontsize=8, rotation=45)
+    x3 = np.arange(len(demand_labels))
+    bar_w3 = 0.35
+    avg_guppi = [np.mean(guppi_by_model[label][:4]) * 100 for label in demand_labels]
+    avg_actual = [np.mean(dp_by_model[label][:4]) for label in demand_labels]
+    ax3a.bar(x3 - bar_w3 / 2, avg_guppi, bar_w3, label="GUPPI screen", color="gray")
+    ax3a.bar(x3 + bar_w3 / 2, avg_actual, bar_w3, label="Solved equilibrium", color="seagreen")
+    ax3a.set_xlabel("Demand Model")
+    ax3a.set_ylabel("Average Merging-Product Effect (%)")
+    ax3a.set_title("Screen vs Solved Price Increase")
+    ax3a.set_xticks(x3)
+    ax3a.set_xticklabels(demand_labels)
     ax3a.legend(fontsize=9)
     ax3a.axhline(0, color="black", linewidth=0.8)
 
-    # GUPPI
-    for idx, (label, guppi_vals) in enumerate(zip(demand_labels,
-            [guppi_logit, guppi_linear, guppi_loglinear])):
-        ax3b.bar(x3 + idx * bar_w3, guppi_vals * 100, bar_w3, label=label, color=model_colors[idx])
+    xprod = np.arange(4)
+    bar_w_upp = 0.25
+    for idx, label in enumerate(demand_labels):
+        ax3b.bar(
+            xprod + (idx - 1) * bar_w_upp,
+            upp_by_model[label][:4],
+            bar_w_upp,
+            label=label,
+            color=model_colors[idx],
+        )
     ax3b.set_xlabel("Product")
-    ax3b.set_ylabel("GUPPI (%)")
-    ax3b.set_title("Gross Upward Pricing Pressure Index by Product")
-    ax3b.set_xticks(x3 + bar_w3)
-    ax3b.set_xticklabels(product_names, fontsize=8, rotation=45)
+    ax3b.set_ylabel("UPP")
+    ax3b.set_title("UPP for Newly Co-Owned Products")
+    ax3b.set_xticks(xprod)
+    ax3b.set_xticklabels(product_names[:4], fontsize=9)
     ax3b.legend(fontsize=9)
     ax3b.axhline(0, color="black", linewidth=0.8)
 
     fig3.tight_layout()
     report.add_figure(
         "figures/upp-guppi.png",
-        "UPP and GUPPI by product and demand model. Only merging products (1-4) have "
-        "positive values; non-merging products have zero UPP by construction.",
+        "GUPPI screen versus solved equilibrium price effects, with product-level UPP for "
+        "the products that become newly co-owned.",
         fig3,
-        description="UPP and GUPPI are screening metrics that approximate merger price effects "
-        "without solving for a new equilibrium. They measure the pricing pressure from "
-        "internalizing diversion between merging products. The variation across demand models "
-        "shows that even these simplified screens are sensitive to demand assumptions.",
+        description="GUPPI is useful precisely because it is local: it uses observed margins "
+        "and diversion before solving a counterfactual equilibrium. The left panel treats the "
+        "solved post-merger price increase as the benchmark. The gap is the pass-through, "
+        "curvature, and strategic-pricing content that a first-order screen cannot carry by "
+        "itself.",
     )
 
     # -----------------------------------------------------------------
     # Figure 4: Price effects vs efficiency gains frontier
     # -----------------------------------------------------------------
     fig4, ax4 = plt.subplots(figsize=(9, 6))
-    efficiency_levels = np.linspace(0.0, 0.25, 15)  # 0% to 25% cost reduction
+    efficiency_levels = np.linspace(0.0, 0.60, 121)  # 0% to 60% cost reduction
 
     mc_by_model = {"Logit": mc_logit, "Linear": mc_linear, "Log-linear": mc_loglinear}
     post_price_by_model = {"Logit": p_post_logit, "Linear": p_post_linear, "Log-linear": p_post_loglinear}
+    break_even_efficiency = {}
     for idx, (label, color) in enumerate(zip(demand_labels, model_colors)):
         avg_price_changes = []
         mc_base = mc_by_model[label]
@@ -771,8 +867,15 @@ In matrix form: $\mathbf{q} + (\Omega \circ \mathbf{J}') (\mathbf{p} - \mathbf{c
             avg_dp = np.mean((p_eff[:4] - prices_obs[:4]) / prices_obs[:4]) * 100
             avg_price_changes.append(avg_dp)
 
-        ax4.plot(efficiency_levels * 100, avg_price_changes, "o-", label=label,
+        efficiency_pct = efficiency_levels * 100
+        break_even_efficiency[label] = first_zero_crossing(efficiency_pct, avg_price_changes)
+        ax4.plot(efficiency_pct, avg_price_changes, "o-", label=label,
                  color=color, markersize=4)
+        if np.isfinite(break_even_efficiency[label]):
+            ax4.scatter(
+                [break_even_efficiency[label]], [0.0],
+                color=color, edgecolor="black", linewidth=0.6, zorder=5,
+            )
 
     ax4.axhline(0, color="black", linewidth=1.0, linestyle="--")
     ax4.set_xlabel("Marginal Cost Reduction for Merging Firms (%)")
@@ -788,10 +891,11 @@ In matrix form: $\mathbf{q} + (\Omega \circ \mathbf{J}') (\mathbf{p} - \mathbf{c
         "How much marginal cost reduction is needed to offset the merger price increase? "
         "The break-even point differs substantially across demand models.",
         fig4,
-        description="The zero-crossing on each curve is the minimum efficiency gain needed "
-        "to make the merger consumer-neutral. Below this threshold, the merger raises prices "
-        "on net. The fact that break-even efficiencies differ across demand models underscores "
-        "how sensitive policy conclusions are to functional form assumptions.",
+        description="The efficiency frontier re-solves the post-merger pricing problem after "
+        "lowering marginal costs for products 1-4. The zero markers are interpolated from a "
+        "fine efficiency grid, so they are closer to the solved-equilibrium break-even point "
+        "than the local CMCR screen. Below the zero line, efficiencies are large enough to "
+        "reverse the average price increase on the merged products.",
     )
 
     # -----------------------------------------------------------------
@@ -799,13 +903,21 @@ In matrix form: $\mathbf{q} + (\Omega \circ \mathbf{J}') (\mathbf{p} - \mathbf{c
     # -----------------------------------------------------------------
     table_data = {
         "Demand Model": [],
-        "Avg Price Change (%)": [],
+        "Avg Actual Price Inc. (%)": [],
         "Max Price Change (%)": [],
+        "Avg GUPPI Screen (%)": [],
+        "Screen Gap (pp)": [],
+        "Avg CMCR Screen (%)": [],
+        "Break-even Eff. (%)": [],
         "Delta CS": [],
         "Delta PS": [],
         "Delta W": [],
-        "Avg GUPPI (%)": [],
-        "Avg CMCR (%)": [],
+        "Post FOC Residual": [],
+    }
+    post_residuals = {
+        "Logit": np.max(np.abs(foc_post_logit)),
+        "Linear": np.max(np.abs(foc_post_linear)),
+        "Log-linear": np.max(np.abs(foc_post_loglinear)),
     }
 
     for label, p_post, guppi_vals, cmcr_vals in [
@@ -814,46 +926,40 @@ In matrix form: $\mathbf{q} + (\Omega \circ \mathbf{J}') (\mathbf{p} - \mathbf{c
         ("Log-linear", p_post_loglinear, guppi_loglinear, cmcr_loglinear),
     ]:
         dp = (p_post - prices_obs) / prices_obs * 100
+        avg_dp = np.mean(dp[:4])
+        avg_guppi_val = np.mean(guppi_vals[:4]) * 100
         table_data["Demand Model"].append(label)
-        table_data["Avg Price Change (%)"].append(f"{np.mean(dp[:4]):.2f}")
-        table_data["Max Price Change (%)"].append(f"{np.max(dp[:4]):.2f}")
-        table_data["Delta CS"].append(f"{dCS[label]:+.4f}")
-        table_data["Delta PS"].append(f"{dPS[label]:+.4f}")
-        table_data["Delta W"].append(f"{dW[label]:+.4f}")
-        table_data["Avg GUPPI (%)"].append(f"{np.mean(guppi_vals[:4]) * 100:.2f}")
-        table_data["Avg CMCR (%)"].append(f"{np.mean(cmcr_vals[:4]) * 100:.2f}")
+        table_data["Avg Actual Price Inc. (%)"].append(round(avg_dp, 2))
+        table_data["Max Price Change (%)"].append(round(np.max(dp[:4]), 2))
+        table_data["Avg GUPPI Screen (%)"].append(round(avg_guppi_val, 2))
+        table_data["Screen Gap (pp)"].append(round(avg_dp - avg_guppi_val, 2))
+        table_data["Avg CMCR Screen (%)"].append(round(np.mean(cmcr_vals[:4]) * 100, 2))
+        table_data["Break-even Eff. (%)"].append(round(break_even_efficiency[label], 2))
+        table_data["Delta CS"].append(round(dCS[label], 4))
+        table_data["Delta PS"].append(round(dPS[label], 4))
+        table_data["Delta W"].append(round(dW[label], 4))
+        table_data["Post FOC Residual"].append(f"{post_residuals[label]:.1e}")
 
     df = pd.DataFrame(table_data)
-    report.add_table("tables/merger-effects.csv", "Merger Effects Comparison Across Demand Models", df,
-        description="The table quantifies how the same merger yields different conclusions "
-        "depending on the demand model. GUPPI and CMCR provide screening thresholds: a CMCR "
-        "above the expected efficiency gains suggests the merger will raise prices.")
+    report.add_table("tables/merger-effects.csv", "Merger Effects and Screen Diagnostics", df,
+        description="The table keeps the screens and the solved equilibrium in the same place. "
+        "Average actual price increases are from the post-merger FOC solution. GUPPI and CMCR "
+        "are local screens. The break-even efficiency column comes from re-solving the pricing "
+        "equilibrium on a finer cost-reduction grid.")
 
     # -----------------------------------------------------------------
     # Takeaway
     # -----------------------------------------------------------------
     report.add_takeaway(
-        "The choice of demand functional form is not innocuous --- it is arguably the most "
-        "consequential modeling decision in structural merger simulation.\n\n"
-        "**Key insights:**\n"
-        "- **Logit demand** imposes IIA: all products (including the outside good) absorb "
-        "diverted sales in proportion to their shares. This typically understates harm from "
-        "mergers between close substitutes because too much substitution 'escapes' to non-purchase.\n"
-        "- **Linear demand** has finite choke prices and bounded substitution. Cross-price "
-        "effects depend on the assumed cross-slope parameters, making results sensitive to "
-        "calibration choices.\n"
-        "- **Log-linear (constant elasticity) demand** has no choke price and can imply very "
-        "large price effects, especially when own-price elasticities are low (high margins).\n"
-        "- **UPP and GUPPI** are first-order approximations that avoid solving the full "
-        "post-merger equilibrium. They are useful screens but cannot capture feedback effects "
-        "(rivals' price responses, demand curvature).\n"
-        "- **CMCR** translates merger harm into the language of efficiency: how large must cost "
-        "synergies be to leave consumers no worse off? This is the standard the DOJ/FTC apply.\n"
-        "- The **efficiency frontier** plot shows that the break-even cost reduction can differ "
-        "by a factor of two or more across demand models --- a sobering reminder that policy "
-        "conclusions are model-dependent.\n\n"
-        "The practical lesson: robust merger analysis should present results under multiple "
-        "demand specifications, not rely on a single functional form."
+        "A merger simulation is a supply-side counterfactual disciplined by a demand model. "
+        "Changing ownership is mechanical; changing the substitution matrix is not. In this "
+        "calibration, all three demand systems predict higher prices and lower consumer "
+        "surplus, but they disagree on magnitudes, on the relation between GUPPI and solved "
+        "price effects, and on the efficiency needed to offset the merger.\n\n"
+        "The practical lesson is to treat UPP, GUPPI, and CMCR as screens, not as substitutes "
+        "for a solved pricing model. The screen tells the analyst where unilateral pressure "
+        "comes from. The equilibrium calculation tells how that pressure is mediated by "
+        "pass-through, demand curvature, rivals' prices, and claimed marginal-cost efficiencies."
     )
 
     report.add_references([

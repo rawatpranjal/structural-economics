@@ -1,106 +1,156 @@
-# Merger Simulation Across Demand Systems
+# Differentiated-Products Merger Simulation
 
-> Comparing merger effects across logit, linear, and log-linear demand to show how functional form assumptions drive antitrust policy conclusions.
+> Demand curvature, diversion, and efficiency screens in a calibrated merger exercise.
 
 ## Overview
 
-Horizontal merger analysis in differentiated product markets hinges on the assumed demand system. This model calibrates three demand specifications --- logit, linear, and log-linear --- to identical pre-merger data, then simulates the same merger (Firm 1 acquires Firm 2) under each. The results diverge, illustrating a central challenge in structural merger analysis.
+A differentiated-products merger changes the objective of the pricing firms. Before the merger, Firm 1 ignores sales that Product 1 loses to Firm 2's products. After the merger, those diverted sales stay inside the merged portfolio, so the old price vector no longer satisfies the pricing first-order conditions.
 
-**Why demand form matters:**
-- **Logit** imposes the IIA property: substitution to the outside good is proportional to share, which overstates escape to non-purchase and can understate price effects among close substitutes.
-- **Linear demand** has bounded quantities and a choke price, implying substitution patterns that differ qualitatively from discrete choice.
-- **Log-linear (constant elasticity)** demand has no choke price --- demand never reaches zero --- and often predicts the largest price increases because margins are sensitive to elasticity.
+The hard part is that diversion is not observed directly. This tutorial takes one pre-merger market and calibrates three demand systems to the same shares, prices, and margins: logit, linear, and log-linear demand. It then changes ownership and solves the post-merger Bertrand-Nash prices. The exercise is not an estimator; it is a controlled way to see how demand curvature and substitution assumptions move the same antitrust counterfactual.
 
-We also compute standard antitrust screening metrics: UPP (Upward Pricing Pressure), GUPPI (Gross Upward Pricing Pressure Index), and CMCR (Compensating Marginal Cost Reduction), all of which vary across demand systems.
+The logit-only [Bertrand pricing](../bertrand-logit-demand/) tutorial isolates the ownership matrix in one demand model. The [BLP random coefficients](../blp-random-coefficients/) tutorial shows how richer substitution patterns can be estimated. Here the object is the gap between quick screens such as GUPPI or CMCR and the solved post-merger equilibrium.
 
 ## Equations
 
-**Bertrand-Nash FOC (general):**
-$$q_j + \sum_{k \in \mathcal{F}_f} \frac{\partial q_k}{\partial p_j} (p_k - c_k) = 0 \quad \forall j \in \mathcal{F}_f$$
+There are $J$ inside products. Product $j$ has price $p_j$, marginal cost
+$c_j$, quantity or share $q_j(p)$, and owner $f(j)$. The ownership matrix is
 
-In matrix form: $\mathbf{q} + (\Omega \circ \mathbf{J}') (\mathbf{p} - \mathbf{c}) = 0$ where $\mathbf{J} = \partial \mathbf{q} / \partial \mathbf{p}'$.
+$$
+\Omega_{jk}=\mathbf 1\{f(j)=f(k)\}.
+$$
 
-**Logit:** $s_j = \frac{\exp(\xi_j + \alpha p_j)}{1 + \sum_k \exp(\xi_k + \alpha p_k)}$
+For a multi-product Bertrand firm, the pricing equation is
 
-**Linear:** $q_j = a_j - \sum_k B_{jk} p_k$
+$$
+0=q_j(p)+\sum_{k=1}^J
+\Omega_{jk}(p_k-c_k)\frac{\partial q_k(p)}{\partial p_j},
+\qquad j=1,\ldots,J .
+$$
 
-**Log-linear:** $\ln q_j = a_j + \sum_k E_{jk} \ln p_k$
+With $\Delta_{kj}(p)=\partial q_k(p)/\partial p_j$, the vector equation is
 
-**Diversion ratio:** $D_{j \to k} = -\frac{\partial q_k / \partial p_j}{\partial q_j / \partial p_j}$
+$$
+q(p)+(\Omega\circ \Delta(p)') (p-c)=0.
+$$
 
-**UPP:** $\text{UPP}_j = \sum_{k \text{ newly co-owned}} D_{j \to k} \cdot (p_k - c_k)$
+The three demand systems are calibrated to the same observed market:
 
-**GUPPI:** $\text{GUPPI}_j = \text{UPP}_j / p_j$
+$$
+s_j^{L}(p)=
+\frac{\exp(\xi_j+\alpha p_j)}
+{1+\sum_{\ell=1}^J \exp(\xi_\ell+\alpha p_\ell)},
+\qquad \alpha<0,
+$$
 
-**CMCR:** $\text{CMCR}_j = \text{UPP}_j / c_j$ --- marginal cost reduction needed to offset pricing pressure.
+$$
+q_j^{A}(p)=a_j-\sum_{k=1}^J B_{jk}p_k,
+$$
+
+and
+
+$$
+\log q_j^{E}(p)=a_j^E+\sum_{k=1}^J E_{jk}\log p_k .
+$$
+
+The local diversion ratio from product $j$ to product $k$ is
+
+$$
+D_{j\to k}=
+-\frac{\partial q_k(p)/\partial p_j}
+{\partial q_j(p)/\partial p_j}, \qquad j\neq k.
+$$
+
+For products that become newly co-owned after the merger,
+
+$$
+UPP_j=\sum_{k:\Omega^{post}_{jk}=1,\ \Omega^{pre}_{jk}=0}
+D_{j\to k}(p_k-c_k),
+$$
+
+with
+
+$$
+GUPPI_j=\frac{UPP_j}{p_j},
+\qquad
+CMCR_j=\frac{UPP_j}{c_j}.
+$$
+
+GUPPI is a first-order screen for upward pricing pressure. CMCR reports the
+product-level marginal-cost reduction that would offset that pressure before
+solving a new equilibrium.
 
 ## Model Setup
 
 | Parameter | Value | Description |
 |-----------|-------|-------------|
 | Products $J$ | 6 | 3 firms, 2 products each |
-| Shares | [np.float64(0.12), np.float64(0.1), np.float64(0.15), np.float64(0.13), np.float64(0.08), np.float64(0.07)] | Pre-merger market shares |
-| Prices | [np.float64(1.0), np.float64(1.2), np.float64(0.9), np.float64(1.1), np.float64(1.3), np.float64(1.4)] | Pre-merger prices |
-| Margins | [np.float64(0.4), np.float64(0.35), np.float64(0.45), np.float64(0.4), np.float64(0.3), np.float64(0.28)] | Price-cost margins |
-| Outside share | 0.35 | Logit outside good |
+| Shares | [0.12, 0.10, 0.15, 0.13, 0.08, 0.07] | Pre-merger inside shares |
+| Prices | [1.00, 1.20, 0.90, 1.10, 1.30, 1.40] | Pre-merger prices |
+| Margins | [0.40, 0.35, 0.45, 0.40, 0.30, 0.28] | Price-cost margins |
+| Outside share | 0.35 | Outside option in the logit demand system |
 | $\alpha$ (logit) | -3.1611 | Calibrated price coefficient |
-| Cross-price ratio (linear) | 0.10 | Cross-slope / geometric mean of own-slopes |
-| Cross elasticity (log-linear) | 0.15 | Symmetric cross-price elasticities |
-| Merger | Firm 1 + Firm 2 | Products 1-4 under common ownership |
+| Linear cross-slope ratio | 0.10 | Cross-slope relative to geometric mean own-slope |
+| Log-linear cross elasticity | 0.15 | Maintained symmetric cross-price elasticity |
+| Merger | Firm 1 buys Firm 2 | Products 1-4 move under common ownership |
+| Benchmark | Solved post-merger FOC | Full equilibrium used to judge first-order screens |
 
 ## Solution Method
 
-**Step 1: Calibrate** each demand system from the same observed data (shares, prices, margins). The FOC is inverted to recover marginal costs, and demand parameters are chosen to match observed equilibrium.
+The computation has to keep two objects separate. Calibration rationalizes the observed pre-merger market under a chosen demand system. Simulation then holds that demand system fixed, changes only ownership, and solves a new price equilibrium.
 
-**Step 2: Verify** FOC residuals at pre-merger prices (logit: 1.4e-17, linear: 2.8e-17, log-linear: 2.8e-17).
+```text
+Algorithm: calibrated merger simulation
+Input: observed shares q, prices p, margins m, pre- and post-merger owners f(j)
+Output: screening metrics, post-merger prices, and welfare changes
+Build Omega_pre and Omega_post from owner labels
+for each demand system d in {logit, linear, log-linear}:
+    choose demand parameters so q_d(p_obs) matches observed shares
+    recover marginal costs c_d from the pre-merger pricing FOC
+    evaluate Delta_d(p_obs) and diversion ratios D_d
+    compute UPP, GUPPI, and CMCR for newly co-owned products
+    solve q_d(p) + (Omega_post .* Delta_d(p)') (p - c_d) = 0
+    compare solved price changes with the first-order screens
+    compute changes in consumer surplus, producer surplus, and total surplus
+for a grid of merger efficiencies:
+    reduce costs on the merging products, re-solve the post-merger FOC,
+    and interpolate the cost reduction where average merged-product prices stop rising
+```
 
-**Step 3: Screen** using UPP, GUPPI, and CMCR --- first-order approximations to merger harm that do not require solving the full post-merger equilibrium.
-
-**Step 4: Simulate** by changing the ownership matrix $\Omega$ and solving the new Bertrand-Nash equilibrium via `scipy.optimize.fsolve`.
-
-**Step 5: Evaluate** welfare changes: consumer surplus (CS), producer surplus (PS), and total welfare ($W = CS + PS$).
+The pre-merger FOC residuals are small by construction (logit 1.4e-17, linear 2.8e-17, log-linear 2.8e-17). The important comparison below is between first-order screens and the solved post-merger equilibrium, not between three separately estimated demand models.
 
 ## Results
 
+The price comparison is the unilateral effect in levels. Products 1-4 are inside the merged portfolio, so their post-merger prices move the most. The logit and log-linear systems give roughly double-digit average increases for the merging products, while the linear system is more muted under this cross-slope calibration.
+
 <img src="figures/price-comparison.png" alt="Pre- vs post-merger prices across three demand systems. Merging products (1-4) see larger price increases; the magnitude depends heavily on the demand model." width="80%">
-*Pre- vs post-merger prices across three demand systems. Merging products (1-4) see larger price increases; the magnitude depends heavily on the demand model.*
+
+The welfare accounting separates the transfer from consumers to firms from the deadweight component. Consumers lose in every demand system here. Producer surplus rises, but not enough to offset the consumer loss, so total surplus falls in this calibration.
 
 <img src="figures/welfare-decomposition.png" alt="Welfare decomposition across demand systems: consumers lose, producers may gain, and the net effect depends on the demand model." width="80%">
-*Welfare decomposition across demand systems: consumers lose, producers may gain, and the net effect depends on the demand model.*
 
-<img src="figures/upp-guppi.png" alt="UPP and GUPPI by product and demand model. Only merging products (1-4) have positive values; non-merging products have zero UPP by construction." width="80%">
-*UPP and GUPPI by product and demand model. Only merging products (1-4) have positive values; non-merging products have zero UPP by construction.*
+GUPPI is useful precisely because it is local: it uses observed margins and diversion before solving a counterfactual equilibrium. The left panel treats the solved post-merger price increase as the benchmark. The gap is the pass-through, curvature, and strategic-pricing content that a first-order screen cannot carry by itself.
+
+<img src="figures/upp-guppi.png" alt="GUPPI screen versus solved equilibrium price effects, with product-level UPP for the products that become newly co-owned." width="80%">
+
+The efficiency frontier re-solves the post-merger pricing problem after lowering marginal costs for products 1-4. The zero markers are interpolated from a fine efficiency grid, so they are closer to the solved-equilibrium break-even point than the local CMCR screen. Below the zero line, efficiencies are large enough to reverse the average price increase on the merged products.
 
 <img src="figures/efficiency-frontier.png" alt="How much marginal cost reduction is needed to offset the merger price increase? The break-even point differs substantially across demand models." width="80%">
-*How much marginal cost reduction is needed to offset the merger price increase? The break-even point differs substantially across demand models.*
 
-**Merger Effects Comparison Across Demand Models**
+The table keeps the screens and the solved equilibrium in the same place. Average actual price increases are from the post-merger FOC solution. GUPPI and CMCR are local screens. The break-even efficiency column comes from re-solving the pricing equilibrium on a finer cost-reduction grid.
 
-| Demand Model   |   Avg Price Change (%) |   Max Price Change (%) |   Delta CS |   Delta PS |   Delta W |   Avg GUPPI (%) |   Avg CMCR (%) |
-|:---------------|-----------------------:|-----------------------:|-----------:|-----------:|----------:|----------------:|---------------:|
-| Logit          |                  11.15 |                  13.34 |    -0.0537 |     0.0204 |   -0.0333 |           11.59 |          19.76 |
-| Linear         |                   5.13 |                   5.59 |    -0.0272 |     0.0078 |   -0.0193 |            7.27 |          12.15 |
-| Log-linear     |                  10.27 |                  13.57 |    -0.0489 |     0.0065 |   -0.0425 |            4.56 |           7.61 |
+**Merger Effects and Screen Diagnostics**
+
+| Demand Model   |   Avg Actual Price Inc. (%) |   Max Price Change (%) |   Avg GUPPI Screen (%) |   Screen Gap (pp) |   Avg CMCR Screen (%) |   Break-even Eff. (%) |   Delta CS |   Delta PS |   Delta W |   Post FOC Residual |
+|:---------------|----------------------------:|-----------------------:|-----------------------:|------------------:|----------------------:|----------------------:|-----------:|-----------:|----------:|--------------------:|
+| Logit          |                       11.15 |                  13.34 |                  11.59 |             -0.44 |                 19.76 |                 34.38 |    -0.0537 |     0.0204 |   -0.0333 |             2.4e-10 |
+| Linear         |                        5.13 |                   5.59 |                   7.27 |             -2.15 |                 12.15 |                 16.66 |    -0.0272 |     0.0078 |   -0.0193 |             5.6e-17 |
+| Log-linear     |                       10.27 |                  13.57 |                   4.56 |              5.7  |                  7.61 |                  9.29 |    -0.0489 |     0.0065 |   -0.0425 |             3e-12   |
 
 ## Takeaway
 
-The choice of demand functional form is not innocuous --- it is arguably the most consequential modeling decision in structural merger simulation.
+A merger simulation is a supply-side counterfactual disciplined by a demand model. Changing ownership is mechanical; changing the substitution matrix is not. In this calibration, all three demand systems predict higher prices and lower consumer surplus, but they disagree on magnitudes, on the relation between GUPPI and solved price effects, and on the efficiency needed to offset the merger.
 
-**Key insights:**
-- **Logit demand** imposes IIA: all products (including the outside good) absorb diverted sales in proportion to their shares. This typically understates harm from mergers between close substitutes because too much substitution 'escapes' to non-purchase.
-- **Linear demand** has finite choke prices and bounded substitution. Cross-price effects depend on the assumed cross-slope parameters, making results sensitive to calibration choices.
-- **Log-linear (constant elasticity) demand** has no choke price and can imply very large price effects, especially when own-price elasticities are low (high margins).
-- **UPP and GUPPI** are first-order approximations that avoid solving the full post-merger equilibrium. They are useful screens but cannot capture feedback effects (rivals' price responses, demand curvature).
-- **CMCR** translates merger harm into the language of efficiency: how large must cost synergies be to leave consumers no worse off? This is the standard the DOJ/FTC apply.
-- The **efficiency frontier** plot shows that the break-even cost reduction can differ by a factor of two or more across demand models --- a sobering reminder that policy conclusions are model-dependent.
-
-The practical lesson: robust merger analysis should present results under multiple demand specifications, not rely on a single functional form.
-
-## Reproduce
-
-```bash
-python run.py
-```
+The practical lesson is to treat UPP, GUPPI, and CMCR as screens, not as substitutes for a solved pricing model. The screen tells the analyst where unilateral pressure comes from. The equilibrium calculation tells how that pressure is mediated by pass-through, demand curvature, rivals' prices, and claimed marginal-cost efficiencies.
 
 ## References
 
