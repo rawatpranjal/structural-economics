@@ -1,6 +1,6 @@
 {
   "pass_name": "quality-control-v1",
-  "updated_at": "2026-05-05T19:56:44Z",
+  "updated_at": "2026-05-05T20:00:37Z",
   "entries": [
     {
       "tutorial_path": "industrial-organization/dynamic-games/",
@@ -22,6 +22,13 @@
       "status": "complete",
       "verdict": "pass",
       "updated_at": "2026-05-05T19:56:44Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/three-part-tariffs/",
+      "report_path": "docs/qc-reports/tutorials/industrial-organization__three-part-tariffs.md",
+      "status": "complete",
+      "verdict": "pass",
+      "updated_at": "2026-05-05T20:00:37Z"
     }
   ]
 }
