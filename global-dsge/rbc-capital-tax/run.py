@@ -280,7 +280,7 @@ def main():
         "consumption becomes cheaper relative to future consumption.\n\n"
         "This tutorial is a tax-wedge companion to the global "
         "[RBC capital and labor](../../dynamic-programming/rbc/) example and the local "
-        "[Dynare RBC](../../dynare/rbc/) impulse-response example. The point is not "
+        "[linearized RBC](../../dsge/rbc/) impulse-response example. The point is not "
         "shock propagation per se, but how a permanent wedge moves the exact "
         "deterministic steady state, the nonlinear capital policy, and simulated "
         "investment behavior."

@@ -4,7 +4,7 @@
 
 ## Overview
 
-Much of macroeconomic dynamics turns on a simple question: after a shock hits, how much of it is still economically relevant next period, next year, or a decade later? The AR(1) law of motion is the standard way to put that persistence into a model. In the [RBC TFP-shock tutorial](../../dynare/rbc/), it drives technology. In the [New Keynesian tutorial](../../dynare/nkdsge/), the same idea is used for policy and demand disturbances.
+Much of macroeconomic dynamics turns on a simple question: after a shock hits, how much of it is still economically relevant next period, next year, or a decade later? The AR(1) law of motion is the standard way to put that persistence into a model. In the [RBC TFP-shock tutorial](../../dsge/rbc/), it drives technology. In the [New Keynesian tutorial](../../dsge/nkdsge/), the same idea is used for policy and demand disturbances.
 
 Here the propagation mechanism is isolated before embedding it in a larger equilibrium system. The first model is a scalar AR(1). The second is Samuelson's multiplier-accelerator model, where persistent government spending moves income, income moves consumption with a lag, and investment responds to changes in consumption.
 

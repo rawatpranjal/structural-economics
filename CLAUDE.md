@@ -20,8 +20,8 @@ position this repo as piggybacking on that project.
   supporting method. Keep it near the top of the root README and order it from
   simple Bellman-equation examples to larger macro applications.
 - Macroeconomics should be a coherent subject block covering heterogeneous
-  agents, DSGE/Dynare, global nonlinear DSGE, continuous-time equilibrium, and
-  optimal control. Do not scatter those examples only by solver family.
+  agents, linearized DSGE, global nonlinear DSGE, continuous-time equilibrium,
+  and optimal control. Do not scatter those examples only by solver family.
 - Within each subject, list canonical and simple tutorials before advanced
   variants. A reader should see the progression, not a flat inventory.
 - Use descriptive tutorial titles that name the economic object and topic. Avoid

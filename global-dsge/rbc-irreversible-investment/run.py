@@ -377,7 +377,7 @@ def main() -> None:
         "faster than depreciation. The irreversible economy cannot. It carries a "
         "capital overhang until depreciation and future investment decisions bring "
         "the state back toward the usual region.\n\n"
-        "This tutorial sits between the local [Dynare RBC](../../dynare/rbc/) "
+        "This tutorial sits between the local [linearized RBC](../../dsge/rbc/) "
         "shock-propagation example and the global [capital-tax RBC](../rbc-capital-tax/) "
         "tutorial. The lesson is not that every period is constrained, but that a "
         "global solution keeps track of the states where the Euler equation has a "

@@ -6,7 +6,7 @@
 
 Irreversible investment is a small change to the RBC problem with a large interpretive payoff. The household can install new capital, but installed capital cannot be converted back into consumption goods. After a bad productivity draw, the unconstrained economy may want to reduce capital faster than depreciation. The irreversible economy cannot. It carries a capital overhang until depreciation and future investment decisions bring the state back toward the usual region.
 
-This tutorial sits between the local [Dynare RBC](../../dynare/rbc/) shock-propagation example and the global [capital-tax RBC](../rbc-capital-tax/) tutorial. The lesson is not that every period is constrained, but that a global solution keeps track of the states where the Euler equation has a kink, which a linear solution around the steady state cannot show.
+This tutorial sits between the local [linearized RBC](../../dsge/rbc/) shock-propagation example and the global [capital-tax RBC](../rbc-capital-tax/) tutorial. The lesson is not that every period is constrained, but that a global solution keeps track of the states where the Euler equation has a kink, which a linear solution around the steady state cannot show.
 
 ## Equations
 

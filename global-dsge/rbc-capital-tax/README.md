@@ -6,7 +6,7 @@
 
 Capital income taxation separates aggregate feasibility from private incentives. The government taxes capital income at rate $\tau_k$ and rebates the proceeds lump-sum. The representative economy still has the same resource constraint, but households save against an after-tax marginal product of capital. The distortion is entirely intertemporal: current consumption becomes cheaper relative to future consumption.
 
-This tutorial is a tax-wedge companion to the global [RBC capital and labor](../../dynamic-programming/rbc/) example and the local [Dynare RBC](../../dynare/rbc/) impulse-response example. The point is not shock propagation per se, but how a permanent wedge moves the exact deterministic steady state, the nonlinear capital policy, and simulated investment behavior.
+This tutorial is a tax-wedge companion to the global [RBC capital and labor](../../dynamic-programming/rbc/) example and the local [linearized RBC](../../dsge/rbc/) impulse-response example. The point is not shock propagation per se, but how a permanent wedge moves the exact deterministic steady state, the nonlinear capital policy, and simulated investment behavior.
 
 ## Equations
 
