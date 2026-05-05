@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Stock-Watson Diffusion Index / Factor Model.
+"""Stock-Watson diffusion-index forecasting.
 
-Implements the Stock and Watson (2002) approach to forecasting with many
-predictors: extract a small number of common factors from a large panel of
-macroeconomic series using principal components, then use these factors in
-forecasting regressions.
+Builds a small, self-contained version of the Stock and Watson (2002)
+many-predictor forecasting problem. A synthetic macro panel has a known latent
+factor, so the report can compare principal-component estimates with the true
+economic state and with a benchmark forecast that observes that state directly.
 
 Reference: Stock, J. and Watson, M. (2002). "Forecasting Using Principal
 Components from a Large Number of Predictors." JASA, 97(460), 1167-1179.
@@ -19,7 +19,7 @@ from numpy.linalg import eigh
 
 # Add repo root to path for lib/ imports
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.plotting import setup_style, save_figure
+from lib.plotting import setup_style
 from lib.output import ModelReport
 
 
@@ -78,9 +78,9 @@ def generate_factor_panel(N=100, T=200, n_factors=1, seed=42):
 def estimate_factors_pca(X, n_factors=1):
     """Estimate common factors via principal components analysis.
 
-    Standardizes the panel, computes the covariance matrix, and extracts
-    the top eigenvectors. The estimated factors are sqrt(T) * eigenvectors
-    of (1/T) X X' (the Bai-Ng normalization).
+    Standardizes the panel, computes the cross-sectional covariance matrix,
+    and extracts the top eigenvectors. The estimated factors are projections
+    of the standardized panel onto those eigenvectors.
 
     Parameters
     ----------
@@ -138,7 +138,7 @@ def factor_augmented_forecast(y, F_hat, p_ar=2, h=1):
 
     Compares:
     1. AR(p): only lagged y
-    2. FAAR(p): lagged y + estimated factors
+    2. Factor AR(p): lagged y + supplied factor series
 
     Uses expanding-window out-of-sample evaluation.
 
@@ -237,7 +237,7 @@ def main():
     # =========================================================================
     print("\nEstimating factors via PCA...")
     n_estimate = 5  # Extract top 5 for scree plot, use 1 for forecasting
-    F_hat, Lambda_hat, eigenvalues, explained_var = estimate_factors_pca(X, n_factors=n_estimate)
+    F_hat, _, eigenvalues, explained_var = estimate_factors_pca(X, n_factors=n_estimate)
     print(f"  Top 5 eigenvalues: {eigenvalues[:5].round(2)}")
     print(f"  Variance explained by first factor: {explained_var[0]:.1%}")
 
@@ -247,7 +247,6 @@ def main():
     # Fix sign: align estimated factor with true factor
     corr_sign = np.sign(np.corrcoef(F_true[:, 0], F_hat[:, 0])[0, 1])
     F_hat_aligned = F_hat[:, 0] * corr_sign
-    Lambda_hat_aligned = Lambda_hat[:, 0] * corr_sign
 
     # Correlation between true and estimated factor
     factor_corr = np.corrcoef(F_true[:, 0], F_hat_aligned)[0, 1]
@@ -260,10 +259,23 @@ def main():
     # Use first series as target (representative macro variable)
     y_target = X[:, 0]
     forecast_results = factor_augmented_forecast(y_target, F_hat_1, p_ar=p_ar, h=h)
+    true_factor_results = factor_augmented_forecast(y_target, F_true, p_ar=p_ar, h=h)
     print(f"  AR({p_ar}) RMSE:   {forecast_results['rmse_ar']:.4f}")
-    print(f"  FAAR({p_ar}) RMSE:  {forecast_results['rmse_faar']:.4f}")
+    print(f"  PCA factor RMSE:   {forecast_results['rmse_faar']:.4f}")
+    print(f"  True factor RMSE:  {true_factor_results['rmse_faar']:.4f}")
     improvement = (1 - forecast_results['rmse_faar'] / forecast_results['rmse_ar']) * 100
-    print(f"  Improvement: {improvement:.1f}%")
+    true_factor_improvement = (1 - true_factor_results['rmse_faar'] / forecast_results['rmse_ar']) * 100
+    print(f"  PCA improvement: {improvement:.1f}%")
+    print(f"  True factor improvement: {true_factor_improvement:.1f}%")
+
+    # Standardized series-factor exposures are the scale-free analogue of
+    # loadings. This avoids comparing arbitrary PCA normalizations directly.
+    Z_panel = (X - X.mean(axis=0)) / X.std(axis=0)
+    F_true_std = (F_true[:, 0] - F_true[:, 0].mean()) / F_true[:, 0].std()
+    F_hat_std = (F_hat_aligned - F_hat_aligned.mean()) / F_hat_aligned.std()
+    true_exposure = Z_panel.T @ F_true_std / T
+    estimated_exposure = Z_panel.T @ F_hat_std / T
+    exposure_corr = np.corrcoef(true_exposure, estimated_exposure)[0, 1]
 
     # =========================================================================
     # Generate Report
@@ -271,39 +283,75 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "Stock-Watson Factor Forecasting",
-        "Principal component estimation of common factors from a large panel, with "
-        "factor-augmented forecasting.",
+        "Stock-Watson Diffusion Index Forecasts",
+        "How a large macro panel becomes a diffusion index for forecasting.",
+        include_reproduce=False,
+        show_figure_captions=False,
     )
 
     report.add_overview(
-        "Stock and Watson (2002) showed that a small number of estimated factors, extracted "
-        "via principal components from a large panel of macroeconomic time series, can "
-        "substantially improve forecasts relative to standard autoregressive models.\n\n"
-        "The key insight is that in a data-rich environment with $N$ series and $T$ periods, "
-        "one can consistently estimate the latent common factors as $N, T \\to \\infty$, even "
-        "though the factor loadings are unknown. This model demonstrates the approach with a "
-        "synthetic panel where the true data generating process is known, allowing us to "
-        "verify that PCA recovers the true factor."
+        "Macroeconomic forecasting is often data rich and sample poor. A researcher may "
+        "observe output, labor, prices, interest rates, credit spreads, orders, inventories, "
+        "and many sectoral series, but only a few hundred monthly or quarterly observations. "
+        "The Stock-Watson answer is to treat the panel as noisy measurements of a small set "
+        "of common economic states, then forecast with those states rather than with every "
+        "series separately.\n\n"
+        "This tutorial uses a synthetic panel so the latent state is known. That makes the "
+        "exercise more than a PCA demo: we can ask whether the first principal component "
+        "recovers the true common factor, whether the cross-sectional exposures are right, "
+        "and how the feasible factor forecast compares with a benchmark that observes "
+        "$F_t$ directly. The [FRED-style macro-data tutorial](../fred-macro-data/) builds "
+        "the measurement intuition for a small macro panel, while [Persistent Shocks](../ar-processes/) "
+        "isolates the AR(1) timing logic used for the common factor here."
     )
 
     report.add_equations(
         r"""
-**Static Factor Model:**
+Let $X_t=(X_{1t},\ldots,X_{Nt})'$ collect the observed macro panel at date $t$.
+The static factor representation is
 
-$$X_{it} = \lambda_i' F_t + e_{it}, \qquad i = 1, \ldots, N, \quad t = 1, \ldots, T$$
+$$
+X_{it}=\lambda_i'F_t+e_{it},
+\qquad i=1,\ldots,N,\quad t=1,\ldots,T.
+$$
 
-where $F_t$ is a $r \times 1$ vector of common factors, $\lambda_i$ is the $r \times 1$
-loading vector for series $i$, and $e_{it}$ is the idiosyncratic component.
+Here $F_t\in\mathbb R^r$ is the common state, $\lambda_i\in\mathbb R^r$ is the
+loading for series $i$, and $e_{it}$ is the idiosyncratic part. In the simulated
+panel used below, $r=1$ and
 
-**PCA Estimation (Bai and Ng, 2002):**
+$$
+F_t=\rho_F F_{t-1}+\eta_t,\qquad \eta_t\sim N(0,1),
+\qquad
+\lambda_i\sim N(1,0.5^2),
+\qquad
+e_{it}\sim N(0,\sigma_{e,i}^2).
+$$
 
-The estimated factors $\hat{F}$ are $\sqrt{T}$ times the eigenvectors corresponding to the
-$r$ largest eigenvalues of the $T \times T$ matrix $(NT)^{-1} X X'$.
+Before estimation, each series is standardized:
 
-**Factor-Augmented Autoregression (FAAR):**
+$$
+Z_{it}=\frac{X_{it}-\bar X_i}{s_i}.
+$$
 
-$$y_{t+h} = \alpha + \sum_{j=1}^{p} \beta_j y_{t-j+1} + \gamma' \hat{F}_t + \varepsilon_{t+h}$$
+Let $v_1,\ldots,v_r$ be the eigenvectors associated with the $r$ largest
+eigenvalues of $T^{-1}Z'Z$. The feasible factor estimate is the projection
+
+$$
+\hat F_t=(Z_t'v_1,\ldots,Z_t'v_r)'.
+$$
+
+Factors and loadings are identified only up to scale, sign, and rotation, so the
+diagnostics compare normalized factors and standardized series-factor
+exposures. The forecasting equation for a target series $y_t$ is
+
+$$
+y_{t+h}
+=\alpha+\sum_{\ell=1}^{p}\beta_\ell y_{t-\ell+1}
++\gamma'\hat F_t+\varepsilon_{t+h}.
+$$
+
+The AR benchmark sets $\gamma=0$. The true-factor benchmark replaces $\hat F_t$
+with the simulated $F_t$.
 """
     )
 
@@ -317,22 +365,39 @@ $$y_{t+h} = \alpha + \sum_{j=1}^{p} \beta_j y_{t-j+1} + \gamma' \hat{F}_t + \var
         f"| $\\lambda_i$ | $\\sim N(1, 0.25)$ | Factor loadings |\n"
         f"| $\\sigma_{{e,i}}$ | $\\sim U(0.5, 1.5)$ | Idiosyncratic std. deviations |\n"
         f"| AR lags ($p$) | {p_ar} | Lags in forecasting equation |\n"
-        f"| Horizon ($h$) | {h} | Forecast horizon |"
+        f"| Horizon ($h$) | {h} | Forecast horizon |\n"
+        f"| Initial training share | 60% | Expanding-window forecast start |\n"
+        f"| Target series | $X_{{1t}}$ | Representative observed macro variable |"
     )
 
     report.add_solution_method(
-        "**Step 1 -- Standardization:** Each series is demeaned and scaled to unit variance.\n\n"
-        "**Step 2 -- Eigendecomposition:** Compute the eigenvalues and eigenvectors of the "
-        "$N \\times N$ sample covariance matrix $(1/T) Z'Z$ where $Z$ is the standardized "
-        "panel. The estimated factors are the projections of the data onto the top "
-        "eigenvectors.\n\n"
-        "**Step 3 -- Forecasting:** Compare an AR(p) model (using only own lags) with a "
-        "factor-augmented AR model (FAAR) that adds the estimated factor as a predictor. "
-        "Evaluation uses an expanding-window out-of-sample exercise.\n\n"
-        f"**Key result:** The first principal component explains **{explained_var[0]:.1%}** "
-        f"of the total variance and has correlation **{factor_corr:.4f}** with the true "
-        f"factor. The FAAR model achieves **{improvement:.1f}%** lower RMSE than the pure "
-        f"AR({p_ar}) benchmark."
+        "The computation has two economic tasks. First, compress the panel into a common "
+        "state that summarizes aggregate co-movement. Second, ask whether that state helps "
+        "forecast a target series beyond its own lags. PCA is useful here because the "
+        "large cross-section averages down idiosyncratic noise without estimating a separate "
+        "coefficient for every predictor in the forecast regression.\n\n"
+        "```text\n"
+        "Algorithm: Stock-Watson diffusion-index forecast\n"
+        "Inputs: panel X_it, target y_t, number of factors r, AR lag order p,\n"
+        "        forecast horizon h, initial training share q\n"
+        "Outputs: estimated factors Fhat_t, AR RMSE, PCA-factor RMSE, true-factor RMSE\n"
+        "\n"
+        "1. Standardize each series: Z_it = (X_it - mean_i) / sd_i.\n"
+        "2. Form the cross-sectional covariance matrix S = T^{-1} Z'Z.\n"
+        "3. Extract the r largest eigenvectors v_1,...,v_r of S.\n"
+        "4. Set Fhat_t = (Z_t'v_1,...,Z_t'v_r) for each date t.\n"
+        "5. For each expanding-window forecast origin tau:\n"
+        "      fit AR(p): y_{t+h} on 1, y_t,...,y_{t-p+1}\n"
+        "      fit factor AR(p): add Fhat_t to the same regression\n"
+        "      fit true-factor AR(p): replace Fhat_t with the simulated F_t\n"
+        "      record each h-step forecast error\n"
+        "6. Compare RMSEs and cumulative squared errors over the evaluation window.\n"
+        "```\n\n"
+        f"In this run, the first principal component explains {explained_var[0]:.1%} "
+        f"of standardized panel variance and has correlation {factor_corr:.4f} with the "
+        f"true factor after sign alignment. The feasible factor forecast lowers RMSE by "
+        f"{improvement:.1f}% relative to AR({p_ar}); the true-factor benchmark lowers it by "
+        f"{true_factor_improvement:.1f}%."
     )
 
     # --- Figure 1: True factor vs estimated factor ---
@@ -345,14 +410,14 @@ $$y_{t+h} = \alpha + \sum_{j=1}^{p} \beta_j y_{t-j+1} + \gamma' \hat{F}_t + \var
     ax1.plot(t_axis, F_hat_scaled, "r--", linewidth=1.5, label="Estimated $\\hat{F}_t$ (PCA)", alpha=0.8)
     ax1.set_xlabel("Time period")
     ax1.set_ylabel("Factor value")
-    ax1.set_title(f"True vs Estimated Factor (correlation = {factor_corr:.4f})")
+    ax1.set_title("Common macro state: true factor and PCA estimate")
     ax1.legend()
     report.add_figure("figures/factor-comparison.png",
                        f"True common factor vs PCA estimate (correlation = {factor_corr:.4f}). "
                        "PCA recovers the latent factor up to a scale normalization.", fig1,
-                       description="Because factor models are identified only up to a rotation, the estimated factor is rescaled for visual comparison. "
-                       "The near-perfect tracking demonstrates the Bai-Ng consistency result: with enough series ($N$) and time periods ($T$), "
-                       "PCA recovers the true latent factor driving co-movement across the panel.")
+                       description=f"The first comparison uses the simulated truth. Because a factor model is invariant to sign and scale, the PCA estimate is aligned and rescaled before plotting. "
+                       f"After that harmless normalization, it tracks the latent state closely: the sample correlation is {factor_corr:.4f}. "
+                       "The point is economic rather than cosmetic. With many series, the common movement is much cleaner than any single observed macro variable.")
 
     # --- Figure 2: Scree plot ---
     fig2, (ax2a, ax2b) = plt.subplots(1, 2, figsize=(12, 5))
@@ -361,7 +426,7 @@ $$y_{t+h} = \alpha + \sum_{j=1}^{p} \beta_j y_{t-j+1} + \gamma' \hat{F}_t + \var
     ax2a.axhline(1.0, color="red", linestyle="--", linewidth=1, alpha=0.7, label="Kaiser criterion")
     ax2a.set_xlabel("Component number")
     ax2a.set_ylabel("Eigenvalue")
-    ax2a.set_title("Scree Plot")
+    ax2a.set_title("Eigenvalue drop")
     ax2a.legend()
 
     # Cumulative variance explained
@@ -370,34 +435,33 @@ $$y_{t+h} = \alpha + \sum_{j=1}^{p} \beta_j y_{t-j+1} + \gamma' \hat{F}_t + \var
     ax2b.axhline(90, color="red", linestyle="--", linewidth=1, alpha=0.7, label="90% threshold")
     ax2b.set_xlabel("Number of components")
     ax2b.set_ylabel("Cumulative variance explained (%)")
-    ax2b.set_title("Cumulative Explained Variance")
+    ax2b.set_title("Cumulative panel variance")
     ax2b.legend()
     fig2.tight_layout()
     report.add_figure("figures/scree-plot.png",
                        "Scree plot and cumulative variance explained. The sharp drop after the "
                        "first eigenvalue correctly indicates one dominant factor.", fig2,
-                       description="The scree plot is the primary diagnostic for choosing the number of factors. "
-                       "A large gap between the first and second eigenvalue signals that one factor dominates the common variation, while the remaining eigenvalues reflect idiosyncratic noise. "
-                       "The Kaiser criterion (eigenvalue > 1) and the 90% cumulative variance threshold offer complementary decision rules.")
+                       description=f"The eigenvalue pattern asks how many common states the panel is really carrying. "
+                       f"Here the answer is deliberately sharp: PC1 explains {explained_var[0]:.1%} of the standardized variance, and the next components look like residual cross-sectional noise. "
+                       "In an empirical FRED-MD application this decision would be less mechanical, but the same diagnostic disciplines the choice of factor dimension.")
 
     # --- Figure 3: Factor loadings ---
     fig3, ax3 = plt.subplots(figsize=(10, 5))
-    sort_idx = np.argsort(Lambda_true[:, 0])
-    ax3.scatter(range(N), Lambda_true[sort_idx, 0], s=25, alpha=0.6,
-                color="#2166ac", label="True $\\lambda_i$", zorder=3)
-    ax3.scatter(range(N), Lambda_hat_aligned[sort_idx] * (F_true[:, 0].std() / F_hat_aligned.std()),
-                s=25, alpha=0.6, color="#b2182b", marker="x",
-                label="Estimated $\\hat{\\lambda}_i$ (scaled)", zorder=3)
-    ax3.set_xlabel("Series (sorted by true loading)")
-    ax3.set_ylabel("Factor loading")
-    ax3.set_title("Factor Loadings: True vs Estimated")
+    sort_idx = np.argsort(true_exposure)
+    ax3.scatter(range(N), true_exposure[sort_idx], s=25, alpha=0.6,
+                color="#2166ac", label="True exposure $corr(X_i,F)$", zorder=3)
+    ax3.scatter(range(N), estimated_exposure[sort_idx], s=25, alpha=0.6,
+                color="#b2182b", marker="x",
+                label="PCA exposure $corr(X_i,\\hat F)$", zorder=3)
+    ax3.set_xlabel("Series (sorted by true exposure)")
+    ax3.set_ylabel("Standardized exposure")
+    ax3.set_title("Which series load on the common state?")
     ax3.legend()
     report.add_figure("figures/factor-loadings.png",
-                       "Factor loadings sorted by true value. PCA estimates track the cross-sectional "
-                       "pattern of true loadings.", fig3,
-                       description="Factor loadings capture how strongly each series responds to the common factor. "
-                       "Series with high loadings are more informative about the latent state of the economy, while low-loading series are dominated by idiosyncratic variation. "
-                       "In macroeconomic applications, these loadings reveal which sectors are most cyclically sensitive.")
+                       "Standardized series-factor exposures sorted by the true exposure.",
+                       fig3,
+                       description=f"The second diagnostic checks the cross-section. A high-exposure series is a clean signal of the common macro state; a low-exposure series is mostly idiosyncratic. "
+                       f"The PCA exposure ranking has correlation {exposure_corr:.4f} with the true ranking, so the estimator is not only tracing the time path of $F_t$ but also recovering which series are informative about it.")
 
     # --- Figure 4: Forecast comparison ---
     fig4, (ax4a, ax4b) = plt.subplots(1, 2, figsize=(14, 5))
@@ -409,28 +473,34 @@ $$y_{t+h} = \alpha + \sum_{j=1}^{p} \beta_j y_{t-j+1} + \gamma' \hat{F}_t + \var
     ax4a.plot(t_oos, forecast_results["y_ar"], "b--", linewidth=1.0,
               label=f"AR({p_ar})", alpha=0.7)
     ax4a.plot(t_oos, forecast_results["y_faar"], "r--", linewidth=1.0,
-              label=f"FAAR({p_ar})", alpha=0.7)
+              label=f"PCA factor AR({p_ar})", alpha=0.7)
+    ax4a.plot(t_oos, true_factor_results["y_faar"], color="#4d9221", linestyle=":", linewidth=1.2,
+              label=f"True factor AR({p_ar})", alpha=0.8)
     ax4a.set_xlabel("Out-of-sample period")
     ax4a.set_ylabel("Value")
-    ax4a.set_title("Out-of-Sample Forecasts")
+    ax4a.set_title("Forecasts of the target series")
     ax4a.legend()
 
     # Cumulative squared forecast errors
     cse_ar = np.cumsum((forecast_results["y_actual"] - forecast_results["y_ar"]) ** 2)
     cse_faar = np.cumsum((forecast_results["y_actual"] - forecast_results["y_faar"]) ** 2)
+    cse_true_factor = np.cumsum((forecast_results["y_actual"] - true_factor_results["y_faar"]) ** 2)
     ax4b.plot(t_oos, cse_ar, "b-", linewidth=1.5, label=f"AR({p_ar})")
-    ax4b.plot(t_oos, cse_faar, "r-", linewidth=1.5, label=f"FAAR({p_ar})")
+    ax4b.plot(t_oos, cse_faar, "r-", linewidth=1.5, label=f"PCA factor AR({p_ar})")
+    ax4b.plot(t_oos, cse_true_factor, color="#4d9221", linestyle=":", linewidth=1.8,
+              label=f"True factor AR({p_ar})")
     ax4b.set_xlabel("Out-of-sample period")
     ax4b.set_ylabel("Cumulative squared error")
-    ax4b.set_title("Cumulative Forecast Error Comparison")
+    ax4b.set_title("Cumulative forecast loss")
     ax4b.legend()
     fig4.tight_layout()
     report.add_figure("figures/forecast-comparison.png",
-                       f"Forecast comparison: FAAR reduces RMSE by {improvement:.1f}% "
+                       f"Forecast comparison: the PCA factor forecast reduces RMSE by {improvement:.1f}% "
                        f"relative to AR({p_ar}). Right panel shows cumulative squared errors.", fig4,
-                       description="The left panel overlays actual values with out-of-sample predictions from both models. "
-                       "The FAAR model's advantage comes from the estimated factor capturing common movements that predict the target series beyond what own lags provide. "
-                       "The cumulative squared error plot (right) shows the FAAR advantage accumulating steadily over the evaluation window, confirming consistent rather than episodic gains.")
+                       description=f"The forecast exercise is the payoff. The AR({p_ar}) benchmark only knows the target's own lags. "
+                       f"The feasible Stock-Watson regression adds the estimated diffusion index and cuts RMSE from {forecast_results['rmse_ar']:.3f} to {forecast_results['rmse_faar']:.3f}. "
+                       f"The true-factor line, which uses the simulated $F_t$, reaches {true_factor_results['rmse_faar']:.3f}. "
+                       "The two factor forecasts are close; the small finite-sample ordering should not be read as a structural ranking.")
 
     # --- Tables ---
     # Eigenvalue table
@@ -441,38 +511,38 @@ $$y_{t+h} = \alpha + \sum_{j=1}^{p} \beta_j y_{t-j+1} + \gamma' \hat{F}_t + \var
         "Cumulative (%)": (np.cumsum(eigenvalues[:5]) / eigenvalues.sum() * 100).round(2),
     })
     report.add_table("tables/eigenvalues.csv",
-                      "Top 5 Eigenvalues and Variance Explained", eig_table,
-                      description="The sharp drop from PC1 to PC2 confirms the single-factor structure of the data-generating process. "
-                      "In empirical macro panels (e.g., FRED-MD with 100+ series), the first 2-3 factors typically explain 30-50% of total variation.")
+                      "Top five eigenvalues and variance explained", eig_table,
+                      description="The eigenvalue table is the numerical version of the scree plot. The large first eigenvalue is the simulated common state; the small remaining eigenvalues are mostly idiosyncratic variation that should not be promoted into forecast regressors without evidence.")
 
     # Forecast comparison table
     forecast_table = pd.DataFrame({
-        "Model": [f"AR({p_ar})", f"FAAR({p_ar})"],
-        "RMSE": [forecast_results["rmse_ar"], forecast_results["rmse_faar"]],
-        "Relative RMSE": [1.0, forecast_results["rmse_faar"] / forecast_results["rmse_ar"]],
+        "Model": [f"AR({p_ar})", f"PCA factor AR({p_ar})", f"True factor AR({p_ar})"],
+        "RMSE": [
+            forecast_results["rmse_ar"],
+            forecast_results["rmse_faar"],
+            true_factor_results["rmse_faar"],
+        ],
+        "Relative RMSE": [
+            1.0,
+            forecast_results["rmse_faar"] / forecast_results["rmse_ar"],
+            true_factor_results["rmse_faar"] / forecast_results["rmse_ar"],
+        ],
     }).round(4)
     report.add_table("tables/forecast-comparison.csv",
-                      "Out-of-Sample Forecast Comparison", forecast_table,
-                      description="The relative RMSE below 1.0 confirms that the factor-augmented model outperforms the pure autoregressive benchmark. "
-                      "This gain comes from exploiting information in the full cross-section of series, which the AR model ignores entirely.")
+                      "Out-of-sample forecast comparison", forecast_table,
+                      description="The true-factor row is useful because the data-generating process is known. In this finite sample it is a benchmark, not a guaranteed lower bound on realized RMSE: the estimated factor is built from the same panel and can pick up small sample-specific target comovement. The durable lesson is that both factor regressions dominate the own-lag forecast.")
 
     report.add_takeaway(
-        "The Stock-Watson diffusion index approach demonstrates a powerful principle: "
-        "when many correlated time series share a common source of variation, principal "
-        "components can extract this latent factor even with unknown loadings.\n\n"
-        "**Key insights:**\n"
-        f"- **Factor recovery:** With N={N} series and T={T} periods, PCA achieves a "
-        f"correlation of {factor_corr:.4f} with the true factor. The Bai-Ng (2002) theory "
-        f"guarantees consistency as min(N,T) grows.\n"
-        f"- **Scree plot diagnostics:** The sharp drop after the first eigenvalue correctly "
-        f"identifies the true number of factors (r=1). The first PC explains "
-        f"{explained_var[0]:.1%} of total variance.\n"
-        f"- **Forecast gains:** Adding the estimated factor to an AR({p_ar}) model reduces "
-        f"RMSE by {improvement:.1f}%. This gain comes from the factor capturing "
-        f"common movements that predict the target series.\n"
-        "- **Practical implication:** Factor models are the workhorse for nowcasting and "
-        "short-term macro forecasting at central banks. The approach scales naturally to "
-        "hundreds of predictors without running into overfitting problems."
+        "The Stock-Watson idea is a disciplined way to use a large information set without "
+        "putting a large number of regressors into a short macro forecast. In this controlled "
+        f"run, PCA recovers the common state almost exactly (factor correlation {factor_corr:.4f}) "
+        f"and lowers one-step RMSE by {improvement:.1f}% relative to AR({p_ar}). The true-factor "
+        f"benchmark lowers RMSE by {true_factor_improvement:.1f}%, so the feasible diffusion "
+        "index is very close to the forecast that observes the simulated common state.\n\n"
+        "The caution is equally important. PCA finds co-movement, not causality, and the "
+        "number of factors is an economic modeling choice disciplined by diagnostics. In a "
+        "real macro panel, the researcher still has to choose transformations, vintages, "
+        "forecast horizons, and evaluation windows before treating the factors as evidence."
     )
 
     report.add_references([

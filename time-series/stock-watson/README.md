@@ -1,30 +1,60 @@
-# Stock-Watson Factor Forecasting
+# Stock-Watson Diffusion Index Forecasts
 
-> Principal component estimation of common factors from a large panel, with factor-augmented forecasting.
+> How a large macro panel becomes a diffusion index for forecasting.
 
 ## Overview
 
-Stock and Watson (2002) showed that a small number of estimated factors, extracted via principal components from a large panel of macroeconomic time series, can substantially improve forecasts relative to standard autoregressive models.
+Macroeconomic forecasting is often data rich and sample poor. A researcher may observe output, labor, prices, interest rates, credit spreads, orders, inventories, and many sectoral series, but only a few hundred monthly or quarterly observations. The Stock-Watson answer is to treat the panel as noisy measurements of a small set of common economic states, then forecast with those states rather than with every series separately.
 
-The key insight is that in a data-rich environment with $N$ series and $T$ periods, one can consistently estimate the latent common factors as $N, T \to \infty$, even though the factor loadings are unknown. This model demonstrates the approach with a synthetic panel where the true data generating process is known, allowing us to verify that PCA recovers the true factor.
+This tutorial uses a synthetic panel so the latent state is known. That makes the exercise more than a PCA demo: we can ask whether the first principal component recovers the true common factor, whether the cross-sectional exposures are right, and how the feasible factor forecast compares with a benchmark that observes $F_t$ directly. The [FRED-style macro-data tutorial](../fred-macro-data/) builds the measurement intuition for a small macro panel, while [Persistent Shocks](../ar-processes/) isolates the AR(1) timing logic used for the common factor here.
 
 ## Equations
 
-**Static Factor Model:**
+Let $X_t=(X_{1t},\ldots,X_{Nt})'$ collect the observed macro panel at date $t$.
+The static factor representation is
 
-$$X_{it} = \lambda_i' F_t + e_{it}, \qquad i = 1, \ldots, N, \quad t = 1, \ldots, T$$
+$$
+X_{it}=\lambda_i'F_t+e_{it},
+\qquad i=1,\ldots,N,\quad t=1,\ldots,T.
+$$
 
-where $F_t$ is a $r \times 1$ vector of common factors, $\lambda_i$ is the $r \times 1$
-loading vector for series $i$, and $e_{it}$ is the idiosyncratic component.
+Here $F_t\in\mathbb R^r$ is the common state, $\lambda_i\in\mathbb R^r$ is the
+loading for series $i$, and $e_{it}$ is the idiosyncratic part. In the simulated
+panel used below, $r=1$ and
 
-**PCA Estimation (Bai and Ng, 2002):**
+$$
+F_t=\rho_F F_{t-1}+\eta_t,\qquad \eta_t\sim N(0,1),
+\qquad
+\lambda_i\sim N(1,0.5^2),
+\qquad
+e_{it}\sim N(0,\sigma_{e,i}^2).
+$$
 
-The estimated factors $\hat{F}$ are $\sqrt{T}$ times the eigenvectors corresponding to the
-$r$ largest eigenvalues of the $T \times T$ matrix $(NT)^{-1} X X'$.
+Before estimation, each series is standardized:
 
-**Factor-Augmented Autoregression (FAAR):**
+$$
+Z_{it}=\frac{X_{it}-\bar X_i}{s_i}.
+$$
 
-$$y_{t+h} = \alpha + \sum_{j=1}^{p} \beta_j y_{t-j+1} + \gamma' \hat{F}_t + \varepsilon_{t+h}$$
+Let $v_1,\ldots,v_r$ be the eigenvectors associated with the $r$ largest
+eigenvalues of $T^{-1}Z'Z$. The feasible factor estimate is the projection
+
+$$
+\hat F_t=(Z_t'v_1,\ldots,Z_t'v_r)'.
+$$
+
+Factors and loadings are identified only up to scale, sign, and rotation, so the
+diagnostics compare normalized factors and standardized series-factor
+exposures. The forecasting equation for a target series $y_t$ is
+
+$$
+y_{t+h}
+=\alpha+\sum_{\ell=1}^{p}\beta_\ell y_{t-\ell+1}
++\gamma'\hat F_t+\varepsilon_{t+h}.
+$$
+
+The AR benchmark sets $\gamma=0$. The true-factor benchmark replaces $\hat F_t$
+with the simulated $F_t$.
 
 ## Model Setup
 
@@ -38,32 +68,54 @@ $$y_{t+h} = \alpha + \sum_{j=1}^{p} \beta_j y_{t-j+1} + \gamma' \hat{F}_t + \var
 | $\sigma_{e,i}$ | $\sim U(0.5, 1.5)$ | Idiosyncratic std. deviations |
 | AR lags ($p$) | 2 | Lags in forecasting equation |
 | Horizon ($h$) | 1 | Forecast horizon |
+| Initial training share | 60% | Expanding-window forecast start |
+| Target series | $X_{1t}$ | Representative observed macro variable |
 
 ## Solution Method
 
-**Step 1 -- Standardization:** Each series is demeaned and scaled to unit variance.
+The computation has two economic tasks. First, compress the panel into a common state that summarizes aggregate co-movement. Second, ask whether that state helps forecast a target series beyond its own lags. PCA is useful here because the large cross-section averages down idiosyncratic noise without estimating a separate coefficient for every predictor in the forecast regression.
 
-**Step 2 -- Eigendecomposition:** Compute the eigenvalues and eigenvectors of the $N \times N$ sample covariance matrix $(1/T) Z'Z$ where $Z$ is the standardized panel. The estimated factors are the projections of the data onto the top eigenvectors.
+```text
+Algorithm: Stock-Watson diffusion-index forecast
+Inputs: panel X_it, target y_t, number of factors r, AR lag order p,
+        forecast horizon h, initial training share q
+Outputs: estimated factors Fhat_t, AR RMSE, PCA-factor RMSE, true-factor RMSE
 
-**Step 3 -- Forecasting:** Compare an AR(p) model (using only own lags) with a factor-augmented AR model (FAAR) that adds the estimated factor as a predictor. Evaluation uses an expanding-window out-of-sample exercise.
+1. Standardize each series: Z_it = (X_it - mean_i) / sd_i.
+2. Form the cross-sectional covariance matrix S = T^{-1} Z'Z.
+3. Extract the r largest eigenvectors v_1,...,v_r of S.
+4. Set Fhat_t = (Z_t'v_1,...,Z_t'v_r) for each date t.
+5. For each expanding-window forecast origin tau:
+      fit AR(p): y_{t+h} on 1, y_t,...,y_{t-p+1}
+      fit factor AR(p): add Fhat_t to the same regression
+      fit true-factor AR(p): replace Fhat_t with the simulated F_t
+      record each h-step forecast error
+6. Compare RMSEs and cumulative squared errors over the evaluation window.
+```
 
-**Key result:** The first principal component explains **57.2%** of the total variance and has correlation **0.9970** with the true factor. The FAAR model achieves **28.0%** lower RMSE than the pure AR(2) benchmark.
+In this run, the first principal component explains 57.2% of standardized panel variance and has correlation 0.9970 with the true factor after sign alignment. The feasible factor forecast lowers RMSE by 28.0% relative to AR(2); the true-factor benchmark lowers it by 27.4%.
 
 ## Results
 
+The first comparison uses the simulated truth. Because a factor model is invariant to sign and scale, the PCA estimate is aligned and rescaled before plotting. After that harmless normalization, it tracks the latent state closely: the sample correlation is 0.9970. The point is economic rather than cosmetic. With many series, the common movement is much cleaner than any single observed macro variable.
+
 <img src="figures/factor-comparison.png" alt="True common factor vs PCA estimate (correlation = 0.9970). PCA recovers the latent factor up to a scale normalization." width="80%">
-*True common factor vs PCA estimate (correlation = 0.9970). PCA recovers the latent factor up to a scale normalization.*
+
+The eigenvalue pattern asks how many common states the panel is really carrying. Here the answer is deliberately sharp: PC1 explains 57.2% of the standardized variance, and the next components look like residual cross-sectional noise. In an empirical FRED-MD application this decision would be less mechanical, but the same diagnostic disciplines the choice of factor dimension.
 
 <img src="figures/scree-plot.png" alt="Scree plot and cumulative variance explained. The sharp drop after the first eigenvalue correctly indicates one dominant factor." width="80%">
-*Scree plot and cumulative variance explained. The sharp drop after the first eigenvalue correctly indicates one dominant factor.*
 
-<img src="figures/factor-loadings.png" alt="Factor loadings sorted by true value. PCA estimates track the cross-sectional pattern of true loadings." width="80%">
-*Factor loadings sorted by true value. PCA estimates track the cross-sectional pattern of true loadings.*
+The second diagnostic checks the cross-section. A high-exposure series is a clean signal of the common macro state; a low-exposure series is mostly idiosyncratic. The PCA exposure ranking has correlation 0.9999 with the true ranking, so the estimator is not only tracing the time path of $F_t$ but also recovering which series are informative about it.
 
-<img src="figures/forecast-comparison.png" alt="Forecast comparison: FAAR reduces RMSE by 28.0% relative to AR(2). Right panel shows cumulative squared errors." width="80%">
-*Forecast comparison: FAAR reduces RMSE by 28.0% relative to AR(2). Right panel shows cumulative squared errors.*
+<img src="figures/factor-loadings.png" alt="Standardized series-factor exposures sorted by the true exposure." width="80%">
 
-**Top 5 Eigenvalues and Variance Explained**
+The forecast exercise is the payoff. The AR(2) benchmark only knows the target's own lags. The feasible Stock-Watson regression adds the estimated diffusion index and cuts RMSE from 1.753 to 1.262. The true-factor line, which uses the simulated $F_t$, reaches 1.273. The two factor forecasts are close; the small finite-sample ordering should not be read as a structural ranking.
+
+<img src="figures/forecast-comparison.png" alt="Forecast comparison: the PCA factor forecast reduces RMSE by 28.0% relative to AR(2). Right panel shows cumulative squared errors." width="80%">
+
+The eigenvalue table is the numerical version of the scree plot. The large first eigenvalue is the simulated common state; the small remaining eigenvalues are mostly idiosyncratic variation that should not be promoted into forecast regressors without evidence.
+
+**Top five eigenvalues and variance explained**
 
 | Component   |   Eigenvalue |   Var. Explained (%) |   Cumulative (%) |
 |:------------|-------------:|---------------------:|-----------------:|
@@ -73,28 +125,21 @@ $$y_{t+h} = \alpha + \sum_{j=1}^{p} \beta_j y_{t-j+1} + \gamma' \hat{F}_t + \var
 | PC4         |        1.414 |                 1.41 |            61.84 |
 | PC5         |        1.357 |                 1.36 |            63.2  |
 
-**Out-of-Sample Forecast Comparison**
+The true-factor row is useful because the data-generating process is known. In this finite sample it is a benchmark, not a guaranteed lower bound on realized RMSE: the estimated factor is built from the same panel and can pick up small sample-specific target comovement. The durable lesson is that both factor regressions dominate the own-lag forecast.
 
-| Model   |   RMSE |   Relative RMSE |
-|:--------|-------:|----------------:|
-| AR(2)   | 1.753  |            1    |
-| FAAR(2) | 1.2621 |            0.72 |
+**Out-of-sample forecast comparison**
+
+| Model             |   RMSE |   Relative RMSE |
+|:------------------|-------:|----------------:|
+| AR(2)             | 1.753  |          1      |
+| PCA factor AR(2)  | 1.2621 |          0.72   |
+| True factor AR(2) | 1.2732 |          0.7263 |
 
 ## Takeaway
 
-The Stock-Watson diffusion index approach demonstrates a powerful principle: when many correlated time series share a common source of variation, principal components can extract this latent factor even with unknown loadings.
+The Stock-Watson idea is a disciplined way to use a large information set without putting a large number of regressors into a short macro forecast. In this controlled run, PCA recovers the common state almost exactly (factor correlation 0.9970) and lowers one-step RMSE by 28.0% relative to AR(2). The true-factor benchmark lowers RMSE by 27.4%, so the feasible diffusion index is very close to the forecast that observes the simulated common state.
 
-**Key insights:**
-- **Factor recovery:** With N=100 series and T=200 periods, PCA achieves a correlation of 0.9970 with the true factor. The Bai-Ng (2002) theory guarantees consistency as min(N,T) grows.
-- **Scree plot diagnostics:** The sharp drop after the first eigenvalue correctly identifies the true number of factors (r=1). The first PC explains 57.2% of total variance.
-- **Forecast gains:** Adding the estimated factor to an AR(2) model reduces RMSE by 28.0%. This gain comes from the factor capturing common movements that predict the target series.
-- **Practical implication:** Factor models are the workhorse for nowcasting and short-term macro forecasting at central banks. The approach scales naturally to hundreds of predictors without running into overfitting problems.
-
-## Reproduce
-
-```bash
-python run.py
-```
+The caution is equally important. PCA finds co-movement, not causality, and the number of factors is an economic modeling choice disciplined by diagnostics. In a real macro panel, the researcher still has to choose transformations, vintages, forecast horizons, and evaluation windows before treating the factors as evidence.
 
 ## References
 
