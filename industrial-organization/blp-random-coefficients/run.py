@@ -325,6 +325,43 @@ def gmm_objective(theta, s_obs, x, p, z, nu):
     return obj
 
 
+def market_elasticity_matrix(delta_t, x_t, p_t, sigma_x, sigma_p, alpha, nu):
+    """Elasticity matrix for one market under random-coefficients logit."""
+    mu = (
+        sigma_x * nu[:, 0][:, None] * x_t[None, :]
+        + sigma_p * nu[:, 1][:, None] * p_t[None, :]
+    )
+    V = delta_t[None, :] + mu
+    exp_V = np.exp(V)
+    prob = exp_V / (1.0 + exp_V.sum(axis=1, keepdims=True))
+    shares = prob.mean(axis=0)
+    alpha_i = alpha + sigma_p * nu[:, 1]
+
+    J = len(p_t)
+    elasticity = np.zeros((J, J))
+    for j in range(J):
+        for k in range(J):
+            if j == k:
+                derivative = np.mean(alpha_i * prob[:, j] * (1.0 - prob[:, j]))
+            else:
+                derivative = np.mean(-alpha_i * prob[:, j] * prob[:, k])
+            elasticity[j, k] = derivative * p_t[k] / shares[j]
+    return elasticity
+
+
+def logit_elasticity_matrix(alpha, prices, shares):
+    """Elasticity matrix for the plain-logit benchmark."""
+    J = len(prices)
+    elasticity = np.zeros((J, J))
+    for j in range(J):
+        for k in range(J):
+            if j == k:
+                elasticity[j, k] = alpha * prices[j] * (1.0 - shares[j])
+            else:
+                elasticity[j, k] = -alpha * prices[k] * shares[k]
+    return elasticity
+
+
 # =============================================================================
 # Main
 # =============================================================================
@@ -424,54 +461,38 @@ def main():
     # =========================================================================
     print("\nComputing elasticities...")
 
-    # Compute elasticities for a single market to illustrate BLP vs logit
+    # Compute elasticities for a single market to illustrate BLP vs logit.
     t_example = 0
     J_ex = J
 
-    # Compute individual-level elasticities for market t_example
-    mu_ex = (sigma_x_hat * nu[:, 0][:, None] * x[None, t_example, :]
-             + sigma_p_hat * nu[:, 1][:, None] * p[None, t_example, :])  # (ns, J)
-    V_ex = delta_hat[None, t_example, :] + mu_ex  # (ns, J)
-    exp_V_ex = np.exp(V_ex)
-    denom_ex = 1.0 + exp_V_ex.sum(axis=1, keepdims=True)  # (ns, 1)
-    prob_ex = exp_V_ex / denom_ex  # (ns, J)
+    true_elast_blp = market_elasticity_matrix(
+        delta_true[t_example, :],
+        x[t_example, :],
+        p[t_example, :],
+        sigma_x_true,
+        sigma_p_true,
+        true_params["alpha"],
+        nu,
+    )
+    cross_elast_blp = market_elasticity_matrix(
+        delta_hat[t_example, :],
+        x[t_example, :],
+        p[t_example, :],
+        sigma_x_hat,
+        sigma_p_hat,
+        alpha_hat,
+        nu,
+    )
+    cross_elast_logit = logit_elasticity_matrix(alpha_hat, p[t_example, :], s_pred[t_example, :])
 
-    # alpha_i for each draw
-    alpha_i = alpha_hat + sigma_p_hat * nu[:, 1]  # (ns,)
-
-    # Own-price elasticities for each product in market t_example
-    own_elast_blp = np.zeros(J_ex)
-    for j in range(J_ex):
-        # eta_j = (alpha_i) * p_j * (1 - s_ij), averaged
-        own_elast_blp[j] = np.mean(alpha_i * p[t_example, j] * (1 - prob_ex[:, j]))
-
-    # Plain logit elasticities for comparison
-    # In plain logit: eta_jj = alpha * p_j * (1 - s_j)
-    s_logit = s_pred[t_example, :]
-    own_elast_logit = alpha_hat * p[t_example, :] * (1 - s_logit)
-
-    # Cross-price elasticity matrix for market t_example (BLP)
-    cross_elast_blp = np.zeros((J_ex, J_ex))
-    for j in range(J_ex):
-        for k in range(J_ex):
-            if j == k:
-                cross_elast_blp[j, k] = own_elast_blp[j]
-            else:
-                # d s_j / d p_k * (p_k / s_j)
-                # = (1/ns) sum_i alpha_i * prob_ij * (-prob_ik) * p_k / s_j
-                numer = np.mean(alpha_i * prob_ex[:, j] * (-prob_ex[:, k]))
-                cross_elast_blp[j, k] = numer * p[t_example, k] / s_pred[t_example, j]
-
-    # Plain logit cross-price elasticities: eta_jk = -alpha * p_k * s_k (same for all j!=k)
-    cross_elast_logit = np.zeros((J_ex, J_ex))
-    for j in range(J_ex):
-        for k in range(J_ex):
-            if j == k:
-                cross_elast_logit[j, k] = own_elast_logit[j]
-            else:
-                cross_elast_logit[j, k] = -alpha_hat * p[t_example, k] * s_logit[k]
+    own_elast_true = np.diag(true_elast_blp)
+    own_elast_blp = np.diag(cross_elast_blp)
+    own_elast_logit = np.diag(cross_elast_logit)
+    max_delta_error = np.max(np.abs(delta_recovered - delta_true))
+    max_own_elast_error = np.max(np.abs(own_elast_blp - own_elast_true))
 
     print(f"  Own-price elasticities (BLP, market 1): {own_elast_blp}")
+    print(f"  Own-price elasticities (true DGP, market 1): {own_elast_true}")
     print(f"  Own-price elasticities (logit, market 1): {own_elast_logit}")
 
     # =========================================================================
@@ -481,72 +502,113 @@ def main():
 
     report = ModelReport(
         "BLP Random Coefficients Demand",
-        "Demand estimation with heterogeneous consumer preferences via Berry, Levinsohn, and Pakes (1995).",
+        "Differentiated-products demand when substitution depends on consumer tastes.",
+        include_reproduce=False,
+        show_figure_captions=False,
     )
 
     report.add_overview(
-        "The BLP model estimates demand for differentiated products while allowing consumer "
-        "preferences to vary across the population. Standard logit demand imposes the IIA "
-        "(Independence of Irrelevant Alternatives) property: the ratio of choice probabilities "
-        "between any two products is independent of the characteristics of all other products. "
-        "This produces unrealistic substitution patterns.\n\n"
-        "Random coefficients break IIA by letting each consumer have a different marginal "
-        "utility for product characteristics. Consumers who value a characteristic highly will "
-        "substitute toward products that share that characteristic, creating a realistic "
-        "pattern where similar products compete more intensely."
+        "In differentiated-products IO, demand is not only about fitting market shares. "
+        "The substitution matrix is what turns demand estimates into merger effects, "
+        "markups, and welfare calculations. The simple logit model in "
+        "[logit demand and markup recovery](../logit-supply-side/) is useful because "
+        "Berry inversion is transparent, but it also forces the IIA restriction: when "
+        "one product changes price, all rivals gain share in proportion to their existing "
+        "shares.\n\n"
+        "BLP replaces that representative-consumer substitution pattern with random "
+        "coefficients. Consumers differ in their taste for the observed characteristic "
+        "and in price sensitivity, so products that attract similar consumers become "
+        "closer substitutes. This tutorial uses a synthetic market where the true "
+        "parameters are known, estimates the nonlinear taste dispersion by GMM, and "
+        "then compares the implied elasticities with both the true DGP and a plain-logit "
+        "benchmark."
     )
 
     report.add_equations(
         r"""
-**Indirect utility** of consumer $i$ for product $j$ in market $t$:
+Consumer $i$ in market $t$ chooses among $J$ inside goods and an outside good.
+The indirect utility from inside product $j$ is
 
 $$u_{ijt} = \beta_0 + \beta_x x_{jt} + \alpha p_{jt} + \xi_{jt} + \sigma_x \nu_{i1} x_{jt} + \sigma_p \nu_{i2} p_{jt} + \varepsilon_{ijt}$$
 
-where $\nu_i \sim N(0, I)$ generates preference heterogeneity and $\varepsilon_{ijt}$ is T1EV (logit error).
+where $x_{jt}$ is an observed product characteristic, $p_{jt}$ is price,
+$\xi_{jt}$ is unobserved quality, $\nu_i \sim N(0,I)$, and
+$\varepsilon_{ijt}$ is Type-I extreme value. The outside good has utility
+normalized to zero.
 
-**Decomposition** into mean utility $\delta_{jt}$ and individual deviation $\mu_{ijt}$:
+It is useful to separate mean utility from the individual-specific part:
 
 $$\delta_{jt} = \beta_0 + \beta_x x_{jt} + \alpha p_{jt} + \xi_{jt}, \qquad \mu_{ijt} = \sigma_x \nu_{i1} x_{jt} + \sigma_p \nu_{i2} p_{jt}$$
 
-**Market shares** via simulation over $ns$ draws:
+For a candidate $\sigma=(\sigma_x,\sigma_p)$, simulated market shares are
 
 $$s_{jt} = \frac{1}{ns} \sum_{i=1}^{ns} \frac{\exp(\delta_{jt} + \mu_{ijt})}{1 + \sum_{k=1}^{J} \exp(\delta_{kt} + \mu_{ikt})}$$
 
-**BLP contraction mapping** to invert shares:
+The BLP contraction finds the mean utilities that rationalize observed shares:
 
 $$\delta^{(r+1)}_{jt} = \delta^{(r)}_{jt} + \log s^{\text{obs}}_{jt} - \log s^{\text{pred}}_{jt}(\delta^{(r)}, \sigma)$$
+
+Given $\delta(\sigma)$, the linear demand equation is
+
+$$\delta_{jt} = X_{jt}\theta_1 + \xi_{jt}, \qquad X_{jt}=(1,x_{jt},p_{jt})$$
+
+and the identifying moments are $E[Z_{jt}\xi_{jt}]=0$. The instruments include
+a cost shifter and sums of rival characteristics, so price can be endogenous
+through $\operatorname{Cov}(p_{jt},\xi_{jt}) \ne 0$.
 """
     )
 
     report.add_model_setup(
-        f"| Parameter | Value | Description |\n"
+        "The data-generating process has 100 independent markets with five products "
+        "per market. Prices are deliberately correlated with unobserved quality, so "
+        "the IV step is doing real work rather than decorating an exogenous logit "
+        "regression.\n\n"
+        f"| Object | Value | Role |\n"
         f"|-----------|-------|-------------|\n"
-        f"| $T$ | {T} | Number of markets |\n"
+        f"| $T$ | {T} | Markets |\n"
         f"| $J$ | {J} | Products per market |\n"
-        f"| $ns$ | {ns} | Simulation draws |\n"
-        f"| $\\beta_0$ | {true_params['beta_0']} | Intercept |\n"
-        f"| $\\beta_x$ | {true_params['beta_x']} | Characteristic coefficient |\n"
+        f"| $ns$ | {ns} | Simulation draws used for shares |\n"
+        f"| $\\beta_0$ | {true_params['beta_0']} | Mean inside-good utility |\n"
+        f"| $\\beta_x$ | {true_params['beta_x']} | Mean taste for $x$ |\n"
         f"| $\\alpha$ | {true_params['alpha']} | Mean price coefficient |\n"
-        f"| $\\sigma_x$ | {true_params['sigma_x']} | Std dev of random coeff on $x$ |\n"
-        f"| $\\sigma_p$ | {true_params['sigma_p']} | Std dev of random coeff on price |"
+        f"| $\\sigma_x$ | {true_params['sigma_x']} | Dispersion in taste for $x$ |\n"
+        f"| $\\sigma_p$ | {true_params['sigma_p']} | Dispersion in price sensitivity |"
     )
 
     report.add_solution_method(
-        "**Nested Fixed-Point (NFXP) with GMM:**\n\n"
-        "The BLP estimator has a nested structure. The *outer loop* searches over nonlinear "
-        "parameters $\\sigma = (\\sigma_x, \\sigma_p)$ to minimize the GMM objective. For each "
-        "candidate $\\sigma$:\n\n"
-        "1. **Inner loop (contraction mapping):** Invert observed shares to recover mean "
-        "utilities $\\delta(\\sigma)$ using the BLP contraction $\\delta^{(r+1)} = \\delta^{(r)} "
-        "+ \\log s^{\\text{obs}} - \\log s^{\\text{pred}}(\\delta^{(r)}, \\sigma)$. Berry (1994) "
-        "proved this map is a contraction.\n\n"
-        "2. **IV regression:** Regress $\\delta$ on $[1, x, p]$ using instruments $[1, x, z]$ "
-        "(2SLS) to recover linear parameters $(\\beta_0, \\beta_x, \\alpha)$ and structural "
-        "errors $\\xi$.\n\n"
-        "3. **GMM criterion:** $Q(\\sigma) = \\xi(\\sigma)' Z (Z'Z)^{-1} Z' \\xi(\\sigma)$, "
-        "exploiting the moment condition $E[z_{jt} \\cdot \\xi_{jt}] = 0$.\n\n"
-        f"Contraction converged in **{len(conv_history)} iterations** at true parameters. "
-        f"GMM optimization used Nelder-Mead ({result.nfev} function evaluations)."
+        "The estimator is nested fixed point with GMM. The outer problem chooses the "
+        "taste-dispersion parameters $\sigma=(\sigma_x,\sigma_p)$. The inner problem "
+        "inverts market shares for the mean utilities $\delta(\sigma)$.\n\n"
+        "```text\n"
+        "Inputs: observed shares s_obs, characteristics x, prices p, instruments Z, draws nu\n"
+        "Choose trial nonlinear parameters sigma = (sigma_x, sigma_p)\n"
+        "Initialize delta with the simple-logit inversion log(s_jt) - log(s_0t)\n"
+        "Repeat until the share residual is small:\n"
+        "    predict shares s_pred(delta, sigma) by averaging over taste draws nu\n"
+        "    update delta <- delta + log(s_obs) - log(s_pred)\n"
+        "Run 2SLS of delta(sigma) on (1, x, p) using Z\n"
+        "Compute xi(sigma) and Q(sigma) = n g(sigma)' W g(sigma), where g = Z' xi / n\n"
+        "Search over sigma and keep the minimizer\n"
+        "Output: sigma_hat, theta_1_hat, xi_hat, elasticities\n"
+        "```\n\n"
+        "The contraction is the economic inversion: it asks what common product utility "
+        "must be present for the model to match the observed shares after integrating "
+        "over consumer heterogeneity. The GMM step then asks whether those recovered "
+        "unobserved qualities are orthogonal to excluded cost and rival-characteristic "
+        "instruments.\n\n"
+        f"At the true nonlinear parameters, the contraction converged in "
+        f"**{len(conv_history)} iterations** with max "
+        f"$|\\delta^{{\\mathrm{{recovered}}}}-\\delta^{{\\mathrm{{true}}}}|="
+        f"{max_delta_error:.2e}$. The GMM search used Nelder-Mead after a coarse "
+        f"starting grid and evaluated the objective {result.nfev} times."
+    )
+
+    report.add_results(
+        "The estimated model matches the simulated market shares closely, which is "
+        "expected because the data come from the same random-coefficients family. "
+        "The more useful checks are the parameter table and the elasticity comparison: "
+        "they show whether the estimator recovers the DGP objects that matter for "
+        "counterfactual IO work."
     )
 
     # --- Figure 1: Observed vs Predicted Shares ---
@@ -562,33 +624,36 @@ $$\delta^{(r+1)}_{jt} = \delta^{(r)}_{jt} + \log s^{\text{obs}}_{jt} - \log s^{\
     ax1.legend()
     report.add_figure(
         "figures/observed-vs-predicted-shares.png",
-        "Observed vs predicted market shares at estimated parameters. Points near the 45-degree line indicate good model fit.",
+        "Observed and predicted market shares at estimated parameters.",
         fig1,
-        description="Tight clustering along the 45-degree line indicates that the estimated "
-        "random coefficients model fits the observed market shares well. Outliers would suggest "
-        "model misspecification or products with unusual unobserved characteristics.",
+        description="The share fit sits on the 45-degree line because the BLP contraction "
+        "forces the model to rationalize observed shares for the chosen nonlinear "
+        "parameters. This is why a good-looking share plot is not, by itself, evidence "
+        "that the substitution pattern is right.",
     )
 
     # --- Figure 2: Own-Price Elasticities ---
     fig2, ax2 = plt.subplots()
     products = np.arange(1, J_ex + 1)
-    width = 0.35
-    ax2.bar(products - width / 2, own_elast_blp, width, label="BLP (random coefficients)", color="steelblue")
-    ax2.bar(products + width / 2, own_elast_logit, width, label="Plain logit", color="coral")
+    width = 0.25
+    ax2.bar(products - width, own_elast_true, width, label="True DGP", color="darkgreen")
+    ax2.bar(products, own_elast_blp, width, label="Estimated BLP", color="steelblue")
+    ax2.bar(products + width, own_elast_logit, width, label="Plain logit", color="coral")
     ax2.set_xlabel("Product")
     ax2.set_ylabel("Own-price elasticity")
-    ax2.set_title("Own-Price Elasticities: BLP vs Plain Logit (Market 1)")
+    ax2.set_title("Own-Price Elasticities in Market 1")
     ax2.set_xticks(products)
     ax2.legend()
     ax2.axhline(y=0, color="k", linewidth=0.5)
     report.add_figure(
         "figures/own-price-elasticities.png",
-        "Own-price elasticities in market 1. BLP produces heterogeneous elasticities across products; plain logit elasticities are driven almost entirely by price level.",
+        "Own-price elasticities in market 1 under the true DGP, estimated BLP model, and plain logit benchmark.",
         fig2,
-        description="In plain logit, own-price elasticities are mechanically tied to "
-        "price and share levels. BLP allows elasticities to vary with the composition of "
-        "consumers who choose each product, producing richer variation that reflects genuine "
-        "differences in price sensitivity across market segments.",
+        description=f"The true-DGP bars are available because this is a simulation. "
+        f"Estimated BLP tracks the product-level pattern, with a maximum own-elasticity "
+        f"error of {max_own_elast_error:.3f} in this market. Plain logit has no "
+        "consumer-specific price coefficient, so its elasticities mostly inherit price "
+        "and share differences rather than the composition of buyers.",
     )
 
     # --- Figure 3: Contraction Mapping Convergence ---
@@ -601,11 +666,11 @@ $$\delta^{(r+1)}_{jt} = \delta^{(r)}_{jt} + \log s^{\text{obs}}_{jt} - \log s^{\
     ax3.legend()
     report.add_figure(
         "figures/contraction-convergence.png",
-        "Convergence of the BLP contraction mapping. The log-linear decline confirms the contraction property proved by Berry (1994).",
+        "Convergence of the BLP contraction mapping.",
         fig3,
-        description="The log-linear convergence rate confirms that the BLP mapping is indeed "
-        "a contraction, as Berry (1994) proved. Each iteration reduces the error by a constant "
-        "factor, making convergence reliable and predictable across different starting values.",
+        description="The inner fixed point is slow but stable. On the log scale, the "
+        "update norm falls almost linearly, which is the practical reason the BLP "
+        "inversion can be embedded inside an outer GMM search.",
     )
 
     # --- Figure 4: Cross-Price Elasticity Matrix ---
@@ -643,12 +708,13 @@ $$\delta^{(r+1)}_{jt} = \delta^{(r)}_{jt} + \log s^{\text{obs}}_{jt} - \log s^{\
     fig4.subplots_adjust(left=0.08, right=0.88, top=0.90, bottom=0.08, wspace=0.35)
     report.add_figure(
         "figures/cross-price-elasticity-matrix.png",
-        "Cross-price elasticity matrices. BLP produces asymmetric off-diagonal entries reflecting heterogeneous substitution; plain logit cross-elasticities depend only on the column product (IIA).",
+        "Cross-price elasticity matrices for estimated BLP and plain logit in market 1.",
         fig4,
-        description="The side-by-side comparison reveals the IIA limitation most clearly. In the "
-        "logit panel (right), each column has identical off-diagonal entries because cross-elasticities "
-        "depend only on the column product's price and share. In the BLP panel (left), cross-elasticities "
-        "vary by row, capturing the fact that similar products compete more intensely.",
+        description="The cross-elasticity matrix is the main economic object. In the "
+        "plain-logit panel, every off-diagonal entry in a column is identical, so a "
+        "price increase for product k sends the same proportional demand response to "
+        "each rival. In the BLP panel, off-diagonal entries vary by row because products "
+        "draw different mixtures of consumer tastes.",
     )
 
     # --- Table: Parameter Estimates ---
@@ -668,29 +734,21 @@ $$\delta^{(r+1)}_{jt} = \delta^{(r)}_{jt} + \log s^{\text{obs}}_{jt} - \log s^{\
         "tables/parameter-estimates.csv",
         "Estimated vs True Parameters",
         df,
-        description="The GMM estimator recovers the true parameters with reasonable accuracy. "
-        "The nonlinear parameters (sigma_x, sigma_p) govern the degree of consumer heterogeneity "
-        "and are identified by the variation in substitution patterns across markets.",
+        description="Because the data are synthetic, the parameter table is an actual "
+        "truth check rather than a loose calibration summary. The nonlinear parameters "
+        "are harder to pin down than the linear taste and price coefficients, but they "
+        "are the parameters that move substitution away from IIA.",
     )
 
     report.add_takeaway(
-        "The BLP random coefficients logit model fundamentally changes how we think about "
-        "demand substitution in differentiated product markets.\n\n"
-        "**Key insights:**\n"
-        "- **Breaking IIA:** In plain logit, if a product is removed from the market, its "
-        "share is redistributed to all remaining products in proportion to their existing "
-        "shares — regardless of similarity. BLP's random coefficients create realistic "
-        "patterns where close substitutes absorb more share.\n"
-        "- **Heterogeneous elasticities:** The cross-price elasticity matrix is no longer "
-        "symmetric in the off-diagonal. Products that attract similar consumer types exhibit "
-        "stronger cross-price effects.\n"
-        "- **Contraction mapping:** Berry (1994) proved that the mapping "
-        "$\\delta \\mapsto \\delta + \\log s^{\\text{obs}} - \\log s^{\\text{pred}}(\\delta)$ is a "
-        "contraction, guaranteeing unique inversion from shares to mean utilities. This is "
-        "the computational backbone of BLP.\n"
-        "- **Identification:** Price endogeneity ($\\text{Cov}(p, \\xi) \\neq 0$) requires "
-        "instruments. Cost shifters ($z$) that affect price but not utility provide "
-        "exclusion restrictions for 2SLS estimation of the linear parameters."
+        "BLP is valuable because it changes the counterfactual object, not because it "
+        "adds a more complicated optimizer. The contraction lets each candidate "
+        "$\\sigma$ fit observed shares, while the IV/GMM moments choose the amount of "
+        "heterogeneity that makes recovered unobserved quality orthogonal to excluded "
+        "instruments. Once heterogeneity is present, substitution is no longer forced "
+        "to follow existing shares. That is why the model is the natural next step "
+        "after simple logit demand, especially before using demand estimates for "
+        "mergers, markups, or welfare."
     )
 
     report.add_references([
