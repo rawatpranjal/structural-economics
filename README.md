@@ -147,7 +147,7 @@ These tutorials are for stochastic processes, macro data handling, and reduced-f
 
 | | Tutorial | What it teaches | Method | Key Insight |
 |:---:|---|---|---|---|
-| <img src="time-series/fred-macro-data/figures/thumb.png" width="192"> | [**FRED-Style Business Cycle Facts**](time-series/fred-macro-data/) | Business-cycle moments from macro time series | HP filter | Cyclical components reveal Okun and Phillips patterns |
+| <img src="time-series/fred-macro-data/figures/thumb.png" width="192"> | [**FRED-Style Macro Data and Business-Cycle Moments**](time-series/fred-macro-data/) | How GDP, inflation, unemployment, and policy-rate cycles become empirical targets | HP filter + moment diagnostics | Trend-cycle measurement turns FRED-style series into finite-sample macro moments |
 | <img src="time-series/ar-processes/figures/thumb.png" width="192"> | [**Persistent Shocks and Multiplier-Accelerator Dynamics**](time-series/ar-processes/) | How AR(1) persistence changes shock half-lives, spectra, and income dynamics | Analytic IRFs + simulation | Persistence is an economic timing assumption, not just a coefficient |
 | <img src="time-series/stock-watson/figures/thumb.png" width="192"> | [**Stock-Watson Factor Forecasting**](time-series/stock-watson/) | Extracting common factors from large panels | PCA | A small number of factors can improve forecasts |
 
