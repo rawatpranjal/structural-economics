@@ -1,23 +1,21 @@
 #!/usr/bin/env python3
-"""Herfindahl-Hirschman Index (HHI) and Market Concentration.
+"""Herfindahl-Hirschman Index (HHI) and merger screening.
 
-Computes the standard HHI for various market structures, demonstrates how
-mergers change concentration (delta-HHI), and compares segmented versus
-differentiated product markets. Includes DOJ/FTC merger guideline thresholds.
+Computes concentration measures, merger-induced delta-HHI, and a small
+Bertrand example that separates ownership aggregation from price effects.
 
-Reference: U.S. Department of Justice & FTC, Horizontal Merger Guidelines (2010).
+Reference: U.S. Department of Justice & FTC, Merger Guidelines (2023).
 """
 import sys
 from pathlib import Path
 
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 import pandas as pd
 
 # Add repo root to path for lib/ imports
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.plotting import setup_style, save_figure
+from lib.plotting import setup_style
 from lib.output import ModelReport
 
 
@@ -33,6 +31,12 @@ def compute_hhi(shares):
     """
     shares = np.asarray(shares, dtype=float)
     return float(np.sum(shares ** 2) * 10000)
+
+
+def effective_firms(shares):
+    """Equivalent number of equal-sized firms implied by the HHI."""
+    hhi = compute_hhi(shares)
+    return 10000 / hhi
 
 
 def delta_hhi(s1, s2):
@@ -58,10 +62,10 @@ def hhi_from_quantities(q, product_to_firm):
 
 
 def classify_hhi(hhi):
-    """Classify HHI per DOJ/FTC Horizontal Merger Guidelines (2010)."""
-    if hhi < 1500:
+    """Classify HHI using the 2023 DOJ/FTC structural thresholds."""
+    if hhi < 1000:
         return "Unconcentrated"
-    elif hhi < 2500:
+    elif hhi <= 1800:
         return "Moderately Concentrated"
     else:
         return "Highly Concentrated"
@@ -158,6 +162,7 @@ def main():
             "N Firms": len(shares),
             "Top Share (%)": f"{shares.max() * 100:.0f}",
             "HHI": f"{hhi:.0f}",
+            "Effective N": f"{effective_firms(shares):.2f}",
             "Classification": classify_hhi(hhi),
         })
     df_markets = pd.DataFrame(market_table)
@@ -228,6 +233,10 @@ def main():
     seg_hhi_after = hhi_from_quantities(q_seg_merge, p2f_merged)
     diff_hhi_before = hhi_from_quantities(q_diff_base, p2f_baseline)
     diff_hhi_after = hhi_from_quantities(q_diff_merge, p2f_merged)
+    seg_price_change = (p_seg_merge[:2].mean() / p_seg_base[:2].mean() - 1) * 100
+    diff_price_change = (p_diff_merge[:2].mean() / p_diff_base[:2].mean() - 1) * 100
+    seg_output_change = (q_seg_merge.sum() / q_seg_base.sum() - 1) * 100
+    diff_output_change = (q_diff_merge.sum() / q_diff_base.sum() - 1) * 100
 
     # =====================================================================
     # 5. Lorenz curves for selected markets
@@ -244,74 +253,147 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "Effective HHI for Merger Screening",
-        "The Herfindahl-Hirschman Index as the standard antitrust screening tool "
-        "for market concentration and merger review.",
+        "HHI, Effective Firms, and Merger Screens",
+        "Market concentration is a useful antitrust screen, but it is not a model of "
+        "competitive effects.",
+        include_reproduce=False,
+        show_figure_captions=False,
     )
 
     report.add_overview(
-        "The Herfindahl-Hirschman Index (HHI) is the most widely used measure of market "
-        "concentration in antitrust economics. It equals the sum of squared market shares "
-        "(times 10,000) and ranges from near zero (atomistic competition) to 10,000 "
-        "(monopoly). The U.S. DOJ and FTC use HHI thresholds to screen horizontal mergers.\n\n"
-        "This model computes HHI for a variety of market structures, demonstrates the "
-        "delta-HHI formula for mergers, and compares how concentration changes in segmented "
-        "versus differentiated product markets."
+        "HHI answers a narrow but important question: how concentrated is control of sales "
+        "in a relevant market? It is cheap to compute, transparent to explain, and therefore "
+        "useful as an early merger screen. The same simplicity is also its limitation. HHI "
+        "knows ownership shares, not diversion ratios, entry, efficiencies, or demand "
+        "curvature.\n\n"
+        "This tutorial keeps that distinction explicit. The first part works through the "
+        "index arithmetic, including the effective number of equal-sized firms implied by a "
+        "given HHI. The second part puts the same ownership change inside a four-product "
+        "Bertrand model. When products are segmented, HHI rises but prices do not move. When "
+        "products substitute, common ownership changes the pricing FOC. For the fuller "
+        "counterfactual exercise, compare the neighboring "
+        "[merger simulation](../merger-simulation/) and "
+        "[logit supply-side](../logit-supply-side/) tutorials."
     )
 
     report.add_equations(
         r"""
-**Herfindahl-Hirschman Index:**
+Let firms be indexed by $f=1,\ldots,F$, with market shares $s_f$ measured as
+fractions that sum to one. The Herfindahl-Hirschman Index is
 
-$$\text{HHI} = \sum_{i=1}^{N} s_i^2 \times 10{,}000$$
+$$
+\text{HHI}=10{,}000\sum_{f=1}^{F}s_f^2.
+$$
 
-where $s_i$ is firm $i$'s market share (as a fraction).
+The associated effective number of equal-sized firms is
 
-**Delta-HHI from a merger of firms $i$ and $j$:**
+$$
+N_{\text{eff}}=\frac{1}{\sum_f s_f^2}=\frac{10{,}000}{\text{HHI}}.
+$$
 
-$$\Delta\text{HHI} = 2 \, s_i \, s_j \times 10{,}000$$
+Thus a market with HHI 2,000 has the same concentration as five symmetric
+firms, even if the actual firm count is different.
 
-This follows because the merged firm's share is $s_i + s_j$, so
-$(s_i + s_j)^2 - s_i^2 - s_j^2 = 2 s_i s_j$.
+If firms $a$ and $b$ merge while all quantities are held fixed, the arithmetic
+change is
 
-**DOJ/FTC Merger Guidelines thresholds:**
-- HHI < 1,500: **Unconcentrated** — mergers unlikely to raise concerns
-- 1,500 $\le$ HHI < 2,500: **Moderately concentrated** — mergers raising HHI by more than 100 warrant scrutiny
-- HHI $\ge$ 2,500: **Highly concentrated** — mergers raising HHI by more than 200 presumed to enhance market power
+$$
+\Delta\text{HHI}
+=10{,}000[(s_a+s_b)^2-s_a^2-s_b^2]
+=20{,}000 s_a s_b.
+$$
+
+For product-level data, product $j$ belongs to firm $f(j)$ and sells quantity
+$q_j$. Firm shares aggregate product quantities:
+
+$$
+s_f=\frac{\sum_{j:f(j)=f}q_j}{\sum_{\ell}q_{\ell}}.
+$$
+
+The small structural comparison uses linear differentiated-products demand,
+
+$$
+q(p)=a+Dp,\qquad D_{jj}=\alpha<0,\quad D_{jk}=\beta\geq 0\ (j\neq k).
+$$
+
+Let $\Omega_{jk}=1$ if products $j$ and $k$ are commonly owned. Bertrand-Nash
+prices satisfy
+
+$$
+q(p)+(\Omega\circ D^\top)(p-c)=0.
+$$
+
+The 2023 DOJ/FTC Merger Guidelines treat HHI above 1,800 as highly
+concentrated and an HHI increase above 100 points as significant for the
+structural presumption. The tutorial also reports the familiar category scale:
+below 1,000 is unconcentrated, 1,000 to 1,800 is moderately concentrated, and
+above 1,800 is highly concentrated.
 """
     )
 
     report.add_model_setup(
-        f"| Parameter | Value | Description |\n"
-        f"|-----------|-------|-------------|\n"
-        f"| $N$ | 1 to 100 | Number of firms |\n"
-        f"| $s_i$ | Various | Market shares (fractions summing to 1) |\n"
-        f"| $\\alpha$ | {alpha} | Own-price demand sensitivity |\n"
-        f"| $\\beta_{{\\text{{seg}}}}$ | {beta_seg} | Cross-price sensitivity (segmented) |\n"
-        f"| $\\beta_{{\\text{{diff}}}}$ | {beta_diff} | Cross-price sensitivity (differentiated) |"
+        "The index calculations use share vectors chosen to isolate firm count from "
+        "asymmetry. The Bertrand comparison uses four products. Initially each product is "
+        "owned by a separate firm; the merger puts products 1 and 2 under common ownership.\n\n"
+        f"| Object | Value | Role |\n"
+        f"|--------|-------|------|\n"
+        f"| $F$ | 1 to 100 | Firm counts for the symmetric HHI benchmark |\n"
+        f"| $s_f$ | Several share vectors | Firm shares used in the concentration table |\n"
+        f"| Products | 4 | Two high-demand products and two lower-demand products |\n"
+        f"| $\\alpha$ | {alpha:.1f} | Own-price slope in linear demand |\n"
+        f"| $\\beta_{{\\text{{seg}}}}$ | {beta_seg:.1f} | No cross-price substitution |\n"
+        f"| $\\beta_{{\\text{{diff}}}}$ | {beta_diff:.1f} | Positive cross-price substitution |\n"
+        f"| Merger | products 1 and 2 | Same ownership change in both demand environments |"
     )
 
     report.add_solution_method(
-        "**HHI computation** is direct summation of squared shares. For merger analysis, "
-        "we use the closed-form delta-HHI = $2 s_i s_j \\times 10{,}000$.\n\n"
-        "**Differentiated products equilibrium** uses Bertrand-Nash pricing. Each firm "
-        "maximizes profit taking rivals' prices as given, with linear demand "
-        "$q = a + (\\partial q / \\partial p) \\cdot p$. The FOC is:\n\n"
-        "$$p - c + (\\Omega \\circ (\\partial q / \\partial p)^\\top)^{-1} q = 0$$\n\n"
-        "where $\\Omega$ is the ownership matrix. We solve this system of equations via "
-        "`scipy.optimize.fsolve` and compare HHI before and after mergers change $\\Omega$."
+        "The concentration part is exact arithmetic. The only equilibrium computation is "
+        "the four-product pricing problem, where the ownership matrix changes the markup "
+        "equation.\n\n"
+        "```text\n"
+        "Inputs: firm shares s, product quantities q, costs c, demand slopes D, ownership f(j)\n"
+        "Outputs: HHI, effective firm count, delta-HHI, equilibrium prices\n\n"
+        "1. For each market, compute HHI = 10000 * sum_f s_f^2.\n"
+        "2. Report N_eff = 10000 / HHI to put asymmetric markets on a symmetric scale.\n"
+        "3. For a candidate merger (a,b), compute delta-HHI = 20000 * s_a * s_b.\n"
+        "4. In product data, aggregate q_j to firm shares using the ownership map f(j).\n"
+        "5. Build Omega_jk = 1[f(j) = f(k)].\n"
+        "6. Solve q(p) + (Omega .* D') (p - c) = 0 for Bertrand-Nash prices.\n"
+        "7. Recompute firm shares and HHI under the post-merger ownership map.\n"
+        "```\n\n"
+        "Step 6 is solved by root finding. In this linear example the root is a numerical "
+        "way to solve a small system of first-order conditions, not the economic point of "
+        "the tutorial. The economic point is that HHI is an ownership screen, while the "
+        "pricing effect appears only through substitution and the Bertrand FOC."
+    )
+
+    report.add_results(
+        "The screen and the pricing model give different objects. In the segmented case, "
+        "the merged products are independent, so prices and total quantity are unchanged. "
+        "HHI still jumps because the two product shares are now counted under one owner. "
+        "With positive cross-price substitution, common ownership also changes the pricing "
+        "problem, so the merged products become more expensive.\n\n"
+        f"| Demand environment | HHI before | HHI after | $\\Delta$HHI | "
+        f"Merged-price change | Total-output change |\n"
+        f"|---|---:|---:|---:|---:|---:|\n"
+        f"| Segmented ($\\beta={beta_seg:.1f}$) | {seg_hhi_before:.0f} | "
+        f"{seg_hhi_after:.0f} | {seg_hhi_after - seg_hhi_before:.0f} | "
+        f"{seg_price_change:.2f}% | {seg_output_change:.2f}% |\n"
+        f"| Differentiated ($\\beta={beta_diff:.1f}$) | {diff_hhi_before:.0f} | "
+        f"{diff_hhi_after:.0f} | {diff_hhi_after - diff_hhi_before:.0f} | "
+        f"{diff_price_change:.2f}% | {diff_output_change:.2f}% |"
     )
 
     # --- Figure 1: HHI vs number of equal-sized firms ---
     fig1, ax1 = plt.subplots()
     ax1.plot(n_firms_range, hhi_equal, "b-", linewidth=2)
     # Shade threshold regions
-    ax1.axhspan(0, 1500, alpha=0.10, color="green", label="Unconcentrated (< 1500)")
-    ax1.axhspan(1500, 2500, alpha=0.10, color="orange", label="Moderate (1500-2500)")
-    ax1.axhspan(2500, 10500, alpha=0.10, color="red", label="Highly Concentrated (> 2500)")
+    ax1.axhspan(0, 1000, alpha=0.10, color="green", label="Unconcentrated (< 1000)")
+    ax1.axhspan(1000, 1800, alpha=0.10, color="orange", label="Moderate (1000-1800)")
+    ax1.axhspan(1800, 10500, alpha=0.10, color="red", label="Highly Concentrated (> 1800)")
     ax1.set_xlabel("Number of Equal-Sized Firms ($N$)")
     ax1.set_ylabel("HHI")
-    ax1.set_title("HHI as a Function of Number of Equal-Sized Firms")
+    ax1.set_title("HHI on the Equal-Sized-Firm Scale")
     ax1.set_xlim(1, 50)
     ax1.set_ylim(0, 10500)
     ax1.legend(loc="upper right", fontsize=9)
@@ -327,12 +409,12 @@ $(s_i + s_j)^2 - s_i^2 - s_j^2 = 2 s_i s_j$.
         )
     report.add_figure(
         "figures/hhi-vs-nfirms.png",
-        "HHI declines as 10000/N for equal-sized firms, with DOJ/FTC threshold regions shaded",
+        "HHI equals 10000/N for equal-sized firms, with DOJ/FTC threshold regions shaded",
         fig1,
-        description="HHI falls as 1/N for symmetric firms, so concentration drops rapidly with "
-        "the first few entrants but the marginal effect of additional firms diminishes. A market "
-        "needs at least 7 equal-sized firms to fall below the DOJ's 'moderately concentrated' "
-        "threshold of 1,500.",
+        description="For symmetric firms, HHI is exactly $10{,}000/N$. Moving from monopoly "
+        "to five equal firms does most of the work: HHI falls from 10,000 to 2,000. The "
+        "highly concentrated threshold of 1,800 corresponds to about 5.6 equal-sized firms, "
+        "while the unconcentrated threshold of 1,000 corresponds to ten equal firms.",
     )
 
     # --- Figure 2: Merger bar chart (before/after HHI) ---
@@ -366,10 +448,10 @@ $(s_i + s_j)^2 - s_i^2 - s_j^2 = 2 s_i s_j$.
             fontsize=9,
             fontweight="bold",
         )
-    ax2.axhline(y=1500, color="green", linestyle="--", linewidth=1, alpha=0.7)
-    ax2.axhline(y=2500, color="orange", linestyle="--", linewidth=1, alpha=0.7)
-    ax2.text(len(merger_results) - 0.5, 1560, "Unconcentrated threshold (1500)", fontsize=8, color="green")
-    ax2.text(len(merger_results) - 0.5, 2560, "Highly concentrated threshold (2500)", fontsize=8, color="orange")
+    ax2.axhline(y=1000, color="green", linestyle="--", linewidth=1, alpha=0.7)
+    ax2.axhline(y=1800, color="orange", linestyle="--", linewidth=1, alpha=0.7)
+    ax2.text(len(merger_results) - 0.5, 1060, "Unconcentrated threshold (1000)", fontsize=8, color="green")
+    ax2.text(len(merger_results) - 0.5, 1860, "Highly concentrated threshold (1800)", fontsize=8, color="orange")
     ax2.set_xticks(x)
     ax2.set_xticklabels([m["label"] for m in merger_results], fontsize=9)
     ax2.set_ylabel("HHI")
@@ -380,9 +462,9 @@ $(s_i + s_j)^2 - s_i^2 - s_j^2 = 2 s_i s_j$.
         "figures/merger-delta-hhi.png",
         "HHI before and after merger of the two largest firms across market structures",
         fig2,
-        description="The delta-HHI labels above each bar show the mechanical increase in "
-        "concentration from the merger. Mergers between large firms (high-share pairs) "
-        "generate disproportionately larger jumps because delta-HHI equals 2*s1*s2*10,000.",
+        description="The merger bars are pure index arithmetic. The same formula, "
+        "$20{,}000 s_a s_b$, makes a 40-30 merger much larger than a merger of two small firms. "
+        "That is why HHI is informative as a first screen, even before estimating demand.",
     )
 
     # --- Figure 3: Lorenz curves ---
@@ -403,10 +485,10 @@ $(s_i + s_j)^2 - s_i^2 - s_j^2 = 2 s_i s_j$.
         "figures/lorenz-curves.png",
         "Lorenz curves: more bowed curves indicate greater concentration and higher HHI",
         fig3,
-        description="The Lorenz curve complements HHI by visualizing the full distribution of "
-        "market shares. Equal-sized firms produce a straight line; a dominant firm pushes the "
-        "curve away from the diagonal. The area between the curve and the equality line is the "
-        "Gini coefficient of market concentration.",
+        description="The Lorenz curves show what the scalar index compresses. Equal firms stay "
+        "on the diagonal. A dominant firm bends the curve away from the diagonal because many "
+        "firms account for little output while one firm accounts for most of it. The table "
+        "below turns the same share vectors into HHI and effective firm counts.",
     )
 
     # --- Table 1: Example markets ---
@@ -414,50 +496,23 @@ $(s_i + s_j)^2 - s_i^2 - s_j^2 = 2 s_i s_j$.
         "tables/market-hhi.csv",
         "HHI for Example Market Structures",
         df_markets,
-        description="The classification column maps HHI to DOJ/FTC merger guideline categories. "
-        "Note how asymmetry amplifies concentration: a dominant firm with 70% share produces "
-        "higher HHI than a symmetric 5-firm market, even though both have similar firm counts.",
-    )
-
-    # --- Results: segmented vs differentiated comparison ---
-    report.add_results(
-        "**Segmented vs. Differentiated Product Markets (merger of firms 1 and 2):**\n\n"
-        f"| Market Type | HHI Before | HHI After | $\\Delta$HHI |\n"
-        f"|-------------|-----------|----------|------------|\n"
-        f"| Segmented ($\\beta=0$) | {seg_hhi_before:.0f} | {seg_hhi_after:.0f} "
-        f"| {seg_hhi_after - seg_hhi_before:.0f} |\n"
-        f"| Differentiated ($\\beta={beta_diff}$) | {diff_hhi_before:.0f} | {diff_hhi_after:.0f} "
-        f"| {diff_hhi_after - diff_hhi_before:.0f} |\n\n"
-        "In segmented markets ($\\beta = 0$, no cross-price effects), a merger changes "
-        "ownership but cannot raise prices because products are independent. HHI still "
-        "changes mechanically through quantity reallocation. In differentiated markets "
-        "($\\beta > 0$), merged firms internalize cross-price externalities, raising prices "
-        "on substitutes and amplifying concentration."
+        description="The effective firm count makes asymmetry visible. A 70-10-10-10 market "
+        "has four firms, but its HHI of 5,200 is equivalent to fewer than two equal-sized "
+        "firms. Firm count alone would miss that concentration.",
     )
 
     report.add_takeaway(
-        "The HHI is the workhorse screening tool for antitrust enforcement. Its appeal "
-        "lies in simplicity: it requires only market shares and has a clean algebraic "
-        "relationship to merger-induced concentration changes.\n\n"
-        "**Key insights:**\n"
-        "- For $N$ equal-sized firms, HHI $= 10{,}000/N$. Moving from 10 to 5 firms "
-        "doubles HHI from 1,000 to 2,000.\n"
-        "- Delta-HHI from a merger equals $2 s_i s_j \\times 10{,}000$ — mergers between "
-        "larger firms generate disproportionately bigger jumps in concentration.\n"
-        "- HHI is a *necessary* but not *sufficient* indicator of market power. Two markets "
-        "can have the same HHI but very different competitive conditions depending on "
-        "product differentiation, entry barriers, and demand elasticities.\n"
-        "- In differentiated product markets, the ownership matrix $\\Omega$ governs which "
-        "cross-price effects are internalized. A merger changes $\\Omega$ and thereby "
-        "changes equilibrium prices — even holding costs and demand parameters fixed.\n"
-        "- The DOJ/FTC thresholds (1,500 and 2,500) are screens, not bright lines. "
-        "Context-specific analysis — including efficiencies, entry, and buyer power — "
-        "determines the ultimate competitive assessment."
+        "HHI is valuable because it is transparent: it converts shares into a concentration "
+        "number and gives a closed-form delta for mergers. But the segmented-product example "
+        "is the warning label. Ownership aggregation can raise HHI even when the maintained "
+        "demand model implies no price effect. Once products substitute, the same ownership "
+        "change works through the Bertrand FOC and prices move. In applied work, HHI should "
+        "start the antitrust conversation, not end it."
     )
 
     report.add_references([
-        "U.S. Department of Justice & Federal Trade Commission (2010). "
-        "*Horizontal Merger Guidelines*.",
+        "U.S. Department of Justice & Federal Trade Commission (2023). "
+        "*Merger Guidelines*.",
         "Werden, G. (1991). \"A Robust Test for Consumer Welfare Enhancing Mergers Among "
         "Sellers of Differentiated Products.\" *Journal of Industrial Economics*, 39(4).",
         "Farrell, J. and Shapiro, C. (1990). \"Horizontal Mergers: An Equilibrium Analysis.\" "
