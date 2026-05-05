@@ -1,5 +1,13 @@
 {
   "pass_name": "quality-control-v1",
-  "updated_at": "2026-05-05T18:07:54Z",
-  "entries": []
+  "updated_at": "2026-05-05T19:47:26Z",
+  "entries": [
+    {
+      "tutorial_path": "industrial-organization/dynamic-games/",
+      "report_path": "docs/qc-reports/tutorials/industrial-organization__dynamic-games.md",
+      "status": "complete",
+      "verdict": "minor issues",
+      "updated_at": "2026-05-05T19:47:26Z"
+    }
+  ]
 }
