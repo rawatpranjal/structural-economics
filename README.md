@@ -121,7 +121,7 @@ Choice and demand stays focused on choice theory, revealed preference, Bayesian 
 
 | | Tutorial | What it teaches | Method | Key Insight |
 |:---:|---|---|---|---|
-| <img src="choice/revealed-preference-afriat/figures/thumb.png" width="192"> | [**Revealed Preference via Afriat**](choice/revealed-preference-afriat/) | Testing whether choices can come from utility maximization | Afriat inequalities | GARP is a testable implication of utility maximization |
+| <img src="choice/revealed-preference-afriat/figures/thumb.png" width="192"> | [**Afriat's Revealed-Preference Test**](choice/revealed-preference-afriat/) | Testing finite choice data without choosing a demand functional form | GARP transitive closure + Afriat inequalities | Rationalizability fails exactly when revealed-preference chains create a strict budget cycle |
 | <img src="choice/preference-recoverability/figures/thumb.png" width="192"> | [**Recovering Preferences from Finite Data**](choice/preference-recoverability/) | Bounding indifference curves without a full functional form | Afriat numbers | Data can bound preferences even without point identification |
 | <img src="choice/money-pump-index/figures/thumb.png" width="192"> | [**Money Pump Index for Revealed Preference**](choice/money-pump-index/) | Measuring how costly a revealed-preference cycle is | Maximum mean cycle | GARP failures differ in welfare severity |
 | <img src="choice/houtman-maks-rational-subsets/figures/thumb.png" width="192"> | [**Houtman-Maks Rational Subsets**](choice/houtman-maks-rational-subsets/) | Finding the largest rationalizable core of a dataset | Exact subset search + SCC heuristic | Some violations are driven by a small set of observations |

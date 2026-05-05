@@ -1,71 +1,107 @@
-# Revealed Preference via Afriat
+# Afriat's Revealed-Preference Test
 
-> Testing whether observed consumption data is consistent with utility maximization.
+> Testing finite choice data for consistency with utility maximization.
 
 ## Overview
 
-Revealed preference theory asks a fundamental empirical question: can observed consumer choices be rationalized by *any* well-behaved utility function? Afriat's theorem (1967) provides a complete answer — observed data $(p_t, x_t)_{t=1}^T$ is consistent with utility maximization if and only if it satisfies the Generalized Axiom of Revealed Preference (GARP).
+Suppose we observe a finite panel of choices: at prices $p_t$, the consumer chooses bundle $x_t$. Without estimating a Cobb-Douglas, CES, or logit demand system, what does utility maximization require of those choices?
 
-This is the empirical foundation of consumer theory. Unlike parametric demand estimation, the revealed preference approach is entirely nonparametric — it does not assume a functional form for utility. If the data passes GARP, there EXISTS a nonsatiated, continuous, concave, monotone utility function that rationalizes it.
+The restriction is about revealed tradeoffs. If bundle $x_j$ was affordable when $x_i$ was chosen, then the data reveal $x_i$ to be at least as good as $x_j$. Chains of those comparisons cannot come back and make an earlier choice strictly cheaper at a later budget. That no-cycle condition is GARP. Afriat's theorem says this finite condition is exactly equivalent to the existence of a locally nonsatiated, monotone, concave utility function that rationalizes the observations.
+
+The tutorial uses three checks: a known rational Cobb-Douglas sample, a small corrupted sample that breaks rationalizability, and a Bronars-style power exercise showing that random choices usually fail once $T$ is large.
 
 ## Equations
 
-**Direct Revealed Preference:** Observation $i$ is *directly revealed preferred* to $j$ if:
-$$p_i \cdot x_i \geq p_i \cdot x_j$$
-i.e., bundle $x_j$ was affordable when $x_i$ was chosen.
+Let the data be $\mathcal{D}=\{(p_t,x_t)\}_{t=1}^T$, where $p_t\in\mathbb{R}_{++}^L$ and $x_t\in\mathbb{R}_{+}^L$. Expenditure at observation $t$ is $m_t=p_t\cdot x_t$.
 
-**GARP:** For all $i, j$: if $x_i \; R^{*} \; x_j$ (revealed preferred, possibly indirectly), then:
-$$p_j \cdot x_j \leq p_j \cdot x_i$$
-i.e., $x_i$ must not lie strictly inside $j$'s budget set.
+Observation $i$ is directly revealed weakly preferred to observation $j$, written $iRj$, when
+$$
+p_i\cdot x_i \geq p_i\cdot x_j .
+$$
+The bundle $x_j$ was affordable when $x_i$ was chosen.
 
-**Afriat Inequalities:** Data is rationalizable $\iff$ there exist scalars $u_i, \lambda_i > 0$ such that:
-$$u_i - u_j \leq \lambda_j \, p_j \cdot (x_i - x_j) \quad \forall \, i, j$$
+Let $R^{*}$ denote the transitive closure of $R$. GARP requires that no pair $(i,j)$ satisfies both
+$$
+iR^{*}j
+\quad\text{and}\quad
+p_j\cdot x_j > p_j\cdot x_i .
+$$
+The first statement says $x_i$ is revealed at least as good as $x_j$ through a chain of budgets. The second says that, at budget $j$, $x_i$ was strictly cheaper than the bundle actually chosen.
 
-**Afriat's Theorem (1967):** The following are equivalent:
-1. Data satisfies GARP
-2. Afriat inequalities have a solution
-3. Data can be rationalized by a nonsatiated, continuous, concave utility function
+Afriat's inequalities give the constructive equivalent condition. The data are rationalizable if and only if there exist numbers $u_t$ and $\lambda_t>0$ such that
+$$
+u_i-u_j \leq \lambda_j p_j\cdot(x_i-x_j)
+\quad \forall i,j .
+$$
+When those inequalities are feasible, a rationalizing utility can be written as
+$$
+\widehat U(x)=\min_j\{u_j+\lambda_j p_j\cdot(x-x_j)\}.
+$$
+This run checks GARP directly; the neighboring [preference-recoverability](../preference-recoverability/) tutorial uses the Afriat numbers to draw preference bounds.
 
 ## Model Setup
 
-| Parameter | Value | Description |
-|-----------|-------|-------------|
-| $T$ | 10 | Number of observations |
-| Goods | 3 | Number of goods per bundle |
-| Example 1 | Cobb-Douglas | Data generated from utility maximizer |
-| Example 2 | Perturbed | Swapped bundles to induce GARP violation |
-| Power test | 500 trials | Random data, $T \in \{2, 3, 5, 8, 10, 15, 20, 30, 50\}$ |
+| Object | Value | Role in the exercise |
+|---|---|---|
+| Observations $T$ | 10 | Budget-choice pairs in the two worked examples |
+| Goods $L$ | 3 | Three-good bundles, with figures projected onto goods 1 and 2 |
+| Cobb-Douglas weights | 0.337, 0.328, 0.335 | Ground-truth rational benchmark |
+| Corrupted sample | 2 violations | Two chosen bundles are swapped until GARP fails |
+| Power exercise | 500 trials | Random independent prices and quantities for each $T$ |
+| Rational benchmark | 0 violations | Utility-maximizing Cobb-Douglas choices should always pass GARP |
 
 ## Solution Method
 
-**Step 1 — Direct Revealed Preference:** For each pair $(i, j)$, check if $p_i \cdot x_i \geq p_i \cdot x_j$. This builds the direct preference matrix $R$.
+The computation is a graph problem on observations. Nodes are observed bundles; directed edges record revealed weak preference. Warshall's transitive closure is enough here because the sample is small and the object of interest is reachability, not a parametric demand curve.
 
-**Step 2 — Transitive Closure (Warshall's Algorithm):** Compute $R^{*}$, the transitive closure of $R$. If $i \; R \; k$ and $k \; R \; j$, then $i \; R^{*} \; j$. This runs in $O(T^3)$ time.
+```text
+Input: prices p_t and chosen bundles x_t for t=1,...,T
+Output: pass/fail GARP decision and violating observation pairs
 
-**Step 3 — GARP Check:** For all pairs where $i \; R^{*} \; j$, verify that $p_j \cdot x_j \leq p_j \cdot x_i$. Any violation means the data cannot be rationalized by utility maximization.
+1. For each pair (i,j), set R[i,j] = 1 if p_i . x_i >= p_i . x_j.
+2. Initialize R_star = R.
+3. For each intermediate node k:
+       for each origin i and destination j:
+           set R_star[i,j] = R_star[i,j] or (R_star[i,k] and R_star[k,j]).
+4. For each reachable pair (i,j), flag a violation if p_j . x_j > p_j . x_i.
+5. The data pass GARP exactly when the violation set is empty.
+```
 
-**Example 1** (consistent): GARP satisfied = **True**, violations = 0.
+This is $O(T^3)$, which is trivial for the samples used here and clear enough to expose the economics. In larger revealed-preference datasets one would usually keep the same objects but implement the graph operations with sparse matrices or specialized reachability routines.
 
-**Example 2** (inconsistent): GARP satisfied = **False**, violations = **2**.
+The Cobb-Douglas sample passes with 0 violations. The corrupted sample fails with 2 violating pairs.
 
 ## Results
 
-<img src="figures/budget-lines-consistent.png" alt="Budget lines and chosen bundles (2D projection) for consistent data generated from a Cobb-Douglas utility maximizer. All choices lie on their respective budget lines." width="80%">
-*Budget lines and chosen bundles (2D projection) for consistent data generated from a Cobb-Douglas utility maximizer. All choices lie on their respective budget lines.*
+The first pair of figures plots the residual budget line for goods 1 and 2, holding the other good at its observed quantity. The projection is not the full three-good budget set, but it makes the revealed-preference comparison visible: rational data can look irregular across budgets without creating a strict cycle.
 
-<img src="figures/budget-lines-inconsistent.png" alt="Budget lines and chosen bundles for inconsistent data. Swapped bundles create revealed preference cycles that cannot be rationalized by any utility function." width="80%">
-*Budget lines and chosen bundles for inconsistent data. Swapped bundles create revealed preference cycles that cannot be rationalized by any utility function.*
+In the rational benchmark, every observation comes from the same Cobb-Douglas preference vector. The chosen bundles need not line up on a smooth two-dimensional curve, because prices and income vary, but the budget comparisons do not contradict one another.
 
-<img src="figures/rp-graph-consistent.png" alt="Directed graph of the revealed preference relation for consistent data. Red edges indicate mutual relations. No GARP-violating cycles exist." width="80%">
-*Directed graph of the revealed preference relation for consistent data. Red edges indicate mutual relations. No GARP-violating cycles exist.*
+<img src="figures/budget-lines-consistent.png" alt="Budget lines and chosen bundles for the GARP-satisfying sample." width="80%">
 
-<img src="figures/rp-graph-inconsistent.png" alt="Directed graph for inconsistent data. Mutual red edges in the transitive closure reveal GARP-violating cycles — these observations cannot be rationalized." width="80%">
-*Directed graph for inconsistent data. Mutual red edges in the transitive closure reveal GARP-violating cycles — these observations cannot be rationalized.*
+After two bundles are swapped, the same price variation now creates a strict revealed-preference cycle. The failure is not a bad functional-form fit; it is a logical inconsistency under the maintained utility-maximization model.
 
-<img src="figures/garp-power.png" alt="Power of the GARP test: fraction of random datasets that violate GARP as a function of the number of observations T. With more data, random choices are increasingly likely to produce violations — GARP has real empirical bite." width="80%">
-*Power of the GARP test: fraction of random datasets that violate GARP as a function of the number of observations T. With more data, random choices are increasingly likely to produce violations — GARP has real empirical bite.*
+<img src="figures/budget-lines-inconsistent.png" alt="Budget lines and chosen bundles for the GARP-violating sample." width="80%">
 
-**Pairwise Revealed Preference Relation (Example 1: Consistent). R = directly revealed preferred, R* = indirectly (via transitive closure)**
+The graph view is often the cleanest way to read the test. An arrow from $i$ to $j$ means the data reveal $x_i$ to be weakly preferred to $x_j$. The right panel adds indirect comparisons. Red arrows mark pairs involved in the strict GARP contradiction.
+
+The rational sample has many revealed-preference links, especially after transitive closure, but none of those links returns to a strictly cheaper rejected bundle. That is the finite-data content of GARP.
+
+<img src="figures/rp-graph-consistent.png" alt="Revealed-preference graph for the GARP-satisfying sample." width="80%">
+
+In the corrupted sample, transitive revealed preference points one way while a later budget strictly reveals the reverse comparison. Those red pairs are enough to reject rationalizability for the whole dataset.
+
+<img src="figures/rp-graph-inconsistent.png" alt="Revealed-preference graph for the GARP-violating sample." width="80%">
+
+The power exercise asks whether this test has bite. Independent random prices and quantities are not an economic model; they are a useful null for seeing how quickly arbitrary behavior violates revealed preference. The Cobb-Douglas line is the known rational benchmark.
+
+Random behavior begins to fail with only a few observations and is almost always rejected by $T=50$. The zero line is the ground-truth rational benchmark: utility-maximizing Cobb-Douglas choices satisfy GARP by construction.
+
+<img src="figures/garp-power.png" alt="GARP violation rates for random choice data and a rational Cobb-Douglas benchmark." width="80%">
+
+The matrix records the same object algebraically. `R` is a direct budget comparison; `R*` is an indirect comparison added by transitive closure. Because this sample is rationalizable, these chains never produce a strict GARP contradiction.
+
+**Pairwise revealed-preference relation in the Cobb-Douglas sample**
 
 |        | Obs 1   | Obs 2   | Obs 3   | Obs 4   | Obs 5   | Obs 6   | Obs 7   | Obs 8   | Obs 9   | Obs 10   |
 |:-------|:--------|:--------|:--------|:--------|:--------|:--------|:--------|:--------|:--------|:---------|
@@ -82,22 +118,13 @@ $$u_i - u_j \leq \lambda_j \, p_j \cdot (x_i - x_j) \quad \forall \, i, j$$
 
 ## Takeaway
 
-Afriat's theorem provides the deepest link between observable behavior and economic theory. It says that the neoclassical model of consumer choice — utility maximization subject to a budget constraint — is *testable* with finite data, and the test is constructive.
+Afriat's theorem turns a familiar consumer-theory restriction into a finite sample test. Passing GARP does not identify a unique utility function, and it does not say preferences are Cobb-Douglas or smooth in any parametric sense. It says something sharper and more primitive: the observed choices can be ordered by some monotone concave utility function. Failing GARP is equally sharp, because no utility function in that class can rationalize the full dataset.
 
-**Key insights:**
-- **Nonparametric power:** GARP does not assume Cobb-Douglas, CES, or any specific functional form. If the data passes, *some* well-behaved utility function rationalizes it. If it fails, *no* such function exists.
-- **Empirical bite increases with data:** As the number of observations $T$ grows, random data is increasingly likely to violate GARP. This means GARP is not vacuous — it makes sharp, falsifiable predictions.
-- **Constructive theorem:** When GARP holds, Afriat's proof constructs an explicit utility function (piecewise linear) via the Afriat numbers $u_i, \lambda_i$.
-- **Foundation for welfare analysis:** If choices are rationalizable, we can perform welfare comparisons, compute equivalent/compensating variation, and do counterfactual policy analysis — all without specifying a parametric model.
-
-## Reproduce
-
-```bash
-python run.py
-```
+That makes this tutorial the entry point for the revealed-preference sequence. Use [preference recoverability](../preference-recoverability/) when the data pass and the question is what utility or welfare bounds are implied. Use [Houtman-Maks](../houtman-maks-rational-subsets/) and the [money pump index](../money-pump-index/) when the data fail and the question is which observations drive the failure or how severe the cycle is.
 
 ## References
 
 - Afriat, S. N. (1967). The Construction of Utility Functions from Expenditure Data. *International Economic Review*, 8(1), 67-77.
+- Bronars, S. G. (1987). The Power of Nonparametric Tests of Preference Maximization. *Econometrica*, 55(3), 693-698.
 - Varian, H. R. (1982). The Nonparametric Approach to Demand Analysis. *Econometrica*, 50(4), 945-973.
 - Varian, H. R. (2006). Revealed Preference. In M. Szenberg et al. (Eds.), *Samuelsonian Economics and the Twenty-First Century*. Oxford University Press.
