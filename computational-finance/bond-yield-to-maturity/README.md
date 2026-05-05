@@ -1,23 +1,43 @@
 # Bond Prices and Yield to Maturity
 
-> Pricing promised cash flows and solving for the yield that rationalizes price.
+> Promised fixed-income cash flows, present values, and implied discount rates.
 
 ## Overview
 
-Fixed-income instruments are claims to dated cash flows. Once a price and a set of promised payments are specified, valuation becomes a present-value problem: discount future dollars until their value matches the price paid today.
+A fixed-income security is first a claim on promised dollars at dated horizons. Its price asks how much those promises are worth today. The yield to maturity turns the same information around: given the price, it reports the single annual discount rate that makes the promised cash flows add back up to that price.
 
-Yield to maturity is the single discount rate that rationalizes that price. It is a useful summary because the same equation handles simple loans, discount bonds, fixed-payment loans, coupon bonds, and arbitrary cash-flow streams. It is not a guaranteed realized return unless promised payments arrive and the holding-period assumptions are satisfied.
+That compression is useful, but it is also easy to overread. YTM is an internal rate for a stated cash-flow schedule, not a statement about realized holding-period returns, reinvestment rates, default, taxes, or calls. This tutorial keeps the cash flows deterministic so the economic object is clean. The data-rich term-structure analogue is the [Treasury yield curve](../treasury-yield-curve/); predictability questions appear later in the [Fama-Bliss-style regression](../fama-bliss-forward-regression/).
 
 ## Equations
 
-For promised cash flows $C_t$ paid at dates $t = 1,\ldots,T$, price is
+Let a bond or loan promise payments $C_m>0$ at annual dates $\tau_m$, for
+$m=1,\ldots,M$. With annual effective yield $y$, its present value is
 
 $$
-P = \sum_{t=1}^{T} \frac{C_t}{(1+y)^t}.
+PV(y)=\sum_{m=1}^{M}\frac{C_m}{(1+y)^{\tau_m}},\qquad y>-1.
 $$
 
-The yield to maturity is the value of $y$ that solves this equation for an
-observed price $P$. A perpetuity has the closed-form price
+The yield to maturity for observed price $P$ is the root $y^{*}$ of
+
+$$
+G(y)=PV(y)-P=0.
+$$
+
+For positive promised cash flows, $PV(y)$ is strictly decreasing in $y$:
+
+$$
+PV'(y)=-\sum_{m=1}^{M}\frac{\tau_m C_m}{(1+y)^{\tau_m+1}}<0.
+$$
+
+This monotonicity gives a unique YTM when the price lies in the attainable
+range. Some special cases have closed forms. A single terminal payment
+$C_T$ at date $T$ implies
+
+$$
+y=\left(\frac{C_T}{P}\right)^{1/T}-1.
+$$
+
+A perpetuity with annual payment $C$ has
 
 $$
 P = \frac{C}{y},
@@ -33,52 +53,65 @@ $$
 
 ## Model Setup
 
-| Object | Value |
-|--------|-------|
-| Coupon-bond face value | 100 |
-| Baseline coupon rate | 6% |
-| Baseline maturity | 10 years |
-| Yield grid | 0.5% to 14% |
-| Root finder | Brent method on the present-value gap |
+| Object | Value | Role |
+|--------|-------|------|
+| Face value $F$ | 100 | Par payoff for the coupon-bond examples |
+| Baseline coupon rate $c$ | 6% | Annual coupon used in the price and YTM figures |
+| Baseline maturity $T$ | 10 years | Horizon for the coupon-bond figures |
+| Yield grid | 0.5% to 14% | Range used only for plotting exact present values |
+| YTM root bracket | -95% to 200% | Bracket for the annual effective yield |
+| Cash-flow examples | 6 instruments | Loans, discount bonds, perpetuities, coupons, and annuities |
 
 ## Solution Method
 
-All finite instruments are converted into payment times and cash-flow amounts. For a candidate yield, each cash flow is discounted and the sum is compared with the observed price. The YTM is found with a scalar root finder. The plots then hold the cash-flow schedule fixed while varying price, coupon, or yield.
+Once the dated cash flows are fixed, pricing is analytic. The only numerical step is the one-dimensional inversion from price to yield. The code evaluates the present-value gap and uses a bracketing root finder; the sign change matters because it preserves the economic monotonicity of price in yield.
+
+```text
+Algorithm: yield to maturity for a promised cash-flow claim
+Input: price P, payment dates tau_m, payments C_m, yield bracket [y_low, y_high]
+Output: implied annual yield y_star
+Define G(y) = sum_m C_m / (1 + y)^tau_m - P
+Check that G(y_low) and G(y_high) have opposite signs
+repeat:
+    choose a trial yield inside the bracket using Brent's step
+    evaluate the present-value gap G(y)
+    shrink the bracket while keeping the sign change
+until the gap and bracket width are numerically small
+return y_star
+```
+
+The plotted price-yield curves are not simulations. They are exact present values for a fixed coupon schedule evaluated over a grid of yields. For the YTM examples, the residual $PV(y^{*})-P$ is the relevant numerical check.
 
 ## Results
 
-The inverse price-yield relationship is mechanical: a higher discount rate lowers the present value of the same promised cash flows. Premium and discount status depend on how the coupon compares with the market yield.
+Holding the promised payments fixed, a higher discount rate lowers the price. The par line helps separate premium from discount bonds. A 6% coupon bond sells at par when the market yield is 6%; if the required yield is higher, the same cash-flow claim must trade below par.
 
-<img src="figures/price-yield-curve.png" alt="Coupon-bond price as yield changes" width="80%">
-*Coupon-bond price as yield changes*
+Coupon rate shifts the level of promised payments, but the inverse price-yield relationship is common across the three schedules.
 
-For the same 6% coupon bond, a price below par implies a YTM above the coupon rate, while a price above par implies a YTM below the coupon rate.
+<img src="figures/price-yield-curve.png" alt="Price-yield schedule for 10-year coupon bonds" width="80%">
 
-<img src="figures/implied-yield-by-price.png" alt="Yield to maturity implied by price" width="80%">
-*Yield to maturity implied by price*
+The inversion works in the other direction: for the same 6% coupon schedule, lower observed prices imply higher yields. At price 95, the implied annual YTM is **6.70%**, above the coupon rate because the buyer earns both coupons and capital gain back to face value.
 
-The same present-value equation handles different debt instruments once each one is written as a price and a sequence of promised cash flows.
+The vertical line is par and the horizontal line is the coupon rate. Their intersection is the par-bond case; away from par, YTM absorbs the capital gain or loss implied by the purchase price.
 
-**Yield-to-maturity examples**
+<img src="figures/implied-yield-by-price.png" alt="Yield to maturity implied by price for a 6% coupon bond" width="80%">
 
-| Instrument          |     Price | YTM    |   PV at YTM | Interpretation                                     |
-|:--------------------|----------:|:-------|------------:|:---------------------------------------------------|
-| Simple loan         |   1000    | 1.60%  |     1000    | One final principal-plus-interest payment.         |
-| Discount bond       |     95    | 1.03%  |       95    | No coupon; all payoff comes at maturity.           |
-| Perpetuity          |     99    | 5.05%  |       99    | Closed-form yield is coupon divided by price.      |
-| Fixed-payment loan  | 100000    | 7.00%  |   100000    | Equal annual payments amortize the loan.           |
-| Coupon bond         |     95    | 10.84% |       95    | Coupon stream plus final face value.               |
-| Arbitrary cash flow |    486.84 | 10.00% |      486.84 | YTM is still a root of the present-value equation. |
+The table applies the same price equation across debt instruments. Closed-form cases and root-solved cases are mixed deliberately: the common object is the present-value residual, which is essentially zero at the reported yield.
+
+**YTM calculations for different promised cash-flow patterns**
+
+| Instrument          | Payment pattern                |     Price | YTM    |   PV residual | Interpretation                                     |
+|:--------------------|:-------------------------------|----------:|:-------|--------------:|:---------------------------------------------------|
+| Simple loan         | 1100 paid in year 6            |   1000    | 1.60%  |     -1.14e-13 | One terminal principal-plus-interest payment.      |
+| Discount bond       | 100 paid in year 5             |     95    | 1.03%  |      0        | No coupon; all payoff comes at maturity.           |
+| Perpetuity          | 5 paid every year forever      |     99    | 5.05%  |      0        | Closed-form yield is coupon divided by price.      |
+| Fixed-payment loan  | 9439.29 paid for 20 years      | 100000    | 7.00%  |     -9.88e-09 | Equal annual payments amortize the loan.           |
+| Coupon bond         | 6 per year plus 100 in year 10 |     95    | 6.70%  |     -1.78e-10 | Coupon stream plus final face value.               |
+| Arbitrary cash flow | 100 paid for 7 years           |    486.84 | 10.00% |      2.34e-10 | YTM is still a root of the present-value equation. |
 
 ## Takeaway
 
-YTM is best read as an implied discount rate for promised cash flows. It is useful because it compresses a price and cash-flow schedule into one number, but that compression hides reinvestment, default, call, tax, and holding-period issues.
-
-## Reproduce
-
-```bash
-python run.py
-```
+Yield to maturity is best read as an implied discount rate for a promised cash-flow schedule. It is useful because it puts loans, discount bonds, coupon bonds, and annuities into a common present-value language. The cost is compression: one yield hides the timing of payments and says little by itself about realized returns when reinvestment, default, calls, taxes, or interim sale prices matter.
 
 ## References
 

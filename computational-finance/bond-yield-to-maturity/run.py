@@ -29,7 +29,9 @@ class CashFlowInstrument:
     price: float
     times: np.ndarray
     cashflows: np.ndarray
+    pattern: str
     note: str
+    perpetuity: bool = False
 
 
 def present_value(cashflows: np.ndarray, times: np.ndarray, yield_rate: float) -> float:
@@ -44,6 +46,22 @@ def solve_ytm(cashflows: np.ndarray, times: np.ndarray, price: float) -> float:
         return present_value(cashflows, times, yield_rate) - price
 
     return float(brentq(gap, -0.95, 2.0))
+
+
+def instrument_value(item: CashFlowInstrument, yield_rate: float) -> float:
+    """Evaluate the price of an instrument at a candidate annual yield."""
+    if item.perpetuity:
+        return float(item.cashflows[0] / yield_rate)
+    return present_value(item.cashflows, item.times, yield_rate)
+
+
+def instrument_ytm(item: CashFlowInstrument) -> float:
+    """Return YTM using closed form where it is simple."""
+    if item.perpetuity:
+        return float(item.cashflows[0] / item.price)
+    if len(item.cashflows) == 1:
+        return float((item.cashflows[0] / item.price) ** (1.0 / item.times[0]) - 1.0)
+    return solve_ytm(item.cashflows, item.times, item.price)
 
 
 def coupon_cashflows(face: float, coupon_rate: float, maturity: int) -> tuple[np.ndarray, np.ndarray]:
@@ -63,7 +81,7 @@ def fixed_payment_cashflows(payment: float, maturity: int) -> tuple[np.ndarray, 
 
 def instrument_examples() -> list[CashFlowInstrument]:
     """Create short debt-instrument examples in a common cash-flow format."""
-    coupon_times, coupon_flows = coupon_cashflows(face=100.0, coupon_rate=0.10, maturity=10)
+    coupon_times, coupon_flows = coupon_cashflows(face=100.0, coupon_rate=0.06, maturity=10)
     mortgage_times, mortgage_flows = fixed_payment_cashflows(payment=9439.29, maturity=20)
     arbitrary_times = np.arange(1, 8, dtype=float)
 
@@ -73,13 +91,15 @@ def instrument_examples() -> list[CashFlowInstrument]:
             1000.0,
             np.array([6.0]),
             np.array([1100.0]),
-            "One final principal-plus-interest payment.",
+            "1100 paid in year 6",
+            "One terminal principal-plus-interest payment.",
         ),
         CashFlowInstrument(
             "Discount bond",
             95.0,
             np.array([5.0]),
             np.array([100.0]),
+            "100 paid in year 5",
             "No coupon; all payoff comes at maturity.",
         ),
         CashFlowInstrument(
@@ -87,13 +107,16 @@ def instrument_examples() -> list[CashFlowInstrument]:
             99.0,
             np.array([1.0]),
             np.array([5.0]),
+            "5 paid every year forever",
             "Closed-form yield is coupon divided by price.",
+            perpetuity=True,
         ),
         CashFlowInstrument(
             "Fixed-payment loan",
             100000.0,
             mortgage_times,
             mortgage_flows,
+            "9439.29 paid for 20 years",
             "Equal annual payments amortize the loan.",
         ),
         CashFlowInstrument(
@@ -101,6 +124,7 @@ def instrument_examples() -> list[CashFlowInstrument]:
             95.0,
             coupon_times,
             coupon_flows,
+            "6 per year plus 100 in year 10",
             "Coupon stream plus final face value.",
         ),
         CashFlowInstrument(
@@ -108,6 +132,7 @@ def instrument_examples() -> list[CashFlowInstrument]:
             486.84,
             arbitrary_times,
             np.full(7, 100.0),
+            "100 paid for 7 years",
             "YTM is still a root of the present-value equation.",
         ),
     ]
@@ -117,18 +142,15 @@ def ytm_summary(instruments: list[CashFlowInstrument]) -> pd.DataFrame:
     """Return a compact table of YTM examples."""
     rows = []
     for item in instruments:
-        if item.name == "Perpetuity":
-            ytm = item.cashflows[0] / item.price
-            pv_check = item.price
-        else:
-            ytm = solve_ytm(item.cashflows, item.times, item.price)
-            pv_check = present_value(item.cashflows, item.times, ytm)
+        ytm = instrument_ytm(item)
+        residual = instrument_value(item, ytm) - item.price
         rows.append(
             {
                 "Instrument": item.name,
+                "Payment pattern": item.pattern,
                 "Price": f"{item.price:.2f}",
                 "YTM": f"{100.0 * ytm:.2f}%",
-                "PV at YTM": f"{pv_check:.2f}",
+                "PV residual": f"{residual:.2e}",
                 "Interpretation": item.note,
             }
         )
@@ -151,30 +173,54 @@ def main() -> None:
 
     report = ModelReport(
         "Bond Prices and Yield to Maturity",
-        "Pricing promised cash flows and solving for the yield that rationalizes price.",
+        "Promised fixed-income cash flows, present values, and implied discount rates.",
+        include_reproduce=False,
+        show_figure_captions=False,
     )
 
     report.add_overview(
-        "Fixed-income instruments are claims to dated cash flows. Once a price and a set of "
-        "promised payments are specified, valuation becomes a present-value problem: discount "
-        "future dollars until their value matches the price paid today.\n\n"
-        "Yield to maturity is the single discount rate that rationalizes that price. It is a "
-        "useful summary because the same equation handles simple loans, discount bonds, "
-        "fixed-payment loans, coupon bonds, and arbitrary cash-flow streams. It is not a "
-        "guaranteed realized return unless promised payments arrive and the holding-period "
-        "assumptions are satisfied."
+        "A fixed-income security is first a claim on promised dollars at dated horizons. "
+        "Its price asks how much those promises are worth today. The yield to maturity "
+        "turns the same information around: given the price, it reports the single annual "
+        "discount rate that makes the promised cash flows add back up to that price.\n\n"
+        "That compression is useful, but it is also easy to overread. YTM is an internal "
+        "rate for a stated cash-flow schedule, not a statement about realized holding-period "
+        "returns, reinvestment rates, default, taxes, or calls. This tutorial keeps the "
+        "cash flows deterministic so the economic object is clean. The data-rich term-"
+        "structure analogue is the [Treasury yield curve](../treasury-yield-curve/); "
+        "predictability questions appear later in the [Fama-Bliss-style regression](../fama-bliss-forward-regression/)."
     )
 
     report.add_equations(
         r"""
-For promised cash flows $C_t$ paid at dates $t = 1,\ldots,T$, price is
+Let a bond or loan promise payments $C_m>0$ at annual dates $\tau_m$, for
+$m=1,\ldots,M$. With annual effective yield $y$, its present value is
 
 $$
-P = \sum_{t=1}^{T} \frac{C_t}{(1+y)^t}.
+PV(y)=\sum_{m=1}^{M}\frac{C_m}{(1+y)^{\tau_m}},\qquad y>-1.
 $$
 
-The yield to maturity is the value of $y$ that solves this equation for an
-observed price $P$. A perpetuity has the closed-form price
+The yield to maturity for observed price $P$ is the root $y^{*}$ of
+
+$$
+G(y)=PV(y)-P=0.
+$$
+
+For positive promised cash flows, $PV(y)$ is strictly decreasing in $y$:
+
+$$
+PV'(y)=-\sum_{m=1}^{M}\frac{\tau_m C_m}{(1+y)^{\tau_m+1}}<0.
+$$
+
+This monotonicity gives a unique YTM when the price lies in the attainable
+range. Some special cases have closed forms. A single terminal payment
+$C_T$ at date $T$ implies
+
+$$
+y=\left(\frac{C_T}{P}\right)^{1/T}-1.
+$$
+
+A perpetuity with annual payment $C$ has
 
 $$
 P = \frac{C}{y},
@@ -191,20 +237,37 @@ $$
     )
 
     report.add_model_setup(
-        "| Object | Value |\n"
-        "|--------|-------|\n"
-        "| Coupon-bond face value | 100 |\n"
-        "| Baseline coupon rate | 6% |\n"
-        "| Baseline maturity | 10 years |\n"
-        "| Yield grid | 0.5% to 14% |\n"
-        "| Root finder | Brent method on the present-value gap |"
+        "| Object | Value | Role |\n"
+        "|--------|-------|------|\n"
+        "| Face value $F$ | 100 | Par payoff for the coupon-bond examples |\n"
+        "| Baseline coupon rate $c$ | 6% | Annual coupon used in the price and YTM figures |\n"
+        "| Baseline maturity $T$ | 10 years | Horizon for the coupon-bond figures |\n"
+        "| Yield grid | 0.5% to 14% | Range used only for plotting exact present values |\n"
+        "| YTM root bracket | -95% to 200% | Bracket for the annual effective yield |\n"
+        "| Cash-flow examples | 6 instruments | Loans, discount bonds, perpetuities, coupons, and annuities |"
     )
 
     report.add_solution_method(
-        "All finite instruments are converted into payment times and cash-flow amounts. "
-        "For a candidate yield, each cash flow is discounted and the sum is compared "
-        "with the observed price. The YTM is found with a scalar root finder. The plots "
-        "then hold the cash-flow schedule fixed while varying price, coupon, or yield."
+        "Once the dated cash flows are fixed, pricing is analytic. The only numerical "
+        "step is the one-dimensional inversion from price to yield. The code evaluates "
+        "the present-value gap and uses a bracketing root finder; the sign change matters "
+        "because it preserves the economic monotonicity of price in yield.\n\n"
+        "```text\n"
+        "Algorithm: yield to maturity for a promised cash-flow claim\n"
+        "Input: price P, payment dates tau_m, payments C_m, yield bracket [y_low, y_high]\n"
+        "Output: implied annual yield y_star\n"
+        "Define G(y) = sum_m C_m / (1 + y)^tau_m - P\n"
+        "Check that G(y_low) and G(y_high) have opposite signs\n"
+        "repeat:\n"
+        "    choose a trial yield inside the bracket using Brent's step\n"
+        "    evaluate the present-value gap G(y)\n"
+        "    shrink the bracket while keeping the sign change\n"
+        "until the gap and bracket width are numerically small\n"
+        "return y_star\n"
+        "```\n\n"
+        "The plotted price-yield curves are not simulations. They are exact present values "
+        "for a fixed coupon schedule evaluated over a grid of yields. For the YTM examples, "
+        "the residual $PV(y^{*})-P$ is the relevant numerical check."
     )
 
     yields = np.linspace(0.005, 0.14, 180)
@@ -215,53 +278,72 @@ $$
     ax1.axhline(100.0, color="black", linestyle="--", linewidth=1.0, label="Par")
     ax1.set_xlabel("Yield to maturity (%)")
     ax1.set_ylabel("Bond price")
-    ax1.set_title("Higher Yields Lower Fixed-Cash-Flow Prices")
+    ax1.set_title("Price-Yield Schedule for 10-Year Coupon Bonds")
     ax1.legend()
+    report.add_results(
+        "Holding the promised payments fixed, a higher discount rate lowers the price. "
+        "The par line helps separate premium from discount bonds. A 6% coupon bond sells "
+        "at par when the market yield is 6%; if the required yield is higher, the same "
+        "cash-flow claim must trade below par."
+    )
     report.add_figure(
         "figures/price-yield-curve.png",
-        "Coupon-bond price as yield changes",
+        "Price-yield schedule for 10-year coupon bonds",
         fig1,
         description=(
-            "The inverse price-yield relationship is mechanical: a higher discount rate lowers "
-            "the present value of the same promised cash flows. Premium and discount status "
-            "depend on how the coupon compares with the market yield."
+            "Coupon rate shifts the level of promised payments, but the inverse price-yield "
+            "relationship is common across the three schedules."
         ),
     )
 
     prices = np.linspace(80.0, 120.0, 160)
     times, flows = coupon_cashflows(face=100.0, coupon_rate=0.06, maturity=10)
     implied_yields = np.array([solve_ytm(flows, times, price) for price in prices])
+    baseline_price = 95.0
+    baseline_ytm = solve_ytm(flows, times, baseline_price)
     fig2, ax2 = plt.subplots(figsize=(7.4, 5.0))
     ax2.plot(prices, 100.0 * implied_yields, color="tab:blue")
+    ax2.scatter([baseline_price], [100.0 * baseline_ytm], color="tab:red", zorder=3, label="Price 95")
     ax2.axvline(100.0, color="black", linestyle="--", linewidth=1.0)
     ax2.axhline(6.0, color="black", linestyle=":", linewidth=1.0)
     ax2.set_xlabel("Observed price")
     ax2.set_ylabel("Implied YTM (%)")
-    ax2.set_title("Observed Price Pins Down the Implied Yield")
+    ax2.set_title("Implied Yield for a 6% Coupon Bond")
+    ax2.legend()
+    report.add_results(
+        "The inversion works in the other direction: for the same 6% coupon schedule, "
+        "lower observed prices imply higher yields. At price 95, the implied annual YTM "
+        f"is **{100.0 * baseline_ytm:.2f}%**, above the coupon rate because the buyer earns "
+        "both coupons and capital gain back to face value."
+    )
     report.add_figure(
         "figures/implied-yield-by-price.png",
-        "Yield to maturity implied by price",
+        "Yield to maturity implied by price for a 6% coupon bond",
         fig2,
         description=(
-            "For the same 6% coupon bond, a price below par implies a YTM above the coupon "
-            "rate, while a price above par implies a YTM below the coupon rate."
+            "The vertical line is par and the horizontal line is the coupon rate. Their "
+            "intersection is the par-bond case; away from par, YTM absorbs the capital "
+            "gain or loss implied by the purchase price."
         ),
     )
 
     report.add_table(
         "tables/instrument-summary.csv",
-        "Yield-to-maturity examples",
+        "YTM calculations for different promised cash-flow patterns",
         summary,
         description=(
-            "The same present-value equation handles different debt instruments once each "
-            "one is written as a price and a sequence of promised cash flows."
+            "The table applies the same price equation across debt instruments. Closed-form "
+            "cases and root-solved cases are mixed deliberately: the common object is the "
+            "present-value residual, which is essentially zero at the reported yield."
         ),
     )
 
     report.add_takeaway(
-        "YTM is best read as an implied discount rate for promised cash flows. It is useful "
-        "because it compresses a price and cash-flow schedule into one number, but that "
-        "compression hides reinvestment, default, call, tax, and holding-period issues."
+        "Yield to maturity is best read as an implied discount rate for a promised cash-flow "
+        "schedule. It is useful because it puts loans, discount bonds, coupon bonds, and "
+        "annuities into a common present-value language. The cost is compression: one yield "
+        "hides the timing of payments and says little by itself about realized returns when "
+        "reinvestment, default, calls, taxes, or interim sale prices matter."
     )
     report.add_references(
         [
