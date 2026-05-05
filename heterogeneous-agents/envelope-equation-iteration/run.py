@@ -457,11 +457,13 @@ def main():
     )
 
     report.add_overview(
-        "The household problem is the same IID income-risk benchmark used in the "
-        "[buffer-stock VFI](../vfi-iid-income/) and "
-        "[endogenous-grid](../endogenous-grid-points/) tutorials. An impatient "
-        "household cannot borrow below $\\underline a=0$, so assets are valuable "
-        "because they insure consumption against bad income draws.\n\n"
+        "The household problem is the IID version of the buffer-stock saving "
+        "environment used in the "
+        "[endogenous-grid](../endogenous-grid-points/) tutorial and the broader "
+        "[income-risk savings](../../dynamic-programming/consumption-savings/) "
+        "benchmark. An impatient household cannot borrow below $\\underline a=0$, "
+        "so assets are valuable because they insure consumption against bad income "
+        "draws.\n\n"
         "This tutorial changes the computational object. EEI does not update the "
         "value level state by state, and it does not build the endogenous current "
         "asset grid used by EGP. It updates $W_a(a)$, the marginal value of entering "
@@ -469,8 +471,8 @@ def main():
         "realized. Given that marginal continuation value, the Euler equation chooses "
         "current consumption; given the consumption rule, the envelope condition "
         "updates $W_a(a)$.\n\n"
-        "The payoff from this example is conceptual as much as computational. VFI, "
-        "EGP, and EEI are three ways to compute the same buffer-stock saving policy. "
+        "The payoff from this example is conceptual as much as computational. Grid "
+        "VFI, EGP, and EEI are three routes to the same buffer-stock saving policy. "
         "The run solves all three on the coarse grid and adds a fine-grid EGP "
         "reference so the plotted EEI policy can be checked against a more accurate "
         "Euler-equation solution."
@@ -572,10 +574,10 @@ to consume.
         "```\n\n"
         f"The coarse-grid EEI solve converged in **{n_iter_eei} iterations** "
         f"with a consumption sup-norm error below $10^{{-6}}$. The same grid took "
-        f"{n_iter_egp} EGP iterations and {n_iter_vfi} grid-VFI iterations. The "
-        "wall-clock numbers are implementation-specific: this EEI code uses "
-        "bisection at every state to make the Euler step transparent, while EGP "
-        "avoids those one-dimensional solves.\n\n"
+        f"{n_iter_egp} EGP iterations and {n_iter_vfi} grid-VFI iterations. Those "
+        "iteration counts compare fixed-point objects, not optimized library "
+        "implementations: this EEI code uses bisection at every state to make the "
+        "Euler step transparent, while EGP avoids those one-dimensional solves.\n\n"
         f"A {na_ref}-point EGP solve provides the fine-grid reference. On the "
         f"plotted asset range $a\\leq 20$, the coarse EEI policy is within "
         f"{ref_c_gap:.2e} in consumption and {ref_s_gap:.2e} in next assets. "
@@ -656,11 +658,11 @@ to consume.
     # --- Figure 4: Convergence Comparison ---
     fig4, ax4 = plt.subplots()
     ax4.semilogy(range(1, len(eei_errors) + 1), eei_errors, 'b-', linewidth=2,
-                 label=f'EEI ({n_iter_eei} iter, {time_eei:.1f}s)')
+                 label=f'EEI ({n_iter_eei} iter)')
     ax4.semilogy(range(1, len(egp_errors) + 1), egp_errors, 'r-', linewidth=2,
-                 label=f'EGP ({n_iter_egp} iter, {time_egp:.1f}s)')
+                 label=f'EGP ({n_iter_egp} iter)')
     ax4.semilogy(range(1, len(vfi_errors) + 1), vfi_errors, 'k-', linewidth=2,
-                 alpha=0.7, label=f'VFI ({n_iter_vfi} iter, {time_vfi:.1f}s)')
+                 alpha=0.7, label=f'VFI ({n_iter_vfi} iter)')
     ax4.axhline(tol_iter, color='gray', linewidth=1, linestyle=':', label=f'Tolerance = {tol_iter:.0e}')
     ax4.set_xlabel("Iteration")
     ax4.set_ylabel("Maximum error (log scale)")
@@ -669,24 +671,20 @@ to consume.
     ax4.set_xlim(0, max(len(eei_errors), len(egp_errors), min(len(vfi_errors), 500)))
     report.add_figure("figures/convergence-comparison.png",
                        "Convergence paths for EEI, EGP, and grid VFI", fig4,
-        description="The convergence plot should be read by method, not just by clock "
-        "time. VFI contracts in value levels. EGP and EEI work with Euler-equation "
-        "objects, so their errors shrink in consumption-policy space. In this simple "
-        "Python implementation, EEI is slower in seconds because every state uses a "
-        "bisection solve; the figure's main point is the different fixed-point object.")
+        description="The convergence plot should be read by fixed-point object. VFI "
+        "contracts in value levels. EGP and EEI work with Euler-equation objects, so "
+        "their errors shrink in consumption-policy space. This transparent EEI "
+        "implementation uses bisection at every state; the figure's main point is the "
+        "different updating equation, not a timing race.")
 
     # --- Table: Solution Statistics ---
     table_data = {
         "Statistic": [
             "EEI iterations",
-            "EEI wall-clock time (s)",
             "Same-grid EGP iterations",
-            "Same-grid EGP wall-clock time (s)",
             "Same-grid VFI iterations",
-            "Same-grid VFI wall-clock time (s)",
             "Fine-grid reference points",
             "Fine-grid reference iterations",
-            "Fine-grid reference wall-clock time (s)",
             "Max consumption gap vs reference, a <= 20",
             "Max next-asset gap vs reference, a <= 20",
             "Mean assets / mean income",
@@ -699,14 +697,10 @@ to consume.
         ],
         "Value": [
             f"{n_iter_eei}",
-            f"{time_eei:.2f}",
             f"{n_iter_egp}",
-            f"{time_egp:.2f}",
             f"{n_iter_vfi}",
-            f"{time_vfi:.2f}",
             f"{na_ref}",
             f"{n_iter_ref}",
-            f"{time_ref:.2f}",
             f"{ref_c_gap:.2e}",
             f"{ref_s_gap:.2e}",
             f"{mean_assets:.4f}",

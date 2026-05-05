@@ -4,11 +4,11 @@
 
 ## Overview
 
-The household problem is the same IID income-risk benchmark used in the [buffer-stock VFI](../vfi-iid-income/) and [endogenous-grid](../endogenous-grid-points/) tutorials. An impatient household cannot borrow below $\underline a=0$, so assets are valuable because they insure consumption against bad income draws.
+The household problem is the IID version of the buffer-stock saving environment used in the [endogenous-grid](../endogenous-grid-points/) tutorial and the broader [income-risk savings](../../dynamic-programming/consumption-savings/) benchmark. An impatient household cannot borrow below $\underline a=0$, so assets are valuable because they insure consumption against bad income draws.
 
 This tutorial changes the computational object. EEI does not update the value level state by state, and it does not build the endogenous current asset grid used by EGP. It updates $W_a(a)$, the marginal value of entering next period with one more unit of assets before the next IID income draw is realized. Given that marginal continuation value, the Euler equation chooses current consumption; given the consumption rule, the envelope condition updates $W_a(a)$.
 
-The payoff from this example is conceptual as much as computational. VFI, EGP, and EEI are three ways to compute the same buffer-stock saving policy. The run solves all three on the coarse grid and adds a fine-grid EGP reference so the plotted EEI policy can be checked against a more accurate Euler-equation solution.
+The payoff from this example is conceptual as much as computational. Grid VFI, EGP, and EEI are three routes to the same buffer-stock saving policy. The run solves all three on the coarse grid and adds a fine-grid EGP reference so the plotted EEI policy can be checked against a more accurate Euler-equation solution.
 
 ## Equations
 
@@ -102,7 +102,7 @@ For n = 0, 1, 2, ...:
 Output: consumption policy c, savings policy g, marginal value W_a
 ```
 
-The coarse-grid EEI solve converged in **149 iterations** with a consumption sup-norm error below $10^{-6}$. The same grid took 151 EGP iterations and 203 grid-VFI iterations. The wall-clock numbers are implementation-specific: this EEI code uses bisection at every state to make the Euler step transparent, while EGP avoids those one-dimensional solves.
+The coarse-grid EEI solve converged in **149 iterations** with a consumption sup-norm error below $10^{-6}$. The same grid took 151 EGP iterations and 203 grid-VFI iterations. Those iteration counts compare fixed-point objects, not optimized library implementations: this EEI code uses bisection at every state to make the Euler step transparent, while EGP avoids those one-dimensional solves.
 
 A 600-point EGP solve provides the fine-grid reference. On the plotted asset range $a\leq 20$, the coarse EEI policy is within 1.09e-02 in consumption and 1.09e-02 in next assets. Those gaps are grid and interpolation errors, not a different economic mechanism.
 
@@ -120,7 +120,7 @@ The terminal cross section is right-skewed, but modest. This is still the IID in
 
 <img src="figures/wealth-distribution.png" alt="Simulated terminal wealth distribution under the EEI policy" width="80%">
 
-The convergence plot should be read by method, not just by clock time. VFI contracts in value levels. EGP and EEI work with Euler-equation objects, so their errors shrink in consumption-policy space. In this simple Python implementation, EEI is slower in seconds because every state uses a bisection solve; the figure's main point is the different fixed-point object.
+The convergence plot should be read by fixed-point object. VFI contracts in value levels. EGP and EEI work with Euler-equation objects, so their errors shrink in consumption-policy space. This transparent EEI implementation uses bisection at every state; the figure's main point is the different updating equation, not a timing race.
 
 <img src="figures/convergence-comparison.png" alt="Convergence paths for EEI, EGP, and grid VFI" width="80%">
 
@@ -131,14 +131,10 @@ The table separates economic output from numerical diagnostics. The asset distri
 | Statistic                                 | Value    |
 |:------------------------------------------|:---------|
 | EEI iterations                            | 149      |
-| EEI wall-clock time (s)                   | 7.79     |
 | Same-grid EGP iterations                  | 151      |
-| Same-grid EGP wall-clock time (s)         | 0.16     |
 | Same-grid VFI iterations                  | 203      |
-| Same-grid VFI wall-clock time (s)         | 0.30     |
 | Fine-grid reference points                | 600      |
 | Fine-grid reference iterations            | 140      |
-| Fine-grid reference wall-clock time (s)   | 1.89     |
 | Max consumption gap vs reference, a <= 20 | 1.09e-02 |
 | Max next-asset gap vs reference, a <= 20  | 1.09e-02 |
 | Mean assets / mean income                 | 0.4118   |
