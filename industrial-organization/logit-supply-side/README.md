@@ -1,37 +1,63 @@
-# Demand Estimation and Markup Recovery
+# Logit Demand and Markup Recovery
 
-> Berry (1994) inversion + Bertrand-Nash FOC to recover marginal costs without accounting data.
+> Berry inversion, price endogeneity, and the supply-side recovery of marginal costs.
 
 ## Overview
 
-This is the **supply-side companion** to the standard logit discrete-choice demand model. The key innovation: given demand estimates from Berry inversion and IV/2SLS, we can recover each firm's marginal costs from observed prices using the Bertrand-Nash first-order conditions -- *without ever seeing accounting data*.
+A differentiated-products demand estimate becomes economically useful when it can say something about markups and marginal costs. In many IO applications, the researcher observes prices, shares, product characteristics, and firm ownership, but not accounting marginal cost. The supply side uses the firm's pricing first-order condition to recover those costs from demand curvature.
 
-We generate synthetic cereal market data (5 products, 100 markets), estimate demand via OLS (biased) and IV/2SLS (consistent), compute price elasticities (illustrating the IIA limitation), and then back out markups and marginal costs from the supply side.
+This tutorial builds a synthetic cereal market with five products and three firms. Prices are deliberately endogenous because firms charge more for products with high unobserved quality. OLS therefore understates price sensitivity. IV/2SLS uses cost shifters and rival-characteristic instruments to recover demand, then the Bertrand-Nash FOC decomposes each observed price into a markup and marginal cost. The point is not that simple logit is a rich substitution model; the elasticity figures make its IIA restriction visible.
 
 ## Equations
 
-**Demand (Berry inversion):**
+There are markets $t$, products $j$, and an outside option. Mean utility is
+$$
+\delta_{jt}
+=\beta_0+\beta_{\text{sugar}}x^{\text{sugar}}_{jt}
++\beta_{\text{fiber}}x^{\text{fiber}}_{jt}
+-\alpha p_{jt}+\xi_{jt}.
+$$
 
-$$\ln s_j - \ln s_0 = \beta_0 + \beta_{\text{sugar}} x_j^{\text{sugar}} + \beta_{\text{fiber}} x_j^{\text{fiber}} - \alpha \, p_j + \xi_j$$
+Simple logit shares satisfy
+$$
+s_{jt}=\frac{\exp(\delta_{jt})}{1+\sum_k \exp(\delta_{kt})},
+\qquad
+s_{0t}=\frac{1}{1+\sum_k \exp(\delta_{kt})}.
+$$
+Berry's inversion turns observed shares into a linear estimating equation:
+$$
+\log s_{jt}-\log s_{0t}
+=\beta_0+\beta_{\text{sugar}}x^{\text{sugar}}_{jt}
++\beta_{\text{fiber}}x^{\text{fiber}}_{jt}
+-\alpha p_{jt}+\xi_{jt}.
+$$
+The price coefficient is identified from price variation that is excluded from
+$\xi_{jt}$, here cost shifters and rival characteristics.
 
-The Berry (1994) inversion transforms the nonlinear share equation into a linear
-regression by taking the log-ratio of inside to outside shares.
+The logit elasticity matrix is
+$$
+\eta_{jj}=-\alpha p_j(1-s_j), \qquad
+\eta_{jk}=\alpha p_k s_k, \quad j\neq k.
+$$
+The cross-elasticity $\eta_{jk}$ depends on product $k$'s price and share, but
+not on how close products $j$ and $k$ are. That is the IIA restriction.
 
-**Elasticities (IIA limitation):**
-
-$$\eta_{jj} = -\alpha \, p_j (1 - s_j), \qquad \eta_{jk} = \alpha \, p_k \, s_k \quad (j \neq k)$$
-
-Cross-elasticities depend *only* on the rival's price and share, not on product
-similarity -- this is the IIA problem.
-
-**Supply side (Bertrand-Nash FOC):**
-
-$$\mathbf{p} - \mathbf{mc} = \Omega^{-1} \mathbf{s}$$
-
-where $\Omega_{jk} = -\frac{\partial s_k}{\partial p_j} \cdot \mathbf{1}[\text{same firm}]$.
-Multi-product firms internalise cannibalisation and charge higher markups.
+On the supply side, firm $f$ chooses prices for its products. Product $j$'s FOC is
+$$
+0=s_j(p)+\sum_k
+\mathbf 1[f(j)=f(k)](p_k-c_k)\frac{\partial s_k(p)}{\partial p_j}.
+$$
+Let $\Delta_{jk}=\partial s_j/\partial p_k$ and let $O_{jk}=1$ when products
+$j$ and $k$ are owned by the same firm. The markup equation is
+$$
+p-c=-(O\circ \Delta')^{-1}s.
+$$
+Multi-product firms internalize business stolen from their own products, so the
+ownership matrix is part of the cost recovery exercise.
 
 ## Model Setup
+
+The data are simulated so the true demand parameters and marginal costs are known. This lets the tutorial separate two errors that are often mixed in real applications: demand bias from endogenous prices and cost-recovery error from using the wrong demand curvature.
 
 | Parameter | Value | Description |
 |-----------|-------|-------------|
@@ -45,25 +71,44 @@ Multi-product firms internalise cannibalisation and charge higher markups.
 
 ## Solution Method
 
-**Step 1 -- Berry Inversion.** Transform observed market shares into mean utilities: $\delta_j = \ln s_j - \ln s_0$. This linearises the logit model.
+The computation keeps demand estimation and supply inversion separate. First recover mean utilities from shares and estimate demand. Then take the estimated price coefficient into the Bertrand-Nash FOC for one market.
 
-**Step 2 -- IV/2SLS.** Price is endogenous (correlated with $\xi_j$). We instrument using cost shifters and BLP-style instruments (sum of rival characteristics). The first stage projects price onto the instrument space; the first-stage F-statistic is **303.1** (well above the Stock-Yogo threshold of 10).
+```text
+Inputs: product characteristics, prices, shares, instruments, firm labels
+Outputs: demand estimates, elasticities, markups, recovered marginal costs
 
-**Step 3 -- Markup Recovery.** Given the estimated $\alpha$, compute the matrix of share derivatives $\partial s_j / \partial p_k$. Combine with the ownership matrix to form $\Omega$, then solve $\Omega (\mathbf{p} - \mathbf{mc}) = \mathbf{s}$ for marginal costs.
+1. Compute delta_jt = log(s_jt) - log(s_0t).
+2. Regress delta_jt on characteristics and price by OLS.
+3. Re-estimate by IV/2SLS using excluded cost shifters for price.
+4. In a representative market, form the logit derivative matrix Delta.
+5. Build ownership O from firm labels.
+6. Recover markups from p - c = -[(O .* Delta')]^{-1}s.
+7. Compare recovered marginal costs with the simulated truth.
+```
+
+The first-stage F-statistic is 303.1, so the instrument set is strong in this synthetic design. That strength is deliberately built in; the exercise is about the mechanics of demand-side IV and supply-side markup recovery, not weak-instrument diagnostics.
 
 ## Results
 
+OLS recovers a price-sensitivity estimate of 1.009, far below the true value 1.500, because high-$\xi$ products are both more popular and more expensive. IV/2SLS moves the estimate to 1.465. In market 0, the recovered marginal costs have mean absolute error 0.455 dollars. The remaining figures show why that recovery is informative and where simple logit remains restrictive.
+
+The gap between OLS (red) and the true value (green) for alpha is the endogeneity bias: OLS understates price sensitivity because unobserved quality raises both demand and price simultaneously. IV/2SLS (blue) recovers the correct parameter by isolating exogenous cost-driven price variation.
+
 <img src="figures/estimation-comparison.png" alt="Parameter estimates: True vs OLS (biased) vs IV/2SLS (consistent). OLS attenuates price sensitivity because high-xi products command higher prices." width="80%">
-*Parameter estimates: True vs OLS (biased) vs IV/2SLS (consistent). OLS attenuates price sensitivity because high-xi products command higher prices.*
+
+Each column of cross-elasticities is identical because the logit model forces all products to be equally substitutable. This means that when a sugary cereal raises its price, the model predicts equal substitution to both a similar sugary cereal and a dissimilar fiber cereal -- an unrealistic restriction.
 
 <img src="figures/elasticity-heatmap.png" alt="Elasticity matrix. Cross-elasticities in each column are identical -- the IIA limitation of the simple logit." width="80%">
-*Elasticity matrix. Cross-elasticities in each column are identical -- the IIA limitation of the simple logit.*
+
+The decomposition is the supply-side accounting exercise: demand estimates plus the Bertrand-Nash FOC turn observed prices into markup and marginal-cost components. Estimated costs are imperfect product by product because the estimated demand slope is not exactly the true slope, but the exercise recovers the economic object needed for counterfactual pricing. Multi-product firms (Choco-Bombs and Store-Frosted, both owned by Firm 1) charge higher markups because they internalize cannibalization between their own products.
 
 <img src="figures/price-decomposition.png" alt="Price = marginal cost + markup. Estimated MC (green, from Bertrand-Nash FOC) compared with true MC (blue). No accounting data required." width="80%">
-*Price = marginal cost + markup. Estimated MC (green, from Bertrand-Nash FOC) compared with true MC (blue). No accounting data required.*
+
+Within each panel, notice that all bars have the same height -- every rival gains the same cross-elasticity regardless of product similarity. This is the IIA property in action. The BLP random coefficients model (see blp-random-coefficients/) breaks this restriction by allowing consumer heterogeneity.
 
 <img src="figures/iia-demonstration.png" alt="IIA demonstration. When any product raises its price, substitution to each rival is proportional to that rival's market share -- not to how similar the products are." width="80%">
-*IIA demonstration. When any product raises its price, substitution to each rival is proportional to that rival's market share -- not to how similar the products are.*
+
+Compare the OLS and IV/2SLS columns: the bias is concentrated in alpha (price sensitivity) because price is the endogenous variable. The characteristic coefficients (sugar, fiber) are less affected because product attributes have weaker correlation with the unobserved quality term.
 
 **Estimation Results: True vs OLS vs IV/2SLS**
 
@@ -76,19 +121,7 @@ Multi-product firms internalise cannibalisation and charge higher markups.
 
 ## Takeaway
 
-**1. Endogeneity bias is real and large.** OLS underestimates price sensitivity because high unobserved quality ($\xi_j$) raises both demand and price. IV/2SLS using cost shifters corrects this.
-
-**2. The IIA problem.** The simple logit forces all cross-price elasticities in a column to be identical. If sugary Choco-Bombs raises its price, consumers unrealistically substitute to healthy Fiber-Bran at the same rate as similar Store-Frosted. The nested logit or random-coefficients logit (BLP) fixes this.
-
-**3. Supply-side cost recovery.** Given demand estimates, the Bertrand-Nash FOC lets us back out marginal costs from observed prices and market shares alone. Multi-product firms (who internalise cannibalisation) charge higher markups. This is the foundation of merger simulation: predict how costs, markups, and prices change when the ownership matrix changes.
-
-**Next step:** The BLP random-coefficients logit (see `blp-random-coefficients/`) allows heterogeneous consumers and richer substitution patterns.
-
-## Reproduce
-
-```bash
-python run.py
-```
+The supply-side object is not observed cost; it is the marginal cost that rationalizes observed prices under the estimated demand system and an ownership matrix. That makes the demand estimate consequential: attenuating price sensitivity also distorts markups and recovered costs. Simple logit is a clean benchmark because Berry inversion and the markup equation are transparent, but its IIA substitution pattern is too rigid for many merger and product-space applications. The natural next step is random-coefficients demand in [BLP](../blp-random-coefficients/), where substitution can vary with consumer heterogeneity and product characteristics.
 
 ## References
 
