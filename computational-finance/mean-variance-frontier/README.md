@@ -1,83 +1,126 @@
 # Mean-Variance Portfolio Frontier
 
-> Diversification, covariance, and the efficient frontier in a small portfolio model.
+> How covariance and short-sale constraints shape the portfolio frontier.
 
 ## Overview
 
-Markowitz portfolio choice formalizes the risk-return tradeoff. Expected return is a weighted average of asset means, while risk depends on the full covariance matrix. Diversification comes from imperfect co-movement, not from low standalone volatility alone.
+The Markowitz problem is a compact way to ask what diversification actually buys. A portfolio's mean return is linear in the weights, but its risk is not: covariance decides whether combining assets smooths payoffs or simply repackages the same aggregate risk.
 
-The inputs are stylized annual expected returns, volatilities, and correlations. Random long-only portfolios show the constrained feasible set; the analytic Markowitz frontier shows the unconstrained minimum-variance portfolio for each target return. The practical caveat is central: frontiers are highly sensitive to estimated means and covariances.
+The example uses four stylized annual asset classes. Random long-only portfolios make the feasible set visible, but they are only a simulation. The tutorial also computes the exact long-only frontier and the unconstrained analytic frontier, so the reader can see which features are economic restrictions and which are sampling noise from drawing many portfolios. The usual warning remains the main empirical one: a frontier is only as credible as the expected returns and covariance matrix fed into it.
 
 ## Equations
 
-For portfolio weights $w$, expected return is
+Let $i=1,\ldots,N$ index risky assets. A portfolio is a vector of weights
+$w=(w_1,\ldots,w_N)^\top$ with budget constraint $\mathbf{1}^\top w=1$. Let
+$\mu$ collect expected risky-asset returns and let $\Sigma$ be the positive
+definite covariance matrix of returns. The portfolio mean and variance are
 
 $$
-\mu_p = w^\top \mu.
+\mu_p(w)=w^\top \mu,
+\qquad
+\sigma_p^2(w)=w^\top \Sigma w.
 $$
 
-Portfolio variance is
-
-$$
-\sigma_p^2 = w^\top \Sigma w.
-$$
-
-The efficient frontier solves the minimum-variance problem for each target
-return:
+For a target mean return $m$, the unconstrained Markowitz frontier solves
 
 $$
 \min_w w^\top \Sigma w
 \quad \text{subject to} \quad
-w^\top \mu = \mu_p,\quad w^\top \mathbf{1} = 1.
+w^\top \mu=m,\quad \mathbf{1}^\top w=1.
 $$
 
-A long-only constrained version adds $w_i \geq 0$ for every asset. The
-unconstrained frontier is analytically convenient, but it can imply short or
-levered positions.
+With
+
+$$
+A=\mathbf{1}^\top\Sigma^{-1}\mathbf{1},\quad
+B=\mathbf{1}^\top\Sigma^{-1}\mu,\quad
+C=\mu^\top\Sigma^{-1}\mu,\quad
+D=AC-B^2,
+$$
+
+the minimum variance at target $m$ is
+
+$$
+\sigma^2(m)=\frac{A m^2-2 B m+C}{D}.
+$$
+
+Adding no-short-sale constraints gives the long-only problem:
+
+$$
+\min_w w^\top\Sigma w
+\quad\text{subject to}\quad
+w^\top\mu=m,\quad \mathbf{1}^\top w=1,\quad w_i\geq 0.
+$$
+
+The tangency portfolio for risk-free rate $r_f$ maximizes the Sharpe ratio,
+
+$$
+\max_w \frac{w^\top\mu-r_f}{\sqrt{w^\top\Sigma w}},
+$$
+
+and, without short-sale constraints, has weights proportional to
+$\Sigma^{-1}(\mu-r_f\mathbf{1})$ and normalized to sum to one.
 
 ## Model Setup
 
-| Asset | Expected return | Volatility |
-|-------|-----------------|------------|
-| Bills | 2.5% | 1.0% |
-| Bonds | 4.5% | 6.0% |
-| Equity | 8.5% | 16.0% |
-| Real assets | 6.5% | 12.0% |
-| Risk-free rate | 2.0% | Used for Sharpe ratios |
+| Object | Value | Role |
+|--------|-------|------|
+| Bills | mean 2.5%, volatility 1.0% | risky asset class |
+| Bonds | mean 4.5%, volatility 6.0% | risky asset class |
+| Equity | mean 8.5%, volatility 16.0% | risky asset class |
+| Real assets | mean 6.5%, volatility 12.0% | risky asset class |
+| Risk-free rate $r_f$ | 2.0% | Sharpe-ratio benchmark |
+| Correlations | fixed $4\times4$ matrix | determines diversification value |
+| Random portfolios | 5,000 Dirichlet draws | visual approximation to the long-only set |
+| Exact long-only frontier | active-set enumeration | benchmark for the random cloud |
 
 ## Solution Method
 
-Random long-only portfolios are simulated from a Dirichlet distribution and assigned their mean, variance, and Sharpe ratio. The unconstrained Markowitz formulas then give the global minimum-variance portfolio, the tangency portfolio, and the continuous frontier.
+The numerical work separates three objects that are often conflated. Random Dirichlet weights give a useful picture of the long-only feasible set. The unconstrained frontier comes from the Lagrange-multiplier formula above. The exact long-only frontier is computed by enumerating active asset sets; for each candidate set, the same two-constraint Markowitz problem is solved on that face of the simplex and discarded if any weight is negative.
+
+```text
+Algorithm: Markowitz frontier with a long-only benchmark
+Input: expected returns mu, covariance matrix Sigma, risk-free rate r_f, target grid M
+Output: random portfolios, unconstrained frontier, exact long-only frontier, selected weights
+Draw many long-only portfolios w from a symmetric Dirichlet distribution
+For each draw, compute mu_p(w), sigma_p(w), and the Sharpe ratio
+For each target return m in M:
+    compute the unconstrained frontier variance from A, B, C, and D
+    initialize the long-only variance at infinity
+    for each nonempty active asset set S:
+        solve the Markowitz problem using only assets in S
+        if all restricted weights are nonnegative:
+            keep the candidate if it has the lowest variance so far
+Compute the global minimum-variance and tangency portfolios
+Compare the best random long-only Sharpe portfolio with the exact frontier
+```
+
+Because there are only four assets, active-set enumeration is cleaner than adding a quadratic-programming dependency. It also makes the economic constraint explicit: the long-only frontier is the lower envelope of feasible faces of the portfolio simplex.
 
 ## Results
 
-Random portfolios fill the feasible long-only region. The analytic frontier shows the best risk-return tradeoff when short positions are allowed by the formula.
+The random cloud is a Monte Carlo picture of the long-only simplex. Its lower-left edge is close to, but not identical to, the exact long-only frontier. The dashed unconstrained frontier extends beyond that curve because it can use short positions or leverage. That distinction is substantive: allowing negative weights changes the choice set, not just the algorithm.
 
-<img src="figures/frontier.png" alt="Simulated portfolios and analytic frontier" width="80%">
-*Simulated portfolios and analytic frontier*
+<img src="figures/frontier.png" alt="Mean-variance frontier comparison" width="80%">
 
-The unconstrained tangency portfolio can use negative or levered positions. That is a mathematical frontier object, not a recommendation.
+The weight plot shows why the frontier comparison matters. The unconstrained global minimum-variance portfolio uses a small short position, while the long-only version moves to the nearest feasible allocation. In this calibration the tangency portfolio is already long-only, so the best random Sharpe draw lands close to the analytic tangency weights.
 
 <img src="figures/portfolio-weights.png" alt="Weights for selected portfolios" width="80%">
-*Weights for selected portfolios*
+
+The table reports annualized moments. The tiny difference between the analytic tangency portfolio and the best random long-only portfolio is simulation error, not a different economic optimum.
 
 **Selected portfolio summaries**
 
-| Portfolio                       | Return   | Risk   |   Sharpe | Bills   | Bonds   | Equity   | Real assets   |
-|:--------------------------------|:---------|:-------|---------:|:--------|:--------|:---------|:--------------|
-| Global min variance             | 2.51%    | 1.00%  |     0.51 | 100.1%  | -0.7%   | -0.1%    | 0.8%          |
-| Tangency                        | 2.97%    | 1.37%  |     0.71 | 85.8%   | 7.7%    | 2.6%     | 3.9%          |
-| Best simulated long-only Sharpe | 2.96%    | 1.37%  |     0.7  | 87.0%   | 5.9%    | 2.9%     | 4.2%          |
+| Portfolio                           | Return   | Risk   |   Sharpe | Bills   | Bonds   | Equity   | Real assets   |
+|:------------------------------------|:---------|:-------|---------:|:--------|:--------|:---------|:--------------|
+| Unconstrained global min variance   | 2.51%    | 1.00%  |     0.51 | 100.1%  | -0.7%   | -0.1%    | 0.8%          |
+| Exact long-only global min variance | 2.53%    | 1.00%  |     0.53 | 99.3%   | 0.0%    | 0.0%     | 0.7%          |
+| Tangency portfolio                  | 2.97%    | 1.37%  |     0.71 | 85.8%   | 7.7%    | 2.6%     | 3.9%          |
+| Best random long-only Sharpe        | 2.96%    | 1.37%  |     0.7  | 87.0%   | 5.9%    | 2.9%     | 4.2%          |
 
 ## Takeaway
 
-Markowitz's key insight is covariance. A portfolio is not just a weighted average of standalone risks, because assets move together. The practical caveat is equally important: frontiers are input-sensitive, especially to expected returns.
-
-## Reproduce
-
-```bash
-python run.py
-```
+The mean-variance frontier is useful because it makes covariance and constraints visible in the same object. It is also fragile. Small changes in expected returns or covariances can move the tangency portfolio sharply, so the computation should be read as a disciplined mapping from inputs to portfolio tradeoffs, not as a standalone investment rule.
 
 ## References
 
