@@ -1,12 +1,12 @@
-# Kalman Filtering Hidden States
+# Kalman Filtering a Latent Economic State
 
-> Recursive signal extraction and likelihood evaluation in a linear Gaussian model.
+> Recursive signal extraction, uncertainty, and likelihood in a linear Gaussian model.
 
 ## Overview
 
-The Kalman filter is the workhorse algorithm for tracking hidden states from noisy measurements. It appears in macroeconomics, engineering, robotics, finance, and any setting where a latent system evolves over time and observations arrive sequentially.
+Many economic states are not directly observed. A policymaker may see noisy indicators of the business cycle, an econometrician may observe prices but not latent demand, and a forecaster may want the persistent component of a volatile series. The Kalman filter is the canonical linear-Gaussian answer to that signal-extraction problem.
 
-This tutorial uses a two-state linear Gaussian model. Each period has two steps: predict the hidden state from the transition equation, then update that prediction using the new observation. The same recursion also produces the likelihood.
+This tutorial uses a two-state model observed through one noisy scalar signal. Each period has two economically distinct steps: predict the latent state using the law of motion, then update that prediction using the surprise in the new observation. The same recursion gives filtered states, posterior uncertainty, forecast innovations, Kalman gains, and the likelihood.
 
 ## Equations
 
@@ -31,6 +31,10 @@ K_t &= P_{t|t-1}\Psi'(\Psi P_{t|t-1}\Psi' + R)^{-1}, \\
 \end{aligned}
 $$
 
+The innovation $\nu_t=y_t-\Psi\hat{s}_{t|t-1}$ has variance
+$S_t=\Psi P_{t|t-1}\Psi' + R$, so the likelihood contribution is the Gaussian
+density of $\nu_t$ under variance $S_t$.
+
 ## Model Setup
 
 | Object | Value |
@@ -44,26 +48,39 @@ $$
 
 ## Solution Method
 
-The code simulates the hidden state and observed signal, then runs the Kalman filter with an initial state known to be zero. At each date it stores the one-step-ahead prediction, the filtered state mean, posterior covariance, Kalman gain, innovation, and log likelihood increment.
+The code simulates the hidden state and observed signal, then runs the Kalman filter from an initial state known to be zero. At each date it stores the one-step-ahead prediction, the filtered state mean, posterior covariance, Kalman gain, innovation, and log likelihood increment.
 
-The plots are meant to make the recursion concrete: the data are noisy, the filtered states are smoother than the raw observation, and uncertainty bands narrow when the signal is informative.
+```text
+Algorithm: Kalman filtering in a linear Gaussian state-space model
+Input: observations y_t, transition Phi, loading Psi, covariances Q and R
+Output: filtered means, filtered covariances, innovations, likelihood
+Initialize s_hat_{0|0} and P_{0|0}
+for t = 1, ..., T:
+    predict state:      s_hat_{t|t-1} = Phi s_hat_{t-1|t-1}
+    predict covariance: P_{t|t-1} = Phi P_{t-1|t-1} Phi' + Q
+    innovation:         nu_t = y_t - Psi s_hat_{t|t-1}
+    innovation var:     S_t = Psi P_{t|t-1} Psi' + R
+    gain:               K_t = P_{t|t-1} Psi' S_t^{-1}
+    update state:       s_hat_{t|t} = s_hat_{t|t-1} + K_t nu_t
+    update covariance:  P_{t|t} = P_{t|t-1} - K_t Psi P_{t|t-1}
+    add log p(nu_t; 0, S_t) to the likelihood
+```
+
+The figures make the recursion concrete: the raw observation is noisy, the filtered states are smoother than the signal, and uncertainty changes with the information in the state equation and measurement equation.
 
 ## Results
 
 The scalar observation combines both hidden states and measurement error. The filter uses the transition law to separate persistent state movements from observation noise.
 
 <img src="figures/simulated-signal.png" alt="Observed signal and hidden state paths" width="80%">
-*Observed signal and hidden state paths*
 
 The posterior covariance is not a side product. It tells us how uncertain the filter is about each latent state after seeing data through period t.
 
 <img src="figures/filter-bands.png" alt="Kalman filtered states with credible bands" width="80%">
-*Kalman filtered states with credible bands*
 
 The innovation is the surprise in the new observation. The Kalman gain converts that surprise into a state update, with weights pinned down by signal and state noise.
 
 <img src="figures/innovations-gain.png" alt="Forecast innovations and Kalman gains" width="80%">
-*Forecast innovations and Kalman gains*
 
 The table compares filtered state means to the simulated hidden states.
 
@@ -75,17 +92,11 @@ The table compares filtered state means to the simulated hidden states.
 | s2             | 0.2447 | 0.2106           | 0.2286               |                0.92 |
 | log likelihood |        |                  |                      |              -25.73 |
 
-The total log likelihood for the simulated sample is -25.73. The filter tracks both states well despite observing only one noisy scalar signal because the transition equation supplies dynamic discipline.
+The total log likelihood for the simulated sample is -25.73. The filter tracks both states well despite observing only one noisy scalar signal because the transition equation supplies dynamic discipline. The Kalman gain stabilizes once the filter learns the relative precision of the transition equation and the measurement equation.
 
 ## Takeaway
 
-The Kalman filter is more than a smoother. It is a disciplined accounting system for uncertainty: prior state uncertainty, measurement noise, forecast surprises, posterior uncertainty, and likelihood all update together. That is why the same recursion is used for forecasting, nowcasting, state estimation, and maximum-likelihood estimation.
-
-## Reproduce
-
-```bash
-python run.py
-```
+The Kalman filter is more than a smoother. It is a disciplined accounting system for uncertainty: prior state uncertainty, measurement noise, forecast surprises, posterior uncertainty, and likelihood update together. That is why the same recursion is useful for nowcasting, forecasting, latent-state estimation, and maximum-likelihood estimation of linear Gaussian models.
 
 ## References
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Kalman filtering for a linear Gaussian state-space model.
+"""Kalman filtering for latent economic states.
 
 The tutorial uses a two-state signal extraction model. The hidden state is
 observed only through a noisy scalar signal, so the Kalman filter shows how
@@ -155,17 +155,22 @@ def main() -> None:
     )
 
     report = ModelReport(
-        "Kalman Filtering Hidden States",
-        "Recursive signal extraction and likelihood evaluation in a linear Gaussian model.",
+        "Kalman Filtering a Latent Economic State",
+        "Recursive signal extraction, uncertainty, and likelihood in a linear Gaussian model.",
+        include_reproduce=False,
+        show_figure_captions=False,
     )
 
     report.add_overview(
-        "The Kalman filter is the workhorse algorithm for tracking hidden states from noisy "
-        "measurements. It appears in macroeconomics, engineering, robotics, finance, and any "
-        "setting where a latent system evolves over time and observations arrive sequentially.\n\n"
-        "This tutorial uses a two-state linear Gaussian model. Each period has two steps: "
-        "predict the hidden state from the transition equation, then update that prediction "
-        "using the new observation. The same recursion also produces the likelihood."
+        "Many economic states are not directly observed. A policymaker may see noisy indicators "
+        "of the business cycle, an econometrician may observe prices but not latent demand, and "
+        "a forecaster may want the persistent component of a volatile series. The Kalman filter "
+        "is the canonical linear-Gaussian answer to that signal-extraction problem.\n\n"
+        "This tutorial uses a two-state model observed through one noisy scalar signal. Each "
+        "period has two economically distinct steps: predict the latent state using the law of "
+        "motion, then update that prediction using the surprise in the new observation. The same "
+        "recursion gives filtered states, posterior uncertainty, forecast innovations, Kalman "
+        "gains, and the likelihood."
     )
 
     report.add_equations(
@@ -190,6 +195,10 @@ K_t &= P_{t|t-1}\Psi'(\Psi P_{t|t-1}\Psi' + R)^{-1}, \\
 \hat{s}_{t|t} &= \hat{s}_{t|t-1} + K_t(y_t - \Psi\hat{s}_{t|t-1}).
 \end{aligned}
 $$
+
+The innovation $\nu_t=y_t-\Psi\hat{s}_{t|t-1}$ has variance
+$S_t=\Psi P_{t|t-1}\Psi' + R$, so the likelihood contribution is the Gaussian
+density of $\nu_t$ under variance $S_t$.
 """
     )
 
@@ -206,12 +215,27 @@ $$
 
     report.add_solution_method(
         "The code simulates the hidden state and observed signal, then runs the Kalman filter "
-        "with an initial state known to be zero. At each date it stores the one-step-ahead "
+        "from an initial state known to be zero. At each date it stores the one-step-ahead "
         "prediction, the filtered state mean, posterior covariance, Kalman gain, innovation, "
         "and log likelihood increment.\n\n"
-        "The plots are meant to make the recursion concrete: the data are noisy, the filtered "
-        "states are smoother than the raw observation, and uncertainty bands narrow when the "
-        "signal is informative."
+        "```text\n"
+        "Algorithm: Kalman filtering in a linear Gaussian state-space model\n"
+        "Input: observations y_t, transition Phi, loading Psi, covariances Q and R\n"
+        "Output: filtered means, filtered covariances, innovations, likelihood\n"
+        "Initialize s_hat_{0|0} and P_{0|0}\n"
+        "for t = 1, ..., T:\n"
+        "    predict state:      s_hat_{t|t-1} = Phi s_hat_{t-1|t-1}\n"
+        "    predict covariance: P_{t|t-1} = Phi P_{t-1|t-1} Phi' + Q\n"
+        "    innovation:         nu_t = y_t - Psi s_hat_{t|t-1}\n"
+        "    innovation var:     S_t = Psi P_{t|t-1} Psi' + R\n"
+        "    gain:               K_t = P_{t|t-1} Psi' S_t^{-1}\n"
+        "    update state:       s_hat_{t|t} = s_hat_{t|t-1} + K_t nu_t\n"
+        "    update covariance:  P_{t|t} = P_{t|t-1} - K_t Psi P_{t|t-1}\n"
+        "    add log p(nu_t; 0, S_t) to the likelihood\n"
+        "```\n\n"
+        "The figures make the recursion concrete: the raw observation is noisy, the filtered "
+        "states are smoother than the signal, and uncertainty changes with the information in "
+        "the state equation and measurement equation."
     )
 
     fig1, axes1 = plt.subplots(3, 1, figsize=(9, 7.4), sharex=True)
@@ -298,14 +322,16 @@ $$
         f"The total log likelihood for the simulated sample is "
         f"{filtered['loglike_increment'].sum():.2f}. The filter tracks both states well despite "
         "observing only one noisy scalar signal because the transition equation supplies dynamic "
-        "discipline."
+        "discipline. The Kalman gain stabilizes once the filter learns the relative precision of "
+        "the transition equation and the measurement equation."
     )
 
     report.add_takeaway(
         "The Kalman filter is more than a smoother. It is a disciplined accounting system for "
         "uncertainty: prior state uncertainty, measurement noise, forecast surprises, posterior "
-        "uncertainty, and likelihood all update together. That is why the same recursion is used "
-        "for forecasting, nowcasting, state estimation, and maximum-likelihood estimation."
+        "uncertainty, and likelihood update together. That is why the same recursion is useful "
+        "for nowcasting, forecasting, latent-state estimation, and maximum-likelihood estimation "
+        "of linear Gaussian models."
     )
 
     report.add_references(
