@@ -24,9 +24,25 @@ Thumbs.db
 
 # Environment
 .env
+.env.*
+!.env.example
 .venv/
 env/
 venv/
+
+# Local sensitive files
+secrets/
+private/
+credentials/
+local-docs/
+*.pem
+*.key
+*.p12
+*.pfx
+*secret*
+*credential*
+*token*
+*password*
 
 # MATLAB
 *.asv
