@@ -1,4 +1,4 @@
-Input,True elasticity,OLS,Proxy-control
-Labor,0.320,0.452,0.333
-Capital,0.240,0.492,0.245
-Materials,0.440,0.771,0.460
+Input,True elasticity,OLS,Proxy-control,OLS bias,Proxy bias
+Labor,0.320,0.452,0.333,0.132,0.013
+Capital,0.240,0.492,0.245,0.252,0.005
+Materials,0.440,0.771,0.460,0.331,0.020

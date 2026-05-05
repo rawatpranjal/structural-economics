@@ -1,87 +1,139 @@
 # Production Functions and Markup Measurement
 
-> Proxy-control production estimation and markup recovery from variable input cost shares.
+> Productivity, input choice, and markup recovery from variable-input cost shares.
 
 ## Overview
 
-Production-function estimation is central to IO because productivity is observed by firms when they choose inputs but not by the econometrician. If more productive firms choose more labor or materials, a naive regression of output on inputs confounds technology with input choice.
+Markup measurement links two objects that are often taught separately: a production function and the firm's first-order condition for a flexible input. The economic problem is not just estimating a technology parameter. If productive firms choose more labor and materials, OLS attributes part of productivity to those inputs, and that bias flows directly into markup estimates.
 
-The tutorial simulates a Cobb-Douglas panel, compares OLS with a simple investment-proxy control regression, and then uses the De Loecker-Warzynski markup formula: markup equals an output elasticity divided by the revenue share of that variable input.
+This tutorial keeps the data synthetic so the truth is visible. A Cobb-Douglas panel generates output, flexible input choices, investment, productivity, and markups. The exercise compares a naive production regression with a transparent investment-proxy control, then applies the De Loecker-Warzynski markup formula. It complements [Logit Demand and Markup Recovery](../logit-supply-side/): that tutorial recovers markups from demand and pricing FOCs, while this one recovers them from production elasticities and input shares.
 
 ## Equations
 
-Cobb-Douglas production:
-$$y_{it} = \beta_l l_{it} + \beta_k k_{it} + \beta_m m_{it} + \omega_{it} + \epsilon_{it}$$
+Let $i$ index firms and $t$ years. Output, labor, capital, and materials are in
+logs and are denoted by $y_{it}$, $l_{it}$, $k_{it}$, and $m_{it}$. The simulated
+production function is
 
-Investment responds monotonically to productivity:
-$$i_{it} = h(k_{it}, \omega_{it})$$
+$$
+y_{it}
+= \beta_l l_{it}+\beta_k k_{it}+\beta_m m_{it}
++\omega_{it}+\varepsilon_{it}.
+$$
 
-Proxy-control estimators invert this policy to control for productivity.
+The productivity state $\omega_{it}$ is observed by the firm before flexible
+inputs are chosen. That timing makes $l_{it}$ and $m_{it}$ correlated with
+$\omega_{it}$, so the population regression error in a naive OLS equation is not
+orthogonal to the inputs.
 
-Markup from a variable input:
-$$\mu_{it} = \frac{\theta^m_{it}}{\alpha^m_{it}}$$
+The proxy variable is investment $I_{it}$. In the synthetic data it follows a
+monotone policy
 
-where $\theta^m$ is the output elasticity of materials and $\alpha^m$ is the materials expenditure share in revenue.
+$$
+I_{it}=h(k_{it},\omega_{it})+\nu_{it},
+\qquad \frac{\partial h(k,\omega)}{\partial \omega}>0.
+$$
+
+The control-function idea is to use the monotonicity of $h$ to form a control
+$\tilde \omega_{it}=h^{-1}(k_{it},I_{it})$ and estimate
+
+$$
+y_{it}
+= \beta_l l_{it}+\beta_k k_{it}+\beta_m m_{it}
++\rho \tilde\omega_{it}+u_{it}.
+$$
+
+The markup formula uses a variable input. For materials, the Cobb-Douglas output
+elasticity is $\theta^m=\beta_m$. Let
+
+$$
+\alpha^m_{it}
+= \frac{\text{materials expenditure}_{it}}{\text{revenue}_{it}}
+$$
+
+be the materials revenue share. Cost minimization implies the gross markup
+
+$$
+\mu_{it}=\frac{\theta^m}{\alpha^m_{it}}.
+$$
+
+In field data, the hard part is justifying the proxy and the variable-input
+first-order condition. In this synthetic run, the hard part is stripped down so
+the mapping from production-elasticity bias to markup bias is observable.
 
 ## Model Setup
 
-| Object | Value |
-|--------|-------|
-| Firms | 320 |
-| Years | 6 |
-| Technology | Cobb-Douglas in labor, capital, and materials |
-| Productivity | Persistent AR(1), observed by firms before input choice |
-| Proxy variable | Investment, increasing in productivity conditional on capital |
-| Markup formula | Materials output elasticity divided by materials revenue share |
+| Object | Value | Role in the exercise |
+|--------|-------|----------------------|
+| Firm-year panel | 320 firms, 6 years | Lets input choices respond to persistent productivity |
+| Technology | Cobb-Douglas in labor, capital, materials | Gives known output elasticities for the benchmark |
+| True elasticities | $\beta_l=0.32$, $\beta_k=0.24$, $\beta_m=0.44$ | Ground truth for the coefficient comparison |
+| Productivity | Persistent AR(1), observed by firms | Source of simultaneity in flexible inputs |
+| Proxy variable | Investment, monotone in productivity conditional on capital | Control for the unobserved productivity state |
+| Markup measure | $\theta^m / \alpha^m_{it}$ | Converts the materials elasticity into firm-year markups |
 
 ## Solution Method
 
-OLS regresses log output on log inputs directly. The proxy-control regression uses the simulated investment policy to construct a noisy productivity proxy, which absorbs much of the productivity term that drives simultaneity. The estimated materials elasticity then enters the markup calculation for every firm-year observation.
+The computation has two layers. First estimate the production elasticity of the variable input. Then divide that elasticity by each firm-year materials share. The proxy-control regression here uses the known synthetic investment schedule to form a noisy productivity control; a full Olley-Pakes or Levinsohn-Petrin application would estimate the nuisance policy and productivity law from data.
+
+```text
+Algorithm: proxy-control markup measurement
+Input: panel {y_it, l_it, k_it, m_it, I_it, alpha^m_it}, proxy policy h, true benchmark mu_it
+Output: production elasticities and firm-year markup estimates
+1. Estimate the naive production regression:
+       y_it = b_l l_it + b_k k_it + b_m m_it + residual_it
+   and record the OLS materials elasticity b_m^OLS.
+2. Use monotonic investment to build a productivity control:
+       omega_tilde_it = h^{-1}(k_it, I_it).
+3. Re-estimate production with the control included:
+       y_it = b_l l_it + b_k k_it + b_m m_it + rho omega_tilde_it + u_it.
+   The controlled b_m is the markup-relevant elasticity theta_hat^m.
+4. For every firm-year, compute
+       mu_hat_it = theta_hat^m / alpha^m_it.
+5. Compare theta_hat^m and mu_hat_it with the simulated truth, and aggregate
+   markups by productivity quintile to inspect heterogeneity.
+```
+
+The markup step is mechanically simple. The identification burden sits in the elasticity and in the assumption that materials are a flexible input with the right first-order condition.
 
 ## Results
 
-OLS loads part of unobserved productivity onto flexible inputs. The proxy-control regression moves the input elasticities closer to the data-generating values.
+The first figure shows why the production-function step matters for IO markups. OLS overstates the flexible-input elasticities because high-productivity firms choose more inputs. The proxy-control estimate is not a new economic object; it is a correction for the omitted productivity state, and in this simulation it moves the materials elasticity close to its true value.
 
 <img src="figures/production-estimates.png" alt="True and estimated output elasticities" width="80%">
-*True and estimated output elasticities*
 
-Markup estimates inherit any error in the production elasticity and any noise in the expenditure share. The distribution is still informative about dispersion.
+The second figure pushes the coefficient bias through the markup formula. The OLS-implied distribution is too far to the right because the materials elasticity is inflated. The proxy-control markups stay much closer to the truth, though they still inherit noise from the expenditure share and the proxy.
 
 <img src="figures/markup-distribution.png" alt="True and estimated markup distributions" width="80%">
-*True and estimated markup distributions*
 
-The same production data can be used to study heterogeneity: high-productivity firms have lower material shares and therefore higher measured markups in this design.
+The third figure uses the simulated truth to check the markup gradient, not just the level. More productive firms have lower materials shares in this design, so true markups rise with productivity. The recovered quintile means trace that gradient fairly closely; the scatter reminds us that firm-level markups are noisy objects even when the production elasticity is well estimated.
 
 <img src="figures/productivity-markups.png" alt="Estimated markups rise with productivity in the simulated panel" width="80%">
-*Estimated markups rise with productivity in the simulated panel*
+
+The coefficient table is read through the markup formula. Materials is the crucial row because $\theta^m$ is divided by the materials revenue share; an elasticity bias of this size would become a markup bias almost one-for-one.
 
 **Production function estimates**
 
-| Input     |   True elasticity |   OLS |   Proxy-control |
-|:----------|------------------:|------:|----------------:|
-| Labor     |              0.32 | 0.452 |           0.333 |
-| Capital   |              0.24 | 0.492 |           0.245 |
-| Materials |              0.44 | 0.771 |           0.46  |
+| Input     |   True elasticity |   OLS |   Proxy-control |   OLS bias |   Proxy bias |
+|:----------|------------------:|------:|----------------:|-----------:|-------------:|
+| Labor     |              0.32 | 0.452 |           0.333 |      0.132 |        0.013 |
+| Capital   |              0.24 | 0.492 |           0.245 |      0.252 |        0.005 |
+| Materials |              0.44 | 0.771 |           0.46  |      0.331 |        0.02  |
+
+The quintile table makes the ground-truth comparison explicit. OLS-based markups are too high in every productivity cell. The proxy-control markups keep the right ordering and a much smaller level error.
 
 **Markup moments by productivity quintile**
 
-| productivity_bin   |   mean_productivity |   mean_markup |   median_markup |
-|:-------------------|--------------------:|--------------:|----------------:|
-| Q1                 |              -0.45  |         0.901 |           0.894 |
-| Q2                 |              -0.162 |         1.048 |           1.044 |
-| Q3                 |               0.015 |         1.244 |           1.227 |
-| Q4                 |               0.195 |         1.43  |           1.407 |
-| Q5                 |               0.469 |         1.728 |           1.693 |
+| productivity_quintile   |   mean_productivity |   true_markup |   ols_markup |   proxy_markup |   proxy_bias |
+|:------------------------|--------------------:|--------------:|-------------:|---------------:|-------------:|
+| Q1                      |              -0.45  |         0.865 |        1.513 |          0.901 |        0.036 |
+| Q2                      |              -0.162 |         1.005 |        1.76  |          1.048 |        0.043 |
+| Q3                      |               0.015 |         1.18  |        2.088 |          1.244 |        0.064 |
+| Q4                      |               0.195 |         1.365 |        2.4   |          1.43  |        0.065 |
+| Q5                      |               0.469 |         1.647 |        2.901 |          1.728 |        0.081 |
 
 ## Takeaway
 
-Production-function estimates are not just technology parameters. Once combined with expenditure shares, they become markup estimates. That makes simultaneity, proxy assumptions, and revenue-vs-quantity measurement central to market-power claims.
-
-## Reproduce
-
-```bash
-python run.py
-```
+The markup estimate is only as credible as the production elasticity and the variable-input share behind it. In this controlled panel, correcting for productivity substantially reduces the markup error; in real IO work, the analogous scrutiny falls on the proxy monotonicity, the timing of input choices, and whether revenue data are being mistaken for physical output.
 
 ## References
 

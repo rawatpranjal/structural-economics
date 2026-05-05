@@ -1,6 +1,6 @@
-productivity_bin,mean_productivity,mean_markup,median_markup
-Q1,-0.450,0.901,0.894
-Q2,-0.162,1.048,1.044
-Q3,0.015,1.244,1.227
-Q4,0.195,1.430,1.407
-Q5,0.469,1.728,1.693
+productivity_quintile,mean_productivity,true_markup,ols_markup,proxy_markup,proxy_bias
+Q1,-0.450,0.865,1.513,0.901,0.036
+Q2,-0.162,1.005,1.760,1.048,0.043
+Q3,0.015,1.180,2.088,1.244,0.064
+Q4,0.195,1.365,2.400,1.430,0.065
+Q5,0.469,1.647,2.901,1.728,0.081
