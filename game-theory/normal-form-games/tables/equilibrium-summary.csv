@@ -1,5 +1,5 @@
-Game,Pure Nash,Interior mixed Nash,Indifference residual
-Prisoner's Dilemma,"(Defect, Defect)",None,
-Matching Pennies,None,"p=0.500, q=0.500",0.0e+00
-Battle of the Sexes,"(Opera, Opera), (Football, Football)","p=0.600, q=0.400",2.2e-16
-Stag Hunt,"(Stag, Stag), (Hare, Hare)","p=0.667, q=0.667",4.4e-16
+Game,Pure Nash equilibria,Interior mixed equilibrium,Indifference residual,Equilibrium pattern
+Prisoner's Dilemma,"(Defect, Defect)",None,None,Dominance: defection is the unique stable profile.
+Matching Pennies,None,Pr(row Heads)=0.500; Pr(column Heads)=0.500,0.0e+00,No pure equilibrium; mixing removes predictable play.
+Battle of the Sexes,"(Opera, Opera), (Football, Football)",Pr(row Opera)=0.600; Pr(column Opera)=0.400,2.2e-16,Two coordination equilibria plus one mixed conflict point.
+Stag Hunt,"(Stag, Stag), (Hare, Hare)",Pr(row Stag)=0.667; Pr(column Stag)=0.667,4.4e-16,"Two coordination equilibria, one payoff dominant."

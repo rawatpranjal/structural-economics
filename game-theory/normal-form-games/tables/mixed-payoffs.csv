@@ -1,4 +1,4 @@
-Game,Row payoff,Column payoff,p,q
-Matching Pennies,0.000,0.000,0.500,0.500
-Battle of the Sexes,1.200,1.200,0.600,0.400
-Stag Hunt,2.667,2.667,0.667,0.667
+Game,Row first-action probability p,Column first-action probability q,Row payoff,Column payoff
+Matching Pennies,0.500,0.500,0.000,0.000
+Battle of the Sexes,0.600,0.400,1.200,1.200
+Stag Hunt,0.667,0.667,2.667,2.667
