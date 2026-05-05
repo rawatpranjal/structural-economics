@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Particle filtering for a linear Gaussian state-space model.
+"""Particle filtering for latent economic states.
 
 The tutorial compares simulation-based filters against the Kalman filter in a
 model where the Kalman answer is available. That makes particle approximation
@@ -332,19 +332,23 @@ def main() -> None:
     print(f"  optimal RMSE vs Kalman={np.sqrt(np.mean(mse_opt)):.4f}")
 
     report = ModelReport(
-        "Particle Filtering and Degeneracy",
-        "Simulation-based filtering, particle degeneracy, and proposal design.",
+        "Particle Filtering Latent Economic States",
+        "Sequential Monte Carlo, particle degeneracy, and proposal design in signal extraction.",
+        include_reproduce=False,
+        show_figure_captions=False,
     )
 
     report.add_overview(
-        "Particle filters approximate a filtering distribution with simulated states. They are "
-        "useful when nonlinearities or non-Gaussian shocks make the Kalman filter unavailable. "
-        "Here we deliberately use a linear Gaussian model so the Kalman filter supplies a truth "
-        "benchmark for particle error.\n\n"
-        "The tutorial compares a bootstrap particle filter with a conditionally optimal particle "
-        "filter. The bootstrap filter simulates from the transition equation and then weights by "
-        "the observation density. The conditionally optimal filter uses the current observation "
-        "inside the proposal, which reduces weight degeneracy when measurements are informative."
+        "When latent economic states evolve nonlinearly or shocks are non-Gaussian, the Kalman "
+        "filter is no longer available in closed form. Particle filters keep the same filtering "
+        "question but represent the posterior distribution with weighted simulated states. The "
+        "economic object is still the filtered state distribution; the computational issue is "
+        "whether the particles are placed where the likelihood is informative.\n\n"
+        "This tutorial deliberately keeps the model linear and Gaussian, so the Kalman filter "
+        "provides a benchmark. That lets us isolate particle error without changing the state "
+        "space model. The bootstrap filter simulates from the transition equation and then "
+        "weights by the observation density. The conditionally optimal filter uses the current "
+        "observation inside the proposal, reducing weight degeneracy when measurements are sharp."
     )
 
     report.add_equations(
@@ -372,6 +376,12 @@ The conditionally optimal proposal uses the current observation:
 $$
 s_t^{(i)} \sim p(s_t \mid s_{t-1}^{(i)}, y_t).
 $$
+
+Effective sample size summarizes weight concentration:
+
+$$
+ESS_t = \frac{1}{\sum_i (w_t^{(i)})^2}.
+$$
 """
     )
 
@@ -393,8 +403,22 @@ $$
         "**Conditionally optimal filter:** for each particle, combine the transition density "
         "and the current observation to sample from $p(s_t \\mid s_{t-1}, y_t)$. The remaining "
         "weights are the one-step predictive likelihoods $p(y_t \\mid s_{t-1})$.\n\n"
+        "```text\n"
+        "Algorithm: particle filtering with resampling\n"
+        "Input: observations y_t, particles s_{0}^{(i)}, proposal q, particle count N\n"
+        "Output: filtered state means, ESS, likelihood estimate\n"
+        "for t = 1, ..., T:\n"
+        "    for each particle i:\n"
+        "        draw proposed state s_t^{(i)} from q(s_t | s_{t-1}^{(i)}, y_t)\n"
+        "        compute importance weight w_t^{(i)} from target / proposal density\n"
+        "    normalize weights and estimate E[s_t | y_{1:t}]\n"
+        "    compute ESS_t = 1 / sum_i (w_t^{(i)})^2\n"
+        "    resample particles according to normalized weights\n"
+        "    accumulate the likelihood increment\n"
+        "```\n\n"
         "The code repeats each filter many times and reports Monte Carlo error relative to the "
-        "Kalman filtered mean."
+        "Kalman filtered mean. Because the benchmark is exact in this linear Gaussian model, "
+        "the tables measure particle approximation error rather than model misspecification."
     )
 
     fig1, axes1 = plt.subplots(2, 1, figsize=(9, 6.4), sharex=True)
@@ -530,7 +554,10 @@ $$
         f"With {n_particles} particles, the bootstrap filter has RMSE "
         f"{np.sqrt(np.mean(mse_boot)):.4f} relative to the Kalman filtered mean, while the "
         f"conditionally optimal filter has RMSE {np.sqrt(np.mean(mse_opt)):.4f}. The main "
-        "difference is not the model; it is the proposal distribution used to place particles."
+        "difference is not the model; it is the proposal distribution used to place particles. "
+        "The measurement-noise sweep shows the mechanism: as observations become sharper, "
+        "bootstrap particles drawn before seeing the signal are more likely to receive near-zero "
+        "weight."
     )
 
     report.add_takeaway(
@@ -538,7 +565,8 @@ $$
         "with weighted simulations. That flexibility has a cost: particle placement matters. "
         "When observations are very informative or contaminated by outliers, naive bootstrap "
         "particles can collapse onto a few high-weight draws. Better proposals, more particles, "
-        "and outlier-robust measurement models are practical ways to respond."
+        "and outlier-robust measurement models are practical responses, but the first warning "
+        "usually appears in ESS and repeated-run Monte Carlo error."
     )
 
     report.add_references(

@@ -1,12 +1,12 @@
-# Particle Filtering and Degeneracy
+# Particle Filtering Latent Economic States
 
-> Simulation-based filtering, particle degeneracy, and proposal design.
+> Sequential Monte Carlo, particle degeneracy, and proposal design in signal extraction.
 
 ## Overview
 
-Particle filters approximate a filtering distribution with simulated states. They are useful when nonlinearities or non-Gaussian shocks make the Kalman filter unavailable. Here we deliberately use a linear Gaussian model so the Kalman filter supplies a truth benchmark for particle error.
+When latent economic states evolve nonlinearly or shocks are non-Gaussian, the Kalman filter is no longer available in closed form. Particle filters keep the same filtering question but represent the posterior distribution with weighted simulated states. The economic object is still the filtered state distribution; the computational issue is whether the particles are placed where the likelihood is informative.
 
-The tutorial compares a bootstrap particle filter with a conditionally optimal particle filter. The bootstrap filter simulates from the transition equation and then weights by the observation density. The conditionally optimal filter uses the current observation inside the proposal, which reduces weight degeneracy when measurements are informative.
+This tutorial deliberately keeps the model linear and Gaussian, so the Kalman filter provides a benchmark. That lets us isolate particle error without changing the state space model. The bootstrap filter simulates from the transition equation and then weights by the observation density. The conditionally optimal filter uses the current observation inside the proposal, reducing weight degeneracy when measurements are sharp.
 
 ## Equations
 
@@ -34,6 +34,12 @@ $$
 s_t^{(i)} \sim p(s_t \mid s_{t-1}^{(i)}, y_t).
 $$
 
+Effective sample size summarizes weight concentration:
+
+$$
+ESS_t = \frac{1}{\sum_i (w_t^{(i)})^2}.
+$$
+
 ## Model Setup
 
 | Object | Value |
@@ -52,29 +58,39 @@ $$
 
 **Conditionally optimal filter:** for each particle, combine the transition density and the current observation to sample from $p(s_t \mid s_{t-1}, y_t)$. The remaining weights are the one-step predictive likelihoods $p(y_t \mid s_{t-1})$.
 
-The code repeats each filter many times and reports Monte Carlo error relative to the Kalman filtered mean.
+```text
+Algorithm: particle filtering with resampling
+Input: observations y_t, particles s_{0}^{(i)}, proposal q, particle count N
+Output: filtered state means, ESS, likelihood estimate
+for t = 1, ..., T:
+    for each particle i:
+        draw proposed state s_t^{(i)} from q(s_t | s_{t-1}^{(i)}, y_t)
+        compute importance weight w_t^{(i)} from target / proposal density
+    normalize weights and estimate E[s_t | y_{1:t}]
+    compute ESS_t = 1 / sum_i (w_t^{(i)})^2
+    resample particles according to normalized weights
+    accumulate the likelihood increment
+```
+
+The code repeats each filter many times and reports Monte Carlo error relative to the Kalman filtered mean. Because the benchmark is exact in this linear Gaussian model, the tables measure particle approximation error rather than model misspecification.
 
 ## Results
 
 With 500 particles, both particle filters track the Kalman benchmark. The difference between the two methods is easier to see in repeated-run error and effective sample size.
 
 <img src="figures/filter-comparison.png" alt="Particle filter state estimates compared with the Kalman filter" width="80%">
-*Particle filter state estimates compared with the Kalman filter*
 
 Effective sample size falls when a few particles receive most of the weight. The conditionally optimal proposal usually preserves more useful particles because it looks at the observation before drawing the new state.
 
 <img src="figures/mse-and-ess.png" alt="Repeated-run Monte Carlo error and effective sample size" width="80%">
-*Repeated-run Monte Carlo error and effective sample size*
 
 Low measurement noise makes the likelihood sharply peaked. Bootstrap particles drawn from the transition can miss that peak, creating weight degeneracy.
 
 <img src="figures/measurement-noise.png" alt="Particle accuracy as measurement noise falls" width="80%">
-*Particle accuracy as measurement noise falls*
 
 Outliers are hard for likelihood-weighted simulation. A single extreme observation can concentrate weights and pull the filtered state sharply.
 
 <img src="figures/outlier-stress.png" alt="Filtering after multiplying observation 25 by ten" width="80%">
-*Filtering after multiplying observation 25 by ten*
 
 The baseline repeats each filter 50 times with 500 particles.
 
@@ -115,17 +131,11 @@ The optimal proposal can often match bootstrap accuracy with fewer particles.
 |        1000 | bootstrap |              0.02   |   244.002  |       0.7239 |
 |        1000 | optimal   |              0.0069 |   985.287  |       0.0324 |
 
-With 500 particles, the bootstrap filter has RMSE 0.0273 relative to the Kalman filtered mean, while the conditionally optimal filter has RMSE 0.0100. The main difference is not the model; it is the proposal distribution used to place particles.
+With 500 particles, the bootstrap filter has RMSE 0.0273 relative to the Kalman filtered mean, while the conditionally optimal filter has RMSE 0.0100. The main difference is not the model; it is the proposal distribution used to place particles. The measurement-noise sweep shows the mechanism: as observations become sharper, bootstrap particles drawn before seeing the signal are more likely to receive near-zero weight.
 
 ## Takeaway
 
-Particle filters are flexible because they replace analytic filtering distributions with weighted simulations. That flexibility has a cost: particle placement matters. When observations are very informative or contaminated by outliers, naive bootstrap particles can collapse onto a few high-weight draws. Better proposals, more particles, and outlier-robust measurement models are practical ways to respond.
-
-## Reproduce
-
-```bash
-python run.py
-```
+Particle filters are flexible because they replace analytic filtering distributions with weighted simulations. That flexibility has a cost: particle placement matters. When observations are very informative or contaminated by outliers, naive bootstrap particles can collapse onto a few high-weight draws. Better proposals, more particles, and outlier-robust measurement models are practical responses, but the first warning usually appears in ESS and repeated-run Monte Carlo error.
 
 ## References
 
