@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Projection methods with Chebyshev polynomials.
+"""Chebyshev projection for a deterministic growth policy.
 
 The tutorial solves a small dynamic problem by approximating the policy function
 directly. It uses a model with a known closed-form solution so approximation
@@ -201,17 +201,22 @@ def main() -> None:
     print(f"  max Euler error={np.max(main_euler_error):.2e}")
 
     report = ModelReport(
-        "Projection Methods with Chebyshev Polynomials",
-        "Function approximation and Euler-equation residuals in a dynamic decision problem.",
+        "Chebyshev Projection for a Growth Policy",
+        "Approximating a deterministic growth policy with collocation and Euler residuals.",
+        include_reproduce=False,
+        show_figure_captions=False,
     )
 
     report.add_overview(
-        "Projection methods solve models by approximating an unknown function with a small "
-        "number of basis functions. Instead of storing a value or policy at every grid point, "
-        "we choose coefficients that make the model's residual equations close to zero.\n\n"
-        "This tutorial uses Chebyshev polynomials to approximate the capital policy in a simple "
-        "growth problem. The example is intentionally transparent: the true policy is known, so "
-        "the reader can see how collocation, approximation order, and Euler residuals fit together."
+        "In many dynamic economic models the object of interest is a policy function, not a "
+        "table of values on a grid. Projection methods approximate that function directly. A "
+        "small vector of coefficients stands in for the whole decision rule, and the model's "
+        "equilibrium conditions determine those coefficients.\n\n"
+        "The economic environment here is the deterministic growth problem with log utility "
+        "and full depreciation. That special case has a closed-form capital policy, which makes "
+        "it a clean benchmark for projection. The tutorial therefore focuses on what the "
+        "Chebyshev approximation is doing: matching Euler equations at collocation nodes, then "
+        "checking whether the implied policy is accurate away from those nodes."
     )
 
     report.add_equations(
@@ -239,6 +244,19 @@ $$
 \qquad
 x(k) \in [-1,1].
 $$
+
+The collocation equations set the log Euler residual to zero at selected
+capital nodes $k_i$:
+
+$$
+R_i(\theta)
+= \log\left[
+\beta \alpha A g(k_i;\theta)^{\alpha-1}
+\frac{c(k_i;\theta)}{c(g(k_i;\theta);\theta)}
+\right] = 0.
+$$
+
+For this calibration, the exact policy is $g^{*}(k)=\alpha\beta A k^\alpha$.
 """
     )
 
@@ -254,12 +272,25 @@ $$
     )
 
     report.add_solution_method(
-        "The code maps capital into the Chebyshev domain [-1,1], represents log next-period "
-        "capital as a Chebyshev polynomial, and chooses coefficients by collocation. The residual "
-        "at each collocation node is the log Euler equation error.\n\n"
-        "The known closed-form policy is used only as a benchmark for the tutorial. In a model "
-        "without a closed-form solution, the same workflow would use residuals and simulation "
-        "diagnostics to judge accuracy."
+        "The code maps capital into the Chebyshev domain $[-1,1]$, represents log next-period "
+        "capital as a Chebyshev polynomial, and chooses coefficients by nonlinear least squares "
+        "on the collocation residuals. Approximating $\\log g(k;\\theta)$ keeps the proposed "
+        "next-period capital positive.\n\n"
+        "```text\n"
+        "Algorithm: Chebyshev collocation for the growth policy\n"
+        "Input: interval [k_min, k_max], basis size n, beta, alpha, A\n"
+        "Output: projected policy g(k; theta) and Euler-error diagnostics\n"
+        "1. Map k in [k_min, k_max] to x(k) in [-1, 1]\n"
+        "2. Choose n Chebyshev collocation nodes k_i\n"
+        "3. Parameterize log g(k; theta) = sum_j theta_j T_j(x(k))\n"
+        "4. At each node, compute c_i = A k_i^alpha - g(k_i; theta)\n"
+        "5. Compute next-period consumption using g(g(k_i; theta); theta)\n"
+        "6. Choose theta so the Euler residuals R_i(theta) are near zero\n"
+        "7. Evaluate policy errors and Euler errors on a dense grid\n"
+        "```\n\n"
+        "The closed-form policy is used only as a benchmark for this tutorial. In a model "
+        "without a closed form, the same workflow would lean on residuals, simulated paths, "
+        "and sensitivity to basis order."
     )
 
     x_plot = np.linspace(-1.0, 1.0, 300)
@@ -365,14 +396,15 @@ $$
     report.add_results(
         f"With {N_BASIS_MAIN} Chebyshev terms, the maximum Euler error on the dense grid is "
         f"{np.max(main_euler_error):.2e}. The policy is stored with only eight coefficients, "
-        "but it can be evaluated smoothly at any capital value inside the interval."
+        "but it tracks the closed-form decision rule closely over the approximation interval "
+        "and can be evaluated smoothly at off-grid capital values."
     )
 
     report.add_takeaway(
-        "Projection replaces a large table of function values with a small set of coefficients. "
-        "That can be powerful when the unknown object is smooth. The tradeoff is that accuracy "
-        "has to be checked globally: a low residual at collocation nodes is not enough unless "
-        "Euler errors and simulated behavior also look good."
+        "Projection is attractive when the policy function is smooth and the state space is too "
+        "large for a crude lookup table. The cost is diagnostic discipline. Matching Euler "
+        "equations at collocation nodes is not by itself a proof of accuracy; the approximation "
+        "must also behave well on a dense grid and along economically relevant simulated paths."
     )
 
     report.add_references(
