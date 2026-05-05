@@ -1,6 +1,6 @@
 {
   "pass_name": "quality-control-v1",
-  "updated_at": "2026-05-05T20:00:37Z",
+  "updated_at": "2026-05-05T20:14:35Z",
   "entries": [
     {
       "tutorial_path": "industrial-organization/dynamic-games/",
@@ -29,6 +29,13 @@
       "status": "complete",
       "verdict": "pass",
       "updated_at": "2026-05-05T20:00:37Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/nash-in-nash/",
+      "report_path": "docs/qc-reports/tutorials/industrial-organization__nash-in-nash.md",
+      "status": "complete",
+      "verdict": "minor issues",
+      "updated_at": "2026-05-05T20:14:35Z"
     }
   ]
 }
