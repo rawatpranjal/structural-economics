@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Endogenous grid points for an income-risk saving problem.
 
-The tutorial uses the same partial-equilibrium IID income-risk problem as the
-nearby VFI example, but solves the household policy by Euler-equation inversion.
+The tutorial uses a partial-equilibrium IID income-risk household problem and
+solves the saving policy by Euler-equation inversion.
 """
 
 import sys
@@ -354,11 +354,12 @@ def main() -> None:
     )
 
     report.add_overview(
-        "The economic problem is familiar from the preceding "
-        "[IID income-risk VFI tutorial](../vfi-iid-income/): an impatient household "
-        "faces uninsurable labor-income risk and cannot borrow below "
-        "$\\underline a=0$. Assets are valuable because they insure consumption "
-        "against bad future income draws.\n\n"
+        "The economic problem is the buffer-stock saving logic used in "
+        "[Income Risk and Buffer-Stock Saving](../../dynamic-programming/consumption-savings/), "
+        "stripped to an IID labor-income benchmark. An impatient household faces "
+        "uninsurable income risk and cannot borrow below $\\underline a=0$. Assets "
+        "are valuable because they insure consumption against bad future income "
+        "draws.\n\n"
         "This tutorial changes the computation, not the economics. Standard VFI "
         "asks, at each current asset level, which next asset choice gives the highest "
         "value. Endogenous grid points (EGP) reverse that question. Start from a grid "
@@ -366,9 +367,11 @@ def main() -> None:
         "that would make that choice optimal, and then recover the current asset level "
         "that could finance it. The result is the same kind of consumption and saving "
         "policy, but without an inner maximization over $a'$.\n\n"
-        "The next step in the section, "
-        "[Fast Aiyagari Equilibrium by EGP](../egp-aiyagari/), puts this speedup "
-        "inside a general-equilibrium capital-market clearing loop."
+        "The neighboring "
+        "[Envelope-Equation Iteration](../envelope-equation-iteration/) tutorial "
+        "keeps the same Euler-equation discipline but iterates on marginal value, "
+        "while the [Huggett equilibrium](../huggett-incomplete-markets/) tutorial "
+        "moves the incomplete-markets logic into continuous time with market clearing."
     )
 
     report.add_equations(
