@@ -1,82 +1,112 @@
 # Houtman-Maks Rational Subsets
 
-> Diagnosing whether revealed-preference failures are global or outlier-driven.
+> Finding the largest rationalizable core after a revealed-preference rejection.
 
 ## Overview
 
-A failed GARP test need not mean that the whole demand model is useless. It may mean that one receipt was miscoded, one shopping trip was unusual, or one observation was drawn from a different decision problem. The Houtman-Maks question is therefore economic before it is computational: what is the largest subset of choices that can still be read as utility-maximizing behavior?
+A GARP rejection is not automatically a rejection of economic choice theory. In household scanner data, lab choices, or administrative purchase records, the failure could come from a different decision problem, a transcription error, or one receipt that should not be pooled with the rest. The Houtman-Maks index asks how much of the sample can still be read as utility-maximizing behavior under one stable preference ordering.
 
-The example starts from Cobb-Douglas choices and corrupts the revealed-preference pattern by swapping two receipts' chosen bundles. The full dataset fails GARP. The Houtman-Maks subset keeps 11 of 12 observations and removes observation 4, restoring rationalizability.
+This tutorial uses a small synthetic demand panel where the uncorrupted choices come from Cobb-Douglas budget shares. Two chosen bundles are then swapped across receipts. The full dataset fails GARP, but the largest rationalizable core keeps 11 of 12 observations. The example is useful because the simulation gives an oracle label for the swapped rows, so the exact Houtman-Maks answer and a greedy large-sample diagnostic can be compared to a known source of contamination.
 
 ## Equations
 
-For any subset $S$ of observations, let $\operatorname{GARP}(S)=1$ if that subset satisfies GARP.
-The Houtman-Maks index is
+There are $T$ observations. Observation $t$ contains prices $p_t \in \mathbb{R}_{+}^{J}$ and the chosen bundle $x_t \in \mathbb{R}_{+}^{J}$. Expenditure is $m_t=p_t \cdot x_t$.
+
+Choice $t$ directly weakly reveals $x_t$ preferred to $x_s$ when $x_s$ was affordable at prices $p_t$:
+
+$$x_t R^D x_s \quad \Longleftrightarrow \quad p_t \cdot x_t \geq p_t \cdot x_s.$$
+
+The direct relation is strict when the inequality is strict. Let $R$ be the transitive closure of $R^D$. GARP holds on a subset $S$ if there is no pair $t,s \in S$ such that
+
+$$x_t R x_s \quad \text{and} \quad p_s \cdot x_s > p_s \cdot x_t.$$
+
+For any subset $S$, let $\operatorname{GARP}(S)=1$ when these restrictions hold after keeping only observations in $S$. The Houtman-Maks index is
 
 $$HM = \max_{S \subseteq \{1,\ldots,T\}} |S| \quad \text{s.t.} \quad \operatorname{GARP}(S)=1.$$
 
-Equivalently, the minimum number of observations to discard is
+The minimum number of observations needed to restore GARP is
 
 $$T - HM.$$
-
-The exact search solves this objective directly for a small sample. The greedy diagnostic removes high-conflict nodes from violating strongly connected components until GARP holds.
 
 ## Model Setup
 
 | Object | Value | Interpretation |
 |---|---:|---|
-| Observations | 12 | Shopping trips with prices and chosen bundles |
-| Goods | 3 | A small multi-good demand environment |
-| Corruption | 2 swapped rows | Swapping two chosen bundles creates the failure |
+| Observations $T$ | 12 | Shopping trips with prices and chosen bundles |
+| Goods $J$ | 3 | Small multi-good demand environment |
+| Data-generating preferences | Cobb-Douglas shares $(0.45,0.35,0.20)$ | Rational benchmark before corruption |
+| Synthetic corruption | rows 3 and 4 swapped | Oracle label available only because this is simulated data |
+| Full-sample GARP violations | 9 | Contradictions after taking transitive closure |
 | Exact Houtman-Maks index | 11 | Largest rationalizable subset size |
-| Minimum deletions | 1 | Observations needed to restore GARP |
+| Greedy deletion | observation 4 | Same deletion selected by the heuristic |
 
 ## Solution Method
 
-The script first builds the direct revealed-preference graph from budget comparisons and checks GARP by transitive closure. For the exact Houtman-Maks index, it enumerates subsets from largest to smallest and stops at the first GARP-consistent subset. This is feasible here because $T=12$.
+The exact calculation treats Houtman-Maks as a finite combinatorial problem. For $T=12$, exhaustive subset search is small enough to be the benchmark.
 
-The larger-sample diagnostic uses the same economic object but a cheaper rule: find violating strongly connected components, count each observation's participation in GARP conflicts, remove the highest-conflict observation, and repeat. In this example the greedy heuristic removes the same observation as the exact search: 4.
+```text
+Algorithm: exact Houtman-Maks core
+Inputs: observations {(p_t, x_t)}_{t=1}^T
+Output: largest subset S* satisfying GARP
+
+for k = T, T-1, ..., 1:
+    for each subset S with |S| = k:
+        build R^D on S using p_t dot x_t >= p_t dot x_s
+        compute the transitive closure R of R^D
+        if no strict budget cycle remains:
+            return S* = S and HM = k
+```
+
+That search is transparent but not scalable. The second calculation keeps the same revealed-preference object and uses the graph structure to choose deletions. A violating strongly connected component is a set of observations tied together by revealed-preference paths, with at least one strict comparison closing the cycle.
+
+```text
+Algorithm: SCC greedy Houtman-Maks diagnosis
+Inputs: observations {(p_t, x_t)}_{t=1}^T
+Output: a GARP-consistent retained set S
+
+initialize S = {1, ..., T}
+while GARP(S) fails:
+    compute weak arcs, strict arcs, and violating pairs on S
+    find strongly connected components of the weak graph
+    restrict attention to components containing a strict internal arc
+    remove the observation with the most violation participation
+return S
+```
+
+In this run, the greedy rule removes observation 4, the same receipt removed by exact search. The exact result is the benchmark; the greedy result is a scalable diagnostic for larger panels.
 
 ## Results
 
-The excluded observation participates in most GARP conflicts. Removing it restores a large rationalizable core rather than discarding the whole dataset.
+The table separates three objects that are easy to conflate. The synthetic swap column is the oracle label from the simulation. The exact Houtman-Maks action is the maximum rationalizable subset. The greedy action is the approximation one would use when exact subset enumeration is too expensive.
 
-**Observation-Level Houtman-Maks Diagnosis**
+**Which Receipts Carry the Rejection**
 
-|   Observation |   Violation participation | Exact HM action   | Greedy action   |   Chosen q1 |   Rational q1 before corruption |
-|--------------:|--------------------------:|:------------------|:----------------|------------:|--------------------------------:|
-|             1 |                         0 | keep              | keep            |        2.64 |                            2.64 |
-|             2 |                         2 | keep              | keep            |        2.6  |                            2.6  |
-|             3 |                         5 | keep              | keep            |        5.94 |                            2.73 |
-|             4 |                         6 | remove            | remove          |        2.73 |                            5.94 |
-|             5 |                         0 | keep              | keep            |        5.24 |                            5.24 |
-|             6 |                         0 | keep              | keep            |        5.03 |                            5.03 |
-|             7 |                         0 | keep              | keep            |        6.2  |                            6.2  |
-|             8 |                         0 | keep              | keep            |        4.33 |                            4.33 |
-|             9 |                         2 | keep              | keep            |        3.1  |                            3.1  |
-|            10 |                         0 | keep              | keep            |        5.21 |                            5.21 |
-|            11 |                         0 | keep              | keep            |        3.82 |                            3.82 |
-|            12 |                         3 | keep              | keep            |        3.42 |                            3.42 |
+|   Observation |   Violation participation | Synthetic swap row   | Exact HM action   | Greedy action   |   Observed good 1 |   Pre-swap good 1 |
+|--------------:|--------------------------:|:---------------------|:------------------|:----------------|------------------:|------------------:|
+|             1 |                         0 | no                   | keep              | keep            |              2.64 |              2.64 |
+|             2 |                         2 | no                   | keep              | keep            |              2.6  |              2.6  |
+|             3 |                         5 | yes                  | keep              | keep            |              5.94 |              2.73 |
+|             4 |                         6 | yes                  | remove            | remove          |              2.73 |              5.94 |
+|             5 |                         0 | no                   | keep              | keep            |              5.24 |              5.24 |
+|             6 |                         0 | no                   | keep              | keep            |              5.03 |              5.03 |
+|             7 |                         0 | no                   | keep              | keep            |              6.2  |              6.2  |
+|             8 |                         0 | no                   | keep              | keep            |              4.33 |              4.33 |
+|             9 |                         2 | no                   | keep              | keep            |              3.1  |              3.1  |
+|            10 |                         0 | no                   | keep              | keep            |              5.21 |              5.21 |
+|            11 |                         0 | no                   | keep              | keep            |              3.82 |              3.82 |
+|            12 |                         3 | no                   | keep              | keep            |              3.42 |              3.42 |
 
-The red node is the observation excluded by the maximum rational subset. Red arcs mark strict revealed-preference comparisons inside the conflict region.
+The revealed-preference graph makes the comparison concrete. Red fill marks the exact Houtman-Maks deletion, the black x marks the greedy deletion, and gold rings mark the two receipts whose bundles were swapped in the simulation. The method does not need to remove both swapped rows: dropping one side of the conflict is enough to recover a GARP-consistent core.
 
-<img src="figures/conflict-graph.png" alt="Preference conflict graph with the exact Houtman-Maks removal highlighted." width="80%">
-*Preference conflict graph with the exact Houtman-Maks removal highlighted.*
+<img src="figures/conflict-graph.png" alt="Preference conflict graph comparing exact, greedy, and synthetic corruption markers." width="80%">
 
-The left panel shows the full dataset's contradictions. The right panel shows that the retained subset has no remaining GARP violations.
+The heat maps are the certificate. The full sample has strict budget-cycle contradictions. After removing the exact Houtman-Maks deletion, the retained core has none.
 
 <img src="figures/violations-before-after.png" alt="GARP violations before and after removing the Houtman-Maks outlier." width="80%">
-*GARP violations before and after removing the Houtman-Maks outlier.*
 
 ## Takeaway
 
-Houtman-Maks reframes a revealed-preference rejection as an outlier diagnosis. The important empirical question is not only whether GARP fails, but whether the failure is diffuse or concentrated. Here the consumer has a large rationalizable core, and one high-conflict observation explains the rejection. Exact search gives the benchmark for small samples; SCC-aware greedy removal gives a transparent diagnostic when exhaustive subset search is too expensive.
-
-## Reproduce
-
-```bash
-python run.py
-```
+Houtman-Maks turns a binary revealed-preference rejection into a question about the size of the rationalizable core. Here the rejection is concentrated: one deletion restores GARP for 11 of 12 observations. The synthetic oracle also shows the main interpretive limit. The index is not a causal label for every corrupted row; it is a finite-data robustness measure for how much of the sample can still support utility maximization.
 
 ## References
 

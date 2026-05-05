@@ -18,7 +18,7 @@ from lib.plotting import setup_style
 TOL = 1e-10
 
 
-def generate_receipt_data() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+def generate_receipt_data() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """Create a mostly rational dataset with one corrupted observation."""
     rng = np.random.default_rng(1)
     observations = 12
@@ -29,8 +29,9 @@ def generate_receipt_data() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     rational_quantities = alpha * incomes[:, None] / prices
 
     corrupted_quantities = rational_quantities.copy()
-    corrupted_quantities[[2, 3]] = corrupted_quantities[[3, 2]]
-    return prices, corrupted_quantities, rational_quantities
+    swapped_rows = np.array([2, 3], dtype=int)
+    corrupted_quantities[swapped_rows] = corrupted_quantities[swapped_rows[::-1]]
+    return prices, corrupted_quantities, rational_quantities, swapped_rows
 
 
 def preference_matrices(
@@ -180,11 +181,15 @@ def plot_conflict_graph(
     weak: np.ndarray,
     strict: np.ndarray,
     exact_keep: list[int],
+    greedy_keep: list[int],
+    synthetic_swapped_rows: np.ndarray,
     violation_counts: np.ndarray,
 ) -> plt.Figure:
     """Plot the violating SCC and the exact Houtman-Maks removal."""
     n = weak.shape[0]
     keep = set(exact_keep)
+    greedy_removed = set(range(n)) - set(greedy_keep)
+    swapped = set(int(x) for x in synthetic_swapped_rows)
     angles = np.linspace(0, 2 * np.pi, n, endpoint=False)
     xy = np.c_[np.cos(angles), np.sin(angles)]
 
@@ -214,8 +219,21 @@ def plot_conflict_graph(
     for node, (x_pos, y_pos) in enumerate(xy):
         removed = node not in keep
         color = "#b3202a" if removed else "#f7f3e8"
-        edge = "#222222"
-        ax.scatter(x_pos, y_pos, s=720, color=color, edgecolor=edge, zorder=3)
+        edge = "#c58b11" if node in swapped else "#222222"
+        linewidth = 2.8 if node in swapped else 1.2
+        ax.scatter(x_pos, y_pos, s=720, color=color, edgecolor=edge, linewidth=linewidth, zorder=3)
+        if node in swapped:
+            ax.scatter(
+                x_pos,
+                y_pos,
+                s=930,
+                facecolors="none",
+                edgecolors="#c58b11",
+                linewidths=1.7,
+                zorder=4,
+            )
+        if node in greedy_removed:
+            ax.scatter(x_pos, y_pos, s=230, marker="x", color="#111111", linewidths=2.8, zorder=5)
         text_color = "white" if removed else "#222222"
         ax.text(x_pos, y_pos + 0.02, str(node + 1), ha="center", va="center", color=text_color, weight="bold")
         if violation_counts[node] > 0:
@@ -230,9 +248,16 @@ def plot_conflict_graph(
             )
 
     ax.set_title("One Observation Explains the Revealed-Preference Conflict")
-    ax.text(0, -1.25, "Node labels are observations; small red numbers count GARP conflicts.", ha="center", fontsize=10)
+    ax.text(
+        0,
+        -1.31,
+        "Small red numbers count conflict participation.\n"
+        "Gold rings mark swapped rows; black x is the greedy deletion; red fill is the exact deletion.",
+        ha="center",
+        fontsize=9.5,
+    )
     ax.set_xlim(-1.35, 1.35)
-    ax.set_ylim(-1.35, 1.25)
+    ax.set_ylim(-1.42, 1.25)
     ax.set_aspect("equal")
     ax.axis("off")
     return fig
@@ -257,8 +282,8 @@ def plot_violation_heatmaps(
 
     fig, axes = plt.subplots(1, 2, figsize=(11.5, 4.8))
     panels = [
-        (full_matrix, "All observations", len(violations_full), list(range(len(prices)))),
-        (keep_matrix, "Houtman-Maks subset", len(violations_keep), exact_keep),
+        (full_matrix, "Full dataset", len(violations_full), list(range(len(prices)))),
+        (keep_matrix, "Retained core", len(violations_keep), exact_keep),
     ]
     for ax, (matrix, title, count, labels) in zip(axes, panels):
         ax.imshow(matrix, cmap="Reds", vmin=0, vmax=1)
@@ -280,7 +305,7 @@ def plot_violation_heatmaps(
 def main() -> None:
     setup_style()
 
-    prices, quantities, rational_quantities = generate_receipt_data()
+    prices, quantities, rational_quantities, synthetic_swapped_rows = generate_receipt_data()
     exact_keep = exact_houtman_maks(prices, quantities)
     greedy_keep, removal_log = greedy_houtman_maks(prices, quantities)
     violations, weak, strict, _ = garp_violations(prices, quantities)
@@ -293,92 +318,140 @@ def main() -> None:
     greedy_removed = [entry["observation"] for entry in removal_log]
 
     diagnostic_rows = []
+    synthetic_swapped = set(int(x) for x in synthetic_swapped_rows)
     for obs in range(len(prices)):
         diagnostic_rows.append(
             {
                 "Observation": obs + 1,
                 "Violation participation": int(violation_counts[obs]),
+                "Synthetic swap row": "yes" if obs in synthetic_swapped else "no",
                 "Exact HM action": "remove" if obs in exact_removed else "keep",
                 "Greedy action": "remove" if obs in greedy_removed else "keep",
-                "Chosen q1": f"{quantities[obs, 0]:.2f}",
-                "Rational q1 before corruption": f"{rational_quantities[obs, 0]:.2f}",
+                "Observed good 1": f"{quantities[obs, 0]:.2f}",
+                "Pre-swap good 1": f"{rational_quantities[obs, 0]:.2f}",
             }
         )
     diagnostics = pd.DataFrame(diagnostic_rows)
 
     report = ModelReport(
         "Houtman-Maks Rational Subsets",
-        "Diagnosing whether revealed-preference failures are global or outlier-driven.",
+        "Finding the largest rationalizable core after a revealed-preference rejection.",
+        include_reproduce=False,
+        show_figure_captions=False,
     )
 
     report.add_overview(
-        "A failed GARP test need not mean that the whole demand model is useless. It may mean "
-        "that one receipt was miscoded, one shopping trip was unusual, or one observation was "
-        "drawn from a different decision problem. The Houtman-Maks question is therefore "
-        "economic before it is computational: what is the largest subset of choices that can "
-        "still be read as utility-maximizing behavior?\n\n"
-        "The example starts from Cobb-Douglas choices and corrupts the revealed-preference "
-        "pattern by swapping two receipts' chosen bundles. The full dataset fails GARP. "
-        "The Houtman-Maks subset keeps "
-        f"{len(exact_keep)} of {len(prices)} observations and removes observation "
-        f"{exact_removed[0] + 1}, restoring rationalizability."
+        "A GARP rejection is not automatically a rejection of economic choice theory. In "
+        "household scanner data, lab choices, or administrative purchase records, the failure "
+        "could come from a different decision problem, a transcription error, or one receipt "
+        "that should not be pooled with the rest. The Houtman-Maks index asks how much of the "
+        "sample can still be read as utility-maximizing behavior under one stable preference "
+        "ordering.\n\n"
+        "This tutorial uses a small synthetic demand panel where the uncorrupted choices come "
+        "from Cobb-Douglas budget shares. Two chosen bundles are then swapped across receipts. "
+        "The full dataset fails GARP, but the largest rationalizable core keeps "
+        f"{len(exact_keep)} of {len(prices)} observations. The example is useful because the "
+        "simulation gives an oracle label for the swapped rows, so the exact Houtman-Maks "
+        "answer and a greedy large-sample diagnostic can be compared to a known source of "
+        "contamination."
     )
 
     report.add_equations(
         r"""
-For any subset $S$ of observations, let $\operatorname{GARP}(S)=1$ if that subset satisfies GARP.
-The Houtman-Maks index is
+There are $T$ observations. Observation $t$ contains prices $p_t \in \mathbb{R}_{+}^{J}$ and the chosen bundle $x_t \in \mathbb{R}_{+}^{J}$. Expenditure is $m_t=p_t \cdot x_t$.
+
+Choice $t$ directly weakly reveals $x_t$ preferred to $x_s$ when $x_s$ was affordable at prices $p_t$:
+
+$$x_t R^D x_s \quad \Longleftrightarrow \quad p_t \cdot x_t \geq p_t \cdot x_s.$$
+
+The direct relation is strict when the inequality is strict. Let $R$ be the transitive closure of $R^D$. GARP holds on a subset $S$ if there is no pair $t,s \in S$ such that
+
+$$x_t R x_s \quad \text{and} \quad p_s \cdot x_s > p_s \cdot x_t.$$
+
+For any subset $S$, let $\operatorname{GARP}(S)=1$ when these restrictions hold after keeping only observations in $S$. The Houtman-Maks index is
 
 $$HM = \max_{S \subseteq \{1,\ldots,T\}} |S| \quad \text{s.t.} \quad \operatorname{GARP}(S)=1.$$
 
-Equivalently, the minimum number of observations to discard is
+The minimum number of observations needed to restore GARP is
 
 $$T - HM.$$
-
-The exact search solves this objective directly for a small sample. The greedy diagnostic removes high-conflict nodes from violating strongly connected components until GARP holds.
 """
     )
 
     report.add_model_setup(
         "| Object | Value | Interpretation |\n"
         "|---|---:|---|\n"
-        f"| Observations | {len(prices)} | Shopping trips with prices and chosen bundles |\n"
-        "| Goods | 3 | A small multi-good demand environment |\n"
-        "| Corruption | 2 swapped rows | Swapping two chosen bundles creates the failure |\n"
+        f"| Observations $T$ | {len(prices)} | Shopping trips with prices and chosen bundles |\n"
+        "| Goods $J$ | 3 | Small multi-good demand environment |\n"
+        "| Data-generating preferences | Cobb-Douglas shares $(0.45,0.35,0.20)$ | Rational benchmark before corruption |\n"
+        "| Synthetic corruption | rows 3 and 4 swapped | Oracle label available only because this is simulated data |\n"
+        f"| Full-sample GARP violations | {len(violations)} | Contradictions after taking transitive closure |\n"
         f"| Exact Houtman-Maks index | {len(exact_keep)} | Largest rationalizable subset size |\n"
-        f"| Minimum deletions | {len(prices) - len(exact_keep)} | Observations needed to restore GARP |"
+        f"| Greedy deletion | observation {greedy_removed[0] + 1} | Same deletion selected by the heuristic |"
     )
 
-    report.add_solution_method(
-        "The script first builds the direct revealed-preference graph from budget comparisons "
-        "and checks GARP by transitive closure. For the exact Houtman-Maks index, it enumerates "
-        "subsets from largest to smallest and stops at the first GARP-consistent subset. This "
-        "is feasible here because $T=12$.\n\n"
-        "The larger-sample diagnostic uses the same economic object but a cheaper rule: find "
-        "violating strongly connected components, count each observation's participation in "
-        "GARP conflicts, remove the highest-conflict observation, and repeat. In this example "
-        f"the greedy heuristic removes the same observation as the exact search: "
-        f"{greedy_removed[0] + 1}."
+    solution_method = r"""
+The exact calculation treats Houtman-Maks as a finite combinatorial problem. For $T=12$, exhaustive subset search is small enough to be the benchmark.
+
+```text
+Algorithm: exact Houtman-Maks core
+Inputs: observations {(p_t, x_t)}_{t=1}^T
+Output: largest subset S* satisfying GARP
+
+for k = T, T-1, ..., 1:
+    for each subset S with |S| = k:
+        build R^D on S using p_t dot x_t >= p_t dot x_s
+        compute the transitive closure R of R^D
+        if no strict budget cycle remains:
+            return S* = S and HM = k
+```
+
+That search is transparent but not scalable. The second calculation keeps the same revealed-preference object and uses the graph structure to choose deletions. A violating strongly connected component is a set of observations tied together by revealed-preference paths, with at least one strict comparison closing the cycle.
+
+```text
+Algorithm: SCC greedy Houtman-Maks diagnosis
+Inputs: observations {(p_t, x_t)}_{t=1}^T
+Output: a GARP-consistent retained set S
+
+initialize S = {1, ..., T}
+while GARP(S) fails:
+    compute weak arcs, strict arcs, and violating pairs on S
+    find strongly connected components of the weak graph
+    restrict attention to components containing a strict internal arc
+    remove the observation with the most violation participation
+return S
+```
+
+In this run, the greedy rule removes observation """
+    solution_method += (
+        f"{greedy_removed[0] + 1}, the same receipt removed by exact search. The exact result is "
+        "the benchmark; the greedy result is a scalable diagnostic for larger panels."
     )
+    report.add_solution_method(solution_method)
 
     report.add_table(
         "tables/houtman-maks-diagnostics.csv",
-        "Observation-Level Houtman-Maks Diagnosis",
+        "Which Receipts Carry the Rejection",
         diagnostics,
         description=(
-            "The excluded observation participates in most GARP conflicts. Removing it "
-            "restores a large rationalizable core rather than discarding the whole dataset."
+            "The table separates three objects that are easy to conflate. The synthetic swap "
+            "column is the oracle label from the simulation. The exact Houtman-Maks action is "
+            "the maximum rationalizable subset. The greedy action is the approximation one "
+            "would use when exact subset enumeration is too expensive."
         ),
     )
 
-    fig1 = plot_conflict_graph(weak, strict, exact_keep, violation_counts)
+    fig1 = plot_conflict_graph(weak, strict, exact_keep, greedy_keep, synthetic_swapped_rows, violation_counts)
     report.add_figure(
         "figures/conflict-graph.png",
-        "Preference conflict graph with the exact Houtman-Maks removal highlighted.",
+        "Preference conflict graph comparing exact, greedy, and synthetic corruption markers.",
         fig1,
         description=(
-            "The red node is the observation excluded by the maximum rational subset. "
-            "Red arcs mark strict revealed-preference comparisons inside the conflict region."
+            "The revealed-preference graph makes the comparison concrete. Red fill marks the "
+            "exact Houtman-Maks deletion, the black x marks the greedy deletion, and gold rings "
+            "mark the two receipts whose bundles were swapped in the simulation. The method "
+            "does not need to remove both swapped rows: dropping one side of the conflict is "
+            "enough to recover a GARP-consistent core."
         ),
     )
 
@@ -388,18 +461,19 @@ The exact search solves this objective directly for a small sample. The greedy d
         "GARP violations before and after removing the Houtman-Maks outlier.",
         fig2,
         description=(
-            "The left panel shows the full dataset's contradictions. The right panel shows "
-            "that the retained subset has no remaining GARP violations."
+            "The heat maps are the certificate. The full sample has strict budget-cycle "
+            "contradictions. After removing the exact Houtman-Maks deletion, the retained "
+            "core has none."
         ),
     )
 
     report.add_takeaway(
-        "Houtman-Maks reframes a revealed-preference rejection as an outlier diagnosis. "
-        "The important empirical question is not only whether GARP fails, but whether the "
-        "failure is diffuse or concentrated. Here the consumer has a large rationalizable "
-        "core, and one high-conflict observation explains the rejection. Exact search gives the "
-        "benchmark for small samples; SCC-aware greedy removal gives a transparent diagnostic "
-        "when exhaustive subset search is too expensive."
+        "Houtman-Maks turns a binary revealed-preference rejection into a question about the "
+        "size of the rationalizable core. Here the rejection is concentrated: one deletion "
+        "restores GARP for 11 of 12 observations. The synthetic oracle also shows the main "
+        "interpretive limit. The index is not a causal label for every corrupted row; it is a "
+        "finite-data robustness measure for how much of the sample can still support utility "
+        "maximization."
     )
 
     report.add_references(
