@@ -1,16 +1,17 @@
-# Metropolis-Hastings Sampling Diagnostics
+# Metropolis-Hastings for a Bimodal Posterior
 
-> Random-walk MCMC, proposal tuning, and mixing diagnostics on a bimodal target.
+> Random-walk MCMC diagnostics for structural parameters with two posterior modes.
 
 ## Overview
 
-Metropolis-Hastings turns a density that is easy to evaluate into draws from that density. The algorithm is simple: propose a move, compare the target density at the new and old locations, and sometimes accept a worse move so the chain keeps exploring.
+Bayesian structural work often has a posterior density that can be evaluated pointwise but not integrated analytically. Metropolis-Hastings turns that density into dependent draws. The draws are useful only if the chain explores the economically relevant parts of the posterior in the finite run actually used for inference.
 
-This tutorial uses the same bimodal mixture as the optimization example. It is intentionally small enough to plot. Small proposals have high acceptance but move slowly. Large proposals jump farther but are often rejected. Useful MCMC lives between those extremes.
+This tutorial uses a two-mode posterior over a parameter vector $\theta$. The target is small enough to plot, but it carries the same practical problem as larger models: a proposal scale can look acceptable by one diagnostic and fail by another. Small proposals accept often but move slowly. Large proposals jump farther but spend time being rejected. The point is not to chase a universal acceptance rate; it is to diagnose mixing for the posterior at hand.
 
 ## Equations
 
-The target is the same two-component mixture used in the optimization tutorial:
+Let $\theta=(\theta_1,\theta_2)$ be a structural parameter vector. The posterior
+kernel used in the tutorial is a two-component mixture:
 
 $$
 \begin{aligned}
@@ -48,26 +49,37 @@ $$
 
 ## Solution Method
 
-The script evaluates the log target directly and runs a Gaussian random-walk chain. All acceptance decisions are made in log space to avoid numerical underflow.
+The script evaluates the log posterior kernel directly and runs Gaussian random-walk chains at three proposal scales. All acceptance decisions are made in log space to avoid numerical underflow.
 
-The diagnostics compare three proposal step sizes. For each chain, the code reports the acceptance rate, number of switches between modes, posterior mean error, and a simple effective-sample-size estimate from autocorrelations.
+```text
+Algorithm: random-walk Metropolis-Hastings
+Input: log posterior ell(theta), proposal scale s, initial theta_0, draws T
+Output: Markov chain theta_1, ..., theta_T and diagnostics
+1. Set current state theta = theta_0 and current log density ell(theta)
+2. For t = 1, ..., T:
+       propose theta_star = theta + s * eta_t, eta_t ~ N(0, I)
+       compute log alpha = ell(theta_star) - ell(theta)
+       accept theta_star with probability min(1, exp(log alpha))
+       otherwise repeat the current theta
+3. Drop burn-in draws
+4. Report acceptance, mode switches, posterior mean error, and ESS
+```
+
+The true mixture mean is known here, so the posterior mean error is a ground-truth diagnostic. In empirical applications, trace plots, multiple chains, posterior moments, and economically meaningful functionals play the same role.
 
 ## Results
 
 With proposal step 0.6, the chain explores both modes while still accepting 69.9% of proposed moves.
 
 <img src="figures/mh-walk.png" alt="Metropolis-Hastings walk over target-density contours" width="80%">
-*Metropolis-Hastings walk over target-density contours*
 
 Trace plots reveal whether the chain has left its starting point, whether it moves between modes, and whether the retained draws are still highly persistent.
 
 <img src="figures/trace-plots.png" alt="Trace plots for the middle-step random-walk chain" width="80%">
-*Trace plots for the middle-step random-walk chain*
 
 A tiny proposal can have a comfortable acceptance rate but still move too slowly. A large proposal can switch modes, but rejection creates persistence. The best choice is empirical and target-specific.
 
 <img src="figures/tuning-diagnostics.png" alt="Proposal tuning changes bias and persistence" width="80%">
-*Proposal tuning changes bias and persistence*
 
 The true mixture mean is zero. The true marginal variance of each coordinate is 3.25, which is much larger than the within-component variance because the two modes are far apart.
 
@@ -79,17 +91,11 @@ The true mixture mean is zero. The true marginal variance of each coordinate is 
 |            0.6  |             0.699 |             319 |        0.255 |          120 |          118 |
 |            2    |             0.304 |             689 |        0.048 |          467 |          494 |
 
-The middle proposal step, 0.6, is used in the path and trace plots; it gives acceptance 69.9% and visible movement between modes. The small proposal accepts more often but has more persistent draws. The largest proposal is useful for jumping across the low-density middle region, but many jumps are rejected.
+The middle proposal step, 0.6, is used in the path and trace plots; it gives acceptance 69.9% and visible movement between modes. The small proposal accepts more often but has more persistent draws. The largest proposal is useful for jumping across the low-density middle region, but many jumps are rejected. The table shows why no single diagnostic is sufficient: acceptance, mode switching, mean error, and effective sample size rank the proposal scales differently.
 
 ## Takeaway
 
-Metropolis-Hastings is easy to implement, but not automatic. Acceptance rates, trace plots, cumulative means, mode switching, and autocorrelation diagnose different failure modes. The key lesson is general: a sampler can be correct in theory and still be weak for a finite computation if it explores the target too slowly.
-
-## Reproduce
-
-```bash
-python run.py
-```
+Metropolis-Hastings is correct asymptotically under weak conditions, but finite-run Bayesian inference depends on mixing. Acceptance rates, trace plots, cumulative means, mode switching, and autocorrelation diagnose different failures. A sampler can target the right posterior in theory and still give weak empirical inference if it explores that posterior too slowly.
 
 ## References
 
