@@ -1,77 +1,117 @@
 # Dynamic Games and Markov-Perfect Investment
 
-> Ericson-Pakes style strategic dynamics with quality states and investment choices.
+> Quality investment as a state variable in oligopoly competition.
 
 ## Overview
 
-Dynamic IO games let firm actions change the future state of competition. A firm may invest today not only because it raises future quality, but also because it changes its rival's future incentives. The Markov-perfect restriction keeps strategies payoff-relevant: actions depend on the current state, not on the entire history.
+Dynamic IO starts from a simple observation: a firm's current action can change the future state of competition. Quality investment is the clean example here. A firm pays a cost today for a chance to move up a quality ladder, which affects future market shares, rival incentives, and the value of being ahead.
 
-This tutorial solves a two-firm quality ladder. Each firm chooses whether to invest. Investment is costly but can move the firm up one quality state. Current profits come from a differentiated-products share formula.
+The model is a deliberately small two-firm Ericson-Pakes style game. The state is the pair of quality levels, each firm chooses whether to invest, and strategies are Markov perfect: they condition on the payoff-relevant state rather than the full history. The companion tutorials on [dynamic entry and exit](../dynamic-entry-exit/) and [dynamic discrete choice](../dynamic-discrete-choice/) use similar continuation-value logic without this simultaneous strategic investment margin.
 
 ## Equations
 
-State is the quality pair:
-$$\omega_t = (q_{1t}, q_{2t})$$
+The state is the quality pair $\omega_t=(q_{1t},q_{2t})$, with
+$q_{it}\in\{0,\ldots,Q\}$. Each firm chooses $a_{it}\in\{0,1\}$, where
+$a_{it}=1$ means invest. Flow profit is a logit-share reduced form:
 
-Markov-perfect values satisfy:
-$$V_i(\omega) = \max_{a_i\in\{0,1\}} \pi_i(\omega) - \kappa a_i + \beta E[V_i(\omega')|\omega,a_i,a_{-i}^{*}(\omega)]$$
+$$
+\pi_i(q_i,q_j)
+= M\frac{\exp(\eta q_i)}
+{1+\exp(\eta q_i)+\exp(\eta q_j)}
++\lambda q_i .
+$$
 
-Investment changes transition probabilities:
-$$Pr(q_i'=q_i+1|a_i=1)=0.62$$
+Investment raises the chance of moving one rung up the ladder; waiting leaves a
+small depreciation risk:
 
-The equilibrium policy maps each state into investment actions:
-$$a_i^{*}(\omega)\in\{0,1\}$$
+$$
+\Pr(q_i'=\min\{q_i+1,Q\}\mid q_i,a_i=1)=0.62,
+\qquad
+\Pr(q_i'=\max\{q_i-1,0\}\mid q_i,a_i=0)=0.12 .
+$$
+
+Given candidate continuation values $V_i$, the state-game payoff from action
+profile $(a_1,a_2)$ is
+
+$$
+G_i(a_i,a_j;\omega,V)
+= \pi_i(\omega)-\kappa a_i
++\beta\sum_{\omega'} P(\omega'\mid \omega,a_i,a_j)V_i(\omega').
+$$
+
+A pure-strategy Markov-perfect equilibrium is a policy
+$a^{*}(\omega)=(a_1^{*}(\omega),a_2^{*}(\omega))$ and values satisfying
+
+$$
+G_i(a_i^{*},a_j^{*};\omega,V)\geq G_i(a_i,a_j^{*};\omega,V)
+\quad\text{for all }a_i\in\{0,1\},
+$$
+
+with $V_i(\omega)=G_i(a_i^{*},a_j^{*};\omega,V)$ at every state.
 
 ## Model Setup
 
-| Object | Value |
-|--------|-------|
-| Firms | 2 |
-| Quality states | 0 through 4 |
-| Actions | Invest or do not invest |
-| Discount factor | 0.90 |
-| Investment cost | 2.20 |
-| Equilibrium concept | Pure-strategy Markov-perfect equilibrium at each state |
+| Primitive | Value | Role |
+|-----------|-------|------|
+| Firms | 2 | Symmetric oligopolists |
+| Quality ladder | $q_i=0,\ldots,4$ | Payoff-relevant industry state |
+| Actions | $a_i\in\{0,1\}$ | Wait or invest |
+| Discount factor | $\beta=0.90$ | Continuation-value weight |
+| Investment cost | $\kappa=2.20$ | Current cost of attempting to improve quality |
+| Market size | $M=14$ | Scale of current profits |
+| Quality in demand | $\eta=0.75$ | How quality shifts product share |
+| Direct quality payoff | $\lambda=0.35$ | Extra payoff from own quality |
+| Equilibrium concept | Pure-strategy MPE | Nash equilibrium in each state game |
 
 ## Solution Method
 
-The solver iterates on firm value functions. At each state it constructs the two-by-two investment payoff matrix using the previous value function, finds a pure Nash equilibrium of that state game, and updates continuation values. The state space is deliberately small so the dynamic-game logic is visible.
+The finite state space makes the equilibrium computation transparent. For a given value-function guess, each quality pair defines a static two-by-two game whose payoffs include current profits and expected continuation values. The algorithm solves that state game, updates the value attached to the selected equilibrium actions, and repeats until the state-contingent values stop moving.
+
+```text
+Inputs: quality cap Q, discount factor beta, investment cost kappa,
+        transition kernel P(q' | q, a), tolerance epsilon
+Initialize V_i^0(q_1,q_2)=0 for both firms and all quality states.
+For n = 0,1,2,...:
+  For each state omega=(q_1,q_2):
+    Build G_i^n(a_1,a_2; omega) using V_i^n as continuation values.
+    Find pure Nash equilibria of the 2-by-2 state game.
+    Select the equilibrium with the largest joint payoff if there is a tie.
+    Set T_i V^n(omega) equal to the selected equilibrium payoff.
+  Update V_i^{n+1} = lambda T_i V^n + (1-lambda) V_i^n.
+  Stop when max_{i,omega} |T_i V^n(omega)-V_i^n(omega)| < epsilon.
+Output: MPE policy a_i^{*}(omega), values V_i(omega), and deviation gains.
+```
+
+There is no closed-form benchmark for this strategic dynamic game. The relevant accuracy check is therefore an equilibrium residual: at the reported policy, no firm should have a profitable one-step deviation at any state.
 
 ## Results
 
-Investment incentives are strongest when a firm is behind or close to its rival. At high own quality, the marginal benefit of another quality step is smaller.
+The policy is simple in this calibration: firm 1 invests at every interior quality state and waits only at the top rung. The rival's quality still matters for values, but not enough here to overturn the incentive to climb until the ladder cap binds.
 
 <img src="figures/investment-policy.png" alt="Firm 1 investment policy over the quality state space" width="80%">
-*Firm 1 investment policy over the quality state space*
 
-Dynamic state variables are payoff relevant. A one-step quality lead changes both current market share and future investment incentives.
+The diagonal is symmetric, while off-diagonal states price the value of a quality lead. The heat map is steepest when one firm is far ahead because quality affects both today's share and tomorrow's continuation value.
 
 <img src="figures/value-advantage.png" alt="Value advantage across states" width="80%">
-*Value advantage across states*
 
-The vertical lines mark periods with at least one investment action. Quality leadership is persistent but not permanent because investment and depreciation keep the state moving.
+The simulated path shows the policy as a stochastic industry process. Investment periods are marked by light vertical lines; leadership persists, but depreciation and catch-up investment keep the identity of the high-quality firm from being fixed forever.
 
 <img src="figures/simulated-quality-path.png" alt="Simulated quality paths under Markov-perfect policies" width="80%">
-*Simulated quality paths under Markov-perfect policies*
 
-**Selected state policies and values**
+The selected states show the economic content of the equilibrium: symmetric states have symmetric values, a quality lead is valuable, and the one-step-deviation gain is zero at the reported actions.
 
-| State   | Firm 1 policy   | Firm 2 policy   |   Firm 1 value |   Firm 2 value |
-|:--------|:----------------|:----------------|---------------:|---------------:|
-| (0,0)   | Invest          | Invest          |          60.03 |          60.03 |
-| (1,2)   | Invest          | Invest          |          58.87 |          78.59 |
-| (2,1)   | Invest          | Invest          |          78.59 |          58.87 |
-| (4,4)   | Wait            | Wait            |          78.52 |          78.52 |
+**Selected state policies, values, and deviation checks**
+
+| State   | Firm 1 policy   | Firm 2 policy   |   Firm 1 value |   Firm 2 value |   Value advantage |   Max deviation gain |
+|:--------|:----------------|:----------------|---------------:|---------------:|------------------:|---------------------:|
+| (0,0)   | Invest          | Invest          |          60.03 |          60.03 |              0    |                    0 |
+| (1,2)   | Invest          | Invest          |          58.87 |          78.59 |            -19.72 |                    0 |
+| (2,1)   | Invest          | Invest          |          78.59 |          58.87 |             19.72 |                    0 |
+| (4,4)   | Wait            | Wait            |          78.52 |          78.52 |              0    |                    0 |
 
 ## Takeaway
 
-Dynamic games turn IO counterfactuals into state-transition problems. The hard part is not just computing a price or entry outcome today; it is tracking how current actions change tomorrow's competitive state and therefore tomorrow's incentives.
-
-## Reproduce
-
-```bash
-python run.py
-```
+A dynamic game turns an IO counterfactual into a state-transition problem. The object is not just today's price, entry decision, or investment choice; it is the mapping from industry states into actions and continuation values. In this quality-ladder example, the ladder cap pins down where investment stops, while off-diagonal states show why leadership is valuable before the cap is reached.
 
 ## References
 
