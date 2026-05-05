@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Collusion Detection: Cartel Stability and Structural Break Analysis.
+"""Collusion Detection: cartel stability and price-screen diagnostics.
 
 Models collusion as a repeated Cournot game with trigger strategies.
-Computes critical discount factors for cartel sustainability and demonstrates
-structural break detection using the vitamins cartel case (Igami & Sugaya, 2021).
+Computes critical discount factors for cartel sustainability and shows how
+price and margin breaks look in a stylized antitrust screen.
 
-Reference: Stigler (1964), Porter (1983), Harrington (2008).
+References: Stigler (1964), Porter (1983), Harrington (2008),
+Igami and Sugaya (2021).
 """
 import sys
 from pathlib import Path
@@ -16,7 +17,7 @@ import pandas as pd
 
 # Add repo root to path for lib/ imports
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.plotting import setup_style, save_figure
+from lib.plotting import setup_style
 from lib.output import ModelReport
 
 
@@ -83,8 +84,17 @@ def critical_discount_factor(n, a, c):
     return delta_star
 
 
+def maximum_sustainable_firms(delta, a, c, max_n=500):
+    """Largest symmetric firm count with delta >= delta*(n)."""
+    feasible = [
+        n for n in range(2, max_n + 1)
+        if critical_discount_factor(n, a, c) <= delta
+    ]
+    return max(feasible) if feasible else None
+
+
 # =============================================================================
-# Structural break simulation
+# Price-screen simulation
 # =============================================================================
 
 def simulate_price_series(T_compete, T_collude, T_detect, a, c, n, sigma_noise,
@@ -134,75 +144,6 @@ def simulate_price_series(T_compete, T_collude, T_detect, a, c, n, sigma_noise,
 
 
 # =============================================================================
-# Vitamins cartel data analysis
-# =============================================================================
-
-def load_vitamins_data():
-    """Load the vitamins cartel dataset if available."""
-    data_path = Path(__file__).resolve().parents[1] / "5_collusion" / "problem_set_2_data.csv"
-    if data_path.exists():
-        return pd.read_csv(data_path)
-    return None
-
-
-def calibrate_vitamins(df):
-    """Calibrate Cournot model parameters from the vitamins data.
-
-    Following Igami & Sugaya (2021): use pre-cartel competitive years to
-    back out the demand slope alpha and firm-level marginal costs.
-    """
-    competitive_years = [1980, 1981, 1982, 1983, 1984]
-    c_roche = 5.9  # known marginal cost for Roche (from problem set)
-
-    # Calibrate alpha from Roche FOC: alpha = -q / (P - c)
-    mask = df["year"].isin(competitive_years)
-    alphas = -df.loc[mask, "q_roche"] / (df.loc[mask, "P"] - c_roche)
-    alpha = alphas.mean()
-
-    # Calibrate marginal costs from FOC: c_i = (q_i + alpha*P) / alpha
-    firms = ["roche", "takeda", "emerck", "basf"]
-    mc = {}
-    for name in firms:
-        qs = df.loc[mask, f"q_{name}"]
-        Ps = df.loc[mask, "P"]
-        mc[name] = ((qs + alpha * Ps) / alpha).mean()
-
-    # Demand shifter: eps = Q - alpha * P
-    df = df.copy()
-    df["eps"] = df["Q"] - alpha * df["P"]
-
-    # Compute competitive (Cournot Nash) quantities and prices
-    def compute_cournot(row):
-        B = np.array([alpha * mc[name] + row["eps"] - row["q_fri"] for name in firms])
-        A_mat = np.ones((4, 4)) + np.eye(4)
-        Q_vec = np.linalg.solve(A_mat, B)
-        return pd.Series(Q_vec, index=[f"q_c_{name}" for name in firms])
-
-    cournot_qs = df.apply(compute_cournot, axis=1)
-    df = pd.concat([df, cournot_qs], axis=1)
-    df["q_c_total"] = sum(df[f"q_c_{name}"] for name in firms)
-    df["P_c"] = (1 / alpha) * (df["q_c_total"] + df["q_fri"] - df["eps"])
-
-    # Monopoly (collusion) quantities -- Roche as cost leader
-    df["q_m"] = 0.5 * (df["eps"] + alpha * mc["roche"] - df["q_fri"])
-    df["P_m"] = (1 / alpha) * (df["q_m"] + df["q_fri"] - df["eps"])
-
-    # Per-firm collusive profits (using 1990 market shares)
-    df_1990 = df[df["year"] == 1990].iloc[0]
-    Q_cartel_1990 = df_1990["Q"] - df_1990["q_fri"]
-    shares = {name: df_1990[f"q_{name}"] / Q_cartel_1990 for name in firms}
-
-    for name in firms:
-        df[f"pi_m_{name}"] = shares[name] * df["q_m"] * (df["P_m"] - mc[name])
-        df[f"pi_c_{name}"] = df[f"q_c_{name}"] * (df["P_c"] - mc[name])
-
-    # Price-cost margin (using Roche's mc as representative)
-    df["pcm"] = (df["P"] - mc["roche"]) / df["P"]
-
-    return df, alpha, mc, firms, shares
-
-
-# =============================================================================
 # Main
 # =============================================================================
 
@@ -234,8 +175,10 @@ def main():
     # -------------------------------------------------------------------------
     # 2. Critical discount factor as function of number of firms
     # -------------------------------------------------------------------------
-    n_range = np.arange(2, 21)
+    delta_reference = 0.9
+    n_range = np.arange(2, 51)
     delta_stars = np.array([critical_discount_factor(n, a, c) for n in n_range])
+    max_n_delta = maximum_sustainable_firms(delta_reference, a, c, max_n=500)
 
     # -------------------------------------------------------------------------
     # 3. Simulate price series with structural break
@@ -247,82 +190,118 @@ def main():
 
     # Price-cost margin over time
     pcm_sim = (prices_sim - mc_sim) / prices_sim
-
-    # -------------------------------------------------------------------------
-    # 4. Load vitamins data for empirical illustration
-    # -------------------------------------------------------------------------
-    vit_df = load_vitamins_data()
-    has_vitamins = vit_df is not None
-    if has_vitamins:
-        print("\n=== Vitamins Cartel Data Loaded ===")
-        vit_df, alpha, mc_vit, firms, shares = calibrate_vitamins(vit_df)
-        print(f"  Demand slope alpha = {alpha:.4f}")
-        for name in firms:
-            print(f"  MC({name}) = {mc_vit[name]:.2f}, share = {shares[name]:.3f}")
+    pcm_compete = (P_compete - c) / P_compete
+    pcm_collude = (P_collude - c) / P_collude
 
     # =========================================================================
     # Generate Report
     # =========================================================================
     report = ModelReport(
-        "Repeated-Game Collusion Detection",
-        "Cartel stability analysis using repeated Cournot games and structural break detection.",
+        "Cartel Stability and Price Screens",
+        "Repeated interaction can make high prices self-enforcing, but only when future rents are large enough.",
+        include_reproduce=False,
+        show_figure_captions=False,
     )
 
     report.add_overview(
-        "Cartels face a fundamental tension: joint profit maximization requires output "
-        "restriction, but each member can increase its own profit by secretly expanding "
-        "output. This model analyzes cartel stability through the lens of repeated game "
-        "theory, using grim trigger strategies to characterize when collusion is "
-        "self-enforcing.\n\n"
-        "We apply the framework to a symmetric Cournot oligopoly and illustrate "
-        "structural break detection using the global vitamins cartel "
-        "(Igami & Sugaya, 2021) as a case study."
+        "A cartel is not just a high-price outcome. It is a dynamic incentive problem. "
+        "If all firms restrict output, they share monopoly rents. If one firm quietly "
+        "expands while rivals keep cooperating, it earns a one-period windfall. The "
+        "question is whether the future value of the relationship is large enough to "
+        "make that deviation unattractive.\n\n"
+        "The tutorial uses symmetric Cournot demand because the incentive constraint is "
+        "closed form. It then adds a stylized price path with competitive, cartel, and "
+        "post-detection regimes, so the price screen can be read against exact Nash and "
+        "monopoly benchmarks. The neighboring [HHI tutorial](../effective-hhi/) is a "
+        "static concentration screen; this one asks whether firms can sustain a "
+        "collusive path once repeated interaction is made explicit."
     )
 
     report.add_equations(
         r"""
-**Cournot oligopoly with $n$ symmetric firms:**
-
-Inverse demand: $P = a - Q$, where $Q = \sum_{i=1}^n q_i$.
+Firms $i=1,\ldots,n$ choose quantities $q_i$. Total quantity is
+$Q=\sum_i q_i$, inverse demand is $P(Q)=a-Q$, and all firms have constant
+marginal cost $c<a$. Let $\delta\in(0,1)$ be the common discount factor.
 
 | Regime | Per-firm quantity | Per-firm profit |
-|--------|-------------------|-----------------|
-| Nash equilibrium | $q^N = \frac{a-c}{n+1}$ | $\pi^N = \left(\frac{a-c}{n+1}\right)^2$ |
-| Collusion (joint monopoly) | $q^M = \frac{a-c}{2n}$ | $\pi^M = \frac{(a-c)^2}{4n}$ |
-| Deviation (best response to collusion) | $q^D = \frac{(n+1)(a-c)}{4n}$ | $\pi^D = \frac{(n+1)^2(a-c)^2}{16n^2}$ |
+|---|---:|---:|
+| Cournot-Nash | $q^N=\dfrac{a-c}{n+1}$ | $\pi^N=\left(\dfrac{a-c}{n+1}\right)^2$ |
+| Joint monopoly split equally | $q^M=\dfrac{a-c}{2n}$ | $\pi^M=\dfrac{(a-c)^2}{4n}$ |
+| One firm deviates while others collude | $q^D=\dfrac{(n+1)(a-c)}{4n}$ | $\pi^D=\dfrac{(n+1)^2(a-c)^2}{16n^2}$ |
 
-**Grim trigger strategy:** collude until any firm deviates, then revert to Nash forever.
+A grim-trigger cartel colludes until a deviation is detected and then reverts to
+Cournot-Nash forever. The value of staying in the cartel is
 
-**Critical discount factor:**
-$$\delta^{*} = \frac{\pi^D - \pi^M}{\pi^D - \pi^N}$$
+$$
+V^M=\frac{\pi^M}{1-\delta},
+$$
 
-Collusion is sustainable if and only if $\delta \geq \delta^{*}$.
+while the value of deviating once is
 
-For the symmetric Cournot case: $\delta^{*} = \frac{(n+1)^2}{n^2 + 6n + 1}$ (increasing in $n$).
+$$
+V^D=\pi^D+\frac{\delta\pi^N}{1-\delta}.
+$$
+
+The incentive constraint $V^M\geq V^D$ is equivalent to
+
+$$
+\delta\geq
+\delta^{*}
+=\frac{\pi^D-\pi^M}{\pi^D-\pi^N}
+=\frac{(n+1)^2}{n^2+6n+1}.
+$$
+
+The price-screen simulation uses the same exact benchmarks. It observes
+
+$$
+P_t=P^{r_t}+\eta_t,\qquad
+r_t\in\{N,M,N\},
+$$
+
+where $P^N$ is the Cournot price, $P^M$ is the joint-monopoly price, and the
+regime $r_t$ moves from competition to cartel conduct and then back after
+detection. The reported margin is $m_t=(P_t-c)/P_t$.
 """
     )
 
     report.add_model_setup(
-        f"| Parameter | Value | Description |\n"
-        f"|-----------|-------|-------------|\n"
-        f"| $a$       | {a}   | Demand intercept |\n"
-        f"| $c$       | {c}   | Marginal cost (symmetric) |\n"
-        f"| $n$       | {n_base} (baseline) | Number of firms |\n"
-        f"| Simulation | {T_compete}+{T_collude}+{T_detect} periods | "
-        f"Competition, collusion, post-detection |"
+        "The numerical choices are deliberately transparent: the repeated-game object is "
+        "analytical, while the simulated time series is only a clean way to see the "
+        "price and margin breaks that an empirical screen would look for.\n\n"
+        f"| Object | Value | Role |\n"
+        f"|---|---:|---|\n"
+        f"| Demand intercept $a$ | {a} | Sets the competitive and monopoly price benchmarks |\n"
+        f"| Marginal cost $c$ | {c} | Common cost used in profits and margins |\n"
+        f"| Baseline firms | {n_base} | Duopoly used for the simulated price path |\n"
+        f"| Firm-count grid | 2 to {n_range[-1]} | Exact cartel-stability thresholds by $n$ |\n"
+        f"| Reference patience | $\\delta={delta_reference:.1f}$ | Used to mark which firm counts are sustainable |\n"
+        f"| Regimes | {T_compete}+{T_collude}+{T_detect} periods | Competition, cartel, post-detection |\n"
+        f"| Price noise | $\\sigma=1.5$ | Adds sampling noise around the exact regime price |"
     )
 
     report.add_solution_method(
-        "**Analytical Cournot solution:** Profits under Nash, collusion, and "
-        "deviation are computed in closed form for the linear demand model.\n\n"
-        "**Trigger strategy analysis:** The critical discount factor $\\delta^{*}$ is "
-        "derived from the incentive compatibility constraint: the one-period gain "
-        "from deviation must not exceed the present value of lost future collusion "
-        "profits.\n\n"
-        "**Structural break detection:** We simulate a price series with three "
-        "regimes (competition, collusion, post-detection) and examine how prices "
-        "and price-cost margins shift across regimes. The vitamins cartel data "
-        "provides an empirical benchmark."
+        "There is no numerical fixed point hidden here. The Cournot equilibrium, the "
+        "joint-monopoly allocation, and the deviation payoff are closed form. The "
+        "algorithm simply evaluates the incentive constraint and then uses those exact "
+        "prices as the ground truth for the simulated screen.\n\n"
+        "```text\n"
+        "Algorithm: repeated-Cournot cartel screen\n"
+        "Input: demand intercept a, marginal cost c, firm-count grid N, discount factor delta\n"
+        "Output: delta*(n), sustainability flags, price and margin benchmarks\n"
+        "1. For each n in N, compute the symmetric Cournot payoff pi^N(n).\n"
+        "2. Compute the equal-split joint-monopoly payoff pi^M(n).\n"
+        "3. Let one firm best respond to the other n-1 firms' collusive quantities;\n"
+        "   record the one-shot deviation payoff pi^D(n).\n"
+        "4. Evaluate delta*(n) = [pi^D(n)-pi^M(n)] / [pi^D(n)-pi^N(n)].\n"
+        "5. Mark collusion sustainable when delta >= delta*(n).\n"
+        "6. For the baseline duopoly, simulate prices around P^N, then P^M,\n"
+        "   then P^N again; compute margins m_t = (P_t-c)/P_t.\n"
+        "```\n\n"
+        f"With $\\delta={delta_reference:.1f}$, the exact threshold in this calibration "
+        f"allows at most {max_n_delta} symmetric firms. The simulated price path is not "
+        "evidence by itself; it is a benchmark showing what a clean structural break "
+        "would look like before adding demand shocks, capacity constraints, or "
+        "procurement institutions."
     )
 
     # --- Figure 1: Profits under three scenarios ---
@@ -337,41 +316,56 @@ For the symmetric Cournot case: $\delta^{*} = \frac{(n+1)^2}{n^2 + 6n + 1}$ (inc
     ax1.plot(n_plot, pi_N, "b^-", markersize=6, label="Nash $\\pi^N$")
     ax1.set_xlabel("Number of firms $n$")
     ax1.set_ylabel("Per-firm profit")
-    ax1.set_title("Per-Firm Profits: Compete vs Collude vs Deviate")
+    ax1.set_title("Payoffs behind the cartel incentive constraint")
     ax1.legend()
     ax1.set_xticks(n_plot)
     report.add_figure(
         "figures/profits-by-regime.png",
-        "Per-firm profits under Nash competition, collusion, and one-shot deviation as a function of the number of firms",
+        "Per-firm Nash, collusive, and deviation profits by firm count",
         fig1,
-        description="The gap between deviation profit and collusion profit is the one-period "
-        "temptation to cheat; the gap between collusion and Nash profit is the per-period "
-        "reward for cooperation. As the number of firms grows, collusion profits fall faster "
-        "than deviation profits, making cartels harder to sustain.",
+        description="The payoff plot separates the two sides of the incentive constraint. "
+        "The distance from $\\pi^M$ up to $\\pi^D$ is the short-run gain from cheating. "
+        "The distance from $\\pi^N$ up to $\\pi^M$ is the per-period rent that is lost "
+        "after punishment. Adding members dilutes the monopoly rent faster than it "
+        "shrinks the deviation opportunity.",
     )
 
     # --- Figure 2: Critical discount factor vs number of firms ---
     fig2, ax2 = plt.subplots()
     ax2.plot(n_range, delta_stars, "ko-", markersize=5, linewidth=2)
-    ax2.axhline(y=0.9, color="red", linestyle="--", alpha=0.7, label="$\\delta = 0.9$")
+    ax2.axhline(
+        y=delta_reference,
+        color="red",
+        linestyle="--",
+        alpha=0.7,
+        label=f"$\\delta = {delta_reference:.1f}$",
+    )
     ax2.axhline(y=0.8, color="orange", linestyle="--", alpha=0.7, label="$\\delta = 0.8$")
+    ax2.axvline(
+        x=max_n_delta + 0.5,
+        color="red",
+        linestyle=":",
+        alpha=0.5,
+        label=f"max $n$ at $\\delta={delta_reference:.1f}$",
+    )
     ax2.fill_between(n_range, delta_stars, 1.0, alpha=0.15, color="green",
                      label="Collusion sustainable")
     ax2.fill_between(n_range, 0, delta_stars, alpha=0.10, color="red",
                      label="Collusion breaks down")
     ax2.set_xlabel("Number of firms $n$")
     ax2.set_ylabel("Critical discount factor $\\delta^{*}$")
-    ax2.set_title("Critical Discount Factor for Cartel Sustainability")
+    ax2.set_title("Exact grim-trigger threshold by firm count")
     ax2.legend(fontsize=9)
     ax2.set_ylim(0, 1.05)
     report.add_figure(
         "figures/critical-discount-factor.png",
-        "Critical discount factor as a function of the number of firms -- more firms make collusion harder to sustain",
+        "Exact critical discount factor as a function of the number of firms",
         fig2,
-        description="Collusion is sustainable only in the green region above the curve. For a "
-        "given discount factor (e.g., 0.9), read across horizontally to find the maximum "
-        "number of firms that can sustain a cartel. This formalizes Stigler's insight that "
-        "cartels become unstable as membership grows.",
+        description=f"The threshold curve is exact for the linear Cournot model. "
+        f"At $\\delta={delta_reference:.1f}$, the last sustainable symmetric market has "
+        f"{max_n_delta} firms; adding one more member pushes the deviation constraint "
+        "above the reference discount factor. This is Stigler's coordination problem "
+        "written as an incentive constraint.",
     )
 
     # --- Figure 3: Simulated price series with structural break ---
@@ -383,103 +377,87 @@ For the symmetric Cournot case: $\delta^{*} = \frac{(n+1)^2}{n^2 + 6n + 1}$ (inc
     ax3.axvspan(T_compete + T_collude, T_compete + T_collude + T_detect - 1,
                 alpha=0.10, color="green", label="Post-Detection")
     ax3.plot(t_sim, prices_sim, "k-", linewidth=1.5, label="Observed price")
-    ax3.axhline(y=P_compete, color="blue", linestyle=":", alpha=0.6)
-    ax3.axhline(y=P_collude, color="red", linestyle=":", alpha=0.6)
+    ax3.axhline(y=P_compete, color="blue", linestyle=":", alpha=0.8,
+                label="Nash price")
+    ax3.axhline(y=P_collude, color="red", linestyle=":", alpha=0.8,
+                label="Monopoly price")
     ax3.axhline(y=c, color="gray", linestyle="--", alpha=0.4, label="Marginal cost")
     ax3.set_xlabel("Period")
     ax3.set_ylabel("Price")
-    ax3.set_title("Simulated Price Series with Regime Changes")
+    ax3.set_title("Price break against exact Cournot benchmarks")
     ax3.legend(fontsize=9, loc="upper right")
     report.add_figure(
         "figures/price-series-structural-break.png",
-        "Simulated price series showing competition, collusion, and post-detection regimes",
+        "Stylized price series with Nash and monopoly reference prices",
         fig3,
-        description="The structural break is visible as a level shift in prices when the cartel "
-        "forms. During collusion, prices hover near the monopoly level (red dotted line) rather "
-        "than the Nash level (blue dotted line). Econometric detection methods look for exactly "
-        "these regime changes in real market data.",
+        description="The price path deliberately gives the analyst the ground truth. Before "
+        "the cartel, prices fluctuate around the exact Nash benchmark. During the cartel, "
+        "they move toward the monopoly benchmark, and after detection they return to Nash. "
+        "Real applications replace these clean reference lines with estimated costs, demand, "
+        "and counterfactual competitive prices.",
     )
 
     # --- Figure 4: Price-cost margin over time ---
     fig4, ax4 = plt.subplots(figsize=(10, 5))
-    if has_vitamins:
-        # Use actual vitamins data
-        ax4.plot(vit_df["year"], vit_df["pcm"], "ko-", markersize=5, linewidth=2,
-                 label="Vitamins cartel (actual)")
-        # Shade cartel period (roughly 1991-1995 based on I_cartel indicator)
-        cartel_start = vit_df.loc[vit_df["I_cartel"] == 1, "year"]
-        if len(cartel_start) > 0:
-            ax4.axvspan(cartel_start.min(), cartel_start.max(), alpha=0.15,
-                        color="red", label="Cartel period")
-        ax4.set_xlabel("Year")
-        ax4.set_ylabel("Price-Cost Margin $(P - c) / P$")
-        ax4.set_title("Price-Cost Margin: Vitamins Cartel")
-        ax4.legend()
-    else:
-        # Fall back to simulated data
-        colors = {"Competition": "blue", "Collusion": "red", "Post-Detection": "green"}
-        for regime in ["Competition", "Collusion", "Post-Detection"]:
-            mask = regimes_sim == regime
-            ax4.scatter(t_sim[mask], pcm_sim[mask], c=colors[regime], s=20,
-                        label=regime, alpha=0.7)
-        ax4.set_xlabel("Period")
-        ax4.set_ylabel("Price-Cost Margin $(P - c) / P$")
-        ax4.set_title("Price-Cost Margin Over Time (Simulated)")
-        ax4.legend()
+    colors = {"Competition": "blue", "Collusion": "red", "Post-Detection": "green"}
+    for regime in ["Competition", "Collusion", "Post-Detection"]:
+        mask = regimes_sim == regime
+        ax4.scatter(t_sim[mask], pcm_sim[mask], c=colors[regime], s=20,
+                    label=regime, alpha=0.7)
+    ax4.axhline(y=pcm_compete, color="blue", linestyle=":", alpha=0.8,
+                label="Nash margin")
+    ax4.axhline(y=pcm_collude, color="red", linestyle=":", alpha=0.8,
+                label="Monopoly margin")
+    ax4.set_xlabel("Period")
+    ax4.set_ylabel("Price-cost margin $(P-c)/P$")
+    ax4.set_title("Margin break against exact Cournot benchmarks")
+    ax4.legend(fontsize=9)
     report.add_figure(
         "figures/price-cost-margin.png",
-        "Price-cost margin over time showing elevated margins during collusion",
+        "Stylized price-cost margin with Nash and monopoly reference margins",
         fig4,
-        description="The price-cost margin is a more informative diagnostic than raw prices "
-        "because it controls for cost fluctuations. Elevated margins during the cartel period "
-        "indicate that prices rose beyond what cost changes can explain -- the hallmark of "
-        "coordinated behavior.",
+        description="The margin version of the same screen removes the level of marginal cost "
+        "from the price comparison. In this simple run cost is constant, so the margin break "
+        "adds no identification by itself. In field data, the margin view is useful because "
+        "cartel allegations usually have to separate conduct from cost shocks.",
     )
 
     # --- Table: Cartel stability conditions for different market structures ---
-    table_n = [2, 3, 4, 5, 6, 8, 10, 15, 20]
+    table_n = [2, 3, 4, 5, 6, 8, 10, 15, 20, 30, 33, 34, 40, 50]
     table_data = {
-        "Firms (n)": table_n,
-        "pi_Nash": [f"{cournot_nash_profits(n, a, c)[2]:.1f}" for n in table_n],
-        "pi_Collude": [f"{collusion_profits(n, a, c)[2]:.1f}" for n in table_n],
-        "pi_Deviate": [f"{deviation_profits(n, a, c)[2]:.1f}" for n in table_n],
-        "delta*": [f"{critical_discount_factor(n, a, c):.4f}" for n in table_n],
-        "Sustainable (delta=0.9)": [
-            "Yes" if critical_discount_factor(n, a, c) <= 0.9 else "No"
+        "n": table_n,
+        "pi_N": [f"{cournot_nash_profits(n, a, c)[2]:.1f}" for n in table_n],
+        "pi_M": [f"{collusion_profits(n, a, c)[2]:.1f}" for n in table_n],
+        "pi_D": [f"{deviation_profits(n, a, c)[2]:.1f}" for n in table_n],
+        "delta_star": [f"{critical_discount_factor(n, a, c):.4f}" for n in table_n],
+        "delta_0.9_sustains": [
+            "yes" if critical_discount_factor(n, a, c) <= delta_reference else "no"
             for n in table_n
         ],
     }
     df_table = pd.DataFrame(table_data)
     report.add_table(
         "tables/cartel-stability.csv",
-        "Cartel Stability Conditions for Different Market Structures (a=100, c=40)",
+        "Exact Cartel Stability Conditions ($a=100$, $c=40$)",
         df_table,
-        description="The critical discount factor rises monotonically with the number of firms. "
-        "At n=2, collusion is easily sustained (delta* < 0.6), but by n=10, firms must be "
-        "extremely patient (delta* close to 1) for the cartel to hold together.",
+        description=f"The table reports exact payoffs and thresholds. For $\\delta={delta_reference:.1f}$, "
+        f"the feasibility cutoff lies between {max_n_delta} and {max_n_delta + 1} firms. "
+        "The high-$n$ rows are included to show the breakdown region, not because a "
+        "50-firm symmetric Cournot cartel is the empirically natural case.",
     )
 
     # --- Economic takeaway ---
     report.add_takeaway(
-        "Cartels are inherently unstable because each member faces a prisoner's dilemma: "
-        "the collective optimum requires restraint, but individual incentives push toward "
-        "expansion.\n\n"
-        "**Key insights:**\n"
-        "- The deviation temptation ($\\pi^D - \\pi^M$) always exceeds zero: cheating on "
-        "the cartel is always profitable in the short run.\n"
-        "- Collusion is sustainable only if firms are sufficiently patient ($\\delta \\geq "
-        "\\delta^{*}$). The Folk Theorem guarantees that cooperation can be sustained in "
-        "repeated games when the discount factor is high enough.\n"
-        "- **More firms make collusion harder.** The critical discount factor $\\delta^{*}$ "
-        "is strictly increasing in $n$, approaching 1 as $n \\to \\infty$. This is Stigler's "
-        "(1964) insight: cartels face greater coordination problems as membership grows.\n"
-        f"- For a duopoly, $\\delta^{{*}} = {delta_star_2:.4f}$; for $n=10$, "
-        f"$\\delta^{{*}} = {critical_discount_factor(10, a, c):.4f}$.\n"
-        "- Structural breaks in price series and price-cost margins provide empirical "
-        "signatures of collusion. The vitamins cartel shows elevated margins during the "
-        "cartel period (1991--1995), consistent with the model's predictions.\n"
-        "- Porter (1983) and Harrington (2008) develop econometric methods to detect "
-        "these regime changes from market data alone."
+        "The repeated-game calculation turns the usual cartel story into a single "
+        "discipline condition. The short-run deviation gain is always positive; the "
+        "question is whether future collusive rents are valuable enough to deter it. "
+        f"In the duopoly, $\\delta^{{*}}={delta_star_2:.4f}$; with ten symmetric firms, "
+        f"$\\delta^{{*}}={critical_discount_factor(10, a, c):.4f}$; with "
+        f"$\\delta={delta_reference:.1f}$, the exact cutoff is {max_n_delta} firms. "
+        "Price and margin breaks are therefore screens, not verdicts. They say where "
+        "to look before bringing in the market facts that matter in practice: costs, "
+        "demand shocks, monitoring, communication, capacity, procurement rules, and "
+        "the legal record."
     )
 
     report.add_references([

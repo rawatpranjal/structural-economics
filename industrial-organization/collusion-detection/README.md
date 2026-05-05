@@ -1,106 +1,134 @@
-# Repeated-Game Collusion Detection
+# Cartel Stability and Price Screens
 
-> Cartel stability analysis using repeated Cournot games and structural break detection.
+> Repeated interaction can make high prices self-enforcing, but only when future rents are large enough.
 
 ## Overview
 
-Cartels face a fundamental tension: joint profit maximization requires output restriction, but each member can increase its own profit by secretly expanding output. This model analyzes cartel stability through the lens of repeated game theory, using grim trigger strategies to characterize when collusion is self-enforcing.
+A cartel is not just a high-price outcome. It is a dynamic incentive problem. If all firms restrict output, they share monopoly rents. If one firm quietly expands while rivals keep cooperating, it earns a one-period windfall. The question is whether the future value of the relationship is large enough to make that deviation unattractive.
 
-We apply the framework to a symmetric Cournot oligopoly and illustrate structural break detection using the global vitamins cartel (Igami & Sugaya, 2021) as a case study.
+The tutorial uses symmetric Cournot demand because the incentive constraint is closed form. It then adds a stylized price path with competitive, cartel, and post-detection regimes, so the price screen can be read against exact Nash and monopoly benchmarks. The neighboring [HHI tutorial](../effective-hhi/) is a static concentration screen; this one asks whether firms can sustain a collusive path once repeated interaction is made explicit.
 
 ## Equations
 
-**Cournot oligopoly with $n$ symmetric firms:**
-
-Inverse demand: $P = a - Q$, where $Q = \sum_{i=1}^n q_i$.
+Firms $i=1,\ldots,n$ choose quantities $q_i$. Total quantity is
+$Q=\sum_i q_i$, inverse demand is $P(Q)=a-Q$, and all firms have constant
+marginal cost $c<a$. Let $\delta\in(0,1)$ be the common discount factor.
 
 | Regime | Per-firm quantity | Per-firm profit |
-|--------|-------------------|-----------------|
-| Nash equilibrium | $q^N = \frac{a-c}{n+1}$ | $\pi^N = \left(\frac{a-c}{n+1}\right)^2$ |
-| Collusion (joint monopoly) | $q^M = \frac{a-c}{2n}$ | $\pi^M = \frac{(a-c)^2}{4n}$ |
-| Deviation (best response to collusion) | $q^D = \frac{(n+1)(a-c)}{4n}$ | $\pi^D = \frac{(n+1)^2(a-c)^2}{16n^2}$ |
+|---|---:|---:|
+| Cournot-Nash | $q^N=\dfrac{a-c}{n+1}$ | $\pi^N=\left(\dfrac{a-c}{n+1}\right)^2$ |
+| Joint monopoly split equally | $q^M=\dfrac{a-c}{2n}$ | $\pi^M=\dfrac{(a-c)^2}{4n}$ |
+| One firm deviates while others collude | $q^D=\dfrac{(n+1)(a-c)}{4n}$ | $\pi^D=\dfrac{(n+1)^2(a-c)^2}{16n^2}$ |
 
-**Grim trigger strategy:** collude until any firm deviates, then revert to Nash forever.
+A grim-trigger cartel colludes until a deviation is detected and then reverts to
+Cournot-Nash forever. The value of staying in the cartel is
 
-**Critical discount factor:**
-$$\delta^{*} = \frac{\pi^D - \pi^M}{\pi^D - \pi^N}$$
+$$
+V^M=\frac{\pi^M}{1-\delta},
+$$
 
-Collusion is sustainable if and only if $\delta \geq \delta^{*}$.
+while the value of deviating once is
 
-For the symmetric Cournot case: $\delta^{*} = \frac{(n+1)^2}{n^2 + 6n + 1}$ (increasing in $n$).
+$$
+V^D=\pi^D+\frac{\delta\pi^N}{1-\delta}.
+$$
+
+The incentive constraint $V^M\geq V^D$ is equivalent to
+
+$$
+\delta\geq
+\delta^{*}
+=\frac{\pi^D-\pi^M}{\pi^D-\pi^N}
+=\frac{(n+1)^2}{n^2+6n+1}.
+$$
+
+The price-screen simulation uses the same exact benchmarks. It observes
+
+$$
+P_t=P^{r_t}+\eta_t,\qquad
+r_t\in\{N,M,N\},
+$$
+
+where $P^N$ is the Cournot price, $P^M$ is the joint-monopoly price, and the
+regime $r_t$ moves from competition to cartel conduct and then back after
+detection. The reported margin is $m_t=(P_t-c)/P_t$.
 
 ## Model Setup
 
-| Parameter | Value | Description |
-|-----------|-------|-------------|
-| $a$       | 100   | Demand intercept |
-| $c$       | 40   | Marginal cost (symmetric) |
-| $n$       | 2 (baseline) | Number of firms |
-| Simulation | 30+25+20 periods | Competition, collusion, post-detection |
+The numerical choices are deliberately transparent: the repeated-game object is analytical, while the simulated time series is only a clean way to see the price and margin breaks that an empirical screen would look for.
+
+| Object | Value | Role |
+|---|---:|---|
+| Demand intercept $a$ | 100 | Sets the competitive and monopoly price benchmarks |
+| Marginal cost $c$ | 40 | Common cost used in profits and margins |
+| Baseline firms | 2 | Duopoly used for the simulated price path |
+| Firm-count grid | 2 to 50 | Exact cartel-stability thresholds by $n$ |
+| Reference patience | $\delta=0.9$ | Used to mark which firm counts are sustainable |
+| Regimes | 30+25+20 periods | Competition, cartel, post-detection |
+| Price noise | $\sigma=1.5$ | Adds sampling noise around the exact regime price |
 
 ## Solution Method
 
-**Analytical Cournot solution:** Profits under Nash, collusion, and deviation are computed in closed form for the linear demand model.
+There is no numerical fixed point hidden here. The Cournot equilibrium, the joint-monopoly allocation, and the deviation payoff are closed form. The algorithm simply evaluates the incentive constraint and then uses those exact prices as the ground truth for the simulated screen.
 
-**Trigger strategy analysis:** The critical discount factor $\delta^{*}$ is derived from the incentive compatibility constraint: the one-period gain from deviation must not exceed the present value of lost future collusion profits.
+```text
+Algorithm: repeated-Cournot cartel screen
+Input: demand intercept a, marginal cost c, firm-count grid N, discount factor delta
+Output: delta*(n), sustainability flags, price and margin benchmarks
+1. For each n in N, compute the symmetric Cournot payoff pi^N(n).
+2. Compute the equal-split joint-monopoly payoff pi^M(n).
+3. Let one firm best respond to the other n-1 firms' collusive quantities;
+   record the one-shot deviation payoff pi^D(n).
+4. Evaluate delta*(n) = [pi^D(n)-pi^M(n)] / [pi^D(n)-pi^N(n)].
+5. Mark collusion sustainable when delta >= delta*(n).
+6. For the baseline duopoly, simulate prices around P^N, then P^M,
+   then P^N again; compute margins m_t = (P_t-c)/P_t.
+```
 
-**Structural break detection:** We simulate a price series with three regimes (competition, collusion, post-detection) and examine how prices and price-cost margins shift across regimes. The vitamins cartel data provides an empirical benchmark.
+With $\delta=0.9$, the exact threshold in this calibration allows at most 33 symmetric firms. The simulated price path is not evidence by itself; it is a benchmark showing what a clean structural break would look like before adding demand shocks, capacity constraints, or procurement institutions.
 
 ## Results
 
-The gap between deviation profit and collusion profit is the one-period temptation to cheat; the gap between collusion and Nash profit is the per-period reward for cooperation. As the number of firms grows, collusion profits fall faster than deviation profits, making cartels harder to sustain.
+The payoff plot separates the two sides of the incentive constraint. The distance from $\pi^M$ up to $\pi^D$ is the short-run gain from cheating. The distance from $\pi^N$ up to $\pi^M$ is the per-period rent that is lost after punishment. Adding members dilutes the monopoly rent faster than it shrinks the deviation opportunity.
 
-<img src="figures/profits-by-regime.png" alt="Per-firm profits under Nash competition, collusion, and one-shot deviation as a function of the number of firms" width="80%">
-*Per-firm profits under Nash competition, collusion, and one-shot deviation as a function of the number of firms*
+<img src="figures/profits-by-regime.png" alt="Per-firm Nash, collusive, and deviation profits by firm count" width="80%">
 
-Collusion is sustainable only in the green region above the curve. For a given discount factor (e.g., 0.9), read across horizontally to find the maximum number of firms that can sustain a cartel. This formalizes Stigler's insight that cartels become unstable as membership grows.
+The threshold curve is exact for the linear Cournot model. At $\delta=0.9$, the last sustainable symmetric market has 33 firms; adding one more member pushes the deviation constraint above the reference discount factor. This is Stigler's coordination problem written as an incentive constraint.
 
-<img src="figures/critical-discount-factor.png" alt="Critical discount factor as a function of the number of firms -- more firms make collusion harder to sustain" width="80%">
-*Critical discount factor as a function of the number of firms -- more firms make collusion harder to sustain*
+<img src="figures/critical-discount-factor.png" alt="Exact critical discount factor as a function of the number of firms" width="80%">
 
-The structural break is visible as a level shift in prices when the cartel forms. During collusion, prices hover near the monopoly level (red dotted line) rather than the Nash level (blue dotted line). Econometric detection methods look for exactly these regime changes in real market data.
+The price path deliberately gives the analyst the ground truth. Before the cartel, prices fluctuate around the exact Nash benchmark. During the cartel, they move toward the monopoly benchmark, and after detection they return to Nash. Real applications replace these clean reference lines with estimated costs, demand, and counterfactual competitive prices.
 
-<img src="figures/price-series-structural-break.png" alt="Simulated price series showing competition, collusion, and post-detection regimes" width="80%">
-*Simulated price series showing competition, collusion, and post-detection regimes*
+<img src="figures/price-series-structural-break.png" alt="Stylized price series with Nash and monopoly reference prices" width="80%">
 
-The price-cost margin is a more informative diagnostic than raw prices because it controls for cost fluctuations. Elevated margins during the cartel period indicate that prices rose beyond what cost changes can explain -- the hallmark of coordinated behavior.
+The margin version of the same screen removes the level of marginal cost from the price comparison. In this simple run cost is constant, so the margin break adds no identification by itself. In field data, the margin view is useful because cartel allegations usually have to separate conduct from cost shocks.
 
-<img src="figures/price-cost-margin.png" alt="Price-cost margin over time showing elevated margins during collusion" width="80%">
-*Price-cost margin over time showing elevated margins during collusion*
+<img src="figures/price-cost-margin.png" alt="Stylized price-cost margin with Nash and monopoly reference margins" width="80%">
 
-The critical discount factor rises monotonically with the number of firms. At n=2, collusion is easily sustained (delta* < 0.6), but by n=10, firms must be extremely patient (delta* close to 1) for the cartel to hold together.
+The table reports exact payoffs and thresholds. For $\delta=0.9$, the feasibility cutoff lies between 33 and 34 firms. The high-$n$ rows are included to show the breakdown region, not because a 50-firm symmetric Cournot cartel is the empirically natural case.
 
-**Cartel Stability Conditions for Different Market Structures (a=100, c=40)**
+**Exact Cartel Stability Conditions ($a=100$, $c=40$)**
 
-|   Firms (n) |   pi_Nash |   pi_Collude |   pi_Deviate |   delta* | Sustainable (delta=0.9)   |
-|------------:|----------:|-------------:|-------------:|---------:|:--------------------------|
-|           2 |     400   |        450   |        506.2 |   0.5294 | Yes                       |
-|           3 |     225   |        300   |        400   |   0.5714 | Yes                       |
-|           4 |     144   |        225   |        351.6 |   0.6098 | Yes                       |
-|           5 |     100   |        180   |        324   |   0.6429 | Yes                       |
-|           6 |      73.5 |        150   |        306.2 |   0.6712 | Yes                       |
-|           8 |      44.4 |        112.5 |        284.8 |   0.7168 | Yes                       |
-|          10 |      29.8 |         90   |        272.2 |   0.7516 | Yes                       |
-|          15 |      14.1 |         60   |        256   |   0.8101 | Yes                       |
-|          20 |       8.2 |         45   |        248.1 |   0.8464 | Yes                       |
+|   n |   pi_N |   pi_M |   pi_D |   delta_star | delta_0.9_sustains   |
+|----:|-------:|-------:|-------:|-------------:|:---------------------|
+|   2 |  400   |  450   |  506.2 |       0.5294 | yes                  |
+|   3 |  225   |  300   |  400   |       0.5714 | yes                  |
+|   4 |  144   |  225   |  351.6 |       0.6098 | yes                  |
+|   5 |  100   |  180   |  324   |       0.6429 | yes                  |
+|   6 |   73.5 |  150   |  306.2 |       0.6712 | yes                  |
+|   8 |   44.4 |  112.5 |  284.8 |       0.7168 | yes                  |
+|  10 |   29.8 |   90   |  272.2 |       0.7516 | yes                  |
+|  15 |   14.1 |   60   |  256   |       0.8101 | yes                  |
+|  20 |    8.2 |   45   |  248.1 |       0.8464 | yes                  |
+|  30 |    3.7 |   30   |  240.2 |       0.889  | yes                  |
+|  33 |    3.1 |   27.3 |  238.8 |       0.8975 | yes                  |
+|  34 |    2.9 |   26.5 |  238.4 |       0.9001 | no                   |
+|  40 |    2.1 |   22.5 |  236.4 |       0.9131 | no                   |
+|  50 |    1.4 |   18   |  234.1 |       0.9286 | no                   |
 
 ## Takeaway
 
-Cartels are inherently unstable because each member faces a prisoner's dilemma: the collective optimum requires restraint, but individual incentives push toward expansion.
-
-**Key insights:**
-- The deviation temptation ($\pi^D - \pi^M$) always exceeds zero: cheating on the cartel is always profitable in the short run.
-- Collusion is sustainable only if firms are sufficiently patient ($\delta \geq \delta^{*}$). The Folk Theorem guarantees that cooperation can be sustained in repeated games when the discount factor is high enough.
-- **More firms make collusion harder.** The critical discount factor $\delta^{*}$ is strictly increasing in $n$, approaching 1 as $n \to \infty$. This is Stigler's (1964) insight: cartels face greater coordination problems as membership grows.
-- For a duopoly, $\delta^{*} = 0.5294$; for $n=10$, $\delta^{*} = 0.7516$.
-- Structural breaks in price series and price-cost margins provide empirical signatures of collusion. The vitamins cartel shows elevated margins during the cartel period (1991--1995), consistent with the model's predictions.
-- Porter (1983) and Harrington (2008) develop econometric methods to detect these regime changes from market data alone.
-
-## Reproduce
-
-```bash
-python run.py
-```
+The repeated-game calculation turns the usual cartel story into a single discipline condition. The short-run deviation gain is always positive; the question is whether future collusive rents are valuable enough to deter it. In the duopoly, $\delta^{*}=0.5294$; with ten symmetric firms, $\delta^{*}=0.7516$; with $\delta=0.9$, the exact cutoff is 33 firms. Price and margin breaks are therefore screens, not verdicts. They say where to look before bringing in the market facts that matter in practice: costs, demand shocks, monitoring, communication, capacity, procurement rules, and the legal record.
 
 ## References
 
