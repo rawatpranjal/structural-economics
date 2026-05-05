@@ -1,86 +1,102 @@
-# Multinomial Logit Demand Estimation
+# Plain Logit Demand and IIA
 
-> Maximum likelihood estimation of a multinomial logit demand model with simulated consumer choice data.
+> Estimate a baseline product-choice model and read the substitution restriction it imposes.
 
 ## Overview
 
-The multinomial logit model is the workhorse of discrete choice analysis. Consumers choose among $J$ differentiated products to maximize utility, which depends on observed product characteristics (price, quality) and an unobserved idiosyncratic taste shock drawn from a Type I Extreme Value distribution.
+A product-choice model is a disciplined way to turn prices, characteristics, and observed purchases into demand primitives. Here the market is deliberately small: five products differ only in price and quality, and each consumer buys the product with the highest utility draw.
 
-This distributional assumption yields the elegant logit choice probability formula and makes maximum likelihood estimation tractable. The model is a clean baseline for studying probabilistic choice and the Independence of Irrelevant Alternatives.
+The plain logit is the benchmark because the Type I extreme-value taste shock gives closed-form choice probabilities. That convenience also gives the model its sharp economic restriction: substitution depends on existing market shares, not on product similarity. This tutorial estimates the coefficients, compares the fitted shares with the known data-generating model, and then makes the Independence of Irrelevant Alternatives (IIA) visible.
 
 ## Equations
 
+Consumers $i=1,\ldots,N$ choose one alternative $j\in\{1,\ldots,J\}$.
+Product $j$ has price $p_j$ and quality $q_j$.
+
 **Utility:**
-$$U_{ij} = \beta_{\text{price}} \, p_j + \beta_{\text{quality}} \, q_j + \varepsilon_{ij}$$
+$$U_{ij}=V_j+\varepsilon_{ij}, \qquad
+V_j=\beta_p p_j+\beta_q q_j,$$
 
-where $\varepsilon_{ij} \sim$ Type I Extreme Value (Gumbel) i.i.d. across consumers and products.
+with $\varepsilon_{ij}$ i.i.d. Type I extreme value. The expected sign is
+$\beta_p<0$ and $\beta_q>0$.
 
-**Choice probability (McFadden, 1974):**
-$$P(i \text{ chooses } j) = \frac{\exp(V_j)}{\sum_{k=1}^{J} \exp(V_k)}, \qquad V_j = \beta_{\text{price}} \, p_j + \beta_{\text{quality}} \, q_j$$
+**Choice probability:**
+$$P_j(\beta)=\Pr(y_i=j\mid p,q;\beta)
+=\frac{\exp(V_j)}{\sum_{k=1}^J \exp(V_k)}.$$
 
-**Log-likelihood:**
-$$\ell(\beta) = \sum_{i=1}^{N} \ln P(y_i \mid x; \beta)$$
+If $d_{ij}=1\{y_i=j\}$, the sample log-likelihood is
+$$\ell(\beta)=\sum_{i=1}^N\sum_{j=1}^J d_{ij}\log P_j(\beta).$$
 
-**Own-price elasticity:**
-$$\eta_{jj} = \beta_{\text{price}} \, p_j \, (1 - s_j)$$
+Because this one-market example has no individual covariates, fitted market
+shares are just $s_j=P_j(\hat\beta)$. The implied price elasticities are
+$$\eta_{jj}=\beta_p p_j(1-s_j), \qquad
+\eta_{jk}=-\beta_p p_k s_k \quad (j\neq k).$$
 
-**Cross-price elasticity (IIA):**
-$$\eta_{jk} = -\beta_{\text{price}} \, p_k \, s_k$$
+IIA follows from the odds ratio
+$$\frac{P_j}{P_k}=\exp(V_j-V_k),$$
+which does not depend on any third product.
 
 ## Model Setup
 
-| Parameter | Value | Description |
+The sample is synthetic, so the true coefficients and population logit shares are available for comparison. That makes the exercise about the estimator and the model restriction, not about data cleaning.
+
+| Object | Value | Role |
 |-----------|-------|-------------|
-| $N$ | 5000 | Number of consumers |
-| $J$ | 5 | Number of alternatives |
-| $\beta_{\text{price}}$ | -0.5 | True price coefficient |
-| $\beta_{\text{quality}}$ | 1.2 | True quality coefficient |
-| Estimation | MLE via BFGS | scipy.optimize.minimize |
+| Consumers | 5000 | Independent choice draws |
+| Products | 5 | Fixed alternatives in one market |
+| Prices | 2.0, 3.5, 5.0, 7.0, 10.0 | Utility shifter with negative coefficient |
+| Quality | 1.0, 2.0, 3.5, 4.0, 5.0 | Utility shifter with positive coefficient |
+| True $\beta_p$ | -0.5 | Price coefficient used to simulate choices |
+| True $\beta_q$ | 1.2 | Quality coefficient used to simulate choices |
 
 ## Solution Method
 
-**Maximum Likelihood Estimation (MLE):** Given observed choices $\{y_i\}_{i=1}^N$ and product characteristics, we maximize the log-likelihood function:
+The estimator chooses the coefficients that make the realized product choices most likely. The code minimizes the negative log-likelihood, but the economic object is the same maximizer:
 
-$$\hat{\beta} = \arg\max_{\beta} \sum_{i=1}^N \ln P(y_i \mid x; \beta)$$
+$$\hat\beta=\arg\max_\beta \ell(\beta).$$
 
-The logit log-likelihood is globally concave (McFadden, 1974), so any gradient-based optimizer converges to the unique global maximum. We use BFGS, which also produces an approximation to the inverse Hessian for standard error computation.
+```text
+Inputs: prices p_j, qualities q_j, choices y_i, starting value beta^(0)
+Repeat inside the optimizer:
+    1. Form V_j(beta) = beta_p p_j + beta_q q_j for every product j.
+    2. Convert V into logit probabilities P_j(beta).
+    3. Evaluate ell(beta) = sum_i log P_{y_i}(beta).
+Choose beta_hat that maximizes ell(beta).
+At beta_hat: compute fitted shares, elasticities, and IIA share ratios.
+```
 
-Converged in **9 iterations** (log-likelihood = -7493.95).
+For this plain logit the likelihood is globally concave, so the two-parameter surface has a single peak. BFGS converged in **9 iterations** with log-likelihood **-7493.95**. The inverse Hessian approximation supplies the standard errors reported below.
 
 ## Results
 
-The single peak confirms global concavity of the logit likelihood -- any gradient-based optimizer will find the same maximum. Notice how tightly the MLE estimate clusters near the true parameters, illustrating the statistical precision achievable with N=5000 observations.
+The contour plot shows the whole estimation problem in two dimensions. The likelihood has one peak, and the MLE sits close to the true coefficients used to generate the data. Sampling noise keeps the estimate from landing exactly on the star, but the gap is small with 5,000 choices.
 
-<img src="figures/log-likelihood-surface.png" alt="Log-likelihood surface: the logit likelihood is globally concave, with the MLE close to the true parameters" width="80%">
-*Log-likelihood surface: the logit likelihood is globally concave, with the MLE close to the true parameters*
+<img src="figures/log-likelihood-surface.png" alt="Log-likelihood surface with true and estimated coefficients marked" width="80%">
 
-Close agreement between predicted and observed shares validates the model specification. Any systematic gap would signal omitted product characteristics or misspecification of the utility function.
+Observed shares are finite-sample frequencies, while the green bars are the population shares from the data-generating logit. The fitted shares mostly sit between those two objects, which is what we should expect when the model is correctly specified.
 
-<img src="figures/market-shares.png" alt="Predicted vs actual market shares: the estimated model closely recovers observed choice frequencies" width="80%">
-*Predicted vs actual market shares: the estimated model closely recovers observed choice frequencies*
+<img src="figures/market-shares.png" alt="Observed, fitted, and true logit market shares" width="80%">
 
-In the logit, own-price elasticity is driven by both the price level and market share through the formula $\eta_{jj} = \beta_p \, p_j (1 - s_j)$. Higher-priced products lose a larger fraction of their customers for a given percentage price increase, which makes elasticities useful for interpreting demand sensitivity.
+The own-price elasticities combine the estimated price coefficient with each product's price and share. The expensive products have larger elasticities in absolute value, so a one percent price increase costs them a larger fraction of demand.
 
-<img src="figures/own-price-elasticities.png" alt="Own-price elasticities: higher-priced products have more elastic demand in the logit model" width="80%">
-*Own-price elasticities: higher-priced products have more elastic demand in the logit model*
+<img src="figures/own-price-elasticities.png" alt="Own-price elasticities implied by the estimated logit" width="80%">
 
-The left panel shows that removing a product reallocates its share proportionally to all remaining products, regardless of similarity. The right panel confirms that pairwise share ratios are exactly preserved -- this is the IIA property, and it is the main limitation motivating grouped and mixed-logit choice models.
+When Product 3 is removed, the remaining products do not become closer or farther apart in the model. Their probabilities are simply renormalized, so the pairwise odds ratios in the right panel stay fixed. This is the IIA restriction that the nested-logit tutorial relaxes by grouping similar products.
 
-<img src="figures/iia-illustration.png" alt="IIA property: removing an alternative does not change the ratio of choice probabilities between remaining alternatives" width="80%">
-*IIA property: removing an alternative does not change the ratio of choice probabilities between remaining alternatives*
+<img src="figures/iia-illustration.png" alt="IIA reallocation after removing one alternative" width="80%">
 
-Both coefficients are estimated with high precision and are statistically significant. The negative price coefficient and positive quality coefficient confirm that consumers trade off price against quality as expected.
+The signs are economically sensible and match the simulation: consumers dislike price and value quality. The estimates are close to the true coefficients because the likelihood is correctly specified and the sample is large.
 
-**MLE Estimation Results: Estimated vs True Parameters**
+**MLE estimates and true coefficients**
 
-| Parameter    |   True |   Estimate |   Std Error |   t-stat |   p-value |
-|:-------------|-------:|-----------:|------------:|---------:|----------:|
-| beta_price   |   -0.5 |    -0.4913 |      0.0174 |   -28.21 |         0 |
-| beta_quality |    1.2 |     1.1559 |      0.0362 |    31.94 |         0 |
+| Parameter   |   True |   Estimate |   Std. error |   t-stat | p-value   |
+|:------------|-------:|-----------:|-------------:|---------:|:----------|
+| beta_p      |   -0.5 |    -0.4913 |       0.0174 |   -28.21 | <0.001    |
+| beta_q      |    1.2 |     1.1559 |       0.0362 |    31.94 | <0.001    |
 
-The IIA property is visible in the cross-elasticity columns: all off-diagonal entries in a given column are identical, meaning every rival product gains the same share when one product raises its price. This unrealistic substitution pattern is the key motivation for richer grouped or mixed-logit models.
+Rows are the products whose shares change; columns are the products whose prices change. In every off-diagonal column the cross-elasticities are identical, so the model sends lost buyers to rivals in proportion to their shares rather than to the most similar product.
 
-**Price Elasticity Matrix (row = product whose share changes, column = product whose price changes)**
+**Price elasticity matrix**
 
 | Product   |   Product 1 |   Product 2 |   Product 3 |   Product 4 |   Product 5 |
 |:----------|------------:|------------:|------------:|------------:|------------:|
@@ -92,20 +108,7 @@ The IIA property is visible in the cross-elasticity columns: all off-diagonal en
 
 ## Takeaway
 
-The multinomial logit is the workhorse of discrete choice demand estimation, but its elegance comes at a cost: the **Independence of Irrelevant Alternatives (IIA)** property.
-
-**Key insights:**
-- MLE recovers the true parameters precisely with N=5000 observations. The logit likelihood is globally concave, so estimation is fast and reliable.
-- Own-price elasticities depend on price level and market share: $\eta_{jj} = \beta_p \, p_j (1 - s_j)$. Higher-priced products are more elastic.
-- **Cross-elasticities are proportional to market shares**, not to product similarity. When a product is removed, its share is reallocated to all remaining products in proportion to their existing shares, regardless of observed similarity.
-- IIA is unrealistic: if a luxury product exits the market, the logit predicts its share goes proportionally to budget and premium products. Nested and mixed-logit models relax this restriction.
-- Despite its limitations, the logit remains the starting point for demand estimation because of its computational tractability and clean closed-form expressions.
-
-## Reproduce
-
-```bash
-python run.py
-```
+Plain logit is a useful first demand model because the mapping from utility coefficients to shares is transparent and the likelihood is easy to optimize. The same structure makes its substitution patterns too rigid: once shares are known, cross-price responses are pinned down by IIA rather than by economic similarity. That is why nested logit and mixed logit are natural next models, not cosmetic complications.
 
 ## References
 
