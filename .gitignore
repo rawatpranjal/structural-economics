@@ -59,3 +59,8 @@ dynare/**/*_results.mat
 # Large files (keep in _legacy/)
 *.pdf
 !_legacy/**/*.pdf
+
+# Internal contributor docs (kept locally, hidden from public repo)
+GLOSSARY.md
+STYLE_GUIDE.md
+docs/superpowers/
