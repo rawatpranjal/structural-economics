@@ -1,33 +1,64 @@
-# Dynamic Discrete Choice for Replacement
+# Bus Engine Replacement and Dynamic Choice
 
-> Rust-style bus engine replacement with full-solution and CCP estimation.
+> Continuation values, replacement hazards, and CCP estimation in a Rust-style model.
 
 ## Overview
 
-Dynamic discrete choice models are used when agents make repeated discrete decisions and today's action changes tomorrow's state. The canonical example is Rust's bus engine replacement problem. A bus operator observes mileage and chooses whether to replace the engine. In this normalization, replacement gives up the current keep payoff but resets future mileage and reduces future maintenance costs.
+Engine replacement is a clean dynamic discrete choice problem because the action is discrete, but the cost of that action is paid through future states. A bus operator who keeps an old engine receives the current keep payoff and lets mileage drift upward. Replacing the engine sacrifices that current keep payoff but resets the bus toward a low-mileage state. The replacement hazard therefore summarizes both current maintenance costs and the continuation value of a fresher engine.
 
-This tutorial solves the model, simulates panel data, and estimates the payoff parameters two ways: full-solution maximum likelihood and a Hotz-Miller conditional-choice-probability estimator.
+The example is the estimation-side complement to the dynamic IO models in [dynamic entry and exit](../dynamic-entry-exit/) and [Markov-perfect investment](../dynamic-games/). Here there is one decision maker rather than strategic firms, so the focus is on recovering payoff parameters from observed choices. The tutorial solves the model, simulates a panel with known truth, and compares nested fixed-point maximum likelihood with a Hotz-Miller conditional-choice-probability (CCP) estimator.
 
 ## Equations
 
-State $x$ is mileage. Action $a=1$ replaces the engine, while $a=0$ keeps it.
-Replacement utility is normalized to zero:
+Let $x_t \in X$ denote mileage at the start of period $t$. The action
+$a_t=1$ replaces the engine and $a_t=0$ keeps it. Replacement flow utility is
+normalized to zero:
 
 $$u(x,1) = 0,$$
 
-and the flow payoff from keeping the engine is:
+and the keep payoff is
 
 $$u(x,0) = \theta_0 + \theta_1 x, \qquad \theta_1 < 0.$$
 
-With Type-I extreme value shocks, the conditional value functions satisfy:
+The transition matrix $F_a(x' \mid x)$ gives next period's mileage. Replacement
+uses $F_1$ and is close to the transition from a new engine; keeping uses $F_0$
+and lets mileage drift upward. With additive Type-I extreme value shocks, the
+conditional value functions satisfy
 
 $$v_a(x) = u(x,a) + \beta \sum_{x'} F_a(x' \mid x)
-\left[\log\left(\exp(v_1(x')) + \exp(v_0(x'))\right) + \gamma\right].$$
+\left[\log\left(\exp(v_1(x')) + \exp(v_0(x'))\right) + \gamma\right],$$
 
-The replacement probability is:
+where $\gamma$ is Euler's constant. The replacement probability is
 
-$$P(a=1 \mid x) =
+$$P_\theta(1 \mid x) =
 \frac{\exp(v_1(x))}{\exp(v_1(x))+\exp(v_0(x))}.$$
+
+For panel observations $(x_{it}, d_{it})$, where $d_{it}=1$ means replacement,
+the full-solution likelihood is
+
+$$\ell(\theta)=\sum_{i,t}
+d_{it}\log P_\theta(1 \mid x_{it})
++ (1-d_{it})\log[1-P_\theta(1 \mid x_{it})].$$
+
+The CCP estimator starts from a first-stage estimate $\hat p(x)$ of
+$\Pr(a=1 \mid x)$. Given $\hat p$, form the policy transition
+
+$$\hat F(x' \mid x)=\hat p(x)F_1(x' \mid x)+[1-\hat p(x)]F_0(x' \mid x).$$
+
+For any candidate $\theta$, the Hotz-Miller ex ante value solves the linear
+system
+
+$$W_\theta =
+\bar u_\theta(\hat p)+\beta \hat F W_\theta,$$
+
+where $\bar u_\theta(\hat p)$ includes the keep payoff and the logit entropy
+terms implied by $\hat p$. The model-implied replacement probability is then
+
+$$P_\theta^{HM}(1 \mid x)
+=\Lambda\left(\beta F_1 W_\theta
+-\theta_0-\theta_1 x-\beta F_0 W_\theta\right),$$
+
+with $\Lambda(z)=1/(1+\exp(-z))$.
 
 ## Model Setup
 
@@ -36,63 +67,96 @@ $$P(a=1 \mid x) =
 | $\beta$ | 0.9 | Discount factor |
 | $\theta_0$ | 2.00 | Keep-engine payoff intercept |
 | $\theta_1$ | -0.15 | Mileage cost slope |
-| Mileage states | 61 | Grid from 0 to 15 |
+| Mileage states | 61 | Grid for $x \in [0,15]$ |
+| Transition law | Exponential increments | Replacement resets to the low-mileage transition |
 | Buses | 1500 | Simulated panel units |
 | Periods | 35 | Observations per bus |
+| Ground truth | Known | Data are simulated from $\theta=(2.00,-0.15)$ |
 
 ## Solution Method
 
-**Full-solution ML** solves the value function for every candidate parameter vector and evaluates the likelihood of observed replacement decisions.
+The nested fixed-point estimator treats the dynamic program as part of the likelihood. Every candidate $\theta$ implies a replacement hazard only after the conditional value functions have been solved.
 
-**CCP estimation** first estimates the policy rule nonparametrically with a logit in mileage and mileage squared. The Hotz-Miller inversion then recovers ex ante values implied by those estimated CCPs, avoiding a nested value-function solve inside the structural objective.
+```text
+Algorithm: nested fixed-point likelihood for replacement
+Input: grid X, transitions F_0 and F_1, discount beta, panel choices (x_it, d_it)
+Output: structural estimate theta and implied policy P_theta(1 | x)
+for each candidate theta proposed by the outer optimizer:
+    initialize conditional values v_0(x), v_1(x)
+    repeat:
+        inclusive(x) = log(exp(v_1(x)) + exp(v_0(x))) + gamma
+        update v_1(x) = beta * sum_x' F_1(x' | x) inclusive(x')
+        update v_0(x) = theta_0 + theta_1 x + beta * sum_x' F_0(x' | x) inclusive(x')
+        error = sup_x,a |v_a^{new}(x) - v_a^{old}(x)|
+    until error < epsilon
+    compute P_theta(1 | x) from the logit choice formula
+    evaluate the panel choice likelihood
+choose theta that maximizes the likelihood
+```
+
+The Hotz-Miller estimator moves the dynamic-programming burden into a first-stage policy estimate. In this run the first stage is a flexible logit in mileage and mileage squared; the known data-generating policy is held out for comparison, not used in estimation.
+
+```text
+Algorithm: Hotz-Miller CCP estimator
+Input: same grid, transitions, beta, and panel choices
+Output: structural estimate theta_CCP and implied policy P_theta^HM(1 | x)
+Estimate first-stage CCPs p_hat(x) = Pr(d=1 | x)
+Build the policy transition F_hat = p_hat F_1 + (1 - p_hat) F_0
+for each candidate theta:
+    construct expected flow payoffs under p_hat, including logit entropy terms
+    solve (I - beta F_hat) W_theta = expected_flow_theta
+    recover P_theta^HM(1 | x) from replacement and keep continuation values
+    evaluate the panel choice likelihood
+choose theta that maximizes the likelihood
+```
+
+The first estimator is direct but repeatedly solves a Bellman fixed point. The second estimator avoids that nested value-function iteration after the first stage, at the cost of relying on the smoothed CCPs.
 
 ## Results
 
-The keep option becomes less attractive as mileage rises. The replacement probability is therefore low at fresh-engine states and high at worn-engine states.
+The first object to inspect is not the parameter vector; it is the replacement hazard. The keep value starts high because a low-mileage engine is still useful. As mileage rises, the keep payoff falls and replacement becomes a way to buy a better future state. The first-stage logit follows the true hazard where the simulated panel has mass, but it is only an approximation to the dynamic policy.
+
+The data-generating replacement probability is the benchmark curve. The estimated first-stage CCP is deliberately shown beside it because the CCP estimator lives or dies by this smoothing step.
 
 <img src="figures/value-and-ccp.png" alt="Value functions and replacement probabilities" width="80%">
-*Value functions and replacement probabilities*
 
-Mileage drifts upward when the operator keeps the old engine and resets after replacement. The scattered points mark replacement decisions.
+The panel makes the identification problem concrete. Low and medium mileage states are observed often because buses return there after replacement. Very high mileage states are scarce: in this simulation only **0.29%** of bus-periods have mileage at least 10. That is where estimated hazards are expected to separate from the known policy.
+
+Mileage drifts upward under the keep action and falls after replacement. The points are replacement decisions, not exogenous maintenance shocks.
 
 <img src="figures/simulated-histories.png" alt="Mileage histories for six simulated buses" width="80%">
-*Mileage histories for six simulated buses*
 
-Both estimators recover the main economic pattern: replacement becomes more likely as mileage increases. Differences are largest in high-mileage states that are rarely observed because buses are usually replaced before reaching them.
+Because the data are simulated, the true policy can stay on the graph as a ground-truth reference. Both estimators recover the economically important shape: replacement is rare for fresh engines and rises sharply once mileage makes keeping the engine costly. The remaining disagreement is largest in sparsely visited states, so it should be read as finite-sample and first-stage approximation error, not as a different economic mechanism.
+
+The full-solution and CCP policies are almost on top of the truth over the states that carry most of the simulated likelihood.
 
 <img src="figures/estimated-policies.png" alt="Policy rules implied by the true and estimated parameters" width="80%">
-*Policy rules implied by the true and estimated parameters*
 
-The full-solution estimator nests a value-function solve inside the likelihood. The CCP estimator uses an estimated policy rule to reduce that computational burden.
+The estimates are close to the data-generating parameters. The full-solution estimator pays for a fresh fixed point at each trial value; the CCP estimator uses the first-stage policy to turn continuation values into a linear solve.
 
 **Structural parameter estimates**
 
-| Parameter   |   True |   Full-solution ML |       CCP |
-|:------------|-------:|-------------------:|----------:|
-| theta_0     |   2    |           2.01812  |  2.01767  |
-| theta_1     |  -0.15 |          -0.153463 | -0.153336 |
+| Parameter   |   True |   Full-solution ML |   Full ML error |      CCP |   CCP error |
+|:------------|-------:|-------------------:|----------------:|---------:|------------:|
+| theta_0     |   2    |            2.01812 |         0.01812 |  2.01767 |     0.01767 |
+| theta_1     |  -0.15 |           -0.15346 |        -0.00346 | -0.15334 |    -0.00334 |
 
-The simulated panel gives the estimators repeated choices at many mileage states.
+The moments summarize the simulated panel and the numerical solve. The high-mileage share is useful because it tells us how much likelihood information is available where the replacement probability is already near one.
 
 **Simulation and solver diagnostics**
 
-| Moment          |      Value |
-|:----------------|-----------:|
-| Repair rate     |   0.253181 |
-| Average mileage |   2.21011  |
-| VFI iterations  | 228        |
-| Full ML success |   1        |
-| CCP success     |   1        |
+| Moment                   |        Value |
+|:-------------------------|-------------:|
+| Repair rate              |   0.253181   |
+| Average mileage          |   2.21011    |
+| Share with mileage >= 10 |   0.00293333 |
+| VFI iterations           | 228          |
+| Full ML success          |   1          |
+| CCP success              |   1          |
 
 ## Takeaway
 
-The hard part of dynamic discrete choice is the feedback between choices and future states. Full-solution likelihood is conceptually direct but expensive because each parameter guess requires solving the dynamic program. CCP methods trade some first-stage smoothing for speed by using observed choice probabilities to infer continuation values.
-
-## Reproduce
-
-```bash
-python run.py
-```
+Dynamic discrete choice turns observed hazards into statements about current payoffs and continuation values. In the replacement problem, a high mileage bus is replaced not only because keeping it is costly today, but because replacement changes the distribution of tomorrow's state. Nested fixed-point likelihood estimates that object directly. CCP estimation is faster because it learns part of the policy first, but then the quality of the structural step depends on how well those first-stage CCPs approximate the true replacement hazard.
 
 ## References
 
