@@ -17,8 +17,8 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "docs" / "qc-reports" / "tutorial-qc-manifest.json"
 REPORT_DIR = ROOT / "docs" / "qc-reports" / "tutorials"
 PASS_NAME = "quality-control-v1"
-DEFAULT_START_INDEX = 33
-DEFAULT_END_INDEX = 64
+DEFAULT_START_INDEX = 34
+DEFAULT_END_INDEX = 65
 CATALOG_LINK_RE = re.compile(r"\]\(([^)#]+/)\)")
 
 
