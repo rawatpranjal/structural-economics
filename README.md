@@ -128,7 +128,7 @@ Choice and demand stays focused on choice theory, revealed preference, Bayesian 
 | <img src="choice/revealed-price-preference/figures/thumb.png" width="192"> | [**Revealed Price Preference**](choice/revealed-price-preference/) | Testing whether price regimes can be ranked from the bundles they make cheap | GAPP graph + transitive closure | A dataset can pass bundle GARP while failing consistency over price regimes |
 | <img src="choice/logit-discrete-choice/figures/thumb.png" width="192"> | [**Plain Logit Demand and IIA**](choice/logit-discrete-choice/) | Estimating a baseline product-choice model and reading the substitution restriction it imposes | MLE | Closed-form shares make estimation easy, but lost buyers are reallocated by rival shares |
 | <img src="choice/bayesian-learning/figures/thumb.png" width="192"> | [**Bayesian Learning and Sequential Investment**](choice/bayesian-learning/) | How noisy signals become posterior beliefs and stopping regions | Bayes' rule + finite-horizon stopping | The likelihood ratio is the sufficient state; waiting has value only at intermediate beliefs |
-| <img src="choice/nested-logit/figures/thumb.png" width="192"> | [**Nested Logit Demand and Within-Nest Substitution**](choice/nested-logit/) | Grouped products and stronger same-nest substitution | Berry inversion | Same-nest substitution can be much larger than cross-nest substitution |
+| <img src="choice/nested-logit/figures/thumb.png" width="192"> | [**Nested Logit Demand and Within-Nest Substitution**](choice/nested-logit/) | How maintained product groups redirect lost buyers toward closer alternatives | Berry inversion + IV/2SLS | The nesting parameter turns plain-logit share reallocation into same-nest diversion |
 
 ## Computational Game Theory
 

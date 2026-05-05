@@ -1,80 +1,135 @@
 # Nested Logit Demand and Within-Nest Substitution
 
-> The simplest fix for the IIA problem: grouping products into nests so that closer substitutes have higher cross-price elasticities.
+> Use product groups to turn logit from market-share substitution into economically closer substitution.
 
 ## Overview
 
-The plain logit imposes the Independence of Irrelevant Alternatives (IIA): the ratio of any two products' market shares is independent of the attributes of all other products. This means a price increase for Choco-Bombs sends customers to Fiber-Bran and Store-Frosted in proportion to their market shares, regardless of how similar those products are.
+A demand model has to answer two questions after a price change: how many buyers leave, and where they go. Plain logit answers the second question with market shares. Lost buyers are reallocated toward larger rivals, not toward products that are economically closer. That is the IIA restriction from the [plain-logit tutorial](../logit-discrete-choice/).
 
-The **nested logit** fixes this by grouping products into nests (e.g., sugary vs healthy cereals). Within a nest, products are closer substitutes. The nesting parameter $\sigma \in [0,1)$ controls the degree of within-nest correlation:
-- $\sigma = 0$: collapses to plain logit (IIA holds)
-- $\sigma \to 1$: products within a nest are perfect substitutes
+Nested logit keeps the closed-form share machinery but lets the researcher declare product groups. In this cereal market, Choco-Bombs and Store-Frosted are sugary cereals; Fiber-Bran and Granola-Crunch are healthy cereals. The nesting parameter $\sigma \in [0,1)$ governs how much extra substitution stays inside a group. At $\sigma=0$ the model is plain logit. As $\sigma$ rises, a price increase for a sugary cereal sends more buyers to the other sugary cereal rather than to the whole market in proportion to shares.
 
-This makes nested logit a compact demand model for correlated alternatives while keeping the share equation easy to estimate.
+The example is intentionally small. The goal is to make the substitution matrix and the IV estimation equation transparent before moving to richer random-coefficients demand models such as [BLP](../../industrial-organization/blp-random-coefficients/).
 
 ## Equations
 
-$$s_j = s_{j|g} \cdot s_g$$
+Products $j=1,\ldots,J$ appear in markets $t=1,\ldots,T$. Product $j$ belongs
+to nest $g(j)$, and $s_{0t}$ is the outside-good share. Mean utility is
+$$
+\delta_{jt}=\beta_0+\beta_{\text{sugar}}\text{sugar}_j-\alpha p_{jt}+\xi_j,
+\qquad \alpha>0 .
+$$
 
-**Within-nest share:**
-$$s_{j|g} = \frac{\exp\!\bigl(\delta_j / (1-\sigma)\bigr)}{D_g}, \qquad D_g = \sum_{k \in g} \exp\!\bigl(\delta_k / (1-\sigma)\bigr)$$
+For each nest $g$, define the inclusive-value denominator
+$$
+D_{gt}=\sum_{k:g(k)=g}\exp\left(\frac{\delta_{kt}}{1-\sigma}\right),
+\qquad 0\leq \sigma<1 .
+$$
 
-**Nest share:**
-$$s_g = \frac{D_g^{\,1-\sigma}}{1 + \sum_h D_h^{\,1-\sigma}}$$
+Shares factor into a conditional share inside the nest and the nest's total
+share:
+$$
+s_{j|g,t}=
+\frac{\exp\left(\delta_{jt}/(1-\sigma)\right)}{D_{g(j)t}},
+\qquad
+s_{gt}=
+\frac{D_{gt}^{1-\sigma}}{1+\sum_h D_{ht}^{1-\sigma}},
+\qquad
+s_{jt}=s_{j|g,t}s_{g(j)t}.
+$$
 
-**Berry inversion (estimation equation):**
-$$\ln s_j - \ln s_0 = \mathbf{x}_j \beta - \alpha \, p_j + \sigma \ln s_{j|g} + \xi_j$$
+The Berry inversion becomes
+$$
+\ln s_{jt}-\ln s_{0t}
+=
+\beta_0+\beta_{\text{sugar}}\text{sugar}_j-\alpha p_{jt}
++\sigma\ln s_{j|g,t}+\xi_j .
+$$
+Both $p_{jt}$ and $\ln s_{j|g,t}$ are endogenous in this regression.
 
-Both $p_j$ and $\ln s_{j|g}$ are endogenous; we instrument with cost shifters,
-rival characteristics, number of products in nest, and same-nest rival characteristics.
+Rows in the elasticity matrix are products whose shares change; columns are
+products whose prices change. For market $t$,
+$$
+\eta_{jk,t}=\frac{\partial\ln s_{jt}}{\partial\ln p_{kt}}=
+\begin{cases}
+-\alpha p_{jt}\left[\dfrac{1}{1-\sigma}
+-\dfrac{\sigma}{1-\sigma}s_{j|g,t}-s_{jt}\right],
+& j=k,\\[1.0em]
+\alpha p_{kt}\left[\dfrac{\sigma}{1-\sigma}s_{k|g,t}+s_{kt}\right],
+& j\neq k,\ g(j)=g(k),\\[1.0em]
+\alpha p_{kt}s_{kt},
+& g(j)\neq g(k).
+\end{cases}
+$$
+The product-level diversion ratio from product $k$ to product $j$ is the
+share-derivative ratio
+$$
+D_{j\leftarrow k}=
+-\frac{\partial s_{jt}/\partial p_{kt}}{\partial s_{kt}/\partial p_{kt}}
+=
+\frac{\eta_{jk,t}s_{jt}}{|\eta_{kk,t}|s_{kt}} .
+$$
 
 ## Model Setup
 
-| Parameter | Value | Description |
-|-----------|-------|-------------|
-| $\alpha$ | 1.5 | Price sensitivity |
-| $\beta_{\text{sugar}}$ | 0.3 | Taste for sugar |
-| $\beta_0$ | 1.0 | Base utility |
-| $\sigma$ | 0.7 | Nesting parameter |
-| Products | 4 (2 nests of 2) | Sugary: Choco-Bombs, Store-Frosted; Healthy: Fiber-Bran, Granola-Crunch |
-| Markets | 50 | Cross-sectional variation for IV |
+The synthetic design keeps the true nested-logit model available as a benchmark. Estimation uses only prices, sugar content, shares, and the instruments below; the true parameters are held out for the comparison figures and table.
+
+| Object | Value | Role |
+|---|---:|---|
+| Markets $T$ | 50 | Cross-market price and cost variation |
+| Inside products $J$ | 4 | Two sugary and two healthy cereals |
+| Outside good | Included | Pins down the Berry share ratio |
+| True $\alpha$ | 1.5 | Price sensitivity in the data-generating model |
+| True $\beta_{\text{sugar}}$ | 0.3 | Taste for sugar content |
+| True $\beta_0$ | 1.0 | Common inside-good utility shifter |
+| True $\sigma$ | 0.7 | Extra same-nest substitution |
+| Nests | Sugary, healthy | Maintained grouping used by nested logit |
 
 ## Solution Method
 
-**Two-Stage Least Squares (2SLS)** on the Berry-inverted equation.
+The computation has two parts. First, the nested-logit formulas map mean utilities into market shares and elasticities. Second, the Berry-inverted equation is estimated by 2SLS. The plain logit is estimated on the same data only as a benchmark for the substitution restriction.
 
-The nested logit introduces a second endogenous variable, $\ln s_{j|g}$, because within-nest shares depend on unobserved quality $\xi_j$. We need instruments for **both** price and within-nest share:
+```text
+Algorithm: nested-logit IV demand
+Input: markets t, products j, nests g(j), shares s_jt, outside shares s_0t
+Output: IV estimates, elasticity matrix, and diversion ratios
+
+1. For each market, compute within-nest shares s_{j|g,t} from observed shares.
+2. Form y_jt = log(s_jt) - log(s_0t) and w_jt = log(s_{j|g,t}).
+3. First stage: project price p_jt and w_jt on sugar and instruments Z_jt.
+4. Second stage: regress y_jt on sugar, fitted price, and fitted w_jt.
+5. Read alpha from the negative price coefficient and sigma from w_jt.
+6. Compute eta_jk,t and D_{j<-k}; compare plain logit, fitted nested logit,
+   and the true synthetic nested-logit benchmark.
+```
+
+The within-nest share is endogenous because the same unobserved product quality $\xi_j$ that raises a product's total share also raises its share inside the nest. The tutorial therefore instruments for both price and $\ln s_{j|g,t}$:
 
 | Instrument | Targets | Rationale |
-|------------|---------|----------|
-| Cost shifter | Price | Cost variation |
-| Rival sugar (all) | Price | Characteristic sum |
-| Number of products in nest | $\ln s_{j\mid g}$ | Affects within-nest competition |
-| Same-nest rival sugar | $\ln s_{j\mid g}$ | Within-nest characteristic variation |
+|---|---|---|
+| Cost shifter | Price | Moves marginal cost without entering utility directly |
+| Rival sugar, all products | Price | Summarizes rival characteristics in the market |
+| Number of products in nest | $\ln s_{j\mid g,t}$ | Changes the local competitive set |
+| Same-nest rival sugar | $\ln s_{j\mid g,t}$ | Moves the attractiveness of close substitutes |
 
 ## Results
 
-The gold-outlined blocks mark within-nest product pairs. Cross-elasticities inside these blocks are visibly larger than those outside, reflecting the intuition that consumers substitute more readily among similar products. This asymmetric substitution pattern is exactly what IIA forbids and what the nested logit is designed to capture.
+Rows are the products whose shares respond; columns are the prices that move. The gold blocks mark the maintained nests. In the fitted nested model, the Choco-Bombs price column has a much larger effect on Store-Frosted than on the healthy cereals, so substitution follows product similarity rather than only market size.
 
 <img src="figures/elasticity-heatmap.png" alt="Nested logit elasticity matrix with nest blocks highlighted. Same-nest cross-elasticities (inside gold boxes) are higher than cross-nest elasticities." width="80%">
-*Nested logit elasticity matrix with nest blocks highlighted. Same-nest cross-elasticities (inside gold boxes) are higher than cross-nest elasticities.*
 
-Under IIA (blue bars), all rivals gain equally from Choco-Bombs' price increase regardless of product similarity. The nested logit (green/red bars) predicts that Store-Frosted -- another sugary cereal -- absorbs the lion's share of switching customers. The point is demand-side substitution: observed groups can concentrate switching toward closer alternatives.
+The blue bars show the plain-logit restriction: the cross response is driven by Choco-Bombs' share and does not know which rival is closest. The green and red bars use the 2SLS nested-logit estimates, while the hatched bars show the true synthetic nested-logit benchmark. The estimate overstates the strength of nesting in this small IV design, but it recovers the main economic ranking: Store-Frosted is the close substitute.
 
-<img src="figures/cross-elasticity-comparison.png" alt="Logit vs nested logit cross-elasticities when Choco-Bombs raises its price. Nested logit sends more customers to Store-Frosted (same nest)." width="80%">
-*Logit vs nested logit cross-elasticities when Choco-Bombs raises its price. Nested logit sends more customers to Store-Frosted (same nest).*
+<img src="figures/cross-elasticity-comparison.png" alt="Cross-elasticities when Choco-Bombs raises its price: plain logit, fitted nested logit, and the true synthetic nested-logit benchmark." width="80%">
 
-Diversion ratios summarize where customers go after one product becomes less attractive. The nested logit concentrates switching within the sugary nest instead of spreading it flatly by market share.
+Diversion ratios convert elasticities back into derivatives of market shares. Plain logit sends lost Choco-Bombs demand toward rivals in proportion to their current shares. Nested logit shifts much more of that product-level diversion to Store-Frosted. Across the three inside rivals, the product diversion shown here sums to 97.8% under the fitted nested model and 92.4% under the true nested model; the remainder goes to the outside good.
 
-<img src="figures/diversion-ratios.png" alt="Diversion ratios: fraction of Choco-Bombs' lost sales captured by each rival. Nested logit predicts much higher diversion to same-nest products." width="80%">
-*Diversion ratios: fraction of Choco-Bombs' lost sales captured by each rival. Nested logit predicts much higher diversion to same-nest products.*
+<img src="figures/diversion-ratios.png" alt="Product diversion ratios from a Choco-Bombs price increase." width="80%">
 
-At $\sigma \approx 0$ the model collapses to plain logit with symmetric cross-elasticities. As $\sigma$ rises toward 1, within-nest products become near-perfect substitutes while cross-nest substitution barely changes. The structural role of $\sigma$ is clear: it controls the degree to which product groupings shape consumer switching behavior.
+Changing $\sigma$ while holding mean utilities fixed isolates the role of the nesting parameter. At $\sigma\approx0$ the model behaves like plain logit. As $\sigma$ approaches one, same-nest elasticities grow rapidly, while cross-nest responses remain governed mostly by aggregate shares.
 
 <img src="figures/sigma-effect.png" alt="Effect of the nesting parameter sigma on substitution patterns. As sigma increases, within-nest substitution intensifies while cross-nest substitution stays flat." width="80%">
-*Effect of the nesting parameter sigma on substitution patterns. As sigma increases, within-nest substitution intensifies while cross-nest substitution stays flat.*
 
-The plain logit omits $\sigma$ entirely, which biases the price sensitivity estimate because within-nest correlation is absorbed into the price coefficient. The nested logit recovers all four structural parameters, including the nesting parameter that governs substitution patterns.
+The table separates model misspecification from finite-sample IV noise. Plain logit has no nesting parameter, so it cannot match the substitution pattern even when the price coefficient is in the right range. The nested-logit estimate recovers the signs and the same-nest ranking, but $\hat\sigma$ is above the true value in this small synthetic panel.
 
 **Parameter estimates: true values vs plain logit vs nested logit**
 
@@ -87,19 +142,7 @@ The plain logit omits $\sigma$ entirely, which biases the price sensitivity esti
 
 ## Takeaway
 
-The nested logit is the simplest departure from the IIA assumption. By grouping products into nests, it allows consumers who leave one product to disproportionately switch to similar products rather than spreading evenly across the market.
-
-**Key insights:**
-- The nesting parameter $\sigma$ controls within-nest correlation. We estimated $\hat{\sigma} = 0.913$ vs the true value of 0.7, confirming that products within a nest are closer substitutes.
-- Same-nest cross-price elasticities are **higher** than cross-nest elasticities. When Choco-Bombs raises its price, customers primarily switch to Store-Frosted (also sugary), not to Fiber-Bran.
-- The plain logit gets the overall price sensitivity roughly right but completely misses the substitution pattern -- this matters for product positioning and targeted pricing.
-- Estimation requires instruments for **both** price and the within-nest share $\ln s_{j|g}$, since both are endogenous. Rival characteristics and nest size serve this purpose in the synthetic example.
-
-## Reproduce
-
-```bash
-python run.py
-```
+Nested logit is useful when the researcher can defend a product grouping and wants a substitution matrix that is richer than plain logit but still easy to estimate. The economic content is the diversion pattern: a price increase for one sugary cereal mainly sends buyers to another sugary cereal. The cost is that the nests are maintained structure. If the important notion of closeness is consumer-specific rather than group-specific, the next step is a random-coefficients model rather than more polishing of the same nested specification.
 
 ## References
 
