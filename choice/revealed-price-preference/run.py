@@ -123,7 +123,7 @@ def plot_cost_ratio_heatmap(case: dict[str, object]) -> plt.Figure:
 
     ax.set_xticks(range(3), [f"Bundle {t + 1}" for t in range(3)])
     ax.set_yticks(range(3), [f"Price {s + 1}" for s in range(3)])
-    ax.set_title("Price Preference Comes from Costing the Same Bundle at Other Prices")
+    ax.set_title("Case A: Cost the Same Bundle Under Competing Price Vectors")
     ax.set_xlabel("Observed chosen bundle")
     ax.set_ylabel("Candidate price vector")
     fig.tight_layout()
@@ -164,11 +164,11 @@ def plot_price_preference_graph(case: dict[str, object]) -> plt.Figure:
         ax.text(x_pos, y_pos + 0.03, f"$p^{node + 1}$", ha="center", va="center", fontsize=15, weight="bold")
         ax.text(x_pos, y_pos - 0.20, f"price {node + 1}", ha="center", va="center", fontsize=9)
 
-    ax.set_title("GAPP Fails When Price Preferences Cycle")
+    ax.set_title("Case A: A Cycle in Revealed Price Preference")
     ax.text(
         0,
         -1.25,
-        "Arrows mean one price vector is revealed cheaper for an observed bundle.",
+        "Arrows compare price vectors while holding the observed bundle fixed.",
         ha="center",
         fontsize=10,
     )
@@ -235,56 +235,95 @@ def main() -> None:
 
     report = ModelReport(
         "Revealed Price Preference",
-        "Testing rationalizability of price vectors rather than chosen bundles.",
+        "When the object being compared is a price regime, not a chosen bundle.",
+        include_reproduce=False,
+        show_figure_captions=False,
     )
 
     report.add_overview(
-        "Standard revealed preference asks whether chosen bundles can be rationalized by "
-        "utility maximization. Revealed price preference asks a dual question: do the "
-        "price vectors themselves behave as if there is a consistent preference over "
-        "prices? This is useful when the empirical object is a price regime, tax schedule, "
-        "or tariff vector rather than only a consumed bundle.\n\n"
-        "The key distinction is simple. GARP compares bundles at the prices faced when a "
-        "bundle was chosen. GAPP fixes an observed chosen bundle and asks whether another "
-        "price vector would have made that same bundle weakly cheaper. Cycles in these "
-        "price comparisons reject rationalizability of prices, even in examples where "
-        "standard bundle GARP may pass."
+        "Many revealed-preference exercises ask whether observed bundles could have come "
+        "from one stable utility ordering. Sometimes the empirical object is different. A "
+        "researcher may want to compare tax schedules, tariffs, insurance menus, or other "
+        "price regimes and ask whether the data rank those regimes consistently.\n\n"
+        "Revealed price preference keeps the same price-quantity observations "
+        "$(p^t,x^t)$, but it reverses the object of comparison. GARP asks whether the "
+        "chosen bundles can be ordered. GAPP asks whether the observed price vectors can "
+        "be ordered by the bundles they make cheap. A price vector $p^s$ is better than "
+        "$p^t$ for observation $t$ if it would have made the bundle actually chosen under "
+        "$p^t$ weakly cheaper. The tutorial uses small deterministic panels to show that "
+        "bundle rationalizability and price-regime rationalizability are distinct "
+        "restrictions, not two descriptions of the same test."
     )
 
     report.add_equations(
         r"""
-Let $p^s$ be price vector $s$ and $x^t$ be the bundle chosen under price vector $t$.
-Price $s$ is directly revealed preferred to price $t$ when it makes bundle $x^t$ weakly cheaper:
+The data are $\mathcal D=\{(p^t,x^t)\}_{t=1}^{T}$, where
+$p^t\in\mathbb R_{++}^{L}$ is the observed price vector and
+$x^t\in\mathbb R_{+}^{L}$ is the chosen bundle. Own expenditure is
+$m_t=p^t\cdot x^t$.
 
-$$R_p[s,t] = 1\{p^s \cdot x^t \le p^t \cdot x^t\}.$$
+For price-regime comparisons, define the cross-cost matrix
+$$
+C_{st}=p^s\cdot x^t .
+$$
+Price vector $s$ is directly revealed weakly preferred to price vector $t$ when
+it would have made the bundle chosen at $t$ no more expensive than it actually
+was:
+$$
+sR_p^D t
+\quad\Longleftrightarrow\quad
+C_{st}\le C_{tt}=m_t .
+$$
 
 The strict relation is
-
-$$P_p[s,t] = 1\{p^s \cdot x^t < p^t \cdot x^t\}.$$
-
-GAPP fails when price $s$ is indirectly revealed preferred to price $t$, but $t$ is strictly directly revealed preferred to $s$:
-
-$$R_p^{*}[s,t] = 1 \quad \text{and} \quad P_p[t,s] = 1.$$
+$$
+sP_p^D t
+\quad\Longleftrightarrow\quad
+C_{st}<C_{tt}.
+$$
+Let $R_p$ be the transitive closure of $R_p^D$. GAPP holds when there is no
+pair $(s,t)$ such that
+$$
+sR_p t
+\quad\text{and}\quad
+tP_p^D s .
+$$
+The first statement says the data indirectly rank price vector $s$ at least as
+good as price vector $t$. The second says the data strictly rank $t$ above $s$
+in the direct reverse comparison. Together they form the price-regime analogue
+of a revealed-preference cycle.
 """
     )
 
     report.add_model_setup(
         "| Object | Value | Interpretation |\n"
         "|---|---:|---|\n"
-        "| Price vectors | 3 | Candidate price regimes |\n"
-        "| Goods | 3 | Bundles are costed under each price vector |\n"
-        "| Focal example | Case A | GARP passes but GAPP fails |\n"
-        f"| Focal price violations | {len(focal['gapp_violations'])} | Cyclic price-preference contradictions |"
+        "| Observations $T$ | 3 | Each case has three price-quantity observations |\n"
+        "| Goods $L$ | 3 | Bundles are finite consumption vectors |\n"
+        "| Deterministic cases | 4 | The examples cover every GARP/GAPP pass-fail cell |\n"
+        "| Focal example | Case A | Bundle GARP passes while price GAPP fails |\n"
+        f"| Focal GAPP violations | {len(focal['gapp_violations'])} | Strict reverse comparisons closing a price cycle |"
     )
 
     report.add_solution_method(
-        "The script first runs the usual GARP test on bundles. It then transposes the "
-        "economic comparison: for each observed bundle, compare how costly that same bundle "
-        "would have been under every observed price vector. Those comparisons form a price "
-        "preference graph. Warshall closure gives indirect price preference, and GAPP checks "
-        "whether any indirect price ranking is contradicted by a strict reverse comparison.\n\n"
-        "The four deterministic examples show that bundle rationalizability and price "
-        "rationalizability are distinct restrictions rather than two names for the same test."
+        "The computation is the same kind of finite graph exercise used in the "
+        "[Afriat revealed-preference test](../revealed-preference-afriat/), but the "
+        "nodes are price vectors rather than bundles. The only costly step is the "
+        "transitive closure, which is $O(T^3)$ and exact for these finite panels.\n\n"
+        "```text\n"
+        "Algorithm: GAPP test for revealed price preference\n"
+        "Input: price vectors p^t and chosen bundles x^t for t=1,...,T\n"
+        "Output: pass/fail GAPP decision and violating price-vector pairs\n\n"
+        "1. Form C_st = p^s . x^t for every pair of observations (s,t).\n"
+        "2. Set R_p^D[s,t] = 1 if C_st <= C_tt.\n"
+        "3. Set P_p^D[s,t] = 1 if C_st < C_tt.\n"
+        "4. Compute the transitive closure R_p of R_p^D.\n"
+        "5. For every pair (s,t), flag a violation if R_p[s,t] = 1 and P_p^D[t,s] = 1.\n"
+        "6. The data pass GAPP exactly when the violation set is empty.\n"
+        "```\n\n"
+        "The script also runs ordinary bundle GARP on the same observations. That side-by-side "
+        "comparison is deliberate: if the empirical question is about price regimes, a clean "
+        "bundle-rationalizability test can miss the restriction that matters."
     )
 
     report.add_table(
@@ -292,9 +331,9 @@ $$R_p^{*}[s,t] = 1 \quad \text{and} \quad P_p[t,s] = 1.$$
         "Bundle GARP and Price GAPP Diagnostics",
         summary,
         description=(
-            "The examples occupy all four pass/fail cells. This is the main conceptual point: "
-            "testing choices over bundles and testing choices over prices are different "
-            "revealed-preference exercises."
+            "The four synthetic panels occupy all four pass-fail cells. Case A is the focal "
+            "example because it looks rational when the bundles are tested, but it fails once "
+            "the price vectors themselves are treated as the objects being ranked."
         ),
     )
 
@@ -304,9 +343,10 @@ $$R_p^{*}[s,t] = 1 \quad \text{and} \quad P_p[t,s] = 1.$$
         "Cost ratios used to reveal preferences over price vectors.",
         fig1,
         description=(
-            "Rows are candidate price vectors and columns are observed bundles. Entries below "
-            "one mean the row price vector makes that column's bundle cheaper than its observed "
-            "price vector did."
+            "The heat map shows the cross-cost ratio $C_{st}/C_{tt}$. Rows are candidate "
+            "price vectors and columns are observed bundles. Entries below one mean that the "
+            "row price vector would have made the column's bundle cheaper than the price "
+            "vector under which that bundle was actually chosen."
         ),
     )
 
@@ -316,8 +356,9 @@ $$R_p^{*}[s,t] = 1 \quad \text{and} \quad P_p[t,s] = 1.$$
         "A cycle in the price-preference graph rejects GAPP.",
         fig2,
         description=(
-            "The arrows are not preferences over bundles. They are revealed comparisons among "
-            "price vectors obtained by holding observed bundles fixed."
+            "The graph translates those cost comparisons into revealed preferences over "
+            "price vectors. The arrows do not compare bundles. They say which price vector "
+            "is revealed to be at least as attractive after holding a chosen bundle fixed."
         ),
     )
 
@@ -327,17 +368,22 @@ $$R_p^{*}[s,t] = 1 \quad \text{and} \quad P_p[t,s] = 1.$$
         "GARP and GAPP classify the same datasets differently.",
         fig3,
         description=(
-            "Because GARP and GAPP ask different economic questions, a dataset can pass one "
-            "test and fail the other."
+            "Across the four deterministic panels, GARP and GAPP separate cleanly. The same "
+            "price-quantity data can support utility maximization over bundles while rejecting "
+            "a consistent ordering of price regimes, or vice versa."
         ),
     )
 
     report.add_takeaway(
-        "Revealed price preference is not a cosmetic relabeling of GARP. GARP tests whether "
-        "chosen bundles can be rationalized by utility maximization. GAPP tests whether price "
-        "vectors are themselves consistently ranked by revealed cost comparisons. The same "
-        "price-quantity data can pass one test and fail the other, so the right diagnostic "
-        "depends on whether the empirical question is about bundles or price regimes."
+        "Revealed price preference is useful when the economic question is about price "
+        "regimes rather than about the chosen bundles themselves. GARP asks whether a stable "
+        "utility ordering can rationalize choices over bundles. GAPP asks whether observed "
+        "price vectors can be ranked consistently by the bundles they make affordable. Since "
+        "the two tests can disagree on the same finite data, the right diagnostic depends on "
+        "which object the empirical exercise is trying to compare. After a standard "
+        "[Afriat test](../revealed-preference-afriat/), this tutorial is the natural dual "
+        "check for applications where prices, tariffs, or schedules are the object of welfare "
+        "comparison."
     )
 
     report.add_references(
