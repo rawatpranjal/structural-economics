@@ -1,5 +1,5 @@
-Pair,Pre-merger price,Post-merger price,Change (%),Demand (full),Demand (disagree)
-Hospital 1 - Insurer 1,4.6923,3.6896,-21.37,478.3,110.4
-Hospital 1 - Insurer 2,4.6923,3.6896,-21.37,478.3,110.4
-Hospital 2 - Insurer 1,5.6923,4.6896,-17.62,478.3,110.4
-Hospital 2 - Insurer 2,5.6923,4.6896,-17.62,478.3,110.4
+Pair,Full demand,Disagreement demand,Demand loss,Gross value / enrollee,Surplus / enrollee,Hospital cost,Transfer
+Hospital 1 - Insurer 1,511.6,278.2,233.4,3.194,2.194,1.000,2.097
+Hospital 1 - Insurer 2,462.9,240.7,222.2,3.600,2.600,1.000,2.300
+Hospital 2 - Insurer 1,511.6,365.0,146.6,2.005,0.805,1.200,1.603
+Hospital 2 - Insurer 2,462.9,321.1,141.8,2.297,1.097,1.200,1.749

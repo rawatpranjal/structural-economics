@@ -1,310 +1,487 @@
 #!/usr/bin/env python3
-"""Nash-in-Nash Bargaining: Bilateral Negotiations in Vertical Markets.
+"""Nash-in-Nash bargaining in a hospital-insurer network."""
 
-Implements the Nash-in-Nash framework for modeling bilateral negotiations
-between upstream suppliers and downstream firms, with applications to
-hospital-insurer and manufacturer-retailer negotiations.
-
-Reference: Horn and Wolinsky (1988), Crawford and Yurukoglu (2012).
-"""
 import sys
 from pathlib import Path
 
-import numpy as np
-from scipy.optimize import fsolve
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.plotting import setup_style, save_figure
 from lib.output import ModelReport
+from lib.plotting import setup_style
 
 
-def main():
-    # =========================================================================
-    # Model Setup: 2 upstream firms (hospitals), 2 downstream firms (insurers)
-    # =========================================================================
-    # Each upstream firm u negotiates a price p_u with each downstream firm d
-    # Downstream firms compete in a final goods market (insurance market)
-    # Nash bargaining: max (pi_u - d_u)^tau * (pi_d - d_d)^(1-tau)
+def main() -> None:
+    # Two hospitals bargain with two insurers over per-enrollee transfers.
+    # Premiums are fixed so the exercise isolates the network-bargaining object.
+    tau = 0.5
+    n_hospitals = 2
+    n_insurers = 2
+    market_size = 1000
+    logit_scale = 5.0
 
-    # Parameters
-    tau = 0.5            # Upstream bargaining power
-    n_upstream = 2       # Number of hospitals
-    n_downstream = 2     # Number of insurers
-    alpha = 10.0         # Consumer WTP for hospital access
-    mc_u = np.array([2.0, 3.0])  # Upstream marginal costs
-    mc_d = np.array([1.0, 1.0])  # Downstream marginal costs
-    premium = np.array([8.0, 8.0])  # Insurance premiums (downstream prices)
-    market_size = 1000   # Total potential enrollees
+    hospital_quality = np.array([20.0, 18.0])
+    second_hospital_value = 3.0
+    hospital_cost = np.array([1.0, 1.2])
+    insurer_cost = np.array([1.0, 1.0])
+    premiums = np.array([8.0, 8.5])
 
-    # Consumer demand: enrollees to insurer d depend on network (which hospitals included)
-    # Simple model: value = sum of alpha for each hospital in network - premium
-    def demand(networks, premiums, alpha_val):
-        """Compute demand for each insurer given networks and premiums.
-        networks[d] = list of hospitals available to insurer d.
-        """
-        n_d = len(premiums)
-        values = np.zeros(n_d)
-        for d in range(n_d):
-            values[d] = alpha_val * len(networks[d]) - premiums[d]
-        # Logit-style demand
-        exp_v = np.exp(values / 5.0)  # Scale parameter
-        shares = exp_v / (1 + np.sum(exp_v))
-        return shares * market_size
-
-    # =========================================================================
-    # Full network: all hospitals in all insurers
-    # =========================================================================
     full_networks = [[0, 1], [0, 1]]
-    q_full = demand(full_networks, premium, alpha)
 
-    # =========================================================================
-    # Disagreement payoffs: what happens if hospital u and insurer d fail to agree
-    # =========================================================================
-    def disagreement_network(u, d, full_nets):
-        """Network if hospital u is dropped from insurer d."""
-        nets = [list(n) for n in full_nets]
-        if u in nets[d]:
-            nets[d].remove(u)
-        return nets
+    def network_quality(network: list[int]) -> float:
+        """Consumer value from the hospital set in one insurer network."""
+        if not network:
+            return 0.0
+        best_hospital = max(hospital_quality[h] for h in network)
+        return best_hospital + second_hospital_value * (len(network) - 1)
 
-    # =========================================================================
-    # Nash-in-Nash solution: each bilateral pair bargains simultaneously
-    # =========================================================================
-    # For each (u, d) pair, the Nash bargaining solution satisfies:
-    # p_{ud} = tau * (MC_change for d from adding u) + (1-tau) * mc_u
-
-    negotiated_prices = np.zeros((n_upstream, n_downstream))
-    upstream_profits = np.zeros(n_upstream)
-    downstream_profits = np.zeros(n_downstream)
-    disagreement_demands = np.zeros((n_upstream, n_downstream))
-
-    for u in range(n_upstream):
-        for d in range(n_downstream):
-            # Demand if u drops out of d's network
-            dis_nets = disagreement_network(u, d, full_networks)
-            q_dis = demand(dis_nets, premium, alpha)
-            disagreement_demands[u, d] = q_dis[d]
-
-            # Incremental value of hospital u to insurer d
-            # = (premium - mc_d) * (q_full[d] - q_disagreement[d])
-            incremental_value = (premium[d] - mc_d[d]) * (q_full[d] - q_dis[d])
-
-            # Nash bargaining price
-            negotiated_prices[u, d] = tau * incremental_value / q_full[d] + mc_u[u]
-
-    # Compute profits
-    for u in range(n_upstream):
-        upstream_profits[u] = sum(
-            (negotiated_prices[u, d] - mc_u[u]) * q_full[d]
-            for d in range(n_downstream)
+    def demand(networks: list[list[int]]) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Logit demand for insurers given their hospital networks."""
+        values = np.array(
+            [network_quality(network) - premiums[d] for d, network in enumerate(networks)]
         )
-    for d in range(n_downstream):
-        downstream_profits[d] = (premium[d] - mc_d[d]) * q_full[d] - sum(
-            negotiated_prices[u, d] * q_full[d] for u in range(n_upstream)
+        exp_values = np.exp(values / logit_scale)
+        shares = exp_values / (1.0 + exp_values.sum())
+        quantities = market_size * shares
+        return quantities, shares, values
+
+    def remove_hospital(networks: list[list[int]], hospital: int, insurer: int) -> list[list[int]]:
+        """Drop one hospital from one insurer while leaving all other deals fixed."""
+        counterfactual = [list(network) for network in networks]
+        counterfactual[insurer].remove(hospital)
+        return counterfactual
+
+    def remove_system(networks: list[list[int]], insurer: int) -> list[list[int]]:
+        """Drop the merged hospital system from one insurer."""
+        counterfactual = [list(network) for network in networks]
+        counterfactual[insurer] = []
+        return counterfactual
+
+    full_quantities, full_shares, full_values = demand(full_networks)
+    insurer_margins = premiums - insurer_cost
+
+    def bilateral_bargaining(
+        tau_value: float,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        """Solve each bilateral Nash bargain, taking other links as fixed."""
+        transfers = np.zeros((n_hospitals, n_insurers))
+        gross_value = np.zeros((n_hospitals, n_insurers))
+        surplus = np.zeros((n_hospitals, n_insurers))
+        disagreement_quantities = np.zeros((n_hospitals, n_insurers))
+
+        for h in range(n_hospitals):
+            for d in range(n_insurers):
+                counterfactual = remove_hospital(full_networks, h, d)
+                q_drop, _, _ = demand(counterfactual)
+                disagreement_quantities[h, d] = q_drop[d]
+
+                gross_value[h, d] = insurer_margins[d] * (
+                    full_quantities[d] - q_drop[d]
+                )
+                surplus[h, d] = gross_value[h, d] - hospital_cost[h] * full_quantities[d]
+                transfers[h, d] = (
+                    hospital_cost[h] + tau_value * surplus[h, d] / full_quantities[d]
+                )
+
+        return transfers, gross_value, surplus, disagreement_quantities
+
+    def merged_system_bargaining(tau_value: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Bargain over a single payment to the merged hospital system."""
+        system_cost = hospital_cost.sum()
+        system_transfers = np.zeros(n_insurers)
+        system_gross_value = np.zeros(n_insurers)
+        system_disagreement_quantities = np.zeros(n_insurers)
+
+        for d in range(n_insurers):
+            counterfactual = remove_system(full_networks, d)
+            q_drop, _, _ = demand(counterfactual)
+            system_disagreement_quantities[d] = q_drop[d]
+            system_gross_value[d] = insurer_margins[d] * (
+                full_quantities[d] - q_drop[d]
+            )
+            system_surplus = (
+                system_gross_value[d] - system_cost * full_quantities[d]
+            )
+            system_transfers[d] = (
+                system_cost + tau_value * system_surplus / full_quantities[d]
+            )
+
+        return system_transfers, system_gross_value, system_disagreement_quantities
+
+    transfers, gross_value, surplus, disagreement_quantities = bilateral_bargaining(tau)
+    system_transfers, system_gross_value, system_disagreement_quantities = (
+        merged_system_bargaining(tau)
+    )
+    separate_total_transfers = transfers.sum(axis=0)
+
+    hospital_profits = ((transfers - hospital_cost[:, None]) * full_quantities).sum(axis=1)
+    insurer_profits = insurer_margins * full_quantities - (
+        transfers * full_quantities
+    ).sum(axis=0)
+
+    tau_grid = np.linspace(0.0, 1.0, 51)
+    hospital_profit_by_tau = np.zeros((len(tau_grid), n_hospitals))
+    insurer_profit_by_tau = np.zeros((len(tau_grid), n_insurers))
+
+    for i, tau_value in enumerate(tau_grid):
+        prices_tau, _, _, _ = bilateral_bargaining(tau_value)
+        hospital_profit_by_tau[i] = (
+            (prices_tau - hospital_cost[:, None]) * full_quantities
+        ).sum(axis=1)
+        insurer_profit_by_tau[i] = insurer_margins * full_quantities - (
+            prices_tau * full_quantities
+        ).sum(axis=0)
+
+    pair_labels = [f"H{h + 1}-I{d + 1}" for h in range(n_hospitals) for d in range(n_insurers)]
+    pair_transfers = transfers.flatten()
+    pair_costs = np.repeat(hospital_cost, n_insurers)
+    pair_disagreement_loss = (
+        full_quantities[None, :] - disagreement_quantities
+    ).flatten()
+
+    bilateral_rows = []
+    for h in range(n_hospitals):
+        for d in range(n_insurers):
+            bilateral_rows.append(
+                {
+                    "Pair": f"Hospital {h + 1} - Insurer {d + 1}",
+                    "Full demand": f"{full_quantities[d]:.1f}",
+                    "Disagreement demand": f"{disagreement_quantities[h, d]:.1f}",
+                    "Demand loss": f"{full_quantities[d] - disagreement_quantities[h, d]:.1f}",
+                    "Gross value / enrollee": f"{gross_value[h, d] / full_quantities[d]:.3f}",
+                    "Surplus / enrollee": f"{surplus[h, d] / full_quantities[d]:.3f}",
+                    "Hospital cost": f"{hospital_cost[h]:.3f}",
+                    "Transfer": f"{transfers[h, d]:.3f}",
+                }
+            )
+
+    merger_rows = []
+    for d in range(n_insurers):
+        merger_rows.append(
+            {
+                "Insurer": f"Insurer {d + 1}",
+                "Full demand": f"{full_quantities[d]:.1f}",
+                "Demand without system": f"{system_disagreement_quantities[d]:.1f}",
+                "Separate hospital transfers": f"{separate_total_transfers[d]:.3f}",
+                "Merged system transfer": f"{system_transfers[d]:.3f}",
+                "Change (%)": (
+                    f"{100.0 * (system_transfers[d] / separate_total_transfers[d] - 1.0):.1f}"
+                ),
+            }
         )
 
-    # =========================================================================
-    # Comparative statics: vary bargaining power
-    # =========================================================================
-    tau_range = np.linspace(0.01, 0.99, 50)
-    prices_by_tau = np.zeros((len(tau_range), n_upstream, n_downstream))
-    up_profits_by_tau = np.zeros((len(tau_range), n_upstream))
-    down_profits_by_tau = np.zeros((len(tau_range), n_downstream))
+    bilateral_df = pd.DataFrame(bilateral_rows)
+    merger_df = pd.DataFrame(merger_rows)
 
-    for t_idx, tau_val in enumerate(tau_range):
-        for u in range(n_upstream):
-            for d in range(n_downstream):
-                dis_nets = disagreement_network(u, d, full_networks)
-                q_dis = demand(dis_nets, premium, alpha)
-                incr_val = (premium[d] - mc_d[d]) * (q_full[d] - q_dis[d])
-                prices_by_tau[t_idx, u, d] = tau_val * incr_val / q_full[d] + mc_u[u]
-
-        for u in range(n_upstream):
-            up_profits_by_tau[t_idx, u] = sum(
-                (prices_by_tau[t_idx, u, d] - mc_u[u]) * q_full[d]
-                for d in range(n_downstream)
-            )
-        for d in range(n_downstream):
-            down_profits_by_tau[t_idx, d] = (premium[d] - mc_d[d]) * q_full[d] - sum(
-                prices_by_tau[t_idx, u, d] * q_full[d] for u in range(n_upstream)
-            )
-
-    # =========================================================================
-    # Merger simulation: Hospital 0 acquires Hospital 1
-    # =========================================================================
-    # Post-merger: joint negotiation maximizes combined upstream surplus
-    # Each insurer now faces a single upstream entity
-    merged_prices = np.zeros((n_upstream, n_downstream))
-    for d in range(n_downstream):
-        # Disagreement: lose BOTH hospitals
-        dis_nets_both = [list(n) for n in full_networks]
-        dis_nets_both[d] = []
-        q_dis_both = demand(dis_nets_both, premium, alpha)
-        total_incr = (premium[d] - mc_d[d]) * (q_full[d] - q_dis_both[d])
-        avg_mc = np.mean(mc_u)
-        for u in range(n_upstream):
-            merged_prices[u, d] = tau * total_incr / (n_upstream * q_full[d]) + mc_u[u]
-
-    # =========================================================================
-    # Generate Report
-    # =========================================================================
     setup_style()
 
     report = ModelReport(
-        "Nash-in-Nash Vertical Bargaining",
-        "Bilateral negotiations in vertical markets between upstream suppliers and downstream firms.",
+        "Nash-in-Nash Hospital-Insurer Bargaining",
+        "Outside options, network value, and bilateral transfers in a vertical market.",
+        include_reproduce=False,
+        show_figure_captions=False,
     )
 
     report.add_overview(
-        "The Nash-in-Nash framework models bilateral negotiations in markets with vertical "
-        "structure: upstream firms (hospitals, manufacturers) negotiate prices with downstream "
-        "firms (insurers, retailers). Each bilateral pair bargains simultaneously, taking other "
-        "pairs' agreements as given.\n\n"
-        "This model is widely used in health economics (hospital-insurer negotiations) and "
-        "retail (manufacturer-retailer bargaining). The key insight: a firm's bargaining "
-        "leverage depends on its *incremental value* — how much the other side loses by "
-        "walking away from this specific deal."
+        "A hospital-insurer contract is valuable because it changes the insurer's network. "
+        "If an insurer loses a hospital, some enrollees may switch to another insurer or to "
+        "the outside option. Nash-in-Nash bargaining turns that lost demand into a transfer: "
+        "the hospital is paid for the incremental value it brings to the insurer, net of the "
+        "hospital's cost of serving those enrollees.\n\n"
+        "The point of the example is not that every hospital merger raises payments. It is "
+        "to show the object that empirical IO papers compute. A bilateral disagreement "
+        "removes one link and leaves all other links in place. A system-level merger changes "
+        "that disagreement point: the insurer may lose the whole system, not just one "
+        "hospital. That distinction is why Nash-in-Nash is a vertical-market model rather "
+        "than a generic Nash equilibrium calculation.\n\n"
+        "Premiums are held fixed to keep the bargaining object clean. The "
+        "[vertical relationships](../vertical-relationships/) tutorial studies double "
+        "marginalization in a simpler channel model, while "
+        "[merger simulation](../merger-simulation/) turns changed ownership into final-price "
+        "counterfactuals."
     )
 
-    report.add_equations(r"""
-**Nash bargaining solution** for pair $(u, d)$:
-$$p_{ud}^{*} = \arg\max_{p} \left(\pi_u^{\text{agree}} - \pi_u^{\text{disagree}}\right)^\tau \left(\pi_d^{\text{agree}} - \pi_d^{\text{disagree}}\right)^{1-\tau}$$
+    report.add_equations(
+        r"""
+Let $d \in \{1,\ldots,D\}$ index insurers and $h \in \{1,\ldots,H\}$ index
+hospitals. Insurer $d$ has hospital network $G_d$. In the full agreement
+network $G$, each insurer carries both hospitals.
 
-**Simplified form (linear surplus):**
-$$p_{ud}^{*} = \tau \cdot \frac{\Delta_d(u)}{q_d} + c_u$$
+Demand is a logit over insurers and an outside option:
 
-where $\Delta_d(u) = (P_d - c_d)(q_d^{\text{agree}} - q_d^{\text{disagree}})$ is hospital $u$'s incremental value to insurer $d$.
+$$
+q_d(G) =
+M \frac{\exp(v_d(G_d) / \sigma_\varepsilon)}
+{1 + \sum_{\ell=1}^{D} \exp(v_\ell(G_\ell) / \sigma_\varepsilon)} .
+$$
 
-**Key property:** Negotiated price depends on the *outside option* — what happens if this specific deal falls through while all other deals remain in place.
-""")
+The deterministic utility of an insurer is
+
+$$
+v_d(G_d) = Q(G_d) - P_d,
+$$
+
+where $P_d$ is the premium. The network value is
+
+$$
+Q(\emptyset)=0,\qquad
+Q(G_d)=\max_{h \in G_d} a_h + \eta(|G_d|-1)
+\quad\text{when }G_d\neq\emptyset .
+$$
+
+Here $a_h$ is hospital quality and $\eta$ is the incremental value of a second
+in-network hospital. Let $m_d=P_d-c_d^D$ be the insurer margin before hospital
+transfers. If the link $(h,d)$ fails, the disagreement network is $G^{-hd}$.
+The gross incremental value of hospital $h$ to insurer $d$ is
+
+$$
+\Delta_{hd}=m_d\left[q_d(G)-q_d(G^{-hd})\right].
+$$
+
+The bilateral surplus net of hospital cost $c_h^H$ is
+
+$$
+S_{hd}=\Delta_{hd}-c_h^H q_d(G).
+$$
+
+The Nash bargain over the per-enrollee hospital transfer $w_{hd}$ solves
+
+$$
+\max_{w_{hd}}
+\left[(w_{hd}-c_h^H)q_d(G)\right]^\tau
+\times
+\left[\Delta_{hd}-w_{hd}q_d(G)\right]^{1-\tau},
+$$
+
+so the transfer is
+
+$$
+w_{hd}=c_h^H + \tau \frac{S_{hd}}{q_d(G)}
+      =(1-\tau)c_h^H+\tau\frac{\Delta_{hd}}{q_d(G)} .
+$$
+
+For a merged hospital system $H$, the relevant disagreement removes all system
+hospitals from insurer $d$. With $C_H=\sum_h c_h^H$,
+
+$$
+W_{Hd}=C_H+\tau\frac{
+m_d[q_d(G)-q_d(G^{-Hd})]-C_Hq_d(G)
+}{q_d(G)}
+$$
+
+is the system-level per-enrollee transfer.
+"""
+    )
 
     report.add_model_setup(
-        "| Parameter | Value | Description |\n"
-        "|-----------|-------|-------------|\n"
-        f"| Upstream firms | {n_upstream} | Hospitals |\n"
-        f"| Downstream firms | {n_downstream} | Insurers |\n"
-        f"| $\\tau$ | {tau} | Upstream bargaining power |\n"
-        f"| $\\alpha$ | {alpha} | Consumer WTP per hospital |\n"
-        f"| MC upstream | {list(mc_u)} | Hospital marginal costs |\n"
-        f"| Market size | {market_size} | Potential enrollees |"
+        "| Object | Value | Role |\n"
+        "|---|---:|---|\n"
+        f"| Hospitals | {n_hospitals} | Upstream negotiators |\n"
+        f"| Insurers | {n_insurers} | Downstream plans selling to consumers |\n"
+        f"| Market size $M$ | {market_size} | Potential enrollees |\n"
+        f"| Bargaining weight $\\tau$ | {tau:.2f} | Hospital share of bilateral surplus |\n"
+        f"| Hospital qualities $a_h$ | {', '.join(f'{x:.1f}' for x in hospital_quality)} | Network utility shifters |\n"
+        f"| Hospital costs $c_h^H$ | {', '.join(f'{x:.1f}' for x in hospital_cost)} | Cost per enrolled member |\n"
+        f"| Insurer premiums $P_d$ | {', '.join(f'{x:.1f}' for x in premiums)} | Fixed downstream prices |\n"
+        f"| Insurer costs $c_d^D$ | {', '.join(f'{x:.1f}' for x in insurer_cost)} | Non-hospital marginal costs |\n"
+        f"| Second-hospital value $\\eta$ | {second_hospital_value:.1f} | Extra network value beyond the best hospital |\n"
+        f"| Logit scale $\\sigma_\\varepsilon$ | {logit_scale:.1f} | Controls substitution across insurers |"
     )
 
     report.add_solution_method(
-        "Each bilateral negotiated price is computed analytically from the Nash bargaining "
-        "solution. The key step is computing the disagreement payoff: what demand would each "
-        "insurer face if it lost access to a specific hospital? This determines each hospital's "
-        "*incremental value* and hence its bargaining leverage."
+        "The computation is finite because every disagreement network can be enumerated. "
+        "The important modeling choice is what remains fixed in each disagreement: in a "
+        "bilateral Nash-in-Nash bargain, all other hospital-insurer links stay in force. "
+        "For a merged system, the disagreement removes the whole system from the insurer's "
+        "network.\n\n"
+        "```text\n"
+        "Algorithm: Nash-in-Nash transfers in a hospital-insurer network\n"
+        "Input: full networks G, premiums P, costs c^D and c^H, demand q(.), weight tau\n"
+        "Output: bilateral transfers w_hd and merged-system transfers W_Hd\n"
+        "Compute full-agreement demand q_d(G) for every insurer d\n"
+        "for each hospital h and insurer d:\n"
+        "    form G^{-hd} by removing hospital h only from insurer d\n"
+        "    compute disagreement demand q_d(G^{-hd})\n"
+        "    Delta_hd = (P_d - c_d^D) * [q_d(G) - q_d(G^{-hd})]\n"
+        "    S_hd = Delta_hd - c_h^H * q_d(G)\n"
+        "    w_hd = c_h^H + tau * S_hd / q_d(G)\n"
+        "for each insurer d under hospital-system ownership:\n"
+        "    form G^{-Hd} by removing the whole hospital system from insurer d\n"
+        "    compute the system surplus using the same demand object\n"
+        "    W_Hd = system cost + tau * system surplus / q_d(G)\n"
+        "```\n\n"
+        f"At the baseline $\\tau={tau:.2f}$, Hospital 1 receives higher transfers because "
+        "it is the higher-quality hospital. Insurer 2 pays somewhat more because its higher "
+        "premium gives it a larger per-enrollee margin to lose when its network deteriorates."
     )
 
-    # --- Figure 1: Negotiated prices ---
-    fig1, ax1 = plt.subplots(figsize=(8, 5))
-    x = np.arange(n_downstream)
-    width = 0.35
-    for u in range(n_upstream):
-        ax1.bar(x + u * width, negotiated_prices[u], width,
-                label=f"Hospital {u+1} (MC={mc_u[u]:.1f})")
-    ax1.set_xlabel("Insurer")
-    ax1.set_ylabel("Negotiated Price")
-    ax1.set_title("Nash-in-Nash Negotiated Prices")
-    ax1.set_xticks(x + width / 2)
-    ax1.set_xticklabels([f"Insurer {d+1}" for d in range(n_downstream)])
-    ax1.legend()
-    report.add_figure("figures/negotiated-prices.png", "Negotiated prices: higher-cost hospital commands higher price", fig1,
-        description="Negotiated prices reflect both the hospital's marginal cost and its "
-        "incremental value to the insurer's network. Hospital 2 commands a higher price "
-        "partly because of higher costs and partly because its outside option (what the "
-        "insurer loses from exclusion) determines bargaining leverage.")
+    fig1, axes = plt.subplots(1, 2, figsize=(11, 4.8))
+    x = np.arange(len(pair_labels))
+    axes[0].bar(x, pair_transfers, color="#4477AA", label="Transfer")
+    axes[0].scatter(x, pair_costs, color="#222222", zorder=3, label="Hospital cost")
+    axes[0].set_xticks(x)
+    axes[0].set_xticklabels(pair_labels)
+    axes[0].set_ylabel("Per-enrollee transfer")
+    axes[0].set_title("Bilateral Transfers")
+    axes[0].legend()
 
+    axes[1].bar(x, pair_disagreement_loss, color="#66A61E")
+    axes[1].set_xticks(x)
+    axes[1].set_xticklabels(pair_labels)
+    axes[1].set_ylabel("Enrollment loss")
+    axes[1].set_title("Demand Lost in Disagreement")
+    fig1.tight_layout()
 
-    # --- Figure 2: Profits vs bargaining power ---
-    fig2, (ax2a, ax2b) = plt.subplots(1, 2, figsize=(12, 5))
-    for u in range(n_upstream):
-        ax2a.plot(tau_range, up_profits_by_tau[:, u], linewidth=2, label=f"Hospital {u+1}")
-    ax2a.set_xlabel("Upstream bargaining power $\\tau$")
+    report.add_results(
+        "The bilateral transfers are not arbitrary markups over hospital cost. They come from "
+        "the enrollment loss created by a specific broken link. Dropping Hospital 1 hurts "
+        "more than dropping Hospital 2 because the first hospital has higher network value; "
+        "Insurer 2's higher premium also raises the dollar value of lost enrollment."
+    )
+    report.add_figure(
+        "figures/negotiated-prices.png",
+        "Bilateral hospital-insurer transfers and disagreement demand losses",
+        fig1,
+        description=(
+            "The left panel shows per-enrollee transfers with hospital costs marked as "
+            "black points. The right panel shows the enrollment loss in each pair's "
+            "disagreement network."
+        ),
+    )
+
+    fig2, (ax2a, ax2b) = plt.subplots(1, 2, figsize=(11, 4.8))
+    for h in range(n_hospitals):
+        ax2a.plot(
+            tau_grid,
+            hospital_profit_by_tau[:, h],
+            linewidth=2,
+            label=f"Hospital {h + 1}",
+        )
+    ax2a.axvline(tau, color="#444444", linestyle=":", linewidth=1)
+    ax2a.set_xlabel("Hospital bargaining weight $\\tau$")
     ax2a.set_ylabel("Profit")
-    ax2a.set_title("Upstream (Hospital) Profits")
+    ax2a.set_title("Hospital Profit")
     ax2a.legend()
 
-    for d in range(n_downstream):
-        ax2b.plot(tau_range, down_profits_by_tau[:, d], linewidth=2, label=f"Insurer {d+1}")
-    ax2b.set_xlabel("Upstream bargaining power $\\tau$")
+    for d in range(n_insurers):
+        ax2b.plot(
+            tau_grid,
+            insurer_profit_by_tau[:, d],
+            linewidth=2,
+            label=f"Insurer {d + 1}",
+        )
+    ax2b.axvline(tau, color="#444444", linestyle=":", linewidth=1)
+    ax2b.set_xlabel("Hospital bargaining weight $\\tau$")
     ax2b.set_ylabel("Profit")
-    ax2b.set_title("Downstream (Insurer) Profits")
+    ax2b.set_title("Insurer Profit")
     ax2b.legend()
     fig2.tight_layout()
-    report.add_figure("figures/profits-vs-bargaining.png", "Profits shift from downstream to upstream as bargaining power increases", fig2,
-        description="Bargaining power tau governs the division of surplus between hospitals "
-        "and insurers. As tau rises from 0 to 1, the entire surplus wedge shifts upstream. "
-        "Downstream profits can turn negative when hospitals extract more than the insurer's "
-        "margin can sustain.")
 
-
-    # --- Figure 3: Pre vs post-merger prices ---
-    fig3, ax3 = plt.subplots(figsize=(8, 5))
-    labels = [f"H{u+1}-I{d+1}" for u in range(n_upstream) for d in range(n_downstream)]
-    pre = negotiated_prices.flatten()
-    post = merged_prices.flatten()
-    x3 = np.arange(len(labels))
-    ax3.bar(x3 - 0.2, pre, 0.35, label="Pre-merger", color="steelblue")
-    ax3.bar(x3 + 0.2, post, 0.35, label="Post-merger", color="coral")
-    ax3.set_xlabel("Bilateral pair")
-    ax3.set_ylabel("Negotiated price")
-    ax3.set_title("Hospital Merger: Prices Rise Due to Increased Leverage")
-    ax3.set_xticks(x3)
-    ax3.set_xticklabels(labels)
-    ax3.legend()
-    report.add_figure("figures/merger-prices.png", "Hospital merger raises all negotiated prices by increasing outside option", fig3,
-        description="After the merger, losing one hospital means losing access to the entire "
-        "merged system. This worsens the insurer's disagreement payoff and strengthens the "
-        "merged entity's bargaining position, resulting in higher negotiated prices for all "
-        "bilateral pairs.")
-
-
-    # --- Table ---
-    table_rows = []
-    for u in range(n_upstream):
-        for d in range(n_downstream):
-            table_rows.append({
-                "Pair": f"Hospital {u+1} - Insurer {d+1}",
-                "Pre-merger price": f"{negotiated_prices[u,d]:.4f}",
-                "Post-merger price": f"{merged_prices[u,d]:.4f}",
-                "Change (%)": f"{100*(merged_prices[u,d]/negotiated_prices[u,d]-1):.2f}",
-                "Demand (full)": f"{q_full[d]:.1f}",
-                "Demand (disagree)": f"{disagreement_demands[u,d]:.1f}",
-            })
-    df = pd.DataFrame(table_rows)
-    report.add_table("tables/nash-in-nash-results.csv", "Nash-in-Nash Negotiation Results", df,
-        description="The demand columns show each insurer's enrollment with and without "
-        "a given hospital. The gap between these numbers determines the hospital's "
-        "incremental value -- the key driver of negotiated prices in the Nash-in-Nash "
-        "framework.")
-
-
-    report.add_takeaway(
-        "Nash-in-Nash bargaining reveals how vertical market structure affects prices:\n\n"
-        "**Key insights:**\n"
-        "- **Incremental value = leverage**: a hospital that is *essential* to an insurer's "
-        "network commands a higher negotiated price. The outside option (network without that "
-        "hospital) determines bargaining power.\n"
-        "- **Bargaining power matters**: as $\\tau$ increases, surplus shifts from insurers to "
-        "hospitals. At $\\tau = 1$, hospitals extract all incremental value.\n"
-        "- **Hospital mergers raise prices**: when hospitals merge, the combined entity "
-        "negotiates as a single unit, and the disagreement point becomes losing *both* "
-        "hospitals — a much worse threat. This increases leverage and prices.\n"
-        "- **Policy implication**: antitrust authorities should focus on *incremental value* "
-        "rather than market share alone when evaluating hospital mergers."
+    report.add_results(
+        "Changing $\\tau$ holds demand and disagreement networks fixed, so it only changes "
+        "the division of surplus. Hospital profits rise mechanically with the bargaining "
+        "weight, while insurer profits fall because a larger share of the same incremental "
+        "network value is paid upstream."
+    )
+    report.add_figure(
+        "figures/profits-vs-bargaining.png",
+        "Surplus division as the hospital bargaining weight changes",
+        fig2,
+        description=(
+            "The vertical guide marks the baseline calibration. The exercise is a surplus "
+            "split, not a new demand equilibrium at each value of tau."
+        ),
     )
 
-    report.add_references([
-        "Horn, H. and Wolinsky, A. (1988). \"Bilateral Monopolies and Incentives for Merger.\" *RAND Journal of Economics*, 19(3).",
-        "Crawford, G. and Yurukoglu, A. (2012). \"The Welfare Effects of Bundling in Multichannel Television Markets.\" *American Economic Review*, 102(2).",
-        "Ho, K. and Lee, R. (2017). \"Insurer Competition in Health Care Markets.\" *Econometrica*, 85(2).",
-    ])
+    fig3, ax3 = plt.subplots(figsize=(8, 4.8))
+    d_x = np.arange(n_insurers)
+    width = 0.34
+    ax3.bar(
+        d_x - width / 2,
+        separate_total_transfers,
+        width,
+        label="Separate hospitals",
+        color="#4477AA",
+    )
+    ax3.bar(
+        d_x + width / 2,
+        system_transfers,
+        width,
+        label="Merged system",
+        color="#CC6677",
+    )
+    ax3.set_xticks(d_x)
+    ax3.set_xticklabels([f"Insurer {d + 1}" for d in range(n_insurers)])
+    ax3.set_ylabel("Total hospital payment per enrollee")
+    ax3.set_title("Ownership Changes the Disagreement Point")
+    ax3.legend()
+    fig3.tight_layout()
+
+    report.add_results(
+        "The merger comparison adds the two separate hospital transfers and compares that "
+        "sum with a single system payment. In this calibration, either hospital alone keeps "
+        "an insurer's network viable. Losing the merged system is much worse because the "
+        "insurer has no in-network hospital, so the system-level disagreement payoff is "
+        "lower and the negotiated payment is higher."
+    )
+    report.add_figure(
+        "figures/merger-prices.png",
+        "Separate hospital payments versus merged-system payment",
+        fig3,
+        description=(
+            "The comparison is at the insurer level because a merged system bargains over "
+            "one total transfer, not two independent hospital prices."
+        ),
+    )
+
+    report.add_table(
+        "tables/nash-in-nash-results.csv",
+        "Bilateral Bargaining Diagnostics",
+        bilateral_df,
+        description=(
+            "The table reports the quantities used in the Nash bargain. Gross value is the "
+            "downstream margin times the enrollment loss; surplus subtracts hospital cost."
+        ),
+    )
+
+    report.add_table(
+        "tables/merged-system-results.csv",
+        "Ownership Counterfactual",
+        merger_df,
+        description=(
+            "The merged-system rows use a different disagreement event from the bilateral "
+            "rows: the insurer loses both hospitals at once."
+        ),
+    )
+
+    report.add_takeaway(
+        "Nash-in-Nash bargaining is useful because it maps a vertical contract into an "
+        "observable counterfactual: what does the insurer lose if this agreement fails while "
+        "the rest of the contracting network remains intact? The answer is not just market "
+        "share or hospital cost. It depends on substitution across insurers, the hospital's "
+        "incremental network value, and the ownership structure that defines the relevant "
+        "outside option."
+    )
+
+    report.add_references(
+        [
+            'Horn, H. and Wolinsky, A. (1988). "Bilateral Monopolies and Incentives for Merger." *RAND Journal of Economics*, 19(3).',
+            'Crawford, G. and Yurukoglu, A. (2012). "The Welfare Effects of Bundling in Multichannel Television Markets." *American Economic Review*, 102(2).',
+            'Ho, K. and Lee, R. (2017). "Insurer Competition in Health Care Markets." *Econometrica*, 85(2).',
+        ]
+    )
 
     report.write("README.md")
-    print(f"\nGenerated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
+    print(
+        f"\nGenerated: README.md + {len(report._figures)} figures + "
+        f"{len(report._tables)} tables"
+    )
+    print(f"Full-network insurer shares: {full_shares.round(3).tolist()}")
+    print(f"Full-network utilities: {full_values.round(2).tolist()}")
+    print(f"Baseline hospital profits: {hospital_profits.round(2).tolist()}")
+    print(f"Baseline insurer profits: {insurer_profits.round(2).tolist()}")
 
 
 if __name__ == "__main__":
