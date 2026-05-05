@@ -1,6 +1,6 @@
 {
   "pass_name": "quality-control-v1",
-  "updated_at": "2026-05-05T19:53:15Z",
+  "updated_at": "2026-05-05T19:56:44Z",
   "entries": [
     {
       "tutorial_path": "industrial-organization/dynamic-games/",
@@ -15,6 +15,13 @@
       "status": "complete",
       "verdict": "major issues",
       "updated_at": "2026-05-05T19:53:15Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/dynamic-discrete-choice/",
+      "report_path": "docs/qc-reports/tutorials/industrial-organization__dynamic-discrete-choice.md",
+      "status": "complete",
+      "verdict": "pass",
+      "updated_at": "2026-05-05T19:56:44Z"
     }
   ]
 }
