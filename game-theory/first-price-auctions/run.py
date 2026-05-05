@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """First-price auctions with symmetric independent private values.
 
-Uses the closed-form equilibrium for uniform values and verifies it with a
-direct grid best-response check.
+The tutorial uses the exact uniform-IPV Bayesian Nash bid function and treats
+grid best responses as a unilateral-deviation audit.
 """
 
 import sys
@@ -67,75 +67,136 @@ def main() -> None:
 
         rows.append({
             "Bidders": n_bidders,
-            "Bid function": f"b(v)={(n_bidders - 1)}/{n_bidders} v",
-            "Bid shading at v=1": f"{shading:.3f}",
+            "Equilibrium bid rule": f"b*(v)={(n_bidders - 1)}/{n_bidders} v",
+            "Shading at v=1": f"{shading:.3f}",
             "Expected revenue": f"{expected_revenue(n_bidders):.3f}",
         })
         residual_rows.append({
             "Bidders": n_bidders,
-            "Max grid BR error": f"{max_error:.3e}",
+            "Max absolute BR error": f"{max_error:.3e}",
         })
 
     setup_style()
     report = ModelReport(
         "First-Price Auctions and Bid Shading",
-        "Bayesian Nash equilibrium in a symmetric independent private values auction.",
+        "Private values, equilibrium bidding, and a direct unilateral-deviation check.",
+        include_reproduce=False,
+        show_figure_captions=False,
     )
 
     report.add_overview(
-        "A first-price sealed-bid auction is a Bayesian game: each bidder knows their own value "
-        "but not rivals' values. In the symmetric independent private values model with uniform "
-        "values, the equilibrium is a simple bid-shading rule. The code uses the closed-form "
-        "solution and then checks it by direct best-response search on a grid."
+        "A first-price sealed-bid auction is a pricing problem under private information. "
+        "A bidder knows its own value, knows the distribution of rival values, and pays its "
+        "own bid when it wins. Lowering the bid raises surplus conditional on winning, but "
+        "also lowers the chance of being the highest bidder.\n\n"
+        "The uniform independent-private-values case is useful because that tradeoff has an "
+        "exact symmetric Bayesian Nash equilibrium. The numerical part of the tutorial is "
+        "therefore not a black-box equilibrium search. It is a unilateral-deviation check: "
+        "if rivals use the exact bid rule, a grid best response should return the same bid. "
+        "That is the Bayesian-game analogue of the no-deviation checks in "
+        "[normal-form games](../normal-form-games/), with types replacing payoff-table cells."
     )
 
     report.add_equations(r"""
-There are $n$ risk-neutral bidders. Values are independently drawn from $U[0,1]$.
-In a symmetric increasing equilibrium, bidder $i$ with value $v$ bids
+There are $n$ risk-neutral bidders. Bidder $i$ has private value
+$v_i \sim U[0,1]$, independently across bidders. A pure symmetric strategy is
+an increasing bid function $b(v)$.
+
+For a general distribution $F$, the symmetric first-price bid rule satisfies
+
 $$
-b(v) = \frac{n-1}{n}v.
+b(v)
+= v-\frac{\int_0^v F(t)^{n-1}\,dt}{F(v)^{n-1}},
+\qquad v>0,
 $$
 
-If a bidder with value $v$ deviates to bid $b$ while opponents use the equilibrium strategy,
-the probability of winning is
+with $b(0)=0$. With $F(v)=v$ on $[0,1]$, this becomes
+
 $$
-\Pr(\text{win} \mid b) =
-\left(\frac{n}{n-1}b\right)^{n-1},
+b^{*}(v)=\frac{n-1}{n}v.
 $$
-for bids below the highest equilibrium bid. Expected payoff is
+
+The bid is below value because the winner pays its own bid. If a type $v$
+deviates to dollar bid $\hat b$ while opponents use $b^{*}$, the rival value
+threshold beaten by $\hat b$ is
+
 $$
-\pi(v,b) = (v-b)\Pr(\text{win} \mid b).
+x(\hat b)=\min\left(\frac{n}{n-1}\hat b,\ 1\right).
 $$
+
+The probability of winning is
+
+$$
+\Pr(\text{win}\mid \hat b)=x(\hat b)^{n-1},
+$$
+
+and expected payoff is
+
+$$
+\pi(v,\hat b)=(v-\hat b)x(\hat b)^{n-1}.
+$$
+
+Expected revenue under the equilibrium is
+
+$$
+R_n = E[b^{*}(V_{n:n})]
+    = \frac{n-1}{n}E[V_{n:n}]
+    = \frac{n-1}{n+1},
+$$
+
+which is also $E[V_{n-1:n}]$, the expected second-highest value in the uniform
+auction.
 """)
 
     report.add_model_setup(
-        "The baseline assumes independent $U[0,1]$ values, risk-neutral bidders, no reserve price, "
-        "and no binding ties. The script compares auctions with 2, 3, 5, and 10 bidders."
+        "| Object | Value | Role |\n"
+        "|---|---:|---|\n"
+        "| Value distribution | $U[0,1]$ | Independent private values |\n"
+        "| Risk preferences | Risk neutral | Payoff is value minus payment when winning |\n"
+        "| Reserve price | None | Every nonnegative bid is admissible |\n"
+        "| Bidder counts | 2, 3, 5, 10 | Comparative statics in competition |\n"
+        f"| Deviation grid | 2,001 bids per value | Best-response check for each $v$ |\n"
+        f"| Check values | {len(check_values)} values in [0.05, 0.95] | Types used for residuals |\n"
+        f"| Focal deviation plot | $n={focal_n}$, $v={focal_value:.1f}$ | Payoff shape for one bidder type |"
     )
 
     report.add_solution_method(
-        "**Closed form:** use the symmetric equilibrium bid function "
-        "$b(v)=\\frac{n-1}{n}v$.\n\n"
-        "**Numerical check:** for a grid of values, search over bids and verify that the best "
-        "response against equilibrium opponents is close to the closed-form bid."
+        "The closed-form bid rule is the economic solution. The grid calculation is a "
+        "diagnostic for strategic optimality: it asks whether any type wants to move away "
+        "from the proposed bid when all other bidders use the same rule.\n\n"
+        "```text\n"
+        "Algorithm: first-price bid rule and unilateral-deviation check\n"
+        "Inputs: bidder count n, type grid V, bid grid B(v) on [0,v]\n"
+        "Outputs: exact bid rule b*(v) and max best-response residual Delta_n\n\n"
+        "1. For each type v in V, set the exact bid b*(v) = ((n-1)/n) v.\n"
+        "2. For each candidate bid bhat in B(v), compute x(bhat)=min{n bhat/(n-1), 1}.\n"
+        "3. Evaluate pi(v,bhat) = (v-bhat) x(bhat)^(n-1).\n"
+        "4. Let BR(v) be the bid on the grid with the highest pi(v,bhat).\n"
+        "5. Report Delta_n = max_v |BR(v)-b*(v)|.\n"
+        "```\n\n"
+        "The residual is a no-profitable-deviation diagnostic. A small value means the "
+        "finite bid grid is selecting the analytic equilibrium bid, up to grid error."
     )
 
     fig, ax = plt.subplots()
     for n_bidders in bidder_counts:
-        ax.plot(values, equilibrium_bid(values, n_bidders), label=f"n={n_bidders}")
-    ax.plot(values, values, color="black", linestyle="--", linewidth=1, label="Truthful bid")
+        ax.plot(values, equilibrium_bid(values, n_bidders), label=f"{n_bidders} bidders")
+    ax.plot(values, values, color="black", linestyle="--", linewidth=1.2, label="Truthful value")
     ax.set_xlabel("Value $v$")
     ax.set_ylabel("Bid $b(v)$")
-    ax.set_title("Equilibrium Bid Shading")
+    ax.set_title("Equilibrium Bidding Under Uniform Private Values")
     ax.legend()
+    report.add_results(
+        "The bid functions make the central comparative static visible. With two bidders, "
+        "the equilibrium bid is only one half of value. As the number of rivals rises, the "
+        "cost of shading increases because a small reduction in the bid gives up more win "
+        "probability. The dashed 45-degree line is truthful bidding, not the first-price "
+        "equilibrium except in the limit as competition becomes very large."
+    )
     report.add_figure(
         "figures/bid-functions.png",
-        "First-price bidders shade bids below values",
+        "Equilibrium first-price bid functions by bidder count",
         fig,
-        description=(
-            "More competition reduces bid shading. With many rivals, winning becomes more valuable "
-            "at the margin, so bids move closer to values."
-        ),
     )
 
     bids = np.linspace(0.0, focal_value, 300)
@@ -145,31 +206,51 @@ $$
 
     fig2, ax2 = plt.subplots()
     ax2.plot(bids, payoffs, label=f"Expected payoff, v={focal_value:.1f}")
-    ax2.axvline(eq_bid, color="black", linestyle=":", label=f"Equilibrium bid {eq_bid:.3f}")
-    ax2.scatter(br_bid, br_payoff, color="crimson", zorder=5, label="Grid best response")
+    ax2.axvline(eq_bid, color="black", linestyle=":", label=f"Exact bid {eq_bid:.3f}")
+    ax2.scatter(br_bid, br_payoff, color="crimson", zorder=5, label=f"Grid BR {br_bid:.3f}")
     ax2.set_xlabel("Bid")
     ax2.set_ylabel("Expected payoff")
-    ax2.set_title("Best-Response Check Against Equilibrium Opponents")
+    ax2.set_title("Unilateral-Deviation Payoff Against Equilibrium Rivals")
     ax2.legend()
+    report.add_results(
+        f"For a bidder with value {focal_value:.1f} facing {focal_n - 1} rivals, the "
+        "payoff curve is single-peaked at the exact bid. The red point is the grid "
+        "best response. Its overlap with the analytic vertical line is the concrete "
+        "equilibrium check: conditional on rivals using $b^{*}$, this type does not "
+        "want to shade more or bid more aggressively."
+    )
     report.add_figure(
         "figures/best-response-check.png",
-        "Closed-form bid matches the grid best response",
+        "Grid best response compared with the exact equilibrium bid",
         fig2,
-        description=(
-            "For a bidder with value 0.8 in a 3-bidder auction, the payoff-maximizing deviation "
-            "is the equilibrium bid."
-        ),
     )
 
-    revenue = [expected_revenue(n) for n in range(2, 21)]
+    revenue_n = np.arange(2, 21)
+    revenue = [expected_revenue(n) for n in revenue_n]
+    second_price_benchmark = [(n - 1.0) / (n + 1.0) for n in revenue_n]
     fig3, ax3 = plt.subplots()
-    ax3.plot(range(2, 21), revenue, marker="o")
+    ax3.plot(
+        revenue_n,
+        second_price_benchmark,
+        color="black",
+        linestyle="--",
+        linewidth=2.0,
+        label="Second-highest value benchmark",
+    )
+    ax3.scatter(revenue_n, revenue, color="#2b6cb0", label="First-price expected winning bid")
     ax3.set_xlabel("Number of bidders")
     ax3.set_ylabel("Expected winning bid")
-    ax3.set_title("Competition Raises Expected Revenue")
+    ax3.set_title("Expected Revenue and the Order-Statistic Benchmark")
+    ax3.legend()
+    report.add_results(
+        "The revenue curve is not a simulation artifact. In the uniform model, the expected "
+        "first-price winning bid equals the expected second-highest value. The points and "
+        "dashed benchmark coincide, which is the revenue-equivalence result in this simple "
+        "risk-neutral environment."
+    )
     report.add_figure(
         "figures/revenue-by-bidders.png",
-        "Expected revenue rises with the number of bidders",
+        "Expected first-price revenue and second-highest-value benchmark",
         fig3,
     )
 
@@ -182,14 +263,18 @@ $$
         "tables/best-response-residuals.csv",
         "Best-Response Check",
         pd.DataFrame(residual_rows),
-        description="The residual is the largest absolute difference between the closed-form bid and a grid best response.",
+        description=(
+            "The table keeps the analytic equilibrium separate from the grid diagnostic. "
+            "Residuals are largest when the exact bid falls between adjacent grid bids."
+        ),
     )
 
     report.add_takeaway(
-        "The symmetric auction model is a compact example of Bayesian Nash equilibrium. A bidder "
-        "trades off a lower payment conditional on winning against a lower probability of winning. "
-        "The equilibrium bid rule solves that tradeoff, and the grid check verifies the strategic "
-        "optimality without introducing a specialized auction package."
+        "The first-price auction turns private information into bid shading. In the uniform "
+        "symmetric benchmark, the equilibrium bid is a constant fraction of value, and that "
+        "fraction rises with competition. The grid best-response calculation is useful because "
+        "it verifies the economic restriction that defines Bayesian Nash equilibrium: no type "
+        "has a profitable unilateral deviation given the strategy used by rival types."
     )
 
     report.add_references([

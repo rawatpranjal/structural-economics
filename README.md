@@ -138,7 +138,7 @@ This section covers equilibrium concepts directly, before they are embedded in I
 |:---:|---|---|---|---|
 | <img src="game-theory/normal-form-games/figures/thumb.png" width="192"> | [**Normal-Form Games and Nash Equilibrium Checks**](game-theory/normal-form-games/) | Reading finite games as no-profitable-deviation restrictions | Enumeration + exact 2x2 indifference | Pure and mixed equilibria are residual checks on payoff tables |
 | <img src="game-theory/static-games/figures/thumb.png" width="192"> | [**Cournot Oligopoly and Best-Response Dynamics**](game-theory/static-games/) | How Nash conditions and best-response iteration solve a static quantity game | Closed-form Cournot + damped iteration | Equilibrium is where best responses cross and residuals vanish |
-| <img src="game-theory/first-price-auctions/figures/thumb.png" width="192"> | [**First-Price Auctions and Bid Shading**](game-theory/first-price-auctions/) | Bayesian Nash bidding in private-value auctions | Bayesian Nash | Bidders trade off surplus against win probability |
+| <img src="game-theory/first-price-auctions/figures/thumb.png" width="192"> | [**First-Price Auctions and Bid Shading**](game-theory/first-price-auctions/) | How private information turns values into shaded first-price bids | Closed-form BNE + grid best response | Bid shading shrinks as competition raises the win-probability cost of lowering a bid |
 | <img src="game-theory/quantal-response-equilibrium/figures/thumb.png" width="192"> | [**Quantal Response Equilibrium**](game-theory/quantal-response-equilibrium/) | Noisy best responses and stochastic choice | Logit fixed point | QRE bridges finite games and probabilistic choice |
 
 ## Time Series and Data
