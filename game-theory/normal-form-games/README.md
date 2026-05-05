@@ -26,18 +26,18 @@ $$
 d_2(i,j)=\max_{j' \in J} B_{ij'}-B_{ij}.
 $$
 
-A pure Nash equilibrium is a profile $(i^{*}, j^{*})$ with
+A pure Nash equilibrium is a profile $(i^{\ast}, j^{\ast})$ with
 
 $$
-d_1(i^{*},j^{*})=d_2(i^{*},j^{*})=0,
+d_1(i^{\ast},j^{\ast})=d_2(i^{\ast},j^{\ast})=0,
 $$
 
 equivalently
 
 $$
-A_{i^{*}j^{*}} \geq A_{ij^{*}} \quad \forall i \in I,
+A_{i^{\ast}j^{\ast}} \geq A_{ij^{\ast}} \quad \forall i \in I,
 \qquad
-B_{i^{*}j^{*}} \geq B_{i^{*}j} \quad \forall j \in J.
+B_{i^{\ast}j^{\ast}} \geq B_{i^{\ast}j} \quad \forall j \in J.
 $$
 
 For a 2x2 game, let the row player use mixed strategy $x=(p,1-p)$ and the

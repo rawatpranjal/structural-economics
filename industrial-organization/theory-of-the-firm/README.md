@@ -18,7 +18,7 @@ Relationship-specific investment $x$ creates gross value
 $$V(x) = \theta x - \frac{1}{2}x^2$$
 
 so the first-best investment, before contracting frictions, is
-$$x^{*} = \theta$$
+$$x^{\ast} = \theta$$
 
 Under regime $g$, the investor internalizes only share $b_g(s)$ of the marginal
 return. The private first-order condition is
@@ -30,10 +30,10 @@ Total surplus nets out the governance cost $F_g(s)$:
 $$W_g(s) = \theta x_g(s) - \frac{1}{2}x_g(s)^2 - F_g(s)$$
 
 The selected governance form is
-$$g^{*}(s)=\arg\max_{g\in\mathcal G} W_g(s).$$
+$$g^{\ast}(s)=\arg\max_{g\in\mathcal G} W_g(s).$$
 
 The first-best surplus line used in the figures is
-$$W^{*}=\frac{1}{2}\theta^2,$$
+$$W^{\ast}=\frac{1}{2}\theta^2,$$
 which is a benchmark, not an attainable governance regime once hold-up and
 governance costs are present.
 
@@ -44,7 +44,7 @@ The calibration is deliberately stylized. It is not estimating a boundary of the
 | Object | Interpretation |
 |--------|----------------|
 | $s\in[0,1]$ | Asset specificity, with higher $s$ meaning weaker redeployability outside the relationship |
-| $\theta=4$ | Marginal productivity scale, so the first-best investment is $x^{*}=4$ |
+| $\theta=4$ | Marginal productivity scale, so the first-best investment is $x^{\ast}=4$ |
 | $b_g(s)$ | Share of the marginal investment return captured by the investor under governance $g$ |
 | $F_g(s)$ | Drafting, monitoring, bureaucracy, and adaptation cost under governance $g$ |
 | Spot contract | Low fixed governance cost, but incentives fall sharply as specificity rises |
@@ -76,7 +76,7 @@ In this calibration the approximate surplus-maximizing regions are: Spot contrac
 
 ## Results
 
-The dashed line is the first-best investment $x^{*}=\theta$. Spot exchange loses investment incentives as specificity rises because the investor expects more ex-post bargaining. Integration keeps investment close to the benchmark, but the next figure shows why that alone does not settle the firm-boundary question.
+The dashed line is the first-best investment $x^{\ast}=\theta$. Spot exchange loses investment incentives as specificity rises because the investor expects more ex-post bargaining. Integration keeps investment close to the benchmark, but the next figure shows why that alone does not settle the firm-boundary question.
 
 <img src="figures/investment-incentives.png" alt="Relationship-specific investment by governance regime" width="80%">
 

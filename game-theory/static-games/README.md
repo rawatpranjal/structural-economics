@@ -29,12 +29,12 @@ $$
 BR_i(q_j)=\frac{a-c-bq_j}{2b}.
 $$
 
-A symmetric Nash equilibrium satisfies $q_i=q_j=q^{*}$ and
-$q^{*}=BR_i(q^{*})$, so
+A symmetric Nash equilibrium satisfies $q_i=q_j=q^{\ast}$ and
+$q^{\ast}=BR_i(q^{\ast})$, so
 
 $$
-q^{*}=\frac{a-c}{3b},\qquad
-P^{*}=a-2bq^{*}.
+q^{\ast}=\frac{a-c}{3b},\qquad
+P^{\ast}=a-2bq^{\ast}.
 $$
 
 The comparison points are also useful:
@@ -54,9 +54,9 @@ price equal to marginal cost.
 | $a$ | 10.0 | Demand intercept |
 | $b$ | 1.0 | Demand slope |
 | $c$ | 2.0 | Marginal cost |
-| $q^{*}$ | 2.667 | Nash output per firm |
-| $P^{*}$ | 4.667 | Nash price |
-| $\pi^{*}$ | 7.111 | Nash profit per firm |
+| $q^{\ast}$ | 2.667 | Nash output per firm |
+| $P^{\ast}$ | 4.667 | Nash price |
+| $\pi^{\ast}$ | 7.111 | Nash profit per firm |
 | Damping $\lambda$ | 0.65 | Weight on each new best response |
 
 ## Solution Method

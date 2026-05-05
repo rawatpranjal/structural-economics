@@ -40,14 +40,14 @@ G_i(a_i,a_j;\omega,V)
 $$
 
 A pure-strategy Markov-perfect equilibrium is a policy
-$a^{*}(\omega)=(a_1^{*}(\omega),a_2^{*}(\omega))$ and values satisfying
+$a^{\ast}(\omega)=(a_1^{\ast}(\omega),a_2^{\ast}(\omega))$ and values satisfying
 
 $$
-G_i(a_i^{*},a_j^{*};\omega,V)\geq G_i(a_i,a_j^{*};\omega,V)
+G_i(a_i^{\ast},a_j^{\ast};\omega,V)\geq G_i(a_i,a_j^{\ast};\omega,V)
 \quad\text{for all }a_i\in\{0,1\},
 $$
 
-with $V_i(\omega)=G_i(a_i^{*},a_j^{*};\omega,V)$ at every state.
+with $V_i(\omega)=G_i(a_i^{\ast},a_j^{\ast};\omega,V)$ at every state.
 
 ## Model Setup
 
@@ -79,7 +79,7 @@ For n = 0,1,2,...:
     Set T_i V^n(omega) equal to the selected equilibrium payoff.
   Update V_i^{n+1} = lambda T_i V^n + (1-lambda) V_i^n.
   Stop when max_{i,omega} |T_i V^n(omega)-V_i^n(omega)| < epsilon.
-Output: MPE policy a_i^{*}(omega), values V_i(omega), and deviation gains.
+Output: MPE policy a_i^{\ast}(omega), values V_i(omega), and deviation gains.
 ```
 
 There is no closed-form benchmark for this strategic dynamic game. The relevant accuracy check is therefore an equilibrium residual: at the reported policy, no firm should have a profitable one-step deviation at any state.

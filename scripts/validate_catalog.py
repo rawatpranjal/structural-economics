@@ -17,6 +17,7 @@ FRAGILE_MATH_DELIMITERS = (
     "\\right" + "\\}",
 )
 UNBRACED_STAR_SCRIPT = re.compile(r"(?<!\\)(\^|_)\*")
+BRACED_LITERAL_STAR_SCRIPT = re.compile(r"(?<!\\)(\^|_)\{\*\}")
 EMPTY_SCRIPT_TARGET = re.compile(r"(?<!\\)(\^|_)(?:\s|$|[,$.;:)\]}]|[\^_])")
 
 
@@ -176,7 +177,11 @@ def math_script_errors() -> list[str]:
             if has_math_marker:
                 if UNBRACED_STAR_SCRIPT.search(line):
                     errors.append(
-                        f"{rel}:{lineno} uses an unbraced star script in math; write ^{{*}} or _{{*}}"
+                        f"{rel}:{lineno} uses an unbraced star script in math; write ^{{\\ast}} or _{{\\ast}}"
+                    )
+                if path.suffix == ".md" and BRACED_LITERAL_STAR_SCRIPT.search(line):
+                    errors.append(
+                        f"{rel}:{lineno} uses a literal star script in rendered math; write ^{{\\ast}} or _{{\\ast}}"
                     )
                 if EMPTY_SCRIPT_TARGET.search(line):
                     errors.append(

@@ -45,11 +45,11 @@ $$
 The steady state satisfies
 
 $$
-f'(k^{*})=\rho+\delta,
+f'(k^{\ast})=\rho+\delta,
 \qquad
-k^{*}=\left(\frac{\alpha A}{\rho+\delta}\right)^{1/(1-\alpha)},
+k^{\ast}=\left(\frac{\alpha A}{\rho+\delta}\right)^{1/(1-\alpha)},
 \qquad
-c^{*}=f(k^{*})-\delta k^{*}.
+c^{\ast}=f(k^{\ast})-\delta k^{\ast}.
 $$
 
 The finite shooting calculation approximates the infinite-horizon boundary
@@ -59,7 +59,7 @@ $$
 \lim_{t\to\infty} e^{-\rho t}u'(c(t))k(t)=0
 $$
 
-by choosing $c_0$ so that the path is near $(k^{*},c^{*})$ at a long terminal date.
+by choosing $c_0$ so that the path is near $(k^{\ast},c^{\ast})$ at a long terminal date.
 
 ## Model Setup
 
@@ -73,15 +73,15 @@ The calibration is deterministic and deliberately close to textbook growth examp
 | $\sigma$ | 2.0 | CRRA coefficient and inverse EIS |
 | $A$ | 1.0 | Total factor productivity |
 | $T$ | 150 | Terminal date for shooting |
-| Initial capital | $0.25k^{*}$ to $2.00k^{*}$ | Predetermined state values |
-| $k^{*}$ | 8.2898 | Ramsey steady-state capital |
-| $c^{*}$ | 1.5952 | Ramsey steady-state consumption |
+| Initial capital | $0.25k^{\ast}$ to $2.00k^{\ast}$ | Predetermined state values |
+| $k^{\ast}$ | 8.2898 | Ramsey steady-state capital |
+| $c^{\ast}$ | 1.5952 | Ramsey steady-state consumption |
 
 ## Solution Method
 
 The method solves a boundary value problem by repeated initial value problems. Capital at date zero is fixed. Initial consumption is guessed, the Ramsey ODE is integrated forward, and the terminal capital gap determines whether the guess was too low or too high. Brent bisection then finds the root.
 
-For this model, the terminal residual is monotone in the relevant bracket. Low $c_0$ leaves too much capital at $T$; high $c_0$ exhausts capital before the terminal date or leaves too little capital. The bracket must be wide enough for initial states above $k^{*}$, where the optimal path begins with consumption above net output so that capital decumulates.
+For this model, the terminal residual is monotone in the relevant bracket. Low $c_0$ leaves too much capital at $T$; high $c_0$ exhausts capital before the terminal date or leaves too little capital. The bracket must be wide enough for initial states above $k^{\ast}$, where the optimal path begins with consumption above net output so that capital decumulates.
 
 ```text
 Algorithm: finite-horizon shooting for Ramsey growth
@@ -97,11 +97,11 @@ Inputs: primitives (alpha, delta, rho, sigma, A), initial capital k0, terminal d
 Output: the saddle-path initial consumption c0(k0) and transition path.
 ```
 
-The local speed check comes from the Jacobian of $(\dot{k},\dot{c})$ at the steady state. Its eigenvalues are $\lambda_s=-0.0584$ and $\lambda_u=0.0884$, so the local half-life is $\ln(2)/|\lambda_s|=11.9$ time units. On the computed path from $0.25k^{*}$, the fitted late-transition rate is $\hat{\lambda}=-0.0583$.
+The local speed check comes from the Jacobian of $(\dot{k},\dot{c})$ at the steady state. Its eigenvalues are $\lambda_s=-0.0584$ and $\lambda_u=0.0884$, so the local half-life is $\ln(2)/|\lambda_s|=11.9$ time units. On the computed path from $0.25k^{\ast}$, the fitted late-transition rate is $\hat{\lambda}=-0.0583$.
 
 ## Results
 
-The phase diagram shows why shooting is an economic selection rule, not only a numerical trick. The dashed curve is net output, where $\dot{k}=0$; the vertical line is $k^{*}$, where $\dot{c}=0$. Each colored path starts from a different $k_0$ and uses the $c_0$ found by shooting. Below $k^{*}$, consumption starts low enough for investment to build capital. Above $k^{*}$, consumption starts above net output, so capital is deliberately run down.
+The phase diagram shows why shooting is an economic selection rule, not only a numerical trick. The dashed curve is net output, where $\dot{k}=0$; the vertical line is $k^{\ast}$, where $\dot{c}=0$. Each colored path starts from a different $k_0$ and uses the $c_0$ found by shooting. Below $k^{\ast}$, consumption starts low enough for investment to build capital. Above $k^{\ast}$, consumption starts above net output, so capital is deliberately run down.
 
 <img src="figures/phase-diagram.png" alt="Ramsey phase diagram with selected saddle paths from different initial capital stocks" width="80%">
 
@@ -109,7 +109,7 @@ The time paths make the saving logic easier to read. A capital-poor economy keep
 
 <img src="figures/time-paths.png" alt="Ramsey transition paths for capital and consumption after shooting selects c0" width="80%">
 
-The log-scale convergence plot separates nonlinear transition dynamics from the local stable-root approximation. Far from the steady state, the paths bend because the marginal product changes quickly. Once the economy is close to $k^{*}$, the decline in $|k(t)-k^{*}|$ is approximately exponential at the stable eigenvalue.
+The log-scale convergence plot separates nonlinear transition dynamics from the local stable-root approximation. Far from the steady state, the paths bend because the marginal product changes quickly. Once the economy is close to $k^{\ast}$, the decline in $|k(t)-k^{\ast}|$ is approximately exponential at the stable eigenvalue.
 
 <img src="figures/convergence-speed.png" alt="Log convergence of capital to the Ramsey steady state with the stable eigenvalue benchmark" width="80%">
 
@@ -117,7 +117,7 @@ The table records the jump variable selected by the root search. The consumption
 
 **Shooting Diagnostics**
 
-|   $k_0/k^{*}$ |   $c_0$ from shooting |   $c_0/[f(k_0)-\delta k_0]$ |   $k(50)/k^{*}$ |   $c(50)/c^{*}$ |   Terminal capital gap |
+|   $k_0/k^{\ast}$ |   $c_0$ from shooting |   $c_0/[f(k_0)-\delta k_0]$ |   $k(50)/k^{\ast}$ |   $c(50)/c^{\ast}$ |   Terminal capital gap |
 |--------------:|----------------------:|----------------------------:|----------------:|----------------:|-----------------------:|
 |          0.25 |              0.867114 |                       0.742 |          0.9548 |          0.979  |               2.75e-07 |
 |          0.5  |              1.16845  |                       0.84  |          0.9714 |          0.9868 |               3.7e-07  |
@@ -129,7 +129,7 @@ The table records the jump variable selected by the root search. The consumption
 
 The Ramsey shooting problem is a clean example of how economics and numerics line up. History fixes $k_0$, but optimality selects $c_0$. The root search is finding the initial consumption level that keeps the path feasible and satisfies the transversality condition.
 
-The exercise also shows why saddle-path systems are easy to state but delicate to compute. A small error in $c_0$ sends the economy toward capital exhaustion or overaccumulation. Once the correct path is selected, the model delivers the usual Ramsey logic: invest when capital is scarce, decumulate when capital is abundant, and converge toward the modified golden-rule point $f'(k^{*})=\rho+\delta$.
+The exercise also shows why saddle-path systems are easy to state but delicate to compute. A small error in $c_0$ sends the economy toward capital exhaustion or overaccumulation. Once the correct path is selected, the model delivers the usual Ramsey logic: invest when capital is scarce, decumulate when capital is abundant, and converge toward the modified golden-rule point $f'(k^{\ast})=\rho+\delta$.
 
 ## References
 

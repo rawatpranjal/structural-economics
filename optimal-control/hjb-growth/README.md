@@ -34,15 +34,15 @@ $$
 The first-order condition is
 
 $$
-u'(c^{*}(k))=V'(k)
+u'(c^{\ast}(k))=V'(k)
 \quad\Longrightarrow\quad
-c^{*}(k)=\left(V'(k)\right)^{-1/\sigma}.
+c^{\ast}(k)=\left(V'(k)\right)^{-1/\sigma}.
 $$
 
 Substituting this policy into the drift
 
 $$
-s(k)=\dot{k}=f(k)-\delta k-c^{*}(k)
+s(k)=\dot{k}=f(k)-\delta k-c^{\ast}(k)
 $$
 
 leaves a nonlinear equation in $V$. On the grid $k_1,\ldots,k_N$ with spacing

@@ -87,7 +87,7 @@ There is no closed-form equilibrium to overlay as ground truth in this
 truncated-grid Huggett problem. The relevant numerical checks are therefore the
 HJB fixed-point tolerance and the zero-net-supply bond-market residual.
 
-The final HJB step converged in **8 iterations** (sup-norm change 1.56e-07). Bisection gives **$r^{*}=0.03192$**, with a market-clearing residual of **2.86e-06** in aggregate assets.
+The final HJB step converged in **8 iterations** (sup-norm change 1.56e-07). Bisection gives **$r^{\ast}=0.03192$**, with a market-clearing residual of **2.86e-06** in aggregate assets.
 
 ## Results
 

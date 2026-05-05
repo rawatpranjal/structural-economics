@@ -57,11 +57,11 @@ $$
 K^d(r)=\left(\frac{r+\delta}{\alpha}\right)^{1/(\alpha-1)}.
 $$
 
-An Aiyagari stationary equilibrium is a price $r^{*}$, wage $w^{*}$, household policy
+An Aiyagari stationary equilibrium is a price $r^{\ast}$, wage $w^{\ast}$, household policy
 $g_a$, and stationary distribution $\mu$ such that
 
 $$
-K^s(r^{*})=\sum_{i,j} a_i\mu(a_i,z_j)=K^d(r^{*}).
+K^s(r^{\ast})=\sum_{i,j} a_i\mu(a_i,z_j)=K^d(r^{\ast}).
 $$
 
 ## Model Setup
@@ -160,7 +160,7 @@ The table separates firm capital demand from household asset supply because the 
 
 ## Takeaway
 
-The useful lesson is that incomplete markets turn a household precautionary motive into an aggregate price effect. With no insurance against persistent income risk, households want buffer assets; in equilibrium those assets are the economy's capital stock. The result is $r^{*}=0.0260$, below $1/\beta-1=0.0417$, and a right-skewed wealth distribution generated without ex ante heterogeneity. Faster algorithms can change the cost of the computation, but they do not change the fixed point: solve household policies, find the stationary distribution, and clear the capital market.
+The useful lesson is that incomplete markets turn a household precautionary motive into an aggregate price effect. With no insurance against persistent income risk, households want buffer assets; in equilibrium those assets are the economy's capital stock. The result is $r^{\ast}=0.0260$, below $1/\beta-1=0.0417$, and a right-skewed wealth distribution generated without ex ante heterogeneity. Faster algorithms can change the cost of the computation, but they do not change the fixed point: solve household policies, find the stationary distribution, and clear the capital market.
 
 ## References
 

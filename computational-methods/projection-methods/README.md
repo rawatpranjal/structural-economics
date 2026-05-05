@@ -45,7 +45,7 @@ R_i(\theta)
 \right] = 0.
 $$
 
-For this calibration, the exact policy is $g^{*}(k)=\alpha\beta A k^\alpha$.
+For this calibration, the exact policy is $g^{\ast}(k)=\alpha\beta A k^\alpha$.
 
 ## Model Setup
 

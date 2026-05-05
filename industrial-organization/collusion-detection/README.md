@@ -37,7 +37,7 @@ The incentive constraint $V^M\geq V^D$ is equivalent to
 
 $$
 \delta\geq
-\delta^{*}
+\delta^{\ast}
 =\frac{\pi^D-\pi^M}{\pi^D-\pi^N}
 =\frac{(n+1)^2}{n^2+6n+1}.
 $$
@@ -128,7 +128,7 @@ The table reports exact payoffs and thresholds. For $\delta=0.9$, the feasibilit
 
 ## Takeaway
 
-The repeated-game calculation turns the usual cartel story into a single discipline condition. The short-run deviation gain is always positive; the question is whether future collusive rents are valuable enough to deter it. In the duopoly, $\delta^{*}=0.5294$; with ten symmetric firms, $\delta^{*}=0.7516$; with $\delta=0.9$, the exact cutoff is 33 firms. Price and margin breaks are therefore screens, not verdicts. They say where to look before bringing in the market facts that matter in practice: costs, demand shocks, monitoring, communication, capacity, procurement rules, and the legal record.
+The repeated-game calculation turns the usual cartel story into a single discipline condition. The short-run deviation gain is always positive; the question is whether future collusive rents are valuable enough to deter it. In the duopoly, $\delta^{\ast}=0.5294$; with ten symmetric firms, $\delta^{\ast}=0.7516$; with $\delta=0.9$, the exact cutoff is 33 firms. Price and margin breaks are therefore screens, not verdicts. They say where to look before bringing in the market facts that matter in practice: costs, demand shocks, monitoring, communication, capacity, procurement rules, and the legal record.
 
 ## References
 

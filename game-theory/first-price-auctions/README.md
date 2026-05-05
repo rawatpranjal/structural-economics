@@ -25,11 +25,11 @@ $$
 with $b(0)=0$. With $F(v)=v$ on $[0,1]$, this becomes
 
 $$
-b^{*}(v)=\frac{n-1}{n}v.
+b^{\ast}(v)=\frac{n-1}{n}v.
 $$
 
 The bid is below value because the winner pays its own bid. If a type $v$
-deviates to dollar bid $\hat b$ while opponents use $b^{*}$, the rival value
+deviates to dollar bid $\hat b$ while opponents use $b^{\ast}$, the rival value
 threshold beaten by $\hat b$ is
 
 $$
@@ -51,7 +51,7 @@ $$
 Expected revenue under the equilibrium is
 
 $$
-R_n = E[b^{*}(V_{n:n})]
+R_n = E[b^{\ast}(V_{n:n})]
     = \frac{n-1}{n}E[V_{n:n}]
     = \frac{n-1}{n+1},
 $$
@@ -95,7 +95,7 @@ The bid functions make the central comparative static visible. With two bidders,
 
 <img src="figures/bid-functions.png" alt="Equilibrium first-price bid functions by bidder count" width="80%">
 
-For a bidder with value 0.8 facing 2 rivals, the payoff curve is single-peaked at the exact bid. The red point is the grid best response. Its overlap with the analytic vertical line is the concrete equilibrium check: conditional on rivals using $b^{*}$, this type does not want to shade more or bid more aggressively.
+For a bidder with value 0.8 facing 2 rivals, the payoff curve is single-peaked at the exact bid. The red point is the grid best response. Its overlap with the analytic vertical line is the concrete equilibrium check: conditional on rivals using $b^{\ast}$, this type does not want to shade more or bid more aggressively.
 
 <img src="figures/best-response-check.png" alt="Grid best response compared with the exact equilibrium bid" width="80%">
 

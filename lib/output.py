@@ -1,6 +1,7 @@
 """ModelReport: auto-generates standardized GitHub-flavored Markdown reports."""
 
 from pathlib import Path
+import re
 from typing import Optional
 
 import matplotlib.pyplot as plt
@@ -8,6 +9,17 @@ import pandas as pd
 from matplotlib.figure import Figure
 
 from lib.plotting import save_figure, save_thumbnail
+
+
+BRACED_LITERAL_STAR_SCRIPT = re.compile(r"(?<!\\)([\^_])\{\*\}")
+
+
+def github_safe_math(text: str) -> str:
+    """Avoid Markdown emphasis parsing inside GitHub math spans."""
+    return BRACED_LITERAL_STAR_SCRIPT.sub(
+        lambda match: f"{match.group(1)}{{\\ast}}",
+        text,
+    )
 
 
 class ModelReport:
@@ -188,7 +200,7 @@ class ModelReport:
         # Write
         p = Path(path)
         p.parent.mkdir(parents=True, exist_ok=True)
-        p.write_text("\n".join(lines))
+        p.write_text(github_safe_math("\n".join(lines)))
 
         # Generate thumbnail
         self.generate_thumbnail()

@@ -46,11 +46,11 @@ $$
 \quad\Longleftrightarrow\quad
 f'(k)=\rho+\delta
 \quad\Longleftrightarrow\quad
-k=k^{*}
+k=k^{\ast}
 =\left(\frac{\alpha A}{\rho+\delta}\right)^{1/(1-\alpha)} .
 $$
 
-Steady-state consumption is $c^{*}=f(k^{*})-\delta k^{*}$. The golden-rule
+Steady-state consumption is $c^{\ast}=f(k^{\ast})-\delta k^{\ast}$. The golden-rule
 capital stock satisfies $f'(k_{GR})=\delta$, so with $\rho>0$ the Ramsey steady
 state lies to the left of the golden rule. The boundary condition selecting the
 planner's path is the transversality condition
@@ -70,20 +70,20 @@ The calibration keeps the economy deterministic so that every movement in the di
 | $\rho$ | 0.04 | Continuous-time discount rate |
 | $\sigma$ | 2.0 | CRRA coefficient and inverse EIS |
 | $A$ | 1.0 | Total factor productivity |
-| $k^{*}$ | 5.5843 | Ramsey steady-state capital |
-| $c^{*}$ | 1.3961 | Ramsey steady-state consumption |
+| $k^{\ast}$ | 5.5843 | Ramsey steady-state capital |
+| $c^{\ast}$ | 1.3961 | Ramsey steady-state consumption |
 | $k_{GR}$ | 12.9314 | Golden-rule capital |
 | $c_{GR}$ | 1.5087 | Golden-rule sustainable consumption |
 
 ## Solution Method
 
-The computation starts where the economics is sharpest: at the steady state. The Jacobian of $(\dot{k},\dot{c})$ at $(k^{*},c^{*})$ is
+The computation starts where the economics is sharpest: at the steady state. The Jacobian of $(\dot{k},\dot{c})$ at $(k^{\ast},c^{\ast})$ is
 
 $$
 J=
 \begin{bmatrix}
-f'(k^{*})-\delta & -1 \\
-c^{*}f''(k^{*})/\sigma & 0
+f'(k^{\ast})-\delta & -1 \\
+c^{\ast}f''(k^{\ast})/\sigma & 0
 \end{bmatrix}.
 $$
 
@@ -106,11 +106,11 @@ The backward integration is only a way to draw the stable arm. Forward in econom
 
 ## Results
 
-The phase plane separates two jobs that are often blurred together. The blue curve and red line give sign information: below net output, capital accumulates; left of $k^{*}$, consumption grows because the marginal product is high. The black curve is stronger than a direction field. It is the stable arm, so for each capital stock on the plotted branch it gives the initial consumption level consistent with convergence and the transversality condition. The dashed line shows why linearization is useful near the steady state but not a global solution; over $k \in [0.5k^{*},1.5k^{*}]$ its largest consumption gap from the nonlinear reference is 0.050.
+The phase plane separates two jobs that are often blurred together. The blue curve and red line give sign information: below net output, capital accumulates; left of $k^{\ast}$, consumption grows because the marginal product is high. The black curve is stronger than a direction field. It is the stable arm, so for each capital stock on the plotted branch it gives the initial consumption level consistent with convergence and the transversality condition. The dashed line shows why linearization is useful near the steady state but not a global solution; over $k \in [0.5k^{\ast},1.5k^{\ast}]$ its largest consumption gap from the nonlinear reference is 0.050.
 
 <img src="figures/phase-diagram.png" alt="Ramsey phase plane with nullclines, local linear arm, and nonlinear stable arm" width="80%">
 
-Starting below steady-state capital, the selected path keeps consumption low enough for investment to be high. As capital approaches $k^{*}$, the marginal product falls, investment slows, and consumption rises toward $c^{*}$. The local stable eigenvalue implies a half-life of about $\ln(2)/|\lambda_s|=9.8$ time units near the steady state; the early part of the transition is nonlinear.
+Starting below steady-state capital, the selected path keeps consumption low enough for investment to be high. As capital approaches $k^{\ast}$, the marginal product falls, investment slows, and consumption rises toward $c^{\ast}$. The local stable eigenvalue implies a half-life of about $\ln(2)/|\lambda_s|=9.8$ time units near the steady state; the early part of the transition is nonlinear.
 
 <img src="figures/time-paths.png" alt="Capital and consumption converge to the Ramsey steady state along the stable arm" width="80%">
 
@@ -118,16 +118,16 @@ Holding initial capital fixed makes the saddle-path logic explicit. A higher ini
 
 <img src="figures/path-selection.png" alt="Forward trajectories from the same initial capital but different initial consumption" width="80%">
 
-The table keeps the main numbers auditable. The Ramsey steady state has $r^{*}=\rho$, while the golden-rule point has more capital because it ignores impatience. The eigenvalue pair verifies the saddle classification. The last row is a compact check on how far the nonlinear stable arm moves away from the local linear approximation over the central part of the graph.
+The table keeps the main numbers auditable. The Ramsey steady state has $r^{\ast}=\rho$, while the golden-rule point has more capital because it ignores impatience. The eigenvalue pair verifies the saddle classification. The last row is a compact check on how far the nonlinear stable arm moves away from the local linear approximation over the central part of the graph.
 
 **Steady-State and Stable-Arm Diagnostics**
 
 | Quantity                    |   Value | Description                                    |
 |:----------------------------|--------:|:-----------------------------------------------|
-| $k^{*}$                     |  5.5843 | Ramsey steady-state capital                    |
-| $c^{*}$                     |  1.3961 | Ramsey steady-state consumption                |
-| $y^{*}$                     |  1.6753 | Steady-state output                            |
-| $r^{*}=f'(k^{*})-\delta$    |  0.04   | Net return equals rho in steady state          |
+| $k^{\ast}$                     |  5.5843 | Ramsey steady-state capital                    |
+| $c^{\ast}$                     |  1.3961 | Ramsey steady-state consumption                |
+| $y^{\ast}$                     |  1.6753 | Steady-state output                            |
+| $r^{\ast}=f'(k^{\ast})-\delta$    |  0.04   | Net return equals rho in steady state          |
 | $k_{GR}$                    | 12.9314 | Capital that maximizes sustainable consumption |
 | $c_{GR}$                    |  1.5087 | Maximum sustainable consumption                |
 | $\lambda_s$                 | -0.071  | Stable eigenvalue                              |

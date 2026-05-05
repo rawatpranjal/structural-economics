@@ -33,7 +33,7 @@ $$k_{t+1}=
 
 The steady state in effective units solves
 
-$$s(k^{*})^\alpha = \Delta k^{*},$$
+$$s(k^{\ast})^\alpha = \Delta k^{\ast},$$
 
 with
 
@@ -41,8 +41,8 @@ $$\Delta=(1+g)(1+n)-1+\delta.$$
 
 Thus
 
-$$k^{*}=\left(\frac{s}{\Delta}\right)^{1/(1-\alpha)},\qquad
-y^{*}=(k^{*})^\alpha,\qquad c^{*}=(1-s)y^{*}.$$
+$$k^{\ast}=\left(\frac{s}{\Delta}\right)^{1/(1-\alpha)},\qquad
+y^{\ast}=(k^{\ast})^\alpha,\qquad c^{\ast}=(1-s)y^{\ast}.$$
 
 Competitive factor prices are the marginal products
 
@@ -64,7 +64,7 @@ per raw worker grows with $A_t$ along the balanced-growth path.
 | $K_0,A_0,L_0$ | 1.0, 1.0, 1.0 | Initial aggregate stocks, implying $k_0=1.0$ |
 | Horizon | 160 periods | Long enough for the transition gap to be visible |
 | $\Delta$ | 0.0902 | Exact break-even investment term in effective units |
-| $k^{*}$ | 4.3086 | Analytical steady-state capital per effective worker |
+| $k^{\ast}$ | 4.3086 | Analytical steady-state capital per effective worker |
 
 ## Solution Method
 
@@ -88,17 +88,17 @@ for t = 0, 1, ..., T-1:
 compare the terminal path to k_star, y_star, and c_star
 ```
 
-With this calibration, the local convergence factor around $k^{*}$ is **0.941**, implying a half-life of about **11.5 periods** for small deviations from the balanced-growth path.
+With this calibration, the local convergence factor around $k^{\ast}$ is **0.941**, implying a half-life of about **11.5 periods** for small deviations from the balanced-growth path.
 
 ## Results
 
-The first figure is the analytical Solow diagram. The curved schedule is actual investment per effective worker, $s k^\alpha$. The line is the investment required to offset depreciation, population growth, and technology growth, $\Delta k$. Their intersection is not estimated from the simulation; it is the exact $k^{*}=4.309$ implied by the primitives.
+The first figure is the analytical Solow diagram. The curved schedule is actual investment per effective worker, $s k^\alpha$. The line is the investment required to offset depreciation, population growth, and technology growth, $\Delta k$. Their intersection is not estimated from the simulation; it is the exact $k^{\ast}=4.309$ implied by the primitives.
 
 Because $k_0=1.000$ lies to the left of the intersection, the economy begins with investment above break-even investment. Capital per effective worker therefore rises.
 
 <img src="figures/solow-diagram.png" alt="Solow diagram with investment and break-even investment in effective-labor units" width="80%">
 
-The transition figure normalizes capital, output, and consumption by their effective-unit steady states. Capital moves more slowly than output because production is concave: as $k_t$ rises, the marginal product of the next unit of capital falls. By the terminal period, $|k_{T-1}-k^{*}|$ is **2.73e-04**.
+The transition figure normalizes capital, output, and consumption by their effective-unit steady states. Capital moves more slowly than output because production is concave: as $k_t$ rises, the marginal product of the next unit of capital falls. By the terminal period, $|k_{T-1}-k^{\ast}|$ is **2.73e-04**.
 
 Consumption and output have the same normalized path because consumption is the fixed share $(1-s)$ of output. This is the mechanical implication of exogenous saving.
 
@@ -106,7 +106,7 @@ Consumption and output have the same normalized path because consumption is the 
 
 Factor prices make the convergence mechanism observable. Starting from low capital, the marginal product of capital is high and the effective wage is low. As capital deepens, $MPK_t$ falls toward **0.124** while $w_t/A_t$ rises toward **1.085**. The same diminishing-returns force underlies conditional convergence.
 
-The dashed lines are analytical steady-state values. The simulation approaches them because capital per effective worker approaches $k^{*}$.
+The dashed lines are analytical steady-state values. The simulation approaches them because capital per effective worker approaches $k^{\ast}$.
 
 <img src="figures/factor-prices.png" alt="Factor prices along the Solow transition" width="80%">
 

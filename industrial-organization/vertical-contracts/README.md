@@ -19,27 +19,27 @@ $$
 
 Given wholesale price $w_j$, the retailer sets the product price by
 $$
-p_j^{*}(w_j)
+p_j^{\ast}(w_j)
 =\arg\max_{p_j\geq w_j} (p_j-w_j)q_j(p_j).
 $$
 For an interior product, this gives
 $$
-p_j^{*}(w_j)=\frac{a_j+bw_j}{2b}.
+p_j^{\ast}(w_j)=\frac{a_j+bw_j}{2b}.
 $$
 
 Contract $C$ maps an assortment $A$ into a wholesale price
 $w_j^C(A)$ and a fixed transfer $F_j^C(A)$ paid by the upstream side to the
 retailer. The retailer chooses
 $$
-A_C^{*}
+A_C^{\ast}
 =\arg\max_{A\subset\mathcal J:\ |A|=K}
-\sum_{j\in A}\left[(p_j^{*}-w_j^C(A))q_j(p_j^{*})+F_j^C(A)\right].
+\sum_{j\in A}\left[(p_j^{\ast}-w_j^C(A))q_j(p_j^{\ast})+F_j^C(A)\right].
 $$
 
 The upstream-profit diagnostic is
 $$
 \Pi_C^U(A)=
-\sum_{j\in A}\left[(w_j^C(A)-c_j)q_j(p_j^{*})-F_j^C(A)\right].
+\sum_{j\in A}\left[(w_j^C(A)-c_j)q_j(p_j^{\ast})-F_j^C(A)\right].
 $$
 
 In the all-unit discount case, the retailer pays a lower wholesale price on

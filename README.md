@@ -2,10 +2,6 @@
 
 This repository gives graduate students and researchers short, executable examples of computational economics. The tutorials are organized by economic question and can be run from their folders with `python run.py`.
 
-It is independent from QuantEcon, but written for a similar audience: readers who know the basics and want compact examples in structural modeling, macro, IO, demand, finance, and numerical methods.
-
-**Built with:** Python, JAX, NumPy, SciPy, Matplotlib | **License:** MIT
-
 ## Contents
 
 - [Quick Start](#quick-start)

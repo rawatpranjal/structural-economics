@@ -6,7 +6,7 @@
 
 The McCall model is a small partial-equilibrium model of unemployment with a sharp economic object: the value of waiting for a better wage offer. An unemployed worker observes one offer at a time. Accepting locks in that wage forever; rejecting pays the unemployment benefit $b$ today and preserves the right to draw again tomorrow.
 
-The optimal policy is a reservation rule. The worker accepts offers at or above a cutoff $w^{*}$ and rejects offers below it. The cutoff is not a taste parameter; it is an endogenous price of search, pinned down by the wage-offer distribution, the benefit level, and the discount factor. This is the worker-side building block behind richer search models such as [search and matching unemployment](../diamond-mortensen-pissarides/). It also echoes the logic in [income-risk saving](../consumption-savings/): a current choice is valuable because it changes exposure to future states.
+The optimal policy is a reservation rule. The worker accepts offers at or above a cutoff $w^{\ast}$ and rejects offers below it. The cutoff is not a taste parameter; it is an endogenous price of search, pinned down by the wage-offer distribution, the benefit level, and the discount factor. This is the worker-side building block behind richer search models such as [search and matching unemployment](../diamond-mortensen-pissarides/). It also echoes the logic in [income-risk saving](../consumption-savings/): a current choice is valuable because it changes exposure to future states.
 
 ## Equations
 
@@ -26,16 +26,16 @@ $$V(w)=\max\bigl[ \frac{w}{1-\beta},\; b+\beta \mathbb{E}_{F}[V(W')] \bigr].$$
 
 The reservation wage is the offer that makes the worker indifferent:
 
-$$\frac{w^{*}}{1-\beta}=C.$$
+$$\frac{w^{\ast}}{1-\beta}=C.$$
 
 Using this indifference condition inside the Bellman equation gives the scalar
 fixed point
 
-$$w^{*}=(1-\beta)b+\beta \mathbb{E}_{F}[\max\{W',w^{*}\}].$$
+$$w^{\ast}=(1-\beta)b+\beta \mathbb{E}_{F}[\max\{W',w^{\ast}\}].$$
 
 This last equation is useful for interpretation. A higher $b$ raises the value
 of rejection directly. A higher $\beta$ raises the option value of future draws.
-A thicker right tail also raises $w^{*}$ because rejecting a mediocre offer buys
+A thicker right tail also raises $w^{\ast}$ because rejecting a mediocre offer buys
 exposure to rare high wages.
 
 ## Model Setup
@@ -45,7 +45,7 @@ exposure to rare high wages.
 | Discount factor $\beta$ | 0.95 | Weight on future search opportunities |
 | Flow benefit $b$ | 1.0 | Payoff while unemployed |
 | Wage law | $\log W \sim N(0.0,1.0^2)$ | Offer distribution |
-| Mean offer $\mathbb{E}[W]$ | 1.6487 | Reference level, not an upper bound on $w^{*}$ |
+| Mean offer $\mathbb{E}[W]$ | 1.6487 | Reference level, not an upper bound on $w^{\ast}$ |
 | Main wage grid | 50 bins | Equiprobable bins represented by conditional means |
 | Continuous benchmark | lognormal tail moments | Held-out reservation-wage check |
 | VFI tolerance | 1e-08 | Sup-norm stopping rule |
@@ -79,7 +79,7 @@ Find a bracket [low, high] with residual(low) < 0 < residual(high)
 Solve residual(r) = r - (1 - beta)*b - beta*m(r) = 0
 ```
 
-The finite-grid VFI converged in **178 iterations** with sup-norm error **9.84e-09**. The baseline cutoff is $w^{*}_{grid}=4.7054$, compared with the continuous lognormal benchmark $w^{*}_{cont}=4.7055$.
+The finite-grid VFI converged in **178 iterations** with sup-norm error **9.84e-09**. The baseline cutoff is $w^{\ast}_{grid}=4.7054$, compared with the continuous lognormal benchmark $w^{\ast}_{cont}=4.7055$.
 
 ## Results
 

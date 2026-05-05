@@ -20,9 +20,9 @@ p_i\cdot x_i \geq p_i\cdot x_j .
 $$
 The bundle $x_j$ was affordable when $x_i$ was chosen.
 
-Let $R^{*}$ denote the transitive closure of $R$. GARP requires that no pair $(i,j)$ satisfies both
+Let $R^{\ast}$ denote the transitive closure of $R$. GARP requires that no pair $(i,j)$ satisfies both
 $$
-iR^{*}j
+iR^{\ast}j
 \quad\text{and}\quad
 p_j\cdot x_j > p_j\cdot x_i .
 $$

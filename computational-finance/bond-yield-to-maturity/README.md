@@ -17,7 +17,7 @@ $$
 PV(y)=\sum_{m=1}^{M}\frac{C_m}{(1+y)^{\tau_m}},\qquad y>-1.
 $$
 
-The yield to maturity for observed price $P$ is the root $y^{*}$ of
+The yield to maturity for observed price $P$ is the root $y^{\ast}$ of
 
 $$
 G(y)=PV(y)-P=0.
@@ -80,7 +80,7 @@ until the gap and bracket width are numerically small
 return y_star
 ```
 
-The plotted price-yield curves are not simulations. They are exact present values for a fixed coupon schedule evaluated over a grid of yields. For the YTM examples, the residual $PV(y^{*})-P$ is the relevant numerical check.
+The plotted price-yield curves are not simulations. They are exact present values for a fixed coupon schedule evaluated over a grid of yields. For the YTM examples, the residual $PV(y^{\ast})-P$ is the relevant numerical check.
 
 ## Results
 
