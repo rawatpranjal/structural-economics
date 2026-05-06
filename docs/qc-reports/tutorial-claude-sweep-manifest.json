@@ -1,6 +1,6 @@
 {
   "pass_name": "claude-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-06T23:37:02Z",
+  "updated_at": "2026-05-06T23:49:21Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -189,6 +189,23 @@
         "heterogeneous-agents/envelope-equation-iteration/tables/solution-statistics.csv"
       ],
       "updated_at": "2026-05-06T23:37:02Z"
+    },
+    {
+      "tutorial_path": "heterogeneous-agents/huggett-incomplete-markets/",
+      "status": "complete",
+      "commit": "2af432f751b9535d8472249e19aa2ee27d1b2a14",
+      "changed_paths": [
+        "README.md",
+        "heterogeneous-agents/huggett-incomplete-markets/README.md",
+        "heterogeneous-agents/huggett-incomplete-markets/figures/bond-market.png",
+        "heterogeneous-agents/huggett-incomplete-markets/figures/savings-policy.png",
+        "heterogeneous-agents/huggett-incomplete-markets/figures/thumb.png",
+        "heterogeneous-agents/huggett-incomplete-markets/figures/value-function.png",
+        "heterogeneous-agents/huggett-incomplete-markets/figures/wealth-distribution.png",
+        "heterogeneous-agents/huggett-incomplete-markets/run.py",
+        "heterogeneous-agents/huggett-incomplete-markets/tables/equilibrium.csv"
+      ],
+      "updated_at": "2026-05-06T23:49:21Z"
     }
   ]
 }
