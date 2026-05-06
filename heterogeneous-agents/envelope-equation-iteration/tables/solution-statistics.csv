@@ -4,12 +4,12 @@ Same-grid EGP iterations,151
 Same-grid VFI iterations,203
 Fine-grid reference points,600
 Fine-grid reference iterations,140
-"Max consumption gap vs reference, a <= 20",1.09e-02
-"Max next-asset gap vs reference, a <= 20",1.09e-02
-Mean assets / mean income,0.4118
+"Max consumption gap vs reference, a ≤ 20",1.09e-02
+"Max next-asset gap vs reference, a ≤ 20",1.09e-02
+Mean assets,0.4124
 Fraction at borrowing limit,3.1%
-"Mean MPC, 0.10 transfer",0.2184
+"Mean MPC, 0.10 transfer",0.2197
 Perfect-foresight MPC limit,0.0413
 10th percentile wealth,0.074
-50th percentile wealth,0.376
-90th percentile wealth,0.793
+50th percentile wealth,0.374
+90th percentile wealth,0.799
