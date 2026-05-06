@@ -1,6 +1,6 @@
 {
   "pass_name": "claude-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-06T22:16:43Z",
+  "updated_at": "2026-05-06T22:24:23Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -48,6 +48,23 @@
         "dynamic-programming/optimal-growth/tables/comparison.csv"
       ],
       "updated_at": "2026-05-06T22:16:43Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/solow-growth/",
+      "status": "complete",
+      "commit": "e2321581f8ef1d4796532302517c39ed724f4ea1",
+      "changed_paths": [
+        "README.md",
+        "dynamic-programming/solow-growth/README.md",
+        "dynamic-programming/solow-growth/figures/convergence-and-comparative-statics.png",
+        "dynamic-programming/solow-growth/figures/factor-prices.png",
+        "dynamic-programming/solow-growth/figures/solow-diagram.png",
+        "dynamic-programming/solow-growth/figures/thumb.png",
+        "dynamic-programming/solow-growth/figures/transition-effective-units.png",
+        "dynamic-programming/solow-growth/run.py",
+        "dynamic-programming/solow-growth/tables/steady-state-comparison.csv"
+      ],
+      "updated_at": "2026-05-06T22:24:23Z"
     }
   ]
 }
