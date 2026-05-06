@@ -11,7 +11,6 @@ This repository gives graduate students and researchers short, executable exampl
 - [Choice and Demand](#choice-and-demand)
 - [Computational Game Theory](#computational-game-theory)
 - [Time Series and Data](#time-series-and-data)
-- [Computational Finance](#computational-finance)
 - [Computational Methods](#computational-methods)
 - [Other Code Repositories](#other-code-repositories)
 
@@ -122,7 +121,6 @@ Choice and demand focuses on revealed preference, learning, and choice models.
 | [<img src="choice/houtman-maks-rational-subsets/figures/thumb.png" width="160">](choice/houtman-maks-rational-subsets/figures/conflict-graph.png) | **[Houtman-Maks Rational Cores](choice/houtman-maks-rational-subsets/)** | Find the largest subset of choices that can be rationalized. This helps distinguish a few inconsistent observations from broad inconsistency. |
 | [<img src="choice/revealed-price-preference/figures/thumb.png" width="160">](choice/revealed-price-preference/figures/price-cost-ratios.png) | **[Revealed Price Preference](choice/revealed-price-preference/)** | Ask whether price regimes can be ranked from the bundles they make affordable. Bundle choices can look rational even when price-regime rankings fail. |
 | [<img src="choice/logit-discrete-choice/figures/thumb.png" width="160">](choice/logit-discrete-choice/figures/log-likelihood-surface.png) | **[Plain Logit Demand and IIA](choice/logit-discrete-choice/)** | Estimate a baseline product-choice model and inspect its substitution restriction. Lost buyers from one product get reallocated mechanically across the rest. |
-| [<img src="choice/conditional-logit-panel/figures/thumb.png" width="160">](choice/conditional-logit-panel/figures/conditional-likelihood.png) | **[Conditional Logit for Fixed Effects Panels](choice/conditional-logit-panel/)** | Condition on each agent's total choices to remove fixed effects. The slope comes from within-agent variation rather than persistent tastes. |
 | [<img src="choice/maximum-score-binary-choice/figures/thumb.png" width="160">](choice/maximum-score-binary-choice/figures/score-objectives.png) | **[Maximum Score Binary Choice](choice/maximum-score-binary-choice/)** | Estimate a binary-choice index with a nonsmooth classification criterion. Scale normalization and smoothing make the semiparametric target visible. |
 | [<img src="choice/bayesian-learning/figures/thumb.png" width="160">](choice/bayesian-learning/figures/belief-evolution.png) | **[Bayesian Learning and Sequential Investment](choice/bayesian-learning/)** | Track how signals update beliefs and change the decision to invest or wait. Waiting is valuable when beliefs are still uncertain enough to move. |
 | [<img src="choice/urn-behavioral-mixtures/figures/thumb.png" width="160">](choice/urn-behavioral-mixtures/figures/bayes-likelihood-ratio.png) | **[Bayesian Urn Classification and Behavioral Mixtures](choice/urn-behavioral-mixtures/)** | Use likelihood ratios to classify urn states and finite mixtures to recover latent decision rules from repeated choices. |
@@ -149,18 +147,6 @@ These tutorials cover stochastic processes, macroeconomic data, and forecasting.
 | [<img src="time-series/fred-macro-data/figures/thumb.png" width="160">](time-series/fred-macro-data/figures/time-series.png) | **[FRED-Style Macro Data and Business-Cycle Moments](time-series/fred-macro-data/)** | Turn GDP, inflation, unemployment, and policy-rate series into business-cycle moments. The tutorial is about the data objects behind macro targets. |
 | [<img src="time-series/ar-processes/figures/thumb.png" width="160">](time-series/ar-processes/figures/ar1-irfs.png) | **[Persistent Shocks and Multiplier-Accelerator Dynamics](time-series/ar-processes/)** | Study how persistence changes shock half-lives, spectra, and income dynamics. The coefficient is an economic timing assumption, not just a statistic. |
 | [<img src="time-series/stock-watson/figures/thumb.png" width="160">](time-series/stock-watson/figures/factor-comparison.png) | **[Stock-Watson Diffusion Index Forecasts](time-series/stock-watson/)** | Extract a common factor from a large macro panel and use it for forecasting. The example compares factor forecasts with simpler benchmarks. |
-
-## Computational Finance
-
-These tutorials cover elementary finance: bond prices, yield curves, predictability tests, and portfolio frontiers.
-
-| Preview | Tutorial | Description |
-|---|---|---|
-| [<img src="computational-finance/bond-yield-to-maturity/figures/thumb.png" width="160">](computational-finance/bond-yield-to-maturity/figures/price-yield-curve.png) | **[Bond Prices and Yield to Maturity](computational-finance/bond-yield-to-maturity/)** | Convert promised bond payments into implied annual yields. Yield to maturity is an internal discount rate for promised cash flows, not a realized return. |
-| [<img src="computational-finance/treasury-yield-curve/figures/thumb.png" width="160">](computational-finance/treasury-yield-curve/figures/yield-curve-snapshots.png) | **[Treasury Yield Curves and Term-Structure Shape](computational-finance/treasury-yield-curve/)** | Read maturity-specific Treasury rates as level, slope, and curvature. The tutorial keeps the distinction between par yields and traded zero-coupon prices clear. |
-| [<img src="computational-finance/fama-bliss-forward-regression/figures/thumb.png" width="160">](computational-finance/fama-bliss-forward-regression/figures/forward-regression-10y.png) | **[Fama-Bliss Forward-Rate Predictability](computational-finance/fama-bliss-forward-regression/)** | Use forward spreads to test whether future yields are predictable. Interpretation depends on the measurement choice and forecast horizon. |
-| [<img src="computational-finance/efficient-market-tests/figures/thumb.png" width="160">](computational-finance/efficient-market-tests/figures/autocorrelations.png) | **[Weak-Form Efficiency in Treasury Yield Changes](computational-finance/efficient-market-tests/)** | Check whether lagged yield changes predict future changes. The exercise ties simple diagnostics to a clear random-walk benchmark. |
-| [<img src="computational-finance/mean-variance-frontier/figures/thumb.png" width="160">](computational-finance/mean-variance-frontier/figures/frontier.png) | **[Mean-Variance Portfolio Frontier](computational-finance/mean-variance-frontier/)** | Build the risk-return frontier for portfolios with and without constraints. Random portfolios are useful for intuition, but the frontier is the object of interest. |
 
 ## Computational Methods
 
