@@ -1,4 +1,4 @@
-k,V(k) numerical,V(k) exact,V error,k' numerical,k' exact,k' error
+k,V numerical,V closed form,V error,k' numerical,k' closed form,k' error
 2.502,32.3565,32.3565,-1.53e-05,6.5967,6.5769,1.98e-02
 5.692,32.6943,32.6943,-1.53e-05,8.4329,8.4160,1.68e-02
 8.881,32.8771,32.8771,-1.53e-05,9.6290,9.6179,1.11e-02
