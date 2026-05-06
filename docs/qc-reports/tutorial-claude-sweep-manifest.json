@@ -1,6 +1,6 @@
 {
   "pass_name": "claude-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-06T23:22:54Z",
+  "updated_at": "2026-05-06T23:31:17Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -158,6 +158,20 @@
         "dynamic-programming/aiyagari/tables/equilibrium.csv"
       ],
       "updated_at": "2026-05-06T23:22:54Z"
+    },
+    {
+      "tutorial_path": "heterogeneous-agents/endogenous-grid-points/",
+      "status": "complete",
+      "commit": "8afea60c174fbe6b87e36421a1658cc6bd331478",
+      "changed_paths": [
+        "README.md",
+        "heterogeneous-agents/endogenous-grid-points/README.md",
+        "heterogeneous-agents/endogenous-grid-points/figures/consumption-policy.png",
+        "heterogeneous-agents/endogenous-grid-points/figures/endogenous-grid.png",
+        "heterogeneous-agents/endogenous-grid-points/figures/thumb.png",
+        "heterogeneous-agents/endogenous-grid-points/run.py"
+      ],
+      "updated_at": "2026-05-06T23:31:17Z"
     }
   ]
 }
