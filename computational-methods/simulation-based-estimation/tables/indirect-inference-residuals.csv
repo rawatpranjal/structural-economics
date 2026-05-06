@@ -1,0 +1,7 @@
+Statistic,Observed target,Simulated at estimate,Scaled residual
+LPM intercept,-1.75243,-1.74529,0.00408
+LPM slope,0.71731,0.7125,-0.0067
+Mean log wage,3.00239,3.01519,0.00426
+SD log wage,0.45058,0.44672,-0.00858
+Acceptance rate,0.4012,0.40303,0.00457
+Mean accepted log wage,3.36538,3.36797,0.00077

@@ -1,0 +1,4 @@
+Model,Log likelihood,Monotonicity violations,Max probability error,Estimated rho,Rho error,LL loss vs saturated
+Unconstrained task logit,-215.05113,1,0.09185,,,0.0
+Fixed-scale CRRA logit,-221.82988,0,0.001,0.45074,0.00074,6.77875
+Monotone task logit,-216.04389,0,0.09185,,,0.99276

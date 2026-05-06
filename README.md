@@ -1,6 +1,6 @@
 # Computational Economics
 
-This repository gives graduate students and researchers short, executable examples of computational economics. The tutorials are organized by economic question and can be run from their folders with `python run.py`.
+This repository gives graduate students and researchers short, executable examples in computational economics. Tutorials are organized by economic question and can be run from their folders with `python run.py`.
 
 ## Contents
 
@@ -103,15 +103,16 @@ The IO section covers firm boundaries, vertical relationships, demand, pricing, 
 | [<img src="industrial-organization/effective-hhi/figures/thumb.png" width="160">](industrial-organization/effective-hhi/figures/hhi-vs-nfirms.png) | **[HHI, Effective Firms, and Merger Screens](industrial-organization/effective-hhi/)** | Use ownership shares to compute concentration screens. The example also shows why HHI is not the same thing as a pricing model. |
 | [<img src="industrial-organization/collusion-detection/figures/thumb.png" width="160">](industrial-organization/collusion-detection/figures/profits-by-regime.png) | **[Cartel Stability and Price Screens](industrial-organization/collusion-detection/)** | Study when repeated interaction can support collusion. Simulated price breaks show how screening evidence relates to the incentive constraint. |
 | [<img src="industrial-organization/dynamic-games/figures/thumb.png" width="160">](industrial-organization/dynamic-games/figures/investment-policy.png) | **[Dynamic Games and Markov-Perfect Investment](industrial-organization/dynamic-games/)** | Model firms that invest in quality while watching rivals' states. Future rivalry makes today's investment payoff depend on the whole industry state. |
+| [<img src="industrial-organization/dynamic-games-estimation/figures/thumb.png" width="160">](industrial-organization/dynamic-games-estimation/figures/ccp-heatmaps.png) | **[Dynamic Games Estimation from First-Stage CCPs](industrial-organization/dynamic-games-estimation/)** | Estimate a small investment game from first-stage policies and forward values. The likelihood avoids solving a full MPE at every trial parameter. |
 | [<img src="industrial-organization/dynamic-entry-exit/figures/thumb.png" width="160">](industrial-organization/dynamic-entry-exit/figures/value-function.png) | **[Dynamic Entry and Exit in Oligopoly](industrial-organization/dynamic-entry-exit/)** | Separate entry costs from exit decisions in a dynamic market. A stable firm count can still hide turnover and option-value hysteresis. |
-| [<img src="industrial-organization/dynamic-discrete-choice/figures/thumb.png" width="160">](industrial-organization/dynamic-discrete-choice/figures/value-and-ccp.png) | **[Bus Engine Replacement and Dynamic Choice](industrial-organization/dynamic-discrete-choice/)** | Estimate a replacement decision where today's action changes tomorrow's state. The same observed replacement rate mixes current costs and continuation values. |
+| [<img src="industrial-organization/dynamic-discrete-choice/figures/thumb.png" width="160">](industrial-organization/dynamic-discrete-choice/figures/value-and-ccp.png) | **[Bus Engine Replacement and Dynamic Choice](industrial-organization/dynamic-discrete-choice/)** | Estimate a replacement decision by NFXP, CCP, and MPEC. The same hazard can be handled by nested fixed points or Bellman constraints. |
 | [<img src="industrial-organization/three-part-tariffs/figures/thumb.png" width="160">](industrial-organization/three-part-tariffs/figures/usage-policy.png) | **[Three-Part Tariffs and Forward-Looking Broadband Demand](industrial-organization/three-part-tariffs/)** | Study plan choice when data allowances make usage forward-looking. The allowance has value before the cap is actually reached. |
 | [<img src="industrial-organization/nash-in-nash/figures/thumb.png" width="160">](industrial-organization/nash-in-nash/figures/negotiated-prices.png) | **[Nash-in-Nash Hospital-Insurer Bargaining](industrial-organization/nash-in-nash/)** | Solve bilateral bargaining over hospital-insurer transfers. Network outside options matter because losing a system is not the same as losing one hospital. |
 | [<img src="industrial-organization/merger-simulation/figures/thumb.png" width="160">](industrial-organization/merger-simulation/figures/price-comparison.png) | **[Differentiated-Products Merger Simulation](industrial-organization/merger-simulation/)** | Simulate post-merger pricing with differentiated products. Screens such as GUPPI help, but the solved equilibrium depends on substitution and efficiencies. |
 
 ## Choice and Demand
 
-Choice and demand focuses on revealed preference, learning, and product-choice models.
+Choice and demand focuses on revealed preference, learning, and choice models.
 
 | Preview | Tutorial | Description |
 |---|---|---|
@@ -121,12 +122,16 @@ Choice and demand focuses on revealed preference, learning, and product-choice m
 | [<img src="choice/houtman-maks-rational-subsets/figures/thumb.png" width="160">](choice/houtman-maks-rational-subsets/figures/conflict-graph.png) | **[Houtman-Maks Rational Cores](choice/houtman-maks-rational-subsets/)** | Find the largest subset of choices that can be rationalized. This helps distinguish a few inconsistent observations from broad inconsistency. |
 | [<img src="choice/revealed-price-preference/figures/thumb.png" width="160">](choice/revealed-price-preference/figures/price-cost-ratios.png) | **[Revealed Price Preference](choice/revealed-price-preference/)** | Ask whether price regimes can be ranked from the bundles they make affordable. Bundle choices can look rational even when price-regime rankings fail. |
 | [<img src="choice/logit-discrete-choice/figures/thumb.png" width="160">](choice/logit-discrete-choice/figures/log-likelihood-surface.png) | **[Plain Logit Demand and IIA](choice/logit-discrete-choice/)** | Estimate a baseline product-choice model and inspect its substitution restriction. Lost buyers from one product get reallocated mechanically across the rest. |
+| [<img src="choice/conditional-logit-panel/figures/thumb.png" width="160">](choice/conditional-logit-panel/figures/conditional-likelihood.png) | **[Conditional Logit for Fixed Effects Panels](choice/conditional-logit-panel/)** | Condition on each agent's total choices to remove fixed effects. The slope comes from within-agent variation rather than persistent tastes. |
+| [<img src="choice/maximum-score-binary-choice/figures/thumb.png" width="160">](choice/maximum-score-binary-choice/figures/score-objectives.png) | **[Maximum Score Binary Choice](choice/maximum-score-binary-choice/)** | Estimate a binary-choice index with a nonsmooth classification criterion. Scale normalization and smoothing make the semiparametric target visible. |
 | [<img src="choice/bayesian-learning/figures/thumb.png" width="160">](choice/bayesian-learning/figures/belief-evolution.png) | **[Bayesian Learning and Sequential Investment](choice/bayesian-learning/)** | Track how signals update beliefs and change the decision to invest or wait. Waiting is valuable when beliefs are still uncertain enough to move. |
+| [<img src="choice/urn-behavioral-mixtures/figures/thumb.png" width="160">](choice/urn-behavioral-mixtures/figures/bayes-likelihood-ratio.png) | **[Bayesian Urn Classification and Behavioral Mixtures](choice/urn-behavioral-mixtures/)** | Use likelihood ratios to classify urn states and finite mixtures to recover latent decision rules from repeated choices. |
+| [<img src="choice/risk-aversion-monotone-choice/figures/thumb.png" width="160">](choice/risk-aversion-monotone-choice/figures/risky-choice-fits.png) | **[Risk Aversion and Monotone Stochastic Choice](choice/risk-aversion-monotone-choice/)** | Estimate lottery choice with unconstrained, structural, and monotonicity-constrained logits. Shape restrictions discipline noisy row shares. |
 | [<img src="choice/nested-logit/figures/thumb.png" width="160">](choice/nested-logit/figures/elasticity-heatmap.png) | **[Nested Logit Demand and Within-Nest Substitution](choice/nested-logit/)** | Group products into nests so substitution can be stronger among close alternatives. The nesting parameter changes where lost buyers go. |
 
 ## Computational Game Theory
 
-These tutorials introduce equilibrium concepts before they appear inside IO and macro models.
+These tutorials introduce computational methods to solve game theoretic equilibria.
 
 | Preview | Tutorial | Description |
 |---|---|---|
@@ -137,7 +142,7 @@ These tutorials introduce equilibrium concepts before they appear inside IO and 
 
 ## Time Series and Data
 
-These tutorials cover stochastic processes, macro data handling, and forecasting objects used in structural work.
+These tutorials cover stochastic processes, macroeconomic data, and forecasting.
 
 | Preview | Tutorial | Description |
 |---|---|---|
@@ -147,7 +152,7 @@ These tutorials cover stochastic processes, macro data handling, and forecasting
 
 ## Computational Finance
 
-These tutorials make bond prices, yield curves, predictability tests, and portfolio frontiers reproducible.
+These tutorials cover elementary finance: bond prices, yield curves, predictability tests, and portfolio frontiers.
 
 | Preview | Tutorial | Description |
 |---|---|---|
@@ -159,11 +164,12 @@ These tutorials make bond prices, yield curves, predictability tests, and portfo
 
 ## Computational Methods
 
-These tutorials are standalone references for optimization, approximation, filtering, and sampling.
+These tutorials are standalone references for optimization, approximation, simulation, filtering, and sampling.
 
 | Preview | Tutorial | Description |
 |---|---|---|
 | [<img src="computational-methods/numerical-optimization/figures/thumb.png" width="160">](computational-methods/numerical-optimization/figures/optimizer-paths.png) | **[Multimodal Likelihood Optimization](computational-methods/numerical-optimization/)** | Optimize an objective with more than one plausible mode. Starting values matter because different optimizers can settle in different basins. |
+| [<img src="computational-methods/simulation-based-estimation/figures/thumb.png" width="160">](computational-methods/simulation-based-estimation/figures/criterion-surfaces.png) | **[Simulation-Based Estimation: MSM and Indirect Inference](computational-methods/simulation-based-estimation/)** | Estimate one stochastic search DGP by moment matching and auxiliary-model matching. Criterion surfaces show simulation noise and identification. |
 | [<img src="computational-methods/projection-methods/figures/thumb.png" width="160">](computational-methods/projection-methods/figures/chebyshev-basis.png) | **[Chebyshev Projection for a Growth Policy](computational-methods/projection-methods/)** | Approximate a smooth growth policy with a small set of coefficients. Euler errors away from the fitted nodes show whether the approximation is reliable. |
 | [<img src="computational-methods/perturbation-linearization/figures/thumb.png" width="160">](computational-methods/perturbation-linearization/figures/local-approximations.png) | **[Perturbation Around a Steady State](computational-methods/perturbation-linearization/)** | Linearize nonlinear dynamics near a steady state. Higher-order terms show where curvature and asymmetric responses start to matter. |
 | [<img src="computational-methods/metropolis-hastings/figures/thumb.png" width="160">](computational-methods/metropolis-hastings/figures/mh-walk.png) | **[Metropolis-Hastings for a Bimodal Posterior](computational-methods/metropolis-hastings/)** | Diagnose how a finite MCMC run explores a two-mode posterior. Proposal tuning changes acceptance, mode switching, and effective sample size. |

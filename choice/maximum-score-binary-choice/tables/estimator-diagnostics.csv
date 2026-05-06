@@ -1,0 +1,10 @@
+Diagnostic,Value
+Choice-one share,0.4908
+Grid maximum score,0.69
+Smoothed score,0.6780264552383047
+Smoothed optimizer success,1.0
+Smoothed optimizer evaluations,22.0
+Bootstrap mean,-0.8263087530609212
+Bootstrap standard deviation,0.06834605909496647
+Bootstrap lower 95,-0.9570803826264641
+Bootstrap upper 95,-0.6792720648378284

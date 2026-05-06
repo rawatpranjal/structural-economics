@@ -1,0 +1,4 @@
+Parameter,True,Estimate,Error
+Quality value theta_q,0.7,0.70387,0.00387
+Gap incentive theta_g,0.4,0.40502,0.00502
+Investment cost theta_c,1.0,0.99885,-0.00115

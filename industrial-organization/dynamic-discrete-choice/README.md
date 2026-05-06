@@ -1,12 +1,12 @@
 # Bus Engine Replacement and Dynamic Choice
 
-> Continuation values, replacement hazards, and CCP estimation in a Rust-style model.
+> Continuation values, replacement hazards, CCP estimation, and MPEC constraints in a Rust-style model.
 
 ## Overview
 
 Engine replacement is a clean dynamic discrete choice problem: the action is discrete, but the cost of that action is paid through future states. A bus operator who keeps an old engine receives the current keep payoff and lets mileage drift upward. Replacing the engine sacrifices that current keep payoff but resets the bus toward a low-mileage state. The replacement hazard therefore summarizes both current maintenance costs and the continuation value of a fresher engine.
 
-The example is the estimation-side complement to the dynamic IO models in [dynamic entry and exit](../dynamic-entry-exit/) and [Markov-perfect investment](../dynamic-games/). Here there is one decision maker rather than strategic firms, so the focus is on recovering payoff parameters from observed choices. The tutorial solves the model, simulates a panel with known truth, and compares nested fixed-point maximum likelihood with a Hotz-Miller conditional-choice-probability (CCP) estimator.
+The example is the estimation-side complement to the dynamic IO models in [dynamic entry and exit](../dynamic-entry-exit/) and [Markov-perfect investment](../dynamic-games/). Here there is one decision maker rather than strategic firms, so the focus is on recovering payoff parameters from observed choices. The tutorial solves the model, simulates a panel with known truth, and compares nested fixed-point maximum likelihood, a Hotz-Miller conditional-choice-probability (CCP) estimator, and a mathematical program with equilibrium constraints (MPEC). The MPEC version makes the continuation values optimization variables and imposes the Bellman equations as feasibility conditions.
 
 ## Equations
 
@@ -60,6 +60,19 @@ $$P_\theta^{HM}(1 \mid x)
 
 with $\Lambda(z)=1/(1+\exp(-z))$.
 
+The MPEC estimator chooses $\theta$ and the conditional values $v$ jointly:
+
+$$
+\max_{\theta,v}\ \ell(v)
+\quad\text{subject to}\quad
+v_a(x) = u(x,a;\theta) + \beta \sum_{x'} F_a(x' \mid x)
+\left[\log\sum_{j\in\{0,1\}}\exp(v_j(x'))+\gamma\right]
+$$
+
+for every action and mileage state. The likelihood still uses the logit choice
+formula, but the fixed point appears as equality constraints rather than an
+inner loop inside the objective.
+
 ## Model Setup
 
 | Parameter | Value | Description |
@@ -110,7 +123,19 @@ for each candidate theta:
 choose theta that maximizes the likelihood
 ```
 
-The first estimator is direct but repeatedly solves a Bellman fixed point. The second estimator avoids that nested value-function iteration after the first stage, at the cost of relying on the smoothed CCPs.
+The MPEC estimator puts the Bellman equations into the optimizer itself.
+
+```text
+Algorithm: MPEC for dynamic discrete choice
+Input: grid, transitions, beta, panel choices, starting theta and values
+Decision variables: theta, v_1(x), v_0(x) for every mileage state
+Objective: maximize the panel choice likelihood implied by v
+Constraints: Bellman residuals equal zero for both actions and all states
+Use a constrained nonlinear optimizer to move theta and v jointly
+Report theta, likelihood, optimizer status, and the max Bellman residual
+```
+
+The first estimator is direct but repeatedly solves a Bellman fixed point. The second estimator avoids that nested value-function iteration after the first stage, at the cost of relying on the smoothed CCPs. The third estimator keeps the fixed point out of the objective and instead asks whether a candidate value array is feasible.
 
 ## Results
 
@@ -126,37 +151,40 @@ Mileage drifts upward under the keep action and falls after replacement. The poi
 
 <img src="figures/simulated-histories.png" alt="Mileage histories for six simulated buses" width="80%">
 
-Because the data are simulated, the true policy can stay on the graph as a ground-truth reference. Both estimators recover the economically important shape: replacement is rare for fresh engines and rises sharply once mileage makes keeping the engine costly. The remaining disagreement is largest in sparsely visited states; it should be read as finite-sample and first-stage approximation error, not as a different economic mechanism.
+Because the data are simulated, the true policy can stay on the graph as a ground-truth reference. All three estimators recover the economically important shape: replacement is rare for fresh engines and rises sharply once mileage makes keeping the engine costly. The remaining disagreement is largest in sparsely visited states; it should be read as finite-sample and first-stage approximation error, not as a different economic mechanism.
 
-The full-solution and CCP policies are almost on top of the truth over the states that carry most of the simulated likelihood.
+The full-solution, CCP, and MPEC policies are almost on top of the truth over the states that carry most of the simulated likelihood.
 
 <img src="figures/estimated-policies.png" alt="Policy rules implied by the true and estimated parameters" width="80%">
 
-The estimates are close to the data-generating parameters. The full-solution estimator pays for a fresh fixed point at each trial value; the CCP estimator uses the first-stage policy to turn continuation values into a linear solve.
+The estimates are close to the data-generating parameters. The full-solution estimator pays for a fresh fixed point at each trial value; the CCP estimator uses the first-stage policy to turn continuation values into a linear solve; the MPEC estimator imposes Bellman equations as nonlinear constraints.
 
 **Structural parameter estimates**
 
-| Parameter   |   True |   Full-solution ML |   Full ML error |      CCP |   CCP error |
-|:------------|-------:|-------------------:|----------------:|---------:|------------:|
-| theta_0     |   2    |            2.01812 |         0.01812 |  2.01767 |     0.01767 |
-| theta_1     |  -0.15 |           -0.15346 |        -0.00346 | -0.15334 |    -0.00334 |
+| Parameter   |   True |   Full-solution ML |   Full ML error |      CCP |   CCP error |     MPEC |   MPEC error |
+|:------------|-------:|-------------------:|----------------:|---------:|------------:|---------:|-------------:|
+| theta_0     |   2    |            2.01812 |         0.01812 |  2.01767 |     0.01767 |  2.01812 |      0.01812 |
+| theta_1     |  -0.15 |           -0.15346 |        -0.00346 | -0.15334 |    -0.00334 | -0.15346 |     -0.00346 |
 
-The moments summarize the simulated panel and the numerical solve. The high-mileage share indicates how much likelihood information is available in the region where the replacement probability is already near one.
+The moments summarize the simulated panel and the numerical solve. The high-mileage share indicates how much likelihood information is available in the region where the replacement probability is already near one. The MPEC residual checks whether the reported conditional values satisfy the Bellman constraints.
 
 **Simulation and solver diagnostics**
 
-| Moment                   |        Value |
-|:-------------------------|-------------:|
-| Repair rate              |   0.253181   |
-| Average mileage          |   2.21011    |
-| Share with mileage >= 10 |   0.00293333 |
-| VFI iterations           | 228          |
-| Full ML success          |   1          |
-| CCP success              |   1          |
+| Moment                    |         Value |
+|:--------------------------|--------------:|
+| Repair rate               |   0.253181    |
+| Average mileage           |   2.21011     |
+| Share with mileage >= 10  |   0.00293333  |
+| VFI iterations            | 228           |
+| Full ML success           |   1           |
+| CCP success               |   1           |
+| MPEC success              |   1           |
+| MPEC iterations           |   5           |
+| MPEC max Bellman residual |   1.16398e-10 |
 
 ## Takeaway
 
-Dynamic discrete choice turns observed hazards into statements about current payoffs and continuation values. In the replacement problem, a high mileage bus is replaced not only because keeping it is costly today, but because replacement changes the distribution of tomorrow's state. Nested fixed-point likelihood estimates that object directly. CCP estimation is faster because it learns part of the policy first, but then the quality of the structural step depends on how well those first-stage CCPs approximate the true replacement hazard.
+Dynamic discrete choice turns observed hazards into statements about current payoffs and continuation values. In the replacement problem, a high mileage bus is replaced not only because keeping it is costly today, but because replacement changes the distribution of tomorrow's state. Nested fixed-point likelihood estimates that object directly. CCP estimation is faster because it learns part of the policy first, but then the quality of the structural step depends on how well those first-stage CCPs approximate the true replacement hazard. MPEC changes the architecture again by turning the Bellman equations into feasibility constraints.
 
 ## References
 

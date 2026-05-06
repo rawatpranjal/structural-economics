@@ -1,0 +1,10 @@
+Diagnostic,Value
+Truth MPE converged,1.0
+Truth MPE iterations,591.0
+Second-stage success,1.0
+Second-stage iterations,72.0
+Second-stage log likelihood,-37238.218259749156
+First-stage policy RMSE,0.017087306060090218
+Model policy RMSE,0.0013543355175390252
+Forward simulation value RMSE,0.04501650928353896
+Firm-period observations,60000.0

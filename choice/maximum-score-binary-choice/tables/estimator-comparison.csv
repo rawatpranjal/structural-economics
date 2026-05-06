@@ -1,0 +1,5 @@
+Estimator,Normalized beta,Error,Classification score
+True index,-0.85,0.0,0.6872
+Grid maximum score,-0.88,-0.03,0.69
+Smoothed maximum score,-0.83084,0.01916,0.6884
+Misspecified logit ratio,-0.66013,0.18987,0.6816

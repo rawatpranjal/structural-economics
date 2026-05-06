@@ -1,0 +1,6 @@
+Statistic,Observed target,Simulated at estimate,Scaled residual
+Acceptance rate,0.4012,0.40027,-0.00233
+Mean log wage,3.00239,3.00751,0.00171
+SD log wage,0.45058,0.44322,-0.01634
+Mean accepted log wage,3.36538,3.35825,-0.00212
+SD accepted log wage,0.31928,0.32516,0.01842

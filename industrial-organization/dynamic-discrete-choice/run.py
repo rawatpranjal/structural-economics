@@ -212,6 +212,79 @@ def estimate_ccp(
     return {"theta": result.x, "objective": result.fun, "success": result.success, "p_hat": p_hat}
 
 
+def bellman_residual(
+    theta: np.ndarray,
+    values: np.ndarray,
+    x: np.ndarray,
+    F_replace: np.ndarray,
+    F_keep: np.ndarray,
+    beta: float,
+) -> np.ndarray:
+    """Stack Bellman residuals for replacement and keep values."""
+    flow_keep = theta[0] + theta[1] * x
+    inclusive = logsumexp(values, axis=1) + EULER_GAMMA
+    replace_rhs = beta * (F_replace @ inclusive)
+    keep_rhs = flow_keep + beta * (F_keep @ inclusive)
+    return np.column_stack([values[:, 0] - replace_rhs, values[:, 1] - keep_rhs]).ravel()
+
+
+def pack_mpec(theta: np.ndarray, values: np.ndarray) -> np.ndarray:
+    """Pack structural parameters and conditional values for MPEC."""
+    return np.concatenate([theta, values.ravel()])
+
+
+def unpack_mpec(z: np.ndarray, n_states: int) -> tuple[np.ndarray, np.ndarray]:
+    """Unpack an MPEC decision vector."""
+    return z[:2], z[2:].reshape(n_states, 2)
+
+
+def estimate_mpec(
+    data: dict[str, np.ndarray],
+    x: np.ndarray,
+    F_replace: np.ndarray,
+    F_keep: np.ndarray,
+    beta: float,
+    theta_start: np.ndarray,
+) -> dict[str, object]:
+    """Estimate by imposing Bellman equations as equality constraints."""
+    start_solution = solve_ddc(theta_start, x, F_replace, F_keep, beta, tol=1e-8)
+    z0 = pack_mpec(theta_start, np.asarray(start_solution["values"]))
+    bounds = [(0.5, 3.5), (-0.35, -0.03)] + [(None, None)] * (2 * len(x))
+
+    def objective(z: np.ndarray) -> float:
+        _, values = unpack_mpec(z, len(x))
+        log_denom = logsumexp(values, axis=1)
+        p_replace = np.exp(values[:, 0] - log_denom)
+        return -panel_log_likelihood(p_replace, data)
+
+    def constraints(z: np.ndarray) -> np.ndarray:
+        theta, values = unpack_mpec(z, len(x))
+        return bellman_residual(theta, values, x, F_replace, F_keep, beta)
+
+    result = minimize(
+        objective,
+        z0,
+        method="SLSQP",
+        bounds=bounds,
+        constraints={"type": "eq", "fun": constraints},
+        options={"ftol": 1e-7, "maxiter": 80, "disp": False},
+    )
+    theta_hat, values_hat = unpack_mpec(result.x, len(x))
+    residual = constraints(result.x)
+    log_denom = logsumexp(values_hat, axis=1)
+    p_replace = np.exp(values_hat[:, 0] - log_denom)
+    return {
+        "theta": theta_hat,
+        "values": values_hat,
+        "p_replace": p_replace,
+        "objective": float(result.fun),
+        "success": bool(result.success),
+        "iterations": int(result.nit),
+        "constraint_max": float(np.max(np.abs(residual))),
+        "message": str(result.message),
+    }
+
+
 def main() -> None:
     beta = 0.90
     theta_true = np.array([2.00, -0.15])
@@ -225,6 +298,14 @@ def main() -> None:
 
     full_est = estimate_full_solution(data, x, F_replace, F_keep, beta, start=np.array([1.7, -0.12]))
     ccp_est = estimate_ccp(data, x, F_replace, F_keep, beta, start=np.array([1.7, -0.12]))
+    mpec_est = estimate_mpec(
+        data,
+        x,
+        F_replace,
+        F_keep,
+        beta,
+        theta_start=np.asarray(ccp_est["theta"]),
+    )
     solution_full = solve_ddc(np.asarray(full_est["theta"]), x, F_replace, F_keep, beta)
     solution_ccp = solve_ddc(np.asarray(ccp_est["theta"]), x, F_replace, F_keep, beta)
 
@@ -236,11 +317,13 @@ def main() -> None:
     print(f"  Simulated repair rate: {repair_rate:.3f}")
     print(f"  Full-solution estimate: {full_est['theta']}")
     print(f"  CCP estimate: {ccp_est['theta']}")
+    print(f"  MPEC estimate: {mpec_est['theta']}")
+    print(f"  MPEC Bellman residual: {mpec_est['constraint_max']:.2e}")
 
     setup_style()
     report = ModelReport(
         "Bus Engine Replacement and Dynamic Choice",
-        "Continuation values, replacement hazards, and CCP estimation in a Rust-style model.",
+        "Continuation values, replacement hazards, CCP estimation, and MPEC constraints in a Rust-style model.",
         include_reproduce=False,
         show_figure_captions=False,
     )
@@ -257,8 +340,10 @@ def main() -> None:
         "[Markov-perfect investment](../dynamic-games/). Here there is one decision maker "
         "rather than strategic firms, so the focus is on recovering payoff parameters from "
         "observed choices. The tutorial solves the model, simulates a panel with known "
-        "truth, and compares nested fixed-point maximum likelihood with a Hotz-Miller "
-        "conditional-choice-probability (CCP) estimator."
+        "truth, and compares nested fixed-point maximum likelihood, a Hotz-Miller "
+        "conditional-choice-probability (CCP) estimator, and a mathematical program with "
+        "equilibrium constraints (MPEC). The MPEC version makes the continuation values "
+        "optimization variables and imposes the Bellman equations as feasibility conditions."
     )
 
     report.add_equations(
@@ -312,6 +397,19 @@ $$P_\theta^{HM}(1 \mid x)
 -\theta_0-\theta_1 x-\beta F_0 W_\theta\right),$$
 
 with $\Lambda(z)=1/(1+\exp(-z))$.
+
+The MPEC estimator chooses $\theta$ and the conditional values $v$ jointly:
+
+$$
+\max_{\theta,v}\ \ell(v)
+\quad\text{subject to}\quad
+v_a(x) = u(x,a;\theta) + \beta \sum_{x'} F_a(x' \mid x)
+\left[\log\sum_{j\in\{0,1\}}\exp(v_j(x'))+\gamma\right]
+$$
+
+for every action and mileage state. The likelihood still uses the logit choice
+formula, but the fixed point appears as equality constraints rather than an
+inner loop inside the objective.
 """
     )
 
@@ -365,15 +463,28 @@ with $\Lambda(z)=1/(1+\exp(-z))$.
         "    evaluate the panel choice likelihood\n"
         "choose theta that maximizes the likelihood\n"
         "```\n\n"
+        "The MPEC estimator puts the Bellman equations into the optimizer itself.\n\n"
+        "```text\n"
+        "Algorithm: MPEC for dynamic discrete choice\n"
+        "Input: grid, transitions, beta, panel choices, starting theta and values\n"
+        "Decision variables: theta, v_1(x), v_0(x) for every mileage state\n"
+        "Objective: maximize the panel choice likelihood implied by v\n"
+        "Constraints: Bellman residuals equal zero for both actions and all states\n"
+        "Use a constrained nonlinear optimizer to move theta and v jointly\n"
+        "Report theta, likelihood, optimizer status, and the max Bellman residual\n"
+        "```\n\n"
         "The first estimator is direct but repeatedly solves a Bellman fixed point. The "
         "second estimator avoids that nested value-function iteration after the first "
-        "stage, at the cost of relying on the smoothed CCPs."
+        "stage, at the cost of relying on the smoothed CCPs. The third estimator keeps "
+        "the fixed point out of the objective and instead asks whether a candidate value "
+        "array is feasible."
     )
 
     values = np.asarray(solution_true["values"])
     p_true = np.asarray(solution_true["p_replace"])
     p_full = np.asarray(solution_full["p_replace"])
     p_ccp = np.asarray(solution_ccp["p_replace"])
+    p_mpec = np.asarray(mpec_est["p_replace"])
     p_hat = np.asarray(ccp_est["p_hat"])
 
     fig1, (ax1a, ax1b) = plt.subplots(1, 2, figsize=(11, 4.5))
@@ -438,13 +549,14 @@ with $\Lambda(z)=1/(1+\exp(-z))$.
     ax3.plot(x, p_true, label="True")
     ax3.plot(x, p_full, "--", label="Full-solution ML")
     ax3.plot(x, p_ccp, ":", label="CCP")
+    ax3.plot(x, p_mpec, "-.", label="MPEC")
     ax3.set_xlabel("Mileage")
     ax3.set_ylabel("Replacement probability")
     ax3.set_title("Estimated Replacement Policies")
     ax3.legend()
     report.add_results(
         "Because the data are simulated, the true policy can stay on the graph as a "
-        "ground-truth reference. Both estimators recover the economically important shape: "
+        "ground-truth reference. All three estimators recover the economically important shape: "
         "replacement is rare for fresh engines and rises sharply once mileage makes keeping "
         "the engine costly. The remaining disagreement is largest in sparsely visited "
         "states; it should be read as finite-sample and first-stage approximation error, "
@@ -455,13 +567,14 @@ with $\Lambda(z)=1/(1+\exp(-z))$.
         "Policy rules implied by the true and estimated parameters",
         fig3,
         description=(
-            "The full-solution and CCP policies are almost on top of the truth over the "
-            "states that carry most of the simulated likelihood."
+        "The full-solution, CCP, and MPEC policies are almost on top of the truth over "
+        "the states that carry most of the simulated likelihood."
         ),
     )
 
     theta_full = np.asarray(full_est["theta"])
     theta_ccp = np.asarray(ccp_est["theta"])
+    theta_mpec = np.asarray(mpec_est["theta"])
     estimate_table = pd.DataFrame({
         "Parameter": ["theta_0", "theta_1"],
         "True": theta_true,
@@ -469,6 +582,8 @@ with $\Lambda(z)=1/(1+\exp(-z))$.
         "Full ML error": theta_full - theta_true,
         "CCP": theta_ccp,
         "CCP error": theta_ccp - theta_true,
+        "MPEC": theta_mpec,
+        "MPEC error": theta_mpec - theta_true,
     })
     report.add_table(
         "tables/parameter-estimates.csv",
@@ -477,7 +592,8 @@ with $\Lambda(z)=1/(1+\exp(-z))$.
         description=(
             "The estimates are close to the data-generating parameters. The full-solution "
             "estimator pays for a fresh fixed point at each trial value; the CCP estimator "
-            "uses the first-stage policy to turn continuation values into a linear solve."
+            "uses the first-stage policy to turn continuation values into a linear solve; "
+            "the MPEC estimator imposes Bellman equations as nonlinear constraints."
         ),
     )
 
@@ -489,6 +605,9 @@ with $\Lambda(z)=1/(1+\exp(-z))$.
             "VFI iterations",
             "Full ML success",
             "CCP success",
+            "MPEC success",
+            "MPEC iterations",
+            "MPEC max Bellman residual",
         ],
         "Value": [
             repair_rate,
@@ -497,6 +616,9 @@ with $\Lambda(z)=1/(1+\exp(-z))$.
             float(solution_true["iterations"]),
             float(bool(full_est["success"])),
             float(bool(ccp_est["success"])),
+            float(bool(mpec_est["success"])),
+            float(mpec_est["iterations"]),
+            float(mpec_est["constraint_max"]),
         ],
     })
     report.add_table(
@@ -506,7 +628,8 @@ with $\Lambda(z)=1/(1+\exp(-z))$.
         description=(
             "The moments summarize the simulated panel and the numerical solve. The high-mileage "
             "share indicates how much likelihood information is available in the region where "
-            "the replacement probability is already near one."
+            "the replacement probability is already near one. The MPEC residual checks "
+            "whether the reported conditional values satisfy the Bellman constraints."
         ),
     )
 
@@ -517,7 +640,8 @@ with $\Lambda(z)=1/(1+\exp(-z))$.
         "distribution of tomorrow's state. Nested fixed-point likelihood estimates that object "
         "directly. CCP estimation is faster because it learns part of the policy first, but "
         "then the quality of the structural step depends on how well those first-stage CCPs "
-        "approximate the true replacement hazard."
+        "approximate the true replacement hazard. MPEC changes the architecture again by "
+        "turning the Bellman equations into feasibility constraints."
     )
 
     report.add_references([
