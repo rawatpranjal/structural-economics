@@ -1,6 +1,6 @@
 {
   "pass_name": "claude-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-06T22:32:18Z",
+  "updated_at": "2026-05-06T22:38:21Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -76,6 +76,23 @@
         "dynamic-programming/consumption-savings/run.py"
       ],
       "updated_at": "2026-05-06T22:32:18Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/job-search-mccall/",
+      "status": "complete",
+      "commit": "dc36eb348653ae6338ad21ab573b66883459f378",
+      "changed_paths": [
+        "README.md",
+        "dynamic-programming/job-search-mccall/README.md",
+        "dynamic-programming/job-search-mccall/figures/accept-vs-reject.png",
+        "dynamic-programming/job-search-mccall/figures/cutoff-on-density.png",
+        "dynamic-programming/job-search-mccall/figures/thumb.png",
+        "dynamic-programming/job-search-mccall/figures/wstar-vs-benefits.png",
+        "dynamic-programming/job-search-mccall/figures/wstar-vs-beta.png",
+        "dynamic-programming/job-search-mccall/run.py",
+        "dynamic-programming/job-search-mccall/tables/reservation-wages.csv"
+      ],
+      "updated_at": "2026-05-06T22:38:21Z"
     }
   ]
 }
