@@ -1,6 +1,6 @@
 {
   "pass_name": "claude-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-06T22:43:58Z",
+  "updated_at": "2026-05-06T22:51:34Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -108,6 +108,24 @@
         "dynamic-programming/asset-pricing/run.py"
       ],
       "updated_at": "2026-05-06T22:43:58Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/rbc/",
+      "status": "complete",
+      "commit": "84f4619da511b279f0c17bc81cbfe1094257c181",
+      "changed_paths": [
+        "README.md",
+        "dynamic-programming/rbc/README.md",
+        "dynamic-programming/rbc/figures/capital-policy.png",
+        "dynamic-programming/rbc/figures/comovements.png",
+        "dynamic-programming/rbc/figures/policy-functions.png",
+        "dynamic-programming/rbc/figures/simulation.png",
+        "dynamic-programming/rbc/figures/thumb.png",
+        "dynamic-programming/rbc/figures/value-function.png",
+        "dynamic-programming/rbc/run.py",
+        "dynamic-programming/rbc/tables/business-cycle-stats.csv"
+      ],
+      "updated_at": "2026-05-06T22:51:34Z"
     }
   ]
 }
