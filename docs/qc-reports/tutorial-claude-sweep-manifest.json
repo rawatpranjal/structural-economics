@@ -1,6 +1,6 @@
 {
   "pass_name": "claude-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-06T22:51:34Z",
+  "updated_at": "2026-05-06T23:09:19Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -126,6 +126,21 @@
         "dynamic-programming/rbc/tables/business-cycle-stats.csv"
       ],
       "updated_at": "2026-05-06T22:51:34Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/diamond-mortensen-pissarides/",
+      "status": "complete",
+      "commit": "6bbef16c3d3f7aa6c3fcbd4a24bb1a5b8523e11c",
+      "changed_paths": [
+        "README.md",
+        "dynamic-programming/diamond-mortensen-pissarides/README.md",
+        "dynamic-programming/diamond-mortensen-pissarides/figures/productivity-tightness.png",
+        "dynamic-programming/diamond-mortensen-pissarides/figures/thumb.png",
+        "dynamic-programming/diamond-mortensen-pissarides/figures/unemployment-vacancies.png",
+        "dynamic-programming/diamond-mortensen-pissarides/run.py",
+        "dynamic-programming/diamond-mortensen-pissarides/tables/amplification-by-surplus.csv"
+      ],
+      "updated_at": "2026-05-06T23:09:19Z"
     }
   ]
 }
