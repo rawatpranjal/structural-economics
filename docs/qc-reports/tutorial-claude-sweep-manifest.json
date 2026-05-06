@@ -1,0 +1,21 @@
+{
+  "pass_name": "claude-full-tutorial-sweep-v1",
+  "updated_at": "2026-05-06T22:07:07Z",
+  "entries": [
+    {
+      "tutorial_path": "dynamic-programming/shock-discretization/",
+      "status": "complete",
+      "commit": "9e74be309f53efc4b488a8c0dc43009a88f3c73e",
+      "changed_paths": [
+        "README.md",
+        "dynamic-programming/shock-discretization/README.md",
+        "dynamic-programming/shock-discretization/figures/moment-accuracy.png",
+        "dynamic-programming/shock-discretization/figures/simulated-paths.png",
+        "dynamic-programming/shock-discretization/figures/stationary-mass.png",
+        "dynamic-programming/shock-discretization/figures/thumb.png",
+        "dynamic-programming/shock-discretization/run.py"
+      ],
+      "updated_at": "2026-05-06T22:07:07Z"
+    }
+  ]
+}
