@@ -1,123 +1,153 @@
 # McCall Job Search and the Reservation Wage
 
-> Sequential wage-offer search, option value, and threshold acceptance.
+> Sequential wage-offer search as an optimal-stopping problem with a scalar continuation value.
 
 ## Overview
 
-The McCall model is a small partial-equilibrium model of unemployment with a sharp economic object: the value of waiting for a better wage offer. An unemployed worker observes one offer at a time. Accepting locks in that wage forever; rejecting pays the unemployment benefit $b$ today and preserves the right to draw again tomorrow.
+An unemployed worker draws one wage offer per period from a known distribution. Accepting an offer locks in that wage forever; rejecting pays the unemployment benefit $b$ and rolls the dice again next period. The question is when to stop searching.
 
-The optimal policy is a reservation rule. The worker accepts offers at or above a cutoff $w^{\ast}$ and rejects offers below it. The cutoff is not a taste parameter; it is an endogenous price of search, pinned down by the wage-offer distribution, the benefit level, and the discount factor. This is the worker-side building block behind richer search models such as [search and matching unemployment](../diamond-mortensen-pissarides/). It also echoes the logic in [income-risk saving](../consumption-savings/): a current choice is valuable because it changes exposure to future states.
+Two features make this the cleanest optimal-stopping problem in the catalog. First, the only state is the current offer $w$, and once $w$ is rejected it is forgotten, so the value of rejection does not depend on $w$ at all. The Bellman equation reduces to a comparison between a linear function of $w$ (acceptance) and a scalar (rejection), which forces the policy to be a cutoff $w^{\ast}$. Second, that cutoff is characterized by a one-dimensional fixed point that can be solved without iterating on the full value function, giving a closed enough benchmark to audit any discretization.
+
+Economically, $w^{\ast}$ is the price of search: the wage at which the marginal continuation gain from waiting equals the foregone earnings from rejecting today. Patience, the benefit level, and the right tail of the offer distribution all push it up; impatience and bad benefits pull it down.
+
+This is the worker-side primitive behind frictional unemployment. The same threshold logic, with vacancies and a matching function added, drives [Diamond-Mortensen-Pissarides search and matching](../diamond-mortensen-pissarides/). On the recursive-methods side, [cake eating](../cake-eating/) shares the scalar Bellman structure without choice under uncertainty, while [income risk and buffer-stock saving](../consumption-savings/) keeps the continuation expectation but adds a continuous endogenous state. The wage discretization here uses the same conditional-mean trick that [shock discretization](../shock-discretization/) applies to AR(1) processes.
 
 ## Equations
 
-Let $W$ denote a wage offer drawn from distribution $F$, and let $w$ be the
-current realization. The worker discounts next period by $\beta \in (0,1)$.
-Accepting $w$ gives the permanent value
+Let $W$ be a wage offer with distribution $F$, and let $w$ denote the current
+realization. The worker discounts at $\beta\in(0,1)$. Accepting locks in a
+permanent income stream worth
 
 $$A(w)=\frac{w}{1-\beta}.$$
 
-Rejecting gives the common continuation value
+Rejecting yields the unemployment benefit $b$ today plus the continuation
+value of being unemployed tomorrow. Because today's offer is discarded on
+rejection, that continuation does not depend on $w$:
 
-$$C=b+\beta \mathbb{E}_{F}[V(W')],$$
+$$C=b+\beta\,\mathbb{E}_{F}[V(W')].$$
 
-so the Bellman equation is
+The Bellman equation is
 
-$$V(w)=\max\bigl[ \frac{w}{1-\beta},\; b+\beta \mathbb{E}_{F}[V(W')] \bigr].$$
+$$V(w)=\max\bigl\{\,\frac{w}{1-\beta},\; C\,\bigr\}.$$
 
-The reservation wage is the offer that makes the worker indifferent:
+Since $A(w)$ is strictly increasing in $w$ and $C$ is constant, the optimal
+policy is the threshold $w^{\ast}$ defined by indifference,
+$A(w^{\ast})=C$, i.e.
 
-$$\frac{w^{\ast}}{1-\beta}=C.$$
+$$\frac{w^{\ast}}{1-\beta}=b+\beta\,\mathbb{E}_{F}[V(W')].$$
 
-Using this indifference condition inside the Bellman equation gives the scalar
-fixed point
+Plugging $V(W')=\max\{W'/(1-\beta),\,C\}$ back in and using
+$C=w^{\ast}/(1-\beta)$ gives a scalar fixed point in $w^{\ast}$ alone:
 
-$$w^{\ast}=(1-\beta)b+\beta \mathbb{E}_{F}[\max\{W',w^{\ast}\}].$$
+$$w^{\ast}=(1-\beta)\,b+\beta\,\mathbb{E}_{F}\!\left[\max\{W',\,w^{\ast}\}\right].$$
 
-This last equation is useful for interpretation. A higher $b$ raises the value
-of rejection directly. A higher $\beta$ raises the option value of future draws.
-A thicker right tail also raises $w^{\ast}$ because rejecting a mediocre offer buys
-exposure to rare high wages.
+Three margins read off this equation directly. A higher $b$ raises the floor
+on the right-hand side. A higher $\beta$ scales up the continuation term and
+makes the worker more selective. And a thicker right tail of $F$ lifts
+$\mathbb{E}_{F}[\max\{W',w^{\ast}\}]$ above $w^{\ast}$ even when most of the
+mass sits below it, which is why the cutoff can settle far above the mean
+offer in fat-tailed calibrations.
 
 ## Model Setup
 
 | Object | Value | Role |
 |---|---:|---|
-| Discount factor $\beta$ | 0.95 | Weight on future search opportunities |
-| Flow benefit $b$ | 1.0 | Payoff while unemployed |
-| Wage law | $\log W \sim N(0.0,1.0^2)$ | Offer distribution |
-| Mean offer $\mathbb{E}[W]$ | 1.6487 | Reference level, not an upper bound on $w^{\ast}$ |
-| Main wage grid | 50 bins | Equiprobable bins represented by conditional means |
-| Continuous benchmark | lognormal tail moments | Held-out reservation-wage check |
+| Discount factor $\beta$ | 0.95 | Weight on the next draw |
+| Flow benefit $b$ | 1.0 | Per-period payoff while unemployed |
+| Wage law | $\log W\sim N(0.0,1.0^2)$ | Lognormal offer distribution |
+| Median offer | 1.0000 | $e^{\mu}$ for the lognormal |
+| Mean offer $\mathbb{E}[W]$ | 1.6487 | Reference level, not a bound on $w^{\ast}$ |
+| Wage grid | 50 equiprobable bins | Each bin represented by its conditional mean |
+| Continuous benchmark | exact lognormal moments | Ground-truth cutoff via scalar fixed point |
 | VFI tolerance | 1e-08 | Sup-norm stopping rule |
 
 ## Solution Method
 
-On a finite offer grid, the Bellman iteration is especially simple because the value of rejecting does not depend on the current offer. Each iteration computes one expected continuation value and then compares it with the lifetime value of accepting each grid wage.
+**Why VFI is essentially scalar here.** The Bellman operator $T$ acting on a candidate $V$ is
+
+$$(TV)(w)=\max\bigl\{\,\frac{w}{1-\beta},\,b+\beta\,\mathbb{E}_{F}[V(W')]\,\bigr\}.$$
+
+It is a $\beta$-contraction in the sup norm, so iterates converge to the unique fixed point. The novelty is that the continuation term is a single number $C=b+\beta\,\mathbb{E}_{F}[V]$, recomputed once per sweep. Each iteration is therefore one inner product and one elementwise max, no interpolation and no per-state expectation.
+
+**Discretization.** The continuous lognormal is replaced by an $n_w=50$-bin discrete law with equal probabilities $1/n_w$ and support points equal to the conditional mean of each bin. This preserves $\mathbb{E}[W]$ exactly and keeps the tail moments the reservation wage actually depends on. Quantile midpoints would compress the right tail and pull $w^{\ast}$ downward.
 
 ```text
-Algorithm: finite-grid McCall VFI
-Input: wages w_i, probabilities p_i, beta, benefit b, tolerance epsilon
-Output: value function V_i and reservation wage w*
-Initialize V_i = w_i / (1 - beta)
-repeat for n = 0, 1, 2, ...:
-    C_n = b + beta * sum_i p_i V_i
-    V_i_new = max{w_i / (1 - beta), C_n} for every wage i
-    error = max_i |V_i_new - V_i|
-    set V_i = V_i_new
-until error < epsilon
-set w* = (1 - beta) * (b + beta * sum_i p_i V_i)
+Algorithm  Finite-grid McCall VFI
+Inputs   wages w_1,...,w_n; probabilities p_1,...,p_n;
+           discount beta in (0,1); benefit b; tolerance epsilon
+Outputs  value V_i and reservation wage w*
+
+Initialise V_i <- w_i / (1 - beta)             # accept-everything guess
+repeat n = 0, 1, 2, ...:
+    C  <- b + beta * sum_i p_i V_i             # one expectation per sweep
+    V_i_new <- max{ w_i / (1 - beta), C }      # elementwise threshold update
+    err <- max_i | V_i_new - V_i |
+    V_i <- V_i_new
+stop when err < epsilon
+w* <- (1 - beta) * (b + beta * sum_i p_i V_i)  # invert C = w* / (1 - beta)
 ```
 
-The continuous benchmark uses the scalar reservation-wage equation rather than the value function. For a candidate cutoff $r$, compute $m(r)=\mathbb{E}[\max\{W,r\}]$ under the lognormal distribution and find the root of $r-(1-\beta)b-\beta m(r)=0$ by bracketing.
+**Continuous benchmark.** With the lognormal offer law the scalar fixed-point equation
+
+$$r = (1-\beta)\,b+\beta\,m(r),\qquad m(r)=\mathbb{E}_{F}[\max\{W,r\}],$$
+
+has a closed-form $m(r)$ in terms of the standard-normal CDF. Bracketing and Brent's method give $r$ to machine precision and provide ground truth against the grid solution.
 
 ```text
-Algorithm: continuous reservation-wage benchmark
-Input: beta, b, lognormal parameters mu and sigma, tolerance epsilon
-Output: continuous-distribution cutoff r
-Define m(r) = E_F[max{W, r}] using lognormal tail moments
-Find a bracket [low, high] with residual(low) < 0 < residual(high)
-Solve residual(r) = r - (1 - beta)*b - beta*m(r) = 0
+Algorithm  Continuous reservation-wage benchmark
+Inputs   beta in (0,1); benefit b; lognormal parameters mu, sigma;
+           tolerance epsilon
+Output   reservation wage r
+
+Define m(r) = r * F(r) + e^{mu + sigma^2/2} * (1 - Phi((log r - mu - sigma^2)/sigma))
+Define residual(r) = r - (1 - beta)*b - beta * m(r)
+Find a bracket [lo, hi] with residual(lo) < 0 < residual(hi)
+Solve residual(r) = 0 by Brent's method to tolerance epsilon
 ```
 
-The finite-grid VFI converged in **178 iterations** with sup-norm error **9.84e-09**. The baseline cutoff is $w^{\ast}_{grid}=4.7054$, compared with the continuous lognormal benchmark $w^{\ast}_{cont}=4.7055$.
+At the baseline calibration the finite-grid VFI converges in **178 iterations** to sup-norm error **9.84e-09**, giving $w^{\ast}_{\text{grid}}=4.7054$. The continuous benchmark returns $w^{\ast}_{\text{cont}}=4.7055$, so the discretization error is **9.1e-05** in absolute terms. The two curves overlay almost everywhere in the comparative statics below; the table at the end shows where the gap is large enough to read off.
 
 ## Results
 
-The first figure shows the reservation rule in value units. Accepting is linear in the current offer, while rejecting is flat because it depends only on the distribution of future offers. In the baseline calibration the finite grid accepts about **6.0%** of grid offers. The continuous benchmark accepts **6.1%** of offers.
+The reservation rule reads directly off the value functions. The rising line is the permanent-income value of accepting the current offer, $w/(1-\beta)$. The flat dashed line is the rejection value $C$, which by construction does not depend on $w$. They cross at the cutoff. The shaded region marks acceptable offers, and the two vertical lines show how close the 50-bin grid gets to the continuous-distribution benchmark. In this calibration the worker accepts about **6.0%** of grid offers and **6.1%** of continuous offers, so expected unemployment duration is roughly **16 periods** before an acceptable draw arrives.
 
 <img src="figures/accept-vs-reject.png" alt="Accept and reject values with finite-grid and continuous reservation wages." width="80%">
 
-Patience makes the worker more selective because the future draw arrives almost as valuable as the current payoff. The cutoff can rise above the mean offer in a right-skewed distribution; the mean is a reference point, not a bound on optimal selectivity.
+Where the cutoff sits relative to the offer distribution makes the fat-tail intuition concrete. The mean and median of $W$ are below $w^{\ast}$, yet rejecting almost-mean offers is optimal because the right tail of $f(w)$ — visible above $w^{\ast}$ — is thick enough that one good draw eventually compensates for many rejected ones. Acceptance is a tail event by design.
+
+<img src="figures/cutoff-on-density.png" alt="Lognormal offer density with the reservation wage and acceptance region." width="80%">
+
+Patience compounds the option value of waiting. As $\beta\to 1$ the worker treats the next draw as nearly equivalent to today's, so the cutoff explodes upward and pushes deep into the right tail. The horizontal benefit line and the mean offer are reference points only: neither bounds $w^{\ast}$ from above when the right tail is thick enough. The grid solution tracks the closed-form benchmark everywhere on this range; the small gap at high $\beta$ is where discretization bites the most because the cutoff probes parts of the tail that the 50-bin grid only crudely resolves.
 
 <img src="figures/wstar-vs-beta.png" alt="Reservation wage by discount factor with continuous benchmark." width="80%">
 
-Benefits move the outside option one for one only in the limiting case where search has no upside. With a non-degenerate wage offer distribution, a higher benefit also preserves the option to wait, so the cutoff remains above the 45-degree line over this range.
+Generosity of benefits raises the cutoff, but never one for one. If search had no upside, $w^{\ast}$ would track the $45^{\circ}$ line: the worker would accept any offer above the outside option. With a non-degenerate offer distribution the slope is strictly less than one because each extra dollar of $b$ also raises the value of drawing again, partially offsetting the change in the floor. The vertical gap to the $45^{\circ}$ line is the option value of search at that benefit level.
 
 <img src="figures/wstar-vs-benefits.png" alt="Reservation wage by unemployment benefit with continuous benchmark." width="80%">
 
-The parameter grid separates two margins. Increasing $b$ improves the payoff from unemployment today. Increasing $\beta$ raises the present value of future draws. Both margins reduce the probability that a fresh offer is accepted.
+Reading the table separates the two margins. Increasing $b$ shifts the floor on the rejection value upward; increasing $\beta$ scales up the option value of the next draw. Both push $w^{\ast}$ up, drag acceptance rates down, and lengthen expected unemployment duration $1/\Pr[W\geq w^{\ast}]$. The discretization error is modest at moderate $\beta$ and grows visibly at $\beta=0.99$, where the cutoff probes parts of the right tail that the 50-bin grid resolves poorly. Refining the grid, or using the scalar fixed-point solver directly, closes the gap at negligible cost.
 
-**Reservation wages and continuous-benchmark acceptance rates**
+**Reservation wages, acceptance rates, and expected unemployment duration**
 
-|   beta |   b |   w* grid |   w* cont. |   grid gap |   Accept % (cont.) |   VFI iter. |
-|-------:|----:|----------:|-----------:|-----------:|-------------------:|------------:|
-|   0.9  | 0.5 |    3.3118 |     3.3126 |    -0.0007 |               11.6 |          86 |
-|   0.9  | 1   |    3.5654 |     3.5656 |    -0.0002 |               10.2 |          95 |
-|   0.9  | 2   |    4.1194 |     4.1196 |    -0.0002 |                7.8 |         106 |
-|   0.95 | 0.5 |    4.4718 |     4.4794 |    -0.0076 |                6.7 |         176 |
-|   0.95 | 1   |    4.7054 |     4.7055 |    -0.0001 |                6.1 |         178 |
-|   0.95 | 2   |    5.1727 |     5.1946 |    -0.0219 |                5   |         181 |
-|   0.99 | 0.5 |    8.1646 |     8.1789 |    -0.0143 |                1.8 |         694 |
-|   0.99 | 1   |    8.3324 |     8.3631 |    -0.0308 |                1.7 |         696 |
-|   0.99 | 2   |    8.6679 |     8.7514 |    -0.0834 |                1.5 |         699 |
+|   beta |   b |   w* grid |   w* cont. |   grid gap |   Accept % (cont.) |   E[duration] |   VFI iter. |
+|-------:|----:|----------:|-----------:|-----------:|-------------------:|--------------:|------------:|
+|   0.9  | 0.5 |    3.3118 |     3.3126 |    -0.0007 |               11.6 |           8.7 |          86 |
+|   0.9  | 1   |    3.5654 |     3.5656 |    -0.0002 |               10.2 |           9.8 |          95 |
+|   0.9  | 2   |    4.1194 |     4.1196 |    -0.0002 |                7.8 |          12.8 |         106 |
+|   0.95 | 0.5 |    4.4718 |     4.4794 |    -0.0076 |                6.7 |          15   |         176 |
+|   0.95 | 1   |    4.7054 |     4.7055 |    -0.0001 |                6.1 |          16.5 |         178 |
+|   0.95 | 2   |    5.1727 |     5.1946 |    -0.0219 |                5   |          20.1 |         181 |
+|   0.99 | 0.5 |    8.1646 |     8.1789 |    -0.0143 |                1.8 |          56.2 |         694 |
+|   0.99 | 1   |    8.3324 |     8.3631 |    -0.0308 |                1.7 |          59.4 |         696 |
+|   0.99 | 2   |    8.6679 |     8.7514 |    -0.0834 |                1.5 |          66.5 |         699 |
 
 ## Takeaway
 
-The McCall model recasts unemployment duration as a reservation-price problem. The worker rejects low offers not because the current benefit is large by itself, but because rejecting preserves a claim on future wage draws. In this calibration the right tail is important enough that the cutoff can sit above the mean offer, a point the finite-grid and continuous benchmarks make explicit. The same acceptance-threshold logic is the partial-equilibrium core of larger search models with matching frictions, endogenous vacancies, and equilibrium wage determination.
+Sequential search collapses unemployment duration into a single endogenous price, the reservation wage. Two margins move it: a higher outside option $b$ and more patience $\beta$, both of which raise $w^{\ast}$ and lengthen expected duration. The cutoff sits well above the mean offer in this calibration because the lognormal right tail is thick enough that rejecting a near-mean draw buys real exposure to high wages. Two computational points generalize beyond this model. First, when the rejection value is offer-independent the Bellman operator is essentially scalar, so VFI here is a useful warm-up rather than a performance bottleneck. Second, the same threshold logic is the partial-equilibrium core of the [Diamond-Mortensen-Pissarides](../diamond-mortensen-pissarides/) matching framework, where free entry and a matching function pin down vacancies and wages on top of exactly this worker problem.
 
 ## References
 
 - McCall, J.J. (1970). "Economics of Information and Job Search." *Quarterly Journal of Economics*, 84(1), 113-126.
 - Ljungqvist, L. and Sargent, T. (2018). *Recursive Macroeconomic Theory*. MIT Press, 4th edition, Ch. 6.
 - Stokey, N., Lucas, R., and Prescott, E. (1989). *Recursive Methods in Economic Dynamics*. Harvard University Press.
-- Pissarides, C.A. (2000). *Equilibrium Unemployment Theory*. MIT Press.
+- Pissarides, C.A. (2000). *Equilibrium Unemployment Theory*. MIT Press, 2nd edition.
