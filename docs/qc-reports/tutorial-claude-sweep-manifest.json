@@ -1,6 +1,6 @@
 {
   "pass_name": "claude-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-06T22:07:07Z",
+  "updated_at": "2026-05-06T22:12:10Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -16,6 +16,22 @@
         "dynamic-programming/shock-discretization/run.py"
       ],
       "updated_at": "2026-05-06T22:07:07Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/cake-eating/",
+      "status": "complete",
+      "commit": "31a0ead3536190631ab7af2cb1e6de8ef352bfc1",
+      "changed_paths": [
+        "README.md",
+        "dynamic-programming/cake-eating/README.md",
+        "dynamic-programming/cake-eating/figures/policy-function.png",
+        "dynamic-programming/cake-eating/figures/simulation.png",
+        "dynamic-programming/cake-eating/figures/thumb.png",
+        "dynamic-programming/cake-eating/figures/value-function.png",
+        "dynamic-programming/cake-eating/run.py",
+        "dynamic-programming/cake-eating/tables/comparison.csv"
+      ],
+      "updated_at": "2026-05-06T22:12:10Z"
     }
   ]
 }
