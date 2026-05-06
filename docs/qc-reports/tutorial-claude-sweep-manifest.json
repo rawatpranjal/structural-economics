@@ -1,6 +1,6 @@
 {
   "pass_name": "claude-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-06T22:12:10Z",
+  "updated_at": "2026-05-06T22:16:43Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -32,6 +32,22 @@
         "dynamic-programming/cake-eating/tables/comparison.csv"
       ],
       "updated_at": "2026-05-06T22:12:10Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/optimal-growth/",
+      "status": "complete",
+      "commit": "f2d300a814020098573d6a4042965eb4d6884229",
+      "changed_paths": [
+        "README.md",
+        "dynamic-programming/optimal-growth/README.md",
+        "dynamic-programming/optimal-growth/figures/policy-function.png",
+        "dynamic-programming/optimal-growth/figures/simulation.png",
+        "dynamic-programming/optimal-growth/figures/thumb.png",
+        "dynamic-programming/optimal-growth/figures/value-function.png",
+        "dynamic-programming/optimal-growth/run.py",
+        "dynamic-programming/optimal-growth/tables/comparison.csv"
+      ],
+      "updated_at": "2026-05-06T22:16:43Z"
     }
   ]
 }
