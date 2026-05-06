@@ -1,6 +1,6 @@
 {
   "pass_name": "claude-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-06T22:38:21Z",
+  "updated_at": "2026-05-06T22:43:58Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -93,6 +93,21 @@
         "dynamic-programming/job-search-mccall/tables/reservation-wages.csv"
       ],
       "updated_at": "2026-05-06T22:38:21Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/asset-pricing/",
+      "status": "complete",
+      "commit": "0a848538f0ae99833be1a49dcf117e9e3e310d53",
+      "changed_paths": [
+        "README.md",
+        "dynamic-programming/asset-pricing/README.md",
+        "dynamic-programming/asset-pricing/figures/asset-price-function.png",
+        "dynamic-programming/asset-pricing/figures/comparative-statics-gamma.png",
+        "dynamic-programming/asset-pricing/figures/simulation-paths.png",
+        "dynamic-programming/asset-pricing/figures/thumb.png",
+        "dynamic-programming/asset-pricing/run.py"
+      ],
+      "updated_at": "2026-05-06T22:43:58Z"
     }
   ]
 }
