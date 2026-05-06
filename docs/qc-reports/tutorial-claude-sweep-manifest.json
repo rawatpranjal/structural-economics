@@ -1,6 +1,6 @@
 {
   "pass_name": "claude-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-06T23:09:19Z",
+  "updated_at": "2026-05-06T23:22:54Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -141,6 +141,23 @@
         "dynamic-programming/diamond-mortensen-pissarides/tables/amplification-by-surplus.csv"
       ],
       "updated_at": "2026-05-06T23:09:19Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/aiyagari/",
+      "status": "complete",
+      "commit": "df5d52d7ba2b69c76a6f585d42cddff852222191",
+      "changed_paths": [
+        "README.md",
+        "dynamic-programming/aiyagari/README.md",
+        "dynamic-programming/aiyagari/figures/capital-market.png",
+        "dynamic-programming/aiyagari/figures/savings-policy.png",
+        "dynamic-programming/aiyagari/figures/thumb.png",
+        "dynamic-programming/aiyagari/figures/value-functions.png",
+        "dynamic-programming/aiyagari/figures/wealth-distribution.png",
+        "dynamic-programming/aiyagari/run.py",
+        "dynamic-programming/aiyagari/tables/equilibrium.csv"
+      ],
+      "updated_at": "2026-05-06T23:22:54Z"
     }
   ]
 }
