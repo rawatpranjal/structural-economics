@@ -1,12 +1,13 @@
 Variable,Value
-Interest rate $r$,0.025959
-Wage $w$,1.2734
-Firm capital demand $K^d$,6.7599
-Aggregate household assets $K^s$,6.7514
-Market-clearing gap $K^s-K^d$,-8.4953e-03
-Relative gap $(K^s-K^d)/K^d$,-1.2567e-03
-Output $Y$,1.9897
+Interest rate $r^{\ast}$,0.025959
+Wage $w^{\ast}$,1.2734
+Aggregate capital $K^{\ast}$,6.7599
+Output $Y^{\ast}$,1.9897
 Capital-output ratio $K/Y$,3.3975
-Gini coefficient,0.5271
-Fraction at constraint,0.0241
-$r$ vs $1/\beta - 1$,0.025959 < 0.041667
+Mean wealth $\bar a$,6.7633
+Median wealth $\tilde a$,4.4728
+P90 wealth,16.3145
+Gini,0.5261
+Mass at constraint,0.0245
+Relative market-clearing gap,+4.939e-04
+Fine-grid $K^s$ check,6.9919 (rel gap 3.27e-02)
