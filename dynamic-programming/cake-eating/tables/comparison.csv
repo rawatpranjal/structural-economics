@@ -1,4 +1,4 @@
-W,V(W) numerical,V(W) analytical,V error,c* numerical,c* analytical,c* error
+W,V numerical,V closed form,V error,c* numerical,c* closed form,c* error
 0.109,-54.6794,-54.6542,-2.52e-02,0.0110,0.0109,3.54e-05
 0.236,-46.9527,-46.9402,-1.24e-02,0.0237,0.0236,7.66e-05
 0.363,-42.6460,-42.6378,-8.25e-03,0.0364,0.0363,1.18e-04
