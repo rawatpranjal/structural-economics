@@ -1,11 +1,18 @@
-Variable,Value
-Equilibrium interest rate r*,0.03192
+Statistic,Value
+Discount rate rho,0.0500
+Equilibrium r* (working grid),0.03499
+Equilibrium r* (reference grid),0.03572
+Precautionary wedge rho - r*,0.01501
 Mean wealth E[a],0.00000
 Mean income E[z],0.1500
 Mean consumption E[c],0.1500
-Mass near borrowing limit,0.1447
+Mass within 0.02 of borrowing limit,0.0581
 Prob(z = z_low),0.5000
 Prob(z = z_high),0.5000
-Bond-market residual abs(E[a]),2.86e-06
-HJB iterations,8
-HJB final sup-norm change,1.56e-07
+Bond-market residual abs(S(r*)),5.43e-06
+"r* gap, working vs reference",7.30e-04
+"Sup-norm savings gap, a in [a_min, 1]",1.57e-03
+"Sup-norm value gap, a in [a_min, 1]",2.23e-01
+Relative value gap (% of value scale),0.155%
+HJB iterations (working),9
+HJB sup-norm change (working),7.91e-07
