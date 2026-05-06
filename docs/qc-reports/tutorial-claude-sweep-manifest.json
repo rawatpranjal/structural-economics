@@ -1,6 +1,6 @@
 {
   "pass_name": "claude-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-06T23:31:17Z",
+  "updated_at": "2026-05-06T23:37:02Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -172,6 +172,23 @@
         "heterogeneous-agents/endogenous-grid-points/run.py"
       ],
       "updated_at": "2026-05-06T23:31:17Z"
+    },
+    {
+      "tutorial_path": "heterogeneous-agents/envelope-equation-iteration/",
+      "status": "complete",
+      "commit": "45886ecc53f31596902ea96f7a94ee4fe924fe87",
+      "changed_paths": [
+        "README.md",
+        "heterogeneous-agents/envelope-equation-iteration/README.md",
+        "heterogeneous-agents/envelope-equation-iteration/figures/consumption-policy.png",
+        "heterogeneous-agents/envelope-equation-iteration/figures/convergence-comparison.png",
+        "heterogeneous-agents/envelope-equation-iteration/figures/thumb.png",
+        "heterogeneous-agents/envelope-equation-iteration/figures/value-derivative.png",
+        "heterogeneous-agents/envelope-equation-iteration/figures/wealth-distribution.png",
+        "heterogeneous-agents/envelope-equation-iteration/run.py",
+        "heterogeneous-agents/envelope-equation-iteration/tables/solution-statistics.csv"
+      ],
+      "updated_at": "2026-05-06T23:37:02Z"
     }
   ]
 }
