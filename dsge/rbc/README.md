@@ -1,17 +1,23 @@
 # RBC TFP Shocks and Capital Propagation
 
-> How a persistent productivity shock moves output, consumption, investment, and capital in a standard RBC model.
+> How a persistent productivity shock reallocates output between consumption, investment, and future capital in a standard RBC model.
 
 ## Overview
 
-A Real Business Cycle model turns a productivity innovation into a path for the whole economy. Output moves on impact because technology is higher today. Capital moves slowly because it is predetermined: households can only change tomorrow's productive capacity by changing investment today.
+Suppose the economy gets a favorable productivity surprise this quarter. The same installed capital can produce more output right away, but the capital stock itself was chosen yesterday. The representative household has to decide how much of the extra output to consume now and how much to invest so future production remains higher after the shock begins to fade.
 
-The `model.mod` file alongside `run.py` is a textbook spec written in DSL syntax for documentation; this tutorial does not execute it. The Python code solves the first-order system directly so the state, control, and approximation are visible. The decision rule is recovered by method of undetermined coefficients and cross-checked against generalized Schur (QZ) decomposition — the same first-order algorithm used by general DSGE solvers. The comparison line in the results solves the exact nonlinear transition for the same decaying TFP shock; for a 1 percent shock the two paths nearly coincide, which is what a local perturbation is supposed to deliver near steady state.
+The economic question is how a persistent TFP shock is split across output, consumption, investment, and capital. Output can jump on impact. Investment is the margin that changes tomorrow's state. Consumption is tied down by intertemporal smoothing through the Euler equation.
+
+The computational question is how to find the rational-expectations transition path consistent with those forces. Today's consumption must line up with expected marginal utility and the future marginal product of capital, so we need a decision rule for capital as a function of last period's capital and current productivity.
+
+The core method is a first-order log-linear perturbation around the deterministic steady state. Because this fixed-labor RBC model has one endogenous state, the linear decision-rule coefficients can be recovered by method of undetermined coefficients. The same first-order system is also solved by Klein's generalized Schur (QZ) decomposition as a scalability check. The dashed comparison path in the results solves the exact nonlinear transition for the same decaying TFP shock; for a 1 percent shock the two paths nearly coincide, which is the local approximation doing its job near steady state.
 
 ## Equations
 
-Let $A_t$ denote total factor productivity, $K_{t-1}$ the capital stock chosen
-last period, $C_t$ consumption, $I_t$ investment, and $Y_t$ output. The model is
+The model object is the representative-agent RBC allocation after a one-time
+technology innovation. Let $A_t$ denote total factor productivity,
+$K_{t-1}$ the capital stock chosen last period, $C_t$ consumption,
+$I_t$ investment, and $Y_t$ output. Production and goods-market clearing are
 
 $$
 Y_t = A_t K_{t-1}^\alpha,
@@ -23,7 +29,8 @@ $$
 K_t = I_t + (1-\delta)K_{t-1},
 $$
 
-and the representative household's Euler equation is
+so investment is the only way to move the state. The representative household's
+Euler equation is
 
 $$
 C_t^{-\sigma} =
@@ -41,9 +48,9 @@ $$
 \varepsilon_t \sim N(0,\sigma_\varepsilon^2).
 $$
 
-The accompanying `model.mod` spec stores $y,c,i,k,a$ as logs, so expressions
-such as `exp(y)` are level variables. Around the deterministic steady state
-with $A=1$,
+The accompanying `model.mod` spec stores $y,c,i,k,a$ as logs for documentation,
+so expressions such as `exp(y)` are level variables. Around the deterministic
+steady state with $A=1$,
 
 $$
 \alpha K^{\alpha-1} = \frac{1}{\beta} - 1 + \delta,
@@ -77,13 +84,13 @@ The calibration implies $K/Y=9.40$ and $C/Y=0.76$.
 
 ## Solution Method
 
-The approximation uses log deviations from steady state. Write $\hat k_t=\log(K_t/K)$ and $\hat a_t=\log A_t$. Since capital is the only endogenous state, the decision rule is linear in last period's capital and current productivity:
+The computational object is a stable linear law of motion for the endogenous state. Write $\hat k_t=\log(K_t/K)$ and $\hat a_t=\log A_t$. Since capital is the only endogenous state, the decision rule is linear in last period's capital and current productivity:
 
 $$
 \hat k_t = 0.9621\hat k_{t-1} + 0.0801\hat a_t.
 $$
 
-Consumption and investment then follow from the resource constraint and capital accumulation. The stable capital root is below one, so a temporary productivity shock can raise investment today without making capital jump all at once.
+Consumption and investment then follow from the resource constraint and capital accumulation. This is what lets the computation answer the economic question: it turns a shock process for TFP into a full allocation path for output, consumption, investment, and capital. The stable capital root is below one, so a temporary productivity shock can raise investment today without making capital jump all at once.
 
 ```text
 Algorithm: first-order RBC impulse response
@@ -103,11 +110,11 @@ Outputs: paths for yhat_t, chat_t, ihat_t, khat_t
    transition for the same TFP path and compare the two IRFs.
 ```
 
-The coefficient-matching residual is 2.9e-15. As an independent check, the same linearized system is also solved by Klein's (2000) generalized Schur (QZ) decomposition — the algorithm general DSGE solvers use because it scales to many states. The two methods agree to 1.5e-15, machine precision for this problem; their stable eigenvalues are 0.9621 and 0.9500, the predetermined-state roots that drive capital and TFP propagation. The nonlinear benchmark is not a different stochastic model. It is the exact deterministic transition implied by the same one-time shock path.
+The coefficient-matching residual is 2.9e-15. As an independent check, the same linearized system is also solved by Klein's (2000) generalized Schur (QZ) decomposition, the algorithm general DSGE solvers use because it scales to many states. The two methods agree to 1.5e-15, machine precision for this problem; their stable eigenvalues are 0.9621 and 0.9500, the predetermined-state roots that drive capital and TFP propagation. The nonlinear benchmark is not a different stochastic model. It is the exact deterministic transition implied by the same one-time shock path.
 
 ## Results
 
-The productivity shock raises output immediately. Investment jumps more than output because the household wants to move capital toward the temporarily higher marginal product of capital. Consumption rises by less on impact and keeps drifting upward for several quarters, reflecting smoothing through the Euler equation. The dashed nonlinear transition sits almost on top of the first-order solution at this shock size, so the local approximation is doing what it is meant to do near steady state.
+Read the figure as an allocation response to better technology. Output rises immediately because current capital is more productive. Investment jumps more than output because the household wants to move capital toward the temporarily higher marginal product of capital. Consumption rises by less on impact and keeps drifting upward for several quarters, reflecting smoothing through the Euler equation. The dashed nonlinear transition sits almost on top of the first-order solution at this shock size, so the local approximation is doing what it is meant to do near steady state.
 
 <img src="figures/irf-tfp-shock.png" alt="Impulse responses of output, consumption, investment, and capital to a 1 percent TFP shock" width="80%">
 
@@ -125,7 +132,7 @@ The summary statistics separate impact effects from delayed peaks. Capital and c
 
 ## Takeaway
 
-In this RBC model, a productivity shock is both a level effect and an intertemporal price signal. Output rises on impact because firms are more productive. Investment responds strongly because the marginal product of capital is temporarily high. Consumption moves more smoothly, and capital accumulates only gradually. That is the propagation mechanism a first-order perturbation around steady state is meant to isolate.
+In this RBC model, a productivity shock is both a level effect and an intertemporal price signal. Output rises on impact because firms are more productive. Investment responds strongly because the marginal product of capital is temporarily high. Consumption moves more smoothly, and capital accumulates only gradually. The first-order perturbation isolates that propagation mechanism by solving for the stable capital decision rule near steady state.
 
 This tutorial is the equilibrium counterpart to the [persistent-shock tutorial](../../time-series/ar-processes/): the AR(1) process supplies the shock's timing, while the Euler equation and capital law of motion decide how that timing shows up in macro quantities. For a global Bellman version of the same RBC mechanism, compare this local solution with the [dynamic-programming RBC tutorial](../../dynamic-programming/rbc/).
 
