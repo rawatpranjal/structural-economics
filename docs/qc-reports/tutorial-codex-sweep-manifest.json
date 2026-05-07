@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T23:40:14Z",
+  "updated_at": "2026-05-07T23:44:03Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -623,6 +623,17 @@
         "choice/risk-aversion-monotone-choice/run.py"
       ],
       "updated_at": "2026-05-07T23:40:14Z"
+    },
+    {
+      "tutorial_path": "choice/nested-logit/",
+      "status": "complete",
+      "commit": "8c2d6d333ba3897c16109110b9c5e1a591ed3a8b",
+      "changed_paths": [
+        "README.md",
+        "choice/nested-logit/README.md",
+        "choice/nested-logit/run.py"
+      ],
+      "updated_at": "2026-05-07T23:44:03Z"
     }
   ]
 }
