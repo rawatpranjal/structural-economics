@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T23:03:46Z",
+  "updated_at": "2026-05-07T23:07:47Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -522,6 +522,18 @@
         "choice/preference-recoverability/run.py"
       ],
       "updated_at": "2026-05-07T23:03:46Z"
+    },
+    {
+      "tutorial_path": "choice/money-pump-index/",
+      "status": "complete",
+      "commit": "91da53fa96d6c97fec28c41f09b3943d15aad650",
+      "changed_paths": [
+        "README.md",
+        "choice/money-pump-index/README.md",
+        "choice/money-pump-index/figures/mpi-severity-comparison.png",
+        "choice/money-pump-index/run.py"
+      ],
+      "updated_at": "2026-05-07T23:07:47Z"
     }
   ]
 }
