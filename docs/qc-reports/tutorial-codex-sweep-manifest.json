@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T22:28:24Z",
+  "updated_at": "2026-05-07T22:32:15Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -423,6 +423,17 @@
         "industrial-organization/collusion-detection/run.py"
       ],
       "updated_at": "2026-05-07T22:28:24Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/dynamic-games/",
+      "status": "complete",
+      "commit": "9356b447e4be295fe251446bf934a8211c0ca770",
+      "changed_paths": [
+        "README.md",
+        "industrial-organization/dynamic-games/README.md",
+        "industrial-organization/dynamic-games/run.py"
+      ],
+      "updated_at": "2026-05-07T22:32:15Z"
     }
   ]
 }
