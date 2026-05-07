@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""New Keynesian monetary shocks and determinacy.
+"""Sticky-price monetary transmission in a New Keynesian DSGE.
 
 The tutorial keeps the three-equation New Keynesian block visible and solves
 its rational-expectations impulse responses by undetermined coefficients.
@@ -220,28 +220,29 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "New Keynesian Monetary Shocks and Determinacy",
-        "Sticky prices, the IS curve, Phillips curve, and Taylor rule in a three-equation DSGE model.",
+        "Sticky-Price Monetary Transmission in a New Keynesian DSGE",
+        "Policy and demand shocks in a three-equation New Keynesian model, solved by coefficient matching.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "The question is why a central bank can move real activity when households and firms "
-        "understand the policy rule. In this small New Keynesian model the answer is sticky "
-        "prices. A surprise increase in the nominal interest rate raises the real rate before "
-        "prices fully adjust, so demand falls. The Phillips curve then translates the weaker "
-        "output gap into lower inflation.\n\n"
-        "The model is deliberately small: an output gap $y_t$, inflation $\\pi_t$, a nominal "
-        "policy rate $i_t$, and one persistent shock at a time. The `model.mod` spec sitting "
-        "alongside `run.py` records the three-equation block in DSL syntax for documentation; "
-        "the Python code solves the log-linear system directly, which makes the expectations "
-        "algebra and the Taylor-rule determinacy condition easy to inspect. The same system is "
-        "also solved by Klein (2000) generalized Schur (QZ) decomposition as a cross-check; "
-        "the two methods agree to machine precision on this problem.\n\n"
-        "Compared with the [RBC tutorial](../rbc/), propagation here does not come from "
-        "slow capital accumulation. It comes from the interaction between forward-looking "
-        "demand, sticky-price inflation, and a policy rule that leans against inflation."
+        "A central bank raises the policy rate by surprise in an economy where firms adjust "
+        "prices sluggishly. Households and firms know the Taylor rule, yet the surprise still "
+        "moves real activity because the nominal rate changes faster than prices. The real rate "
+        "rises, demand falls, and the Phillips curve carries the lower output gap into lower "
+        "inflation.\n\n"
+        "The model keeps that transmission channel to three variables: the output gap $y_t$, "
+        "inflation $\\pi_t$, and the nominal policy rate $i_t$. We ask how a policy wedge and "
+        "a natural-rate demand shock move these variables over time. Studying those paths means "
+        "solving a small forward-looking equilibrium, since today's output and inflation depend "
+        "on expectations of tomorrow's values.\n\n"
+        "Because the system is already log-linear, the computation can stay transparent. The "
+        "code guesses that output and inflation are linear in the shock state, matches "
+        "coefficients in the IS curve and Phillips curve, and then traces impulse responses. "
+        "A Klein (2000) generalized Schur (QZ) solve checks the same equilibrium. The agreement "
+        "shows that coefficient matching has selected the stable rational-expectations path "
+        "under a Taylor rule that leans against inflation."
     )
 
     report.add_equations(
@@ -284,8 +285,8 @@ pi = beta*pi(+1) + k*y
 i = rho + phi_pi*pi + phi_y*y + e
 ```
 
-The Python report uses $v_t$ for the Taylor-rule shock and $d_t$ for the
-natural-rate shifter so the two impulse responses can be read separately.
+The report uses $v_t$ for the Taylor-rule shock and $d_t$ for the natural-rate
+shifter so the two experiments do not blur together.
 """
     )
 
@@ -301,24 +302,24 @@ natural-rate shifter so the two impulse responses can be read separately.
         f"| $\\rho_d$ | {rho_d:.3g} | Persistence of the demand shock |\n"
         f"| Shock innovation | {sigma_e:.3f} | One-percentage-point innovation at date 0 |\n"
         f"| IRF horizon | {T_irf} quarters | Periods shown in each impulse response |\n\n"
-        "The source `model.mod` uses $\\phi_\\pi=0.33$ and $\\kappa=0.95$. This report "
+        "The source `model.mod` uses $\\phi_\\pi=0.33$ and $\\kappa=0.95$. The tutorial "
         "uses a standard determinate calibration, $\\phi_\\pi=1.5$ and $\\kappa=0.3$, "
-        "because the economic point is monetary transmission under a stable Taylor "
+        "because the economic exercise is monetary transmission under a stable Taylor "
         "rule. The contrast matters: when policy fails to lean hard enough against "
         "inflation, the forward-looking system no longer selects a unique stable path."
     )
 
     report.add_solution_method(
         "For either shock, write the scalar state as $s_t=\\rho_s s_{t-1}+\\varepsilon_t$. "
-        "Because the model is already log-linear, the rational-expectations solution is "
-        "linear in that state:\n\n"
+        "The equilibrium object is the pair of loading coefficients that maps the state "
+        "into output and inflation. Since the model is log-linear, the "
+        "rational-expectations solution is linear in that state:\n\n"
         "$$y_t=\\psi_y s_t,\\qquad \\pi_t=\\psi_\\pi s_t. $$\n\n"
         "The Phillips curve gives\n\n"
         "$$\\psi_\\pi=\\frac{\\kappa\\psi_y}{1-\\beta\\rho_s}. $$\n\n"
-        "The IS curve and Taylor rule then pin down $\\psi_y$. For a monetary-policy "
-        "shock, the right-hand side is negative because $v_t$ raises the policy rate. "
-        "For a demand shock, the right-hand side is positive because $d_t$ raises the "
-        "natural rate:\n\n"
+        "The IS curve and Taylor rule then pin down $\\psi_y$. A monetary-policy shock "
+        "loads negatively because $v_t$ raises the policy rate. A demand shock loads "
+        "positively because $d_t$ raises the natural rate:\n\n"
         "$$\\psi_y\\left[(1-\\rho_s)+\\frac{\\phi_y}{\\sigma}"
         "+\\frac{(\\phi_\\pi-\\rho_s)\\kappa}{\\sigma(1-\\beta\\rho_s)}\\right]"
         "= b_s,$$\n\n"
@@ -329,25 +330,24 @@ natural-rate shifter so the two impulse responses can be read separately.
         "Outputs: paths for y_t, pi_t, i_t, and the shock state s_t\n\n"
         "1. Pick the shock experiment: monetary policy v_t or natural-rate demand d_t.\n"
         "2. Guess y_t = psi_y s_t and pi_t = psi_pi s_t.\n"
-        "3. Use the Phillips curve to express psi_pi in terms of psi_y.\n"
-        "4. Substitute both coefficients into the IS curve and Taylor rule.\n"
+        "3. Use the Phillips curve to express psi_pi as a function of psi_y.\n"
+        "4. Substitute both loadings into the IS curve and Taylor rule.\n"
         "5. Match coefficients on s_t to solve for psi_y, then recover psi_pi.\n"
         "6. Recover the policy-rate coefficient psi_i from the Taylor rule.\n"
         "7. Set s_0 = eps_0 and iterate s_t = rho_s s_{t-1} for t = 1,...,T.\n"
         "8. Plot y_t = psi_y s_t, pi_t = psi_pi s_t, and i_t = psi_i s_t.\n"
         "```\n\n"
-        "There is no finer-grid benchmark to add here. Within this tutorial's "
-        "log-linear model, coefficient matching is the exact solution. As an "
-        "independent check the same system is also solved by Klein (2000) "
+        "There is no grid benchmark to add here. Within this log-linear model, "
+        "coefficient matching is the exact solution. As an independent check, the "
+        "same system is also solved by Klein (2000) "
         f"generalized Schur (QZ) decomposition; the two methods agree to "
-        f"{max(mp_qz_diff, d_qz_diff):.1e} on both shock experiments. The Klein "
-        "algorithm is what general DSGE solvers use because it scales to many "
-        "states; on this small model it is overkill, but the agreement establishes "
-        "that the closed-form coefficients pick out the unique stable rational-"
-        "expectations equilibrium. Approximation error would enter only if we "
-        "replaced the three-equation block with a nonlinear price-setting model "
-        "and then compared a local perturbation to a global or perfect-foresight "
-        "solution."
+        f"{max(mp_qz_diff, d_qz_diff):.1e} on both shock experiments. Generalized "
+        "Schur decomposition scales to larger DSGE systems with many states. In "
+        "this small model, it mainly verifies that the closed-form coefficients "
+        "pick out the unique stable rational-expectations equilibrium. Approximation "
+        "error would enter only if we replaced the three-equation block with a "
+        "nonlinear price-setting model and compared the local perturbation to a "
+        "global or perfect-foresight solution."
     )
 
     periods = np.arange(T_irf)
@@ -388,7 +388,7 @@ natural-rate shifter so the two impulse responses can be read separately.
         "Impulse responses to a one-percentage-point contractionary monetary-policy shock",
         fig1,
         description="The monetary shock is a wedge in the Taylor rule, not the total policy-rate response. "
-        "On impact the wedge is one percentage point, but the systematic part of the rule partly offsets "
+        "On impact the wedge is one percentage point, while the systematic part of the rule partly offsets "
         "it because expected output and inflation fall. The real rate still rises, demand contracts, and "
         "inflation falls with the output gap. Persistence in $v_t$ controls how slowly the economy returns "
         "to steady state.",
@@ -451,10 +451,10 @@ natural-rate shifter so the two impulse responses can be read separately.
     )
 
     report.add_takeaway(
-        "The three-equation New Keynesian model is compact, but it already separates two "
-        "central ideas. First, sticky prices let a nominal policy surprise move the real "
-        "rate and therefore current demand. Second, determinacy is not a numerical detail: "
-        "with forward-looking inflation, the Taylor rule has to make expected inflation "
+        "The three-equation New Keynesian model is compact, and it already shows two "
+        "central lessons. Sticky prices let a nominal policy surprise move the real "
+        "rate and current demand. Determinacy is part of the economics: with "
+        "forward-looking inflation, the Taylor rule has to make expected inflation "
         "costly enough for the model to select one stable path.\n\n"
         "The policy-shock and demand-shock experiments use the same solution method but "
         "differ in their economics. A policy wedge contracts demand and inflation. A "
