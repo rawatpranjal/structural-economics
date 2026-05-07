@@ -127,22 +127,23 @@ def main() -> None:
 
     setup_style()
     report = ModelReport(
-        "Cournot Oligopoly and Best-Response Dynamics",
-        "A static quantity game solved by closed-form Nash conditions and checked by best-response iteration.",
+        "Cournot Quantity Competition and Best-Response Iteration",
+        "A quantity-setting oligopoly solved by Nash first-order conditions and checked by fixed-point iteration.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "Cournot competition is a small static game with a large economic lesson: "
-        "market power comes from each firm's recognition that its own output moves "
-        "the market price. The Nash quantity is not the joint-profit maximum and "
-        "not the competitive quantity. It is the point where each firm is already "
-        "choosing its optimal quantity given the other firm's quantity.\n\n"
-        "Two solution views run side by side. The first is the closed-form first-order "
-        "condition. The second iterates best responses and reports a fixed-point residual. "
-        "The iteration matters because larger games usually do not have a one-line "
-        "equilibrium formula."
+        "Two firms sell a homogeneous good, such as cement in one local market. "
+        "Each firm chooses output before the market price clears. Producing more "
+        "raises the firm's own sales, but it also lowers the price paid on every "
+        "unit. Cournot equilibrium asks where those incentives balance when each "
+        "firm treats the rival's quantity as given.\n\n"
+        "This linear duopoly has a closed-form Nash quantity, so the equilibrium "
+        "condition is easy to see. The computation treats the same condition as a "
+        "fixed point of best responses. That numerical view is useful because most "
+        "oligopoly games lose the one-line formula once demand, costs, or the number "
+        "of firms become richer."
     )
 
     report.add_equations(
@@ -199,8 +200,9 @@ price equal to marginal cost.
     )
 
     report.add_solution_method(
-        "The closed-form solution solves the two first-order conditions directly. "
-        "The best-response iteration treats the same equilibrium as a fixed point "
+        "The analytic solution solves the two first-order conditions directly. "
+        "The numerical calculation keeps the economic object the same: a Nash "
+        "quantity pair where both firms best respond. It searches for a fixed point "
         "of the map $BR(q_1,q_2)=(BR_1(q_2),BR_2(q_1))$.\n\n"
         "```text\n"
         "Algorithm: damped Cournot best-response iteration\n"
@@ -212,8 +214,9 @@ price equal to marginal cost.
         "4. Repeat until max_i |q_{it} - BR_i(q_{-i,t})| is near zero.\n"
         "5. Compare the numerical fixed point with q* = (a-c)/(3b).\n"
         "```\n\n"
-        "A small residual matters more than a visually stable path: Nash equilibrium "
-        "is a no-profitable-deviation condition, not just convergence of a line on a plot."
+        "The residual links the iteration back to game theory. A path can look stable "
+        "on a figure while still leaving a firm with a profitable output change. "
+        "A small residual checks the no-deviation condition directly."
     )
 
     q_grid = np.linspace(0.0, 8.0, 240)
@@ -243,10 +246,9 @@ price equal to marginal cost.
 
     report.add_results(
         "The best-response curves cross at the Nash quantity. The joint-monopoly "
-        "split is inside the diagram but not an equilibrium: each firm would rather "
-        "expand output if the rival stayed at the collusive quantity. The damped "
-        "paths show how the same Nash condition can be reached by iteration from "
-        "different starting points."
+        "split sits below that crossing. If one firm expected the rival to stay at "
+        "the collusive quantity, it would expand output and gain profit. The damped "
+        "paths show the same Nash condition reached from several starting quantities."
     )
     report.add_figure(
         "figures/cournot-best-response.png",
@@ -264,9 +266,10 @@ price equal to marginal cost.
     ax2.legend()
 
     report.add_results(
-        "The residual falls quickly because this linear duopoly has a stable "
-        "best-response map after damping. Reporting it ties the numerical exercise to "
-        "the economic definition of equilibrium."
+        "The residual falls quickly because damping stabilizes this linear "
+        "best-response map. The final residual answers a game-theoretic question: "
+        "at the computed quantities, how large is the best remaining unilateral "
+        "output adjustment?"
     )
     report.add_figure(
         "figures/residuals.png",
@@ -293,10 +296,10 @@ price equal to marginal cost.
     ax3.legend(fontsize=8)
 
     report.add_results(
-        "The welfare comparison is the economic reason the equilibrium matters. "
-        "Cournot output lies between monopoly and perfect competition, so the price "
-        "is also intermediate. The exact numbers are calibration-specific, but the "
-        "ranking is the standard Cournot logic."
+        "The output comparison gives the equilibrium an economic interpretation. "
+        "Cournot output lies between monopoly and perfect competition, and so does "
+        "the price. The exact levels come from the calibration, while the ranking "
+        "comes from the strategic output effect."
     )
     report.add_figure(
         "figures/welfare-analysis.png",
@@ -338,9 +341,10 @@ price equal to marginal cost.
     report.add_takeaway(
         "Cournot equilibrium is a fixed point with economic content: each firm is "
         "already choosing its profit-maximizing quantity given the rival's output. "
-        "Closed form makes that condition transparent here. Best-response iteration "
-        "is the computational version of the same idea, and the residual verifies "
-        "that the iteration has actually reached a Nash equilibrium."
+        "The closed form makes that condition transparent in a linear duopoly. "
+        "Best-response iteration turns the same idea into a numerical procedure, "
+        "and the residual checks whether the computed quantities satisfy Nash "
+        "incentives."
     )
 
     report.add_references(
