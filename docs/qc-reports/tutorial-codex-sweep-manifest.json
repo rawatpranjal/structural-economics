@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T22:41:19Z",
+  "updated_at": "2026-05-07T22:44:39Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -456,6 +456,17 @@
         "industrial-organization/dynamic-entry-exit/run.py"
       ],
       "updated_at": "2026-05-07T22:41:19Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/dynamic-discrete-choice/",
+      "status": "complete",
+      "commit": "006ba8fd8476b92fb3dd61428121d07d1aff11c1",
+      "changed_paths": [
+        "README.md",
+        "industrial-organization/dynamic-discrete-choice/README.md",
+        "industrial-organization/dynamic-discrete-choice/run.py"
+      ],
+      "updated_at": "2026-05-07T22:44:39Z"
     }
   ]
 }
