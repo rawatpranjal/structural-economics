@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T18:50:36Z",
+  "updated_at": "2026-05-07T20:05:05Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -213,6 +213,17 @@
         "dsge/rbc/run.py"
       ],
       "updated_at": "2026-05-07T18:50:36Z"
+    },
+    {
+      "tutorial_path": "dsge/nkdsge/",
+      "status": "complete",
+      "commit": "aaaec4ec7e2ca1e52cee1e0b467b07a428057c27",
+      "changed_paths": [
+        "README.md",
+        "dsge/nkdsge/README.md",
+        "dsge/nkdsge/run.py"
+      ],
+      "updated_at": "2026-05-07T20:05:05Z"
     }
   ]
 }
