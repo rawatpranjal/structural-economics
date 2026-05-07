@@ -1,14 +1,14 @@
-# Ramsey Phase Diagrams and Saddle Paths
+# Ramsey Consumption Choice and Saddle Paths
 
-> How nullclines and the stable arm discipline consumption in continuous-time growth.
+> Trace the stable arm that selects initial consumption in continuous-time growth.
 
 ## Overview
 
-In the Ramsey-Cass-Koopmans model, the planner chooses the whole consumption path, but the phase diagram reduces the economic discipline to a simple question: for a given capital stock, which initial consumption level keeps the economy feasible and satisfies the transversality condition?
+A Ramsey planner inherits an initial capital stock and must choose consumption today before the rest of the path is known. Starting below the steady state makes the tradeoff concrete: consuming too much leaves too little investment, while consuming too little builds capital that the planner would rather have consumed earlier.
 
-The state-control pair is $(k,c)$. The two nullclines show where capital or consumption stops moving; their intersection is the steady state. That is not enough to determine the optimum, because most nearby paths move away from the steady state. The missing object is the stable arm: the one-dimensional set of initial $(k,c)$ pairs that converges to the saddle-point steady state.
+The phase diagram turns that intertemporal choice into geometry. Capital is the state, consumption is the control, and each point $(k,c)$ has an arrow showing how the economy moves next. The nullclines show where capital or consumption is temporarily flat, and their intersection gives the Ramsey steady state. The optimum needs one more object: the stable arm, the curve of initial $(k,c)$ pairs that converges to the saddle-point steady state and satisfies the present-value boundary condition.
 
-This tutorial is the geometric companion to the neighboring [HJB growth](../hjb-growth/) and [Ramsey shooting](../ramsey-growth/) examples. The method here is visual: read the economic forces from the phase plane, then use the local eigenvector and ODE integration to trace the stable arm.
+The computation traces that curve. We linearize the differential equation system at the steady state, take the stable eigenvector as a local guide, and integrate the nonlinear Ramsey ODE backward to draw the stable arm away from the steady state. The same selection problem appears in shooting and HJB methods, but the phase plane lets the reader see the economics before choosing a numerical solver.
 
 ## Equations
 
@@ -61,7 +61,7 @@ $$
 
 ## Model Setup
 
-The calibration keeps the economy deterministic so that every movement in the diagram has a direct interpretation. Capital is the state, consumption is the control, and output is Cobb-Douglas.
+The calibration is deterministic, so every arrow in the diagram reflects the planner's consumption-investment tradeoff. Output is Cobb-Douglas, preferences are CRRA, and the discount rate places the Ramsey steady state below the golden-rule capital stock.
 
 | Parameter | Value | Description |
 |-----------|-------|-------------|
@@ -77,7 +77,7 @@ The calibration keeps the economy deterministic so that every movement in the di
 
 ## Solution Method
 
-The computation starts at the steady state, where the economics is sharpest. The Jacobian of $(\dot{k},\dot{c})$ at $(k^{\ast},c^{\ast})$ is
+The steady state anchors the calculation because the saddle structure is local. The Jacobian of $(\dot{k},\dot{c})$ at $(k^{\ast},c^{\ast})$ is
 
 $$
 J=
@@ -87,26 +87,26 @@ c^{\ast}f''(k^{\ast})/\sigma & 0
 \end{bmatrix}.
 $$
 
-Its eigenvalues are $\lambda_s=-0.0710$ and $\lambda_u=0.1110$, so the steady state is a saddle. The stable eigenvector has local slope $dc/dk=0.1110$. That line is a first-order approximation. To get a nonlinear reference for the plotted stable arm, the code integrates the full Ramsey system backward from two nearby points on the stable eigenvector.
+The eigenvalues are $\lambda_s=-0.0710$ and $\lambda_u=0.1110$. One is negative and one is positive, so nearby paths split into stable and unstable directions. The stable eigenvector has local slope $dc/dk=0.1110$. That line gives the slope of the planner's path at the steady state, but it is only a first-order approximation. To draw the nonlinear stable arm, the code starts near the steady state along that eigenvector and integrates the full Ramsey system backward.
 
 ```text
-Algorithm: nonlinear stable arm in the Ramsey phase plane
+Algorithm: trace the Ramsey stable arm
 Inputs: primitives (alpha, delta, rho, sigma, A), bounds for plotted k and c
 1. Compute (k*, c*) from f'(k*) = rho + delta and c* = f(k*) - delta k*.
 2. Form the Jacobian J of F(k,c) = (dot{k}, dot{c}) at (k*, c*).
 3. Let lambda_s < 0 and v_s = (1, m_s) be the stable eigenpair.
-4. Start just below and just above the steady state along v_s.
+4. Start just below and just above (k*, c*) along v_s.
 5. Integrate d(k,c)/d tau = -F(k,c) away from the steady state.
-6. Stop when the path leaves the economically relevant plotting region.
-7. Sort the two branches by k and use them as the stable-arm reference.
-Output: nullclines, local linear arm, nonlinear stable arm, and forward paths.
+6. Stop when a branch leaves the plotted economic region.
+7. Sort the branches by k and read c(k) as the selected initial consumption rule.
+Output: nullclines, local linear arm, nonlinear stable arm, and sample forward paths.
 ```
 
-The backward integration is a way to draw the stable arm. Forward in economic time, points on that arm converge to the steady state; nearby points above or below it violate the boundary condition.
+Backward integration is a drawing device. Forward in economic time, points on the traced arm converge to the steady state; points above or below it miss the present-value boundary condition.
 
 ## Results
 
-The phase plane separates two jobs that are often blurred together. The blue curve and red line give sign information: below net output, capital accumulates; left of $k^{\ast}$, consumption grows because the marginal product is high. The black curve is stronger than a direction field. It is the stable arm, so for each capital stock on the plotted branch it gives the initial consumption level consistent with convergence and the transversality condition. The dashed line shows that linearization works near the steady state but not as a global solution; over $k \in [0.5k^{\ast},1.5k^{\ast}]$ its largest consumption gap from the nonlinear reference is 0.050.
+The blue curve and red line give sign information. Below net output, capital accumulates; left of $k^{\ast}$, consumption grows because the marginal product is high. The black curve does more than show local motion. For each capital stock on the plotted branch, it gives the initial consumption level that converges to the steady state and satisfies the transversality condition. The dashed line shows that linearization works near the steady state but not globally; over $k \in [0.5k^{\ast},1.5k^{\ast}]$ its largest consumption gap from the nonlinear reference is 0.050.
 
 <img src="figures/phase-diagram.png" alt="Ramsey phase plane with nullclines, local linear arm, and nonlinear stable arm" width="80%">
 
@@ -114,7 +114,7 @@ Starting below steady-state capital, the selected path keeps consumption low eno
 
 <img src="figures/time-paths.png" alt="Capital and consumption converge to the Ramsey steady state along the stable arm" width="80%">
 
-Holding initial capital fixed makes the saddle-path logic explicit. A higher initial consumption choice starts above the stable arm and runs capital down. A lower choice starts below it and accumulates too much capital relative to the present-value boundary condition. The planner's choice is not the direction indicated by the nullclines; it is the one initial consumption level that puts the economy on the stable arm.
+Holding initial capital fixed makes the saddle-path logic explicit. A higher initial consumption choice starts above the stable arm and runs capital down. A lower choice starts below it and accumulates too much capital relative to the present-value boundary condition. The arrows help explain motion, but they do not select the path. The planner needs the one initial consumption level that puts the economy on the stable arm.
 
 <img src="figures/path-selection.png" alt="Forward trajectories from the same initial capital but different initial consumption" width="80%">
 
@@ -137,7 +137,7 @@ The table keeps the main numbers auditable. The Ramsey steady state has $r^{\ast
 
 ## Takeaway
 
-The phase diagram is an economic selection device. Nullclines say which way capital and consumption move, but they do not choose the optimal initial consumption level. The transversality condition does that by selecting the stable arm. Linearization gives the local slope and convergence speed; backward integration of the nonlinear ODE shows how the selected path bends away from the steady state. The same selection problem reappears in shooting algorithms and in HJB methods, but the phase plane makes the economics visible before the solver takes over.
+A Ramsey phase diagram is an economic selection device. Nullclines say which way capital and consumption move, but they do not choose the initial consumption level. The transversality condition selects the stable arm. Linearization gives the local slope and convergence speed; backward integration of the nonlinear ODE shows how the selected path bends away from the steady state. Shooting algorithms and HJB methods solve the same selection problem in different ways, while the phase plane keeps the consumption-investment tradeoff visible.
 
 ## References
 
