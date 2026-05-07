@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T21:56:45Z",
+  "updated_at": "2026-05-07T22:01:22Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -346,6 +346,17 @@
         "industrial-organization/vertical-relationships/run.py"
       ],
       "updated_at": "2026-05-07T21:56:45Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/vertical-contracts/",
+      "status": "complete",
+      "commit": "c9ba0162d37a28adc603fdd671048e35d8a1e0a5",
+      "changed_paths": [
+        "README.md",
+        "industrial-organization/vertical-contracts/README.md",
+        "industrial-organization/vertical-contracts/run.py"
+      ],
+      "updated_at": "2026-05-07T22:01:22Z"
     }
   ]
 }
