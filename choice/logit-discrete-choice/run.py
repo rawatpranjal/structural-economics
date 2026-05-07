@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Plain logit demand and the IIA restriction.
+"""Product demand with plain logit and the IIA restriction.
 
-Simulates choices over a small differentiated-products market, estimates the
-price and quality coefficients by maximum likelihood, and shows how the logit
-maps those coefficients into substitution patterns.
+Simulates choices in a small differentiated-products market, estimates price
+and quality tastes by maximum likelihood, and shows how plain logit maps those
+tastes into substitution patterns.
 
 Reference: McFadden (1974), Train (2009) "Discrete Choice Methods with Simulation"
 """
@@ -220,29 +220,31 @@ def main() -> None:
     setup_style()
 
     report = ModelReport(
-        "Plain Logit Demand and IIA",
-        "Estimate a baseline product-choice model and read the substitution restriction it imposes.",
+        "Product Demand with Plain Logit and IIA",
+        "Estimate product-choice demand by maximum likelihood and read the substitution pattern implied by IIA.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "A product-choice model is a disciplined way to turn prices, characteristics, "
-        "and observed purchases into demand primitives. The market here is small: "
-        "five products differ only in price and quality, and each consumer buys "
-        "the product with the highest utility draw.\n\n"
-        "Plain logit is the benchmark because the Type I extreme-value taste shock "
-        "gives closed-form choice probabilities. That convenience also gives the model "
-        "its sharp economic restriction: substitution depends on existing market shares, "
-        "not on product similarity. The tutorial estimates the coefficients, compares "
-        "the fitted shares with the known data-generating model, and then makes the "
-        "Independence of Irrelevant Alternatives (IIA) visible."
+        "Suppose a researcher observes purchases in a product category where five "
+        "items differ in price and quality. The demand object is practical: recover "
+        "price and quality tastes, predict market shares, and ask where buyers go "
+        "when one product leaves the shelf.\n\n"
+        "Plain logit gives a transparent first demand system for that problem. "
+        "The Type I extreme-value taste shock turns utility indexes into closed-form "
+        "choice probabilities, so the code can fit the taste coefficients by maximum "
+        "likelihood. After estimation, the same probabilities deliver fitted shares, "
+        "elasticities, and an immediate counterfactual. They also reveal the model's "
+        "restriction: IIA reallocates lost buyers in proportion to existing shares, "
+        "even when the remaining products differ in economic closeness."
     )
 
     report.add_equations(
         r"""
-Consumers $i=1,\ldots,N$ choose one alternative $j\in\{1,\ldots,J\}$.
-Product $j$ has price $p_j$ and quality $q_j$.
+Consumers $i=1,\ldots,N$ choose one product $j\in\{1,\ldots,J\}$.
+Product $j$ has price $p_j$ and quality $q_j$. The deterministic part of
+utility is common across consumers in this simple market.
 
 **Utility:**
 $$U_{ij}=V_j+\varepsilon_{ij}, \qquad
@@ -255,24 +257,26 @@ $\beta_p<0$ and $\beta_q>0$.
 $$P_j(\beta)=\Pr(y_i=j\mid p,q;\beta)
 =\frac{\exp(V_j)}{\sum_{k=1}^J \exp(V_k)}.$$
 
-If $d_{ij}=1\{y_i=j\}$, the sample log-likelihood is
+If $d_{ij}=1\{y_i=j\}$ records the observed purchase, the sample
+log-likelihood is
 $$\ell(\beta)=\sum_{i=1}^N\sum_{j=1}^J d_{ij}\log P_j(\beta).$$
 
 Because this one-market example has no individual covariates, fitted market
-shares are just $s_j=P_j(\hat\beta)$. The implied price elasticities are
+shares are $s_j=P_j(\hat\beta)$. The implied price elasticities are
 $$\eta_{jj}=\beta_p p_j(1-s_j), \qquad
 \eta_{jk}=-\beta_p p_k s_k \quad (j\neq k).$$
 
 IIA follows from the odds ratio
 $$\frac{P_j}{P_k}=\exp(V_j-V_k),$$
-which does not depend on any third product.
+which does not depend on any third product in the choice set.
 """
     )
 
     report.add_model_setup(
-        "The sample is synthetic, so the true coefficients and population logit "
-        "shares are available for comparison. That makes the exercise about the "
-        "estimator and the model restriction, not about data cleaning.\n\n"
+        "The example keeps the market small enough to see the economics of the "
+        "estimates. Five fixed products trade off price against quality. The sample "
+        "is synthetic, so the true coefficients and population shares are available "
+        "for comparison after estimation.\n\n"
         f"| Object | Value | Role |\n"
         f"|-----------|-------|-------------|\n"
         f"| Consumers | {N} | Independent choice draws |\n"
@@ -284,21 +288,24 @@ which does not depend on any third product.
     )
 
     report.add_solution_method(
-        "The estimator chooses the coefficients that make the realized product "
-        "choices most likely. The code minimizes the negative log-likelihood, but "
-        "the economic object is the same maximizer:\n\n"
+        "The likelihood turns the demand model into a two-parameter optimization "
+        "problem. Each candidate $\\beta=(\\beta_p,\\beta_q)$ implies utilities, "
+        "utilities imply choice probabilities, and the observed choices score that "
+        "candidate through the log-likelihood:\n\n"
         "$$\\hat\\beta=\\arg\\max_\\beta \\ell(\\beta).$$\n\n"
         "```text\n"
         "Inputs: prices p_j, qualities q_j, choices y_i, starting value beta^(0)\n"
-        "Repeat inside the optimizer:\n"
+        "For each trial beta proposed by the optimizer:\n"
         "    1. Form V_j(beta) = beta_p p_j + beta_q q_j for every product j.\n"
         "    2. Convert V into logit probabilities P_j(beta).\n"
         "    3. Evaluate ell(beta) = sum_i log P_{y_i}(beta).\n"
         "Choose beta_hat that maximizes ell(beta).\n"
         "At beta_hat: compute fitted shares, elasticities, and IIA share ratios.\n"
         "```\n\n"
-        "For this plain logit the likelihood is globally concave, so the two-"
-        "parameter surface has a single peak. BFGS converged in "
+        "The code evaluates probabilities with a stable softmax calculation, which "
+        "subtracts the largest utility before exponentiating and leaves odds ratios "
+        "unchanged. For this plain logit the likelihood is globally concave, so the "
+        "two-parameter surface has a single peak. BFGS converged in "
         f"**{result.nit} iterations** with log-likelihood **{-result.fun:.2f}**. "
         "The inverse Hessian approximation supplies the standard errors reported below."
     )
@@ -332,9 +339,9 @@ which does not depend on any third product.
     report.add_figure("figures/log-likelihood-surface.png",
                        "Log-likelihood surface with true and estimated coefficients marked",
                        fig1,
-                       description="The contour plot shows the whole estimation problem in two dimensions. "
-                       "The likelihood has one peak, and the MLE sits close to the true coefficients used to generate the data. "
-                       "Sampling noise keeps the estimate from landing exactly on the star, but the gap is small at 5,000 choices.")
+                       description="The contour plot shows the estimation problem in two dimensions. "
+                       "The likelihood has one peak, and the MLE sits close to the coefficients used to generate the data. "
+                       "Sampling noise keeps the estimate from landing exactly on the star, but the gap is small with 5,000 choices.")
 
     # --- Figure 2: Predicted vs Actual Market Shares ---
     fig2, ax2 = plt.subplots(figsize=(8, 5))
@@ -352,8 +359,8 @@ which does not depend on any third product.
     report.add_figure("figures/market-shares.png",
                        "Observed, fitted, and true logit market shares",
                        fig2,
-                       description="Observed shares are finite-sample frequencies; the green bars are the population shares from the data-generating logit. "
-                       "The fitted shares mostly sit between those two objects, which is what correct specification predicts.")
+                       description="Observed shares are finite-sample purchase frequencies. "
+                       "The green bars are the population shares from the data-generating logit, and the fitted shares mostly sit between the realized sample and that population target.")
 
     # --- Figure 3: Own-Price Elasticities ---
     fig3, ax3 = plt.subplots(figsize=(8, 5))
@@ -373,8 +380,8 @@ which does not depend on any third product.
     report.add_figure("figures/own-price-elasticities.png",
                        "Own-price elasticities implied by the estimated logit",
                        fig3,
-                       description="The own-price elasticities combine the estimated price coefficient with each product's price and share. "
-                       "The expensive products have larger elasticities in absolute value, so a one percent price increase costs them a larger fraction of demand.")
+                       description="The own-price elasticities combine the estimated price coefficient with each product's price and fitted share. "
+                       "Higher-priced products are more elastic in absolute value here, so a one percent price increase costs them a larger fraction of demand.")
 
     # --- Figure 4: IIA Illustration ---
     fig4, (ax4a, ax4b) = plt.subplots(1, 2, figsize=(13, 5))
@@ -417,7 +424,7 @@ which does not depend on any third product.
                        fig4,
                        description="When Product 3 is removed, the remaining products do not become closer or farther apart in the model. "
                        "Their probabilities are renormalized, so the pairwise odds ratios in the right panel stay fixed. "
-                       "This is the IIA restriction that the nested-logit tutorial relaxes by grouping similar products.")
+                       "This is the IIA restriction that nested logit relaxes by grouping similar products.")
 
     # --- Table: Estimation Results ---
     table_data = {
@@ -432,7 +439,7 @@ which does not depend on any third product.
     report.add_table("tables/estimation-results.csv",
                       "MLE estimates and true coefficients",
                       df_results,
-                      description="The signs are economically sensible and match the simulation: consumers dislike price and value quality. "
+                      description="The estimated signs match the simulation: consumers dislike price and value quality. "
                       "The estimates are close to the true coefficients because the likelihood is correctly specified and the sample is large.")
 
     # --- Table: Elasticity Matrix ---
@@ -444,15 +451,15 @@ which does not depend on any third product.
                       "Price elasticity matrix",
                       df_elas,
                       description="Rows are the products whose shares change; columns are the products whose prices change. "
-                      "In every off-diagonal column the cross-elasticities are identical, so the model sends lost buyers to rivals in proportion to their shares rather than to the most similar product.")
+                      "In every off-diagonal column the cross-elasticities are identical, so the model sends lost buyers to rivals in proportion to their shares rather than to the closest product.")
 
     report.add_takeaway(
-        "Plain logit is a useful first demand model because the mapping from utility "
-        "coefficients to shares is transparent and the likelihood is easy to optimize. "
-        "The same structure makes its substitution patterns too rigid: once shares are "
-        "known, cross-price responses are pinned down by IIA rather than by economic "
-        "similarity. Nested logit and mixed logit are the natural next models, "
-        "not cosmetic complications."
+        "Plain logit gives an executable first pass at product demand: utility "
+        "coefficients map directly into shares, elasticities, and removal "
+        "counterfactuals. Its cost is rigid substitution. Once shares are known, "
+        "IIA pins down cross-price responses without using product closeness. "
+        "A richer demand model has to change the taste-shock structure, through "
+        "nests or random coefficients, before that economics can appear."
     )
 
     report.add_references([
