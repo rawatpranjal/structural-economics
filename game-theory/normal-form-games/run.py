@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Normal-form games and Nash equilibrium checks.
+"""Finite strategic games and Nash equilibrium checks.
 
 Solves small finite games with direct enumeration and 2x2 indifference
 conditions. No external game solver is used.
@@ -106,25 +106,25 @@ def main() -> None:
             "row": np.array([[-1, -3], [0, -2]], dtype=float),
             "col": np.array([[-1, 0], [-3, -2]], dtype=float),
             "actions": (["Cooperate", "Defect"], ["Cooperate", "Defect"]),
-            "pattern": "Dominance: defection is the unique stable profile.",
+            "pattern": "Defection is stable even though cooperation has higher joint payoff.",
         },
         "Matching Pennies": {
             "row": np.array([[1, -1], [-1, 1]], dtype=float),
             "col": np.array([[-1, 1], [1, -1]], dtype=float),
             "actions": (["Heads", "Tails"], ["Heads", "Tails"]),
-            "pattern": "No pure equilibrium; mixing removes predictable play.",
+            "pattern": "Any predictable pure action invites a profitable response.",
         },
         "Battle of the Sexes": {
             "row": np.array([[3, 0], [0, 2]], dtype=float),
             "col": np.array([[2, 0], [0, 3]], dtype=float),
             "actions": (["Opera", "Football"], ["Opera", "Football"]),
-            "pattern": "Two coordination equilibria plus one mixed conflict point.",
+            "pattern": "Two conventions are stable; mixing balances conflicting preferred outcomes.",
         },
         "Stag Hunt": {
             "row": np.array([[4, 0], [3, 2]], dtype=float),
             "col": np.array([[4, 3], [0, 2]], dtype=float),
             "actions": (["Stag", "Hare"], ["Stag", "Hare"]),
-            "pattern": "Two coordination equilibria, one payoff dominant.",
+            "pattern": "Safe and payoff-dominant conventions both satisfy no-deviation.",
         },
     }
 
@@ -146,34 +146,38 @@ def main() -> None:
             "Pure Nash equilibria": format_equilibria(pure, game["actions"]),
             "Interior mixed equilibrium": mixed_text,
             "Indifference residual": residual_text,
-            "Equilibrium pattern": game["pattern"],
+            "Economic pattern": game["pattern"],
         })
 
     setup_style()
     report = ModelReport(
-        "Normal-Form Games and Nash Equilibrium Checks",
-        "Pure profiles, mixed supports, and unilateral-deviation residuals.",
+        "Finite Strategic Games and Nash Equilibrium Checks",
+        "Payoff tables, deviation gains, and mixed-strategy indifference.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "A normal-form game is the payoff table behind many richer models. Before adding "
-        "states, prices, or private information, Nash equilibrium is a set of "
-        "no-profitable-deviation restrictions on that table. The games here are small "
-        "enough that those restrictions can be inspected directly.\n\n"
-        "The point is not to showcase a solver. Pure equilibria come from checking every "
-        "action profile. Interior mixed equilibria in 2x2 games come from the two "
-        "indifference equations that make randomization optimal. The same logic is the "
-        "static baseline for [Cournot best-response dynamics](../static-games/) and the "
-        "exact benchmark that [quantal response equilibrium](../quantal-response-equilibrium/) "
-        "softens into noisy best responses."
+        "Many economic situations ask the same question: after each participant chooses "
+        "an action, would anyone want to switch? A pair of firms may decide whether to "
+        "compete hard or cooperate tacitly, two groups may need a convention, and a "
+        "matching game may reward players who avoid being predictable. A normal-form "
+        "game records that strategic situation in one payoff table.\n\n"
+        "Because the table is finite, the computation can stay close to the definition. "
+        "For each action profile, calculate the best payoff each player could get by "
+        "changing only their own action. A Nash equilibrium is a cell with zero "
+        "profitable deviation. In 2x2 games, mixed equilibria add one more calculation: "
+        "choose probabilities that make each player indifferent across the actions they "
+        "randomize over. These checks give the static benchmark for [Cournot "
+        "best-response dynamics](../static-games/) and for [quantal response "
+        "equilibrium](../quantal-response-equilibrium/), where best responses become "
+        "payoff-sensitive choice probabilities."
     )
 
     report.add_equations(r"""
-There are two players. The row player has actions $i \in I$, the column player
-has actions $j \in J$, and the payoff matrices are $A$ for the row player and
-$B$ for the column player. At pure profile $(i,j)$, payoffs are $(A_{ij},B_{ij})$.
+A finite two-player game has a row player with actions $i \in I$ and a column
+player with actions $j \in J$. The matrices $A$ and $B$ record row and column
+payoffs. At pure profile $(i,j)$, the players receive $(A_{ij},B_{ij})$.
 
 The row player's one-step deviation gain at $(i,j)$ is
 
@@ -212,13 +216,15 @@ B_{11}p + B_{21}(1-p) = B_{12}p + B_{22}(1-p).
 $$
 
 The candidate is an equilibrium only if $p,q \in [0,1]$. The reported mixed
-residual is the maximum absolute gap in these two indifference equations.
+residual is the maximum absolute gap left in these two indifference equations.
 """)
 
     report.add_model_setup(
-        "Four canonical 2x2 games are used. Each payoff table is small enough that the "
-        "economic tension is visible in the cells, and the equilibrium patterns differ "
-        "enough to separate dominance, zero-sum mixing, and coordination.\n\n"
+        "Four canonical 2x2 games keep the economic forces visible in the cells. "
+        "Prisoner's Dilemma shows private incentives defeating joint surplus. Matching "
+        "Pennies shows why predictable pure actions cannot survive in a strictly "
+        "opposed game. Battle of the Sexes and Stag Hunt show two kinds of "
+        "coordination: conflict over convention and risk around cooperation.\n\n"
         "| Game | Actions | What the payoffs isolate |\n"
         "|---|---|---|\n"
         "| Prisoner's Dilemma | Cooperate/Defect | Individual incentives overturn the efficient profile. |\n"
@@ -228,9 +234,10 @@ residual is the maximum absolute gap in these two indifference equations.
     )
 
     report.add_solution_method(
-        "The computation is exact for these finite games. Enumeration handles pure "
-        "profiles. The 2x2 mixed calculation solves the closed-form indifference system "
-        "and then checks the candidate rather than trusting the formula mechanically.\n\n"
+        "The algorithm treats equilibrium as a checkable set of inequalities. It "
+        "computes deviation gains at every pure profile. When a 2x2 game has a possible "
+        "interior mixture, it solves two linear equations for the probabilities that "
+        "make each player indifferent.\n\n"
         "```text\n"
         "Algorithm: Nash checks for a two-player finite game\n"
         "Inputs: payoff matrices A, B and action labels I, J\n"
@@ -241,18 +248,18 @@ residual is the maximum absolute gap in these two indifference equations.
         "4. Keep the mixed candidate only when p and q lie in [0,1].\n"
         "5. Recompute both expected-payoff gaps and report the largest absolute residual.\n"
         "```\n\n"
-        "This residual is the diagnostic. A profile or mixed strategy is not interesting "
-        "because an algorithm named it; it is interesting because no player can improve "
-        "by changing only its own action."
+        "The residual turns the equilibrium claim into a number. A pure profile passes "
+        "when both deviation gains equal zero. A mixed profile passes when the payoff "
+        "gaps for the actions in the support are numerically zero."
     )
 
     report.add_results(
-        "The first figure colors each pure action profile by the largest profitable "
-        "unilateral deviation. A zero-deviation cell is a pure Nash equilibrium, so the "
-        "black outlines are not decorative markers; they are the cells where the "
-        "equilibrium inequalities bind. This also separates efficiency from equilibrium. "
-        "In Prisoner's Dilemma, mutual cooperation has higher joint payoff than mutual "
-        "defection, but is not stable against a one-player deviation."
+        "The heat maps read each payoff table through incentives to deviate. Warmer "
+        "cells have larger one-player gains from switching action. A black outline "
+        "marks a zero-deviation cell, so it marks a pure Nash equilibrium. Prisoner's "
+        "Dilemma shows the main economic lesson: mutual cooperation creates more total "
+        "surplus, yet mutual defection is the stable prediction because each player "
+        "wants to defect when the other cooperates."
     )
 
     max_gain = max(
@@ -291,18 +298,18 @@ residual is the maximum absolute gap in these two indifference equations.
     )
     report.add_figure(
         "figures/pure-deviation-gains.png",
-        "Pure payoff tables colored by unilateral-deviation gain",
+        "Payoff tables colored by profitable deviation gains",
         fig,
     )
 
     report.add_results(
-        "The mixed-strategy figure uses the closed-form indifference equations as the "
-        "ground truth. Each curve is the expected payoff from the first action minus "
-        "the expected payoff from the second action. A root is where the opponent's "
-        "mix makes that player willing to randomize. Matching Pennies has the symmetric "
-        "half-half root; Battle of the Sexes has asymmetric mixing because the players "
-        "prefer different coordinated outcomes; Stag Hunt's mixed equilibrium is the "
-        "knife-edge between the safe and payoff-dominant basins."
+        "The mixed-strategy panels plot the payoff differences behind randomization. "
+        "Each curve shows the first-action payoff minus the second-action payoff as the "
+        "opponent's probability changes. A root gives the probability that makes that "
+        "player willing to mix. Matching Pennies lands at half-half. In Battle of the "
+        "Sexes, the probabilities are asymmetric because the players value different "
+        "conventions. In Stag Hunt, the mixed point separates attraction to safe and "
+        "payoff-dominant coordination."
     )
 
     p_grid = np.linspace(0, 1, 200)
@@ -343,7 +350,7 @@ residual is the maximum absolute gap in these two indifference equations.
         ax.legend(fontsize=7)
     report.add_figure(
         "figures/mixed-indifference.png",
-        "Exact mixed-equilibrium indifference roots",
+        "Mixed-strategy indifference roots in 2x2 games",
         fig2,
     )
 
@@ -353,9 +360,9 @@ residual is the maximum absolute gap in these two indifference equations.
         "Equilibrium Summary by Game",
         df_games,
         description=(
-            "The summary table reports the exact pure-equilibrium set and the interior "
-            "mixed candidate when one exists. Residuals are numerical checks of the "
-            "closed-form indifference equations."
+            "The summary table translates the same checks into equilibrium objects. "
+            "Pure-equilibrium entries list zero-deviation cells. The mixed entries list "
+            "the interior probability pair and the largest indifference residual."
         ),
     )
 
@@ -377,20 +384,19 @@ residual is the maximum absolute gap in these two indifference equations.
         "Expected Payoffs at Interior Mixed Equilibria",
         pd.DataFrame(mixed_payoffs),
         description=(
-            "Expected payoffs at the mixed equilibria are included because the "
-            "probabilities alone can hide the economic tradeoff. In zero-sum Matching "
-            "Pennies both players get zero; in the coordination games the mixed point "
-            "is worse than successful coordination."
+            "Expected payoffs put the mixed probabilities in economic terms. In "
+            "zero-sum Matching Pennies both players get zero. In the coordination games "
+            "the mixed point gives lower payoffs than successful coordination."
         ),
     )
 
     report.add_takeaway(
-        "For finite static games, Nash equilibrium is best read as a residual condition. "
-        "Pure equilibria are zero-deviation cells in the payoff table. Interior mixed "
-        "equilibria choose probabilities that make opponents indifferent across the "
-        "actions they use. This direct calculation is the benchmark before moving to "
-        "fixed-point iteration, noisy response, or dynamic games where the same "
-        "no-deviation logic is harder to see."
+        "A finite normal-form game makes Nash equilibrium observable in the payoff "
+        "table. Enumeration finds pure equilibria by asking whether anyone can "
+        "profitably switch actions. The 2x2 mixed check chooses probabilities that "
+        "erase payoff gaps within each player's support. This direct calculation is the "
+        "benchmark for larger fixed-point, noisy-response, and dynamic-game "
+        "computations."
     )
 
     report.add_references([
