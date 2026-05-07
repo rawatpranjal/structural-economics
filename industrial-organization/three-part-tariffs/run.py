@@ -158,22 +158,26 @@ def main() -> None:
     print(plan_summary.to_string(index=False))
 
     report = ModelReport(
-        "Three-Part Tariffs and Forward-Looking Broadband Demand",
-        "How data caps make monthly broadband demand a dynamic choice problem.",
+        "Broadband Data Caps and Forward-Looking Plan Choice",
+        "A finite-horizon usage model for valuing monthly allowances in three-part tariffs.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "Residential broadband contracts often combine three instruments: a fixed fee, "
-        "an included data allowance, and a per-GB overage price. The allowance is not just "
-        "a nonlinear price schedule. It creates a state variable inside the month. A GB "
-        "used on day 3 lowers the remaining allowance on day 4, so the relevant marginal "
-        "price includes the option value of keeping data for later.\n\n"
-        "The demand side here is small. A consumer solves a finite-horizon usage problem "
-        "within the billing cycle, then heterogeneous types choose among a low-fee metered "
-        "plan, a middle three-part plan, and an unlimited plan. The dynamic-choice logic is "
-        "close to the continuation-value reasoning in "
+        "Households often choose a broadband contract before they know exactly how much "
+        "data they will want over the month. A cheap plan may carry a small allowance and "
+        "overage charges. A more expensive plan may include a larger allowance or unlimited "
+        "use. The allowance matters before the bill crosses the cap: if a household streams "
+        "an extra 4 GB in the first week, it carries less insurance against a heavy final "
+        "week.\n\n"
+        "To study plan choice, the tutorial treats cumulative usage as the state variable "
+        "inside the billing cycle. For each contract and taste type, a finite-horizon "
+        "dynamic program chooses daily usage. The resulting value of each plan, after the "
+        "fixed fee and speed are counted, determines sorting across metered, three-part, "
+        "and unlimited contracts. Backward induction on the usage state is the computation "
+        "that turns unused allowance into a comparable plan value. The logic is close to "
+        "the continuation-value reasoning in "
         "[bus replacement](../dynamic-discrete-choice/), while the fixed-fee role connects "
         "to the two-part-tariff discussion in "
         "[vertical relationships](../vertical-relationships/)."
@@ -195,9 +199,10 @@ $$C_t=C_{t-1}+c_t,\qquad C_0=0.$$
 The incremental overage quantity created on day $t$ is
 
 $$\Delta O_k(C_{t-1},c_t)
-=\max\{0,C_{t-1}+c_t-A_k\}-\max\{0,C_{t-1}-A_k\}.$$
+=\max(0,C_{t-1}+c_t-A_k)-\max(0,C_{t-1}-A_k).$$
 
-For a given plan and type, the within-cycle value function is
+For a given plan and type, the within-cycle value function is the object solved
+by backward induction:
 
 $$V_{k,t}(C_{t-1};h)=
 \max_{c_t\in[0,\bar c]}
@@ -218,9 +223,11 @@ d_i=\arg\max_k W_i(k).$$
     report.add_model_setup(
         f"The calibration uses a {BILLING_DAYS}-day billing cycle, "
         f"$\\psi={SATIATION}$, daily choices $c_t\\in[0,{DAILY_ACTION_MAX:.0f}]$, "
-        "and the speed shifter $B(s_k)=2.6\\log(s_k)$. Consumer heterogeneity is a "
-        "small discrete type distribution; the weights are used only for plan shares and "
-        "average outcomes.\n\n"
+        "and the speed shifter $B(s_k)=2.6\\log(s_k)$. The numbers create a clean "
+        "teaching example: the metered plan is cheap but tight, the three-part plan buys "
+        "a larger monthly allowance, and the unlimited plan removes overage risk at a "
+        "higher fixed fee. Consumer heterogeneity is a small discrete taste distribution. "
+        "The weights aggregate type-specific choices into plan shares and average outcomes.\n\n"
         "| Plan | Fixed fee | Allowance | Overage price | Speed |\n"
         "|------|-----------|-----------|---------------|-------|\n"
         f"| Metered | {PLANS['Metered']['fixed_fee']:.0f} | {PLANS['Metered']['allowance']:.0f} GB | {PLANS['Metered']['overage_price']:.2f} | {PLANS['Metered']['speed']:.0f} Mbps |\n"
@@ -232,11 +239,15 @@ d_i=\arg\max_k W_i(k).$$
     )
 
     report.add_solution_method(
-        "For each type-plan pair, backward induction solves the finite-horizon usage "
-        "problem on a grid for cumulative monthly usage. The fixed fee is excluded from "
-        "the daily Bellman recursion because it is sunk after the plan is chosen; it enters "
-        "only when comparing plans. The overage price enters inside the recursion because "
-        "today's usage can move the consumer closer to the cap or past it.\n\n"
+        "Backward induction works here because the billing cycle has a known final day. "
+        "On the last day, unused allowance has no continuation value. Moving backward from "
+        "that date, the algorithm asks how much an extra GB of remaining allowance is worth "
+        "tomorrow. That continuation value is what makes a consumer conserve data early in "
+        "the month even when current usage is still below the cap.\n\n"
+        "For each type-plan pair, the code solves the Bellman recursion on a grid for "
+        "cumulative monthly usage. The fixed fee stays outside the daily recursion because "
+        "it is paid once at plan choice. The overage price stays inside the recursion "
+        "because today's usage can move the household closer to the cap or past it.\n\n"
         "```text\n"
         "Algorithm: finite-horizon usage and plan choice\n"
         "Input: plans (F_k, A_k, q_k, s_k), type distribution (h_i, omega_i), usage grid C\n"
@@ -253,8 +264,9 @@ d_i=\arg\max_k W_i(k).$$
         "    compute W_i(k) = V_{k,1}(0; h_i) + B(s_k) - F_k\n"
         "choose d_i = argmax_k W_i(k), then aggregate shares with weights omega_i\n"
         "```\n\n"
-        "The focal policy uses a 0.5 GB grid. For the billing-cycle path, the same model is "
-        "also solved on a 0.25 GB grid as a numerical benchmark."
+        "The focal policy uses a 0.5 GB cumulative-usage grid. The same model is also "
+        "solved on a 0.25 GB grid for the billing-cycle path, which checks whether the "
+        "main economic pattern comes from the contract rather than the coarser grid."
     )
 
     policy = np.asarray(focal_dp["policy"])
@@ -280,10 +292,10 @@ d_i=\arg\max_k W_i(k).$$
         "Daily usage policy by day and remaining allowance",
         fig1,
         description=(
-            "The shadow price of the remaining allowance. Early in the month, a consumer "
-            "near the cap cuts usage because each GB raises the chance of paying overage "
-            "charges later. Near the end of the cycle, the same remaining allowance has "
-            "less option value, so the policy relaxes."
+            "The policy heat map shows how unused allowance changes daily demand. Early "
+            "in the month, a consumer near the cap cuts usage because each GB raises the "
+            "chance of paying overage charges later. Near the end of the cycle, the same "
+            "remaining allowance has less option value, so the policy relaxes."
         ),
     )
 
@@ -308,8 +320,9 @@ d_i=\arg\max_k W_i(k).$$
         "Billing-cycle usage under the baseline grid and a finer-grid benchmark",
         fig2,
         description=(
-            "The simulated path stays close to the allowance without treating it as a hard "
-            "constraint. The finer-grid benchmark matches total usage within "
+            "For the focal type, cumulative usage moves toward the allowance without "
+            "treating it as a hard constraint. The finer-grid benchmark matches total "
+            "usage within "
             f"**{total_usage_gap:.2f} GB**, while the largest cumulative-path gap is "
             f"**{max_cumulative_gap:.2f} GB**. The dynamics come from the nonlinear contract, "
             "not from time-varying daily tastes."
@@ -339,7 +352,7 @@ d_i=\arg\max_k W_i(k).$$
         "Net consumer value by type and plan",
         fig3,
         description=(
-            "Plan choice as a sorting problem. Low-usage types choose the low fixed fee, "
+            "The value curves show plan sorting. Low-usage types choose the low fixed fee, "
             "middle types value the allowance, and high-usage types pay for unlimited "
             "access. The circled points are the contracts selected by the discrete type "
             "distribution."
@@ -352,13 +365,12 @@ d_i=\arg\max_k W_i(k).$$
     report.add_table("tables/plan-summary.csv", "Plan-choice summary across consumer types", table)
 
     report.add_takeaway(
-        "A three-part tariff changes demand before the cap is reached. The allowance has a "
-        "shadow value because it can be spent later in the billing cycle, so a forward-looking "
-        "consumer reacts to expected overage risk rather than only to the current marginal "
-        "price. The contract menu sorts consumers by usage intensity: low types avoid the "
-        "fixed fee, middle types buy the allowance, and high types choose unlimited access. "
-        f"The numerical benchmark check suggests that the focal path is not driven by the "
-        f"coarse grid: net consumer value differs from the finer-grid solution by "
+        "A three-part tariff changes demand before the cap is reached. Unused allowance "
+        "has a shadow value because it can be spent later in the billing cycle, so a "
+        "forward-looking household responds to expected overage risk. The contract menu "
+        "sorts consumers by usage intensity: low types avoid the fixed fee, middle types "
+        "buy the allowance, and high types choose unlimited access. The finer-grid check "
+        f"keeps the numerical claim modest: net consumer value differs by "
         f"**{consumer_value_gap:.3f}**, about **{consumer_value_relative_gap:.1%}** of the "
         "baseline value."
     )
