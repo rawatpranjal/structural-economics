@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T22:56:15Z",
+  "updated_at": "2026-05-07T22:59:52Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -500,6 +500,17 @@
         "industrial-organization/merger-simulation/run.py"
       ],
       "updated_at": "2026-05-07T22:56:15Z"
+    },
+    {
+      "tutorial_path": "choice/revealed-preference-afriat/",
+      "status": "complete",
+      "commit": "089a26c4be8bcfa2caf56d7214fff4bb9d8a1a9c",
+      "changed_paths": [
+        "README.md",
+        "choice/revealed-preference-afriat/README.md",
+        "choice/revealed-preference-afriat/run.py"
+      ],
+      "updated_at": "2026-05-07T22:59:52Z"
     }
   ]
 }
