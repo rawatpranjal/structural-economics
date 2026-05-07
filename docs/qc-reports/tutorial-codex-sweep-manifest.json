@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T23:12:00Z",
+  "updated_at": "2026-05-07T23:16:48Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -545,6 +545,17 @@
         "choice/houtman-maks-rational-subsets/run.py"
       ],
       "updated_at": "2026-05-07T23:12:00Z"
+    },
+    {
+      "tutorial_path": "choice/revealed-price-preference/",
+      "status": "complete",
+      "commit": "bd079beef78b04002d72687fa1a861e55ce89e86",
+      "changed_paths": [
+        "README.md",
+        "choice/revealed-price-preference/README.md",
+        "choice/revealed-price-preference/run.py"
+      ],
+      "updated_at": "2026-05-07T23:16:48Z"
     }
   ]
 }
