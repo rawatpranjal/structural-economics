@@ -1,12 +1,12 @@
-# Continuous-Time Cake Eating and Shadow Prices
+# Fixed-Resource Consumption and Pontryagin Shadow Prices
 
-> Optimal depletion of a finite resource, solved with Pontryagin's maximum principle.
+> A finite-resource consumption problem in continuous time, solved by costate equations.
 
 ## Overview
 
-Cake eating is the stripped-down resource allocation problem: a planner starts with a fixed stock $W_0$ and must decide how quickly to turn it into consumption. In discrete time this appears as a Bellman equation, as in [Finite-Resource Cake Eating](../../dynamic-programming/cake-eating/). Here the same economics is written in continuous time, so the central object is the path $c(t)$ rather than a sequence of grid choices.
+A planner begins with one fixed stock $W_0$, perhaps an inherited reserve of a consumption good, and has to decide how quickly to draw it down. Eating more today gives utility now, but it also leaves less for every future date. With CRRA utility, the smoothing motive pushes the planner away from spending the whole stock early.
 
-Consuming more now lowers the stock available later, while CRRA utility rewards smoothing. Pontryagin's maximum principle turns that tradeoff into a shadow price for the remaining cake. Because the cake itself does not enter utility except through feasible consumption, the present-value shadow price is constant and consumption declines smoothly rather than dropping to zero in finite time.
+In discrete time this allocation can be written as a Bellman equation, as in [Finite-Resource Cake Eating](../../dynamic-programming/cake-eating/). Here the same economic tradeoff is written in continuous time. Instead of searching over a grid of next-period stocks, we use Pontryagin's maximum principle to price the remaining resource and recover the consumption path $c(t)$ directly. The costate variable is the shadow value of one more unit left for the future.
 
 ## Equations
 
@@ -30,7 +30,7 @@ condition gives the Euler equation
 $$\frac{\dot c(t)}{c(t)}=-\frac{\rho}{\sigma}.$$
 
 The no-waste condition $\int_0^\infty c(t)\,dt=W_0$ pins down the initial
-consumption rate:
+consumption rate and therefore the full path:
 $$c(t)=\frac{\rho}{\sigma}W_0 e^{-\rho t/\sigma}, \qquad
 W(t)=W_0 e^{-\rho t/\sigma}.$$
 
@@ -45,14 +45,14 @@ the present-value costate is flat.
 |-----------|-------|-------------|
 | $\rho$    | 0.05 | Continuous discount rate |
 | $\sigma$  | 2.0 | Relative risk aversion; IES $=1/\sigma$ |
-| $W_0$     | 1.0 | Initial cake size |
-| $\beta = e^{-\rho}$ | 0.9512 | Period-one discount factor used for the discrete reference path |
-| $T$       | 80.0 | Plotting and ODE-check horizon |
-| Evaluation points | 500 | Time points for plotting exact and numerical paths |
+| $W_0$     | 1.0 | Initial resource stock |
+| $\beta = e^{-\rho}$ | 0.9512 | Period-one discount factor for the discrete reference path |
+| $T$       | 80.0 | Plotting horizon; the economic problem has an infinite horizon |
+| Evaluation points | 500 | Time points for exact paths and ODE checks |
 
 ## Solution Method
 
-Pontryagin's principle attaches a price to relaxing the stock constraint by one unit. The planner chooses $c(t)$ so that discounted marginal utility equals that price at every instant. Since $W$ has no direct payoff, the present-value price does not drift; all movement in consumption comes from discounting and curvature.
+Pontryagin's principle attaches a price to one extra unit of the resource stock. At each instant, the planner equates discounted marginal utility from current consumption with that shadow price. Since $W$ has no direct payoff, the present-value price does not drift. Discounting and preference curvature then determine how quickly consumption falls.
 
 ```text
 Inputs: rho, sigma, W0, evaluation grid {t_m}
@@ -62,30 +62,30 @@ Inputs: rho, sigma, W0, evaluation grid {t_m}
 4. Differentiate the FOC to obtain c_dot(t) / c(t) = -rho / sigma.
 5. Use integral_0^infinity c(t) dt = W0 to set c(0) = (rho / sigma) W0.
 6. Evaluate c(t), W(t), and mu(t) = c(t)^(-sigma) on {t_m}.
-Output: exact consumption, stock, and shadow-price paths.
+Output: consumption, remaining stock, and shadow-price paths.
 ```
 
-The ODE integration is a numerical check, not the source of the solution. It integrates $\dot{W}=-c$ and $\dot{c}=-(\rho/\sigma)c$ from the analytical initial condition and compares the resulting path with the exact one. The period-one discrete path is a nearby benchmark for the dynamic programming version of the same allocation problem.
+The numerical work evaluates those analytical paths and checks them by ODE integration. The ODE check integrates $\dot{W}=-c$ and $\dot{c}=-(\rho/\sigma)c$ from the implied initial consumption rate, then compares the result with the closed-form path. The period-one discrete path gives a nearby benchmark for the dynamic-programming version of the same allocation problem.
 
 **Verification:** Max absolute error in $W(t)$: 2.64e-11, in $c(t)$: 6.61e-13.
 
 ## Results
 
-Consumption starts at $(\rho/\sigma)W_0$ and then falls at the constant proportional rate $\rho/\sigma$. The black markers show that direct ODE integration recovers the exact path. The stepped line is the period-one discrete allocation, which connects this continuous-time problem to the finite-resource dynamic-programming tutorial.
+Consumption starts at $(\rho/\sigma)W_0$ and falls at the constant proportional rate $\rho/\sigma$. The ODE markers sit on the closed-form path, so the costate calculation and the differential equation give the same allocation. The stepped line is the period-one discrete allocation from the related finite-resource dynamic-programming problem.
 
-<img src="figures/consumption-path.png" alt="Exact continuous consumption path with ODE and discrete-time comparisons" width="80%">
+<img src="figures/consumption-path.png" alt="Continuous consumption path with ODE and discrete-time comparisons" width="80%">
 
-The stock is depleted only asymptotically. That is not a numerical artifact: with CRRA utility and an infinite horizon, the planner keeps a tail of future consumption alive because marginal utility becomes large as consumption approaches zero.
+The stock is depleted only asymptotically. With CRRA utility and an infinite horizon, the planner keeps a tail of future consumption alive because marginal utility becomes large as consumption approaches zero.
 
 <img src="figures/cake-remaining.png" alt="Exact cake stock with ODE and discrete-time comparisons" width="80%">
 
-The present-value costate is flat because the resource stock has no direct payoff term. In current-value units the shadow price rises at rate $\rho$: one unit of cake left for a later date is scarce in utility terms even though its discounted value is equalized along the optimum.
+The present-value costate is flat because the resource stock has no direct payoff term. In current-value units the shadow price rises at rate $\rho$: one unit left for a later date is scarce in utility terms even though its discounted value is equalized along the optimum.
 
-<img src="figures/shadow-price.png" alt="Present-value and current-value shadow prices for cake" width="80%">
+<img src="figures/shadow-price.png" alt="Present-value and current-value shadow prices for the resource stock" width="80%">
 
-The exact solution is a benchmark for the numerical ODE path. The small errors below are solver error, not approximation error from a grid over choices.
+The exact solution is a benchmark for the numerical ODE path. The small errors below come from ODE solver tolerances rather than a grid over choices.
 
-**Selected Checks Against the Exact Continuous-Time Path**
+**Selected Checks Against the Continuous-Time Path**
 
 |   t |   c(t) exact |   c(t) RK45 |   c error |   W(t) exact |   W(t) RK45 |   W error |
 |----:|-------------:|------------:|----------:|-------------:|------------:|----------:|
@@ -98,9 +98,9 @@ The exact solution is a benchmark for the numerical ODE path. The small errors b
 
 ## Takeaway
 
-The costate is the intertemporal price of the remaining resource, not just formal machinery. In this problem the present-value price is constant, so optimality requires a declining consumption path that keeps discounted marginal utility equal across dates.
+The costate is the intertemporal price of the remaining resource. In this problem the present-value price is constant, so optimality requires a declining consumption path that keeps discounted marginal utility equal across dates.
 
-Higher impatience raises the depletion rate, while higher risk aversion slows it through the smoothing motive. The continuous-time formulation also clarifies what the discrete cake-eating Bellman problem is approximating: a smooth shadow-price condition, not merely a search over feasible consumption grid points.
+Higher impatience raises the depletion rate, while higher risk aversion slows it through the smoothing motive. The continuous-time formulation also clarifies the object behind the discrete cake-eating Bellman problem: a smooth shadow-price condition linking current consumption to all future scarcity.
 
 ## References
 
