@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T18:46:58Z",
+  "updated_at": "2026-05-07T18:50:36Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -202,6 +202,17 @@
         "heterogeneous-agents/huggett-incomplete-markets/tables/equilibrium.csv"
       ],
       "updated_at": "2026-05-06T23:49:21Z"
+    },
+    {
+      "tutorial_path": "dsge/rbc/",
+      "status": "complete",
+      "commit": "732a69b0a4ed71b54707cb91bb410b1a9a5883c9",
+      "changed_paths": [
+        "README.md",
+        "dsge/rbc/README.md",
+        "dsge/rbc/run.py"
+      ],
+      "updated_at": "2026-05-07T18:50:36Z"
     }
   ]
 }
