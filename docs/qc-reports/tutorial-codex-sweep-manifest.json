@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T23:51:30Z",
+  "updated_at": "2026-05-07T23:54:31Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -657,6 +657,17 @@
         "game-theory/static-games/run.py"
       ],
       "updated_at": "2026-05-07T23:51:30Z"
+    },
+    {
+      "tutorial_path": "game-theory/first-price-auctions/",
+      "status": "complete",
+      "commit": "cdf2d996d869508a73131dc8d9beda3bcbe9fb03",
+      "changed_paths": [
+        "README.md",
+        "game-theory/first-price-auctions/README.md",
+        "game-theory/first-price-auctions/run.py"
+      ],
+      "updated_at": "2026-05-07T23:54:31Z"
     }
   ]
 }
