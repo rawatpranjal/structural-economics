@@ -382,28 +382,31 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "HJB Growth and Capital Accumulation",
-        "A Ramsey planner chooses consumption and capital accumulation in "
-        "continuous time; the HJB is solved by implicit upwind finite differences.",
+        "Ramsey Capital Accumulation by HJB Upwinding",
+        "A Ramsey planner allocates output between consumption and investment in "
+        "continuous time; an implicit upwind HJB computes the shadow value of capital.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "This is the continuous-time version of the planner's growth problem. The state "
-        "is aggregate capital $k$, the control is consumption $c$, and the economic "
-        "question is how much output should be consumed today rather than invested for "
-        "future production.\n\n"
-        "The Hamilton-Jacobi-Bellman equation gives the value of capital in units of "
-        "lifetime utility. Once the marginal value $V'(k)$ is known, the consumption "
-        "choice follows from the first-order condition. The numerical problem is "
-        "therefore not a search over consumption; it is a problem of computing the "
-        "right derivative of the value function along the capital drift.\n\n"
-        "The implicit upwind scheme from continuous-time macro is used here. "
-        "The same economic dynamics also appear in the neighboring "
+        "Consider a planner who inherits aggregate capital $k$. Output can be consumed "
+        "now or reinvested, and the marginal product of capital changes along the path. "
+        "When capital is scarce, investment is valuable. When capital is abundant, the "
+        "planner can afford more current consumption. The tutorial computes this Ramsey "
+        "transition in continuous time.\n\n"
+        "The Hamilton-Jacobi-Bellman equation records the lifetime value of starting "
+        "with each capital stock. Its derivative, $V'(k)$, is the shadow value of one "
+        "more unit of capital, and the first-order condition maps that shadow value "
+        "directly into consumption. Computation is needed because the nonlinear HJB does "
+        "not give a closed-form policy on the capital grid.\n\n"
+        "Implicit upwind finite differences approximate $V'(k)$ from the side consistent "
+        "with the policy-implied capital drift. That is why the method matters for the "
+        "economics: the derivative choice and the direction of capital movement have to "
+        "agree. The same Ramsey dynamics also appear in the neighboring "
         "[Ramsey phase-diagram](../phase-diagrams/) and "
-        "[Ramsey shooting](../ramsey-growth/) tutorials; here the focus is the HJB "
-        "representation and the finite-difference policy calculation."
+        "[Ramsey shooting](../ramsey-growth/) tutorials; here the HJB representation "
+        "makes the planner's shadow value explicit."
     )
 
     report.add_equations(r"""
@@ -429,15 +432,15 @@ $$
 The first-order condition is
 
 $$
-u'(c^{*}(k))=V'(k)
+u'(c^{\ast}(k))=V'(k)
 \quad\Longrightarrow\quad
-c^{*}(k)=\left(V'(k)\right)^{-1/\sigma}.
+c^{\ast}(k)=\left(V'(k)\right)^{-1/\sigma}.
 $$
 
 Substituting this policy into the drift
 
 $$
-s(k)=\dot{k}=f(k)-\delta k-c^{*}(k)
+s(k)=\dot{k}=f(k)-\delta k-c^{\ast}(k)
 $$
 
 leaves a nonlinear equation in $V$. On the grid $k_1,\ldots,k_N$ with spacing
@@ -461,10 +464,10 @@ $$
 """)
 
     report.add_model_setup(
-        "The calibration is small by design: one capital state, Cobb-Douglas "
-        "technology, CRRA utility, and no shocks. The baseline HJB grid is used for "
-        "the reported policy functions. A finer HJB grid is solved only as a "
-        "same-model reference for the figures; it is not a different economic model.\n\n"
+        "The model keeps the economics deliberately clean: one aggregate capital state, "
+        "Cobb-Douglas production, CRRA utility, and no shocks. The baseline HJB grid "
+        "produces the reported policies. A finer HJB grid is solved only as a same-model "
+        "reference for the figures; it is not a different economic environment.\n\n"
         f"| Parameter | Value | Description |\n"
         f"|-----------|-------|-------------|\n"
         f"| $\\rho$   | {rho} | Discount rate |\n"
@@ -481,12 +484,11 @@ $$
     )
 
     report.add_solution_method(
-        "The HJB is solved by implicit iteration in pseudo-time. Given a value guess, "
-        "the algorithm computes two candidate marginal values, turns each into a "
-        "consumption rule, and then chooses the derivative from the side that is "
-        "upwind relative to the implied capital drift. The derivative and the policy "
-        "are chosen together, which is the main numerical discipline in the "
-        "continuous-time formulation.\n\n"
+        "Start from a guessed value function on the capital grid. The update compares "
+        "forward and backward slopes, converts each slope into a consumption rule, and "
+        "then uses the slope whose direction matches the implied motion of capital. "
+        "That upwind choice keeps the finite-difference derivative aligned with the "
+        "economic law of motion.\n\n"
         "```text\n"
         "Inputs: grid {k_i}, primitives (rho, sigma, alpha, delta, A), tolerance eps\n"
         "Initialize V^0_i = u(f(k_i)) / rho\n"
@@ -505,10 +507,10 @@ $$
         "       = u(c^n) + V^n / Delta.\n"
         "Output: value V, consumption policy c(k), and drift s(k)=dot{k}\n"
         "```\n\n"
-        "The linear solve is sparse and tridiagonal. The large pseudo-time step "
-        "$\\Delta=1000$ is a numerical device, not an economic period length; it "
-        "stabilizes the fixed-point update while leaving the continuous-time HJB as "
-        "the target equation.\n\n"
+        "The implicit step then solves one sparse tridiagonal linear system. The large "
+        "pseudo-time step $\\Delta=1000$ is a numerical device, not an economic period "
+        "length; it stabilizes the fixed-point update while leaving the continuous-time "
+        "HJB as the target equation.\n\n"
         f"The baseline continuous-time HJB converged in **{info_ct['iterations']} "
         f"iterations** (change = {info_ct['error']:.2e}). The fine-grid HJB reference "
         f"converged in **{info_ref['iterations']} iterations** (change = "
@@ -689,16 +691,17 @@ $$
     )
 
     report.add_takeaway(
-        "The economic content is the Ramsey accumulation logic: invest when the marginal "
+        "The Ramsey logic is visible in the computed policy: invest when the marginal "
         "product of capital is high, consume more when capital is abundant, and converge "
-        "to the point where $f'(k)=\\rho+\\delta$. The computational content is that the "
-        "HJB turns this logic into a derivative problem. Once $V'(k)$ is approximated "
-        "from the correct side, consumption follows from the FOC and the remaining step "
-        "is a sparse linear solve.\n\n"
-        "The upwind choice is not a cosmetic numerical detail; it encodes the direction "
-        "of capital movement. That same idea becomes central in continuous-time "
-        "heterogeneous-agent models, where the HJB policy and the forward equation for "
-        "the distribution have to use compatible drift directions."
+        "to the point where $f'(k)=\\rho+\\delta$. The HJB makes that logic operational "
+        "through the marginal value $V'(k)$. Once the derivative is approximated from "
+        "the correct side, consumption follows from the FOC and the remaining update is "
+        "a sparse linear solve.\n\n"
+        "Upwinding is an economic consistency check as well as a numerical choice. It "
+        "uses the direction of capital movement to pick the derivative. The same idea "
+        "becomes central in continuous-time heterogeneous-agent models, where the HJB "
+        "policy and the forward equation for the distribution must use compatible drift "
+        "directions."
     )
 
     report.add_references([
