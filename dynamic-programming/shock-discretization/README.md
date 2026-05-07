@@ -4,9 +4,9 @@
 
 ## Overview
 
-Many dynamic models begin with a familiar economic object: income or productivity is risky, and bad times tend to persist. A household deciding how much to save cares about whether a low income draw is likely to last. A planner in an RBC model cares about whether today's productivity shock also changes tomorrow's investment return. That is the economic question: what risk process should the model feed into choices and continuation values?
+Suppose income is low this year. In a consumption-savings model, the household wants to know whether that low draw is likely to continue. In an RBC model, a productivity shock matters for investment because it also changes expected productivity tomorrow. The economics is about the shock process that choices and continuation values should face.
 
-The computational question is different. A computer needs a finite object inside the Bellman equation, so the continuous AR(1) shock has to become a small grid of states and a transition matrix. This tutorial asks how much of the original persistence and long-run risk survive that replacement.
+The code cannot put a continuous AR(1) directly into a small Bellman equation. It needs a finite list of shock states and a transition matrix. The practical question is whether that finite Markov chain keeps the persistence and long-run variance that make the original process economically important.
 
 Tauchen and Rouwenhorst are two common answers. **Tauchen** is easy to see: put a grid over the Gaussian support and integrate conditional normal mass between cell midpoints. **Rouwenhorst** is less visual but targets the moments that matter for persistent shocks. With $\rho \approx 0.95$ and $N=7$, Tauchen overstates persistence by about a percentage point and the unconditional standard deviation by more than 20 percent, while Rouwenhorst matches both by construction. Those differences feed directly into the [consumption-savings](../consumption-savings/), [Aiyagari](../aiyagari/), and [RBC](../rbc/) tutorials that use this kind of shock.
 
