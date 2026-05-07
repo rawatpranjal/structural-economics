@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Maximum score estimation for semiparametric binary choice."""
+"""Maximum score estimation for a semiparametric participation index."""
 import sys
 from pathlib import Path
 
@@ -15,7 +15,7 @@ from lib.plotting import setup_style
 
 
 def simulate_binary_choice(n_obs: int, beta_true: float, seed: int) -> dict[str, np.ndarray]:
-    """Simulate a binary-choice model with median-zero heteroskedastic errors."""
+    """Simulate a binary participation model with median-zero heteroskedastic errors."""
     rng = np.random.default_rng(seed)
     x1 = rng.normal(size=n_obs)
     x2 = 0.40 * x1 + rng.normal(size=n_obs)
@@ -117,7 +117,7 @@ def classification_table(
     """Summarize estimates and classification rates."""
     rows = []
     for name, beta in [
-        ("True index", beta_true),
+        ("True participation index", beta_true),
         ("Grid maximum score", float(grid_est["beta"])),
         ("Smoothed maximum score", float(smooth_est["beta"])),
         ("Misspecified logit ratio", float(logit["beta_ratio"])),
@@ -149,7 +149,7 @@ def main() -> None:
     bootstrap = bootstrap_smoothed_score(x1, x2, y, bandwidth, n_bootstrap=80, seed=19)
     ci_low, ci_high = np.quantile(bootstrap, [0.025, 0.975])
 
-    print("Maximum score binary choice tutorial")
+    print("Binary participation maximum-score tutorial")
     print(f"  True normalized beta: {beta_true:.3f}")
     print(f"  Grid maximum score beta: {float(grid_est['beta']):.3f}")
     print(f"  Smoothed maximum score beta: {float(smooth_est['beta']):.3f}")
@@ -157,45 +157,51 @@ def main() -> None:
 
     setup_style()
     report = ModelReport(
-        "Maximum Score Binary Choice",
-        "Estimate a binary-choice index with a nonsmooth classification criterion.",
+        "Binary Participation with Maximum Score",
+        "Recover a binary participation index with a nonsmooth semiparametric estimator.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "Logit and probit estimate a full distributional model for binary choices. Maximum "
-        "score asks for less. It assumes that the conditional median of the latent error is "
-        "zero and estimates the sign of the index that best classifies choices.\n\n"
-        "The method is useful because it makes scale normalization, nonsmooth objectives, "
-        "and semiparametric robustness concrete. The data here are generated with "
-        "heteroskedastic logistic errors, so a simple homoskedastic logit is misspecified. "
-        "Maximum score still targets the normalized index direction."
+        "Suppose an applied microeconomist observes whether people enroll in a job-training "
+        "program after seeing wage gains, commuting costs, and other covariates. A binary "
+        "choice model describes the sign of latent net surplus, but the researcher may not "
+        "want to assume a correctly specified logit error. Maximum score estimates the "
+        "direction of that surplus index from the side of the boundary each observation "
+        "falls on.\n\n"
+        "The computation is awkward because the estimator maximizes the share of choices "
+        "classified correctly. A small change in the slope can leave all classifications "
+        "unchanged, then another change can flip several observations at once. This tutorial "
+        "uses direct grid search for Manski's original score and a smoothed Horowitz-style "
+        "score to compute the same median-choice target."
     )
 
     report.add_equations(
         r"""
-The latent choice model is
+The simulated decision is a participation rule:
 
 $$
-y_i = 1\{x_{i1}+\beta x_{i2}+\varepsilon_i \geq 0\}.
+y_i = 1\{x^B_i+\beta x^C_i+\varepsilon_i \geq 0\}.
 $$
 
-Only the direction of the index is identified, so the coefficient on $x_{i1}$
-is normalized to one. Manski's maximum-score estimator solves
+Here $x^B_i$ is a benefit shifter, $x^C_i$ is a cost shifter, and
+$\beta<0$ makes high costs reduce participation. Only the direction of the
+index is identified, so the coefficient on $x^B_i$ is normalized to one.
+Manski's maximum-score estimator solves
 
 $$
 \hat\beta
 = \arg\max_b \frac{1}{n}\sum_i
-\left[y_i 1\{x_{i1}+b x_{i2}\geq 0\} + (1-y_i)1\{x_{i1}+b x_{i2}<0\}\right].
+\left[y_i 1\{x^B_i+b x^C_i\geq 0\} + (1-y_i)1\{x^B_i+b x^C_i<0\}\right].
 $$
 
 The smoothed version replaces the hard indicator with a normal CDF:
 
 $$
 S_h(b)=\frac{1}{n}\sum_i
-\left[y_i \Phi((x_{i1}+b x_{i2})/h)
-+(1-y_i)\{1-\Phi((x_{i1}+b x_{i2})/h)\}\right].
+\left[y_i \Phi((x^B_i+b x^C_i)/h)
++(1-y_i)\{1-\Phi((x^B_i+b x^C_i)/h)\}\right].
 $$
 """
     )
@@ -203,36 +209,39 @@ $$
     report.add_model_setup(
         f"| Object | Value | Role |\n"
         f"|--------|-------|------|\n"
-        f"| Observations | {n_obs:,} | Simulated binary choices |\n"
-        f"| Normalized coefficient | 1 | Scale normalization on $x_1$ |\n"
-        f"| True $\\beta$ | {beta_true:.2f} | Index weight on $x_2$ |\n"
-        f"| Error distribution | heteroskedastic logistic | Median zero but not homoskedastic logit |\n"
+        f"| Observations | {n_obs:,} | Simulated participation decisions |\n"
+        f"| Normalized coefficient | 1 | Benefit shifter weight |\n"
+        f"| True $\\beta$ | {beta_true:.2f} | Cost shifter weight |\n"
+        f"| Error distribution | heteroskedastic logistic | Median zero, logit likelihood misspecified |\n"
         f"| Grid points | {len(grid)} | Direct search over nonsmooth objective |\n"
-        f"| Smoothing bandwidth | {bandwidth:.2f} | Smooth score approximation |\n"
-        f"| Bootstrap draws | {len(bootstrap)} | Nonparametric uncertainty check |"
+        f"| Smoothing bandwidth | {bandwidth:.2f} | Smooth boundary approximation |\n"
+        f"| Bootstrap draws | {len(bootstrap)} | Finite-sample check for smoothed estimate |"
     )
 
     report.add_solution_method(
-        "The nonsmooth objective is easy to evaluate and hard to optimize with derivative "
-        "methods. The tutorial therefore shows both a grid search over the original score "
-        "and a smoothed objective that can be optimized continuously.\n\n"
+        "Because the score is a step function, derivative methods do not see the objective's "
+        "jumps. The code first evaluates every candidate cost weight on a grid. It then "
+        "replaces the indicator with Phi((x^B_i+b x^C_i)/h) and optimizes the smooth "
+        "approximation. The bandwidth controls how sharply observations near the boundary "
+        "switch classifications.\n\n"
         "```text\n"
-        "Algorithm: maximum score binary choice\n"
-        "Input: choices y_i and covariates x_i1, x_i2\n"
-        "Normalize the coefficient on x_i1 to one\n"
-        "Grid maximum score:\n"
-        "  For each b on a grid, compute the share correctly classified by sign(x_i1+b x_i2)\n"
-        "  Choose the grid value with the largest score\n"
-        "Smoothed maximum score:\n"
-        "  Replace indicators with Phi((x_i1+b x_i2)/h)\n"
-        "  Optimize the smooth score over b\n"
-        "Bootstrap:\n"
-        "  Resample observations and re-estimate the smoothed score\n"
-        "Report classification score, normalized beta, and bootstrap interval\n"
+        "Algorithm: estimate a binary participation index\n"
+        "Input: choices y_i, benefit shifter x^B_i, cost shifter x^C_i, grid B, bandwidth h\n"
+        "Normalize the benefit-shifter coefficient to one\n"
+        "For each b in B:\n"
+        "  classify i as a participant when x^B_i + b x^C_i >= 0\n"
+        "  record the share of choices classified correctly\n"
+        "Choose the grid value with the largest score\n"
+        "For the smoothed estimate:\n"
+        "  replace the hard classification rule with Phi((x^B_i+b x^C_i)/h)\n"
+        "  maximize the smooth score over b\n"
+        "Bootstrap observations and repeat the smoothed estimate\n"
+        "Output: normalized cost weight, classification score, and bootstrap interval\n"
         "```\n\n"
-        "The scale normalization is not a detail. Multiplying every coefficient by a positive "
-        "constant leaves the sign of the index unchanged, so maximum score identifies a "
-        "direction rather than an absolute utility scale."
+        "The normalization matters for interpretation. If every coefficient were multiplied "
+        "by a positive constant, the sign of latent surplus would not change. The estimate "
+        "is a cost weight relative to the normalized benefit shifter, not an absolute utility "
+        "scale."
     )
 
     raw_scores = np.asarray(grid_est["scores"])
@@ -244,19 +253,20 @@ $$
     ax1.axvline(float(smooth_est["beta"]), color="tab:red", linestyle=":", linewidth=2, label="Smoothed estimate")
     ax1.set_xlabel("Normalized beta")
     ax1.set_ylabel("Classification score")
-    ax1.set_title("Nonsmooth and Smoothed Objectives")
+    ax1.set_title("Nonsmooth and Smoothed Participation Scores")
     ax1.legend()
     report.add_results(
-        "The raw maximum-score objective is a step function. Many nearby values can classify "
-        "the same observations, so the surface is flat over intervals. The smoothed score "
-        f"peaks at **{float(smooth_est['beta']):.3f}**, close to the true normalized slope "
-        f"**{beta_true:.3f}**."
+        "The raw score is flat across ranges of beta because a boundary that does not cross "
+        "any observation classifies the same people. The smoothed curve peaks at "
+        f"**{float(smooth_est['beta']):.3f}**, close to the true normalized cost weight "
+        f"**{beta_true:.3f}**. In this sample, maximum score recovers a negative cost effect "
+        "even though the logit likelihood is misspecified."
     )
     report.add_figure(
         "figures/score-objectives.png",
         "Maximum-score and smoothed-score objective functions",
         fig1,
-        description="Smoothing turns the classification objective into a differentiable approximation without changing the target index direction.",
+        description="Both objectives point to a similar participation boundary; smoothing mainly makes the search surface easier to optimize.",
     )
 
     fig2, ax2 = plt.subplots(figsize=(6.8, 6.2))
@@ -267,20 +277,21 @@ $$
     ax2.plot(sample, -sample / float(smooth_est["beta"]), color="tab:red", linestyle="--", linewidth=2, label="Estimated boundary")
     ax2.set_xlim(-3, 3)
     ax2.set_ylim(-3, 3)
-    ax2.set_xlabel("$x_1$")
-    ax2.set_ylabel("$x_2$")
-    ax2.set_title("Classification Boundary")
+    ax2.set_xlabel("Benefit shifter $x^B$")
+    ax2.set_ylabel("Cost shifter $x^C$")
+    ax2.set_title("Participation Boundary")
     ax2.legend(loc="upper right")
     report.add_results(
-        "Maximum score is literally fitting a separating hyperplane, but not under a hard "
-        "separability assumption. The best boundary still misclassifies observations because "
-        "latent errors move choices across the median index."
+        "The scatterplot shows why the estimator is a boundary problem. People with larger "
+        "benefit shifters are more likely to participate, while large cost shifters push "
+        "against participation when beta is negative. Noise means the regions overlap, so "
+        "the best boundary cannot classify everyone correctly."
     )
     report.add_figure(
         "figures/classification-boundary.png",
-        "Observed choices and estimated index boundary",
+        "Observed participation choices and estimated surplus boundary",
         fig2,
-        description="The estimated boundary is close to the true median-choice boundary even though the errors are heteroskedastic.",
+        description="The estimated median-surplus boundary tracks the simulated boundary despite heteroskedastic choice noise.",
     )
 
     fig3, ax3 = plt.subplots(figsize=(7.2, 4.6))
@@ -295,8 +306,9 @@ $$
     ax3.legend()
     report.add_results(
         f"The nonparametric bootstrap interval is **[{ci_low:.3f}, {ci_high:.3f}]**. "
-        "This is a diagnostic rather than a full asymptotic theory lesson; the point is "
-        "that inference is less routine when the criterion is nonsmooth."
+        "It gives a finite-sample read on how stable the smoothed estimate is. It is not a "
+        "replacement for the full nonstandard asymptotic theory; here it keeps uncertainty "
+        "connected to the computation the tutorial just ran."
     )
     report.add_figure(
         "figures/bootstrap-estimates.png",
@@ -310,7 +322,7 @@ $$
         "tables/estimator-comparison.csv",
         "Estimator comparison",
         estimates.round(5),
-        description="The logit coefficient vector is normalized by the coefficient on x1 so it can be compared with maximum score.",
+        description="The logit coefficient vector is normalized by the benefit-shifter coefficient so its cost slope can be compared with maximum score.",
     )
 
     diagnostics = pd.DataFrame(
@@ -343,15 +355,15 @@ $$
         "tables/estimator-diagnostics.csv",
         "Score and bootstrap diagnostics",
         diagnostics,
-        description="The raw score is the share of observations classified by the sign of the normalized index.",
+        description="The score is the share of choices classified by the sign of the normalized surplus index.",
     )
 
     report.add_takeaway(
-        "Maximum score is a different computational object from logit MLE. It maximizes a "
-        "classification score under a median restriction and needs a scale normalization. "
-        "That robustness comes with a nonsmooth criterion and less automatic inference. "
-        "Smoothing and bootstrapping make the estimator easier to compute and diagnose, "
-        "while keeping the core semiparametric idea visible."
+        "For binary participation models, maximum score separates the median-surplus "
+        "boundary from a full probability model. The computation maximizes correct "
+        "classifications, so the objective is nonsmooth and inference is less automatic "
+        "than in logit MLE. Smoothing turns the boundary search into a continuous problem "
+        "while preserving the normalized index interpretation."
     )
 
     report.add_references(
