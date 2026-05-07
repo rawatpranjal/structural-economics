@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T23:35:29Z",
+  "updated_at": "2026-05-07T23:40:14Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -612,6 +612,17 @@
         "choice/urn-behavioral-mixtures/tables/type-allocation.csv"
       ],
       "updated_at": "2026-05-07T23:35:29Z"
+    },
+    {
+      "tutorial_path": "choice/risk-aversion-monotone-choice/",
+      "status": "complete",
+      "commit": "8135e807bb076fc167c618865e54a54ded624fd7",
+      "changed_paths": [
+        "README.md",
+        "choice/risk-aversion-monotone-choice/README.md",
+        "choice/risk-aversion-monotone-choice/run.py"
+      ],
+      "updated_at": "2026-05-07T23:40:14Z"
     }
   ]
 }
