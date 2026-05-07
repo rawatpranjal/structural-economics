@@ -53,7 +53,7 @@ $$
 Let $O_{jk}=1$ when products $j$ and $k$ are owned by the same firm, and define
 the pricing matrix
 $$
-\Omega_{jk}=-O_{jk}\frac{\partial s_j}{\partial p_k}.
+\Omega_{jk}=-O_{jk}\frac{\partial s_k}{\partial p_j}.
 $$
 The markup vector $m=p-c$ solves
 $$
