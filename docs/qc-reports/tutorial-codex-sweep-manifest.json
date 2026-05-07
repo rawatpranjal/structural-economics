@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T21:25:24Z",
+  "updated_at": "2026-05-07T21:38:36Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -279,6 +279,17 @@
         "global-dsge/heaton-lucas/run.py"
       ],
       "updated_at": "2026-05-07T21:25:24Z"
+    },
+    {
+      "tutorial_path": "optimal-control/hjb-growth/",
+      "status": "complete",
+      "commit": "6d0683f53f217d50ed694354ba18d3c0e35dd6bb",
+      "changed_paths": [
+        "README.md",
+        "optimal-control/hjb-growth/README.md",
+        "optimal-control/hjb-growth/run.py"
+      ],
+      "updated_at": "2026-05-07T21:38:36Z"
     }
   ]
 }
