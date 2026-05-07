@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T21:42:09Z",
+  "updated_at": "2026-05-07T21:45:40Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -301,6 +301,17 @@
         "optimal-control/phase-diagrams/run.py"
       ],
       "updated_at": "2026-05-07T21:42:09Z"
+    },
+    {
+      "tutorial_path": "optimal-control/ramsey-growth/",
+      "status": "complete",
+      "commit": "4a06fa9f161f900cfef69dc7fc8affca79892d9e",
+      "changed_paths": [
+        "README.md",
+        "optimal-control/ramsey-growth/README.md",
+        "optimal-control/ramsey-growth/run.py"
+      ],
+      "updated_at": "2026-05-07T21:45:40Z"
     }
   ]
 }
