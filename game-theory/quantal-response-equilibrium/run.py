@@ -46,7 +46,7 @@ def solve_symmetric_entry_qre(
     """Solve the symmetric entry-game logit QRE by bisection.
 
     The symmetric fixed point is p = QBR(p; lambda). In this entry game,
-    f(p) = p - QBR(p; lambda) is strictly increasing, so bisection is robust
+    f(p) = p - QBR(p; lambda) is strictly increasing, so bisection is reliable
     even when direct fixed-point iteration would be poorly behaved.
     """
     low = 0.0
@@ -96,24 +96,24 @@ def main() -> None:
 
     setup_style()
     report = ModelReport(
-        "Entry Game QRE and Noisy Best Responses",
-        "How payoff-sensitive mistakes trace a smooth path toward mixed Nash.",
+        "Market Entry with Quantal Response Equilibrium",
+        "How payoff-sensitive entry mistakes trace a fixed-point path toward mixed Nash.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "Entry games are a good place to see why quantal response equilibrium is not just "
-        "a numerical trick. Exact Nash behavior says a firm enters whenever entry is a best "
-        "response and mixes only when it is exactly indifferent. QRE keeps the same strategic "
-        "payoff comparison, but turns the sharp best response into a smooth choice probability: "
-        "better actions are chosen more often, not with probability one.\n\n"
-        "The example below follows the symmetric logit-QRE branch in a two-player entry game. "
-        "The exact game has two asymmetric pure Nash equilibria and one symmetric mixed Nash "
-        "equilibrium. That mixed equilibrium is the benchmark for the symmetric QRE path, "
-        "which continues the residual logic in [normal-form games](../normal-form-games/): "
-        "equilibrium is still a fixed point of best responses, but the response map is "
-        "probabilistic."
+        "Two firms are deciding whether a small market can support entry. One entrant earns "
+        "positive profit. If both firms enter, competition makes entry unprofitable. Exact "
+        "Nash equilibrium predicts either one entrant for sure or a symmetric mixed strategy "
+        "that makes each firm indifferent.\n\n"
+        "Quantal response equilibrium asks a nearby behavioral question. Suppose firms still "
+        "compare expected payoffs, but they make payoff-sensitive mistakes. More profitable "
+        "actions are chosen more often, yet lower-payoff actions can still occur. The "
+        "calculation below follows the symmetric logit-QRE branch in this entry game and "
+        "compares each finite-precision entry probability with the exact mixed Nash "
+        "benchmark. The computation is a fixed-point problem because each firm's noisy entry "
+        "probability must agree with the noisy response induced by the rival's probability."
     )
 
     report.add_equations(r"""
@@ -151,15 +151,15 @@ $$
 p = QBR(p;\lambda).
 $$
 
-The precision parameter $\lambda \geq 0$ governs how sharply payoff gaps affect
-behavior. At $\lambda=0$, the entry probability is one half regardless of
-payoffs. Along the symmetric branch, $p(\lambda)$ approaches $p^{N}=2/3$ as
-$\lambda$ becomes large.
+The precision parameter $\lambda \geq 0$ controls how strongly payoff gaps move
+choice probabilities. At $\lambda=0$, both actions receive probability one half.
+As $\lambda$ rises, the symmetric QRE branch $p(\lambda)$ moves toward the mixed
+Nash probability $p^{N}=2/3$.
 """)
 
     report.add_model_setup(
-        "The payoff table is intentionally small. Entry is profitable when the other player "
-        "stays out, but competition or congestion makes joint entry costly.\n\n"
+        "The payoff table gives the economic tension directly. Entry pays when the rival "
+        "stays out. Joint entry destroys profits for both firms.\n\n"
         "| | Column Enter | Column Stay Out |\n"
         "|---|---:|---:|\n"
         "| **Row Enter** | -1, -1 | 2, 0 |\n"
@@ -167,16 +167,18 @@ $\lambda$ becomes large.
         "| Object | Value | Role |\n"
         "|---|---:|---|\n"
         "| Exact pure Nash profiles | $(E,O)$ and $(O,E)$ | One entrant serves the market |\n"
-        f"| Symmetric mixed Nash $p^N$ | {mixed_nash_enter_prob:.4f} | Exact benchmark for the symmetric branch |\n"
-        f"| Precision grid | {precisions[0]:.0f} to {precisions[-1]:.0f} | How strongly choices react to payoff gaps |\n"
-        f"| Focal fixed-point plot | $\\lambda={focal_precision:.1f}$ | One noisy best-response map |"
+        f"| Symmetric mixed Nash $p^N$ | {mixed_nash_enter_prob:.4f} | Exact benchmark for symmetric entry |\n"
+        f"| Precision grid | {precisions[0]:.0f} to {precisions[-1]:.0f} | Strength of payoff sensitivity |\n"
+        f"| Focal fixed-point plot | $\\lambda={focal_precision:.1f}$ | One logit response map |"
     )
 
     report.add_solution_method(
-        "Tracking the symmetric branch reduces the problem to one dimension at each "
-        "precision value. Define the residual $G_{\\lambda}(p)=p-QBR(p;\\lambda)$. In this "
-        "entry game the residual is strictly increasing on $[0,1]$, with opposite signs at "
-        "the endpoints, so bisection gives a transparent fixed-point solver.\n\n"
+        "The symmetric branch turns the equilibrium calculation into a one-dimensional root "
+        "search at each precision value. For a candidate entry probability $p$, define "
+        "$G_{\\lambda}(p)=p-QBR(p;\\lambda)$. A QRE sets this residual to zero. In this "
+        "entry game, $G_{\\lambda}$ is strictly increasing on $[0,1]$ and changes sign "
+        "between the endpoints, so bisection finds the fixed point without tuning a step "
+        "size.\n\n"
         "```text\n"
         "Algorithm: symmetric logit-QRE path in the entry game\n"
         "Inputs: precision grid Lambda, payoff gap Delta(p)=2-3p, tolerance epsilon\n"
@@ -188,10 +190,10 @@ $\lambda$ becomes large.
         "5. Stop when |G_lambda(p)| or the bracket width is below epsilon.\n"
         "6. Report p(lambda), |G_lambda(p(lambda))|, and p(lambda)-p^N.\n"
         "```\n\n"
-        "For larger normal-form games, QRE is a system of fixed-point equations. The "
-        "one-dimensional version here is narrow so the economic object stays visible: a "
-        "noisy entry probability that must be consistent with the noisy response it induces "
-        "in the other player."
+        "For larger normal-form games, QRE becomes a system of fixed-point equations over "
+        "mixed strategies. The one-dimensional version here keeps the entry object visible: "
+        "a noisy entry probability that must be consistent with the noisy response it gives "
+        "the other firm."
     )
 
     fig, ax = plt.subplots()
@@ -209,11 +211,11 @@ $\lambda$ becomes large.
     ax.set_ylim(0.48, 0.69)
     ax.legend()
     report.add_results(
-        "At zero precision, behavior ignores payoffs and both players enter with probability "
-        "one half. As precision rises, the symmetric QRE entry probability moves upward "
-        "because entry has positive expected payoff whenever the rival enters with probability "
-        "below $2/3$. The dotted line is not estimated by the QRE solver; it is the exact "
-        "mixed Nash probability from the indifference condition."
+        "At zero precision, firms ignore payoffs and enter with probability one half. As "
+        "precision rises, the symmetric QRE entry probability moves upward. The reason is "
+        "economic: entry has positive expected payoff whenever the rival enters with "
+        "probability below $2/3$. The dotted line comes from the exact indifference "
+        "condition, not from the QRE root search."
     )
     report.add_figure(
         "figures/qre-path.png",
@@ -249,7 +251,7 @@ $\lambda$ becomes large.
     ax2.legend()
     report.add_results(
         f"At $\\lambda={focal_precision:.1f}$, the noisy best-response curve is smooth but "
-        "still strategic. A higher rival entry probability lowers the payoff from entering, "
+        "still strategic. A higher rival entry probability lowers the payoff from entry, "
         "so the response curve slopes down. The QRE is the crossing with the 45-degree line. "
         "The exact mixed Nash benchmark sits to the right because finite precision still "
         "puts weight on the lower-payoff action."
@@ -286,17 +288,16 @@ $\lambda$ becomes large.
         description=(
             "The high-precision endpoint is close to, but still below, the mixed Nash limit. "
             "That distinction matters: QRE at a finite precision is a behavioral model, not "
-            "a failed computation of Nash."
+            "a failed Nash computation."
         ),
     )
 
     report.add_takeaway(
-        "QRE keeps the equilibrium discipline of mutual consistency but relaxes the knife-edge "
-        "best-response rule. In this entry game, higher precision moves the symmetric QRE toward "
-        "the exact mixed Nash probability, while the fixed-point residual verifies that each "
-        "reported probability is internally consistent with logit best response. The lesson is "
-        "not the bisection routine itself; it is the separation between numerical error, "
-        "measured by the residual, and behavioral smoothing, measured by the gap to Nash."
+        "QRE keeps mutual consistency but softens the exact best-response rule. In this "
+        "entry game, higher precision moves the symmetric QRE toward the mixed Nash "
+        "probability. The fixed-point residual checks the computation, while the gap to "
+        "Nash measures finite-precision behavior. Those are different objects, and the "
+        "tables keep them separate."
     )
 
     report.add_references([
