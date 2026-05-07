@@ -1,12 +1,12 @@
-# RBC with Endogenous Labor: Klein QZ Solution
+# RBC Labor Supply and TFP Shocks by Klein QZ
 
-> Real Business Cycles with capital and labor, solved by generalized Schur decomposition — the algorithm Dynare uses at first order.
+> Endogenous hours shape business-cycle responses, and generalized Schur decomposition solves the local rational-expectations system.
 
 ## Overview
 
-When labor is endogenous, a productivity shock moves both quantities: capital responds slowly because it is predetermined, but labor jumps immediately to exploit a temporarily higher real wage. Two states (capital, TFP) and two jump variables (consumption, labor) leave method of undetermined coefficients behind: hand-deriving a 4×4 linear system is tedious and error-prone, and the smallest realistic medium-scale models add several more variables.
+A positive productivity shock makes firms want more inputs today. Capital is largely inherited from yesterday, but hours can move at once, so the household must decide how much of the higher wage to take as labor income, consumption, and investment. In this small RBC economy, a one percent TFP innovation is enough to show the main tension: output jumps immediately, capital builds gradually, and hours absorb part of the short-run adjustment.
 
-This tutorial solves the same first-order rational-expectations system using Klein's (2000) generalized Schur (QZ) decomposition — the exact algorithm Dynare implements for ``stoch_simul, order=1`` (Villemot 2011). The method is matrix-based and scales to arbitrary linear DSGEs without changes. The neighboring [RBC tutorial](../rbc/) and [NK tutorial](../nkdsge/) cross-check their hand-derived coefficients against this same QZ routine; here QZ is the primary solver.
+The computation starts after log-linearizing the equilibrium around steady state. The local system has lagged capital and current TFP as predetermined variables, with consumption and labor as jump variables. Hand-solving those coefficients is possible but unappealing once labor enters. Klein's (2000) generalized Schur decomposition finds the stable subspace of the linear rational-expectations system and converts it into a state transition plus decision rules. Those rules let us trace impulse responses and compare the local solution with a nonlinear perfect-foresight path near steady state.
 
 ## Equations
 
@@ -27,10 +27,10 @@ and the Euler equation for capital is
 
 $$C_t^{-\sigma}=\beta \mathbb{E}_t\left[C_{t+1}^{-\sigma}\left(\alpha A_{t+1}K_t^{\alpha-1}N_{t+1}^{1-\alpha}+1-\delta\right)\right].$$
 
-After log-linearization around the deterministic steady state, the system has
-two predetermined variables $\hat k_{t-1},\hat a_t$ and two jump variables
-$\hat c_t,\hat n_t$. Output and investment are eliminated via the production
-function and resource constraint.
+After log-linearization around the deterministic steady state, the local object
+is a decision rule for consumption and labor as functions of lagged capital and
+current TFP. Output and investment are then recovered from production and the
+resource constraint.
 
 ## Model Setup
 
@@ -58,32 +58,32 @@ function and resource constraint.
 
 ## Solution Method
 
-Stack the linearized system as $A\,\mathbb{E}_t s_{t+1}=B\,s_t$ with $s_t=(\hat k_{t-1},\hat a_t,\hat c_t,\hat n_t)'$. The first two entries are predetermined; the last two are jump variables. The four equations are: capital accumulation (after substituting the resource constraint and production function), the TFP AR(1), the intratemporal labor-supply condition (no expectation), and the Euler equation.
+Stack the linearized equilibrium as $A\,\mathbb{E}_t s_{t+1}=B\,s_t$ with $s_t=(\hat k_{t-1},\hat a_t,\hat c_t,\hat n_t)'$. The first two entries are states, and the last two are jump variables. The rows collect capital accumulation, the TFP law of motion, intratemporal labor supply, and the Euler equation for capital. The solution is a pair of matrices
 
-Klein's algorithm computes the ordered generalized Schur (QZ) decomposition
+$$x_{t+1}=F x_t,\qquad y_t=P x_t,$$
 
-$$Q^H A Z = AA,\qquad Q^H B Z = BB,$$
+where $x_t=(\hat k_{t-1},\hat a_t)'$ and $y_t=(\hat c_t,\hat n_t)'$. The economic content of $P$ is immediate: it tells us how consumption and hours respond when productivity rises or when the inherited capital stock changes.
 
-where $AA, BB$ are upper triangular and the eigenvalues $\lambda_i = (BB)_{ii}/(AA)_{ii}$ are sorted with $|\lambda_i|<1$ first. Blanchard-Kahn requires the count of explosive eigenvalues to equal the number of jump variables. The decision rule for jumps and the state transition follow from the stable subspace of $Z$ — see ``lib/perturbation.py``.
+Klein's algorithm computes an ordered generalized Schur decomposition. The ordering separates the stable roots from the explosive roots, then uses the stable subspace to pick the unique non-explosive path for the jump variables.
 
 ```text
-Algorithm: Klein QZ first-order DSGE solver
-Inputs:  matrices A, B; partition n_x = number of predetermined vars
-Outputs: state transition F (n_x x n_x), decision rule P (n_y x n_x)
+Algorithm: Klein QZ for the linearized RBC system
+Inputs:  matrices A and B; number of state variables n_x = 2
+Outputs: state transition F, decision rule P, and impulse responses
 
-1. Compute ordered generalized Schur: ordqz(B, A, sort='iuc') -> AA, BB, Z.
-2. Count stable eigenvalues |alpha/beta| < 1; check Blanchard-Kahn.
-3. Partition Z conformably: Z = [[Z11 Z12]; [Z21 Z22]] with Z11 (n_x x n_x).
-4. Decision rule:    P = Z21 @ inv(Z11)        (jump = P @ predetermined).
-5. State transition: F = Z11 @ inv(AA11) @ BB11 @ inv(Z11).
-6. Iterate x_{t+1} = F x_t and recover y_t = P x_t for IRFs.
+1. Compute the ordered QZ decomposition of (B, A), with stable roots first.
+2. Check Blanchard-Kahn: the number of stable roots must equal n_x.
+3. Partition the Schur vectors into state and jump blocks.
+4. Recover P from the jump block relative to the state block.
+5. Recover F from the stable triangular blocks.
+6. Start from x_0 = (0, sigma_e) and iterate x_{t+1} = F x_t, y_t = P x_t.
 ```
 
-For this calibration the Blanchard-Kahn condition holds: 2 stable eigenvalues for 2 predetermined variables, 2 explosive eigenvalues for 2 jump variables. The stable eigenvalues are 0.9500 (capital) and 0.9531 (TFP). Capital evolution and the jump variables follow from the stable subspace; the explosive components are zeroed out as the unique non-explosive rational-expectations solution.
+For this calibration the Blanchard-Kahn condition holds: 2 stable eigenvalues for 2 state variables, and 2 explosive eigenvalues for 2 jump variables. The stable eigenvalues are 0.9500 and 0.9531. Once these roots are ordered, the rest of the calculation is linear algebra.
 
 ## Results
 
-All six series respond to the productivity innovation. Output rises on impact for two reasons — TFP is higher and labor jumps up to take advantage of the temporarily elevated real wage. Investment is the most volatile margin; consumption smooths through the Euler equation. Capital accumulates slowly. The dashed nonlinear perfect-foresight transition tracks the linear Klein solution closely at this shock size, which is what a local first-order approximation should deliver near steady state.
+The productivity innovation raises output on impact because TFP is higher and hours rise with the temporarily higher marginal product of labor. Investment moves more than consumption because capital is the state that carries the shock forward. Consumption responds smoothly through the Euler equation, while capital accumulates over many quarters. The nonlinear perfect-foresight path is included as a local benchmark. It preserves the same ranking of margins, with larger percentage-point gaps for investment and capital because investment is the residual margin that moves the stock.
 
 <img src="figures/irf-tfp-shock.png" alt="Linear Klein QZ vs nonlinear perfect-foresight responses to a 1% TFP shock" width="80%">
 
@@ -100,7 +100,7 @@ All six series respond to the productivity innovation. Output rises on impact fo
 
 ## Takeaway
 
-Endogenous labor changes the transmission of a TFP shock from a slow capital story to a fast labor-jump plus slow capital story. The key economic object is the labor decision rule $\hat n_t=-0.1677\hat k_{t-1}+0.4612\hat a_t$, which says hours rise sharply with TFP but moderate as the capital stock expands and the marginal product of labor returns toward steady state. Methodologically, the same Klein QZ solver that drives general DSGE frameworks works here without bespoke coefficient algebra — adding more variables (sticky prices, capital adjustment costs, habits, two countries) would only enlarge the matrices, not change the algorithm.
+Endogenous labor makes the TFP shock partly a labor-hours response and partly a capital-accumulation response. The labor decision rule $\hat n_t=-0.1677\hat k_{t-1}+0.4612\hat a_t$ says that hours rise strongly with productivity but fall as inherited capital becomes abundant. Klein QZ matters because it delivers that economic object from the stable subspace of the log-linear system. Adding more DSGE variables would enlarge the matrices, but the solution logic would stay the same.
 
 ## References
 
