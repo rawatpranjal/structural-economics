@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Vertical relationships: double marginalization and vertical restraints."""
+"""Double marginalization in a manufacturer-retailer channel."""
 import sys
 from pathlib import Path
 
@@ -91,26 +91,26 @@ def main() -> None:
     print(df[["Contract", "Retail price", "Quantity", "Channel profit"]].to_string(index=False))
 
     report = ModelReport(
-        "Vertical Relationships and Double Marginalization",
-        "How marginal wholesale prices distort a separated retail channel.",
+        "Double Marginalization in Vertical Supply Chains",
+        "A manufacturer-retailer pricing game solved by backward induction.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "The economic issue is not that a manufacturer and a retailer disagree about "
-        "the monopoly price. They would both like the channel to sell the "
-        "joint-profit-maximizing quantity. The problem is the instrument. With a "
-        "linear wholesale price, the upstream margin becomes part of the retailer's "
-        "marginal cost, so the downstream firm adds another margin on top of it. The "
-        "channel then under-sells relative to an integrated firm.\n\n"
-        "Demand is simple so the contract logic stays visible. A two-part tariff uses a "
-        "low per-unit wholesale price to restore the downstream pricing incentive, then "
-        "uses a fixed fee to move profit upstream. Resale price maintenance instead "
-        "controls the retail price directly. These mechanisms are the pricing counterpart "
-        "to the firm-boundary problem in [theory of the firm](../theory-of-the-firm/) and "
-        "a simpler precursor to the assortment contracts in "
-        "[vertical contracts](../vertical-contracts/)."
+        "A manufacturer often sells through an independent retailer. The manufacturer "
+        "chooses wholesale terms, the retailer chooses the shelf price, and consumers "
+        "respond to the final price. Both firms may prefer the channel to behave like "
+        "one monopolist, but a linear wholesale price puts the upstream markup inside "
+        "the retailer's marginal cost. The retailer then adds its own markup, and the "
+        "channel sells too little.\n\n"
+        "The example keeps demand linear so the contract comparison stays visible. We "
+        "compute the integrated benchmark, solve the manufacturer-retailer game by "
+        "backward induction, and then evaluate contracts that separate marginal "
+        "incentives from profit transfers. A two-part tariff restores the retail "
+        "pricing incentive with a low per-unit price and uses a fixed fee to allocate "
+        "profit. Resale price maintenance reaches the same retail price by controlling "
+        "the downstream choice directly."
     )
 
     report.add_equations(r"""
@@ -162,33 +162,34 @@ can then be chosen so the downstream participation constraint binds.
     )
 
     report.add_solution_method(
-        "The solution is backward induction with closed-form first-order conditions. "
-        "The computation is mainly accounting: evaluate each contract using the same "
-        "demand curve, then compare price, quantity, channel profit, and consumer "
-        "surplus to the integrated benchmark.\n\n"
+        "Each contract changes which first-order condition determines the retail "
+        "price. The computation solves those conditions in the order the firms move, "
+        "then puts every contract on the same demand curve. That lets the tutorial "
+        "separate an efficiency loss, lower quantity, from a transfer, the fixed fee "
+        "or wholesale margin.\n\n"
         "```text\n"
-        "Inputs: demand q(p)=a-bp, costs c_M and c_R, contract set K\n"
+        "Inputs: demand q(p)=a-bp, costs c_M and c_R\n"
         "\n"
-        "Integrated benchmark:\n"
+        "1. Integrated channel\n"
         "    p_I = (a/b + c_M + c_R) / 2\n"
         "    q_I = q(p_I)\n"
         "\n"
-        "Linear wholesale contract:\n"
-        "    For any wholesale price w:\n"
-        "        retailer best response p_R(w) = (a/b + w + c_R) / 2\n"
+        "2. Linear wholesale game\n"
+        "    For a candidate wholesale price w:\n"
+        "        retailer sets p_R(w) = (a/b + w + c_R) / 2\n"
         "    Manufacturer chooses w_DM to maximize (w-c_M) q(p_R(w))\n"
-        "    Evaluate p_R(w_DM), q(p_R(w_DM)), and surplus\n"
+        "    Evaluate p_R(w_DM), q(p_R(w_DM)), profits, and surplus\n"
         "\n"
-        "Counterfactual contracts:\n"
+        "3. Contract counterfactuals\n"
         "    Two-part tariff: set w=c_M, p=p_I, and fixed fee F=(p_I-c_M-c_R)q_I\n"
         "    Resale price maintenance: set p=p_I and choose w so retailer profit is zero\n"
         "\n"
         "Outputs: contract outcomes and pass-through curve p_R(w)\n"
         "```\n\n"
-        "The integrated solution is the analytic ground truth for the channel's "
-        "joint-profit problem. The figures use that benchmark to mark what is lost "
-        "under the separated linear contract and what the alternative contracts "
-        "restore."
+        "The integrated solution is the benchmark for the channel's joint-profit "
+        "problem. The backward-induction solution shows how the separated linear "
+        "contract departs from that benchmark, and the counterfactual contracts show "
+        "which part of the departure comes from marginal incentives."
     )
 
     x = np.arange(len(df))
@@ -212,11 +213,13 @@ can then be chosen so the downstream participation constraint binds.
         "figures/price-quantity.png",
         "Price and quantity by vertical contract",
         fig1,
-        description="The separated linear contract is the outlier. The wholesale price "
-        f"${linear['Wholesale price']:.2f}$ makes the retailer behave as if its marginal "
-        "cost is well above the true channel cost, so price rises and quantity falls. "
-        "The two-part tariff and the resale-price-maintenance counterfactual both put "
-        "the retail price back on the integrated-channel line.",
+        description="The integrated channel charges "
+        f"${benchmark['Retail price']:.2f}$ and sells {benchmark['Quantity']:.1f} units. "
+        "The separated linear contract chooses a wholesale price of "
+        f"${linear['Wholesale price']:.2f}$, which pushes the retail price to "
+        f"${linear['Retail price']:.2f}$ and cuts quantity to {linear['Quantity']:.1f}. "
+        "The two-part tariff and resale price maintenance return the retail price to "
+        "the integrated-channel line.",
     )
 
     fig2, ax2 = plt.subplots(figsize=(8, 5))
@@ -232,11 +235,11 @@ can then be chosen so the downstream participation constraint binds.
         "figures/surplus-decomposition.png",
         "Consumer surplus and channel profit by contract",
         fig2,
-        description="The transfer between upstream and downstream firms is not the welfare "
-        "loss. The loss comes from the smaller quantity sold under the linear wholesale "
+        description="The wholesale margin reallocates profit inside the channel, but "
+        "the welfare loss comes from the smaller quantity sold under the linear "
         "contract. Once the marginal wholesale price is neutralized, consumer surplus "
-        "and channel profit both return to the integrated benchmark in this simple "
-        "single-product environment.",
+        "and channel profit return to the integrated benchmark in this single-product "
+        "environment.",
     )
 
     fig3, axes3 = plt.subplots(1, 2, figsize=(9, 4.2), sharex=True)
@@ -262,9 +265,9 @@ can then be chosen so the downstream participation constraint binds.
         "figures/wholesale-pass-through.png",
         "Retail pass-through as wholesale price changes",
         fig3,
-        description="The pass-through exercise varies only the per-unit wholesale price. "
-        "Moving from $w=c_M$ to $w^{DM}$ traces the double-marginalization mechanism: "
-        "the retailer's best response price rises mechanically with perceived marginal "
+        description="The pass-through exercise varies only the per-unit wholesale "
+        "price. Moving from $w=c_M$ to $w^{DM}$ traces the double-marginalization "
+        "mechanism: the retailer's best response price rises with perceived marginal "
         "cost, and the quantity gap opens relative to the integrated benchmark.",
     )
 
@@ -291,16 +294,17 @@ can then be chosen so the downstream participation constraint binds.
         table,
         description="The table separates efficiency from incidence. Channel profit and "
         "consumer surplus describe the real allocation. Manufacturer and retailer "
-        "profits show how each contract allocates that profit; for the integrated "
-        "benchmark the internal split is just a transfer convention.",
+        "profits show how each contract allocates that profit. For the integrated "
+        "benchmark, the internal split is only a transfer convention.",
     )
 
     report.add_takeaway(
-        "Distinguish marginal incentives from transfers. A high wholesale price changes "
-        "the downstream pricing first-order condition, so it creates a real quantity "
-        "distortion. A fixed fee moves profit without changing the retailer's marginal "
-        "cost. Nonlinear pricing can therefore remove double marginalization while still "
-        "letting the upstream firm extract the channel's profit."
+        "Vertical contracts matter because they decide which margins affect the retail "
+        "price. A high wholesale price changes the downstream first-order condition "
+        "and creates a real quantity distortion. A fixed fee moves profit without "
+        "changing the retailer's marginal cost. Nonlinear pricing can remove double "
+        "marginalization while still letting the upstream firm collect the channel's "
+        "profit."
     )
 
     report.add_references([
