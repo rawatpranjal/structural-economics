@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T23:16:48Z",
+  "updated_at": "2026-05-07T23:20:40Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -556,6 +556,17 @@
         "choice/revealed-price-preference/run.py"
       ],
       "updated_at": "2026-05-07T23:16:48Z"
+    },
+    {
+      "tutorial_path": "choice/logit-discrete-choice/",
+      "status": "complete",
+      "commit": "ba4a852136800ec28fbb6468982225a60fa31d7f",
+      "changed_paths": [
+        "README.md",
+        "choice/logit-discrete-choice/README.md",
+        "choice/logit-discrete-choice/run.py"
+      ],
+      "updated_at": "2026-05-07T23:20:40Z"
     }
   ]
 }
