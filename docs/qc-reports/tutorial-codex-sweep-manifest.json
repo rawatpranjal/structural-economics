@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T22:19:39Z",
+  "updated_at": "2026-05-07T22:24:16Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -401,6 +401,17 @@
         "industrial-organization/production-functions-markups/run.py"
       ],
       "updated_at": "2026-05-07T22:19:39Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/effective-hhi/",
+      "status": "complete",
+      "commit": "c93fe9736794f64111e1d080cd5170c8e9fcf5e3",
+      "changed_paths": [
+        "README.md",
+        "industrial-organization/effective-hhi/README.md",
+        "industrial-organization/effective-hhi/run.py"
+      ],
+      "updated_at": "2026-05-07T22:24:16Z"
     }
   ]
 }
