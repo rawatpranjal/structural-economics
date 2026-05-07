@@ -1,20 +1,21 @@
-# Heaton-Lucas Risk Sharing and Asset Prices
+# Heaton-Lucas Risk Sharing and Equity Premia
 
-> Constrained trade in equity and a bond makes the wealth distribution a pricing state.
+> Incomplete risk sharing makes the wealth distribution part of the asset-pricing state.
 
 ## Overview
 
-Heaton and Lucas (1996) ask how much asset prices can move when households cannot fully share risk. Two CRRA agents receive stochastic endowments, trade a claim to aggregate dividends, and trade a one-period bond. Equity short sales are ruled out and bond positions have a lower bound, so the identity of the household holding financial wealth matters for the stochastic discount factor.
+Households do not all price risk in the same way when trade is limited. In Heaton and Lucas (1996), two CRRA agents receive different endowment shares, trade a claim to aggregate dividends, and trade a one-period bond. Short-sale and borrowing limits prevent full insurance, so the household that holds wealth after a shock can matter for the stochastic discount factor.
 
-The endogenous state is agent 1's wealth share, $\omega_1$. In a complete-markets Lucas tree, a fixed Pareto weight would summarize risk sharing. Here, constraints make the wealth share move over time, and the price of aggregate risk changes with it. The tutorial is a distributional counterpart to the [Lucas-tree pricing](../../dynamic-programming/asset-pricing/) example and a global-solution companion to the [Huggett bond-market](../../heterogeneous-agents/huggett-incomplete-markets/) tutorial.
+The state variable is agent 1's wealth share, $\omega_1$. In a complete-markets Lucas tree, a fixed Pareto weight would summarize risk sharing. With portfolio constraints, wealth shares move after shocks and the price of aggregate risk moves with them. That is why the tutorial needs a global computation: prices, portfolios, and the next wealth share have to be solved together at each point in the state space. The example connects the [Lucas-tree pricing](../../dynamic-programming/asset-pricing/) environment with the incomplete-markets logic in the [Huggett bond-market](../../heterogeneous-agents/huggett-incomplete-markets/) tutorial.
 
 ## Equations
 
 Let $z_t\in\{1,\ldots,8\}$ be the Markov shock. In state $z$, aggregate growth
 is $g_z$, the equity dividend is $d_z$, and agent 1 receives endowment share
-$\eta_{1z}$ with $\eta_{2z}=1-\eta_{1z}$. Agent $i$ chooses consumption $c_i$,
-next-period equity holdings $s_i'$, and next-period bond holdings $b_i'$. The
-equity and bond prices are $p_s$ and $p_b$.
+$\eta_{1z}$ with $\eta_{2z}=1-\eta_{1z}$. Agent $i$ has CRRA utility with
+risk aversion $\gamma$ and chooses consumption $c_i$, next-period equity
+holdings $s_i'$, and next-period bond holdings $b_i'$. The equity and bond
+prices are $p_s$ and $p_b$.
 
 For $i=1,2$, the budget constraint is
 
@@ -42,8 +43,8 @@ g_{z'}^{-\gamma}\left(\frac{c_i'}{c_i}\right)^{-\gamma}
 $$\mu_i^s\geq0,\quad \mu_i^s s_i'=0,\qquad
 \mu_i^b\geq0,\quad \mu_i^b(b_i'-\bar K^b)=0.$$
 
-The future wealth share is not an exogenous transition. It must be consistent
-with the portfolio chosen today and the asset prices tomorrow:
+The future wealth share is not an exogenous Markov transition. It must be
+consistent with today's portfolio choice and tomorrow's asset prices:
 
 $$\omega_1'(z')=
 \frac{s_1'[p_s(z',\omega_1'(z'))+d_{z'}]+b_1'/g_{z'}}
@@ -51,50 +52,50 @@ $$\omega_1'(z')=
 
 ## Model Setup
 
-| Object | Value | Role in the tutorial |
+| Object | Value | Why it matters |
 |---|---:|---|
 | $\beta$ | 0.95 | Discount factor |
 | $\gamma$ | 1.5 | CRRA risk aversion |
 | $\bar{K}^b$ | -0.05 | Lower bound on each agent's bond position |
 | Shock states | 8 | Joint Markov chain for growth, dividends, and endowment shares |
 | Wealth-share grid | 201 points on $[-0.05,1.05]$ | Collocation grid for $\omega_1$, with a small buffer around $[0,1]$ |
-| Unknowns per collocation point | 19 | Consumption, portfolios, prices, multipliers, and eight next-state wealth shares |
+| Unknowns per collocation point | 19 | Consumption, portfolios, prices, multipliers, and eight shock-contingent wealth shares |
 | Simulation | 24 paths x 10,000 periods | Used to approximate the ergodic wealth-share distribution |
 
 ## Solution Method
 
-The hard object is the law of motion for $\omega_1$. It is implicit because tomorrow's wealth share depends on tomorrow's price, and tomorrow's price is a function of tomorrow's wealth share. Simultaneous Transition and Policy Function Iteration (STPFI) handles that by solving today's policies and all shock-contingent next wealth shares in the same nonlinear system.
+The transition for $\omega_1$ is implicit. Tomorrow's wealth share depends on tomorrow's equity price, and tomorrow's equity price is itself a function of that wealth share. Simultaneous Transition and Policy Function Iteration (STPFI) treats the policy rules and the transition rule as one fixed point. At each current shock and wealth share, the nonlinear system solves consumption, portfolios, prices, Kuhn-Tucker multipliers, and all eight possible next wealth shares at the same time.
 
 ```text
 Algorithm: STPFI for the Heaton-Lucas wealth-share economy
 Input: grid Omega, shock transition P, primitives beta, gamma, Kb
-Output: policies c_i(z,omega), s_i'(z,omega), b_i'(z,omega), prices p_s, p_b, transition omega'(z')
-Initialize c_1^0=z-dependent endowment resources, c_2^0 similarly, and p_s^0=1
+Output: policies c_i(z,omega), s_i'(z,omega), b_i'(z,omega), prices p_s, p_b, and transition omega'(z')
+Initialize c_1^0 and c_2^0 from endowment resources, and set p_s^0=1
 repeat:
     for each current shock z and wealth grid point omega:
-        take current guesses for future c_i^n(z',omega') and p_s^n(z',omega')
+        evaluate current guesses for future c_i^n(z',omega') and p_s^n(z',omega')
         solve for y=(c_1,c_2,s_1',b_1',b_2',mu^s,mu^b,p_s,p_b,{omega'(z')})
         impose Euler equations, complementary slackness, market clearing, budgets, and consistency
     damp the policy and transition updates
 until the sup-norm policy change is below epsilon or the iteration cap is reached
-Simulate the Markov chain and the implied omega transition to read the ergodic distribution
+simulate the Markov chain and the implied omega transition to read the ergodic distribution
 ```
 
 This run stopped at the iteration cap after **80** STPFI iterations with final policy change 2.06e-02 and maximum pointwise equation residual 1.27e-03. The nonlinear systems use `scipy.optimize.root`; JAX supplies the 19-by-19 Jacobian at each collocation point.
 
 ## Results
 
-The computed equity premium is state dependent: across the displayed wealth-share grid it ranges from 0.43% to 1.42%. Those movements are not different shock labels. They reflect which agent is close to a portfolio constraint and therefore whose marginal utility receives more weight in pricing aggregate dividends.
+The computed equity premium changes across wealth shares, ranging from 0.43% to 1.42% on the displayed interior grid. Those movements do more than relabel shocks. They reflect which agent is close to a portfolio constraint and whose marginal utility receives more weight in pricing aggregate dividends.
 
-The first panel reads asset prices against the distributional state. The second panel shows where the simulated economy spends its time: the mean wealth share is 0.487, with the 10th and 90th percentiles at -0.050 and 1.050. Pricing is still evaluated over the whole state space, not only near the modal wealth shares.
+The first panel reads equity premia against the distributional state. The second panel shows where the simulated economy spends its time: the mean wealth share is 0.487, with the 10th and 90th percentiles at -0.050 and 1.050. The solution still prices assets over the whole state space, including states that the simulation visits less often.
 
 <img src="figures/equity-premium-and-distribution.png" alt="Equity premium and ergodic distribution of wealth share." width="80%">
 
-The multiplier panels map the constraint regions. For agent 1, the no-short-sale multiplier is positive at 0.3% of interior collocation points and the borrowing multiplier at 2.7%. The equity-premium panel repeats the pricing object on the same states, making the link between constraints and risk compensation visible.
+The multiplier panels show where constraints bind for agent 1. The no-short-sale multiplier is positive at 0.3% of interior collocation points, and the borrowing multiplier is positive at 2.7%. The equity-premium panel puts the pricing object on the same states, so the constraint regions can be read against risk compensation.
 
 <img src="figures/policy-functions.png" alt="Multipliers and equity premium where constraints bind." width="80%">
 
-The table is a numerical diagnostic, not a new economic moment. This Python/JAX translation keeps the model transparent and close to the original GDSGE file; the original C++ benchmark gives the tighter reference scale for the equity Euler equation.
+The table reports numerical accuracy, not a new economic moment. This Python/JAX version keeps the model close to the original GDSGE file; the original C++ benchmark gives the tighter reference scale for the equity Euler equation.
 
 **Euler Residuals and Benchmark Scale**
 
@@ -106,11 +107,11 @@ The table is a numerical diagnostic, not a new economic moment. This Python/JAX 
 | GDSGE benchmark mean      |    2.08e-05 | not reported | Original GDSGE C++ scale reported for the model   |
 | GDSGE benchmark max       |    0.0034   | not reported | Original GDSGE C++ scale reported for the model   |
 
-The numerical status matters for interpretation. The plotted policies recover the state-dependent pricing and constraint patterns, but this coarse pedagogical run is looser than the optimized GDSGE benchmark. For production accuracy, the next step is to raise the iteration cap, tighten damping, or run a denser grid in the original compiled implementation rather than treat the displayed Euler errors as final benchmark accuracy.
+The diagnostic table limits how far to push the quantitative numbers. The plotted policies recover state-dependent pricing and constraint patterns, but this coarse pedagogical run is looser than the optimized GDSGE benchmark. A production exercise would raise the iteration cap, tune damping, or run a denser grid in the original compiled implementation before treating the Euler errors as benchmark accuracy.
 
 ## Takeaway
 
-Incomplete markets turn the wealth distribution into an asset-pricing state. With moderate risk aversion, risk premia move because constrained households cannot freely trade away bad marginal-utility states. STPFI is useful here because it keeps the implicit wealth-share transition and the occasionally binding portfolio constraints inside the same global fixed point.
+Limited asset trade turns the wealth distribution into an asset-pricing state. With moderate risk aversion, risk premia move because constrained households cannot freely trade away bad marginal-utility states. STPFI fits this problem because it solves the implicit wealth-share transition and the occasionally binding portfolio constraints inside one global fixed point.
 
 ## References
 

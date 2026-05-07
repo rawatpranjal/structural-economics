@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Heaton-Lucas (1996): Incomplete Markets with Two Agents via STPFI.
+"""Heaton-Lucas (1996): incomplete markets with two agents via STPFI.
 
-Faithful JAX translation of HL1996.gmod from github.com/gdsge/gdsge.
 Two agents trade equity shares and bonds with short-sale and borrowing
-constraints. Solved globally using Simultaneous Transition and Policy
-Function Iterations with JAX autodiff Jacobians.
+constraints. The global solution follows the HL1996.gmod example from
+github.com/gdsge/gdsge and uses Simultaneous Transition and Policy Function
+Iterations with JAX autodiff Jacobians.
 
 Reference: Heaton & Lucas (1996, JPE), Cao, Luo & Nie (2023, RED).
 """
@@ -30,14 +30,14 @@ from lib.simulate import simulate_markov, compute_ergodic_histogram
 
 def main():
     # =========================================================================
-    # Parameters — exact from HL1996.gmod lines 1-5
+    # Parameters: exact from HL1996.gmod lines 1-5
     # =========================================================================
     beta = 0.95
     gamma = 1.5
     Kb = -0.05
 
     # =========================================================================
-    # Exogenous shocks — HL1996.gmod lines 7-23
+    # Exogenous shocks: HL1996.gmod lines 7-23
     # =========================================================================
     shock_num = 8
     g = jnp.array([.9904, 1.0470, .9904, 1.0470, .9904, 1.0470, .9904, 1.0470])
@@ -58,7 +58,7 @@ def main():
     shock_trans_jnp = jnp.array(shock_trans)
 
     # =========================================================================
-    # State grid — HL1996.gmod line 26: w1 = linspace(-0.05,1.05,201)
+    # State grid: HL1996.gmod line 26, w1 = linspace(-0.05,1.05,201)
     # =========================================================================
     n_w = 201
     w_grid = jnp.linspace(-0.05, 1.05, n_w)
@@ -73,7 +73,7 @@ def main():
     n_eq = 19
 
     # =========================================================================
-    # JAX residual — direct translation of gmod model block (lines 56-88)
+    # JAX residual: direct translation of gmod model block (lines 56-88)
     # =========================================================================
     def make_residual_fn(iz_val):
         @jax.jit
@@ -168,7 +168,7 @@ def main():
     print("  Compiled.\n")
 
     # =========================================================================
-    # Initial guesses — gmod lines 44-52
+    # Initial guesses: gmod lines 44-52
     # =========================================================================
     ps_pol = np.ones((shock_num, n_w))
     c1_pol = np.zeros((shock_num, n_w))
@@ -336,26 +336,29 @@ def main():
     status_phrase = "converged" if info["converged"] else "stopped at the iteration cap"
 
     report = ModelReport(
-        "Heaton-Lucas Risk Sharing and Asset Prices",
-        "Constrained trade in equity and a bond makes the wealth distribution "
-        "a pricing state.",
+        "Heaton-Lucas Risk Sharing and Equity Premia",
+        "Incomplete risk sharing makes the wealth distribution part of the "
+        "asset-pricing state.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "Heaton and Lucas (1996) ask how much asset prices can move when "
-        "households cannot fully share risk. Two CRRA agents receive stochastic "
-        "endowments, trade a claim to aggregate dividends, and trade a one-period "
-        "bond. Equity short sales are ruled out and bond positions have a lower "
-        "bound, so the identity of the household holding financial wealth matters "
-        "for the stochastic discount factor.\n\n"
-        "The endogenous state is agent 1's wealth share, $\\omega_1$. In a "
+        "Households do not all price risk in the same way when trade is limited. "
+        "In Heaton and Lucas (1996), two CRRA agents receive different endowment "
+        "shares, trade a claim to aggregate dividends, and trade a one-period "
+        "bond. Short-sale and borrowing limits prevent full insurance, so the "
+        "household that holds wealth after a shock can matter for the stochastic "
+        "discount factor.\n\n"
+        "The state variable is agent 1's wealth share, $\\omega_1$. In a "
         "complete-markets Lucas tree, a fixed Pareto weight would summarize "
-        "risk sharing. Here, constraints make the wealth share move over time, "
-        "and the price of aggregate risk changes with it. The tutorial is a "
-        "distributional counterpart to the [Lucas-tree pricing](../../dynamic-programming/asset-pricing/) "
-        "example and a global-solution companion to the "
+        "risk sharing. With portfolio constraints, wealth shares move after "
+        "shocks and the price of aggregate risk moves with them. That is why "
+        "the tutorial needs a global computation: prices, portfolios, and the "
+        "next wealth share have to be solved together at each point in the "
+        "state space. The example connects the "
+        "[Lucas-tree pricing](../../dynamic-programming/asset-pricing/) "
+        "environment with the incomplete-markets logic in the "
         "[Huggett bond-market](../../heterogeneous-agents/huggett-incomplete-markets/) "
         "tutorial."
     )
@@ -363,9 +366,10 @@ def main():
     report.add_equations(r"""
 Let $z_t\in\{1,\ldots,8\}$ be the Markov shock. In state $z$, aggregate growth
 is $g_z$, the equity dividend is $d_z$, and agent 1 receives endowment share
-$\eta_{1z}$ with $\eta_{2z}=1-\eta_{1z}$. Agent $i$ chooses consumption $c_i$,
-next-period equity holdings $s_i'$, and next-period bond holdings $b_i'$. The
-equity and bond prices are $p_s$ and $p_b$.
+$\eta_{1z}$ with $\eta_{2z}=1-\eta_{1z}$. Agent $i$ has CRRA utility with
+risk aversion $\gamma$ and chooses consumption $c_i$, next-period equity
+holdings $s_i'$, and next-period bond holdings $b_i'$. The equity and bond
+prices are $p_s$ and $p_b$.
 
 For $i=1,2$, the budget constraint is
 
@@ -393,8 +397,8 @@ g_{z'}^{-\gamma}\left(\frac{c_i'}{c_i}\right)^{-\gamma}
 $$\mu_i^s\geq0,\quad \mu_i^s s_i'=0,\qquad
 \mu_i^b\geq0,\quad \mu_i^b(b_i'-\bar K^b)=0.$$
 
-The future wealth share is not an exogenous transition. It must be consistent
-with the portfolio chosen today and the asset prices tomorrow:
+The future wealth share is not an exogenous Markov transition. It must be
+consistent with today's portfolio choice and tomorrow's asset prices:
 
 $$\omega_1'(z')=
 \frac{s_1'[p_s(z',\omega_1'(z'))+d_{z'}]+b_1'/g_{z'}}
@@ -402,7 +406,7 @@ $$\omega_1'(z')=
 """)
 
     report.add_model_setup(
-        f"| Object | Value | Role in the tutorial |\n"
+        f"| Object | Value | Why it matters |\n"
         f"|---|---:|---|\n"
         f"| $\\beta$ | {beta} | Discount factor |\n"
         f"| $\\gamma$ | {gamma} | CRRA risk aversion |\n"
@@ -411,30 +415,32 @@ $$\omega_1'(z')=
         f"| Wealth-share grid | {n_w} points on $[-0.05,1.05]$ | "
         f"Collocation grid for $\\omega_1$, with a small buffer around $[0,1]$ |\n"
         f"| Unknowns per collocation point | {n_eq} | "
-        f"Consumption, portfolios, prices, multipliers, and eight next-state wealth shares |\n"
+        f"Consumption, portfolios, prices, multipliers, and eight shock-contingent wealth shares |\n"
         f"| Simulation | 24 paths x 10,000 periods | Used to approximate the ergodic wealth-share distribution |"
     )
 
     report.add_solution_method(
-        "The hard object is the law of motion for $\\omega_1$. It is implicit "
-        "because tomorrow's wealth share depends on tomorrow's price, and "
-        "tomorrow's price is a function of tomorrow's wealth share. "
-        "Simultaneous Transition and Policy Function Iteration (STPFI) handles "
-        "that by solving today's policies and all shock-contingent next wealth "
-        "shares in the same nonlinear system.\n\n"
+        "The transition for $\\omega_1$ is implicit. Tomorrow's wealth share "
+        "depends on tomorrow's equity price, and tomorrow's equity price is "
+        "itself a function of that wealth share. Simultaneous Transition and "
+        "Policy Function Iteration (STPFI) treats the policy rules and the "
+        "transition rule as one fixed point. At each current shock and wealth "
+        "share, the nonlinear system solves consumption, portfolios, prices, "
+        "Kuhn-Tucker multipliers, and all eight possible next wealth shares at "
+        "the same time.\n\n"
         "```text\n"
         "Algorithm: STPFI for the Heaton-Lucas wealth-share economy\n"
         "Input: grid Omega, shock transition P, primitives beta, gamma, Kb\n"
-        "Output: policies c_i(z,omega), s_i'(z,omega), b_i'(z,omega), prices p_s, p_b, transition omega'(z')\n"
-        "Initialize c_1^0=z-dependent endowment resources, c_2^0 similarly, and p_s^0=1\n"
+        "Output: policies c_i(z,omega), s_i'(z,omega), b_i'(z,omega), prices p_s, p_b, and transition omega'(z')\n"
+        "Initialize c_1^0 and c_2^0 from endowment resources, and set p_s^0=1\n"
         "repeat:\n"
         "    for each current shock z and wealth grid point omega:\n"
-        "        take current guesses for future c_i^n(z',omega') and p_s^n(z',omega')\n"
+        "        evaluate current guesses for future c_i^n(z',omega') and p_s^n(z',omega')\n"
         "        solve for y=(c_1,c_2,s_1',b_1',b_2',mu^s,mu^b,p_s,p_b,{omega'(z')})\n"
         "        impose Euler equations, complementary slackness, market clearing, budgets, and consistency\n"
         "    damp the policy and transition updates\n"
         "until the sup-norm policy change is below epsilon or the iteration cap is reached\n"
-        "Simulate the Markov chain and the implied omega transition to read the ergodic distribution\n"
+        "simulate the Markov chain and the implied omega transition to read the ergodic distribution\n"
         "```\n\n"
         f"This run {status_phrase} after **{info['iterations']}** STPFI iterations "
         f"with final policy change {info['error']:.2e} and maximum pointwise "
@@ -444,10 +450,10 @@ $$\omega_1'(z')=
     )
 
     report.add_results(
-        f"The computed equity premium is state dependent: across the displayed "
-        f"wealth-share grid it ranges from {eq_min:.2f}% to {eq_max:.2f}%. "
-        "Those movements are not different shock labels. They reflect which "
-        "agent is close to a portfolio constraint and therefore whose marginal "
+        f"The computed equity premium changes across wealth shares, ranging "
+        f"from {eq_min:.2f}% to {eq_max:.2f}% on the displayed interior grid. "
+        "Those movements do more than relabel shocks. They reflect "
+        "which agent is close to a portfolio constraint and whose marginal "
         "utility receives more weight in pricing aggregate dividends."
     )
 
@@ -470,12 +476,12 @@ $$\omega_1'(z')=
         "Equity premium and ergodic distribution of wealth share.",
         fig1,
         description=(
-            "The first panel reads asset prices against the distributional state. "
+            "The first panel reads equity premia against the distributional state. "
             "The second panel shows where the simulated economy spends its time: "
             f"the mean wealth share is {omega_mean:.3f}, with the 10th and 90th "
-            f"percentiles at {omega_p10:.3f} and {omega_p90:.3f}. Pricing is "
-            "still evaluated over the whole state space, not only near the modal "
-            "wealth shares."
+            f"percentiles at {omega_p10:.3f} and {omega_p90:.3f}. The solution "
+            "still prices assets over the whole state space, including states "
+            "that the simulation visits less often."
         ),
     )
 
@@ -493,12 +499,12 @@ $$\omega_1'(z')=
         "Multipliers and equity premium where constraints bind.",
         fig2,
         description=(
-            "The multiplier panels map the constraint regions. For "
-            f"agent 1, the no-short-sale multiplier is positive at {no_short_share:.1f}% "
-            f"of interior collocation points and the borrowing multiplier at "
-            f"{borrow_share:.1f}%. The equity-premium panel repeats the pricing "
-            "object on the same states, making the link between constraints and "
-            "risk compensation visible."
+            "The multiplier panels show where constraints bind for agent 1. "
+            f"The no-short-sale multiplier is positive at {no_short_share:.1f}% "
+            f"of interior collocation points, and the borrowing multiplier is "
+            f"positive at {borrow_share:.1f}%. The equity-premium panel puts "
+            "the pricing object on the same states, so the constraint regions "
+            "can be read against risk compensation."
         ),
     )
 
@@ -537,30 +543,29 @@ $$\omega_1'(z')=
         "Euler Residuals and Benchmark Scale",
         df,
         description=(
-            "The table is a numerical diagnostic, not a new economic moment. "
-            "This Python/JAX translation keeps the model transparent and close "
-            "to the original GDSGE file; the original C++ benchmark gives the "
-            "tighter reference scale for the equity Euler equation."
+            "The table reports numerical accuracy, not a new economic moment. "
+            "This Python/JAX version keeps the model close to the original "
+            "GDSGE file; the original C++ benchmark gives the tighter reference "
+            "scale for the equity Euler equation."
         ),
     )
 
     report.add_results(
-        "The numerical status matters for interpretation. The plotted policies "
-        "recover the state-dependent pricing and constraint patterns, but this "
-        "coarse pedagogical run is looser than the optimized GDSGE benchmark. "
-        "For production accuracy, the next step is to raise the iteration cap, "
-        "tighten damping, or run a denser grid in the original compiled "
-        "implementation rather than treat the displayed Euler errors as final "
-        "benchmark accuracy."
+        "The diagnostic table limits how far to push the quantitative numbers. "
+        "The plotted policies recover state-dependent pricing and constraint "
+        "patterns, but this coarse pedagogical run is looser than the optimized "
+        "GDSGE benchmark. A production exercise would raise the iteration cap, "
+        "tune damping, or run a denser grid in the original compiled "
+        "implementation before treating the Euler errors as benchmark accuracy."
     )
 
     report.add_takeaway(
-        "Incomplete markets turn the wealth distribution into an asset-pricing "
-        "state. With moderate risk aversion, risk premia move because "
-        "constrained households cannot freely trade away bad marginal-utility "
-        "states. STPFI is useful here because it keeps the implicit "
-        "wealth-share transition and the occasionally binding portfolio "
-        "constraints inside the same global fixed point."
+        "Limited asset trade turns the wealth distribution into an asset-pricing "
+        "state. With moderate risk aversion, risk premia move because constrained "
+        "households cannot freely trade away bad marginal-utility states. STPFI "
+        "fits this problem because it solves the implicit wealth-share transition "
+        "and the occasionally binding portfolio constraints inside one global "
+        "fixed point."
     )
 
     report.add_references([
