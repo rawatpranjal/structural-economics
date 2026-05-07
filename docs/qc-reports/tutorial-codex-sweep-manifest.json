@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T21:52:59Z",
+  "updated_at": "2026-05-07T21:56:45Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -335,6 +335,17 @@
         "industrial-organization/theory-of-the-firm/tables/governance-comparison.csv"
       ],
       "updated_at": "2026-05-07T21:52:59Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/vertical-relationships/",
+      "status": "complete",
+      "commit": "0b8f6eb18adfcdcf6a14c718de2137d84c19d3f7",
+      "changed_paths": [
+        "README.md",
+        "industrial-organization/vertical-relationships/README.md",
+        "industrial-organization/vertical-relationships/run.py"
+      ],
+      "updated_at": "2026-05-07T21:56:45Z"
     }
   ]
 }
