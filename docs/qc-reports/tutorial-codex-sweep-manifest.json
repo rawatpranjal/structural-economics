@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T20:39:13Z",
+  "updated_at": "2026-05-07T20:44:04Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -246,6 +246,17 @@
         "dsge/rbc-with-labor/run.py"
       ],
       "updated_at": "2026-05-07T20:39:13Z"
+    },
+    {
+      "tutorial_path": "global-dsge/rbc-capital-tax/",
+      "status": "complete",
+      "commit": "2bb1af75645b35e34d2bb29c9b03b6fe46af318d",
+      "changed_paths": [
+        "README.md",
+        "global-dsge/rbc-capital-tax/README.md",
+        "global-dsge/rbc-capital-tax/run.py"
+      ],
+      "updated_at": "2026-05-07T20:44:04Z"
     }
   ]
 }
