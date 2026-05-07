@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T22:59:52Z",
+  "updated_at": "2026-05-07T23:03:46Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -511,6 +511,17 @@
         "choice/revealed-preference-afriat/run.py"
       ],
       "updated_at": "2026-05-07T22:59:52Z"
+    },
+    {
+      "tutorial_path": "choice/preference-recoverability/",
+      "status": "complete",
+      "commit": "a0f37d3a3124ce87716a996df2d7caf73bfcb54a",
+      "changed_paths": [
+        "README.md",
+        "choice/preference-recoverability/README.md",
+        "choice/preference-recoverability/run.py"
+      ],
+      "updated_at": "2026-05-07T23:03:46Z"
     }
   ]
 }
