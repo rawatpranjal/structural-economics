@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T22:16:13Z",
+  "updated_at": "2026-05-07T22:19:39Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -390,6 +390,17 @@
         "industrial-organization/blp-random-coefficients/run.py"
       ],
       "updated_at": "2026-05-07T22:16:13Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/production-functions-markups/",
+      "status": "complete",
+      "commit": "02de40b5abf0bd99b315d9f0f90bf65995c69c70",
+      "changed_paths": [
+        "README.md",
+        "industrial-organization/production-functions-markups/README.md",
+        "industrial-organization/production-functions-markups/run.py"
+      ],
+      "updated_at": "2026-05-07T22:19:39Z"
     }
   ]
 }
