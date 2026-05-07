@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Bayesian learning from sequential signals.
+"""Sequential investment under Bayesian learning.
 
-A decision maker is uncertain about a binary state and observes noisy public
-signals. The sufficient state is the posterior belief, which can be updated
-recursively and used in both classification and finite-horizon stopping.
+A firm is uncertain about a binary project type and observes noisy signals
+before deciding whether to invest. The sufficient state is the posterior belief,
+which can be updated recursively and used in both classification and
+finite-horizon stopping.
 
 Reference: DeGroot (1970), Chamley (2004).
 """
@@ -366,26 +367,27 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "Bayesian Learning and Sequential Investment",
-        "Posterior beliefs, sufficient statistics, and the option value of waiting before investment.",
+        "Sequential Investment Under Bayesian Learning",
+        "Filtering noisy signals into a belief state for investment timing.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "A firm is deciding whether to invest in a project whose quality is not directly "
-        "observed. Each signal is noisy, so no single draw settles the question. What matters "
-        "for choice is the posterior probability that the project is good, not the full signal "
-        "history.\n\n"
-        "The two-state urn model makes that compression exact. "
-        "Nature chooses state $H$ or $L$, signals arrive sequentially, and the agent updates "
-        "$p_t=\\Pr(H \\mid s_1,\\ldots,s_t)$. The posterior then feeds into a finite-horizon "
-        "stopping problem: invest when confidence is high, reject when confidence is low, and "
-        "continue sampling when information still has option value.\n\n"
-        "Within the choice section, this is a belief-state example rather than a demand model. "
-        "It complements [plain logit demand](../logit-discrete-choice/) because both rely on "
-        "log odds, but here the probability is a posterior about an unknown state rather than "
-        "a market share."
+        "Suppose a firm can sink capital into a project, but the project type is hidden. "
+        "A favorable signal raises expected payoff; an unfavorable signal pulls the firm "
+        "toward rejection. The firm does not need the whole signal history on the table "
+        "at every date. It needs the current probability that the project is good.\n\n"
+        "A two-state signal model makes that probability a sufficient statistic. Nature "
+        "chooses state $H$ or $L$, signals arrive one at a time, and the agent updates "
+        "$p_t=\\Pr(H \\mid s_1,\\ldots,s_t)$. The posterior becomes the state variable in "
+        "a finite-horizon investment problem. Near zero or one, the action is clear. In "
+        "the middle, one more signal can change the action, so waiting has value.\n\n"
+        "The numerical work has two pieces. Bayesian filtering collapses any signal "
+        "history into $p_t$. Backward induction on a grid of beliefs then turns that "
+        "filter into invest, reject, and continue regions. A trained classifier appears "
+        "as a benchmark exercise: when the signal law is known, it should recover the "
+        "same likelihood-ratio rule from simulated histories."
     )
 
     report.add_equations(
@@ -433,10 +435,10 @@ $$V_t(p)=\max[A(p),\ C_t(p)].$$
     )
 
     report.add_model_setup(
-        "The calibration is symmetric around an uninformative prior. A red signal is "
-        "evidence for $H$; a blue signal is evidence for $L$. The classifier comparison "
-        "uses synthetic data from the same signal structure, so the Bayesian rule is the "
-        "known benchmark rather than an estimated model.\n\n"
+        "The experiment keeps the signal process symmetric around an uninformative prior. "
+        "A red signal is evidence for $H$; a blue signal is evidence for $L$. The classifier "
+        "comparison uses synthetic histories from the same signal structure, so the Bayesian "
+        "rule is the population benchmark and the trained logit is a finite-sample learner.\n\n"
         f"| Object | Value | Role |\n"
         f"|-----------|-------|-------------|\n"
         f"| $p_H$ | {p_red_H} | Probability of a red signal in state $H$ |\n"
@@ -452,11 +454,12 @@ $$V_t(p)=\max[A(p),\ C_t(p)].$$
     )
 
     report.add_solution_method(
-        "There are two computational objects. The first is the filtering recursion that "
-        "maps a signal history into one posterior belief. The second is a stopping boundary "
-        "on that belief state. The logistic-regression exercise is only a comparison: it asks "
-        "how close a flexible statistical classifier gets when the true likelihoods are already "
-        "known to the Bayesian agent.\n\n"
+        "The code uses Bayesian filtering for inference and backward induction for the "
+        "investment timing problem. Filtering maps the signal history into one posterior "
+        "belief. Backward induction compares immediate action payoffs with the expected "
+        "value of one more signal at each belief. The logistic-regression exercise asks how "
+        "close a statistical classifier gets when it learns from histories generated by the "
+        "same signal process.\n\n"
         "```text\n"
         "Algorithm: Bayesian filtering and finite-horizon stopping\n"
         "Input: prior p_0, likelihoods f_H and f_L, payoffs pi_H and pi_L, horizon T\n"
@@ -568,11 +571,10 @@ $$V_t(p)=\max[A(p),\ C_t(p)].$$
         "ROC curves for the Bayes rule and a trained logistic classifier.",
         fig3,
         description=(
-            "The classifier comparison is favorable to Bayes by construction: the likelihoods used "
-            "by the Bayesian rule are the true likelihoods. Logistic regression sees simulated "
-            "histories and learns a similar monotone rule in the red-signal count. The near "
-            "overlap is the point. Machine learning recovers the same "
-            "sufficient statistic rather than discovering a different economic object."
+            "The likelihoods used by the Bayesian rule are the true likelihoods, so Bayes is "
+            "the population benchmark. Logistic regression sees simulated histories and learns "
+            "a similar monotone rule in the red-signal count. The near overlap is the point. "
+            "The trained classifier recovers the same sufficient statistic from data."
         ),
     )
 
@@ -633,16 +635,15 @@ $$V_t(p)=\max[A(p),\ C_t(p)].$$
     )
 
     report.add_takeaway(
-        "Bayesian learning reduces a long signal history to the "
-        "posterior belief relevant for choice. The same object classifies the state, "
-        "sets the stopping boundary, and prices the value of one more signal.\n\n"
-        "The relevant comparison is not Bayes versus machine learning as slogans. In this "
-        "controlled experiment the likelihood is known, so Bayes is the population benchmark. "
-        "A trained classifier can learn the same likelihood-ratio rule from data, but the "
-        "economic state variable remains the posterior belief. Once that state is in hand, "
-        "the investment decision is a standard dynamic choice problem: act at extreme beliefs, "
-        "wait in the middle, and accept that the waiting region collapses as the deadline "
-        "approaches."
+        "Bayesian learning reduces a long signal history to the posterior belief relevant "
+        "for choice. The same object classifies the state, sets the stopping boundary, and "
+        "prices the value of one more signal.\n\n"
+        "In this controlled experiment the likelihood is known, so Bayes is the population "
+        "benchmark. A trained classifier can learn the same likelihood-ratio rule from data, "
+        "but the economic state variable remains the posterior belief. Once that state is in "
+        "hand, the investment decision is a standard dynamic choice problem: act at extreme "
+        "beliefs, wait in the middle, and recognize that the waiting region collapses as the "
+        "deadline approaches."
     )
 
     report.add_references([
