@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
-"""Logit Demand Estimation with Supply-Side Markup Recovery.
+"""Cereal Demand Estimation with Supply-Side Markup Recovery.
 
-Estimates the simple logit discrete-choice demand model using Berry (1994)
-inversion, then recovers firm marginal costs from the Bertrand-Nash pricing
-FOC -- without observing any accounting data.
+Builds a small differentiated-products market where firms observe quality and
+set higher prices for stronger products. The script estimates demand with Berry
+inversion and IV/2SLS, then uses Bertrand-Nash pricing FOCs to recover the
+marginal costs that rationalize observed prices.
 
 Pipeline:
   1. Generate synthetic cereal market data (5 products, 100 markets)
   2. OLS estimation (biased by price endogeneity)
   3. IV/2SLS estimation (consistent, using cost shifters as instruments)
-  4. Elasticity computation (demonstrating the IIA limitation)
-  5. Supply side: ownership matrix, markup recovery, marginal cost estimation
+  4. Elasticity computation to show the IIA restriction
+  5. Supply side: ownership matrix, markup recovery, marginal cost estimates
 
 Reference: Berry, S. (1994). "Estimating Discrete-Choice Models of Product
            Differentiation." RAND Journal of Economics 25(2), 242-262.
@@ -175,7 +176,7 @@ def compute_elasticities(alpha: float, prices: np.ndarray,
     """JxJ elasticity matrix.
 
     Own:   eta_jj = -alpha * p_j * (1 - s_j)
-    Cross: eta_jk =  alpha * p_k * s_k   (identical across rows -- IIA)
+    Cross: eta_jk =  alpha * p_k * s_k   (identical across rows under IIA)
     """
     J = len(prices)
     E = np.zeros((J, J))
@@ -364,7 +365,7 @@ def main():
         print(f"    {name}: {elast[i, i]:.3f}")
 
     # =========================================================================
-    # Step 5: Supply side -- markup recovery
+    # Step 5: Supply side: markup recovery
     # =========================================================================
     print("\nStep 5: Supply-side markup recovery ...")
     firm_ids = m0["firm_id"].values
@@ -386,29 +387,30 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "Logit Demand and Markup Recovery",
-        "Berry inversion, price endogeneity, and the supply-side recovery of marginal costs.",
+        "Cereal Demand and Markup Recovery from Prices",
+        "Berry inversion, IV/2SLS, and Bertrand-Nash pricing FOCs.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "A differentiated-products demand estimate becomes economically useful when it "
-        "can say something about markups and marginal costs. In many IO applications, "
-        "the researcher observes prices, shares, product characteristics, and firm "
-        "ownership, but not accounting marginal cost. The supply side uses the firm's "
-        "pricing first-order condition to recover those costs from demand curvature.\n\n"
-        "The tutorial builds a synthetic cereal market with five products and three "
-        "firms. Prices are endogenous because firms charge more for products with high "
-        "unobserved quality. OLS therefore understates price sensitivity. IV/2SLS uses "
-        "cost shifters and rival-characteristic instruments to recover demand, then the "
-        "Bertrand-Nash FOC decomposes each observed price into a markup and marginal cost. "
-        "Simple logit is not a rich substitution model; the elasticity figures make its "
-        "IIA restriction visible."
+        "Think of a cereal aisle where a researcher sees product characteristics, prices, "
+        "market shares, and which firm owns each box. The researcher wants markups and "
+        "marginal costs, because those objects drive counterfactual prices and market-power "
+        "measurement. Accounting marginal costs are usually missing, so the costs have to "
+        "be inferred from an economic pricing model.\n\n"
+        "The example uses five cereal products sold by three firms. Firms charge more for "
+        "products with high unobserved quality, which makes price endogenous in the demand "
+        "equation. Berry inversion turns shares into mean utilities, IV/2SLS uses cost "
+        "shifters and rival characteristics to estimate price sensitivity, and the "
+        "Bertrand-Nash first-order condition converts demand curvature into markups and "
+        "marginal costs. The logit model keeps the mechanics transparent, while the "
+        "elasticity figures show the cost of that transparency: substitution follows IIA."
     )
 
     report.add_equations(r"""
-There are markets $t$, products $j$, and an outside option. Mean utility is
+There are markets $t$, products $j$, and an outside option. Mean utility collects
+observed characteristics, price, and unobserved quality:
 $$
 \delta_{jt}
 =\beta_0+\beta_{\text{sugar}}x^{\text{sugar}}_{jt}
@@ -430,7 +432,8 @@ $$
 -\alpha p_{jt}+\xi_{jt}.
 $$
 The price coefficient is identified from price variation that is excluded from
-$\xi_{jt}$, here cost shifters and rival characteristics.
+$\xi_{jt}$. In the simulated data, cost shifters and rival characteristics play
+that role.
 
 The logit elasticity matrix is
 $$
@@ -438,27 +441,33 @@ $$
 \eta_{jk}=\alpha p_k s_k, \quad j\neq k.
 $$
 The cross-elasticity $\eta_{jk}$ depends on product $k$'s price and share, but
-not on how close products $j$ and $k$ are. That is the IIA restriction.
+not on how close products $j$ and $k$ are. That restriction is what makes simple
+logit easy to invert and too rigid for many product-space applications.
 
 On the supply side, firm $f$ chooses prices for its products. Product $j$'s FOC is
 $$
 0=s_j(p)+\sum_k
 \mathbf 1[f(j)=f(k)](p_k-c_k)\frac{\partial s_k(p)}{\partial p_j}.
 $$
-Let $\Delta_{jk}=\partial s_j/\partial p_k$ and let $O_{jk}=1$ when products
-$j$ and $k$ are owned by the same firm. The markup equation is
+Let $O_{jk}=1$ when products $j$ and $k$ are owned by the same firm, and define
+the pricing matrix
 $$
-p-c=-(O\circ \Delta')^{-1}s.
+\Omega_{jk}=-O_{jk}\frac{\partial s_j}{\partial p_k}.
 $$
-Multi-product firms internalize business stolen from their own products, so the
-ownership matrix is part of the cost recovery exercise.
+The markup vector $m=p-c$ solves
+$$
+\Omega m=s.
+$$
+The recovered cost vector is then $c=p-m$. Multi-product firms internalize
+business stolen from their own products, so ownership enters directly into the
+cost recovery.
 """)
 
     report.add_model_setup(
         "The data are simulated so the true demand parameters and marginal costs are "
-        "known. This separates two errors that are often mixed in real applications: "
-        "demand bias from endogenous prices and cost-recovery error from using the "
-        "wrong demand curvature.\n\n"
+        "known. This lets the run separate two mistakes that real data often mix "
+        "together: estimating the wrong price slope because price is endogenous, and "
+        "recovering the wrong marginal costs because the demand curvature is wrong.\n\n"
         f"| Parameter | Value | Description |\n"
         f"|-----------|-------|-------------|\n"
         f"| $\\alpha$ | {TRUE_ALPHA} | Price sensitivity |\n"
@@ -471,36 +480,38 @@ ownership matrix is part of the cost recovery exercise.
     )
 
     report.add_solution_method(
-        "The computation keeps demand estimation and supply inversion separate. First "
-        "recover mean utilities from shares and estimate demand. Then take the estimated "
-        "price coefficient into the Bertrand-Nash FOC for one market.\n\n"
+        "The computation separates the demand step from the supply inversion. Demand "
+        "estimation recovers the price slope that governs substitution. The supply step "
+        "then treats observed prices as firm choices and asks which marginal costs make "
+        "those choices optimal under Bertrand-Nash pricing.\n\n"
         "```text\n"
         "Inputs: product characteristics, prices, shares, instruments, firm labels\n"
         "Outputs: demand estimates, elasticities, markups, recovered marginal costs\n\n"
-        "1. Compute delta_jt = log(s_jt) - log(s_0t).\n"
-        "2. Regress delta_jt on characteristics and price by OLS.\n"
+        "1. Convert shares to mean utilities: delta_jt = log(s_jt) - log(s_0t).\n"
+        "2. Estimate linear logit demand by OLS as a biased benchmark.\n"
         "3. Re-estimate by IV/2SLS using excluded cost shifters for price.\n"
-        "4. In a representative market, form the logit derivative matrix Delta.\n"
-        "5. Build ownership O from firm labels.\n"
-        "6. Recover markups from p - c = -[(O .* Delta')]^{-1}s.\n"
-        "7. Compare recovered marginal costs with the simulated truth.\n"
+        "4. For one market, compute the logit derivative matrix Delta.\n"
+        "5. Combine Delta with firm ownership to form Omega.\n"
+        "6. Solve Omega m = s for markups, then set c = p - m.\n"
+        "7. Compare recovered costs with the simulated marginal costs.\n"
         "```\n\n"
         f"The first-stage F-statistic is {iv['first_stage_f']:.1f}, so the instrument "
-        "set is strong in this synthetic design. That strength is deliberately built "
-        "in; the exercise is about the mechanics of demand-side IV and supply-side "
-        "markup recovery, not weak-instrument diagnostics."
+        "set is strong in this synthetic design. The strength is built in because the "
+        "lesson is the chain from demand-side IV to supply-side markup recovery, rather "
+        "than weak-instrument diagnostics."
     )
 
     report.add_results(
         f"OLS recovers a price-sensitivity estimate of {ols_alpha:.3f}, far below the "
-        f"true value {TRUE_ALPHA:.3f}, because high-$\\xi$ products are both more popular "
-        "and more expensive. IV/2SLS moves the estimate to "
+        f"true value {TRUE_ALPHA:.3f}, because high-$\\xi$ products are more popular and "
+        "more expensive. IV/2SLS moves the estimate to "
         f"{iv['alpha']:.3f}. In market 0, the recovered marginal costs have mean absolute "
-        f"error {np.abs(est_mc - true_mc).mean():.3f} dollars. The remaining figures put "
-        "the recovery in context and indicate where simple logit remains restrictive."
+        f"error {np.abs(est_mc - true_mc).mean():.3f} dollars. The figures connect those "
+        "numbers to the economic objects: biased demand slopes, rigid substitution, and "
+        "the price decomposition into markup and cost."
     )
 
-    # --- Figure 1: OLS vs IV parameter estimates ---
+    # Figure 1: OLS vs IV parameter estimates
     fig1, ax1 = plt.subplots(figsize=(9, 6))
     param_names = [r"$\alpha$", r"$\beta_{\mathrm{sugar}}$",
                    r"$\beta_{\mathrm{fiber}}$", r"$\beta_0$"]
@@ -526,16 +537,15 @@ ownership matrix is part of the cost recovery exercise.
     ax1.axhline(0, color="black", linewidth=0.5)
     report.add_figure(
         "figures/estimation-comparison.png",
-        "Parameter estimates: True vs OLS (biased) vs IV/2SLS (consistent). "
+        "Parameter estimates: true, OLS, and IV/2SLS. "
         "OLS attenuates price sensitivity because high-xi products command higher prices.",
         fig1,
-        description="The gap between OLS (red) and the true value (green) for alpha is "
-        "the endogeneity bias: OLS understates price sensitivity because unobserved quality "
-        "raises both demand and price simultaneously. IV/2SLS (blue) recovers the parameter "
-        "by isolating exogenous cost-driven price variation.",
+        description="The red OLS bar misses the true alpha because unobserved quality raises "
+        "demand and price at the same time. The blue IV/2SLS bar moves back toward the "
+        "truth by using cost-driven price variation.",
     )
 
-    # --- Figure 2: Elasticity heatmap ---
+    # Figure 2: Elasticity heatmap
     fig2, ax2 = plt.subplots(figsize=(8, 7))
     vmax = max(abs(elast.min()), abs(elast.max()))
     im = ax2.imshow(elast, cmap="RdBu_r", aspect="auto", vmin=-vmax, vmax=vmax)
@@ -555,16 +565,16 @@ ownership matrix is part of the cost recovery exercise.
     ax2.set_title("Price Elasticity Matrix (Logit)\nOff-diagonal columns are identical (IIA)")
     report.add_figure(
         "figures/elasticity-heatmap.png",
-        "Elasticity matrix. Cross-elasticities in each column are identical -- "
+        "Elasticity matrix. Cross-elasticities in each column are identical, "
         "the IIA limitation of the simple logit.",
         fig2,
         description="Each column of cross-elasticities is identical because the logit model "
         "forces all products to be equally substitutable. When a sugary cereal raises its "
-        "price, the model predicts equal substitution to a similar sugary cereal and to a "
-        "dissimilar fiber cereal -- an unrealistic restriction.",
+        "price, the model sends consumers to a similar sugary cereal and to a dissimilar "
+        "fiber cereal in the same proportional way.",
     )
 
-    # --- Figure 3: Price decomposition (stacked bar: MC + markup) ---
+    # Figure 3: Price decomposition (stacked bar: MC + markup)
     fig3, ax3 = plt.subplots(figsize=(10, 6))
     x_prod = np.arange(N_PRODUCTS)
     bar_w = 0.3
@@ -593,7 +603,7 @@ ownership matrix is part of the cost recovery exercise.
     report.add_figure(
         "figures/price-decomposition.png",
         "Price = marginal cost + markup. Estimated MC (green, from Bertrand-Nash FOC) "
-        "compared with true MC (blue). No accounting data required.",
+        "compared with true MC (blue).",
         fig3,
         description="The decomposition is the supply-side accounting exercise: demand estimates "
         "plus the Bertrand-Nash FOC turn observed prices into markup and marginal-cost "
@@ -604,7 +614,7 @@ ownership matrix is part of the cost recovery exercise.
         "cannibalization across their own products.",
     )
 
-    # --- Figure 4: IIA demonstration (cross-elasticity bar charts) ---
+    # Figure 4: IIA demonstration (cross-elasticity bar charts)
     fig4, axes4 = plt.subplots(1, N_PRODUCTS, figsize=(16, 5), sharey=True)
     bar_colors = ["#e74c3c", "#3498db", "#27ae60", "#f39c12", "#9b59b6"]
     for j, ax in enumerate(axes4):
@@ -630,16 +640,16 @@ ownership matrix is part of the cost recovery exercise.
     report.add_figure(
         "figures/iia-demonstration.png",
         "IIA demonstration. When any product raises its price, substitution to "
-        "each rival is proportional to that rival's market share -- not to how "
+        "each rival is proportional to that rival's market share, rather than how "
         "similar the products are.",
         fig4,
-        description="Within each panel, all bars have the same height -- every rival gains the "
-        "same cross-elasticity regardless of product similarity. That is the IIA property. "
+        description="Within each panel, all bars have the same height because every rival gains "
+        "the same cross-elasticity regardless of product similarity. That is the IIA property. "
         "The BLP random coefficients model (see blp-random-coefficients/) breaks the "
         "restriction by allowing consumer heterogeneity.",
     )
 
-    # --- Table: Estimation results ---
+    # Table: Estimation results
     table_data = {
         "Parameter": ["alpha", "beta_sugar", "beta_fiber", "beta_const"],
         "True": [f"{v:.3f}" for v in true_vals],
@@ -659,12 +669,11 @@ ownership matrix is part of the cost recovery exercise.
     )
 
     report.add_takeaway(
-        "The supply-side object is not observed cost; it is the marginal cost that "
-        "rationalizes observed prices under the estimated demand system and an ownership "
-        "matrix. The demand estimate is therefore consequential: attenuating price "
-        "sensitivity also distorts markups and recovered costs. Simple logit is a useful "
-        "benchmark because Berry inversion and the markup equation are transparent, but "
-        "its IIA substitution pattern is too rigid for many merger and product-space "
+        "The recovered supply-side object is the marginal cost vector that rationalizes "
+        "observed prices under the estimated demand system and ownership matrix. A biased "
+        "price coefficient therefore changes more than a demand table: it changes markups "
+        "and costs. Simple logit makes Berry inversion and markup recovery easy to see, "
+        "but its IIA substitution pattern is too rigid for many merger and product-space "
         "applications. Random-coefficients demand in [BLP](../blp-random-coefficients/) "
         "lets substitution vary with consumer heterogeneity and product characteristics."
     )
