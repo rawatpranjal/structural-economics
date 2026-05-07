@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T22:37:01Z",
+  "updated_at": "2026-05-07T22:41:19Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -445,6 +445,17 @@
         "industrial-organization/dynamic-games-estimation/run.py"
       ],
       "updated_at": "2026-05-07T22:37:01Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/dynamic-entry-exit/",
+      "status": "complete",
+      "commit": "39bf3ddc7e1ee21937a04aa67ef27854f1c11408",
+      "changed_paths": [
+        "README.md",
+        "industrial-organization/dynamic-entry-exit/README.md",
+        "industrial-organization/dynamic-entry-exit/run.py"
+      ],
+      "updated_at": "2026-05-07T22:41:19Z"
     }
   ]
 }
