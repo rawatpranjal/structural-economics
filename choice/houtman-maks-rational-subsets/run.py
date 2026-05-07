@@ -334,26 +334,30 @@ def main() -> None:
     diagnostics = pd.DataFrame(diagnostic_rows)
 
     report = ModelReport(
-        "Houtman-Maks Rational Subsets",
-        "Finding the largest rationalizable core after a revealed-preference rejection.",
+        "Rationalizable Choice Cores with Houtman-Maks",
+        "Measuring how much of a finite choice dataset can still come from one stable utility ordering.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "A GARP rejection is not automatically a rejection of economic choice theory. In "
-        "household scanner data, lab choices, or administrative purchase records, the failure "
-        "could come from a different decision problem, a transcription error, or one receipt "
-        "that should not be pooled with the rest. The Houtman-Maks index asks how much of the "
-        "sample can still be read as utility-maximizing behavior under one stable preference "
-        "ordering.\n\n"
-        "The setup is a small synthetic demand panel where the uncorrupted choices come "
-        "from Cobb-Douglas budget shares. Two chosen bundles are then swapped across receipts. "
-        "The full dataset fails GARP, but the largest rationalizable core keeps "
-        f"{len(exact_keep)} of {len(prices)} observations. The "
-        "simulation gives an oracle label for the swapped rows, so the exact Houtman-Maks "
-        "answer and a greedy large-sample diagnostic can be compared to a known source of "
-        "contamination."
+        "Suppose a researcher has a file of grocery trips. Each row records prices and the "
+        "bundle the household bought. Afriat's theorem and GARP can say whether all rows fit "
+        "one stable utility function, but a single rejection is often too blunt for empirical "
+        "work. One miscoded receipt, a change in household needs, or a row from a different "
+        "decision problem can make the whole sample fail even when most choices look coherent.\n\n"
+        "Houtman-Maks asks for the largest group of observations that remains rationalizable. "
+        "That is an economic object: the size and composition of the utility-consistent core. "
+        "The computation needed to find it is a subset search over a revealed-preference graph. "
+        "This tutorial keeps both pieces visible. It builds the revealed-preference relation, "
+        "searches for the largest GARP-consistent subset, and compares exact enumeration with "
+        "a graph-based greedy deletion rule.\n\n"
+        "The example is a small synthetic demand panel where the uncorrupted choices come from "
+        "Cobb-Douglas budget shares. Two chosen bundles are swapped across receipts. The full "
+        "dataset fails GARP, but the largest rationalizable core keeps "
+        f"{len(exact_keep)} of {len(prices)} observations. Because this is simulated data, we "
+        "know which receipts were swapped, so we can compare the exact Houtman-Maks deletion "
+        "and the greedy large-sample diagnostic against a known source of contamination."
     )
 
     report.add_equations(
@@ -384,14 +388,14 @@ $$T - HM.$$
         f"| Observations $T$ | {len(prices)} | Shopping trips with prices and chosen bundles |\n"
         "| Goods $J$ | 3 | Small multi-good demand environment |\n"
         "| Data-generating preferences | Cobb-Douglas shares $(0.45,0.35,0.20)$ | Rational benchmark before corruption |\n"
-        "| Synthetic corruption | rows 3 and 4 swapped | Oracle label available only because this is simulated data |\n"
+        "| Synthetic corruption | bundles in rows 3 and 4 swapped | Oracle label available only because this is simulated data |\n"
         f"| Full-sample GARP violations | {len(violations)} | Contradictions after taking transitive closure |\n"
         f"| Exact Houtman-Maks index | {len(exact_keep)} | Largest rationalizable subset size |\n"
         f"| Greedy deletion | observation {greedy_removed[0] + 1} | Same deletion selected by the heuristic |"
     )
 
     solution_method = r"""
-The exact calculation treats Houtman-Maks as a finite combinatorial problem. For $T=12$, exhaustive subset search is small enough to be the benchmark.
+The exact routine treats the dataset as a finite search problem. It builds the revealed-preference graph for a candidate subset, takes the transitive closure, and checks whether any strict budget cycle remains. For $T=12$, enumeration is small enough to give a benchmark.
 
 ```text
 Algorithm: exact Houtman-Maks core
@@ -406,7 +410,7 @@ for k = T, T-1, ..., 1:
             return S* = S and HM = k
 ```
 
-That search is transparent but not scalable. The second calculation keeps the same revealed-preference object and uses the graph structure to choose deletions. A violating strongly connected component is a set of observations tied together by revealed-preference paths, with at least one strict comparison closing the cycle.
+Enumeration is exact, but the number of subsets grows quickly. The second calculation keeps the same revealed-preference object and uses the graph structure to choose deletions. A violating strongly connected component is a set of observations tied together by revealed-preference paths, with at least one strict comparison closing the cycle.
 
 ```text
 Algorithm: SCC greedy Houtman-Maks diagnosis
@@ -425,7 +429,7 @@ return S
 In this run, the greedy rule removes observation """
     solution_method += (
         f"{greedy_removed[0] + 1}, the same receipt removed by exact search. The exact result is "
-        "the benchmark; the greedy result is a scalable diagnostic for larger panels."
+        "the benchmark; the greedy result is a practical diagnostic for larger panels."
     )
     report.add_solution_method(solution_method)
 
@@ -434,10 +438,10 @@ In this run, the greedy rule removes observation """
         "Which Receipts Carry the Rejection",
         diagnostics,
         description=(
-            "The table separates three objects that are easy to conflate. The synthetic swap "
-            "column is the oracle label from the simulation. The exact Houtman-Maks action is "
-            "the maximum rationalizable subset. The greedy action is the approximation one "
-            "would use when exact subset enumeration is too expensive."
+            "The table keeps three objects separate. The synthetic swap column is the oracle "
+            "label from the simulation. The exact Houtman-Maks action is the maximum "
+            "rationalizable subset. The greedy action is the approximation one would use "
+            "when exact subset enumeration is too expensive."
         ),
     )
 
@@ -447,11 +451,11 @@ In this run, the greedy rule removes observation """
         "Preference conflict graph comparing exact, greedy, and synthetic corruption markers.",
         fig1,
         description=(
-            "The revealed-preference graph makes the comparison concrete. Red fill marks the "
-            "exact Houtman-Maks deletion, the black x marks the greedy deletion, and gold rings "
+            "The graph shows why one deletion can be enough. Red fill marks the exact "
+            "Houtman-Maks deletion, the black x marks the greedy deletion, and gold rings "
             "mark the two receipts whose bundles were swapped in the simulation. The method "
-            "does not need to remove both swapped rows; dropping one side of the conflict is "
-            "enough to recover a GARP-consistent core."
+            "does not need to remove both swapped rows; dropping one side of the conflict "
+            "recovers a GARP-consistent core."
         ),
     )
 
@@ -468,12 +472,12 @@ In this run, the greedy rule removes observation """
     )
 
     report.add_takeaway(
-        "Houtman-Maks turns a binary revealed-preference rejection into a question about the "
-        "size of the rationalizable core. Here the rejection is concentrated: one deletion "
-        "restores GARP for 11 of 12 observations. The synthetic oracle also shows the main "
-        "interpretive limit. The index is not a causal label for every corrupted row; it is a "
-        "finite-data robustness measure for how much of the sample can still support utility "
-        "maximization."
+        "Houtman-Maks turns a binary revealed-preference rejection into a measurement of the "
+        "rationalizable core. Here the rejection is local: one deletion restores GARP for "
+        "11 of 12 observations. The synthetic oracle also shows the main interpretive limit. "
+        "The index is not a causal label for every corrupted row; it tells us how much of the "
+        "finite sample can still support a stable utility model and which observations create "
+        "the conflict."
     )
 
     report.add_references(
