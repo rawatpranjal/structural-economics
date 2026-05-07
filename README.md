@@ -71,7 +71,7 @@ These tutorials solve macro models on grids so constraints, taxes, and risk shar
 
 | Preview | Tutorial | Description |
 |---|---|---|
-| [<img src="global-dsge/rbc-capital-tax/figures/thumb.png" width="160">](global-dsge/rbc-capital-tax/figures/steady-state-tax.png) | **[Capital Tax Wedges in an RBC Model](global-dsge/rbc-capital-tax/)** | Show how a capital tax changes saving even when revenue is rebated. The exercise separates the resource effect from the after-tax return wedge. |
+| [<img src="global-dsge/rbc-capital-tax/figures/thumb.png" width="160">](global-dsge/rbc-capital-tax/figures/steady-state-tax.png) | **[Capital Taxes and Saving in a Global RBC Model](global-dsge/rbc-capital-tax/)** | Study how a rebated capital-income tax lowers saving by taxing the return to future capital. A global grid solution with Euler refinement separates aggregate feasibility from the private after-tax return. |
 | [<img src="global-dsge/rbc-irreversible-investment/figures/thumb.png" width="160">](global-dsge/rbc-irreversible-investment/figures/policy-functions.png) | **[Irreversible Investment and Capital Overhang in RBC](global-dsge/rbc-irreversible-investment/)** | Add an investment nonnegativity constraint to a business-cycle model. The constraint matters most when low productivity meets high installed capital. |
 | [<img src="global-dsge/heaton-lucas/figures/thumb.png" width="160">](global-dsge/heaton-lucas/figures/equity-premium-and-distribution.png) | **[Heaton-Lucas Risk Sharing and Asset Prices](global-dsge/heaton-lucas/)** | Study how limited asset trade affects risk sharing and prices. The wealth distribution matters because households value risky payoffs differently. |
 

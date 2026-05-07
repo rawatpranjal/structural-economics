@@ -1,12 +1,12 @@
-# Capital Tax Wedges in an RBC Model
+# Capital Taxes and Saving in a Global RBC Model
 
-> A revenue-neutral capital tax leaves aggregate resources unchanged but lowers the after-tax return that governs saving.
+> A rebated capital tax leaves goods available today unchanged, but it lowers the private return that governs saving.
 
 ## Overview
 
-Capital income taxation separates aggregate feasibility from private incentives. The government taxes capital income at rate $\tau_k$ and rebates the proceeds lump-sum. The representative economy still has the same resource constraint, but households save against an after-tax marginal product of capital. The distortion is entirely intertemporal: current consumption becomes cheaper relative to future consumption.
+Suppose the government taxes capital income and sends the revenue back as a lump-sum transfer. No goods disappear from the aggregate resource constraint. The representative household still changes its plan, because one more unit of capital now pays only the after-tax marginal product. The policy experiment is therefore about a wedge between what the economy can produce and what the household privately earns by saving.
 
-This tutorial is a tax-wedge companion to the global [RBC capital and labor](../../dynamic-programming/rbc/) example and the local [linearized RBC](../../dsge/rbc/) impulse-response example. The point is not shock propagation per se, but how a permanent wedge moves the exact deterministic steady state, the nonlinear capital policy, and simulated investment behavior.
+A closed-form steady state gives the long-run benchmark, but it does not show how the saving rule changes after productivity shocks. For that we solve the stochastic RBC model on a global capital and productivity grid. The grid solution lets the tax wedge move the entire policy function, then we simulate every tax regime on the same productivity path.
 
 ## Equations
 
@@ -54,7 +54,7 @@ tax revenue $T_{ss}=\tau_k \alpha Y_{ss}$.
 | $\sigma$ | 2.0 | CRRA coefficient |
 | $\delta$ | 0.025 | Depreciation rate |
 | $\rho$   | 0.95 | TFP persistence |
-| $\sigma_\varepsilon$ | 0.01 | TFP innovation std |
+| $\sigma_\varepsilon$ | 0.01 | TFP innovation standard deviation |
 | $\tau_k$ | [0.0, 0.1, 0.2, 0.3, 0.4] | Permanent tax rates compared |
 | Capital grid | 40 points around each $K_{ss}(\tau_k)$ | State and $K'$ choice grid |
 | TFP grid | 5 Tauchen states | Approximation to log productivity |
@@ -62,12 +62,12 @@ tax revenue $T_{ss}=\tau_k \alpha Y_{ss}$.
 
 ## Solution Method
 
-The computation uses the resource-feasible Bellman problem to get a stable global policy on the $(z,K)$ grid, then refines consumption with the after-tax Euler equation. The first step is a good initializer because the rebate leaves the aggregate resource constraint unchanged. The second step introduces the capital-tax wedge.
+The numerical problem is to recover a saving rule over the full $(z,K)$ state space, away from the deterministic steady state as well as at it. The solver starts with a resource-feasible Bellman pass, which gives a stable global policy on the capital grid. It then iterates directly on the Euler equation, replacing the pre-tax marginal product with $(1-\tau_k)MPK$. Howard improvement speeds up the value iteration step, while the Euler refinement is the part that makes the tax experiment economically meaningful.
 
 ```text
-Algorithm: global policy iteration with a capital-tax wedge
+Algorithm: global saving rule with a capital-tax wedge
 Input: tax rate tau_k, grids K and Z, transition matrix P, primitives beta, alpha, sigma, delta
-Output: value V(z,K), capital policy g_K(z,K), consumption policy g_c(z,K)
+Output: value V(z,K), saving rule g_K(z,K), consumption rule g_c(z,K)
 Compute the exact deterministic K_ss(tau_k) and build a capital grid around it
 Discretize log productivity with Tauchen to obtain Z and P
 Precompute feasible consumption c = z K^alpha + (1-delta)K - K' for every (z,K,K')
@@ -89,17 +89,17 @@ until the consumption policy update is below epsilon
 Simulate all tax regimes on the same productivity path
 ```
 
-The exact deterministic steady state serves as a ground-truth benchmark for the long-run comparisons. The stochastic policy functions are numerical, and the table below separates the exact steady states from simulated means. Across the five tax regimes, VFI used at most **49** outer iterations and the Euler refinement used at most **223** iterations.
+The deterministic steady state anchors the long-run comparison. The stochastic policy functions are numerical, so the table below keeps exact steady states separate from simulated means. Across the five tax regimes, VFI used at most **49** outer iterations and Euler refinement used at most **223** iterations.
 
 ## Results
 
-The exact steady-state formulas already show the size of the distortion. At $\tau_k=30\%$, deterministic capital is 42.7% below the no-tax value, output is 18.2% lower, and consumption is 9.7% lower. Consumption falls less because a lower capital stock also reduces replacement investment. The simulations use the same productivity sequence for every tax rate, so the level differences across paths are the tax wedge, not different shock histories.
+The exact steady-state formulas show the size of the distortion before we look at any simulated path. At $\tau_k=30\%$, deterministic capital is 42.7% below the no-tax value, output is 18.2% lower, and consumption is 9.7% lower. Consumption falls less because a lower capital stock also reduces replacement investment. The simulations use the same productivity sequence for every tax rate, so the level differences across paths are the tax wedge, not different shock histories.
 
-The first comparison is analytical rather than simulated. Capital falls with $(1-\tau_k)^{1/(1-\alpha)}$, so the tax rate is amplified by the capital share. Output and consumption move less than capital, but the economy operates from a lower productive base.
+The first comparison uses the exact steady-state formula. Capital falls with $(1-\tau_k)^{1/(1-\alpha)}$, so the tax rate is magnified by the capital share. Output and consumption move less than capital, but the economy operates from a lower productive base.
 
 <img src="figures/steady-state-tax.png" alt="Exact steady-state levels and losses by capital tax rate" width="80%">
 
-At the median productivity state, the policy functions show the same wedge in decision-rule form. Higher taxes move the capital policy down and the consumption policy up: the household chooses less saving because tomorrow's marginal product is partly taxed away.
+At the median productivity state, the policy functions show the wedge in decision-rule form. Higher taxes move the capital policy down and the consumption policy up: the household saves less because tomorrow's marginal product is partly taxed away.
 
 <img src="figures/policy-by-tax.png" alt="Capital and consumption policies at median TFP by capital tax rate" width="80%">
 
@@ -107,11 +107,11 @@ The simulated paths keep the productivity sequence fixed across regimes. The hig
 
 <img src="figures/simulation-paths.png" alt="Simulated capital and output paths by capital tax rate" width="80%">
 
-The distributional view is useful because the policy change is not only a new mean. Higher taxes shift the investment share and the capital-output ratio left across the stationary simulation, so the economy spends more time in states with a smaller productive base.
+The stationary distributions add another view of the same mechanism. Higher taxes shift the investment share and the capital-output ratio left, so the economy spends more time in states with a smaller productive base.
 
 <img src="figures/investment-distributions.png" alt="Investment-rate and capital-output distributions by tax regime" width="80%">
 
-The table keeps the closed-form steady-state benchmark separate from the simulated mean. The simulated mean capital is slightly above the deterministic value because productivity risk and the nonlinear policy shift the invariant distribution, but the ranking across tax regimes is unchanged.
+The table keeps the closed-form steady-state benchmark separate from the simulated mean. Simulated mean capital is slightly above the deterministic value because productivity risk and the nonlinear policy shift the invariant distribution, but the ranking across tax regimes is unchanged.
 
 **Exact Steady States and Simulated Moments by Tax Rate**
 
@@ -125,7 +125,7 @@ The table keeps the closed-form steady-state benchmark separate from the simulat
 
 ## Takeaway
 
-The rebate closes the government budget, not the intertemporal wedge. Once the household prices saving with $(1-\tau_k)MPK$ rather than $MPK$, the economy carries less capital into every productivity state. The exact steady state is the cleanest way to see the long-run loss; the global policy functions show how the same force operates away from the steady state. The lesson for nearby DSGE applications is that fiscal wedges can be revenue-neutral in resources and still large in allocation.
+The rebate balances the government budget while the intertemporal wedge remains. Once the household prices saving with $(1-\tau_k)MPK$, the economy carries less capital into every productivity state. The exact steady state gives the clean long-run comparison, and the global policy functions show how the same force operates away from the steady state. Fiscal wedges can be revenue-neutral in resources and still large in allocation.
 
 ## References
 
