@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T23:20:40Z",
+  "updated_at": "2026-05-07T23:25:45Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -567,6 +567,21 @@
         "choice/logit-discrete-choice/run.py"
       ],
       "updated_at": "2026-05-07T23:20:40Z"
+    },
+    {
+      "tutorial_path": "choice/maximum-score-binary-choice/",
+      "status": "complete",
+      "commit": "7c602252368f056a216854cf1fafb56e26190c27",
+      "changed_paths": [
+        "README.md",
+        "choice/maximum-score-binary-choice/README.md",
+        "choice/maximum-score-binary-choice/figures/classification-boundary.png",
+        "choice/maximum-score-binary-choice/figures/score-objectives.png",
+        "choice/maximum-score-binary-choice/figures/thumb.png",
+        "choice/maximum-score-binary-choice/run.py",
+        "choice/maximum-score-binary-choice/tables/estimator-comparison.csv"
+      ],
+      "updated_at": "2026-05-07T23:25:45Z"
     }
   ]
 }
