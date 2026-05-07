@@ -501,31 +501,33 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "BLP Random Coefficients Demand",
-        "Differentiated-products demand when substitution depends on consumer tastes.",
+        "Differentiated-Products Demand with BLP",
+        "Random-coefficients demand for substitution patterns and merger counterfactuals.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "In differentiated-products IO, demand is not only about fitting market shares. "
-        "The substitution matrix is what turns demand estimates into merger effects, "
-        "markups, and welfare calculations. The simple logit model in "
-        "[logit demand and markup recovery](../logit-supply-side/) is useful because "
-        "Berry inversion is transparent, but it also forces the IIA restriction: when "
-        "one product changes price, all rivals gain share in proportion to their existing "
-        "shares.\n\n"
-        "BLP replaces that representative-consumer substitution pattern with random "
-        "coefficients. Consumers differ in their taste for the observed characteristic "
-        "and in price sensitivity, so products that attract similar consumers become "
-        "closer substitutes. The tutorial uses a synthetic market with known parameters, "
-        "estimates the nonlinear taste dispersion by GMM, and compares the implied "
-        "elasticities with the true DGP and a plain-logit benchmark."
+        "Suppose an antitrust team wants to know which products win demand when one "
+        "brand raises price. Matching market shares is not enough for that question. "
+        "The answer depends on the substitution matrix, and that matrix drives merger "
+        "effects, markups, and welfare calculations in differentiated-products IO.\n\n"
+        "Plain logit gives a clean first pass because Berry inversion turns shares into "
+        "mean utilities. The tradeoff is the IIA restriction: if one product changes price, "
+        "all rivals gain share in proportion to their existing shares. BLP keeps the "
+        "same share-fitting discipline but adds random coefficients. Consumers differ "
+        "in their taste for the observed characteristic and in price sensitivity, so "
+        "products that attract similar buyers become closer substitutes.\n\n"
+        "This tutorial uses a synthetic market where the true parameters are known. "
+        "The computation inverts shares for mean utilities, estimates taste dispersion "
+        "with IV/GMM, and then compares the implied elasticities with the true DGP and "
+        "a plain-logit benchmark."
     )
 
     report.add_equations(
         r"""
 Consumer $i$ in market $t$ chooses among $J$ inside goods and an outside good.
+Think of $x_{jt}$ as a product attribute such as quality, style, or size.
 The indirect utility from inside product $j$ is
 
 $$u_{ijt} = \beta_0 + \beta_x x_{jt} + \alpha p_{jt} + \xi_{jt} + \sigma_x \nu_{i1} x_{jt} + \sigma_p \nu_{i2} p_{jt} + \varepsilon_{ijt}$$
@@ -543,7 +545,8 @@ For a candidate $\sigma=(\sigma_x,\sigma_p)$, simulated market shares are
 
 $$s_{jt} = \frac{1}{ns} \sum_{i=1}^{ns} \frac{\exp(\delta_{jt} + \mu_{ijt})}{1 + \sum_{k=1}^{J} \exp(\delta_{kt} + \mu_{ikt})}$$
 
-The BLP contraction finds the mean utilities that rationalize observed shares:
+The BLP contraction finds the mean utilities that make predicted shares equal
+observed shares:
 
 $$\delta^{(r+1)}_{jt} = \delta^{(r)}_{jt} + \log s^{\text{obs}}_{jt} - \log s^{\text{pred}}_{jt}(\delta^{(r)}, \sigma)$$
 
@@ -558,10 +561,10 @@ through $\operatorname{Cov}(p_{jt},\xi_{jt}) \ne 0$.
     )
 
     report.add_model_setup(
-        "The data-generating process has 100 independent markets with five products "
-        "per market. Prices are deliberately correlated with unobserved quality, so "
-        "the IV step is doing real work rather than decorating an exogenous logit "
-        "regression.\n\n"
+        "The example has 100 independent markets with five products per market. "
+        "Each product has an observed characteristic, an unobserved quality draw, "
+        "a cost shifter, and a price. Price loads on both cost and unobserved quality, "
+        "so the IV step has an actual endogeneity problem to solve.\n\n"
         f"| Object | Value | Role |\n"
         f"|-----------|-------|-------------|\n"
         f"| $T$ | {T} | Markets |\n"
@@ -575,9 +578,10 @@ through $\operatorname{Cov}(p_{jt},\xi_{jt}) \ne 0$.
     )
 
     report.add_solution_method(
-        "The estimator is nested fixed point with GMM. The outer problem chooses the "
-        "taste-dispersion parameters $\sigma=(\sigma_x,\sigma_p)$. The inner problem "
-        "inverts market shares for the mean utilities $\delta(\sigma)$.\n\n"
+        "The estimator is a nested fixed point with GMM. The outer search chooses the "
+        "taste-dispersion parameters $\sigma=(\sigma_x,\sigma_p)$. For each trial "
+        "$\sigma$, the inner contraction finds the mean utilities $\delta(\sigma)$ "
+        "that reproduce the observed shares.\n\n"
         "```text\n"
         "Inputs: observed shares s_obs, characteristics x, prices p, instruments Z, draws nu\n"
         "Choose trial nonlinear parameters sigma = (sigma_x, sigma_p)\n"
@@ -590,9 +594,9 @@ through $\operatorname{Cov}(p_{jt},\xi_{jt}) \ne 0$.
         "Search over sigma and keep the minimizer\n"
         "Output: sigma_hat, theta_1_hat, xi_hat, elasticities\n"
         "```\n\n"
-        "The contraction is the economic inversion: it asks what common product utility "
-        "must be present for the model to match the observed shares after integrating "
-        "over consumer heterogeneity. The GMM step then asks whether those recovered "
+        "The contraction is the share inversion. It asks what common product utility "
+        "must be present for the model to match observed shares after averaging over "
+        "consumer heterogeneity. The GMM step then checks whether the recovered "
         "unobserved qualities are orthogonal to excluded cost and rival-characteristic "
         "instruments.\n\n"
         f"At the true nonlinear parameters, the contraction converged in "
@@ -603,10 +607,10 @@ through $\operatorname{Cov}(p_{jt},\xi_{jt}) \ne 0$.
     )
 
     report.add_results(
-        "The estimated model matches the simulated market shares closely, which is "
+        "The estimated model matches the simulated market shares closely. That is "
         "expected because the data come from the same random-coefficients family. "
-        "The more useful checks are the parameter table and the elasticity comparison: "
-        "they show whether the estimator recovers the DGP objects that matter for "
+        "The stronger checks are the parameter table and the elasticity comparison. "
+        "They show whether the estimator recovers the objects that matter for "
         "counterfactual IO work."
     )
 
@@ -627,8 +631,8 @@ through $\operatorname{Cov}(p_{jt},\xi_{jt}) \ne 0$.
         fig1,
         description="The share fit sits on the 45-degree line because the BLP contraction "
         "forces the model to rationalize observed shares at the chosen nonlinear "
-        "parameters. A good-looking share plot is therefore not, by itself, evidence "
-        "that the substitution pattern is right.",
+        "parameters. A good-looking share plot alone does not prove that the "
+        "substitution pattern is right.",
     )
 
     # --- Figure 2: Own-Price Elasticities ---
@@ -713,7 +717,7 @@ through $\operatorname{Cov}(p_{jt},\xi_{jt}) \ne 0$.
         "plain-logit panel, every off-diagonal entry in a column is identical, so a "
         "price increase for product k sends the same proportional demand response to "
         "each rival. In the BLP panel, off-diagonal entries vary by row because products "
-        "draw different mixtures of consumer tastes.",
+        "attract different mixtures of consumer tastes.",
     )
 
     # --- Table: Parameter Estimates ---
@@ -740,12 +744,12 @@ through $\operatorname{Cov}(p_{jt},\xi_{jt}) \ne 0$.
     )
 
     report.add_takeaway(
-        "BLP changes the counterfactual object, not the optimizer. The contraction lets "
-        "each candidate $\\sigma$ fit observed shares, while the IV/GMM moments choose the "
-        "amount of heterogeneity that makes recovered unobserved quality orthogonal to "
-        "excluded instruments. Once heterogeneity is present, substitution is no longer "
-        "forced to follow existing shares. That is the natural step after simple logit "
-        "demand, especially before using demand estimates for mergers, markups, or welfare."
+        "BLP changes the counterfactual object. The contraction lets each candidate "
+        "$\\sigma$ fit observed shares, while the IV/GMM moments choose the amount of "
+        "heterogeneity that makes recovered unobserved quality orthogonal to excluded "
+        "instruments. With heterogeneity in the model, substitution no longer has to "
+        "follow existing shares. That is the natural step after simple logit demand "
+        "before using demand estimates for mergers, markups, or welfare."
     )
 
     report.add_references([
