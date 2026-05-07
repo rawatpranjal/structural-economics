@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T21:45:40Z",
+  "updated_at": "2026-05-07T21:49:19Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -312,6 +312,17 @@
         "optimal-control/ramsey-growth/run.py"
       ],
       "updated_at": "2026-05-07T21:45:40Z"
+    },
+    {
+      "tutorial_path": "optimal-control/continuous-cake-eating/",
+      "status": "complete",
+      "commit": "45e0419eb1a22618dcf711965169d1bff60162e4",
+      "changed_paths": [
+        "README.md",
+        "optimal-control/continuous-cake-eating/README.md",
+        "optimal-control/continuous-cake-eating/run.py"
+      ],
+      "updated_at": "2026-05-07T21:49:19Z"
     }
   ]
 }
