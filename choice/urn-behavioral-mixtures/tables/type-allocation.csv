@@ -1,5 +1,5 @@
 True rule,Bayes,Conservative,Share cutoff,Count cutoff
-Bayes,272,0,0,3
-Conservative,150,0,0,3
-Share cutoff,0,0,118,0
-Count cutoff,0,0,0,54
+Bayes,275,0,0,0
+Conservative,0,151,0,0
+Share cutoff,1,0,120,0
+Count cutoff,0,0,0,53

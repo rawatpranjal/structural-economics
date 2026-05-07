@@ -1,5 +1,5 @@
 Rule,Definition,True weight,Estimated weight,Error
-Bayes,Choose high if the posterior probability of the high urn is at least one half.,0.46,0.3544,-0.1056
-Conservative,Choose high only when the posterior probability of the high urn is at least 0.75.,0.24,0.3544,0.1144
-Share cutoff,Choose high when at least half of sampled balls are red.,0.2,0.1991,-0.0009
-Count cutoff,"Choose high when at least four sampled balls are red, ignoring sample size.",0.1,0.0922,-0.0078
+Bayes,Choose high if the posterior probability of the high urn is at least one half.,0.46,0.4575,-0.0025
+Conservative,Choose high only when the posterior probability of the high urn is at least 0.75.,0.24,0.2523,0.0123
+Share cutoff,Choose high when at least half of sampled balls are red.,0.2,0.2019,0.0019
+Count cutoff,"Choose high when at least four sampled balls are red, ignoring sample size.",0.1,0.0883,-0.0117

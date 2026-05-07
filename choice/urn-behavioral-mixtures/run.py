@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bayesian urn classification and finite mixtures of behavioral rules."""
+"""Urn choices, Bayesian learning, and finite mixtures of behavioral rules."""
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -77,6 +77,8 @@ def simulate_panel(
     rng: np.random.Generator,
     n_subjects: int,
     n_tasks: int,
+    draw_counts: np.ndarray,
+    draw_probabilities: np.ndarray,
     true_weights: np.ndarray,
     prior_h: float,
     p_red_h: float,
@@ -84,7 +86,7 @@ def simulate_panel(
     tremble: float,
 ) -> dict[str, np.ndarray]:
     """Simulate repeated urn choices from a finite mixture of rules."""
-    n_draws = rng.choice(np.array([4, 6, 8]), size=n_tasks, p=np.array([0.35, 0.40, 0.25]))
+    n_draws = rng.choice(draw_counts, size=n_tasks, p=draw_probabilities)
     state_high = rng.binomial(1, prior_h, size=n_tasks)
     p_red = np.where(state_high == 1, p_red_h, p_red_l)
     k_red = rng.binomial(n_draws, p_red)
@@ -185,17 +187,21 @@ def bayes_diagnostics(
 def main() -> None:
     rng = np.random.default_rng(1234)
     n_subjects = 600
-    n_tasks = 30
+    n_tasks = 60
     prior_h = 0.45
     p_red_h = 0.72
     p_red_l = 0.32
     tremble = 0.06
+    draw_counts = np.array([3, 4, 5, 6, 7, 8, 9, 12])
+    draw_probabilities = np.array([0.12, 0.10, 0.16, 0.10, 0.16, 0.10, 0.16, 0.10])
     true_weights = np.array([0.46, 0.24, 0.20, 0.10])
 
     panel = simulate_panel(
         rng,
         n_subjects,
         n_tasks,
+        draw_counts,
+        draw_probabilities,
         true_weights,
         prior_h,
         p_red_h,
@@ -218,6 +224,10 @@ def main() -> None:
     )
     bayes_accuracy = float(bayes_table["Bayes correct"].mean())
     weight_l1 = float(np.sum(np.abs(weights_hat - true_weights)))
+    rule_choices = np.asarray(panel["rule_choices"])
+    bayes_conservative_split = int(np.sum(rule_choices[0] != rule_choices[1]))
+    bayes_share_split = int(np.sum(rule_choices[0] != rule_choices[2]))
+    bayes_count_split = int(np.sum(rule_choices[0] != rule_choices[3]))
 
     print("Urn behavioral mixtures tutorial")
     print(f"  EM converged: {estimates['converged']} in {estimates['iterations']} iterations")
@@ -226,23 +236,24 @@ def main() -> None:
 
     setup_style()
     report = ModelReport(
-        "Bayesian Urn Classification and Behavioral Mixtures",
-        "Likelihood-ratio sufficient statistics and latent decision rules in repeated urn choices.",
+        "Urn Choices and Latent Decision Rules",
+        "Bayesian learning benchmarks and EM mixtures for repeated urn classifications.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "The urn experiment is useful because the normative classifier is exactly known. "
-        "A subject sees a finite sample of red and blue balls and chooses whether it came "
-        "from a high-red or low-red urn. Bayes' rule compresses the whole signal history "
-        "into one likelihood-ratio statistic.\n\n"
-        "The computational method is not another economic setting. It is a finite mixture "
-        "estimator for unobserved decision rules. Subjects are observed over repeated urn "
-        "tasks, and each subject is assigned probabilistically to one of several candidate "
-        "rules: exact Bayesian updating, a conservative Bayesian cutoff, a red-share rule, "
-        "or a raw red-count rule. The known data-generating mixture lets the tutorial show "
-        "classification error and parameter recovery."
+        "Consider a lab task in which a subject sees a small sample from one of two urns "
+        "and must decide whether the urn is the high-red state. The setting is attractive "
+        "for studying belief-based choice because the Bayesian benchmark is fully pinned "
+        "down. For any red count and sample size, Bayes' rule gives the posterior "
+        "probability of the high state.\n\n"
+        "Repeated choices make the inference problem more interesting. The researcher "
+        "observes a sequence of high-urn choices, not the rule each subject used. The code "
+        "first turns each signal into a likelihood-ratio state variable. It then estimates "
+        "a finite mixture by EM, treating each person's decision rule as a latent class. "
+        "That gives the researcher two outputs: population shares for the rules and "
+        "subject-level probabilities over candidate behavioral types."
     )
 
     report.add_equations(
@@ -297,34 +308,39 @@ $$
         f"| Prior high urn | {prior_h:.2f} | Baseline probability of state $H$ |\n"
         f"| Red probability under $H$ | {p_red_h:.2f} | Signal distribution for high urn |\n"
         f"| Red probability under $L$ | {p_red_l:.2f} | Signal distribution for low urn |\n"
-        f"| Draw counts | 4, 6, 8 | Sample-size variation separates Bayes and cutoff rules |\n"
+        f"| Draw counts | {', '.join(str(x) for x in draw_counts)} | Signal-size variation separates Bayes and cutoff rules |\n"
+        f"| Bayes-conservative separating tasks | {bayes_conservative_split} | Tasks with posterior between the two decision cutoffs |\n"
         f"| Tremble rate | {tremble:.2f} | Symmetric error around each deterministic rule |\n"
         f"| Latent rules | {len(RULES)} | Bayesian and cutoff decision types |"
     )
 
     report.add_solution_method(
-        "The Bayes classifier is computed directly from the likelihood ratio. The mixture "
-        "estimator then treats the rule label as missing data and updates posterior rule "
-        "responsibilities until the likelihood stops changing.\n\n"
+        "The calculation has two layers. First, each urn task is reduced to a likelihood "
+        "ratio, so the Bayesian benchmark depends on $(k,n)$ rather than the full signal "
+        "history. Second, EM estimates the population shares of the candidate rules. Each "
+        "E step computes the probability that a subject followed each rule, and each M "
+        "step averages those probabilities into new mixture weights.\n\n"
         "```text\n"
-        "Algorithm: finite mixture of behavioral rules\n"
+        "Algorithm: EM for latent decision rules\n"
         "Input: repeated choices d_it, task counts (k_t, n_t), candidate rules m=1,...,M\n"
-        "For each task, compute the sufficient statistic Lambda(k_t,n_t)\n"
-        "For each rule, compute q_m(k_t,n_t), the probability of choosing high\n"
-        "Initialize weights w_m = 1/M\n"
-        "Repeat until convergence:\n"
-        "  E-step: tau_im = w_m L_im / sum_h w_h L_ih\n"
-        "  M-step: w_m = mean_i tau_im\n"
-        "Assign each subject to argmax_m tau_im for diagnostics\n"
+        "1. For each task, compute Lambda(k_t,n_t)\n"
+        "2. For each rule, compute q_m(k_t,n_t), the probability of choosing high\n"
+        "3. Initialize weights w_m = 1/M\n"
+        "4. Repeat until the log likelihood changes by less than the tolerance:\n"
+        "   E step: tau_im = w_m L_im / sum_h w_h L_ih\n"
+        "   M step: w_m = mean_i tau_im\n"
+        "5. Assign each subject to argmax_m tau_im for diagnostics\n"
         "Output: mixture shares, posterior responsibilities, allocation accuracy\n"
         "```\n\n"
-        "Because the rule-specific choice probabilities are fixed here, the M-step is just "
-        "a normalized average of responsibilities. In richer models, the same likelihood "
-        "architecture can add rule-specific parameters and optimize them inside the M-step."
+        "Because the rule-specific choice probabilities are fixed here, the M step is just "
+        "a normalized average of responsibilities. With unknown cutoff points or response "
+        "noise, the same likelihood would optimize those rule-specific parameters inside "
+        "the M step."
     )
 
-    k_grid = np.arange(0, 9)
-    n_grid = np.full_like(k_grid, 8)
+    display_draws = 5
+    k_grid = np.arange(0, display_draws + 1)
+    n_grid = np.full_like(k_grid, display_draws)
     posterior_grid = posterior_high(k_grid, n_grid, prior_h, p_red_h, p_red_l)
     log_lr_grid = log_likelihood_ratio(k_grid, n_grid, p_red_h, p_red_l)
 
@@ -339,10 +355,11 @@ $$
     ax1.set_title("Bayesian State Variable")
     ax1.legend()
     report.add_results(
-        "The likelihood ratio is the sufficient statistic. For a fixed sample size, moving "
-        "from fewer to more red balls moves the posterior monotonically. The labels on the "
-        "curve are red counts out of eight draws. Cutoff rules can look close to Bayes in "
-        "some tasks but disagree when sample size changes."
+        "The likelihood ratio is the sufficient statistic for the Bayesian state "
+        f"classification. With {display_draws} draws, three red balls put the posterior "
+        "above one half but below the conservative 0.75 cutoff. Those middle signals "
+        "help the repeated-choice panel distinguish exact Bayesian updating from a "
+        "stricter decision rule."
     )
     report.add_figure(
         "figures/bayes-likelihood-ratio.png",
@@ -364,9 +381,8 @@ $$
     report.add_results(
         "The EM estimator recovers the population shares of the fixed candidate rules. "
         f"The L1 distance between estimated and true weights is **{weight_l1:.3f}**. "
-        "The exercise is deliberately finite: the rules are specified before estimation, "
-        "so the statistical problem is classifying unobserved heterogeneity rather than "
-        "searching over arbitrary decision trees."
+        "The exercise keeps the candidate rules fixed, so the estimate answers a concrete "
+        "heterogeneity question: what share of subjects behave like each rule?"
     )
     report.add_figure(
         "figures/mixture-weights.png",
@@ -381,10 +397,13 @@ $$
     ax3.set_ylabel("Subjects")
     ax3.set_title("Classification Confidence")
     report.add_results(
-        "Posterior responsibilities also say when classification is weak. A subject with "
-        "choices that several rules can explain receives diffuse responsibilities, even "
-        "if the aggregate mixture weights are accurate. The hard allocation accuracy in "
-        f"this run is **{type_accuracy:.3f}**."
+        "Posterior responsibilities measure subject-level classification confidence. "
+        "A subject with choices that several rules can explain receives diffuse "
+        "responsibilities, even if the aggregate mixture weights are accurate. The hard "
+        f"allocation accuracy in this run is **{type_accuracy:.3f}**. In the simulated "
+        f"task menu, Bayes differs from the conservative rule on {bayes_conservative_split} "
+        f"tasks, from the red-share rule on {bayes_share_split} tasks, and from the "
+        f"raw-count rule on {bayes_count_split} tasks."
     )
     report.add_figure(
         "figures/classification-confidence.png",
@@ -462,11 +481,11 @@ $$
     )
 
     report.add_takeaway(
-        "Bayesian classification supplies the economically disciplined state variable: "
-        "the likelihood ratio. The finite-mixture estimator then uses repeated choices to "
-        "recover unobserved heterogeneity in decision rules. The point is methodological: "
-        "instead of fitting one average rule, the likelihood treats behavioral types as "
-        "latent classes and reports both population shares and individual responsibilities."
+        "Likelihood ratios turn each urn signal into a belief benchmark. The EM mixture "
+        "then turns repeated choices into estimates of latent behavioral-rule shares. "
+        "This is the reusable lesson for nearby choice data: when several simple rules "
+        "are economically meaningful, a finite mixture can estimate population shares "
+        "and show which individuals are hard to classify."
     )
 
     report.add_references(
