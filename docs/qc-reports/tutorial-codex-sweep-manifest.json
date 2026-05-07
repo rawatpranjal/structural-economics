@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T22:08:51Z",
+  "updated_at": "2026-05-07T22:10:12Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -372,13 +372,13 @@
     {
       "tutorial_path": "industrial-organization/logit-supply-side/",
       "status": "complete",
-      "commit": "0016899e4e01907e033f81e73734c5a03b134934",
+      "commit": "0554a224423548c90632ec71a42a8eb9153866b1",
       "changed_paths": [
         "README.md",
         "industrial-organization/logit-supply-side/README.md",
         "industrial-organization/logit-supply-side/run.py"
       ],
-      "updated_at": "2026-05-07T22:08:51Z"
+      "updated_at": "2026-05-07T22:10:12Z"
     }
   ]
 }
