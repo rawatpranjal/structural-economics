@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T23:54:31Z",
+  "updated_at": "2026-05-07T23:57:55Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -668,6 +668,17 @@
         "game-theory/first-price-auctions/run.py"
       ],
       "updated_at": "2026-05-07T23:54:31Z"
+    },
+    {
+      "tutorial_path": "game-theory/quantal-response-equilibrium/",
+      "status": "complete",
+      "commit": "6540d60796ba0a937eaa5727b42d9b2868ece3af",
+      "changed_paths": [
+        "README.md",
+        "game-theory/quantal-response-equilibrium/README.md",
+        "game-theory/quantal-response-equilibrium/run.py"
+      ],
+      "updated_at": "2026-05-07T23:57:55Z"
     }
   ]
 }
