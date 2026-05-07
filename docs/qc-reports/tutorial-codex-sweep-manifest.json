@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T20:44:04Z",
+  "updated_at": "2026-05-07T20:47:57Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -257,6 +257,17 @@
         "global-dsge/rbc-capital-tax/run.py"
       ],
       "updated_at": "2026-05-07T20:44:04Z"
+    },
+    {
+      "tutorial_path": "global-dsge/rbc-irreversible-investment/",
+      "status": "complete",
+      "commit": "908ece8655ebea92a0fb6673f68de05d21a2fc90",
+      "changed_paths": [
+        "README.md",
+        "global-dsge/rbc-irreversible-investment/README.md",
+        "global-dsge/rbc-irreversible-investment/run.py"
+      ],
+      "updated_at": "2026-05-07T20:47:57Z"
     }
   ]
 }
