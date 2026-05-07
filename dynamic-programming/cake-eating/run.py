@@ -165,7 +165,7 @@ $$\sum_{t=0}^{\infty} \beta^t u(c_t),
 The Bellman equation collapses the lifetime problem onto the one-dimensional
 state $W$:
 
-$$V(W) = \max_{0 \le c \le W} \bigl\{\, u(c) + \beta\, V(W-c) \,\bigr\}.$$
+$$V(W) = \max_{0 \le c \le W} \{\, u(c) + \beta\, V(W-c) \,\}.$$
 
 Differentiating inside the max and using the envelope theorem $V'(W)=u'(c^{\ast}(W))$
 gives the **Euler equation**
@@ -184,7 +184,7 @@ equation pins down $\kappa = 1-\beta$, so
 $$c^{\ast}(W) = (1-\beta)\, W,
 \qquad g(W) = W - c^{\ast}(W) = \beta\, W,$$
 
-$$V(W) = \frac{\ln\bigl((1-\beta) W\bigr)}{1-\beta}
+$$V(W) = \frac{\ln((1-\beta) W)}{1-\beta}
 + \frac{\beta \ln \beta}{(1-\beta)^2},
 \qquad V'(W) = \frac{1}{(1-\beta)\,W}.$$
 
@@ -208,7 +208,7 @@ everything immediately.
 
     report.add_solution_method(
         "Define the Bellman operator\n\n"
-        r"$$(TV)(W) \;=\; \max_{0 \le c \le W} \bigl\{\, u(c) + \beta\, V(W-c) \,\bigr\}."
+        r"$$(TV)(W) \;=\; \max_{0 \le c \le W} \{\, u(c) + \beta\, V(W-c) \,\}."
         "$$\n\n"
         "Blackwell's sufficient conditions hold (monotonicity and discounting), so $T$ "
         "is a contraction on bounded continuous functions with modulus $\\beta$. Any "

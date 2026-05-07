@@ -203,7 +203,7 @@ Because the proposal is symmetric, the Metropolis-Hastings acceptance probabilit
 
 $$
 \alpha(\theta_t,\theta^\star)
-= \min\bigl[1,\frac{p(\theta^\star)}{p(\theta_t)}\bigr].
+= \min[1,\frac{p(\theta^\star)}{p(\theta_t)}].
 $$
 """
     )

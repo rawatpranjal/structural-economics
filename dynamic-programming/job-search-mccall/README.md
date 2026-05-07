@@ -28,7 +28,7 @@ $$C=b+\beta\,\mathbb{E}_{F}[V(W')].$$
 
 The Bellman equation is
 
-$$V(w)=\max\bigl\{\,\frac{w}{1-\beta},\; C\,\bigr\}.$$
+$$V(w)=\max\left(\frac{w}{1-\beta}, C\right).$$
 
 Since $A(w)$ is strictly increasing in $w$ and $C$ is constant, the optimal
 policy is the threshold $w^{\ast}$ defined by indifference,
@@ -36,15 +36,15 @@ $A(w^{\ast})=C$, i.e.
 
 $$\frac{w^{\ast}}{1-\beta}=b+\beta\,\mathbb{E}_{F}[V(W')].$$
 
-Plugging $V(W')=\max\{W'/(1-\beta),\,C\}$ back in and using
+Plugging $V(W')=\max(W'/(1-\beta),C)$ back in and using
 $C=w^{\ast}/(1-\beta)$ gives a scalar fixed point in $w^{\ast}$ alone:
 
-$$w^{\ast}=(1-\beta)\,b+\beta\,\mathbb{E}_{F}\!\left[\max\{W',\,w^{\ast}\}\right].$$
+$$w^{\ast}=(1-\beta)\,b+\beta\,\mathbb{E}_{F}[\max(W',w^{\ast})].$$
 
 Three margins read off this equation directly. A higher $b$ raises the floor
 on the right-hand side. A higher $\beta$ scales up the continuation term and
 makes the worker more selective. And a thicker right tail of $F$ lifts
-$\mathbb{E}_{F}[\max\{W',w^{\ast}\}]$ above $w^{\ast}$ even when most of the
+$\mathbb{E}_{F}[\max(W',w^{\ast})]$ above $w^{\ast}$ even when most of the
 mass sits below it, which is why the cutoff can settle far above the mean
 offer in fat-tailed calibrations.
 
@@ -65,7 +65,7 @@ offer in fat-tailed calibrations.
 
 **Why VFI is essentially scalar here.** The Bellman operator $T$ acting on a candidate $V$ is
 
-$$(TV)(w)=\max\bigl\{\,\frac{w}{1-\beta},\,b+\beta\,\mathbb{E}_{F}[V(W')]\,\bigr\}.$$
+$$(TV)(w)=\max\left(\frac{w}{1-\beta}, b+\beta\,\mathbb{E}_{F}[V(W')]\right).$$
 
 It is a $\beta$-contraction in the sup norm, so iterates converge to the unique fixed point. The novelty is that the continuation term is a single number $C=b+\beta\,\mathbb{E}_{F}[V]$, recomputed once per sweep. Each iteration is therefore one inner product and one elementwise max, no interpolation and no per-state expectation.
 
@@ -89,7 +89,7 @@ w* <- (1 - beta) * (b + beta * sum_i p_i V_i)  # invert C = w* / (1 - beta)
 
 **Continuous benchmark.** With the lognormal offer law the scalar fixed-point equation
 
-$$r = (1-\beta)\,b+\beta\,m(r),\qquad m(r)=\mathbb{E}_{F}[\max\{W,r\}],$$
+$$r = (1-\beta)\,b+\beta\,m(r),\qquad m(r)=\mathbb{E}_{F}[\max(W,r)],$$
 
 has a closed-form $m(r)$ in terms of the standard-normal CDF. Bracketing and Brent's method give $r$ to machine precision and provide ground truth against the grid solution.
 

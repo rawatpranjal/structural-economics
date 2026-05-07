@@ -56,10 +56,10 @@ This is the equilibrium condition that pins down $\theta_t$.
 **Stock dynamics.** Once $\theta_t$ is determined, unemployment evolves
 mechanically and vacancies follow as a residual:
 
-$$u_{t+1}=\sigma(1-u_t)+\bigl(1-f(\theta_t)\bigr)u_t,\qquad
+$$u_{t+1}=\sigma(1-u_t)+(1-f(\theta_t))u_t,\qquad
 v_t=\theta_t u_t.$$
 
-The deterministic steady state has $u_{ss}=\sigma/\bigl(\sigma+f(\theta_{ss})\bigr)$,
+The deterministic steady state has $u_{ss}=\sigma/(\sigma+f(\theta_{ss}))$,
 the textbook Beveridge relation.
 
 **Local linearization.** Writing $\hat\theta_t=\log\theta_t-\log\theta_{ss}$ and
@@ -101,7 +101,7 @@ Two solvers run in parallel.
 
 **Nonlinear free-entry fixed point.** Discretize $\hat z_t$ on a Rouwenhorst grid with $N_z=41$ nodes and transition matrix $P_{ij}=\Pr(\hat z_{t+1}=\hat z_j\mid\hat z_t=\hat z_i)$. Substitute the free-entry condition for $\theta_i$ inside the job-value Bellman to get a recursion in $J_i=J(z_i)$ alone:
 
-$$J_i=(1-\gamma)(z_i-b)-\gamma k\theta_i+\beta(1-\sigma)\sum_j P_{ij}J_j,\qquad \theta_i=\Bigl(\tfrac{\beta\chi}{k}\sum_j P_{ij}J_j\Bigr)^{1/(1-\eta)}.$$
+$$J_i=(1-\gamma)(z_i-b)-\gamma k\theta_i+\beta(1-\sigma)\sum_j P_{ij}J_j,\qquad \theta_i=(\tfrac{\beta\chi}{k}\sum_j P_{ij}J_j)^{1/(1-\eta)}.$$
 
 The right-hand side defines a contraction in the sup norm with modulus $\beta(1-\sigma)=0.9621$, so iterates converge geometrically at that rate independent of $N_z$.
 

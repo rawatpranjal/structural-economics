@@ -36,7 +36,7 @@ The Bellman equation is
 
 $$
 V(a,z_j) = \max_{a'\in[\underline a,(1+r)a+wz_j)}
-\Bigl[u\bigl((1+r)a+wz_j-a'\bigr) + \beta\sum_k P_{jk} V(a',z_k)\Bigr],
+[u((1+r)a+wz_j-a') + \beta\sum_k P_{jk} V(a',z_k)],
 $$
 
 with optimal asset policy $g_a(a,z_j)$ and consumption policy
@@ -56,12 +56,12 @@ $K^s(r) = \sum_{i,j} a_i\,\mu(a_i,z_j)$.
 **Firm.** Cobb-Douglas technology $Y = K^{\alpha} L^{1-\alpha}$ with capital
 share $\alpha$ and depreciation $\delta$ delivers competitive factor prices
 
-$$r(K) = \alpha\Bigl(\tfrac{K}{L}\Bigr)^{\alpha-1}-\delta,\qquad
-w(K) = (1-\alpha)\Bigl(\tfrac{K}{L}\Bigr)^{\alpha}.$$
+$$r(K) = \alpha(\tfrac{K}{L})^{\alpha-1}-\delta,\qquad
+w(K) = (1-\alpha)(\tfrac{K}{L})^{\alpha}.$$
 
 With aggregate efficient labor normalized to $L=1$, capital demand at $r$ is
 
-$$K^d(r) = \Bigl(\tfrac{r+\delta}{\alpha}\Bigr)^{1/(\alpha-1)}.$$
+$$K^d(r) = (\tfrac{r+\delta}{\alpha})^{1/(\alpha-1)}.$$
 
 **Stationary equilibrium.** A price $r^{\ast}$, wage
 $w^{\ast}=w(K^d(r^{\ast}))$, household policy $g_a$, and stationary
@@ -99,7 +99,7 @@ Two nested fixed points. The inner one is the household Bellman; the outer one i
 
 **Inner block (Bellman contraction).** The operator
 
-$$ (TV)(a,z_j) = \max_{a'} \bigl[u((1+r)a+wz_j-a') + \beta \textstyle\sum_k P_{jk}V(a',z_k)\bigr] $$
+$$ (TV)(a,z_j) = \max_{a'} [u((1+r)a+wz_j-a') + \beta \textstyle\sum_k P_{jk}V(a',z_k)] $$
 
 is a $\beta$-contraction in the sup norm on bounded continuous $V$, so iterates converge geometrically at rate $\beta=0.96$. The nontrivial wrinkle in the discrete implementation is the occasionally-binding borrowing constraint: when $g_a(a,z_j)=\underline a$, the Euler equation holds with strict inequality, and Euler-based solvers have to handle that case explicitly. Grid-search VFI handles it trivially because the constraint is built into the feasible set.
 

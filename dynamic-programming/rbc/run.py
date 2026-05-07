@@ -323,7 +323,7 @@ $\log 0.5/\log 0.9\approx 6.6$ periods.
 **Bellman equation.** Conditioning on the current state $(k,z_i)$, the household
 solves
 
-$$V(k,z_i)=\max_{k',\,l\in(0,1)}\bigl[\log c+\phi\log(1-l)+\beta\sum_{j}P_{ij}\,V(k',z_j)\bigr],$$
+$$V(k,z_i)=\max_{k',\,l\in(0,1)}[\log c+\phi\log(1-l)+\beta\sum_{j}P_{ij}\,V(k',z_j)],$$
 
 subject to $c=z_i k^{\alpha} l^{1-\alpha}+(1-\delta)k-k'>0$. The policy
 functions are $g_k(k,z)=k'$ and $g_l(k,z)=l$.
@@ -343,12 +343,12 @@ the cost of a bigger per-iteration tensor.
 Bellman, the Euler condition for capital pins down the steady-state
 capital-labor ratio,
 
-$$\frac{k_{ss}}{l_{ss}}=\Bigl(\frac{1/\beta-1+\delta}{\alpha}\Bigr)^{1/(\alpha-1)},$$
+$$\frac{k_{ss}}{l_{ss}}=(\frac{1/\beta-1+\delta}{\alpha})^{1/(\alpha-1)},$$
 
 and the labor first-order condition pins down hours
 
 $$l_{ss}=\frac{w_{ss}}{w_{ss}+\phi\,(c_{ss}/l_{ss})},\qquad
-w_{ss}=(1-\alpha)\bigl(k_{ss}/l_{ss}\bigr)^{\alpha}.$$
+w_{ss}=(1-\alpha)(k_{ss}/l_{ss})^{\alpha}.$$
 
 This is the *only* point in $(k,z)$-space where the model has an exact
 analytical solution; the stochastic policy fluctuates around it.
@@ -377,8 +377,8 @@ analytical solution; the stochastic policy fluctuates around it.
 
     report.add_solution_method(
         "**What the algorithm does.** The Bellman operator\n\n"
-        "$$(TV)(k,z_i)=\\max_{(l,k')}\\bigl[\\log c(k,z_i,l,k')+\\phi\\log(1-l)"
-        "+\\beta\\sum_{j}P_{ij}V(k',z_j)\\bigr]$$\n\n"
+        "$$(TV)(k,z_i)=\\max_{(l,k')}\[\\log c(k,z_i,l,k')+\\phi\\log(1-l)"
+        "+\\beta\\sum_{j}P_{ij}V(k',z_j)\]$$\n\n"
         "is a $\\beta$-contraction on bounded continuous functions, so iterates "
         "converge geometrically at rate $\\beta=0.99$ to the unique fixed point. "
         "The ingredients that make a finite-grid implementation behave well are "

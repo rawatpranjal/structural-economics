@@ -25,7 +25,7 @@ $$\sum_{t=0}^{\infty} \beta^{t} \log c_t,
 with state $k$ summarizing the entire future. The Bellman equation is
 
 $$V(k) \;=\; \max_{0 < k' < A k^{\alpha}}
-\Bigl\{\, \log\bigl(A k^{\alpha}-k'\bigr) + \beta\, V(k') \,\Bigr\}.$$
+\{\, \log(A k^{\alpha}-k') + \beta\, V(k') \,\}.$$
 
 Let $g(k)$ denote the optimal $k'$ and $c^{\ast}(k) = A k^{\alpha} - g(k)$ the
 implied consumption. Differentiating inside the max and applying the envelope
@@ -54,12 +54,12 @@ B \;=\; \frac{\alpha}{1-\alpha\beta},$$
 
 with intercept
 
-$$E \;=\; \frac{1}{1-\beta}\!\left[\,\log\bigl(A(1-\alpha\beta)\bigr)
-+ \frac{\beta\alpha}{1-\alpha\beta}\,\log\bigl(A\,\alpha\beta\bigr)\,\right].$$
+$$E \;=\; \frac{1}{1-\beta}\!\left[\,\log(A(1-\alpha\beta))
++ \frac{\beta\alpha}{1-\alpha\beta}\,\log(A\,\alpha\beta)\,\right].$$
 
 The steady state solves $k = g(k)$, equivalently $\beta f'(k_{ss}) = 1$:
 
-$$k_{ss} \;=\; \bigl(\alpha\beta A\bigr)^{1/(1-\alpha)},
+$$k_{ss} \;=\; (\alpha\beta A)^{1/(1-\alpha)},
 \qquad c_{ss} \;=\; A k_{ss}^{\alpha} - k_{ss}.$$
 
 The closed form depends on all three assumptions jointly. Drop log utility,
@@ -88,7 +88,7 @@ sharpest available test of whether the solver gets it right.
 
 Define the Bellman operator on bounded continuous functions of capital,
 
-$$(TV)(k) \;=\; \max_{0 < k' < A k^{\alpha}}\Bigl\{\, \log\bigl(A k^{\alpha} - k'\bigr) + \beta\, V(k') \,\Bigr\}.$$
+$$(TV)(k) \;=\; \max_{0 < k' < A k^{\alpha}}\{\, \log(A k^{\alpha} - k') + \beta\, V(k') \,\}.$$
 
 Blackwell's monotonicity and discounting conditions hold, so $T$ is a contraction with modulus $\beta$. Successive iterates satisfy $\|V_n - V\|_{\infty} \le \beta^{n}\|V_0 - V\|_{\infty}$, which fixes the convergence rate and the stopping rule. With $\beta=0.9$ the bound predicts roughly $\log(\varepsilon)/\log(\beta)$ iterations to reach tolerance $\varepsilon$.
 

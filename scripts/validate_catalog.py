@@ -16,6 +16,9 @@ FRAGILE_MATH_DELIMITERS = (
     "\\right" + "}",
     "\\right" + "\\}",
 )
+FRAGILE_MATH_SIZE_COMMANDS = tuple(
+    "\\" + command for command in ("bigl", "bigr", "Bigl", "Bigr")
+)
 UNBRACED_STAR_SCRIPT = re.compile(r"(?<!\\)(\^|_)\*")
 BRACED_LITERAL_STAR_SCRIPT = re.compile(r"(?<!\\)(\^|_)\{\*\}")
 EMPTY_SCRIPT_TARGET = re.compile(r"(?<!\\)(\^|_)(?:\s|$|[,$.;:)\]}]|[\^_])")
@@ -158,6 +161,11 @@ def fragile_math_delimiter_errors() -> list[str]:
                 if delimiter in line:
                     errors.append(
                         f"{rel}:{lineno} uses fragile math delimiter {delimiter}; use bracket delimiters instead"
+                    )
+            for command in FRAGILE_MATH_SIZE_COMMANDS:
+                if command in line:
+                    errors.append(
+                        f"{rel}:{lineno} uses GitHub-fragile math delimiter command {command}; use plain delimiters instead"
                     )
     return errors
 

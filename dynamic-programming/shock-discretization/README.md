@@ -33,7 +33,7 @@ $P_{ij}=\Pr(z_{t+1}=z_j\mid z_t=z_i)$. Inside any Bellman equation that
 integrates over next period's shock, the conditional expectation collapses
 to a finite sum:
 
-$$\mathbb{E}\bigl[V(x_{t+1},z_{t+1})\,\big|\,z_t=z_i\bigr]
+$$\mathbb{E}[V(x_{t+1},z_{t+1})\,\big|\,z_t=z_i]
 \;=\; \sum_{j=1}^N P_{ij}\, V(x_{t+1}, z_j).$$
 
 The chain has a unique invariant distribution $\pi$ satisfying $\pi=\pi P$

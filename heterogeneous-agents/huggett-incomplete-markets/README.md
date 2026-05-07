@@ -46,14 +46,14 @@ two-point chain over $i$. With CRRA flow utility $u(c) = c^{1-\sigma}/(1-\sigma)
 discount rate $\rho > 0$, the Hamilton-Jacobi-Bellman equation is
 
 $$\rho\,V_i(a) \;=\; \max_{c > 0}\,
-\Bigl[\,u(c) \;+\; V_i'(a)\,(z_i + r\,a - c) \;+\; \lambda_i\,\bigl(V_j(a) - V_i(a)\bigr)\,\Bigr].$$
+[\,u(c) \;+\; V_i'(a)\,(z_i + r\,a - c) \;+\; \lambda_i\,(V_j(a) - V_i(a))\,].$$
 
 The first two terms are the certainty-equivalent piece — current utility plus the
 deterministic continuation value implied by $\dot a$ — and the last term is the
 expected jump in the value function when income switches. The first-order condition
 delivers the Euler/envelope identity
 
-$$c_i(a) \;=\; \bigl[V_i'(a)\bigr]^{-1/\sigma}, \qquad
+$$c_i(a) \;=\; [V_i'(a)]^{-1/\sigma}, \qquad
 s_i(a) \;=\; z_i + r\,a - c_i(a).$$
 
 The borrowing constraint enters as a *state constraint*: at $a = \underline a$ the asset
@@ -69,7 +69,7 @@ continuous-time counterpart to the Kuhn-Tucker margin in [EGP](../endogenous-gri
 The cross-sectional density $g_i(a)$ on $(\underline a, \infty)$ satisfies the Kolmogorov
 Forward Equation
 
-$$0 \;=\; -\frac{\partial}{\partial a}\bigl[s_i(a)\,g_i(a)\bigr]
+$$0 \;=\; -\frac{\partial}{\partial a}[s_i(a)\,g_i(a)]
 \;-\; \lambda_i\,g_i(a) \;+\; \lambda_j\,g_j(a),
 \qquad \int g_L + g_H \;=\; 1,$$
 
@@ -77,7 +77,7 @@ with a delta-mass component at $\underline a$ for income states whose drift hits
 constraint with positive probability. Equilibrium in the bond market is the
 zero-net-supply condition
 
-$$S(r) \;\equiv\; \int_{\underline a}^{\bar a} a\,\bigl[g_L(a) + g_H(a)\bigr]\,da \;=\; 0.$$
+$$S(r) \;\equiv\; \int_{\underline a}^{\bar a} a\,[g_L(a) + g_H(a)]\,da \;=\; 0.$$
 
 In the deterministic mirror of the model, the household Euler equation reduces to
 $\dot c / c = (r - \rho)/\sigma$, and a non-degenerate stationary equilibrium exists
@@ -129,7 +129,7 @@ break that property and admit unphysical reflections off $\underline a$.
 **Implicit step.** Stack $V$ over income states into a vector of length $2I$. The
 implicit HJB update is
 
-$$\bigl[(\Delta^{-1} + \rho)\,\mathbf I - A^{n}\bigr]\,V^{n+1} \;=\; u(c^{n}) + \Delta^{-1} V^{n},$$
+$$[(\Delta^{-1} + \rho)\,\mathbf I - A^{n}]\,V^{n+1} \;=\; u(c^{n}) + \Delta^{-1} V^{n},$$
 
 where $A^{n}$ is the upwind transition generator built from the current drift and the
 income-switching intensities $\lambda_i$. With a large step $\Delta = 1000$ this update

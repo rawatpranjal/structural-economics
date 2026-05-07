@@ -13,7 +13,7 @@ The economic environment here is the deterministic growth problem with log utili
 The planner chooses next-period capital:
 
 $$
-V(k) = \max_{k'} \bigl[\log(c) + \beta V(k')\bigr],
+V(k) = \max_{k'} [\log(c) + \beta V(k')],
 \qquad
 c = A k^\alpha - k'.
 $$

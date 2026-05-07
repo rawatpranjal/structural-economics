@@ -36,14 +36,14 @@ with the log case $u(c)=\log c$ obtained as $\gamma\to 1$.
 that pays the dividend $y_{t+1}$ and a resale value $p(y_{t+1})$ next period
 must satisfy the Euler condition
 
-$$p(y_t)=\mathbb{E}_t\!\left[M_{t+1}\bigl(y_{t+1}+p(y_{t+1})\bigr)\right],
+$$p(y_t)=\mathbb{E}_t\!\left[M_{t+1}(y_{t+1}+p(y_{t+1}))\right],
 \qquad M_{t+1}=\beta\left(\frac{y_{t+1}}{y_t}\right)^{-\gamma}.$$
 
 Writing this out and noting that $u'(y_t)=y_t^{-\gamma}$ does not depend on
 $y_{t+1}$,
 
 $$p(y_t)=\beta\,\mathbb{E}_t\!\left[
-\frac{u'(y_{t+1})}{u'(y_t)}\bigl(p(y_{t+1})+y_{t+1}\bigr)\right].$$
+\frac{u'(y_{t+1})}{u'(y_t)}(p(y_{t+1})+y_{t+1})\right].$$
 
 **Linearizing transform.** Multiply both sides by $u'(y_t)$ and define the
 *marginal-utility-scaled price*

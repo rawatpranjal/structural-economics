@@ -454,7 +454,7 @@ def main() -> None:
         "Envelope-equation iteration (EEI), introduced by Maliar and Maliar "
         "(2013), works directly with the marginal continuation value\n\n"
         "$$ W_a(a) \\;=\\; \\frac{\\partial}{\\partial a}\\,\\mathbb{E}_y\\,V(a,y) \\;=\\; "
-        "R\\,\\sum_j \\pi_j\\,u'\\!\\bigl(c(a,y_j)\\bigr), $$\n\n"
+        "R\\,\\sum_j \\pi_j\\,u'\\!\(c(a,y_j)\), $$\n\n"
         "where the second equality is the Benveniste–Scheinkman envelope "
         "condition. EEI alternates two steps. The envelope step maps a "
         "consumption policy $c(a,y)$ into the one-dimensional curve $W_a(a)$ "
@@ -483,7 +483,7 @@ return $R = 1+r$, the Bellman equation in pre-decision form is
 
 $$
 V(a,y_j) \;=\; \max_{a' \geq \underline a}\,
-\Bigl\{\,u\!\bigl(R a + y_j - a'\bigr) \;+\; \beta\,W(a')\,\Bigr\},
+\{\,u\!(R a + y_j - a') \;+\; \beta\,W(a')\,\},
 \qquad
 W(a') \;=\; \sum_{\ell=1}^{n_y}\pi_\ell\,V(a',y_\ell),
 $$
@@ -503,7 +503,7 @@ At an interior optimum the Euler equation pins down today's marginal utility
 at a single object, the marginal continuation value $W_a(a')$:
 
 $$
-u'\!\bigl(c(a,y_j)\bigr) \;=\; \beta\,W_a\!\bigl(g(a,y_j)\bigr).
+u'\!(c(a,y_j)) \;=\; \beta\,W_a\!(g(a,y_j)).
 $$
 
 Differentiating the value function under the maximum and applying the
@@ -511,7 +511,7 @@ envelope theorem gives
 
 $$
 W_a(a) \;=\; \sum_{\ell=1}^{n_y}\pi_\ell\,V_a(a,y_\ell)
-\;=\; R\,\sum_{\ell=1}^{n_y}\pi_\ell\,u'\!\bigl(c(a,y_\ell)\bigr).
+\;=\; R\,\sum_{\ell=1}^{n_y}\pi_\ell\,u'\!(c(a,y_\ell)).
 $$
 
 These two equations close the system without ever using the value level. The
@@ -519,7 +519,7 @@ borrowing limit shows up as a Kuhn–Tucker margin: when it binds,
 $g(a,y_j) = \underline a$ and the Euler condition holds with strict inequality,
 
 $$
-u'\!\bigl(R a + y_j - \underline a\bigr) \;\geq\; \beta\,W_a(\underline a),
+u'\!(R a + y_j - \underline a) \;\geq\; \beta\,W_a(\underline a),
 $$
 
 which is the slack-constraint mechanism that delivers near-unit MPCs at low
