@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Money Pump Index for revealed-preference violations.
+"""Revealed-preference cycles and the Money Pump Index.
 
-The example treats a GARP violation as an economically exploitable cycle. The
-Money Pump Index (MPI) asks how much budget slack is available, on average, in
-the worst revealed-preference cycle.
+A finite dataset can fail GARP by a small margin or through a large cycle of
+budget slack. The tutorial builds the weighted revealed-preference graph and
+uses Karp's maximum mean-cycle dynamic program to price the worst cycle.
 """
 from __future__ import annotations
 
@@ -258,7 +258,7 @@ def plot_money_pump_graph(case: dict[str, object]) -> plt.Figure:
 
 
 def plot_severity_comparison(cases: list[dict[str, object]]) -> plt.Figure:
-    """Compare binary GARP failure with MPI severity."""
+    """Compare pass/fail GARP with MPI severity."""
     labels = [str(case["label"]) for case in cases]
     mpi = np.array([float(case["mpi"]) for case in cases])
     exact_cycle_mean = np.array([float(case["cycle_mpi"]) for case in cases])
@@ -284,7 +284,7 @@ def plot_severity_comparison(cases: list[dict[str, object]]) -> plt.Figure:
         zorder=3,
     )
     axes[1].set_ylabel("Money Pump Index")
-    axes[1].set_title("Economic severity")
+    axes[1].set_title("Expenditure exposed by the cycle")
     axes[1].set_ylim(0, max(mpi) * 1.25)
     axes[1].tick_params(axis="x", rotation=25)
     axes[1].legend(frameon=False, fontsize=9, loc="upper left")
@@ -328,42 +328,44 @@ def main() -> None:
     summary = pd.DataFrame(rows)
 
     report = ModelReport(
-        "Money Pump Index for Revealed Preference",
-        "Putting economic size on a revealed-preference violation.",
+        "Revealed-Preference Cycles and the Money Pump Index",
+        "Measuring the expenditure exposed by inconsistent choices.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "A GARP rejection is a statement about internal consistency, not about economic "
-        "magnitude. Two datasets can both violate revealed preference, but one violation "
-        "may be a nearly indifferent accounting error while another creates a large "
-        "cyclic arbitrage. The money-pump interpretation asks how much budget slack an "
-        "outside trader could extract by repeatedly moving the consumer around the "
-        "revealed-preference cycle.\n\n"
-        "The example keeps the economic object small: three observed choices, "
-        "three bundles, and own expenditure normalized to one. In the severe case the "
-        "consumer chooses A when B was 18 percent cheaper, chooses B when C was 24 percent "
-        "cheaper, and chooses C when A was 8 percent cheaper. GARP says this cannot come "
-        "from one stable utility ordering. The Money Pump Index says the exploitable cycle "
-        f"is worth {float(severe['mpi']):.1%} of expenditure per trade."
+        "Suppose a consumer is observed choosing bundle A at one price vector, bundle B "
+        "at another, and bundle C at a third. A GARP test tells us whether these choices "
+        "could come from one stable utility ordering. It does not tell us whether the "
+        "failure is a near-tie or whether an observer could make money by cycling the "
+        "consumer through trades.\n\n"
+        "This tutorial puts a price on that failure. Own expenditure is normalized to "
+        "one, so each comparison can be read as a share of the consumer's budget. In the "
+        "severe case the consumer chooses A when B was 18 percent cheaper, chooses B when "
+        "C was 24 percent cheaper, and chooses C when A was 8 percent cheaper. Those "
+        "comparisons form a directed revealed-preference cycle. The computation assigns "
+        "each edge its budget slack and finds the cycle with the largest average slack, "
+        f"which is {float(severe['mpi']):.1%} of expenditure per trade."
     )
 
     report.add_equations(
         r"""
-There are $T$ observations. Observation $i$ records a price vector $p_i \in \mathbb{R}^G_+$
-and chosen bundle $x_i \in \mathbb{R}^G_+$. Let
+There are $T$ observations. Observation $i$ records a price vector
+$p_i \in \mathbb{R}^G_+$ and chosen bundle $x_i \in \mathbb{R}^G_+$.
+Let
 
 $$E_{ij}=p_i \cdot x_j$$
 
-be the cost of bundle $j$ at prices $i$. Choosing $x_i$ directly reveals
-$x_i \succeq^D x_j$ when $E_{ii} \ge E_{ij}$. For strict comparisons, define
-the relative budget slack on a direct revealed-preference edge as
+be the cost of bundle $j$ at observation $i$ prices. Choosing $x_i$ when
+$x_j$ was affordable, $E_{ii} \ge E_{ij}$, directly reveals
+$x_i \succeq^D x_j$. For strict comparisons, define the relative budget slack
+on a direct revealed-preference edge as
 
 $$w_{ij} = \frac{E_{ii} - E_{ij}}{E_{ii}}.$$
 
-In this tutorial the graph keeps edges with $w_{ij}>0$. For a directed cycle
-$C=(i_1,\ldots,i_m,i_1)$, the average slack is
+The graph keeps edges with $w_{ij}>0$. For a directed cycle
+$C=(i_1,\ldots,i_m,i_1)$, average slack is
 
 $$\bar w(C)=\frac{1}{m}\sum_{\ell=1}^{m} w_{i_\ell,i_{\ell+1}}.$$
 
@@ -377,29 +379,30 @@ $$\operatorname{MPI} = \max_C \bar w(C).$$
     report.add_model_setup(
         "| Object | Value | Interpretation |\n"
         "|---|---:|---|\n"
-        "| Observations | 3 | One price vector and one chosen bundle per observation |\n"
+        "| Observations | 3 | One price vector and one chosen bundle in each row |\n"
         "| Bundles | 3 | A, B, and C are the only candidate bundles |\n"
-        "| Own expenditure | 1.00 | Each chosen bundle is normalized to cost one |\n"
+        "| Own expenditure | 1.00 | Each chosen bundle costs one at its own prices |\n"
         "| Severe-cycle slack | 18%, 24%, 8% | Slack on A over B, B over C, and C over A |\n"
         f"| Severe MPI | {float(severe['mpi']):.3f} | Average extractable slack per trade |\n"
-        "| Nearby tutorials | Afriat, Houtman-Maks | Afriat asks whether choices are rationalizable; Houtman-Maks asks which rows to drop |"
+        "| Nearby tutorials | Afriat, Houtman-Maks | Afriat checks rationalizability; Houtman-Maks searches for rows to drop |"
     )
 
     report.add_solution_method(
-        "The first step is still the revealed-preference test: compare every chosen bundle "
-        "with every other bundle at the same prices. The extra step puts weights on "
-        "strict revealed-preference arcs and solves a maximum mean-cycle problem. Karp's "
-        "dynamic program is exact for this finite graph. The script also enumerates cycles "
-        "because the graph has three nodes, which gives a transparent benchmark for "
-        "the plotted examples.\n\n"
+        "After the budget comparisons, the problem becomes a graph problem. Each "
+        "observation is a node. A directed edge points from observation $i$ to "
+        "observation $j$ when bundle $j$ was strictly cheaper at prices $i$, even though "
+        "the consumer chose $i$. The edge weight is the saved budget share. Karp's "
+        "dynamic program computes the maximum mean weight over all directed cycles in "
+        "this finite graph. For this three-node example, direct enumeration gives a "
+        "visible check on the plotted cycle.\n\n"
         "```text\n"
         "Inputs: prices p_i, bundles x_i, tolerance eps\n"
         "1. Form E_ij = p_i . x_j for all observations i,j.\n"
         "2. Add arc i -> j when (E_ii - E_ij) / E_ii > eps.\n"
         "3. Attach weight w_ij = (E_ii - E_ij) / E_ii to each arc.\n"
-        "4. Let D_k(v) be the largest total weight of any k-arc path ending at v.\n"
-        "5. Iterate D_k(v) = max_{u -> v} D_{k-1}(u) + w_uv for k = 1,...,T.\n"
-        "6. Return max_v min_{0 <= k < T} [D_T(v) - D_k(v)] / (T-k).\n"
+        "4. Let D_k(v) be the largest total weight of a k-arc path ending at v.\n"
+        "5. Update D_k(v) = max_{u -> v} D_{k-1}(u) + w_uv for k = 1,...,T.\n"
+        "6. Return max_v min_{0 <= k < T} [D_T(v) - D_k(v)] / (T - k).\n"
         "Output: MPI, the maximum average budget slack in a cycle.\n"
         "```\n\n"
         f"For the severe example, the enumerated cycle mean and Karp's MPI both equal "
@@ -411,10 +414,11 @@ $$\operatorname{MPI} = \max_C \bar w(C).$$
         "GARP Rejection and Money Pump Severity",
         summary,
         description=(
-            "The GARP rejection column gives the same yes/no "
-            "answer for all three inconsistent datasets. The severity columns show why "
-            "that is not enough. In this small graph, direct enumeration gives the same "
-            "cycle mean as Karp's dynamic program."
+            "The table separates the logical rejection from the expenditure at stake. "
+            "All three inconsistent datasets reject GARP, but their MPI values range "
+            "from three cents to nearly seventeen cents per dollar of expenditure. In "
+            "this small graph, direct enumeration gives the same cycle mean as Karp's "
+            "dynamic program."
         ),
     )
 
@@ -424,9 +428,9 @@ $$\operatorname{MPI} = \max_C \bar w(C).$$
         "The severe revealed-preference cycle and its edge-level budget slack.",
         fig1,
         description=(
-            "Each arrow points from a chosen bundle to another bundle that was strictly "
-            "cheaper at the same prices. The red cycle is not just a graph-theoretic "
-            "oddity: it is the sequence of trades that creates the money pump."
+            "Each arrow points from an observed choice to another bundle that was "
+            "strictly cheaper at the same prices. Cycling through the red arrows moves "
+            "the consumer through trades with 16.7 percent average budget slack."
         ),
     )
 
@@ -436,23 +440,22 @@ $$\operatorname{MPI} = \max_C \bar w(C).$$
         "GARP is binary, while the Money Pump Index ranks the severity of failures.",
         fig2,
         description=(
-            "The left panel throws away magnitude by design. The right panel keeps it: "
-            "small, medium, and severe cycles all fail the same rationalizability test, "
-            "but the average slack available to a trader differs sharply. The black "
-            "diamonds are the exact cycle means obtained by enumeration in this three-node "
-            "example."
+            "The left panel records pass/fail GARP. The right panel keeps the "
+            "expenditure magnitude, so small, medium, and severe cycles line up by "
+            "average slack. The black diamonds are the exact cycle means obtained by "
+            "enumeration in this three-node example."
         ),
     )
 
     report.add_takeaway(
-        "The Money Pump Index keeps the economic content of a "
-        "revealed-preference failure in view. GARP asks whether the finite dataset is "
-        "rationalizable. MPI asks how much expenditure is exposed by the worst cycle. "
-        "That makes it a complement to the "
-        "[Afriat test](../revealed-preference-afriat/) and to "
+        "Revealed-preference tests are useful because they turn finite choices into "
+        "sharp restrictions. The Money Pump Index adds an economic scale after a "
+        "rejection. It reports the average expenditure a cycle exposes, so an applied "
+        "researcher can distinguish a harmless near-tie from a large inconsistency. "
+        "Use it beside the "
+        "[Afriat test](../revealed-preference-afriat/) and "
         "[Houtman-Maks deletion diagnostics](../houtman-maks-rational-subsets/): "
-        "after rejection, one can ask whether the problem is small, large, or "
-        "concentrated in a few observations."
+        "after rejection, one can ask how much expenditure the worst cycle exposes."
     )
 
     report.add_references(
