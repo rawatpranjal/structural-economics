@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T22:51:53Z",
+  "updated_at": "2026-05-07T22:56:15Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -489,6 +489,17 @@
         "industrial-organization/nash-in-nash/run.py"
       ],
       "updated_at": "2026-05-07T22:51:53Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/merger-simulation/",
+      "status": "complete",
+      "commit": "29687d3024aaee111edc8e76c7892e167be8e360",
+      "changed_paths": [
+        "README.md",
+        "industrial-organization/merger-simulation/README.md",
+        "industrial-organization/merger-simulation/run.py"
+      ],
+      "updated_at": "2026-05-07T22:56:15Z"
     }
   ]
 }
