@@ -187,27 +187,29 @@ def main() -> None:
 
     setup_style()
     report = ModelReport(
-        "Risk Aversion and Monotone Stochastic Choice",
-        "Constrained stochastic-choice estimation on a Holt-Laury lottery ladder.",
+        "Lottery Risk Aversion with Monotone Choice",
+        "Estimate risk aversion from a lottery ladder while enforcing ordered choice probabilities.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "A Holt-Laury lottery ladder is designed so the risky option becomes more "
-        "attractive as the probability of the high payoff rises. A risk-averse expected "
-        "utility model therefore predicts a monotone risky-choice probability across the "
-        "rows of the experiment.\n\n"
-        "The computational lesson is shape-restricted estimation. The saturated task "
-        "logit fits each row separately and can inherit sampling noise. A fixed-scale "
-        "CRRA logit imposes an economic index and estimates one risk-aversion parameter. "
-        "A monotone task logit keeps row-level flexibility but constrains the estimated "
-        "choice probabilities to be nondecreasing along the lottery ladder."
+        "A Holt-Laury lottery ladder asks subjects to choose between a safer lottery and "
+        "a riskier lottery across a sequence of rows. Only the probability of the high "
+        "payoff changes. As that probability rises, the risky option becomes more "
+        "attractive under expected utility, even for a risk-averse subject.\n\n"
+        "Finite samples can blur that ordering. One row may happen to draw fewer risky "
+        "choices than the row before it, and a saturated row-by-row logit will treat the "
+        "wiggle as behavior. This tutorial estimates the same lottery panel three ways: "
+        "raw row logits, a fixed-scale CRRA logit for the risk-aversion parameter, and a "
+        "monotone logit that keeps flexible row probabilities but requires the risky-choice "
+        "curve to rise along the ladder."
     )
 
     report.add_equations(
         r"""
-Lottery $A$ is safer and lottery $B$ is riskier:
+At row $j$, the high-payoff probability is $p_j$. The subject chooses between a
+safer lottery $A$ and a riskier lottery $B$:
 
 $$
 A(p)=(2.00 \text{ with } p,\ 1.60 \text{ otherwise}),\qquad
@@ -234,52 +236,57 @@ $$
 = \lambda + (1-2\lambda)\frac{1}{1+\exp[-s\,\Delta EU(p;\rho)]}.
 $$
 
-The monotone task-logit model estimates row-specific logits $\alpha_j$ subject
-to the shape restriction
+The monotone task-logit model estimates row-specific logits $\alpha_j$ from
+binomial counts $y_j$ out of $N_j$ choices:
+
+$$
+\ell(\alpha)=\sum_j y_j\log\Lambda(\alpha_j) + (N_j-y_j)\log[1-\Lambda(\alpha_j)].
+$$
+
+The shape restriction is
 
 $$
 \alpha_{j+1}\geq \alpha_j
 \quad \text{for all adjacent rows }j.
 $$
 
-Since the logistic map is monotone, this is equivalent to requiring
+Since $\Lambda$ is monotone, this is equivalent to requiring
 $\Pr(d=1\mid p_{j+1})\geq \Pr(d=1\mid p_j)$.
 """
     )
 
     report.add_model_setup(
-        f"| Object | Value | Role |\n"
+        f"| Primitive | Value | Economic role |\n"
         f"|--------|-------|------|\n"
         f"| Lottery rows | {len(prob_high)} | Probability ladder from 0.10 to 1.00 |\n"
-        f"| Choices per row | {trials_per_task} | Binomial observations used for estimation |\n"
+        f"| Choices per row | {trials_per_task} | Binomial observations for each lottery pair |\n"
         f"| True risk aversion | {rho_true:.2f} | Data-generating CRRA curvature |\n"
-        f"| True scale | {scale_true:.2f} | Maps utility differences into choice probabilities |\n"
-        f"| Lapse rate | {lapse:.2f} | Symmetric stochastic error floor |\n"
-        f"| Fixed-scale estimator | scale = {fixed_scale:.2f} | Identifies $\\rho$ without estimating noise scale |\n"
-        f"| Shape restriction | nondecreasing | Risky choices cannot fall as $p$ rises |"
+        f"| True scale | {scale_true:.2f} | Maps utility differences into stochastic choice |\n"
+        f"| Lapse rate | {lapse:.2f} | Symmetric lower and upper error floor |\n"
+        f"| Fixed-scale estimator | scale = {fixed_scale:.2f} | Recovers $\\rho$ from the payoff index |\n"
+        f"| Shape restriction | nondecreasing | Risky-choice probability cannot fall as $p$ rises |"
     )
 
     report.add_solution_method(
-        "The three estimators answer different questions about the same binomial counts.\n\n"
+        "The calculation compares a fully flexible fit with two ways to add economic "
+        "discipline. The CRRA logit imposes a one-parameter utility index. The monotone "
+        "logit solves a finite-dimensional constrained likelihood problem, so it can stay "
+        "close to row shares when the data are clear and pool adjacent rows when sampling "
+        "noise reverses the ladder.\n\n"
         "```text\n"
-        "Algorithm: lottery choice estimators\n"
-        "Input: risky counts y_j out of N_j choices at probability rows p_j\n"
-        "Unconstrained logit:\n"
-        "  Estimate alpha_j separately, so expit(alpha_j)=y_j/N_j\n"
-        "Fixed-scale CRRA logit:\n"
-        "  For each candidate rho, compute Delta EU(p_j; rho)\n"
-        "  Evaluate the binomial likelihood with fixed scale s\n"
-        "  Choose rho that maximizes the likelihood\n"
-        "Monotone task logit:\n"
-        "  Estimate alpha_j jointly\n"
-        "  Maximize the binomial likelihood subject to alpha_{j+1} >= alpha_j\n"
-        "Diagnostics:\n"
-        "  Report likelihood loss, monotonicity violations, parameter recovery, and fit to truth\n"
+        "Algorithm: monotone lottery-choice estimation\n"
+        "Input: rows (p_j, y_j, N_j), fixed scale s, lapse rate lambda\n"
+        "1. Convert each observed row share y_j/N_j into a saturated logit alpha_j.\n"
+        "2. For the structural fit, search over rho and evaluate Delta EU(p_j; rho).\n"
+        "3. Map Delta EU into choice probabilities and maximize the binomial likelihood.\n"
+        "4. For the monotone fit, choose all alpha_j jointly subject to alpha_{j+1} >= alpha_j.\n"
+        "5. Convert logits to probabilities and compare likelihood loss, violations, and rho recovery.\n"
+        "Output: fitted risky-choice curves and diagnostics for each specification\n"
         "```\n\n"
-        "The fixed-scale model is the tight structural specification. The monotone logit is "
-        "a weaker but still economic restriction: it does not impose CRRA curvature, but it "
-        "rules out fitted stochastic choice patterns that contradict the ordering of the "
-        "lottery rows."
+        "The fixed-scale model is the tight structural specification. The monotone logit "
+        "keeps less theory in the model, but it still uses the economics of the experiment: "
+        "a better chance at the high payoff should not lower the probability of choosing "
+        "the risky lottery."
     )
 
     fig1, ax1 = plt.subplots(figsize=(7.5, 4.8))
@@ -293,16 +300,17 @@ $\Pr(d=1\mid p_{j+1})\geq \Pr(d=1\mid p_j)$.
     ax1.set_title("Risky Choice Along the Lottery Ladder")
     ax1.legend()
     report.add_results(
-        "The observed shares are noisy enough to violate monotonicity once: the risky share "
-        "falls between two adjacent low-probability rows. The unconstrained task logit "
-        "inherits that violation. The monotone estimator pools exactly where needed, while "
-        "the fixed-scale CRRA logit traces a smooth structural curve."
+        "At low high-payoff probabilities, only a few subjects choose the risky lottery. "
+        "In this sample, the row with $p=0.30$ draws a lower risky share than the row with "
+        "$p=0.20$, even though the risky payoff became more likely. The unconstrained logit "
+        "repeats that downward step. The monotone estimator pools the affected rows, while "
+        "the fixed-scale CRRA logit traces a smooth payoff-based curve."
     )
     report.add_figure(
         "figures/risky-choice-fits.png",
         "Observed and fitted risky-choice probabilities",
         fig1,
-        description="The constrained fit removes a sampling artifact without forcing the full CRRA index.",
+        description="The constrained curve removes the downward step without forcing the full CRRA shape.",
     )
 
     rho_grid = np.linspace(-0.25, 1.25, 220)
@@ -319,15 +327,17 @@ $\Pr(d=1\mid p_{j+1})\geq \Pr(d=1\mid p_j)$.
     ax2.set_title("Fixed-Scale Structural Likelihood")
     ax2.legend()
     report.add_results(
-        "The structural likelihood is sharply centered near the data-generating risk "
-        f"aversion parameter. With the scale fixed at {fixed_scale:.1f}, the estimate is "
-        f"**{float(fixed['rho']):.3f}**, close to the true value **{rho_true:.3f}**."
+        "The CRRA likelihood uses the payoff model rather than row labels. With the "
+        f"stochastic scale fixed at {fixed_scale:.1f}, the maximizer is "
+        f"**{float(fixed['rho']):.3f}**, close to the true value **{rho_true:.3f}**. "
+        "In an empirical application, this number would summarize risk aversion. Here the "
+        "known data-generating value lets us see the target directly."
     )
     report.add_figure(
         "figures/rho-likelihood.png",
         "Likelihood over CRRA risk aversion",
         fig2,
-        description="Fixing the stochastic scale turns the lottery panel into a one-dimensional risk-aversion likelihood.",
+        description="Fixing the stochastic scale turns lottery choices into a one-dimensional likelihood for risk aversion.",
     )
 
     fig3, ax3 = plt.subplots(figsize=(7, 4.5))
@@ -338,10 +348,11 @@ $\Pr(d=1\mid p_{j+1})\geq \Pr(d=1\mid p_j)$.
     ax3.set_ylabel("EU(B) minus EU(A)")
     ax3.set_title("Expected-Utility Index")
     report.add_results(
-        "The underlying expected-utility index crosses zero once. That single crossing is "
-        "why a structural model predicts ordered choice probabilities across the ladder. "
-        "Shape restrictions use the same economic ordering without insisting that the "
-        "whole curve has exactly the CRRA-logit form."
+        "For the true $\\rho$, the expected-utility difference rises with the high-payoff "
+        "probability and crosses zero once. The crossing marks the point where expected "
+        "utility switches from the safer lottery to the riskier lottery. The monotone "
+        "estimator borrows this ordering implication without requiring every row to lie "
+        "on the CRRA-logit curve."
     )
     report.add_figure(
         "figures/eu-index.png",
@@ -367,7 +378,7 @@ $\Pr(d=1\mid p_{j+1})\geq \Pr(d=1\mid p_j)$.
         "tables/row-fits.csv",
         "Lottery-row fit diagnostics",
         rows.round(4),
-        description="The row table shows where the monotone constraint binds: adjacent fitted probabilities are pooled when sampling noise breaks the ordering.",
+        description="Equal adjacent monotone fits show where the inequality constraint binds.",
     )
 
     report.add_table(
@@ -375,9 +386,9 @@ $\Pr(d=1\mid p_{j+1})\geq \Pr(d=1\mid p_j)$.
         "Estimator comparison",
         summary.round(5),
         description=(
-            "The constrained model gives up a small amount of saturated likelihood in exchange "
-            "for an economically ordered choice curve. The fixed-scale model is more restrictive "
-            "but recovers the known risk-aversion parameter."
+            f"The monotone model gives up {summary.loc[summary['Model'] == 'Monotone task logit', 'LL loss vs saturated'].iloc[0]:.2f} "
+            "log-likelihood points relative to the saturated fit. The fixed-scale model gives "
+            "up more fit because it asks one payoff-based curve to explain all rows."
         ),
     )
 
@@ -405,16 +416,17 @@ $\Pr(d=1\mid p_{j+1})\geq \Pr(d=1\mid p_j)$.
         "tables/solver-diagnostics.csv",
         "Solver and constraint diagnostics",
         diagnostics,
-        description="The minimum adjacent spacing is the numerical slack in the monotonicity constraints.",
+        description="The diagnostics check convergence and the adjacent-logit inequality.",
     )
 
     report.add_takeaway(
-        "The saturated logit is descriptive, but it can treat sampling noise as behavior. "
-        "The fixed-scale CRRA logit is parsimonious and identifies risk aversion when the "
-        "scale is fixed. The monotone specification sits between them: it allows flexible "
-        "row effects while enforcing the economic shape restriction implied by the lottery "
-        "ordering. This is the core computational lesson: inequality constraints can encode "
-        "economic discipline without fully specifying a parametric utility model."
+        "Risk-aversion experiments ask for a preference parameter, but small panels also "
+        "raise a numerical question about how much noise to allow in the choice curve. A "
+        "saturated logit describes row shares. A fixed-scale CRRA logit converts payoffs "
+        "into a one-dimensional likelihood for $\\rho$. A monotone logit enforces the "
+        "economically natural ordering with inequality constraints. The reusable idea is "
+        "to put trusted shape restrictions into the likelihood when a full structural "
+        "model feels too tight."
     )
 
     report.add_references(
