@@ -1,14 +1,14 @@
 # Discretizing Persistent Shocks
 
-> Turning a Gaussian AR(1) into the finite Markov chain used in Bellman equations.
+> Why persistent shocks need a finite-state approximation before they enter Bellman equations.
 
 ## Overview
 
-Start with a household or planner who faces persistent income or productivity risk. Income might be $y_t=\exp(z_t)$ in a buffer-stock saving model, or productivity might be $A_t=\exp(z_t)$ in an RBC planner problem. The economic question is not how to draw a prettier grid. It is how to replace the continuous shock $z_t$ with a finite Markov chain without changing the insurance motive, persistence, and long-run distribution that the dynamic model sees.
+Many dynamic models begin with a familiar economic object: income or productivity is risky, and bad times tend to persist. A household deciding how much to save cares about whether a low income draw is likely to last. A planner in an RBC model cares about whether today's productivity shock also changes tomorrow's investment return. That is the economic question: what risk process should the model feed into choices and continuation values?
 
-This tutorial isolates that step before solving a full dynamic program. A Gaussian AR(1) is approximated by two standard finite-state methods. **Tauchen** lays a uniform grid over a few unconditional standard deviations and integrates conditional Gaussian mass between cell midpoints. **Rouwenhorst** builds the transition matrix recursively so that the chain matches the AR(1) variance and one-period autocorrelation by construction.
+The computational question is different. A computer needs a finite object inside the Bellman equation, so the continuous AR(1) shock has to become a small grid of states and a transition matrix. This tutorial asks how much of the original persistence and long-run risk survive that replacement.
 
-For annual income or productivity with $\rho \approx 0.95$, this choice is economically meaningful. With $N=7$, Tauchen overstates persistence by about a percentage point and the unconditional standard deviation by more than 20 percent, while Rouwenhorst matches both target moments. Those errors feed directly into continuation values in the downstream [consumption-savings](../consumption-savings/), [Aiyagari](../aiyagari/), and [RBC](../rbc/) tutorials.
+Tauchen and Rouwenhorst are two common answers. **Tauchen** is easy to see: put a grid over the Gaussian support and integrate conditional normal mass between cell midpoints. **Rouwenhorst** is less visual but targets the moments that matter for persistent shocks. With $\rho \approx 0.95$ and $N=7$, Tauchen overstates persistence by about a percentage point and the unconditional standard deviation by more than 20 percent, while Rouwenhorst matches both by construction. Those differences feed directly into the [consumption-savings](../consumption-savings/), [Aiyagari](../aiyagari/), and [RBC](../rbc/) tutorials that use this kind of shock.
 
 ## Equations
 
