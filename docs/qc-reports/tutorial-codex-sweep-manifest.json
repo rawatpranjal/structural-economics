@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T22:24:16Z",
+  "updated_at": "2026-05-07T22:28:24Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -412,6 +412,17 @@
         "industrial-organization/effective-hhi/run.py"
       ],
       "updated_at": "2026-05-07T22:24:16Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/collusion-detection/",
+      "status": "complete",
+      "commit": "dc7447d5e241349139d37d5371899c5aaa187312",
+      "changed_paths": [
+        "README.md",
+        "industrial-organization/collusion-detection/README.md",
+        "industrial-organization/collusion-detection/run.py"
+      ],
+      "updated_at": "2026-05-07T22:28:24Z"
     }
   ]
 }
