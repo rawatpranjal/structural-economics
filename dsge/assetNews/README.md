@@ -1,12 +1,12 @@
-# Lucas-Tree News Shocks and Stochastic Discounting
+# Lucas-Tree Dividend News and Asset Prices
 
-> Anticipated dividend news in a representative-agent asset-pricing model where cash-flow news also moves marginal utility.
+> Price a tree claim when investors learn about future dividends before the cash flow arrives.
 
 ## Overview
 
-A news shock separates two dates that simple impulse responses tend to collapse: the date when agents learn something and the date when the cash flow actually changes. In this Lucas-tree example, a signal $n_t$ arrives today and shifts next period's dividend. A surprise shock $z_t$ instead moves today's dividend immediately.
+An investor owns a claim to a dividend tree. Today she hears credible news that next period's dividend will be higher, while today's dividend and consumption have not moved. The price should react today, because the payoff forecast has changed. The direction is less mechanical than the timing: the same dividend news also changes the stochastic discount factor used to value that payoff.
 
-The economic wrinkle is that the dividend is also aggregate consumption. Good dividend news raises future payoffs, but it also implies lower future marginal utility. With the calibration in `model.mod`, $\gamma=2$ makes this discount-rate channel slightly stronger on impact than the cash-flow channel. So the lesson is sharper than "prices move before dividends": anticipated shocks are priced before they realize, and the sign depends on the stochastic discount factor.
+This tutorial works through that timing problem in a representative-agent Lucas tree. A surprise shock $z_t$ moves today's dividend immediately. A news shock $n_t$ is observed today and moves tomorrow's dividend. We compute the linear pricing rule that maps the current dividend state and the news signal into the asset price, then compare it with a nonlinear perfect-foresight path for the same realized dividend sequence. With $\gamma=2$, the discount-rate effect is strong enough that good dividend news slightly lowers the impact price before the dividend itself rises.
 
 ## Equations
 
@@ -96,7 +96,9 @@ For this calibration, $A=1.917$ and $B=-0.009$.
 
 ## Solution Method
 
-The impulse responses use log deviations from steady state. The first-order solution is the closed-form pricing rule above. The comparison line is an exact nonlinear perfect-foresight transition for the same realized dividend path, computed by backward recursion on the level Euler equation. It is not a separate stochastic model. It is a local-solution check along the same one-shock experiment.
+The computation starts from a first-order perturbation of the Euler equation. Because the state vector is only the current dividend state $x_t$ and the news signal $n_t$, coefficient matching gives the closed-form rule $q_t=A x_t+B n_t$. The coefficient $B$ is the impact price of news before the cash flow moves.
+
+`run.py` also writes the same linear system in Klein's generalized-Schur form. The QZ solution matches the hand-derived coefficients to numerical precision, so the algebra and the rational-expectations root selection agree. For scale, the figures add an exact nonlinear perfect-foresight transition along the same realized dividend path, computed by backward recursion on the level Euler equation.
 
 ```text
 Algorithm: Lucas-tree news and surprise IRFs
@@ -115,23 +117,23 @@ Outputs: x_t, q_t, p_t, and the price-dividend ratio
    backward from the terminal steady-state price.
 ```
 
-The sign of $B$ is the diagnostic. Here $B<0$: a positive signal about future dividends slightly lowers today's price because the cash flow arrives in a future high-consumption state and is discounted at lower marginal utility.
+Here $B<0$. A positive signal about future dividends slightly lowers today's price because the cash flow arrives in a future high-consumption state, where marginal utility is lower.
 
 ## Results
 
-A surprise shock moves dividends immediately, so the price response is mostly a magnified version of the current dividend state. The nonlinear benchmark is nearly indistinguishable from the first-order rule at this scale. A news shock behaves differently: the dividend is still at steady state on impact, but the price moves because agents already know $x_1$ will be higher. In this calibration that impact movement is slightly negative, not positive, because the marginal-utility effect dominates until the dividend actually realizes.
+A surprise shock moves dividends immediately, so the price response mainly reflects the current dividend state. The nonlinear benchmark is nearly indistinguishable from the first-order rule at this scale. A news shock has a different timing pattern. The dividend is still at steady state on impact, but the price moves because agents already know $x_1$ will be higher. In this calibration the impact movement is slightly negative because the marginal-utility effect dominates until the dividend realizes.
 
 <img src="figures/irf-surprise-vs-news.png" alt="Dividend and asset-price impulse responses under surprise and news shocks" width="80%">
 
-The date-0 news response decomposes into three forces. Higher expected future prices raise today's value, and the next dividend payoff adds a small positive term. The stochastic discount factor moves the other way: future dividends are paid in a high-consumption state, where marginal utility is lower. With $\gamma=2$, that discounting term is just large enough to make the net impact negative.
+The date-0 news response decomposes into expected resale value, next-period dividend payoff, and marginal-utility discounting. Higher expected future prices raise today's value, and the next dividend payoff adds a small positive term. The stochastic discount factor moves the other way because future dividends are paid in a high-consumption state. With $\gamma=2$, that discounting term is large enough to make the net impact negative.
 
 <img src="figures/price-dynamics.png" alt="Decomposition of the date-0 price response to a positive news shock" width="80%">
 
-In the simulated path, prices mostly track persistent dividends because the coefficient on the current dividend state is large. News still matters at the dates when signals arrive. It enters the price rule immediately through $B n_t$ and then enters the dividend process one period later through $\sigma_1 n_t$.
+In the simulated path, prices track persistent dividends closely because the coefficient on the current dividend state is large. News matters at signal dates. It enters the price rule immediately through $B n_t$ and then enters the dividend process one period later through $\sigma_1 n_t$.
 
 <img src="figures/simulated-paths.png" alt="Simulated first-order dividend and asset-price paths with surprise and news innovations" width="80%">
 
-The impact table is in percent log deviations. The news experiment has zero dividend movement at date 0 by construction, yet the price and price-dividend ratio already move. The date-1 column shows the delayed cash-flow realization. The nonlinear benchmark is close to the first-order solution, so the sign change is economic, not a plotting artifact.
+The impact table is in percent log deviations. The news experiment has zero dividend movement at date 0 by construction, yet the price and price-dividend ratio already move. The date-1 column shows the delayed cash-flow realization. The nonlinear benchmark is close to the first-order solution, so the negative impact response comes from the pricing equation rather than the approximation.
 
 **Impact and Realization Responses**
 
@@ -144,7 +146,7 @@ The impact table is in percent log deviations. The news experiment has zero divi
 
 ## Takeaway
 
-News shocks are about information timing, not mechanically about higher prices. The Lucas-tree Euler equation prices a future dividend with the future marginal utility of consumption. If the dividend is paid in a state where consumption is high, the stochastic discount factor can offset the cash-flow effect. In this calibration, positive dividend news moves the price before the dividend, but the impact sign is slightly negative.
+The computed experiment shows why news shocks are about information timing, not mechanically about higher prices. The Lucas-tree Euler equation prices a future dividend with the future marginal utility of consumption. If the dividend is paid in a high-consumption state, the stochastic discount factor can offset the cash-flow effect. In this calibration, positive dividend news moves the price before the dividend, and the impact sign is slightly negative.
 
 That makes this tutorial a companion to the [Lucas-tree dynamic-programming asset-pricing tutorial](../../dynamic-programming/asset-pricing/): both price payoffs with marginal utility, while this one isolates the timing distinction between surprise and anticipated shocks. The [RBC tutorial](../rbc/) uses the same local-solution logic for real quantities rather than asset prices.
 
