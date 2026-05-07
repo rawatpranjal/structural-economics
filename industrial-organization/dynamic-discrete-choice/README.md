@@ -1,12 +1,14 @@
-# Bus Engine Replacement and Dynamic Choice
+# Bus Engine Replacement in a Dynamic Choice Model
 
-> Continuation values, replacement hazards, CCP estimation, and MPEC constraints in a Rust-style model.
+> Mileage, continuation values, and observed replacement hazards in a Rust-style maintenance model.
 
 ## Overview
 
-Engine replacement is a clean dynamic discrete choice problem: the action is discrete, but the cost of that action is paid through future states. A bus operator who keeps an old engine receives the current keep payoff and lets mileage drift upward. Replacing the engine sacrifices that current keep payoff but resets the bus toward a low-mileage state. The replacement hazard therefore summarizes both current maintenance costs and the continuation value of a fresher engine.
+A transit agency sees each bus many times before an engine is replaced. Keeping the old engine saves the replacement cost today, but it also lets mileage drift upward and makes future maintenance less attractive. Replacing the engine resets the bus toward a low-mileage state. The observed replacement hazard therefore mixes two objects an economist wants to separate: current operating payoffs and the continuation value of a fresher engine.
 
-The example is the estimation-side complement to the dynamic IO models in [dynamic entry and exit](../dynamic-entry-exit/) and [Markov-perfect investment](../dynamic-games/). Here there is one decision maker rather than strategic firms, so the focus is on recovering payoff parameters from observed choices. The tutorial solves the model, simulates a panel with known truth, and compares nested fixed-point maximum likelihood, a Hotz-Miller conditional-choice-probability (CCP) estimator, and a mathematical program with equilibrium constraints (MPEC). The MPEC version makes the continuation values optimization variables and imposes the Bellman equations as feasibility conditions.
+That separation requires computation because a candidate payoff vector is not enough to evaluate the likelihood. Each trial value of the structural parameters implies a dynamic program, a replacement policy, and then a choice probability for each observed bus-period. The tutorial solves the model, simulates a panel with known truth, and compares nested fixed-point maximum likelihood, a Hotz-Miller conditional-choice-probability (CCP) estimator, and a mathematical program with equilibrium constraints (MPEC). The MPEC version makes continuation values optimization variables and imposes the Bellman equations as feasibility conditions.
+
+The example also complements the dynamic IO models in [dynamic entry and exit](../dynamic-entry-exit/) and [Markov-perfect investment](../dynamic-games/). Here there is one decision maker rather than strategic firms, so the estimation problem is easier to see: recover payoff parameters from observed replacement choices.
 
 ## Equations
 
@@ -184,7 +186,7 @@ The moments summarize the simulated panel and the numerical solve. The high-mile
 
 ## Takeaway
 
-Dynamic discrete choice turns observed hazards into statements about current payoffs and continuation values. In the replacement problem, a high mileage bus is replaced not only because keeping it is costly today, but because replacement changes the distribution of tomorrow's state. Nested fixed-point likelihood estimates that object directly. CCP estimation is faster because it learns part of the policy first, but then the quality of the structural step depends on how well those first-stage CCPs approximate the true replacement hazard. MPEC changes the architecture again by turning the Bellman equations into feasibility constraints.
+Dynamic discrete choice turns observed hazards into statements about current payoffs and continuation values. In the replacement problem, a high mileage bus is replaced because keeping it is costly today and because replacement changes the distribution of tomorrow's state. Nested fixed-point likelihood estimates that object directly. CCP estimation is faster because it learns part of the policy first, with the structural step depending on how well those first-stage CCPs approximate the true replacement hazard. MPEC changes the architecture again by turning the Bellman equations into feasibility constraints.
 
 ## References
 
