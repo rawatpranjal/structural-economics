@@ -397,9 +397,13 @@ def build_prompt(tutorial: Path) -> str:
         Instructions for this single-tutorial pass:
         - Make the tutorial economics-first for RA/pre-PhD through early PhD
           economics readers.
-        - Separate the economic question from the computational question. The
-          economic question is the model object or empirical/equilibrium use case
-          the reader cares about. The computational question is the numerical
+        - Keep the economic question distinct from the computational question.
+          Use that distinction to plan the rewrite, but do not write formulaic
+          paragraphs that begin "The economic question is", "The computational
+          question is", or "The core method is". The prose should read like a
+          person explaining the tutorial, not like a checklist.
+        - The economic question is the model object or empirical/equilibrium use
+          case the reader cares about. The computational question is the numerical
           obstacle or algorithmic object needed to study it. Do not collapse these
           into "the economic question is how to run the algorithm."
         - Write the opening in a conversational but precise style: start with the
@@ -409,13 +413,26 @@ def build_prompt(tutorial: Path) -> str:
         - Start from the economic problem, give a concrete example, introduce the
           mathematical object, explain the algorithm with compact pseudocode where
           useful, then interpret results.
+        - Write in active voice where it makes the sentence clearer. Use concrete
+          examples and varied sentence rhythm. Avoid forced three-part lists,
+          "not just ... but ..." contrasts, generic signposting, and inflated AI
+          tells such as delve, crucial, pivotal, seamless, robust, landscape,
+          testament, underscores, highlights, serves as, and stands as.
+        - Do not use em dashes in generated or edited prose. Use commas, colons,
+          parentheses, or shorter sentences instead.
         - Avoid solver-first prose, compressed survey prose, long caveat chains,
           package trivia, and code-dump narration.
         - Keep visible Reproduce sections and image captions omitted unless needed;
           keep useful alt text.
-        - Improve the root catalog row only to match the new framing. Keep it
-          scannable: economic object first, computational method second, one key
-          result or diagnostic.
+        - Improve the root catalog row only to match the new framing. The title
+          should be informative, and the description should stay high-level,
+          roughly two or three short wrapped lines in the table. Put the economic
+          object first and the computational method second. Do not cram
+          diagnostics, exact residuals, or too many numbers into the outer README
+          row.
+        - Before committing, scan the edited tutorial README, run.py, and root
+          catalog row for the AI tells above, formulaic question labels, and em
+          dashes. Revise any matches that are part of the generated prose.
         - Edit {rel}run.py first, then regenerate from inside the tutorial folder
           with python3 run.py.
         - Run python3 scripts/validate_catalog.py from the repository root.
