@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T23:48:19Z",
+  "updated_at": "2026-05-07T23:51:30Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -646,6 +646,17 @@
         "game-theory/normal-form-games/tables/equilibrium-summary.csv"
       ],
       "updated_at": "2026-05-07T23:48:19Z"
+    },
+    {
+      "tutorial_path": "game-theory/static-games/",
+      "status": "complete",
+      "commit": "3cfeff2b59f387c0206b5fd07b34de00b250c7a1",
+      "changed_paths": [
+        "README.md",
+        "game-theory/static-games/README.md",
+        "game-theory/static-games/run.py"
+      ],
+      "updated_at": "2026-05-07T23:51:30Z"
     }
   ]
 }
