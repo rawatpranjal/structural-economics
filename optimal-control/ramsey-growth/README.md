@@ -1,14 +1,14 @@
-# Ramsey Growth by Shooting
+# Ramsey Saving by Saddle-Path Shooting
 
-> A continuous-time Ramsey planner picks the one initial consumption level that puts capital on the stable path.
+> A continuous-time Ramsey planner inherits capital and uses the consumption jump to reach the saddle path.
 
 ## Overview
 
-The Ramsey-Cass-Koopmans model asks how much output a planner should consume today and how much should be invested for future production. Capital $k(0)$ is inherited from the past, but consumption can jump at date zero. The economic selection problem is sharp: for a given $k_0$, which $c_0$ is consistent with optimal intertemporal saving?
+The Ramsey-Cass-Koopmans planner starts with an inherited capital stock and decides how much output to consume today versus invest for future production. A capital-poor economy should save enough to build productive capacity. A capital-rich economy can consume more while capital runs down. In both cases, history fixes $k_0$, but optimality must select the date-zero consumption jump $c_0$.
 
-Most initial consumption choices are wrong. If $c_0$ is too high, the economy runs capital down too aggressively and violates feasibility. If it is too low, the planner overaccumulates capital relative to the present-value boundary condition. The shooting method turns that economic restriction into a one-dimensional root search over $c_0$.
+The difficulty comes from the boundary condition at infinity. Once we pick $c_0$, the Euler equation and resource law determine the whole path. Almost every initial consumption choice fails: a high guess exhausts capital, while a low guess leaves the planner overaccumulating relative to the transversality condition. Shooting turns that long-run economic restriction into a scalar root search over $c_0$.
 
-This tutorial is the algorithmic companion to the neighboring [Ramsey phase-diagram](../phase-diagrams/) example and the HJB formulation in [HJB growth](../hjb-growth/). The model is the same; the numerical representation differs.
+The page computes that selection for economies that begin at one quarter, one half, three quarters, one and a half, and twice the Ramsey steady-state capital stock. It uses the same planner as the neighboring [Ramsey phase-diagram](../phase-diagrams/) example and the [HJB growth](../hjb-growth/) tutorial, but represents the stable arm as the root of a terminal capital gap.
 
 ## Equations
 
@@ -52,18 +52,20 @@ k^{\ast}=\left(\frac{\alpha A}{\rho+\delta}\right)^{1/(1-\alpha)},
 c^{\ast}=f(k^{\ast})-\delta k^{\ast}.
 $$
 
-The finite shooting calculation approximates the infinite-horizon boundary
-condition
+The saddle path is the feasible path that starts from the inherited $k_0$ and
+satisfies the infinite-horizon boundary condition
 
 $$
 \lim_{t\to\infty} e^{-\rho t}u'(c(t))k(t)=0
 $$
 
-by choosing $c_0$ so that the path is near $(k^{\ast},c^{\ast})$ at a long terminal date.
+along with the two differential equations above. The finite shooting
+calculation approximates this condition by choosing $c_0$ so that the path is
+near $(k^{\ast},c^{\ast})$ at a long terminal date.
 
 ## Model Setup
 
-The calibration is deterministic and stays close to textbook growth examples. The terminal date is a numerical device used to approximate the infinite-horizon transversality condition; it is not an economic horizon.
+The calibration is deterministic and stays close to textbook growth examples. The low initial states mimic economies that begin with too little capital, and the high initial states mimic economies that have accumulated past the long-run Ramsey level. The terminal date is a numerical device for approximating the infinite-horizon transversality condition; it is not an economic horizon.
 
 | Object | Value | Role |
 |---|---:|---|
@@ -79,9 +81,9 @@ The calibration is deterministic and stays close to textbook growth examples. Th
 
 ## Solution Method
 
-The method solves a boundary value problem by repeated initial value problems. Capital at date zero is fixed. Initial consumption is guessed, the Ramsey ODE is integrated forward, and the terminal capital gap determines whether the guess was too low or too high. Brent bisection then finds the root.
+Shooting solves the Ramsey boundary value problem through repeated initial value problems. For a fixed $k_0$, define the terminal gap $G(c_0;k_0)=k(T;c_0)-k^{\ast}$. The algorithm guesses $c_0$, integrates the Ramsey system forward, and reads the sign of $G$ as an economic mistake: too much terminal capital means the planner consumed too little early on, while too little terminal capital means the planner consumed too much.
 
-For this model, the terminal residual is monotone in the relevant bracket. Low $c_0$ leaves too much capital at $T$; high $c_0$ exhausts capital before the terminal date or leaves too little capital. The bracket must be wide enough for initial states above $k^{\ast}$, where the optimal path begins with consumption above net output so that capital decumulates.
+For this calibration, the relevant bracket has a single crossing. A low $c_0$ leaves too much capital at $T$; a high $c_0$ exhausts capital before the terminal date or leaves too little capital. The bracket must be wide enough for initial states above $k^{\ast}$, where the optimal path begins with consumption above net output so that capital decumulates. Brent's bracketing method then searches for the jump variable that makes the terminal gap zero.
 
 ```text
 Algorithm: finite-horizon shooting for Ramsey growth
@@ -101,7 +103,7 @@ The local speed check comes from the Jacobian of $(\dot{k},\dot{c})$ at the stea
 
 ## Results
 
-The phase diagram shows why shooting is an economic selection rule, not only a numerical trick. The dashed curve is net output, where $\dot{k}=0$; the vertical line is $k^{\ast}$, where $\dot{c}=0$. Each colored path starts from a different $k_0$ and uses the $c_0$ found by shooting. Below $k^{\ast}$, consumption starts low enough for investment to build capital. Above $k^{\ast}$, consumption starts above net output, so capital is run down.
+The phase diagram shows the economic selection behind the shooting calculation. The dashed curve is net output, where $\dot{k}=0$; the vertical line is $k^{\ast}$, where $\dot{c}=0$. Each colored path starts from a different $k_0$ and uses the $c_0$ found by shooting. Below $k^{\ast}$, consumption starts low enough for investment to build capital. Above $k^{\ast}$, consumption starts above net output, so capital is run down.
 
 <img src="figures/phase-diagram.png" alt="Ramsey phase diagram with selected saddle paths from different initial capital stocks" width="80%">
 
@@ -127,7 +129,7 @@ The table records the jump variable selected by the root search. The consumption
 
 ## Takeaway
 
-Ramsey shooting is a clean example of how economics and numerics line up. History fixes $k_0$, but optimality selects $c_0$. The root search finds the initial consumption level that keeps the path feasible and satisfies the transversality condition.
+The computation enforces the economic restriction that the planner cannot choose an arbitrary date-zero consumption jump. History fixes $k_0$, optimality selects $c_0$, and the root search finds the value that keeps the path feasible while satisfying the transversality condition.
 
 Saddle-path systems are easy to state but delicate to compute. A small error in $c_0$ sends the economy toward capital exhaustion or overaccumulation. Once the correct path is selected, the model delivers the standard Ramsey logic: invest when capital is scarce, decumulate when capital is abundant, and converge toward the modified golden-rule point $f'(k^{\ast})=\rho+\delta$.
 
