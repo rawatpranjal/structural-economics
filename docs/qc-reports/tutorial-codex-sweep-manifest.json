@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T20:31:59Z",
+  "updated_at": "2026-05-07T20:39:13Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -235,6 +235,17 @@
         "dsge/assetNews/run.py"
       ],
       "updated_at": "2026-05-07T20:31:59Z"
+    },
+    {
+      "tutorial_path": "dsge/rbc-with-labor/",
+      "status": "complete",
+      "commit": "988a71695e86d6e3de6cb1236864df3f5bfe2ac5",
+      "changed_paths": [
+        "README.md",
+        "dsge/rbc-with-labor/README.md",
+        "dsge/rbc-with-labor/run.py"
+      ],
+      "updated_at": "2026-05-07T20:39:13Z"
     }
   ]
 }
