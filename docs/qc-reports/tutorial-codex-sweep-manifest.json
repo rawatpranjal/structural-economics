@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T21:38:36Z",
+  "updated_at": "2026-05-07T21:42:09Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -290,6 +290,17 @@
         "optimal-control/hjb-growth/run.py"
       ],
       "updated_at": "2026-05-07T21:38:36Z"
+    },
+    {
+      "tutorial_path": "optimal-control/phase-diagrams/",
+      "status": "complete",
+      "commit": "a10b848514b186a63ce9cc21499e154f82492edf",
+      "changed_paths": [
+        "README.md",
+        "optimal-control/phase-diagrams/README.md",
+        "optimal-control/phase-diagrams/run.py"
+      ],
+      "updated_at": "2026-05-07T21:42:09Z"
     }
   ]
 }
