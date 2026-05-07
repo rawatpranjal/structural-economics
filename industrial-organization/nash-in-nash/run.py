@@ -178,25 +178,24 @@ def main() -> None:
     setup_style()
 
     report = ModelReport(
-        "Nash-in-Nash Hospital-Insurer Bargaining",
-        "Outside options, network value, and bilateral transfers in a vertical market.",
+        "Hospital-Insurer Network Bargaining with Nash-in-Nash",
+        "How network outside options shape negotiated hospital payments.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "A hospital-insurer contract is valuable because it changes the insurer's network. "
-        "If an insurer loses a hospital, some enrollees may switch to another insurer or to "
-        "the outside option. Nash-in-Nash bargaining turns that lost demand into a transfer: "
-        "the hospital is paid for the incremental value it brings to the insurer, net of the "
-        "hospital's cost of serving those enrollees.\n\n"
-        "Not every hospital merger raises payments; the example is meant to make the object "
-        "that empirical IO papers compute concrete. A bilateral disagreement removes one link "
-        "and leaves all other links in place. A system-level merger changes that disagreement "
-        "point: the insurer may lose the whole system, not just one hospital. That distinction "
-        "is why Nash-in-Nash is a vertical-market model rather than a generic Nash equilibrium "
-        "calculation.\n\n"
-        "Premiums are held fixed to keep the bargaining object clean. The "
+        "Health insurers sell networks, not isolated hospital contracts. A plan that loses "
+        "a high-quality hospital becomes less attractive to enrollees, and a plan that loses "
+        "a whole hospital system can become nearly unusable. The tutorial computes how those "
+        "outside options translate into negotiated hospital payments.\n\n"
+        "Nash-in-Nash supplies the pricing rule for the contracts. For each hospital-insurer "
+        "link, the calculation removes that link, recomputes insurer demand, converts lost "
+        "enrollment into downstream surplus, and splits the surplus by the bargaining weight. "
+        "The network is small enough to enumerate every disagreement case, but the object is "
+        "the same one used in empirical IO work on hospital systems, cable channels, and other "
+        "vertical markets with many bilateral negotiations.\n\n"
+        "The example keeps premiums fixed so the computation isolates network bargaining. The "
         "[vertical relationships](../vertical-relationships/) tutorial studies double "
         "marginalization in a simpler channel model, while "
         "[merger simulation](../merger-simulation/) turns changed ownership into final-price "
@@ -291,11 +290,11 @@ is the system-level per-enrollee transfer.
     )
 
     report.add_solution_method(
-        "The computation is finite because every disagreement network can be enumerated. "
-        "The important modeling choice is what remains fixed in each disagreement: in a "
-        "bilateral Nash-in-Nash bargain, all other hospital-insurer links stay in force. "
-        "For a merged system, the disagreement removes the whole system from the insurer's "
-        "network.\n\n"
+        "The numerical work is enumeration plus a closed-form Nash split. The model does "
+        "not solve a new premium equilibrium. It asks what each side would lose under a "
+        "specific disagreement network, holding the other links fixed when the bargain is "
+        "bilateral. Under system ownership, the disagreement removes the whole hospital "
+        "system from the insurer's network.\n\n"
         "```text\n"
         "Algorithm: Nash-in-Nash transfers in a hospital-insurer network\n"
         "Input: full networks G, premiums P, costs c^D and c^H, demand q(.), weight tau\n"
@@ -313,8 +312,9 @@ is the system-level per-enrollee transfer.
         "    W_Hd = system cost + tau * system surplus / q_d(G)\n"
         "```\n\n"
         f"At the baseline $\\tau={tau:.2f}$, Hospital 1 receives higher transfers because "
-        "it is the higher-quality hospital. Insurer 2 pays somewhat more because its higher "
-        "premium gives it a larger per-enrollee margin to lose when its network deteriorates."
+        "its removal lowers network value more. Insurer 2 pays somewhat more because its "
+        "higher premium gives it a larger per-enrollee margin to lose when the network "
+        "deteriorates."
     )
 
     fig1, axes = plt.subplots(1, 2, figsize=(11, 4.8))
@@ -335,10 +335,10 @@ is the system-level per-enrollee transfer.
     fig1.tight_layout()
 
     report.add_results(
-        "The bilateral transfers are not arbitrary markups over hospital cost. They come from "
-        "the enrollment loss created by a specific broken link. Dropping Hospital 1 hurts "
-        "more than dropping Hospital 2 because Hospital 1 has higher network value; Insurer "
-        "2's higher premium also raises the dollar value of lost enrollment."
+        "The bilateral transfers come from the enrollment loss created by a specific broken "
+        "link. Dropping Hospital 1 hurts the insurer more than dropping Hospital 2 because "
+        "Hospital 1 has higher network value. Insurer 2's higher premium also raises the "
+        "dollar value of lost enrollment."
     )
     report.add_figure(
         "figures/negotiated-prices.png",
@@ -380,10 +380,10 @@ is the system-level per-enrollee transfer.
     fig2.tight_layout()
 
     report.add_results(
-        "Changing $\\tau$ holds demand and disagreement networks fixed, so it only changes "
-        "the division of surplus. Hospital profits rise mechanically with the bargaining "
-        "weight, while insurer profits fall because a larger share of the same incremental "
-        "network value is paid upstream."
+        "Changing $\\tau$ holds demand and disagreement networks fixed, so it changes only "
+        "the division of surplus. Hospital profits rise with the bargaining weight. Insurer "
+        "profits fall because a larger share of the same incremental network value is paid "
+        "upstream."
     )
     report.add_figure(
         "figures/profits-vs-bargaining.png",
@@ -422,9 +422,9 @@ is the system-level per-enrollee transfer.
     report.add_results(
         "The merger comparison adds the two separate hospital transfers and compares that "
         "sum with a single system payment. In this calibration, either hospital alone keeps "
-        "an insurer's network viable. Losing the merged system is much worse because the "
-        "insurer has no in-network hospital, so the system-level disagreement payoff is "
-        "lower and the negotiated payment is higher."
+        "an insurer's network viable. Losing the merged system leaves the insurer with no "
+        "in-network hospital, so the system-level disagreement payoff is lower and the "
+        "negotiated payment is higher."
     )
     report.add_figure(
         "figures/merger-prices.png",
@@ -459,9 +459,9 @@ is the system-level per-enrollee transfer.
     report.add_takeaway(
         "Nash-in-Nash bargaining maps a vertical contract into an observable counterfactual: "
         "what does the insurer lose if this agreement fails while the rest of the contracting "
-        "network remains intact? The answer is not just market share or hospital cost. It "
-        "depends on substitution across insurers, the hospital's incremental network value, "
-        "and the ownership structure that defines the relevant outside option."
+        "network remains intact? The answer depends on substitution across insurers, the "
+        "hospital's incremental network value, and the ownership structure that defines the "
+        "relevant outside option."
     )
 
     report.add_references(
