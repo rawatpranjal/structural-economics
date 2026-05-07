@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T22:44:39Z",
+  "updated_at": "2026-05-07T22:49:03Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -467,6 +467,17 @@
         "industrial-organization/dynamic-discrete-choice/run.py"
       ],
       "updated_at": "2026-05-07T22:44:39Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/three-part-tariffs/",
+      "status": "complete",
+      "commit": "9a4204e6f6d9ae5944bebdf6958c2c44eb0c2734",
+      "changed_paths": [
+        "README.md",
+        "industrial-organization/three-part-tariffs/README.md",
+        "industrial-organization/three-part-tariffs/run.py"
+      ],
+      "updated_at": "2026-05-07T22:49:03Z"
     }
   ]
 }
