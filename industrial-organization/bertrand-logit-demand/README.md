@@ -1,12 +1,12 @@
-# Bertrand Pricing with Logit Demand
+# Differentiated-Products Merger Pricing with Logit Demand
 
-> Ownership changes, diversion, and unilateral merger effects in a four-product market.
+> Ownership, diversion, and Bertrand-Nash price effects in a four-product market.
 
 ## Overview
 
-A differentiated-products merger is a question about where lost sales go. Before a merger, Firm 1 does not care that a price increase on Product 1 sends some consumers to Product 2. After common ownership, those diverted sales are partly recaptured by the same firm, so the old price vector is no longer optimal.
+Take a four-product category with four single-product firms. Products 1 and 2 are candidates for common ownership. If Product 1 raises its price before the merger, some consumers leave Product 1 for Product 2, but Firm 1 does not earn those sales. After the merger, that same diversion becomes revenue inside the merged firm. Pricing incentives change even if demand and marginal costs are unchanged.
 
-The tutorial calibrates a small logit demand system from pre-merger prices, shares, and one margin, then changes the ownership matrix and solves the Bertrand-Nash pricing equations again. Demand, diversion, markups, and marginal-cost efficiencies all enter the basic unilateral-effects calculation. [BLP random coefficients](../blp-random-coefficients/) relaxes the logit substitution pattern; [merger simulation across demand systems](../merger-simulation/) compares the consequences of that modeling choice.
+To quantify the price effect, the tutorial builds the demand and supply objects used in merger simulation. It calibrates a simple logit model to pre-merger prices, shares, and one observed margin, recovers marginal costs from the Bertrand first-order conditions, then solves those conditions again under new ownership and under a cost-efficiency case. The core computation is a nonlinear root-finding problem: find prices that make every product's pricing condition hold for a given ownership matrix. [BLP random coefficients](../blp-random-coefficients/) relaxes the logit substitution pattern; [merger simulation across demand systems](../merger-simulation/) compares the consequences of that modeling choice.
 
 ## Equations
 
@@ -60,7 +60,7 @@ up to the usual income constant.
 
 ## Model Setup
 
-The data are a transparent calibration rather than an estimated market. Products 1 and 2 are the merging products; products 3 and 4 are outside rivals within the market.
+The calibration is deliberately small. Products 1 and 2 are candidate merger partners in one category; products 3 and 4 remain rival products. The numbers are not estimated from a dataset. They make the mapping from shares and prices to markups visible.
 
 | Object | Value | Role |
 |--------|-------|------|
@@ -75,41 +75,40 @@ The data are a transparent calibration rather than an estimated market. Products
 
 ## Solution Method
 
-The computation has two distinct parts. Calibration makes the observed pre-merger market exactly rationalized by logit demand and Bertrand pricing. Counterfactual simulation then holds demand fixed, changes ownership and possibly costs, and searches for the new price vector.
+The algorithm first makes the observed pre-merger prices an equilibrium of the calibrated model. It then asks how the same demand system prices the category when the ownership matrix changes. Because each price changes shares for every product, the post-merger calculation is a coupled nonlinear system rather than four separate markup calculations.
 
 ```text
 Inputs: pre-merger prices p, shares s, firm labels f(j),
         one observed margin, and counterfactual ownership labels
 Outputs: calibrated demand/costs and equilibrium outcomes by scenario
 
-1. Set s0 = 1 - sum_j s_j.
-2. Use Product 1's margin to infer alpha from its single-product FOC.
-3. Recover mean utilities: xi_j = log(s_j / s0) - alpha p_j.
-4. Build Delta(p), the logit demand Jacobian at observed prices.
-5. Recover marginal costs from p - c = -[(Omega .* Delta')]^{-1}s.
-6. For each counterfactual ownership/cost scenario:
-       solve F_j(p) = s_j(p)
-                    + sum_k Omega_jk (p_k-c_k) ds_k(p)/dp_j = 0
-       compute shares, outside share, consumer surplus, HHI, and residuals.
+1. Compute the outside share: s0 = 1 - sum_j s_j.
+2. Infer alpha from Product 1's observed margin and single-product FOC.
+3. Back out mean utilities: xi_j = log(s_j / s0) - alpha p_j.
+4. Form Delta(p), the logit demand Jacobian at observed prices.
+5. Invert the pre-merger markup equation to recover marginal costs c.
+6. Replace Omega and c when ownership or efficiencies change.
+7. Use root finding on the Bertrand FOCs F(p; Omega, c) = 0.
+8. Report prices, shares, outside share, consumer surplus, HHI, and residuals.
 ```
 
-The pre-merger FOC residual after calibration is 0.00e+00. The post-merger solutions below use the same equations, not a reduced-form pass-through rule.
+The pre-merger FOC residual after calibration is 0.00e+00. The post-merger solutions below come from the same pricing equations, not from a reduced-form pass-through rule.
 
 ## Results
 
-Common ownership of Products 1 and 2 raises both of their prices because the merged firm now values sales recaptured by its partner product. Products 3 and 4 also move up because prices are strategic complements. The cost-saving scenario lowers the merged products' marginal costs, but does not mechanically restore the pre-merger equilibrium.
+After Products 1 and 2 merge, the common owner raises both prices because a lost sale to the partner product is no longer fully lost. Products 3 and 4 also rise because prices are strategic complements in this demand system. The 10 percent cost reduction mutes the increase but does not erase it.
 
 <img src="figures/price-comparison.png" alt="Equilibrium prices under alternative ownership" width="80%">
 
-The merged products lose volume after their prices rise. Part of that volume moves to rival inside products, and part leaves the inside market through the outside good. The outside option limits how much price pressure can be internalized by any set of firms.
+Volume leaves the merged products after their price increases. Some sales move to rival inside products, and some leave the inside market through the outside good. The outside option limits how much price pressure any owner can internalize.
 
 <img src="figures/share-comparison.png" alt="Market shares and the outside option" width="80%">
 
-Rows are products losing a marginal sale; columns are products that receive it. Under logit, larger-share products absorb more diverted sales from every other product. That is convenient for a first merger exercise, but it is also why richer demand systems are needed when closeness of substitution is central.
+Each row is the product losing a marginal sale; each column is the product that receives it. Under logit, larger-share products absorb more diverted sales from every other product. This makes the first merger calculation transparent, but it also shows why richer demand systems matter when product closeness drives the case.
 
 <img src="figures/diversion-ratios.png" alt="Diversion ratios between products" width="80%">
 
-HHI is computed on inside-good firm shares, so it captures the ownership change rather than the outside option. Consumer surplus is reported as a change from the pre-merger calibration. The FOC residuals are included because a merger simulation is only as credible as the solved post-merger pricing equations.
+HHI is computed on inside-good firm shares, so it captures the ownership change rather than the outside option. Consumer surplus is reported as a change from the pre-merger calibration. The FOC residuals check that the reported prices solve the post-merger pricing equations.
 
 **Merger simulation outcomes**
 
@@ -122,7 +121,7 @@ HHI is computed on inside-good firm shares, so it captures the ownership change 
 
 ## Takeaway
 
-The basic merger calculation is not an HHI calculation with a price effect attached. It is a pricing first-order condition with a different ownership matrix. A merger raises prices when diverted sales are valuable enough to the common owner; marginal-cost efficiencies push the other way. Under simple logit, diversion is easy to compute but tightly restricted by IIA, so the exercise reads as a clean benchmark before richer demand estimates and product-specific substitution patterns are introduced.
+Merger simulation here is an ownership-matrix exercise inside a pricing first-order condition. The same calibrated demand and costs support separate firms, common ownership, cost efficiencies, and monopoly. Diversion gives the merged firm its upward pricing incentive, while cost reductions push in the other direction. Simple logit makes diversion transparent, but its IIA pattern also limits what this benchmark can say about product closeness.
 
 ## References
 
