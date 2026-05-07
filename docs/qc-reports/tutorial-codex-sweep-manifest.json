@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T22:49:03Z",
+  "updated_at": "2026-05-07T22:51:53Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -478,6 +478,17 @@
         "industrial-organization/three-part-tariffs/run.py"
       ],
       "updated_at": "2026-05-07T22:49:03Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/nash-in-nash/",
+      "status": "complete",
+      "commit": "1e6babf43b031a3016b326f9a24a1f3fa9468fc3",
+      "changed_paths": [
+        "README.md",
+        "industrial-organization/nash-in-nash/README.md",
+        "industrial-organization/nash-in-nash/run.py"
+      ],
+      "updated_at": "2026-05-07T22:51:53Z"
     }
   ]
 }
