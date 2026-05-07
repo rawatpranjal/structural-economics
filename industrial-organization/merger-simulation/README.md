@@ -1,17 +1,18 @@
-# Differentiated-Products Merger Simulation
+# Merger Pricing in Differentiated-Products Markets
 
-> Demand curvature, diversion, and efficiency screens in a calibrated merger exercise.
+> GUPPI screens and Bertrand-Nash counterfactuals with calibrated substitution.
 
 ## Overview
 
-A differentiated-products merger changes the objective of the pricing firms. Before the merger, Firm 1 ignores sales that Product 1 loses to Firm 2's products. After the merger, those diverted sales stay inside the merged portfolio, so the old price vector no longer satisfies the pricing first-order conditions.
+A merger between close substitutes changes pricing incentives even if marginal costs do not move. Before the merger, Firm 1 treats sales lost to Firm 2 as business lost to a rival. After the merger, some of those consumers stay inside the same portfolio. That internalized diversion is the unilateral price effect an antitrust merger simulation tries to measure.
 
-The hard part is that diversion is not observed directly. The tutorial takes one pre-merger market and calibrates three demand systems to the same shares, prices, and margins: logit, linear, and log-linear demand. It then changes ownership and solves the post-merger Bertrand-Nash prices. The exercise is not an estimator; it is a controlled way to see how demand curvature and substitution assumptions move the same antitrust counterfactual.
+The missing object is the substitution matrix. Shares, prices, and margins describe the observed market, but they do not directly reveal how many consumers leave Product 1 for Product 3 when Product 1 becomes more expensive. This tutorial fixes a six-product market, calibrates logit, linear, and log-linear demand to the same observables, changes only ownership, and solves the post-merger Bertrand-Nash pricing conditions.
 
-The logit-only [Bertrand pricing](../bertrand-logit-demand/) tutorial isolates the ownership matrix in one demand model. The [BLP random coefficients](../blp-random-coefficients/) tutorial shows how richer substitution patterns can be estimated. Here the object is the gap between quick screens such as GUPPI or CMCR and the solved post-merger equilibrium.
+GUPPI and CMCR summarize local upward pricing pressure at observed prices. The full counterfactual asks what happens after every firm reacts and after claimed cost efficiencies shift marginal costs. The logit-only [Bertrand pricing](../bertrand-logit-demand/) tutorial isolates the ownership matrix in one demand model. The [BLP random coefficients](../blp-random-coefficients/) tutorial shows how richer substitution patterns can be estimated. This page focuses on the gap between first-order screens and a solved post-merger equilibrium.
 
 ## Equations
 
+The target object is the counterfactual price vector after ownership changes.
 There are $J$ inside products. Product $j$ has price $p_j$, marginal cost
 $c_j$, quantity or share $q_j(p)$, and owner $f(j)$. The ownership matrix is
 
@@ -76,8 +77,9 @@ CMCR_j=\frac{UPP_j}{c_j}.
 $$
 
 GUPPI is a first-order screen for upward pricing pressure. CMCR reports the
-product-level marginal-cost reduction that would offset that pressure before
-solving a new equilibrium.
+product-level marginal-cost reduction that would offset that pressure at the
+observed price vector. The simulation then solves the full pricing system under
+post-merger ownership.
 
 ## Model Setup
 
@@ -92,11 +94,11 @@ solving a new equilibrium.
 | Linear cross-slope ratio | 0.10 | Cross-slope relative to geometric mean own-slope |
 | Log-linear cross elasticity | 0.15 | Maintained symmetric cross-price elasticity |
 | Merger | Firm 1 buys Firm 2 | Products 1-4 move under common ownership |
-| Benchmark | Solved post-merger FOC | Full equilibrium used to judge first-order screens |
+| Benchmark | Post-merger Bertrand-Nash FOC | Equilibrium used to judge first-order screens |
 
 ## Solution Method
 
-The computation has to keep two objects separate. Calibration rationalizes the observed pre-merger market under a chosen demand system. Simulation then holds that demand system fixed, changes only ownership, and solves a new price equilibrium.
+Calibration and simulation do different jobs. Calibration makes each demand system pass through the observed market. Simulation keeps those demand primitives fixed, replaces the pre-merger ownership matrix with the post-merger one, and searches for a new Bertrand-Nash price vector.
 
 ```text
 Algorithm: calibrated merger simulation
@@ -116,29 +118,29 @@ for a grid of merger efficiencies:
     and interpolate the cost reduction where average merged-product prices stop rising
 ```
 
-The pre-merger FOC residuals are small by construction (logit 1.4e-17, linear 2.8e-17, log-linear 2.8e-17). The important comparison below is between first-order screens and the solved post-merger equilibrium, not between three separately estimated demand models.
+The residual check confirms that each calibration reproduces the observed pricing conditions (logit 1.4e-17, linear 2.8e-17, log-linear 2.8e-17). The results below compare first-order screens with the solved post-merger equilibrium, rather than comparing three separately estimated demand models.
 
 ## Results
 
-The unilateral effect in levels. Products 1-4 are inside the merged portfolio, so their post-merger prices move the most. The logit and log-linear systems give roughly double-digit average increases for the merging products, while the linear system is more muted under this cross-slope calibration.
+Products 1-4 move inside the same portfolio after the merger, so the merged firm internalizes diversion among them. The logit and log-linear systems give roughly double-digit average increases for those products. The linear system is more muted under this cross-slope calibration.
 
-<img src="figures/price-comparison.png" alt="Pre- vs post-merger prices across three demand systems. Merging products (1-4) see larger price increases; the magnitude depends heavily on the demand model." width="80%">
+<img src="figures/price-comparison.png" alt="Pre- vs post-merger prices across three demand systems. Merging products (1-4) see larger price increases, with magnitudes shaped by the calibrated substitution pattern." width="80%">
 
-The welfare accounting separates the transfer from consumers to firms from the deadweight component. Consumers lose in every demand system here. Producer surplus rises, but not enough to offset the consumer loss, so total surplus falls under this calibration.
+The welfare bars separate consumer surplus, producer surplus, and their sum. Consumers lose in every demand system here. Producer surplus rises, but the gain does not offset the consumer loss, so total surplus falls under this calibration.
 
 <img src="figures/welfare-decomposition.png" alt="Welfare decomposition across demand systems: consumers lose, producers may gain, and the net effect depends on the demand model." width="80%">
 
-GUPPI is local: it uses observed margins and diversion before solving a counterfactual equilibrium. The left panel treats the solved post-merger price increase as the benchmark. The gap is the pass-through, curvature, and strategic-pricing content that a first-order screen cannot carry by itself.
+GUPPI uses observed margins and diversion before the counterfactual prices are solved. The left panel treats the solved post-merger price increase as the benchmark. The gap comes from pass-through, demand curvature, and rival price responses.
 
 <img src="figures/upp-guppi.png" alt="GUPPI screen versus solved equilibrium price effects, with product-level UPP for the products that become newly co-owned." width="80%">
 
-The efficiency frontier re-solves the post-merger pricing problem after lowering marginal costs for products 1-4. The zero markers are interpolated from a fine efficiency grid, so they are closer to the solved-equilibrium break-even point than the local CMCR screen. Below the zero line, efficiencies are large enough to reverse the average price increase on the merged products.
+The efficiency curve lowers marginal costs for products 1-4 and re-solves the post-merger pricing problem. The zero markers are interpolated from a fine efficiency grid, so they approximate the solved-equilibrium break-even point. Below the zero line, efficiencies are large enough to reverse the average price increase on the merged products.
 
 <img src="figures/efficiency-frontier.png" alt="How much marginal cost reduction is needed to offset the merger price increase? The break-even point differs substantially across demand models." width="80%">
 
-Screens and solved equilibrium in the same place. Average actual price increases are from the post-merger FOC solution. GUPPI and CMCR are local screens. The break-even efficiency column comes from re-solving the pricing equilibrium on a finer cost-reduction grid.
+The table puts local screens and solved counterfactuals side by side. Average actual price increases come from the post-merger FOC solution. GUPPI and CMCR are local screens. The break-even efficiency column comes from re-solving the pricing equilibrium on a finer cost-reduction grid.
 
-**Merger Effects and Screen Diagnostics**
+**Merger Price Effects and Screens**
 
 | Demand Model   |   Avg Actual Price Inc. (%) |   Max Price Change (%) |   Avg GUPPI Screen (%) |   Screen Gap (pp) |   Avg CMCR Screen (%) |   Break-even Eff. (%) |   Delta CS |   Delta PS |   Delta W |   Post FOC Residual |
 |:---------------|----------------------------:|-----------------------:|-----------------------:|------------------:|----------------------:|----------------------:|-----------:|-----------:|----------:|--------------------:|
@@ -148,9 +150,9 @@ Screens and solved equilibrium in the same place. Average actual price increases
 
 ## Takeaway
 
-A merger simulation is a supply-side counterfactual disciplined by a demand model. Changing ownership is mechanical; changing the substitution matrix is not. In this calibration, all three demand systems predict higher prices and lower consumer surplus, but they disagree on magnitudes, on the relation between GUPPI and solved price effects, and on the efficiency needed to offset the merger.
+Merger simulation turns a change in control into an equilibrium price calculation. The ownership matrix is easy to change. The economic content sits in substitution and cost pass-through, so different calibrated demand systems can give different counterfactuals in the same observed market.
 
-UPP, GUPPI, and CMCR are screens, not substitutes for a solved pricing model. The screen indicates where unilateral pressure comes from. The equilibrium calculation indicates how that pressure is mediated by pass-through, demand curvature, rivals' prices, and claimed marginal-cost efficiencies.
+UPP, GUPPI, and CMCR are useful triage tools. They point to products with strong internalized diversion, while the FOC solve accounts for every firm's reaction, demand curvature, and cost-efficiency claims. In this calibration, all three systems raise prices and lower consumer surplus, but they disagree on magnitudes and on the efficiency needed to offset the merger.
 
 ## References
 
