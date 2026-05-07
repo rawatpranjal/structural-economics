@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T23:25:45Z",
+  "updated_at": "2026-05-07T23:30:02Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -582,6 +582,17 @@
         "choice/maximum-score-binary-choice/tables/estimator-comparison.csv"
       ],
       "updated_at": "2026-05-07T23:25:45Z"
+    },
+    {
+      "tutorial_path": "choice/bayesian-learning/",
+      "status": "complete",
+      "commit": "aa7f3c7b1fd47f5ad4c5712e70d696a2f3851028",
+      "changed_paths": [
+        "README.md",
+        "choice/bayesian-learning/README.md",
+        "choice/bayesian-learning/run.py"
+      ],
+      "updated_at": "2026-05-07T23:30:02Z"
     }
   ]
 }
