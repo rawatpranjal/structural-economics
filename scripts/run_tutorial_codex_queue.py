@@ -6,6 +6,7 @@ import argparse
 import difflib
 import json
 import re
+import shutil
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -20,11 +21,101 @@ CLAUDE_MANIFEST = ROOT / "docs" / "qc-reports" / "tutorial-claude-sweep-manifest
 PASS_NAME = "codex-full-tutorial-sweep-v1"
 CATALOG_LINK_RE = re.compile(r"\]\(([^)#]+/)\)")
 BOOTSTRAP_COMPLETED_TUTORIALS = ("dynamic-programming/shock-discretization/",)
+DEFAULT_MIN_FREE_MIB = 1024
+TRANSIENT_CACHE_PATHS = (
+    Path.home() / ".npm" / "_npx",
+)
 
 
 def utc_now() -> str:
     """Return a compact UTC timestamp."""
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def format_bytes(size: int) -> str:
+    """Return a compact binary size for log messages."""
+    units = ("B", "KiB", "MiB", "GiB", "TiB")
+    value = float(size)
+    for unit in units:
+        if value < 1024 or unit == units[-1]:
+            if unit == "B":
+                return f"{int(value)} {unit}"
+            return f"{value:.1f} {unit}"
+        value /= 1024
+
+
+def directory_size(path: Path) -> int:
+    """Return a best-effort recursive size for a path."""
+    if not path.exists():
+        return 0
+    if path.is_file() or path.is_symlink():
+        try:
+            return path.lstat().st_size
+        except OSError:
+            return 0
+
+    total = 0
+    for item in path.rglob("*"):
+        try:
+            if item.is_file() or item.is_symlink():
+                total += item.lstat().st_size
+        except OSError:
+            continue
+    return total
+
+
+def disk_free_bytes() -> int:
+    """Return free bytes on the repository volume."""
+    return shutil.disk_usage(ROOT).free
+
+
+def prune_transient_caches() -> list[str]:
+    """Remove safe transient cache directories that can grow during Codex runs."""
+    removed: list[str] = []
+    for path in TRANSIENT_CACHE_PATHS:
+        if not path.exists():
+            continue
+        size = directory_size(path)
+        try:
+            if path.is_dir() and not path.is_symlink():
+                shutil.rmtree(path)
+            else:
+                path.unlink()
+        except OSError as exc:
+            raise SystemExit(f"Failed to remove transient cache {path}: {exc}") from exc
+        removed.append(f"{path} ({format_bytes(size)})")
+    return removed
+
+
+def require_disk_headroom(min_free_mib: int, *, prune: bool) -> None:
+    """Abort live runs when the repo volume is too full."""
+    if min_free_mib < 0:
+        raise SystemExit("--min-free-mib must be nonnegative")
+
+    minimum = min_free_mib * 1024 * 1024
+    before = disk_free_bytes()
+    removed = prune_transient_caches() if prune else []
+    after = disk_free_bytes()
+
+    if removed:
+        print("Removed transient cache path(s) before launching Codex:")
+        for item in removed:
+            print(f"  - {item}")
+
+    if after < minimum:
+        message = (
+            f"Only {format_bytes(after)} free on the repository volume; "
+            f"need at least {format_bytes(minimum)} before launching Codex."
+        )
+        if prune and before == after and not removed:
+            message += " No configured transient cache paths were present to prune."
+        raise SystemExit(message)
+
+    print(
+        f"Disk headroom OK: {format_bytes(after)} free "
+        f"(minimum {format_bytes(minimum)}).",
+        flush=True,
+    )
 
 
 def catalog_tutorials() -> list[Path]:
@@ -512,6 +603,17 @@ def parse_args() -> argparse.Namespace:
         help="Codex executable to invoke.",
     )
     parser.add_argument(
+        "--min-free-mib",
+        type=int,
+        default=DEFAULT_MIN_FREE_MIB,
+        help="Minimum free space required on the repo volume before a live Codex run.",
+    )
+    parser.add_argument(
+        "--skip-cache-prune",
+        action="store_true",
+        help="Do not remove configured transient cache paths before a live Codex run.",
+    )
+    parser.add_argument(
         "--seed-from-claude",
         action="store_true",
         help="Copy missing completed entries from the Claude sweep manifest into the Codex manifest.",
@@ -539,6 +641,7 @@ def main() -> int:
 
     require_clean_worktree()
     require_no_unpushed_commits()
+    require_disk_headroom(args.min_free_mib, prune=not args.skip_cache_prune)
 
     tutorial = queue[0]
     tutorial_path = rel_tutorial(tutorial)
