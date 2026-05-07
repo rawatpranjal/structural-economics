@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T20:47:57Z",
+  "updated_at": "2026-05-07T21:25:24Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -268,6 +268,17 @@
         "global-dsge/rbc-irreversible-investment/run.py"
       ],
       "updated_at": "2026-05-07T20:47:57Z"
+    },
+    {
+      "tutorial_path": "global-dsge/heaton-lucas/",
+      "status": "complete",
+      "commit": "dc6b8b9bb0e87dabdb3231f944a498f0f674cac9",
+      "changed_paths": [
+        "README.md",
+        "global-dsge/heaton-lucas/README.md",
+        "global-dsge/heaton-lucas/run.py"
+      ],
+      "updated_at": "2026-05-07T21:25:24Z"
     }
   ]
 }
