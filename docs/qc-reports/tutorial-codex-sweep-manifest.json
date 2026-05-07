@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T22:01:22Z",
+  "updated_at": "2026-05-07T22:04:39Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -357,6 +357,17 @@
         "industrial-organization/vertical-contracts/run.py"
       ],
       "updated_at": "2026-05-07T22:01:22Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/bertrand-logit-demand/",
+      "status": "complete",
+      "commit": "24786d003fadcb3e28f4ee598678ab08f3de8495",
+      "changed_paths": [
+        "README.md",
+        "industrial-organization/bertrand-logit-demand/README.md",
+        "industrial-organization/bertrand-logit-demand/run.py"
+      ],
+      "updated_at": "2026-05-07T22:04:39Z"
     }
   ]
 }
