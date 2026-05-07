@@ -1,21 +1,22 @@
-# Preference Bounds from Revealed Choices
+# Recovering Preference Bounds from Budget Choices
 
-> Afriat numbers, recovered upper contours, and the limits of finite choice data.
+> Afriat numbers turn finite budget data into a rationalizing utility contour.
 
 ## Overview
 
-Passing GARP is only the first revealed-preference question. Once the choices are rationalizable, the natural next question is what they say about the preference ordering itself. The answer is set-valued by construction: finite budgets do not identify a unique demand system, but they do restrict the utility functions that could have generated the data.
+Suppose we watch a consumer face several two-good budgets. At each price vector, the consumer buys one bundle and leaves every other affordable bundle unchosen. An economist may want to use those choices to compare welfare across policies or to discipline a later demand model, but finite budget observations cannot reveal the whole utility function.
 
-The starting object is the same as in [Afriat's revealed-preference test](../revealed-preference-afriat/): a finite sample of prices $p_t$ and chosen bundles $x_t$. Instead of stopping at pass/fail rationalizability, the tutorial constructs Afriat numbers and uses them to draw a concave utility index that exactly rationalizes the observed choices. Because the synthetic data come from a Cobb-Douglas consumer, the true indifference curve is available as a diagnostic; the Afriat construction does not use that functional form.
+Revealed preference gives a middle ground. After the observations pass GARP, Afriat's theorem turns the same price-bundle pairs into utility numbers and supporting slopes. The computation solves a linear feasibility problem and then evaluates the lower envelope of supporting planes. In this two-good example, that envelope draws one concave upper-contour boundary through a target bundle. The synthetic choices come from Cobb-Douglas demand, so the true contour is available only to judge what finite data recover.
 
 ## Equations
 
-There are two goods and $T$ observations. At observation $t$, prices are
-$p_t=(p_{1t},p_{2t})\in\mathbb{R}_{++}^{2}$, the chosen bundle is
+There are two goods and $T$ budget-choice observations. At observation $t$,
+prices are $p_t=(p_{1t},p_{2t})\in\mathbb{R}_{++}^{2}$, the chosen bundle is
 $x_t=(x_{1t},x_{2t})\in\mathbb{R}_{+}^{2}$, and expenditure is
 $m_t=p_t\cdot x_t$.
 
-Afriat's inequalities ask for numbers $u_t$ and $\lambda_t>0$ such that
+Afriat recovery asks for ordinal utility scores $u_t$ and positive supporting
+slopes $\lambda_t$ such that
 $$
 u_i-u_j \leq \lambda_j p_j\cdot(x_i-x_j)
 \qquad \text{for all } i,j=1,\ldots,T .
@@ -25,9 +26,9 @@ $$
 \widehat U(y)=\min_{j=1,\ldots,T}
 \left[u_j+\lambda_j p_j\cdot(y-x_j)\right].
 $$
-The minimum of affine supporting functions is concave, monotone when prices and
-$\lambda_j$ are positive, and satisfies $\widehat U(x_t)=u_t$ at the observed
-choices.
+This utility is the lower envelope of affine supporting functions. It is
+concave, monotone when prices and $\lambda_j$ are positive, and satisfies
+$\widehat U(x_t)=u_t$ at the observed choices.
 
 For a target observation $k$, the recovered upper-contour set is
 $$
@@ -56,28 +57,28 @@ $$
 
 | Object | Value | Role in the exercise |
 |---|---:|---|
-| Observations $T$ | 18 | Budget-choice pairs used for recovery |
-| Goods | 2 | Keeps the recovered contour visible |
-| True $\alpha$ | 0.60 | Cobb-Douglas benchmark, held out from recovery |
-| Income range | [5.07, 13.33] | Shifts observed budget lines |
-| Price range | [0.57, 1.96] | Rotates observed budget lines |
-| GARP violations | 0 | Required before recovery is meaningful |
-| Max Afriat residual | 1.30e-15 | Numerical feasibility check |
-| Target observation | 7 | Bundle whose contour is recovered |
+| Observations $T$ | 18 | Price-bundle pairs observed by the analyst |
+| Goods | 2 | Makes the recovered contour visible |
+| True $\alpha$ | 0.60 | Cobb-Douglas benchmark, hidden from recovery |
+| Income range | [5.07, 13.33] | Moves budget lines outward or inward |
+| Price range | [0.57, 1.96] | Rotates the observed budgets |
+| GARP violations | 0 | Screen before utility recovery |
+| Max Afriat residual | 1.30e-15 | Feasibility error from the inequalities |
+| Target observation | 7 | Bundle whose contour is drawn |
 
 ## Solution Method
 
-The computation has two pieces. First, the observed choices must pass the same revealed-preference consistency check used in the preceding tutorial. Second, the Afriat inequalities are solved as linear difference constraints. Utility levels are ordinal, so the report fixes their sample mean at one; the expenditure normalization $\lambda_t=1/m_t$ fixes the utility units for this generated sample.
+Afriat recovery uses a linear program because the unknown utility scores enter only through pairwise inequalities. The GARP screen protects the economic interpretation: if a strict revealed-preference cycle exists, no monotone concave utility can rationalize all choices. Once the screen passes, the linear program chooses one ordinal utility score for each observed bundle. The lower envelope then extends those scores to nearby bundles.
 
 ```text
 Algorithm: Afriat contour recovery
 Input: budgets (p_t, x_t) for t=1,...,T and target observation k
 Output: recovered utility index U_hat and contour through x_k
 
-1. Build R[i,j] = 1 if p_i . x_i >= p_i . x_j.
-2. Compute the transitive closure R_star and verify that GARP has no strict cycle.
-3. Set lambda_t = 1 / (p_t . x_t) to choose utility units.
-4. Solve for u_t subject to
+1. Mark i R j when bundle x_j was affordable under budget i.
+2. Close R transitively and check for a strict revealed-preference reversal.
+3. Set lambda_t = 1 / (p_t . x_t) to normalize supporting slopes.
+4. Solve for ordinal scores u_t subject to
        u_i - u_j <= lambda_j p_j . (x_i - x_j) for every pair (i,j),
        average_t u_t = 1, and u_t >= 0.
 5. Define U_hat(y) = min_j [u_j + lambda_j p_j . (y - x_j)].
@@ -85,23 +86,23 @@ Output: recovered utility index U_hat and contour through x_k
        U_hat((y_1,y_2)) >= u_k.
 ```
 
-A more general implementation could leave the $\lambda_t$ values as additional linear-programming variables. The fixed normalization here keeps the focus on recoverability rather than on the many equivalent ordinal scalings of the same revealed-preference information.
+A more general implementation could let the $\lambda_t$ values vary inside the linear program. The fixed expenditure normalization used here keeps the example focused on the recoverable preference restrictions rather than on equivalent ordinal scalings.
 
 ## Results
 
-The raw data are only budgets and chosen bundles. Price variation rotates the budget lines, while income shifts them out. The highlighted bundle is the one whose upper-contour boundary is recovered below. The computation treats the Cobb-Douglas origin of the choices as unknown.
+Each line is an observed budget set, and each dot is the bundle chosen from that set. Price variation rotates budgets, while income variation shifts them outward or inward. The starred bundle is the observation whose upper-contour boundary is recovered below. The computation treats the Cobb-Douglas origin of the choices as unknown.
 
-<img src="figures/budget-lines.png" alt="Observed budget lines and chosen bundles with the target observation highlighted" width="80%">
+<img src="figures/budget-lines.png" alt="Observed budget lines and chosen bundles with the target observation starred" width="80%">
 
-The recovered boundary is not a parametric estimate of Cobb-Douglas demand. It is one concave utility contour that passes through the target choice and rationalizes every observed bundle. The dashed curve is the true contour from the simulation and is shown only because this example has a known benchmark. On the plotted overlap, the median recovered-to-true $x_2$ ratio is **0.86**, and the largest absolute contour gap is **9.89** units of good 2.
+The blue curve is not a parametric estimate of Cobb-Douglas demand. It is one concave utility contour that passes through the target choice and rationalizes every observed bundle. The dashed curve is the true contour from the simulation and is shown only because this example has a known benchmark. On the plotted overlap, the median recovered-to-true $x_2$ ratio is **0.86**, and the largest absolute contour gap is **9.89** units of good 2.
 
 <img src="figures/indifference-curve.png" alt="Recovered Afriat contour and the held-out Cobb-Douglas contour" width="80%">
 
-The Afriat numbers are not structural parameters. They are a finite-data certificate: $u_t$ ranks observed bundles in a way that respects all budget comparisons, and $\lambda_t$ gives the supporting hyperplane slope in utility units. Since the sample is simulated, we can check the ordinal relationship against the true utility index; the correlation is **0.973**.
+The Afriat numbers should be read as a finite-data certificate, not as structural parameters. The scores $u_t$ rank observed bundles in a way that respects all budget comparisons, and $\lambda_t$ gives the supporting hyperplane slope in utility units. Since the sample is simulated, we can compare the recovered ordering with the true utility index. The correlation is **0.973**.
 
 <img src="figures/afriat-numbers.png" alt="Afriat utility levels and marginal utility normalizations" width="80%">
 
-The last column checks that the recovered utility evaluates to $u_t$ at each observed bundle. The true normalized utility column is a diagnostic for this simulation, not an input to the recovery algorithm.
+The last column checks that the recovered utility evaluates to $u_t$ at each observed bundle. The normalized true utility column is a simulation diagnostic, not an input to the recovery algorithm.
 
 **Afriat numbers and fit diagnostics**
 
@@ -128,9 +129,9 @@ The last column checks that the recovered utility evaluates to $u_t$ at each obs
 
 ## Takeaway
 
-Preference recoverability is useful because it does not pretend that finite data identify a unique utility function. Afriat numbers give a concrete rationalizing utility index and a way to draw local upper-contour restrictions from observed budgets. The Cobb-Douglas overlay shows the right interpretation: the data discipline the preference ordering where budgets create support, while regions with little price variation remain weakly pinned down.
+Finite choice data can say more than pass/fail rationalizability, but less than a fully specified utility function. Afriat numbers recover one utility index and one local contour that respect every observed budget comparison. The Cobb-Douglas overlay shows how to read the result: budgets discipline the preference ordering where they create support, and areas with little price variation remain weakly pinned down.
 
-If the data fail GARP, this exercise should stop and the next question is which observations break rationalizability; see the [money pump index](../money-pump-index/) and [Houtman-Maks rational subsets](../houtman-maks-rational-subsets/) tutorials. If the data pass, Afriat recovery gives the nonparametric object that a later parametric demand model has to respect.
+If the data fail GARP, this exercise should stop and the analyst should ask which observations break rationalizability; see the [money pump index](../money-pump-index/) and [Houtman-Maks rational subsets](../houtman-maks-rational-subsets/) tutorials. If the data pass, Afriat recovery gives a nonparametric object that a later parametric demand model has to respect.
 
 ## References
 

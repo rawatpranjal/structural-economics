@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Preference recoverability from finite revealed-preference data.
+"""Preference bounds from finite revealed-preference data.
 
 Constructs one concave monotone utility function that rationalizes
-GARP-consistent choices and compares its implied contour with the
-Cobb-Douglas data-generating benchmark.
+GARP-consistent budget choices and compares its implied contour with
+the Cobb-Douglas data-generating benchmark.
 
 Reference: Varian (1982), "The Nonparametric Approach to Demand Analysis."
 """
@@ -241,36 +241,36 @@ def main() -> None:
     setup_style()
 
     report = ModelReport(
-        "Preference Bounds from Revealed Choices",
-        "Afriat numbers, recovered upper contours, and the limits of finite choice data.",
+        "Recovering Preference Bounds from Budget Choices",
+        "Afriat numbers turn finite budget data into a rationalizing utility contour.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "Passing GARP is only the first revealed-preference question. Once the choices "
-        "are rationalizable, the natural next question is what they say about the "
-        "preference ordering itself. The answer is set-valued by construction: finite "
-        "budgets do not identify a unique demand system, but they do restrict the "
-        "utility functions that could have generated the data.\n\n"
-        "The starting object is the same as in "
-        "[Afriat's revealed-preference test](../revealed-preference-afriat/): a finite "
-        "sample of prices $p_t$ and chosen bundles $x_t$. Instead of stopping at "
-        "pass/fail rationalizability, the tutorial constructs Afriat numbers and uses them to "
-        "draw a concave utility index that exactly rationalizes the observed choices. "
-        "Because the synthetic data come from a Cobb-Douglas consumer, the true "
-        "indifference curve is available as a diagnostic; the Afriat construction does "
-        "not use that functional form."
+        "Suppose we watch a consumer face several two-good budgets. At each price "
+        "vector, the consumer buys one bundle and leaves every other affordable bundle "
+        "unchosen. An economist may want to use those choices to compare welfare across "
+        "policies or to discipline a later demand model, but finite budget observations "
+        "cannot reveal the whole utility function.\n\n"
+        "Revealed preference gives a middle ground. After the observations pass GARP, "
+        "Afriat's theorem turns the same price-bundle pairs into utility numbers and "
+        "supporting slopes. The computation solves a linear feasibility problem and "
+        "then evaluates the lower envelope of supporting planes. In this two-good "
+        "example, that envelope draws one concave upper-contour boundary through a "
+        "target bundle. The synthetic choices come from Cobb-Douglas demand, so the "
+        "true contour is available only to judge what finite data recover."
     )
 
     report.add_equations(
         r"""
-There are two goods and $T$ observations. At observation $t$, prices are
-$p_t=(p_{1t},p_{2t})\in\mathbb{R}_{++}^{2}$, the chosen bundle is
+There are two goods and $T$ budget-choice observations. At observation $t$,
+prices are $p_t=(p_{1t},p_{2t})\in\mathbb{R}_{++}^{2}$, the chosen bundle is
 $x_t=(x_{1t},x_{2t})\in\mathbb{R}_{+}^{2}$, and expenditure is
 $m_t=p_t\cdot x_t$.
 
-Afriat's inequalities ask for numbers $u_t$ and $\lambda_t>0$ such that
+Afriat recovery asks for ordinal utility scores $u_t$ and positive supporting
+slopes $\lambda_t$ such that
 $$
 u_i-u_j \leq \lambda_j p_j\cdot(x_i-x_j)
 \qquad \text{for all } i,j=1,\ldots,T .
@@ -280,9 +280,9 @@ $$
 \widehat U(y)=\min_{j=1,\ldots,T}
 \left[u_j+\lambda_j p_j\cdot(y-x_j)\right].
 $$
-The minimum of affine supporting functions is concave, monotone when prices and
-$\lambda_j$ are positive, and satisfies $\widehat U(x_t)=u_t$ at the observed
-choices.
+This utility is the lower envelope of affine supporting functions. It is
+concave, monotone when prices and $\lambda_j$ are positive, and satisfies
+$\widehat U(x_t)=u_t$ at the observed choices.
 
 For a target observation $k$, the recovered upper-contour set is
 $$
@@ -312,42 +312,42 @@ $$
     report.add_model_setup(
         f"| Object | Value | Role in the exercise |\n"
         f"|---|---:|---|\n"
-        f"| Observations $T$ | {n_obs} | Budget-choice pairs used for recovery |\n"
-        f"| Goods | 2 | Keeps the recovered contour visible |\n"
-        f"| True $\\alpha$ | {alpha_true:.2f} | Cobb-Douglas benchmark, held out from recovery |\n"
-        f"| Income range | [{income.min():.2f}, {income.max():.2f}] | Shifts observed budget lines |\n"
-        f"| Price range | [{prices.min():.2f}, {prices.max():.2f}] | Rotates observed budget lines |\n"
-        f"| GARP violations | {len(violations)} | Required before recovery is meaningful |\n"
-        f"| Max Afriat residual | {max_afriat_residual:.2e} | Numerical feasibility check |\n"
-        f"| Target observation | {target_obs + 1} | Bundle whose contour is recovered |"
+        f"| Observations $T$ | {n_obs} | Price-bundle pairs observed by the analyst |\n"
+        f"| Goods | 2 | Makes the recovered contour visible |\n"
+        f"| True $\\alpha$ | {alpha_true:.2f} | Cobb-Douglas benchmark, hidden from recovery |\n"
+        f"| Income range | [{income.min():.2f}, {income.max():.2f}] | Moves budget lines outward or inward |\n"
+        f"| Price range | [{prices.min():.2f}, {prices.max():.2f}] | Rotates the observed budgets |\n"
+        f"| GARP violations | {len(violations)} | Screen before utility recovery |\n"
+        f"| Max Afriat residual | {max_afriat_residual:.2e} | Feasibility error from the inequalities |\n"
+        f"| Target observation | {target_obs + 1} | Bundle whose contour is drawn |"
     )
 
     report.add_solution_method(
-        "The computation has two pieces. First, the observed choices must pass the "
-        "same revealed-preference consistency check used in the preceding tutorial. "
-        "Second, the Afriat inequalities are solved as linear difference constraints. "
-        "Utility levels are ordinal, so the report fixes their sample mean at one; "
-        "the expenditure normalization $\\lambda_t=1/m_t$ fixes the utility units for "
-        "this generated sample.\n\n"
+        "Afriat recovery uses a linear program because the unknown utility scores enter "
+        "only through pairwise inequalities. The GARP screen protects the economic "
+        "interpretation: if a strict revealed-preference cycle exists, no monotone "
+        "concave utility can rationalize all choices. Once the screen passes, the "
+        "linear program chooses one ordinal utility score for each observed bundle. "
+        "The lower envelope then extends those scores to nearby bundles.\n\n"
         "```text\n"
         "Algorithm: Afriat contour recovery\n"
         "Input: budgets (p_t, x_t) for t=1,...,T and target observation k\n"
         "Output: recovered utility index U_hat and contour through x_k\n"
         "\n"
-        "1. Build R[i,j] = 1 if p_i . x_i >= p_i . x_j.\n"
-        "2. Compute the transitive closure R_star and verify that GARP has no strict cycle.\n"
-        "3. Set lambda_t = 1 / (p_t . x_t) to choose utility units.\n"
-        "4. Solve for u_t subject to\n"
+        "1. Mark i R j when bundle x_j was affordable under budget i.\n"
+        "2. Close R transitively and check for a strict revealed-preference reversal.\n"
+        "3. Set lambda_t = 1 / (p_t . x_t) to normalize supporting slopes.\n"
+        "4. Solve for ordinal scores u_t subject to\n"
         "       u_i - u_j <= lambda_j p_j . (x_i - x_j) for every pair (i,j),\n"
         "       average_t u_t = 1, and u_t >= 0.\n"
         "5. Define U_hat(y) = min_j [u_j + lambda_j p_j . (y - x_j)].\n"
         "6. For a grid of y_1 values, compute the smallest y_2 that satisfies\n"
         "       U_hat((y_1,y_2)) >= u_k.\n"
         "```\n\n"
-        "A more general implementation could leave the $\\lambda_t$ values as "
-        "additional linear-programming variables. The fixed normalization here keeps "
-        "the focus on recoverability rather than on the many equivalent "
-        "ordinal scalings of the same revealed-preference information."
+        "A more general implementation could let the $\\lambda_t$ values vary inside "
+        "the linear program. The fixed expenditure normalization used here keeps the "
+        "example focused on the recoverable preference restrictions rather than on "
+        "equivalent ordinal scalings."
     )
 
     # --- Figure 1: observed budgets and choices ---
@@ -377,14 +377,15 @@ $$
     ax1.legend(frameon=False, loc="upper right")
 
     report.add_results(
-        "The raw data are only budgets and chosen bundles. Price variation rotates the "
-        "budget lines, while income shifts them out. The highlighted bundle is the one "
-        "whose upper-contour boundary is recovered below. The computation treats the "
-        "Cobb-Douglas origin of the choices as unknown."
+        "Each line is an observed budget set, and each dot is the bundle chosen from "
+        "that set. Price variation rotates budgets, while income variation shifts them "
+        "outward or inward. The starred bundle is the observation whose upper-contour "
+        "boundary is recovered below. The computation treats the Cobb-Douglas origin "
+        "of the choices as unknown."
     )
     report.add_figure(
         "figures/budget-lines.png",
-        "Observed budget lines and chosen bundles with the target observation highlighted",
+        "Observed budget lines and chosen bundles with the target observation starred",
         fig1,
     )
 
@@ -430,10 +431,10 @@ $$
     ax2.legend(frameon=False)
 
     report.add_results(
-        "The recovered boundary is not a parametric estimate of Cobb-Douglas demand. "
-        "It is one concave utility contour that passes through the target choice and "
-        "rationalizes every observed bundle. The dashed curve is the true contour from "
-        "the simulation and is shown only because this example has a known benchmark. "
+        "The blue curve is not a parametric estimate of Cobb-Douglas demand. It is one "
+        "concave utility contour that passes through the target choice and rationalizes "
+        "every observed bundle. The dashed curve is the true contour from the "
+        "simulation and is shown only because this example has a known benchmark. "
         f"On the plotted overlap, the median recovered-to-true $x_2$ ratio is "
         f"**{median_contour_ratio:.2f}**, and the largest absolute contour gap is "
         f"**{max_contour_gap:.2f}** units of good 2."
@@ -465,11 +466,12 @@ $$
     fig3.tight_layout()
 
     report.add_results(
-        "The Afriat numbers are not structural parameters. They are a finite-data "
-        "certificate: $u_t$ ranks observed bundles in a way that respects all budget "
-        "comparisons, and $\\lambda_t$ gives the supporting hyperplane slope in utility "
-        "units. Since the sample is simulated, we can check the ordinal relationship "
-        f"against the true utility index; the correlation is **{utility_corr:.3f}**."
+        "The Afriat numbers should be read as a finite-data certificate, not as "
+        "structural parameters. The scores $u_t$ rank observed bundles in a way that "
+        "respects all budget comparisons, and $\\lambda_t$ gives the supporting "
+        "hyperplane slope in utility units. Since the sample is simulated, we can "
+        "compare the recovered ordering with the true utility index. The correlation "
+        f"is **{utility_corr:.3f}**."
     )
     report.add_figure(
         "figures/afriat-numbers.png",
@@ -492,23 +494,23 @@ $$
         df,
         description=(
             "The last column checks that the recovered utility evaluates to $u_t$ at "
-            "each observed bundle. The true normalized utility column is a diagnostic "
-            "for this simulation, not an input to the recovery algorithm."
+            "each observed bundle. The normalized true utility column is a simulation "
+            "diagnostic, not an input to the recovery algorithm."
         ),
     )
 
     report.add_takeaway(
-        "Preference recoverability is useful because it does not pretend that "
-        "finite data identify a unique utility function. Afriat numbers give a concrete "
-        "rationalizing utility index and a way to draw local upper-contour restrictions "
-        "from observed budgets. The Cobb-Douglas overlay shows the right interpretation: "
-        "the data discipline the preference ordering where budgets create support, while "
-        "regions with little price variation remain weakly pinned down.\n\n"
-        "If the data fail GARP, this exercise should stop and the next question is which "
-        "observations break rationalizability; see the "
+        "Finite choice data can say more than pass/fail rationalizability, but less "
+        "than a fully specified utility function. Afriat numbers recover one utility "
+        "index and one local contour that respect every observed budget comparison. "
+        "The Cobb-Douglas overlay shows how to read the result: budgets discipline the "
+        "preference ordering where they create support, and areas with little price "
+        "variation remain weakly pinned down.\n\n"
+        "If the data fail GARP, this exercise should stop and the analyst should ask "
+        "which observations break rationalizability; see the "
         "[money pump index](../money-pump-index/) and "
         "[Houtman-Maks rational subsets](../houtman-maks-rational-subsets/) tutorials. "
-        "If the data pass, Afriat recovery gives the nonparametric object that a later "
+        "If the data pass, Afriat recovery gives a nonparametric object that a later "
         "parametric demand model has to respect."
     )
 
