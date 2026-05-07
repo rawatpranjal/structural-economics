@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T23:30:02Z",
+  "updated_at": "2026-05-07T23:35:29Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -593,6 +593,25 @@
         "choice/bayesian-learning/run.py"
       ],
       "updated_at": "2026-05-07T23:30:02Z"
+    },
+    {
+      "tutorial_path": "choice/urn-behavioral-mixtures/",
+      "status": "complete",
+      "commit": "5f2cadb0f97f901695bb59a78a77ce9baee29b70",
+      "changed_paths": [
+        "README.md",
+        "choice/urn-behavioral-mixtures/README.md",
+        "choice/urn-behavioral-mixtures/figures/bayes-likelihood-ratio.png",
+        "choice/urn-behavioral-mixtures/figures/classification-confidence.png",
+        "choice/urn-behavioral-mixtures/figures/mixture-weights.png",
+        "choice/urn-behavioral-mixtures/figures/thumb.png",
+        "choice/urn-behavioral-mixtures/run.py",
+        "choice/urn-behavioral-mixtures/tables/bayes-task-diagnostics.csv",
+        "choice/urn-behavioral-mixtures/tables/estimator-diagnostics.csv",
+        "choice/urn-behavioral-mixtures/tables/mixture-weights.csv",
+        "choice/urn-behavioral-mixtures/tables/type-allocation.csv"
+      ],
+      "updated_at": "2026-05-07T23:35:29Z"
     }
   ]
 }
