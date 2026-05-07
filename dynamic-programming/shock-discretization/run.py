@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Discretizing Persistent Shocks: Tauchen vs Rouwenhorst.
+"""Discretizing persistent income and productivity shocks.
 
-Compares standard finite-state approximations to a Gaussian AR(1). The chain
-that comes out is part of the economic model, not a numerical convenience: it
-sets the support over which households evaluate marginal utility and the
-persistence that propagates into expected continuation values.
+Compares standard finite-state approximations to a Gaussian AR(1). The output
+is the Markov chain that enters Bellman expectations in household and macro
+models, so its variance and persistence affect policies and stationary
+distributions rather than only numerical accuracy.
 
 References: Tauchen (1986); Rouwenhorst (1995); Kopecky and Suen (2010).
 """
@@ -133,36 +133,46 @@ def main() -> None:
     setup_style()
     report = ModelReport(
         "Discretizing Persistent Shocks",
-        "Tauchen and Rouwenhorst approximations to a Gaussian AR(1).",
+        "Turning a Gaussian AR(1) into the finite Markov chain used in Bellman equations.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "Almost every quantitative dynamic model in this section replaces a continuous "
-        "productivity or income shock with a finite Markov chain so that the Bellman "
-        "operator integrates over a finite expectation. The chain that comes out is "
-        "*part of the model*: it sets the support over which households evaluate "
-        "marginal utility, the persistence that propagates into continuation values, "
-        "and the long-run distribution underneath any stationary equilibrium.\n\n"
-        "Two algorithms cover most uses. **Tauchen** lays a uniform grid over a few "
-        "unconditional standard deviations and integrates conditional Gaussian mass "
-        "between cell midpoints. **Rouwenhorst** builds a chain recursively that "
-        "matches unconditional variance and one-period autocorrelation by "
-        "construction. For annual productivity or labor income with $\\rho \\approx "
-        "0.95$, the gap is not a rounding issue: with $N=7$, Tauchen overstates "
-        "persistence by about a percentage point, while Rouwenhorst is exact at every "
-        "$N$. Kopecky and Suen (2010) formalize this dominance for highly persistent "
-        "processes.\n\n"
-        "The same calibration of $(\\rho,\\sigma_\\epsilon)$ feeds the "
-        "[consumption-savings](../consumption-savings/), [Aiyagari](../aiyagari/), "
-        "and [RBC](../rbc/) tutorials, where the discretized chain enters the "
-        "household's or planner's expected continuation value directly."
+        "Start with a household or planner who faces persistent income or productivity "
+        "risk. Income might be $y_t=\\exp(z_t)$ in a buffer-stock saving model, or "
+        "productivity might be $A_t=\\exp(z_t)$ in an RBC planner problem. The economic "
+        "question is not how to draw a prettier grid. It is how to replace the "
+        "continuous shock $z_t$ with a finite Markov chain without changing the "
+        "insurance motive, persistence, and long-run distribution that the dynamic "
+        "model sees.\n\n"
+        "This tutorial isolates that step before solving a full dynamic program. A "
+        "Gaussian AR(1) is approximated by two standard finite-state methods. "
+        "**Tauchen** lays a uniform grid over a few unconditional standard deviations "
+        "and integrates conditional Gaussian mass between cell midpoints. "
+        "**Rouwenhorst** builds the transition matrix recursively so that the chain "
+        "matches the AR(1) variance and one-period autocorrelation by construction.\n\n"
+        "For annual income or productivity with $\\rho \\approx 0.95$, this choice is "
+        "economically meaningful. With $N=7$, Tauchen overstates persistence by about "
+        "a percentage point and the unconditional standard deviation by more than "
+        "20 percent, while Rouwenhorst matches both target moments. Those errors "
+        "feed directly into continuation values in the downstream "
+        "[consumption-savings](../consumption-savings/), "
+        "[Aiyagari](../aiyagari/), and [RBC](../rbc/) tutorials."
     )
 
     report.add_equations(
         rf"""
-The target is the Gaussian AR(1)
+A simple income-risk Bellman equation shows where the finite Markov chain
+enters. If assets are $a$, current shock state is $z_i$, and next assets are
+$a'$, the continuation term is a weighted sum over next-period shock states:
+
+$$V(a,z_i) = \max_{{a' \in \mathcal{{A}}}}
+[ u(Ra+\exp(z_i)-a') + \beta \sum_{{j=1}}^N P_{{ij}} V(a',z_j) ].$$
+
+The computational object needed by this Bellman equation is the grid
+$\{{z_1,\dots,z_N\}}$ and the transition matrix $P$. The continuous process
+being approximated is the Gaussian AR(1)
 
 $$z_{{t+1}} = \rho\, z_t + \sigma_\epsilon\, \varepsilon_{{t+1}},
 \qquad \varepsilon_{{t+1}} \sim \mathcal{{N}}(0,1).$$
@@ -172,33 +182,35 @@ Its unconditional law is $z_t \sim \mathcal{{N}}(0, \sigma_z^2)$ with
 $$\sigma_z^2 \;=\; \frac{{\sigma_\epsilon^2}}{{1-\rho^2}},
 \qquad \rho_k \;\equiv\; \mathrm{{Corr}}(z_t, z_{{t+k}}) \;=\; \rho^k.$$
 
-For $\rho={rho}$ and $\sigma_\epsilon={sigma_eps}$ this gives
+For $\rho={rho}$ and $\sigma_\epsilon={sigma_eps}$, the unconditional standard
+deviation is
 $\sigma_z = {true_std:.4f}$, with shock half-life
 $\ln 2 / (-\ln \rho) \approx {half_life:.0f}$ periods.
 
-A finite-state approximation replaces $z_t$ with a state space
-$\{{z_1,\dots,z_N\}}$ and a row-stochastic transition matrix
-$P\in\mathbb{{R}}^{{N\times N}}$ with
-$P_{{ij}}=\Pr(z_{{t+1}}=z_j\mid z_t=z_i)$. Inside any Bellman equation that
-integrates over next period's shock, the conditional expectation collapses
-to a finite sum:
+A finite-state approximation replaces the conditional Gaussian law with a
+row-stochastic matrix $P\in\mathbb{{R}}^{{N\times N}}$, where
+$P_{{ij}}=\Pr(z_{{t+1}}=z_j\mid z_t=z_i)$. The conditional expectation in any
+Bellman equation then becomes
 
-$$\mathbb{{E}}[V(x_{{t+1}},z_{{t+1}})\,\big|\,z_t=z_i]
-\;=\; \sum_{{j=1}}^N P_{{ij}}\, V(x_{{t+1}}, z_j).$$
+$$\mathbb{{E}}[V(x_{{t+1}},z_{{t+1}})\mid z_t=z_i]
+= \sum_{{j=1}}^N P_{{ij}} V(x_{{t+1}}, z_j).$$
 
-The chain has a unique invariant distribution $\pi$ satisfying $\pi=\pi P$
-and $\sum_i \pi_i = 1$. Two diagnostics decide whether the chain is a
-faithful stand-in for the AR(1):
+The chain has an invariant distribution $\pi$ satisfying $\pi=\pi P$ and
+$\sum_i \pi_i = 1$. Two diagnostics decide whether it is a faithful stand-in
+for the AR(1):
 
 1. Does the implied unconditional standard deviation match $\sigma_z$?
 2. Does the implied one-period autocorrelation match $\rho$?
 
-Both moments enter $\sum_j P_{{ij}} V(\cdot, z_j)$ directly, so errors here
-translate into bias in policies, prices, and stationary distributions.
+The first moment controls how much cross-sectional risk the model sees. The
+second controls how much a good or bad shock changes future continuation values.
 """
     )
 
     report.add_model_setup(
+        "The calibration is deliberately small. It should be read as an annual log "
+        "income or log productivity shock that will later be embedded in a dynamic "
+        "program, not as a standalone forecasting exercise.\n\n"
         f"| Parameter | Value | Description |\n"
         f"|-----------|-------|-------------|\n"
         f"| $\\rho$ | {rho} | AR(1) persistence (annual productivity-like calibration) |\n"
@@ -211,9 +223,9 @@ translate into bias in policies, prices, and stationary distributions.
     )
 
     report.add_solution_method(
-        "Two algorithms cover most teaching and research uses for AR(1) "
-        "discretization. They differ in what they target and how the error "
-        "scales with $N$.\n\n"
+        "The computational task is to choose a small state space and a transition "
+        "matrix that preserve the economic features of the continuous shock process. "
+        "Tauchen and Rouwenhorst solve that task in different ways.\n\n"
         "### Tauchen (1986): integrate Gaussian mass between cell midpoints\n\n"
         "Place an evenly spaced grid over $[-m\\sigma_z,\\, m\\sigma_z]$. For "
         "each starting state $z_i$ the conditional law of $z_{t+1}$ is "
@@ -221,7 +233,7 @@ translate into bias in policies, prices, and stationary distributions.
         "mass that conditional Gaussian assigns to the cell around $z_j$. "
         "Endpoint cells absorb the remaining tail mass.\n\n"
         "```text\n"
-        "Algorithm 1 — Tauchen\n"
+        "Algorithm 1: Tauchen\n"
         "Input:  rho, sigma_eps, N, half-width m\n"
         "Output: grid {z_j}, transition P, invariant pi\n"
         "  sigma_z = sigma_eps / sqrt(1 - rho^2)\n"
@@ -233,16 +245,13 @@ translate into bias in policies, prices, and stationary distributions.
         "             - Phi((c_j     - rho*z_i) / sigma_eps)\n"
         "  solve pi = pi P,   sum_j pi_j = 1\n"
         "```\n\n"
-        "Tradeoffs. Tauchen is transparent and nests an obvious limit: refining "
-        "$N$ recovers the conditional Gaussian. The catch on coarse grids with "
-        "$\\rho$ near one is that the conditional density centred on a near-tail "
-        "$z_i$ leaks mass past the endpoint, so the endpoint absorbs more "
-        "probability than the AR(1) actually places there. The chain ends up "
-        "with too much variance and mildly distorted persistence. Larger $m$ "
-        "widens the support but hollows out the centre; smaller $m$ truncates "
-        "the tails. Tauchen-Hussey quadrature improves on the bin choice for "
-        "moderate $\\rho$, but on coarse grids and high persistence the cleaner "
-        "answer is to switch methods.\n\n"
+        "The appeal is transparency. The grid has a visible support choice, and "
+        "refining $N$ recovers the conditional Gaussian. The cost shows up when "
+        "$\\rho$ is close to one and $N$ is small. Conditional mass from a near-tail "
+        "$z_i$ spills beyond the endpoint and gets absorbed by the last cell. The "
+        "chain then puts too much mass in persistent tail states. Widening the "
+        "support with a larger $m$ protects the tails but thins the center; shrinking "
+        "$m$ protects the center but truncates rare states.\n\n"
         "### Rouwenhorst (1995): match the moments by construction\n\n"
         "Build $P_N$ recursively from a 2-state base whose persistence "
         "$p=(1+\\rho)/2$ is calibrated to deliver the AR(1) one-period "
@@ -254,7 +263,7 @@ translate into bias in policies, prices, and stationary distributions.
         "of the stationary distribution is wrong even though the first two "
         "moments are right.\n\n"
         "```text\n"
-        "Algorithm 2 — Rouwenhorst\n"
+        "Algorithm 2: Rouwenhorst\n"
         "Input:  rho, sigma_eps, N\n"
         "Output: grid {z_j}, transition P_N, invariant pi\n"
         "  p   = (1 + rho) / 2\n"
@@ -271,10 +280,9 @@ translate into bias in policies, prices, and stationary distributions.
         "  z_j     = sigma_z * sqrt(N-1) * (2*(j-1)/(N-1) - 1)        for j = 1..N\n"
         "  pi_j    = binomial(N-1, j-1) / 2^{N-1}\n"
         "```\n\n"
-        "Kopecky and Suen (2010) prove that Rouwenhorst dominates Tauchen for "
-        "highly persistent processes on coarse grids: the moments are exact "
-        "rather than approximated, and the conditional persistence does not "
-        "collapse near the support boundary.\n\n"
+        "For highly persistent processes on coarse grids, this is usually the safer "
+        "economic approximation. The moments that drive continuation values are exact "
+        "rather than approached gradually as the grid grows.\n\n"
         "### Discrete-normal quadrature (for contrast only)\n\n"
         "The first figure also shows a discrete-normal quadrature, which "
         "approximates the *unconditional* law $\\mathcal{N}(0,\\sigma_z^2)$ "
@@ -317,7 +325,7 @@ translate into bias in policies, prices, and stationary distributions.
         "Tauchen approximation should sit on the curve. Tauchen tracks it "
         "reasonably well at $N=7$ but bleeds extra mass into its outermost "
         "states, which is exactly the source of the variance overstatement "
-        "documented next. Rouwenhorst sits on a different shape — its $\\pi$ is "
+        "documented next. Rouwenhorst sits on a different shape: its $\\pi$ is "
         "binomial, so even though $\\sigma_z$ is exact, the central states are "
         "heavier and the tails thinner than the Gaussian. The discrete-normal "
         "stems are included only to flag the contrast: without a transition "
@@ -349,14 +357,14 @@ translate into bias in policies, prices, and stationary distributions.
     report.add_results(
         "The second figure separates the two diagnostics. The horizontal axis "
         "is grid size; the zero line is the true AR(1) moment in each panel. "
-        "Rouwenhorst sits on zero at every $N$ — the construction enforces both "
+        "Rouwenhorst sits on zero at every $N$: the construction enforces both "
         "moments analytically. Tauchen approaches the targets only as $N$ "
         "grows, and convergence is slow when $\\rho$ is close to one. The "
         "$N=3$ Tauchen case is instructive: with only three states the chain "
         "rarely transitions, so the implied autocorrelation collapses to "
         "essentially one regardless of the target. For PhD-style "
         "consumption-savings or RBC calibrations that pair $\\rho \\approx 0.95$ "
-        "with small $N$, the persistence error is the more damaging one — it "
+        "with small $N$, the persistence error is the more damaging one: it "
         "enters every continuation value off the chain and biases "
         "precautionary saving and asset prices."
     )
@@ -386,12 +394,12 @@ translate into bias in policies, prices, and stationary distributions.
         "concrete. Both finite chains receive the same sequence of innovation "
         "ranks fed through their own conditional CDFs, so any deviation from "
         "the black AR(1) path comes from discretization alone. The chains "
-        "step between grid points — what was a smooth path becomes a coarse "
+        "step between grid points: what was a smooth path becomes a coarse "
         "staircase. The right question is not whether the staircase tracks "
         "the continuous line point by point (it cannot at $N=7$) but whether "
         "the rhythm of its movements is reasonable. Tauchen occasionally "
         "jumps to its wider tail states; Rouwenhorst is forced to stay closer "
-        "to the centre by its binomial $\\pi$, but reproduces the slow drift "
+        "to the center by its binomial $\\pi$, but reproduces the slow drift "
         "of a high-$\\rho$ process more cleanly."
     )
     report.add_figure(
@@ -429,7 +437,7 @@ translate into bias in policies, prices, and stationary distributions.
         "when the *shape* of the unconditional law shows up in the equilibrium "
         "object (for example, wealth distributions aggregating over income "
         "states). It is fine when persistence is moderate or the grid is fine "
-        "enough — but with $\\rho=0.95$ and $N=7$ it overstates persistence by "
+        "enough. But with $\\rho=0.95$ and $N=7$, it overstates persistence by "
         "about a percentage point, enough to perturb precautionary saving and "
         "asset prices in the downstream "
         "[consumption-savings](../consumption-savings/) and "
