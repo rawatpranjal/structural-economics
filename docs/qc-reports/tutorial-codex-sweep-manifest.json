@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T21:49:19Z",
+  "updated_at": "2026-05-07T21:52:59Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -323,6 +323,18 @@
         "optimal-control/continuous-cake-eating/run.py"
       ],
       "updated_at": "2026-05-07T21:49:19Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/theory-of-the-firm/",
+      "status": "complete",
+      "commit": "0b2677e6e0c321b4f558650db394c5dce01c8c36",
+      "changed_paths": [
+        "README.md",
+        "industrial-organization/theory-of-the-firm/README.md",
+        "industrial-organization/theory-of-the-firm/run.py",
+        "industrial-organization/theory-of-the-firm/tables/governance-comparison.csv"
+      ],
+      "updated_at": "2026-05-07T21:52:59Z"
     }
   ]
 }
