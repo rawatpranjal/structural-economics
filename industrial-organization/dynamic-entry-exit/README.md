@@ -1,12 +1,12 @@
-# Dynamic Entry and Exit in Oligopoly
+# Entry, Exit, and Market Structure in Oligopoly
 
-> Sunk entry costs, exit option values, and the stationary distribution of market structure.
+> Sunk entry costs, incumbent option values, and the stationary firm-count distribution.
 
 ## Overview
 
-Entry and exit are the dynamic margin behind many static IO objects. A market with eight firms today is not just a point on a concentration scale; it is also a state that determines incumbents' option value and entrants' willingness to sink capital. The product market here is symmetric Cournot, so market structure responds through the entry and exit margins rather than through differentiated-products demand.
+Consider a local market with eight active firms. A static concentration measure tells us how crowded the market is today, but it does not tell us whether those firms are entrenched or whether some incumbents are close to leaving while potential entrants wait outside. Entry and exit make the firm count a dynamic state. A firm that already paid the sunk cost may keep operating after a weak period because it owns a continuation option. A potential entrant faces a different calculation: it must pay $K$ before it can earn tomorrow's profits.
 
-The state is the number of active firms $N_t$. Incumbents pay a fixed operating cost $f$ if they stay, while entrants pay a sunk cost $K$ before becoming incumbents. The sunk cost is the wedge: an incumbent may tolerate a weak current profit because leaving means giving up the option to operate next period, whereas a potential entrant must justify the up-front cost. The companion tutorials on [dynamic games](../dynamic-games/) and [dynamic discrete choice](../dynamic-discrete-choice/) use the same continuation-value logic with different economic primitives.
+The model strips that situation down to a symmetric Cournot market. The state is the number of active firms $N_t$. Incumbents pay a fixed operating cost $f$ if they stay, and entrants pay a sunk cost $K$ before becoming incumbents. Computing the model is necessary because today's exit and entry rules depend on tomorrow's distribution of market structures. The tutorial solves that fixed point, then uses the implied Markov chain to read off persistence, turnover, and the long-run distribution of firm counts.
 
 ## Equations
 
@@ -78,7 +78,9 @@ $$
 
 ## Solution Method
 
-The computation is a finite-state fixed point. Given a candidate continuation value, the code computes incumbent exit probabilities, applies a state-level free-entry cutoff based on expected survival, and updates the inclusive value. Realized exits are still stochastic, so the induced transition matrix is not deterministic. Dampening is used only to stabilize the numerical fixed point; it is not an economic friction.
+The numerical object is the finite-state fixed point in incumbent continuation values. Once the continuation value $V(N)$ is known, the stay-or-exit choice, the free-entry cutoff, and the transition matrix all follow from the same object. That fixed point matters economically because it prices incumbency as an option: staying today buys access to future Cournot rents, while entering today requires paying the sunk cost before those rents arrive.
+
+The algorithm iterates on $V(N)$. At each candidate value function it computes smooth incumbent exit probabilities, counts how many entrants would be willing to enter after expected incumbent survival, integrates over realized survivor counts, and updates the log-sum value. Realized exits remain stochastic, so the final policy induces a Markov chain over firm counts. Dampening only stabilizes the numerical update; it is not an economic friction.
 
 ```text
 Algorithm: symmetric entry-exit fixed point
@@ -104,7 +106,7 @@ The value iteration converged in **667 iterations** with sup-norm error **9.94e-
 
 ## Results
 
-Incumbency value falls as additional competitors erode Cournot rents. The dashed horizontal line is the sunk entry cost: below it, a new firm would not enter even though an incumbent may still prefer to stay. The vertical line is the static zero-flow-profit benchmark; the dynamic cutoff does not have to coincide with it.
+Incumbency value falls as additional competitors erode Cournot rents. The dashed horizontal line is the sunk entry cost: below it, a new firm would not enter even when an incumbent may still prefer to stay. The vertical line is the static zero-flow-profit benchmark; the dynamic cutoff does not have to coincide with it.
 
 <img src="figures/value-function.png" alt="Incumbent value function by number of active firms" width="80%">
 
@@ -112,7 +114,7 @@ The two policy margins move in opposite directions. Exit risk rises with crowdin
 
 <img src="figures/entry-exit-probabilities.png" alt="Exit probability and expected entry by market size" width="80%">
 
-The invariant distribution is tightly centered because free entry offsets most departures from the profitable range. The black markers are a long Monte Carlo check from the same policy-induced Markov chain; their maximum distance from the invariant distribution is **5.42e-04** after burn-in.
+The invariant distribution is tightly centered because free entry offsets many departures from the profitable range. The black markers are a long Monte Carlo check from the same policy-induced Markov chain; their maximum distance from the invariant distribution is **5.42e-04** after burn-in.
 
 <img src="figures/stationary-distribution.png" alt="Stationary distribution of active firms" width="80%">
 
@@ -120,7 +122,7 @@ The simulated path gives the same object in time-series form. The firm count spe
 
 <img src="figures/simulated-market.png" alt="Simulated market structure and turnover flows" width="80%">
 
-The expected market size is below the static zero-profit count because entrants must recover the sunk cost $K$, not just cover the per-period fixed cost. At the same time, incumbents still have continuation value, so the exit margin remains smooth rather than a hard static shutdown rule.
+The expected market size is below the static zero-profit count because entrants must recover the sunk cost $K$ in addition to the per-period fixed cost. Incumbents still have continuation value, so the exit margin remains smooth rather than a hard static shutdown rule.
 
 **Equilibrium Statistics**
 
@@ -158,7 +160,7 @@ The selected states show the entry and exit cutoffs in levels. Thin markets have
 
 ## Takeaway
 
-The entry condition and the exit condition separate. Static profits say when a firm covers today's operating cost; dynamic profits say whether it is worth preserving the option to operate tomorrow. A sunk entry cost creates a band in which incumbents stay but entrants do not rush in. That band is what makes market structure persistent in Ericson-Pakes style IO models, even before adding firm heterogeneity, investment, or product differentiation.
+The entry condition and the exit condition separate. Static profits say when a firm covers today's operating cost; dynamic profits say whether preserving the option to operate tomorrow is valuable. A sunk entry cost creates a band in which incumbents stay while entrants wait outside. That band makes market structure persistent in Ericson-Pakes style IO models, even before adding firm heterogeneity, investment, or product differentiation.
 
 ## References
 
