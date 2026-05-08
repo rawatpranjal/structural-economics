@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T04:26:22Z",
+  "updated_at": "2026-05-08T04:34:38Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -36,6 +36,19 @@
         "dynamic-programming/optimal-growth/run.py"
       ],
       "updated_at": "2026-05-08T04:26:22Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/solow-growth/",
+      "status": "complete",
+      "commit": "cdee0213fb861e9c0692dcee89836d5afae8c83b",
+      "changed_paths": [
+        "README.md",
+        "dynamic-programming/solow-growth/README.md",
+        "dynamic-programming/solow-growth/figures/factor-prices.png",
+        "dynamic-programming/solow-growth/run.py",
+        "dynamic-programming/solow-growth/tables/steady-state-comparison.csv"
+      ],
+      "updated_at": "2026-05-08T04:34:38Z"
     },
     {
       "tutorial_path": "heterogeneous-agents/endogenous-grid-points/",
