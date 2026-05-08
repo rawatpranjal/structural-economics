@@ -11,14 +11,17 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from textwrap import dedent
+from textwrap import dedent, indent
 from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-MANIFEST = ROOT / "docs" / "qc-reports" / "tutorial-codex-sweep-manifest.json"
+DEFAULT_MANIFEST = ROOT / "docs" / "qc-reports" / "tutorial-codex-sweep-manifest.json"
+MANIFEST = DEFAULT_MANIFEST
 CLAUDE_MANIFEST = ROOT / "docs" / "qc-reports" / "tutorial-claude-sweep-manifest.json"
-PASS_NAME = "codex-full-tutorial-sweep-v1"
+DEFAULT_PASS_NAME = "codex-full-tutorial-sweep-v1"
+PASS_NAME = DEFAULT_PASS_NAME
+PROMPT_MODE = "standard"
 CATALOG_LINK_RE = re.compile(r"\]\(([^)#]+/)\)")
 BOOTSTRAP_COMPLETED_TUTORIALS = ("dynamic-programming/shock-discretization/",)
 DEFAULT_MIN_FREE_MIB = 1024
@@ -147,6 +150,14 @@ def rel_tutorial(path: Path) -> str:
     return path.relative_to(ROOT).as_posix() + "/"
 
 
+def display_path(path: Path) -> str:
+    """Return a repository-relative display path when possible."""
+    try:
+        return path.relative_to(ROOT).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
 def catalog_row_for(tutorial: Path) -> str:
     """Return the root README catalog row for a tutorial, if present."""
     rel = rel_tutorial(tutorial)
@@ -162,7 +173,7 @@ def load_manifest() -> dict[str, Any]:
         return {
             "pass_name": PASS_NAME,
             "updated_at": utc_now(),
-            "entries": bootstrap_completed_entries(),
+            "entries": initial_manifest_entries(),
         }
 
     data = json.loads(MANIFEST.read_text())
@@ -173,6 +184,13 @@ def load_manifest() -> dict[str, Any]:
     if "entries" not in data or not isinstance(data["entries"], list):
         raise SystemExit("Manifest must contain an entries list")
     return data
+
+
+def initial_manifest_entries() -> list[dict[str, Any]]:
+    """Return initial entries for a missing manifest."""
+    if MANIFEST == DEFAULT_MANIFEST and PASS_NAME == DEFAULT_PASS_NAME:
+        return bootstrap_completed_entries()
+    return []
 
 
 def write_manifest(data: dict[str, Any]) -> None:
@@ -448,43 +466,10 @@ def git_push() -> None:
     run_git(["push"], capture=False)
 
 
-def build_prompt(tutorial: Path) -> str:
-    """Build the prompt for one non-interactive Codex run."""
-    rel = rel_tutorial(tutorial)
-    changed_paths = "\n".join(
-        [
-            f"- {rel}run.py",
-            f"- generated files under {rel}",
-            f"- the single root README.md catalog row for {rel}",
-        ]
-    )
-
+def standard_prompt_instructions(rel: str) -> str:
+    """Return the original tutorial rewrite instructions."""
     return dedent(
         f"""\
-        You are working in {ROOT}.
-        Public project name: Computational Economics.
-
-        Target tutorial for this run: {rel}
-
-        Process exactly this one tutorial and stop. Do not inspect, revise,
-        regenerate, or commit later tutorials in the catalog. You may edit only:
-        {changed_paths}
-
-        The parent runner owns docs/qc-reports/tutorial-codex-sweep-manifest.json.
-        Do not edit docs/qc-reports files.
-
-        Before editing, read:
-        - CLAUDE.md
-        - STYLE_GUIDE.md
-        - GLOSSARY.md
-        - the relevant section-level CLAUDE.md, if present
-        - {rel}run.py
-        - {rel}README.md
-        - the root README.md catalog row for this tutorial
-
-        Current root catalog row:
-        {catalog_row_for(tutorial)}
-
         Instructions for this single-tutorial pass:
         - Make the tutorial economics-first for RA/pre-PhD through early PhD
           economics readers.
@@ -535,6 +520,125 @@ def build_prompt(tutorial: Path) -> str:
     )
 
 
+def cut_prompt_instructions(rel: str) -> str:
+    """Return the cut-not-compress editorial instructions."""
+    return dedent(
+        f"""\
+        Instructions for this cut-not-compress pass:
+        - This is an editorial deletion pass, not a general rewrite. The goal is
+          to make the tutorial easier to read by cutting material that is useful
+          but not necessary for this tutorial's core lesson.
+        - Before editing, identify the tutorial's core lesson in one sentence.
+          Keep that sentence as your private decision rule. Do not add a visible
+          "core lesson" label to the tutorial unless the local style already uses
+          that label.
+        - Build a keep list with 3 to 5 necessary ideas. Build a delete list
+          before rewriting. Delete useful-but-not-necessary material. Do not
+          reintroduce deleted content in compressed form.
+        - Overview may only introduce the economic situation, the object, and the
+          computational need. Put those in separate paragraphs. Do not use the
+          opening to map neighboring tutorials or adjacent methods.
+        - Keep one paragraph to one concept. Keep one sentence to one thought.
+          Prose sentences must be 22 words or fewer. Prose paragraphs must be 70
+          words or fewer.
+        - Allowed jargon must be tutorial-specific and short. Use only terms the
+          reader needs for this tutorial's object or method, such as the model
+          name, estimator, algorithm, state variable, policy rule, equilibrium
+          object, likelihood, residual, or operator being taught. Delete generic
+          filler and unnecessary meta-language.
+        - Avoid forced three-part lists, "not just ... but ..." contrasts,
+          generic signposting, inflated AI tells such as delve, crucial, pivotal,
+          seamless, robust, landscape, testament, underscores, highlights, serves
+          as, and stands as, and all em dashes in generated prose.
+        - Preserve correct equations, generated figures, and code needed to run
+          the tutorial. Edit {rel}run.py first, then regenerate from inside the
+          tutorial folder with python3 run.py.
+        - Keep visible Reproduce sections and image captions omitted unless
+          needed; keep useful alt text.
+        - Improve the root catalog row only if needed to match the cut tutorial.
+          Keep it short. Put the economic object first and the computational
+          method second.
+
+        Required child self-audit before committing:
+        - After regenerating, audit the edited tutorial README, run.py generated
+          prose, and root catalog row. Use temporary shell one-liners if useful,
+          but do not leave helper files behind.
+        - Report the 15 longest prose sentences and their word counts in your
+          terminal-visible reasoning or final child message. Revise any prose
+          sentence over 22 words unless it is code, a heading, a table row, math,
+          a URL, or unavoidable bibliography/provenance text.
+        - Report every prose paragraph over 70 words. Revise any violation unless
+          it is code, math, a table, or generated metadata that should not be
+          rewritten.
+        - Assign a short job label to each prose paragraph, such as situation,
+          object, computational need, equation, algorithm, diagnostic, or
+          interpretation.
+        - Report paragraphs with more than one job. Split or cut them before
+          committing.
+        - Report the non-allowed jargon list. Delete or replace each item before
+          committing.
+        - Explicitly confirm that the final cuts are deletions, not compression.
+          If you moved deleted material into shorter sentences, keep cutting.
+        - Run python3 scripts/validate_catalog.py from the repository root.
+        - Commit only this tutorial's files and the matching root README.md row.
+          Do not use an empty commit.
+        - Push the commit before finishing.
+        - Leave a clean worktree.
+        """
+    )
+
+
+def build_prompt(tutorial: Path) -> str:
+    """Build the prompt for one non-interactive Codex run."""
+    rel = rel_tutorial(tutorial)
+    changed_paths = indent(
+        "\n".join(
+            [
+                f"- {rel}run.py",
+                f"- generated files under {rel}",
+                f"- the single root README.md catalog row for {rel}",
+            ]
+        ),
+        "        ",
+    )
+    instructions = (
+        cut_prompt_instructions(rel)
+        if PROMPT_MODE == "cut"
+        else standard_prompt_instructions(rel)
+    ).rstrip()
+
+    prefix = dedent(
+        f"""\
+        You are working in {ROOT}.
+        Public project name: Computational Economics.
+
+        Target tutorial for this run: {rel}
+        Prompt mode: {PROMPT_MODE}
+
+        Process exactly this one tutorial and stop. Do not inspect, revise,
+        regenerate, or commit later tutorials in the catalog. You may edit only:
+{changed_paths}
+
+        The parent runner owns {display_path(MANIFEST)}.
+        Do not edit docs/qc-reports files.
+
+        Before editing, read:
+        - CLAUDE.md
+        - STYLE_GUIDE.md
+        - GLOSSARY.md
+        - the relevant section-level CLAUDE.md, if present
+        - {rel}run.py
+        - {rel}README.md
+        - the root README.md catalog row for this tutorial
+
+        Current root catalog row:
+        {catalog_row_for(tutorial)}
+
+        """
+    )
+    return f"{prefix}{instructions}\n"
+
+
 def run_codex(tutorial: Path, codex_bin: str) -> int:
     """Run one non-interactive Codex job for a tutorial."""
     cmd = [
@@ -545,7 +649,10 @@ def run_codex(tutorial: Path, codex_bin: str) -> int:
         str(ROOT),
         "-",
     ]
-    print(f"\n=== Running Codex for {rel_tutorial(tutorial)} ===", flush=True)
+    print(
+        f"\n=== Running Codex for {rel_tutorial(tutorial)} ({PROMPT_MODE} mode) ===",
+        flush=True,
+    )
     return subprocess.run(cmd, cwd=ROOT, input=build_prompt(tutorial), text=True).returncode
 
 
@@ -556,11 +663,14 @@ def dry_run(limit: int | None, start_index: int) -> int:
     selected = {rel_tutorial(path) for path in queued_tutorials(start_index, limit)}
     queue_count = len(selected)
     complete_source = (
-        MANIFEST.relative_to(ROOT)
+        display_path(MANIFEST)
         if MANIFEST.exists()
-        else f"bootstrap defaults for missing {MANIFEST.relative_to(ROOT)}"
+        else f"initial defaults for missing {display_path(MANIFEST)}"
     )
 
+    print(f"Manifest: {display_path(MANIFEST)}")
+    print(f"Pass name: {PASS_NAME}")
+    print(f"Prompt mode: {PROMPT_MODE}")
     print(f"{len(tutorials)} active tutorial(s) in root README order.")
     print(f"{len(done)} complete from {complete_source}.")
     print(f"{queue_count} tutorial(s) selected for the next run.")
@@ -598,6 +708,22 @@ def parse_args() -> argparse.Namespace:
         help="1-based catalog position to start from before skipping manifest-complete entries.",
     )
     parser.add_argument(
+        "--manifest",
+        default=DEFAULT_MANIFEST.relative_to(ROOT).as_posix(),
+        help="Manifest JSON path for this pass. Defaults to the completed v1 Codex manifest.",
+    )
+    parser.add_argument(
+        "--pass-name",
+        default=DEFAULT_PASS_NAME,
+        help="Expected pass_name to read or write in the manifest.",
+    )
+    parser.add_argument(
+        "--prompt-mode",
+        choices=("standard", "cut"),
+        default="standard",
+        help="Prompt template to send to the child Codex run.",
+    )
+    parser.add_argument(
         "--codex-bin",
         default="codex",
         help="Codex executable to invoke.",
@@ -621,12 +747,34 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def configure_run(args: argparse.Namespace) -> None:
+    """Apply CLI configuration to the module-level runner state."""
+    global MANIFEST, PASS_NAME, PROMPT_MODE
+
+    manifest = Path(args.manifest)
+    if not manifest.is_absolute():
+        manifest = ROOT / manifest
+    manifest = manifest.resolve()
+    try:
+        manifest.relative_to(ROOT)
+    except ValueError as exc:
+        raise SystemExit("--manifest must be inside the repository") from exc
+
+    if not args.pass_name.strip():
+        raise SystemExit("--pass-name must be nonempty")
+
+    MANIFEST = manifest
+    PASS_NAME = args.pass_name
+    PROMPT_MODE = args.prompt_mode
+
+
 def main() -> int:
     args = parse_args()
+    configure_run(args)
 
     if args.seed_from_claude:
         added = seed_manifest_from_claude()
-        print(f"Seeded {added} completion(s) from {CLAUDE_MANIFEST.relative_to(ROOT)}.")
+        print(f"Seeded {added} completion(s) from {display_path(CLAUDE_MANIFEST)}.")
         if added and not args.dry_run:
             print("Seeded the Codex manifest; commit and push it before a live tutorial run.")
             return 0
