@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Cereal demand with nested logit substitution.
 
-Estimates a nested logit demand system for a synthetic cereal market where
-products are grouped into sugary and healthy nests. The nesting parameter sigma
-controls within-nest correlation in unobserved tastes, so substitution can be
-stronger among close alternatives than across the whole product space.
+Estimates a nested logit demand system for a synthetic cereal market. Products
+belong to sugary and healthy nests, so substitution can be stronger inside a
+group than across the whole product space.
 
 References: Berry (1994), McFadden (1978).
 """
@@ -402,47 +401,6 @@ def fig_diversion_ratios(logit_eta, nested_eta, true_eta, shares, names, nest_id
     return fig
 
 
-def fig_sigma_effect():
-    """Figure 4: How sigma changes the elasticity pattern (three panels)."""
-    delta = np.array([1.0, 0.8, 0.5, 0.3])
-    nids = np.array([1, 1, 2, 2])
-    prices = np.array([3.0, 2.0, 5.0, 4.0])
-    alpha = 1.5
-    labels = ["A (Nest 1)", "B (Nest 1)", "C (Nest 2)", "D (Nest 2)"]
-
-    sigmas = [0.01, 0.5, 0.9]
-    titles = [r"$\sigma = 0$ (plain logit)", r"$\sigma = 0.5$ (moderate)",
-              r"$\sigma = 0.9$ (strong nesting)"]
-
-    fig, axes = plt.subplots(1, 3, figsize=(16, 5))
-    for ax, sig, title in zip(axes, sigmas, titles):
-        st, sw, _ = compute_total_shares(delta, nids, sig)
-        eta = compute_nested_elasticities(alpha, sig, prices, st, sw, nids)
-        vmax, vmin = 3.0, -8.0
-        im = ax.imshow(eta, cmap="RdBu_r", aspect="auto", vmin=vmin, vmax=vmax)
-        ax.set_xticks(range(4))
-        ax.set_yticks(range(4))
-        ax.set_xticklabels(labels, rotation=45, ha="right", fontsize=8)
-        ax.set_yticklabels(labels, fontsize=8)
-        ax.set_title(title, fontsize=11, fontweight="bold")
-        for i in range(4):
-            for j in range(4):
-                v = eta[i, j]
-                c = "white" if abs(v) > 2 else "black"
-                ax.text(j, i, f"{v:.1f}", ha="center", va="center", fontsize=8, color=c)
-        # Nest block outlines
-        rect1 = plt.Rectangle((-0.5, -0.5), 2, 2, fill=False, edgecolor="gold", linewidth=2)
-        rect2 = plt.Rectangle((1.5, 1.5), 2, 2, fill=False, edgecolor="gold", linewidth=2)
-        ax.add_patch(rect1)
-        ax.add_patch(rect2)
-
-    fig.colorbar(im, ax=axes.ravel().tolist(), label="Elasticity", shrink=0.8)
-    fig.suptitle("Effect of nesting parameter on substitution patterns",
-                 fontsize=13, fontweight="bold")
-    fig.subplots_adjust(top=0.88, bottom=0.22, wspace=0.35)
-    return fig
-
-
 # =============================================================================
 # Main
 # =============================================================================
@@ -544,27 +502,15 @@ def main():
     )
 
     report.add_overview(
-        "Suppose a supermarket raises the price of Choco-Bombs. The first demand "
-        "effect is mechanical: fewer people buy Choco-Bombs. The harder economic "
-        "object is the diversion pattern. Do those buyers mostly switch to "
-        "Store-Frosted, another sugary cereal, or do they drift toward healthy "
-        "cereals and the outside option?\n\n"
-        "Plain logit answers that question with existing market shares. A lost "
-        "buyer is sent toward larger rivals, even when a smaller rival is the "
-        "closer substitute. That is the IIA restriction from the "
-        "[plain-logit tutorial](../logit-discrete-choice/). Nested logit keeps a "
-        "closed-form share system but adds product groups. Here Choco-Bombs and "
-        "Store-Frosted are sugary cereals, while Fiber-Bran and Granola-Crunch "
-        "are healthy cereals. The nesting parameter $\\sigma \\in [0,1)$ controls "
-        "how strongly substitution stays inside a group.\n\n"
-        "The computation has to connect that economic grouping to objects an "
-        "economist can use: predicted shares, price elasticities, and diversion "
-        "ratios. The tutorial computes nested-logit shares from inclusive values, "
-        "uses the Berry inversion to estimate $\\sigma$ by IV, and then turns the "
-        "estimated model into a substitution matrix. The example stays small so "
-        "the mechanics are visible before richer random-coefficients demand models "
-        "such as "
-        "[BLP](../../industrial-organization/blp-random-coefficients/)."
+        "A supermarket raises the price of Choco-Bombs. Fewer shoppers choose it. "
+        "Some switch to Store-Frosted, and some leave the cereal category.\n\n"
+        "The object is the diversion pattern. Nested logit groups Choco-Bombs "
+        "with Store-Frosted and groups the two healthier cereals. The nesting "
+        "parameter $\\sigma$ controls how much substitution stays inside a group.\n\n"
+        "The computation starts from shares, prices, nests, and instruments. "
+        "Berry inversion gives a linear equation. 2SLS estimates price "
+        "sensitivity and $\\sigma$. Elasticities and diversion ratios then show "
+        "where lost Choco-Bombs demand goes."
     )
 
     report.add_equations(r"""
@@ -629,11 +575,10 @@ $$
 """)
 
     report.add_model_setup(
-        "The synthetic panel mimics a small cereal category observed across many "
-        "markets. The data-generating model is known, but the estimator only sees "
-        "prices, sugar content, shares, nest assignments, and excluded shifters. "
-        "The true parameters appear later only as a benchmark for the estimates "
-        "and substitution patterns.\n\n"
+        "The synthetic panel has a small cereal category across many markets. "
+        "Prices move with a cost shifter. Shares come from the nested-logit model. "
+        "The estimator observes prices, sugar, shares, nests, and excluded "
+        "shifters.\n\n"
         "| Object | Value | Role |\n"
         "|---|---:|---|\n"
         f"| Markets $T$ | {df['market_id'].nunique()} | Cross-market price and cost variation |\n"
@@ -647,12 +592,10 @@ $$
     )
 
     report.add_solution_method(
-        "The numerical work is simple because nested logit has closed-form shares. "
-        "For any candidate mean utilities and nesting parameter, inclusive values "
-        "summarize each product group. The estimation step then uses 2SLS on the "
-        "Berry-inverted regression, since price and the within-nest share both "
-        "move with unobserved product quality. Plain logit is estimated on the "
-        "same data as the benchmark that forces IIA.\n\n"
+        "Nested logit has closed-form shares. Inclusive values summarize each "
+        "product group. The estimation step uses 2SLS on the Berry-inverted "
+        "regression. Price and within-nest share both move with unobserved "
+        "product quality. Plain logit is estimated as the IIA benchmark.\n\n"
         "```text\n"
         "Algorithm: nested-logit IV demand\n"
         "Input: markets t, products j, nests g(j), shares s_jt, outside shares s_0t\n"
@@ -665,9 +608,9 @@ $$
         "6. Compute eta_jk,t and D_{j<-k}; compare plain logit, fitted nested logit,\n"
         "   and the true synthetic nested-logit benchmark.\n"
         "```\n\n"
-        "The instrument list follows the two endogenous variables. Cost variation "
-        "moves prices. Rival characteristics and nest composition move the local "
-        "competitive set used to predict $\\ln s_{j|g,t}$.\n\n"
+        "The instruments match the two endogenous variables. Cost variation moves "
+        "prices. Rival characteristics and nest composition predict "
+        "$\\ln s_{j|g,t}$.\n\n"
         "| Instrument | Targets | Rationale |\n"
         "|---|---|---|\n"
         "| Cost shifter | Price | Moves marginal cost without entering utility directly |\n"
@@ -681,10 +624,13 @@ $$
     report.add_figure(
         "figures/elasticity-heatmap.png",
         "Nested logit elasticity matrix with nest blocks highlighted. "
-        "Same-nest cross-elasticities (inside gold boxes) are higher than "
-        "cross-nest elasticities.",
+        "Same-nest responses are higher than cross-nest responses.",
         fig1,
-        description="Rows are the products whose shares respond; columns are the prices that move. The gold blocks mark the maintained nests. In the fitted nested model, the Choco-Bombs price column has a much larger effect on Store-Frosted than on the healthy cereals, so substitution follows product similarity rather than only market size.",
+        description=(
+            "Rows are products whose shares respond. Columns are prices that move. "
+            "Gold blocks mark the nests. The Choco-Bombs column is largest for "
+            "Store-Frosted, so substitution follows product similarity."
+        ),
     )
 
     # --- Figure 2: Cross-elasticity comparison ---
@@ -692,9 +638,14 @@ $$
     report.add_figure(
         "figures/cross-elasticity-comparison.png",
         "Cross-elasticities when Choco-Bombs raises its price: plain logit, "
-        "fitted nested logit, and the true synthetic nested-logit benchmark.",
+        "fitted nested logit, and the true synthetic model.",
         fig2,
-        description="The blue bars show the plain-logit restriction: cross responses follow product shares without using product closeness. The green and red bars use the 2SLS nested-logit estimates; the hatched bars show the true synthetic nested-logit benchmark. The estimate overstates the strength of nesting in this small IV design, but it recovers the economic ranking: Store-Frosted is the close substitute.",
+        description=(
+            "The blue bars show the plain-logit restriction. Cross responses "
+            "follow product shares without product closeness. The green and red "
+            "bars use 2SLS nested-logit estimates. The hatched bars show the "
+            "true synthetic model. It ranks Store-Frosted as the close substitute."
+        ),
     )
 
     # --- Figure 3: Diversion ratios ---
@@ -704,20 +655,11 @@ $$
         "Product diversion ratios from a Choco-Bombs price increase.",
         fig3,
         description=(
-            "Diversion ratios convert elasticities back into derivatives of market shares. Plain logit sends lost Choco-Bombs demand toward rivals in proportion to their current shares. Nested logit shifts much more of that product-level diversion to Store-Frosted. "
-            f"Across the three inside rivals, the product diversion shown here sums to {sum(div_nested.values()) * 100:.1f}% under the fitted nested model and {sum(div_true.values()) * 100:.1f}% under the true nested model; the remainder goes to the outside good."
+            "Diversion ratios convert elasticities back into share derivatives. "
+            "Plain logit sends lost Choco-Bombs demand toward larger rivals. "
+            "Nested logit shifts more diversion to Store-Frosted. The remaining "
+            "lost demand goes to the outside good."
         ),
-    )
-
-    # --- Figure 4: Sigma effect ---
-    fig4 = fig_sigma_effect()
-    report.add_figure(
-        "figures/sigma-effect.png",
-        "Effect of the nesting parameter sigma on substitution patterns. "
-        "As sigma increases, within-nest substitution intensifies while "
-        "cross-nest substitution stays flat.",
-        fig4,
-        description="Changing $\\sigma$ while holding mean utilities fixed isolates the role of the nesting parameter. At $\\sigma\\approx0$ the model behaves like plain logit. As $\\sigma$ approaches one, same-nest elasticities grow rapidly, while cross-nest responses remain governed mostly by aggregate shares.",
     )
 
     # --- Table: Parameter estimates ---
@@ -733,15 +675,18 @@ $$
     tdf = pd.DataFrame(table_data)
     report.add_table("tables/parameter-estimates.csv",
                      "Parameter estimates: true values vs plain logit vs nested logit", tdf,
-                     description="The table separates model misspecification from finite-sample IV noise. Plain logit has no nesting parameter, so it cannot match the substitution pattern even when the price coefficient is in the right range. The nested-logit estimate recovers the signs and the same-nest ranking, but $\\hat\\sigma$ is above the true value in this small synthetic panel.")
+                     description=(
+                         "The table checks whether estimation recovers the "
+                         "parameters used to generate the synthetic shares. "
+                         "Plain logit cannot estimate $\\sigma$. Nested logit "
+                         "recovers the signs and the same-nest ranking."
+                     ))
 
     report.add_takeaway(
-        "Nested logit is useful when the researcher can defend a product grouping "
-        "and needs a substitution matrix richer than plain logit. The economic "
-        "content is the diversion pattern: a price increase for one sugary cereal "
-        "mainly sends buyers to another sugary cereal. The maintained nests do real "
-        "work, so the model is only as persuasive as the grouping. If closeness is "
-        "consumer-specific instead, the natural next model is random coefficients."
+        "Nested logit is useful when product groups are defensible. Here a "
+        "Choco-Bombs price increase mainly sends buyers to Store-Frosted. The "
+        "nests do real work. The diversion matrix is only as credible as the "
+        "grouping."
     )
 
     report.add_references([

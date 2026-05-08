@@ -4,11 +4,11 @@
 
 ## Overview
 
-Suppose a supermarket raises the price of Choco-Bombs. The first demand effect is mechanical: fewer people buy Choco-Bombs. The harder economic object is the diversion pattern. Do those buyers mostly switch to Store-Frosted, another sugary cereal, or do they drift toward healthy cereals and the outside option?
+A supermarket raises the price of Choco-Bombs. Fewer shoppers choose it. Some switch to Store-Frosted, and some leave the cereal category.
 
-Plain logit answers that question with existing market shares. A lost buyer is sent toward larger rivals, even when a smaller rival is the closer substitute. That is the IIA restriction from the [plain-logit tutorial](../logit-discrete-choice/). Nested logit keeps a closed-form share system but adds product groups. Here Choco-Bombs and Store-Frosted are sugary cereals, while Fiber-Bran and Granola-Crunch are healthy cereals. The nesting parameter $\sigma \in [0,1)$ controls how strongly substitution stays inside a group.
+The object is the diversion pattern. Nested logit groups Choco-Bombs with Store-Frosted and groups the two healthier cereals. The nesting parameter $\sigma$ controls how much substitution stays inside a group.
 
-The computation has to connect that economic grouping to objects an economist can use: predicted shares, price elasticities, and diversion ratios. The tutorial computes nested-logit shares from inclusive values, uses the Berry inversion to estimate $\sigma$ by IV, and then turns the estimated model into a substitution matrix. The example stays small so the mechanics are visible before richer random-coefficients demand models such as [BLP](../../industrial-organization/blp-random-coefficients/).
+The computation starts from shares, prices, nests, and instruments. Berry inversion gives a linear equation. 2SLS estimates price sensitivity and $\sigma$. Elasticities and diversion ratios then show where lost Choco-Bombs demand goes.
 
 ## Equations
 
@@ -73,7 +73,7 @@ $$
 
 ## Model Setup
 
-The synthetic panel mimics a small cereal category observed across many markets. The data-generating model is known, but the estimator only sees prices, sugar content, shares, nest assignments, and excluded shifters. The true parameters appear later only as a benchmark for the estimates and substitution patterns.
+The synthetic panel has a small cereal category across many markets. Prices move with a cost shifter. Shares come from the nested-logit model. The estimator observes prices, sugar, shares, nests, and excluded shifters.
 
 | Object | Value | Role |
 |---|---:|---|
@@ -88,7 +88,7 @@ The synthetic panel mimics a small cereal category observed across many markets.
 
 ## Solution Method
 
-The numerical work is simple because nested logit has closed-form shares. For any candidate mean utilities and nesting parameter, inclusive values summarize each product group. The estimation step then uses 2SLS on the Berry-inverted regression, since price and the within-nest share both move with unobserved product quality. Plain logit is estimated on the same data as the benchmark that forces IIA.
+Nested logit has closed-form shares. Inclusive values summarize each product group. The estimation step uses 2SLS on the Berry-inverted regression. Price and within-nest share both move with unobserved product quality. Plain logit is estimated as the IIA benchmark.
 
 ```text
 Algorithm: nested-logit IV demand
@@ -104,7 +104,7 @@ Output: IV estimates, elasticity matrix, and diversion ratios
    and the true synthetic nested-logit benchmark.
 ```
 
-The instrument list follows the two endogenous variables. Cost variation moves prices. Rival characteristics and nest composition move the local competitive set used to predict $\ln s_{j|g,t}$.
+The instruments match the two endogenous variables. Cost variation moves prices. Rival characteristics and nest composition predict $\ln s_{j|g,t}$.
 
 | Instrument | Targets | Rationale |
 |---|---|---|
@@ -115,23 +115,19 @@ The instrument list follows the two endogenous variables. Cost variation moves p
 
 ## Results
 
-Rows are the products whose shares respond; columns are the prices that move. The gold blocks mark the maintained nests. In the fitted nested model, the Choco-Bombs price column has a much larger effect on Store-Frosted than on the healthy cereals, so substitution follows product similarity rather than only market size.
+Rows are products whose shares respond. Columns are prices that move. Gold blocks mark the nests. The Choco-Bombs column is largest for Store-Frosted, so substitution follows product similarity.
 
-<img src="figures/elasticity-heatmap.png" alt="Nested logit elasticity matrix with nest blocks highlighted. Same-nest cross-elasticities (inside gold boxes) are higher than cross-nest elasticities." width="80%">
+<img src="figures/elasticity-heatmap.png" alt="Nested logit elasticity matrix with nest blocks highlighted. Same-nest responses are higher than cross-nest responses." width="80%">
 
-The blue bars show the plain-logit restriction: cross responses follow product shares without using product closeness. The green and red bars use the 2SLS nested-logit estimates; the hatched bars show the true synthetic nested-logit benchmark. The estimate overstates the strength of nesting in this small IV design, but it recovers the economic ranking: Store-Frosted is the close substitute.
+The blue bars show the plain-logit restriction. Cross responses follow product shares without product closeness. The green and red bars use 2SLS nested-logit estimates. The hatched bars show the true synthetic model. It ranks Store-Frosted as the close substitute.
 
-<img src="figures/cross-elasticity-comparison.png" alt="Cross-elasticities when Choco-Bombs raises its price: plain logit, fitted nested logit, and the true synthetic nested-logit benchmark." width="80%">
+<img src="figures/cross-elasticity-comparison.png" alt="Cross-elasticities when Choco-Bombs raises its price: plain logit, fitted nested logit, and the true synthetic model." width="80%">
 
-Diversion ratios convert elasticities back into derivatives of market shares. Plain logit sends lost Choco-Bombs demand toward rivals in proportion to their current shares. Nested logit shifts much more of that product-level diversion to Store-Frosted. Across the three inside rivals, the product diversion shown here sums to 97.8% under the fitted nested model and 92.4% under the true nested model; the remainder goes to the outside good.
+Diversion ratios convert elasticities back into share derivatives. Plain logit sends lost Choco-Bombs demand toward larger rivals. Nested logit shifts more diversion to Store-Frosted. The remaining lost demand goes to the outside good.
 
 <img src="figures/diversion-ratios.png" alt="Product diversion ratios from a Choco-Bombs price increase." width="80%">
 
-Changing $\sigma$ while holding mean utilities fixed isolates the role of the nesting parameter. At $\sigma\approx0$ the model behaves like plain logit. As $\sigma$ approaches one, same-nest elasticities grow rapidly, while cross-nest responses remain governed mostly by aggregate shares.
-
-<img src="figures/sigma-effect.png" alt="Effect of the nesting parameter sigma on substitution patterns. As sigma increases, within-nest substitution intensifies while cross-nest substitution stays flat." width="80%">
-
-The table separates model misspecification from finite-sample IV noise. Plain logit has no nesting parameter, so it cannot match the substitution pattern even when the price coefficient is in the right range. The nested-logit estimate recovers the signs and the same-nest ranking, but $\hat\sigma$ is above the true value in this small synthetic panel.
+The table checks whether estimation recovers the parameters used to generate the synthetic shares. Plain logit cannot estimate $\sigma$. Nested logit recovers the signs and the same-nest ranking.
 
 **Parameter estimates: true values vs plain logit vs nested logit**
 
@@ -144,7 +140,7 @@ The table separates model misspecification from finite-sample IV noise. Plain lo
 
 ## Takeaway
 
-Nested logit is useful when the researcher can defend a product grouping and needs a substitution matrix richer than plain logit. The economic content is the diversion pattern: a price increase for one sugary cereal mainly sends buyers to another sugary cereal. The maintained nests do real work, so the model is only as persuasive as the grouping. If closeness is consumer-specific instead, the natural next model is random coefficients.
+Nested logit is useful when product groups are defensible. Here a Choco-Bombs price increase mainly sends buyers to Store-Frosted. The nests do real work. The diversion matrix is only as credible as the grouping.
 
 ## References
 
