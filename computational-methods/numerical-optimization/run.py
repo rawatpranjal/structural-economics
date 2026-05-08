@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 """Optimizer diagnostics for a latent-regime likelihood.
 
-A researcher estimating a latent-regime model may face two parameter regions
-that fit the same data almost equally well. This tutorial uses a two-component
-Gaussian mixture as a small likelihood surface, then compares local optimizers,
-global search, and multi-start basin checks on that surface.
+A latent-regime likelihood can have two basins that fit the data.
+The tutorial compares local starts, a restart grid, and global search.
 """
 
 import sys
@@ -305,22 +303,19 @@ def main() -> None:
     )
 
     report.add_overview(
-        "Suppose an economist estimates a model with two latent regimes, such as high and low "
-        "productivity states, or two consumer types that generate similar choice patterns. The "
-        "object of interest is the parameter vector that explains the data. The difficulty is "
-        "that the likelihood may have more than one region that fits well.\n\n"
-        "This tutorial builds that situation in two dimensions. A mixture of two Gaussian "
-        "regimes creates a negative log likelihood with two equally good basins. The example is "
-        "small enough to draw, but it carries the empirical lesson: one optimizer run reports "
-        "where its starting value led, while multi-start and global search checks tell us "
-        "whether the estimate is stable across the criterion surface."
+        "An economist may estimate a model with two latent regimes. Each regime can explain "
+        "the same data with a different parameter vector.\n\n"
+        "The object is the parameter vector that minimizes a negative log likelihood. The "
+        "tutorial uses a two-dimensional Gaussian mixture so the full criterion can be drawn.\n\n"
+        "A single local optimizer can report the basin reached from its starting value. Restart "
+        "grids and global search check whether the estimate changes across basins."
     )
 
     report.add_equations(
         r"""
 Let $\theta=(\theta_1,\theta_2)$ denote the structural parameter vector. The
-target density represents a stylized latent-regime likelihood. Each regime has
-its own mean, and the researcher observes only the mixture:
+target density is a stylized latent-regime likelihood. Each regime has its own
+mean, while the researcher observes only the mixture:
 
 $$
 \begin{aligned}
@@ -338,15 +333,12 @@ $$
 f(\theta) = -\log p(\theta).
 $$
 
-Newton's method uses local curvature around the current parameter guess:
+Newton's method uses local curvature around the current guess:
 
 $$
 \theta_{n+1} = \theta_n - H_f(\theta_n)^{-1}\nabla f(\theta_n).
 $$
 
-BFGS approximates the Hessian from gradient changes. Nelder-Mead moves a
-simplex using only function values. Simulated annealing searches more broadly by
-allowing occasional uphill moves, then polishes the best point locally.
 """
     )
 
@@ -362,10 +354,10 @@ allowing occasional uphill moves, then polishes the best point locally.
     )
 
     report.add_solution_method(
-        "All methods see the same likelihood criterion $f(\\theta)$. The local optimizers start "
-        "from the same off-diagonal point, so their paths show how curvature and simplex moves "
-        "choose a basin. Dual annealing searches over the full box before a local polish. A "
-        "separate BFGS restart grid maps which starting values lead to which mode.\n\n"
+        "All methods minimize the same criterion $f(\\theta)$. The local methods start from "
+        "the same off-diagonal value. Their paths show how different search rules choose a "
+        "basin. Dual annealing searches the full box before local polishing. The BFGS restart "
+        "grid maps the basin reached from each start.\n\n"
         "```text\n"
         "Algorithm: optimizer diagnostics for a latent-regime likelihood\n"
         "Input: objective f(theta), starting value theta_0, search box B\n"
@@ -379,9 +371,8 @@ allowing occasional uphill moves, then polishes the best point locally.
         "4. Restart BFGS on a grid of initial values to map basins of attraction\n"
         "5. Read instability across starts as information about the likelihood surface\n"
         "```\n\n"
-        "The known component means provide a diagnostic in this teaching example. In empirical "
-        "work, the same role usually falls to multi-start checks, profile likelihoods, "
-        "moment-residual plots, and restrictions that rule out economically irrelevant labels."
+        "The known component means make basin labels observable in this teaching example. In "
+        "empirical work, the restart grid is the main diagnostic."
     )
 
     x_grid, y_grid, z_grid = make_objective_grid()
@@ -415,10 +406,9 @@ allowing occasional uphill moves, then polishes the best point locally.
         "Optimizer paths over negative log-density contours",
         fig1,
         description=(
-            "The contour plot mimics an estimation problem where two latent-regime parameter "
-            "vectors fit about equally well. Newton and BFGS follow local curvature toward the "
-            "upper-right basin, while Nelder-Mead and dual annealing settle in the lower-left "
-            "basin."
+            "The contour plot shows two parameter vectors with the same likelihood value. Newton "
+            "and BFGS reach the upper-right basin. Nelder-Mead and dual annealing reach the "
+            "lower-left basin."
         ),
     )
 
@@ -436,9 +426,8 @@ allowing occasional uphill moves, then polishes the best point locally.
         "Objective gaps along recorded optimizer paths",
         fig2,
         description=(
-            "Iteration counts measure local progress after a basin has effectively been chosen. "
-            "A flat objective gap near zero does not tell us whether the optimizer inspected the "
-            "other basin."
+            "Iteration counts measure progress after a basin has been chosen. A zero objective "
+            "gap does not show that the other basin was checked."
         ),
     )
 
@@ -466,8 +455,8 @@ allowing occasional uphill moves, then polishes the best point locally.
         "BFGS solutions from different starting points",
         fig3,
         description=(
-            "Each dot is a BFGS starting value. The color records which regime mean the optimizer "
-            "reaches, so the map shows where initialization changes the reported estimate."
+            "Each dot is a BFGS starting value. The color records the regime mean reached by "
+            "the optimizer."
         ),
     )
 
@@ -476,25 +465,21 @@ allowing occasional uphill moves, then polishes the best point locally.
         "Optimizer outcomes",
         summary,
         description=(
-            "The local methods share one starting value. Dual annealing searches over a box before "
-            "returning a polished estimate."
+            "The local methods share one starting value. Dual annealing searches the box first."
         ),
     )
 
     report.add_results(
-        f"The best objective found is {best_objective:.5f}. Because the mixture weights are equal, "
-        "the two regime labels produce equally good estimates near their component means. The "
-        "table therefore does not rank labels. It shows how much the reported estimate depends on "
-        "local geometry and initialization. BFGS reaches a mode quickly from the common start, yet "
-        "the restart grid shows that nearby starts can point to a different regime."
+        f"The best objective found is {best_objective:.5f}. The equal mixture weights make both "
+        "regime labels fit equally well. The table therefore does not rank labels. It shows that "
+        "the reported estimate can depend on initialization. The restart grid shows that nearby "
+        "starts can point to different regimes."
     )
 
     report.add_takeaway(
-        "Treat optimization as part of identification work. A point estimate from a local "
-        "optimizer is credible only after the researcher has checked the criterion around it and "
-        "tested sensitivity to starting values. Smooth, well-identified likelihoods reward "
-        "derivative-based methods. Multimodal likelihoods call for restart grids, diagnostics, "
-        "and sometimes a global search pass before the estimate gets an economic interpretation."
+        "A local optimum is not enough in a latent-regime likelihood. Check the criterion around "
+        "the estimate and rerun from many starts. Use a global pass when local starts find "
+        "different basins. Interpret the estimate only after those checks."
     )
 
     report.add_references(
