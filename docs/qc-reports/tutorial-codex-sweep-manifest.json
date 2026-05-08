@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-08T00:02:14Z",
+  "updated_at": "2026-05-08T00:06:24Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -690,6 +690,17 @@
         "time-series/fred-macro-data/run.py"
       ],
       "updated_at": "2026-05-08T00:02:14Z"
+    },
+    {
+      "tutorial_path": "time-series/ar-processes/",
+      "status": "complete",
+      "commit": "ebc5411619bed273c1fb50827b5c3dd5332aeedd",
+      "changed_paths": [
+        "README.md",
+        "time-series/ar-processes/README.md",
+        "time-series/ar-processes/run.py"
+      ],
+      "updated_at": "2026-05-08T00:06:24Z"
     }
   ]
 }
