@@ -1,12 +1,14 @@
 # Product Demand with Plain Logit and IIA
 
-> Estimate product-choice demand by maximum likelihood and read the substitution pattern implied by IIA.
+> Estimate product demand by maximum likelihood and inspect the IIA substitution rule.
 
 ## Overview
 
-Suppose a researcher observes purchases in a product category where five items differ in price and quality. The demand object is practical: recover price and quality tastes, predict market shares, and ask where buyers go when one product leaves the shelf.
+Five products sit on one shelf. Each product has a price and a quality level, and each buyer chooses one product.
 
-Plain logit gives a transparent first demand system for that problem. The Type I extreme-value taste shock turns utility indexes into closed-form choice probabilities, so the code can fit the taste coefficients by maximum likelihood. After estimation, the same probabilities deliver fitted shares, elasticities, and an immediate counterfactual. They also reveal the model's restriction: IIA reallocates lost buyers in proportion to existing shares, even when the remaining products differ in economic closeness.
+The object is product demand in this market. We want price and quality tastes, fitted shares, and buyer reallocation after removal.
+
+The computational task is maximum likelihood. Each trial coefficient vector gives logit probabilities, and the observed choices select the best-fitting vector.
 
 ## Equations
 
@@ -40,7 +42,7 @@ which does not depend on any third product in the choice set.
 
 ## Model Setup
 
-The example keeps the market small enough to see the economics of the estimates. Five fixed products trade off price against quality. The sample is synthetic, so the true coefficients and population shares are available for comparison after estimation.
+The market is small enough to see each estimate. Five products trade off price against quality. The sample is synthetic, so true coefficients and population shares are available after estimation.
 
 | Object | Value | Role |
 |-----------|-------|-------------|
@@ -53,7 +55,7 @@ The example keeps the market small enough to see the economics of the estimates.
 
 ## Solution Method
 
-The likelihood turns the demand model into a two-parameter optimization problem. Each candidate $\beta=(\beta_p,\beta_q)$ implies utilities, utilities imply choice probabilities, and the observed choices score that candidate through the log-likelihood:
+The likelihood turns the demand model into a two-parameter optimization problem. Each candidate $\beta=(\beta_p,\beta_q)$ implies utilities. Those utilities imply probabilities, and the observed choices score the candidate through the log-likelihood:
 
 $$\hat\beta=\arg\max_\beta \ell(\beta).$$
 
@@ -67,27 +69,25 @@ Choose beta_hat that maximizes ell(beta).
 At beta_hat: compute fitted shares, elasticities, and IIA share ratios.
 ```
 
-The code evaluates probabilities with a stable softmax calculation, which subtracts the largest utility before exponentiating and leaves odds ratios unchanged. For this plain logit the likelihood is globally concave, so the two-parameter surface has a single peak. BFGS converged in **9 iterations** with log-likelihood **-7493.95**. The inverse Hessian approximation supplies the standard errors reported below.
-
 ## Results
 
-The contour plot shows the estimation problem in two dimensions. The likelihood has one peak, and the MLE sits close to the coefficients used to generate the data. Sampling noise keeps the estimate from landing exactly on the star, but the gap is small with 5,000 choices.
+The contour plot shows the two-parameter likelihood. The MLE sits near the true coefficients used to generate the choices.
 
 <img src="figures/log-likelihood-surface.png" alt="Log-likelihood surface with true and estimated coefficients marked" width="80%">
 
-Observed shares are finite-sample purchase frequencies. The green bars are the population shares from the data-generating logit, and the fitted shares mostly sit between the realized sample and that population target.
+Observed shares are sample purchase frequencies. Fitted shares are close to both the sample and population shares.
 
 <img src="figures/market-shares.png" alt="Observed, fitted, and true logit market shares" width="80%">
 
-The own-price elasticities combine the estimated price coefficient with each product's price and fitted share. Higher-priced products are more elastic in absolute value here, so a one percent price increase costs them a larger fraction of demand.
+The own-price elasticities combine the estimated price coefficient with each product's price and fitted share. Higher prices make demand more elastic in absolute value here.
 
 <img src="figures/own-price-elasticities.png" alt="Own-price elasticities implied by the estimated logit" width="80%">
 
-When Product 3 is removed, the remaining products do not become closer or farther apart in the model. Their probabilities are renormalized, so the pairwise odds ratios in the right panel stay fixed. This is the IIA restriction that nested logit relaxes by grouping similar products.
+Removing Product 3 raises every remaining share. The pairwise odds ratios stay fixed, which is the IIA restriction.
 
 <img src="figures/iia-illustration.png" alt="IIA reallocation after removing one alternative" width="80%">
 
-The estimated signs match the simulation: consumers dislike price and value quality. The estimates are close to the true coefficients because the likelihood is correctly specified and the sample is large.
+The estimated signs match the simulation: consumers dislike price and value quality. The estimates are close to the true coefficients.
 
 **MLE estimates and true coefficients**
 
@@ -96,7 +96,7 @@ The estimated signs match the simulation: consumers dislike price and value qual
 | beta_p      |   -0.5 |    -0.4913 |       0.0174 |   -28.21 | <0.001    |
 | beta_q      |    1.2 |     1.1559 |       0.0362 |    31.94 | <0.001    |
 
-Rows are the products whose shares change; columns are the products whose prices change. In every off-diagonal column the cross-elasticities are identical, so the model sends lost buyers to rivals in proportion to their shares rather than to the closest product.
+Rows are products whose shares change. Columns are products whose prices change. Off-diagonal entries repeat within each column because substitution is proportional to rival shares.
 
 **Price elasticity matrix**
 
@@ -110,7 +110,7 @@ Rows are the products whose shares change; columns are the products whose prices
 
 ## Takeaway
 
-Plain logit gives an executable first pass at product demand: utility coefficients map directly into shares, elasticities, and removal counterfactuals. Its cost is rigid substitution. Once shares are known, IIA pins down cross-price responses without using product closeness. A richer demand model has to change the taste-shock structure, through nests or random coefficients, before that economics can appear.
+Plain logit turns utility coefficients into shares, elasticities, and removal counterfactuals. That simplicity imposes IIA. After one product disappears, remaining buyers are reassigned by existing shares, not measured product closeness.
 
 ## References
 
