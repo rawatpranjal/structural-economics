@@ -49,6 +49,22 @@ $$
 
 Zero means the Euler equation holds.
 
+Training chooses parameters that make this residual small. In population, the
+risk is
+
+$$
+\Xi(\theta) = E\left[r(k;\theta)^2\right].
+$$
+
+The program replaces that expectation with simulated capital draws
+$k_1,\ldots,k_n$ and solves the empirical problem
+
+$$
+\Xi_n(\theta) = \frac{1}{n}\sum_{i=1}^{n} r(k_i;\theta)^2,
+\qquad
+\hat{\theta} = \arg\min_{\theta} \Xi_n(\theta).
+$$
+
 The neural policy first chooses a saving share,
 
 $$
@@ -96,18 +112,22 @@ $$
 
 ## Solution Method
 
-The broader deep-learning recipe is to choose a parameterized policy, simulate or draw states, build an economic residual at those states, and minimize the average squared residual. In richer DSGE models the same template can use lifetime rewards or Bellman residuals. Here the Euler equation is enough because the deterministic growth model has one state and one policy.
+The broader deep-learning recipe is to choose a parameterized policy, simulate or draw states, build an economic residual at those states, and minimize the average squared residual. In richer DSGE models the same template can use lifetime rewards or Bellman residuals. Here the Euler equation is enough because the deterministic growth model has one state and one policy. JAX autodiff supplies the gradient of the empirical risk, and Adam takes the parameter updates.
 
 ```text
 Algorithm: simulated-state Euler-residual training
-Input: primitives alpha, beta, A; training interval K; neural weights theta
+Inputs: primitives alpha, beta, A; training interval K; batch size n; steps T
 Output: feasible neural policy k'(k; theta)
-Compute the exact steady state k_ss and draw minibatches k_i from K
-For each k_i, map log(k_i/k_ss) through the MLP and sigmoid saving-share transform
-Construct c_i, k'_i, and c(k'_i; theta) so feasibility holds by construction
-Evaluate the log Euler residual r(k_i; theta)
-Minimize mean_i r(k_i; theta)^2 with Adam and JAX autodiff
-Audit the trained policy on an out-of-sample capital grid against the exact rule
+Initialize theta and Adam moments
+Compute the exact steady state k_ss
+For t = 1,...,T:
+    Draw minibatch states k_1,...,k_n from K
+    Evaluate s(k_i; theta), c(k_i; theta), and k'(k_i; theta)
+    Evaluate c(k'(k_i; theta); theta)
+    Compute residuals r(k_i; theta)
+    Set Xi_n(theta) = (1/n) sum_i r(k_i; theta)^2
+    Update theta with one Adam step using the gradient of Xi_n(theta)
+Audit k'(k; theta) on a holdout grid against the exact rule
 ```
 
 The audit is not part of the training loss. It exists because this Brock-Mirman case has the closed-form rule $k'=\alpha\beta A k^\alpha$. The comparison shows what the residual-trained neural policy learned.
@@ -134,13 +154,13 @@ The neural policy tracks the closed-form transition path from the same initial c
 
 The table reports the out-of-sample audit on the plotted grid. Policy errors are in capital units. The Euler residual is the maximum absolute log residual, so values near zero mean the intertemporal first-order condition is nearly satisfied.
 
-**Neural Policy Audit**
+**Policy Approximation Accuracy**
 
-|   final_training_loss |   mean_policy_error |   max_policy_error |   max_log_euler_residual |   final_path_error |   gradient_steps |
-|----------------------:|--------------------:|-------------------:|-------------------------:|-------------------:|-----------------:|
-|           2.31559e-08 |         4.43835e-05 |        0.000162423 |              0.000282804 |        0.000116169 |             6000 |
+|   Final loss |   Mean policy error |   Max policy error |   Max Euler residual |   Terminal path error |   Gradient steps |
+|-------------:|--------------------:|-------------------:|---------------------:|----------------------:|-----------------:|
+|  2.31559e-08 |         4.43835e-05 |        0.000162423 |          0.000282804 |           0.000116169 |             6000 |
 
-The learned saving share is nearly flat, as theory predicts. Across the audit grid its mean is 0.3420; the exact saving share is $\alpha\beta=0.3420$.
+The estimated policy and the exact Brock-Mirman policy are nearly identical on the audit grid. The learned saving share is nearly flat, as theory predicts: its mean is 0.3420, while the exact saving share is $\alpha\beta=0.3420$. The policy figure is the main evidence; the table records the numerical audit behind the plot.
 
 ## Takeaway
 

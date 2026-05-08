@@ -1,2 +1,2 @@
-final_training_loss,mean_policy_error,max_policy_error,max_log_euler_residual,final_path_error,gradient_steps
+Final loss,Mean policy error,Max policy error,Max Euler residual,Terminal path error,Gradient steps
 2.3155900308324817e-08,4.438347968971357e-05,0.00016242265701293945,0.0002828044234775007,0.00011616945266723633,6000

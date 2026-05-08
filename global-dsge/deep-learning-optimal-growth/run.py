@@ -253,18 +253,24 @@ def main() -> None:
     neural_path, exact_path = simulate_path(params, k0, periods, k_ss)
     final_path_error = float(abs(neural_path[-1] - exact_path[-1]))
 
+    mean_policy_error = float(np.mean(np.abs(policy_error)))
+    max_policy_error = float(np.max(np.abs(policy_error)))
+    max_euler_residual = float(np.max(np.abs(euler_residual)))
+    mean_saving_share = float(share_grid.mean())
+    exact_saving_share = ALPHA * BETA
+
     summary = pd.DataFrame([{
-        "final_training_loss": float(train_log["final_loss"]),
-        "mean_policy_error": float(np.mean(np.abs(policy_error))),
-        "max_policy_error": float(np.max(np.abs(policy_error))),
-        "max_log_euler_residual": float(np.max(np.abs(euler_residual))),
-        "final_path_error": final_path_error,
-        "gradient_steps": TRAIN_STEPS,
+        "Final loss": float(train_log["final_loss"]),
+        "Mean policy error": mean_policy_error,
+        "Max policy error": max_policy_error,
+        "Max Euler residual": max_euler_residual,
+        "Terminal path error": final_path_error,
+        "Gradient steps": TRAIN_STEPS,
     }])
 
-    print(f"  final loss: {summary.loc[0, 'final_training_loss']:.3e}")
-    print(f"  max policy error: {summary.loc[0, 'max_policy_error']:.3e}")
-    print(f"  max log Euler residual: {summary.loc[0, 'max_log_euler_residual']:.3e}")
+    print(f"  final loss: {summary.loc[0, 'Final loss']:.3e}")
+    print(f"  max policy error: {summary.loc[0, 'Max policy error']:.3e}")
+    print(f"  max log Euler residual: {summary.loc[0, 'Max Euler residual']:.3e}")
 
     setup_style()
 
@@ -327,6 +333,22 @@ $$
 
 Zero means the Euler equation holds.
 
+Training chooses parameters that make this residual small. In population, the
+risk is
+
+$$
+\Xi(\theta) = E\left[r(k;\theta)^2\right].
+$$
+
+The program replaces that expectation with simulated capital draws
+$k_1,\ldots,k_n$ and solves the empirical problem
+
+$$
+\Xi_n(\theta) = \frac{1}{n}\sum_{i=1}^{n} r(k_i;\theta)^2,
+\qquad
+\hat{\theta} = \arg\min_{\theta} \Xi_n(\theta).
+$$
+
 The neural policy first chooses a saving share,
 
 $$
@@ -380,17 +402,22 @@ $$
         "and minimize the average squared residual. In richer DSGE models the "
         "same template can use lifetime rewards or Bellman residuals. Here the "
         "Euler equation is enough because the deterministic growth model has one "
-        "state and one policy.\n\n"
+        "state and one policy. JAX autodiff supplies the gradient of the empirical "
+        "risk, and Adam takes the parameter updates.\n\n"
         "```text\n"
         "Algorithm: simulated-state Euler-residual training\n"
-        "Input: primitives alpha, beta, A; training interval K; neural weights theta\n"
+        "Inputs: primitives alpha, beta, A; training interval K; batch size n; steps T\n"
         "Output: feasible neural policy k'(k; theta)\n"
-        "Compute the exact steady state k_ss and draw minibatches k_i from K\n"
-        "For each k_i, map log(k_i/k_ss) through the MLP and sigmoid saving-share transform\n"
-        "Construct c_i, k'_i, and c(k'_i; theta) so feasibility holds by construction\n"
-        "Evaluate the log Euler residual r(k_i; theta)\n"
-        "Minimize mean_i r(k_i; theta)^2 with Adam and JAX autodiff\n"
-        "Audit the trained policy on an out-of-sample capital grid against the exact rule\n"
+        "Initialize theta and Adam moments\n"
+        "Compute the exact steady state k_ss\n"
+        "For t = 1,...,T:\n"
+        "    Draw minibatch states k_1,...,k_n from K\n"
+        "    Evaluate s(k_i; theta), c(k_i; theta), and k'(k_i; theta)\n"
+        "    Evaluate c(k'(k_i; theta); theta)\n"
+        "    Compute residuals r(k_i; theta)\n"
+        "    Set Xi_n(theta) = (1/n) sum_i r(k_i; theta)^2\n"
+        "    Update theta with one Adam step using the gradient of Xi_n(theta)\n"
+        "Audit k'(k; theta) on a holdout grid against the exact rule\n"
         "```\n\n"
         "The audit is not part of the training loss. It exists because this "
         "Brock-Mirman case has the closed-form rule $k'=\\alpha\\beta A k^\\alpha$. "
@@ -471,14 +498,17 @@ $$
     )
     report.add_table(
         "tables/training-summary.csv",
-        "Neural Policy Audit",
+        "Policy Approximation Accuracy",
         summary,
     )
 
     report.add_results(
-        "The learned saving share is nearly flat, as theory predicts. Across the "
-        f"audit grid its mean is {share_grid.mean():.4f}; the exact saving share "
-        f"is $\\alpha\\beta={ALPHA * BETA:.4f}$."
+        "The estimated policy and the exact Brock-Mirman policy are nearly "
+        "identical on the audit grid. The learned saving share is nearly flat, "
+        f"as theory predicts: its mean is {mean_saving_share:.4f}, while the "
+        f"exact saving share is $\\alpha\\beta={exact_saving_share:.4f}$. The "
+        "policy figure is the main evidence; the table records the numerical "
+        "audit behind the plot."
     )
 
     report.add_takeaway(
