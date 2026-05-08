@@ -1,0 +1,5 @@
+Product,Observed share,True probability,Plain logit,Mixed logit,Mixed error
+Budget,0.294,0.2983,0.2801,0.2928,-0.0012
+Mainstream,0.2447,0.2522,0.2649,0.25,0.0053
+Premium,0.2593,0.2512,0.2482,0.2609,0.0016
+Niche,0.202,0.1983,0.2068,0.1963,-0.0057

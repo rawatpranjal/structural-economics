@@ -1,0 +1,14 @@
+Moment,Observed target,Simulated at estimate,Difference
+Search rate: Basic,0.0965,0.0903,-0.0062
+Search rate: Comfort,0.3718,0.3838,0.012
+Search rate: Sport,0.6645,0.6787,0.0142
+Search rate: Premium,1.0,1.0,0.0
+Search rate: Boutique,0.242,0.2426,0.0006
+Purchase share: Basic,0.0268,0.0259,-0.0009
+Purchase share: Comfort,0.1152,0.1233,0.0081
+Purchase share: Sport,0.2735,0.2733,-0.0002
+Purchase share: Premium,0.4895,0.4811,-0.0084
+Purchase share: Boutique,0.095,0.0963,0.0013
+Purchase share: Outside,0.0,0.0,0.0
+Average searches,2.3748,2.3953,0.0206
+One-search rate,0.3355,0.3213,-0.0142

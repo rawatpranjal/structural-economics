@@ -1,0 +1,4 @@
+Parameter,True,Estimate,Error,Status
+Quality taste,1.18,1.193,0.013,estimated
+Base search cost,0.08,0.0791,-0.0009,estimated
+Complexity cost slope,0.48,0.48,0.0,fixed

@@ -1,0 +1,5 @@
+Parameter,True,Plain logit,Mixed logit,Mixed error
+Mean price taste,-1.0000,-1.0847,-1.0798,-0.0798
+Mean quality taste,1.1000,1.1963,1.2668,0.1668
+SD price taste,0.3600,not estimated,0.5746,0.2146
+SD quality taste,0.5500,not estimated,0.3119,-0.2381
