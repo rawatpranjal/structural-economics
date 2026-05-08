@@ -1,23 +1,31 @@
-# Perturbation Around a Steady State
+# Aggregate Adjustment Around a Steady State
 
-> Local Taylor approximations for nonlinear economic dynamics and impulse responses.
+> Taylor perturbations for nonlinear macro dynamics and impulse responses.
 
 ## Overview
 
-Macroeconomic models are often solved near a deterministic steady state. The local object is a law of motion for deviations from that point: after a productivity, demand, or policy shock, how does the state return toward its steady value? Perturbation methods approximate that law of motion with a Taylor expansion.
+A macro model often asks what happens after an economy is pushed away from its steady state. Think of a productivity surprise, a demand shock, or a policy change that moves a state variable above its normal level. The researcher wants the path back to steady state and wants to know whether an equally sized negative shock would unwind in the same way.
 
-The first-order case is the familiar linearization. It is fast and gives transparent impulse responses, but it removes curvature and makes positive and negative shocks mirror images. Higher-order perturbations add curvature and asymmetry while remaining local. The exact nonlinear transition rule is kept available below so the cost of that locality is visible.
+The hard part is that the full nonlinear law of motion may be expensive to solve or awkward to interpret. Perturbation replaces that law with a Taylor approximation near the steady state. First order gives the familiar linearized impulse response. Higher orders keep local curvature, so positive and negative shocks can produce different adjustment paths. This tutorial keeps the exact nonlinear transition in view, which lets us see what the local approximation gains and what it misses.
 
 ## Equations
 
-Let $x_t$ be a scalar deviation from the deterministic steady state, normalized
-so that $x=0$ is the steady state. The exact transition rule is:
+Let $x_t$ be a scalar deviation from the deterministic steady state. The
+steady state is normalized to $x=0$. The exact nonlinear transition is:
 
 $$
 F(x) = \rho x + \gamma x^2 - \eta x^3 + \kappa x^4.
 $$
 
-The first three perturbation approximations around zero are:
+The coefficients are chosen to create persistent adjustment, local curvature,
+and asymmetric responses. A Taylor perturbation of order $n$ around zero keeps
+the derivatives through order $n$:
+
+$$
+F_n(x) = \sum_{j=1}^{n} \frac{F^{(j)}(0)}{j!} x^j.
+$$
+
+For the first three orders in this example:
 
 $$
 \begin{aligned}
@@ -37,50 +45,50 @@ $$
 
 | Object | Value |
 |--------|-------|
-| Persistence $\rho$ | 0.82 |
-| Quadratic term $\gamma$ | 0.45 |
-| Cubic term $\eta$ | 0.80 |
-| Fourth-order term $\kappa$ | 0.35 |
-| Shock size | 0.18 |
+| Persistence $\rho$ | 0.82, so deviations decay gradually |
+| Quadratic term $\gamma$ | 0.45, adding local curvature |
+| Cubic term $\eta$ | 0.80, changing the speed of large responses |
+| Fourth-order term $\kappa$ | 0.35, left out by third order |
+| Shock size | 0.18 in either direction |
 | IRF periods | 28 |
 
 ## Solution Method
 
-The exercise treats the exact transition rule as a known benchmark, then truncates its Taylor expansion at different orders. Errors are measured both pointwise and after iterating the approximated law of motion forward.
+The calculation treats the exact transition as a benchmark and asks how much of it a local expansion recovers. The map error answers a numerical question: how close is the approximated law of motion at nearby states? The impulse-response error answers the economic question the researcher would usually care about: does the computed shock path tell the same adjustment story as the nonlinear model?
 
 ```text
-Algorithm: local perturbation diagnostic
-Input: exact law F(x), steady state x_bar = 0, approximation order n, shock epsilon
-Output: local map errors, impulse-response errors, asymmetry diagnostic
-1. Compute the Taylor coefficients of F around x_bar through order n
-2. Define F_n(x) as the truncated local law of motion
-3. Compare F_n(x) with F(x) on a local and a wider state interval
-4. For x_0 = epsilon, iterate x_{t+1} = F_n(x_t) and compare with the exact path
-5. Repeat for x_0 = -epsilon to check whether positive and negative shocks mirror
-6. Interpret large errors as a warning about states far from the expansion point
+Algorithm: perturbation check for a shock response
+Input: nonlinear law F(x), steady state x_bar = 0, order n, shock epsilon
+Output: approximate law F_n, map errors, IRF errors, asymmetry statistic
+1. Differentiate F at x_bar and keep terms through order n
+2. Build the local law F_n(x) from those Taylor coefficients
+3. Compare F_n(x) with F(x) on a tight neighborhood and a wider interval
+4. Starting from x_0 = epsilon, iterate x_{t+1} = F_n(x_t)
+5. Repeat from x_0 = -epsilon and add the two response paths
+6. Read nonzero sums as nonlinear asymmetry, not as linear adjustment
 ```
 
-This is the same logic used in larger DSGE applications: solve around a steady state, then ask whether the local approximation is accurate enough for the shocks and states the research question actually visits.
+Large DSGE systems apply the same idea to a vector of equilibrium conditions. This scalar example strips that machinery away, leaving the main discipline: a local solution is useful only for the shocks and states that stay near the expansion point.
 
 ## Results
 
-All approximations agree at the steady state. Differences grow as the state moves away from the expansion point.
+The curves agree at the steady state because each approximation is built there. Away from zero, the missing curvature changes the next-period state.
 
 <img src="figures/local-approximations.png" alt="Taylor approximations around the steady state" width="80%">
 
-Higher-order terms reduce local error, but no finite Taylor expansion is a global solution. The question that matters is how far the model travels from the steady state.
+Higher-order terms lower error near the steady state. Error still rises with distance, so the relevant accuracy check depends on the states reached by the shock experiment.
 
 <img src="figures/local-errors.png" alt="Approximation error by distance from the expansion point" width="80%">
 
-The first-order approximation is symmetric: changing the sign of the shock changes only the sign of the response. Higher-order terms can capture asymmetric adjustment.
+The first-order path is symmetric by construction. Higher-order paths can let a positive shock and a negative shock unwind at different speeds.
 
 <img src="figures/impulse-responses.png" alt="Impulse responses under exact and approximated dynamics" width="80%">
 
-For a purely linear model, positive and negative impulse responses cancel exactly. A nonzero sum is a direct diagnostic for nonlinear asymmetry.
+In a linearized model, the positive and negative impulse responses cancel exactly. A nonzero sum shows how much nonlinear asymmetry the local solution preserves.
 
 <img src="figures/asymmetry.png" alt="Nonlinear asymmetry in positive and negative responses" width="80%">
 
-Map errors are computed directly; IRF errors compare each approximation to the exact path.
+Map errors compare transition rules. IRF errors compare the full adjustment path after the same shock.
 
 **Perturbation accuracy by order**
 
@@ -93,11 +101,11 @@ Map errors are computed directly; IRF errors compare each approximation to the e
 |       3 | local abs(x) <= 0.20 |        0.000542 |           3.47e-05 |            0.000315 |            0.000125 |
 |       3 | wide abs(x) <= 0.60  |        0.0454   |           0.00286  |            0.000315 |            0.000125 |
 
-The first-order approximation is accurate very close to the steady state, but it misses curvature and asymmetric responses. The second and third orders reduce local error and track the nonlinear impulse responses more closely for the shock size used here. The asymmetry plot is the clearest economic diagnostic: a linearized model forces the positive and negative responses to cancel, even when the nonlinear economy does not.
+The first-order approximation works well in a tight neighborhood of the steady state, but it misses the curvature that shapes asymmetric adjustment. Second and third order terms reduce local map error and follow the nonlinear impulse responses more closely for this shock size. The asymmetry plot gives the most direct economic reading: the linearized model forces the positive and negative responses to cancel, while the nonlinear economy does not.
 
 ## Takeaway
 
-Linearization is often enough for small deviations, but its symmetry is a substantive restriction. Higher-order perturbation adds curvature without solving the full global model. The practical discipline is to check where the simulated or impulse-response path actually goes. Local approximations are only as credible as the neighborhood they are asked to cover.
+Linearization is often enough for small deviations, but its symmetry is an economic restriction. Higher-order perturbation adds curvature without solving the full global model. The practical check is simple: trace the simulated or impulse-response path and ask whether it remains in the neighborhood where the local approximation is accurate.
 
 ## References
 
