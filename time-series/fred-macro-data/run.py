@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""FRED-style macro data and business-cycle moment measurement.
+"""Business-cycle moments from a FRED-style macro panel.
 
-The tutorial is self-contained: it simulates a small quarterly macro panel with
-FRED-like units and moments, applies the HP trend-cycle convention, and reports
-the business-cycle moments that structural macro models often try to match.
+The tutorial is self-contained: it simulates quarterly GDP growth, inflation,
+unemployment, and policy-rate series with FRED-like units, applies the HP
+trend-cycle convention, and reports the moments that business-cycle models
+often try to match.
 """
 from __future__ import annotations
 
@@ -213,28 +214,29 @@ def main() -> None:
 
     setup_style()
     report = ModelReport(
-        "FRED-Style Macro Data and Business-Cycle Moments",
-        "HP-filtered macro cycles in a self-contained quarterly panel.",
+        "Business-Cycle Moments from a FRED-Style Macro Panel",
+        "HP filtering and moment measurement for a quarterly macro panel.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "Before a structural macro model is estimated or simulated, the researcher has "
-        "to decide what the data object is. Quarterly GDP growth, inflation, "
-        "unemployment, and the policy rate are not yet business-cycle facts; they "
-        "become facts only after a trend-cycle convention and a set of moments are "
-        "chosen.\n\n"
-        "Here that measurement step is kept small and explicit. A synthetic panel with "
-        "FRED-style units keeps the example reproducible without an API key or "
-        "changing data release. The maintained co-movement is familiar: "
-        "output and unemployment move in opposite directions, inflation and slack move "
-        "against each other, and the funds rate comoves with inflation. The exercise "
-        "then asks how much of that structure is visible in a finite 50-year quarterly "
-        "sample.\n\n"
-        "The tutorial bridges the scalar persistence logic in "
-        "[Persistent Shocks](../ar-processes/) and the larger-panel forecasting "
-        "problem in [Stock-Watson Factor Forecasting](../stock-watson/)."
+        "Suppose you want to compare an RBC or New Keynesian model with "
+        "business-cycle facts. The model reports cyclical movements in output, "
+        "inflation, unemployment, and interest rates. The raw macro data arrive as "
+        "quarterly series with their own units, trends, and sampling noise. Before the "
+        "model can be judged, the researcher has to turn those series into moments "
+        "defined on the same object.\n\n"
+        "This tutorial builds that object in a controlled setting. It simulates a "
+        "small FRED-style panel, so the example stays reproducible without an API key "
+        "or a changing data release. The calibration gives the panel familiar "
+        "co-movement: output and unemployment move in opposite directions, inflation "
+        "falls when slack rises, and the policy rate moves with inflation.\n\n"
+        "The computation applies the HP filter to each series, forms deviations from "
+        "smooth trends, and summarizes the cyclical panel with volatility, GDP "
+        "comovement, persistence, and an Okun slope. A long simulation from the same "
+        "data-generating process gives a benchmark for reading the finite 50-year "
+        "sample."
     )
 
     report.add_equations(
@@ -258,8 +260,8 @@ y_t=\mu+\sigma\odot s_t.
 $$
 
 Here $\odot$ is element-by-element multiplication. The correlation matrix $C$
-sets the intended contemporaneous macro relationships, while $\rho_j$ controls
-how slowly each series adjusts.
+sets the contemporaneous macro relationships built into the example, while
+$\rho_j$ controls how slowly each series adjusts after an innovation.
 
 For each observed series $y_{j,t}$, the HP filter chooses a trend $\tau_{j,t}$
 by solving
@@ -313,13 +315,17 @@ cycle.
     )
 
     report.add_solution_method(
-        "The computation is a measurement exercise, not a structural estimation "
-        "routine. The HP filter supplies the trend-cycle split, and the moment table "
-        "summarizes the cyclical panel. The long simulation is not an external truth; "
-        "it is the same data-generating process run long enough to show what the "
-        "finite sample is trying to recover.\n\n"
+        "The computation turns a macro panel into the moment vector a modeler might "
+        "match or inspect. The HP filter solves one sparse linear system for each "
+        "series. It chooses a trend that stays close to the data while penalizing "
+        "changes in trend growth. The remaining deviations define the cycles, and the "
+        "moment table uses ordinary sample statistics on those cycles.\n\n"
+        "The long simulation has a narrower role. It runs the same data-generating "
+        "process for many quarters, then applies the same HP filter and moment "
+        "calculation. That comparison separates sampling variation in a 50-year panel "
+        "from the co-movement imposed by the DGP.\n\n"
         "```text\n"
-        "Algorithm: FRED-style business-cycle measurement\n"
+        "Algorithm: HP-filtered business-cycle moments\n"
         "Inputs: quarterly panel y_t, HP parameter lambda, benchmark horizon T_B\n"
         "Outputs: cycles c_t, moment table M, Okun slope beta_O\n\n"
         "1. Simulate the four-variable macro vector y_t from the calibrated DGP.\n"
@@ -332,10 +338,10 @@ cycle.
         "5. Repeat steps 1-4 with T_B quarters and use those moments only as a\n"
         "   long-sample benchmark for the finite 50-year run.\n"
         "```\n\n"
-        "The interpretive step is step 2. A positive GDP-growth cycle means output "
-        "growth is above its smooth trend; a positive unemployment cycle means labor "
-        "market slack is above trend. The signs should therefore be read by variable, "
-        "not as a generic good-versus-bad cycle."
+        "Interpretation starts when the cycles are defined. A positive GDP-growth "
+        "cycle means output growth is above its smooth trend. A positive unemployment "
+        "cycle means labor-market slack is above trend. The signs have to be read by "
+        "series before the moments can be used as economic targets."
     )
 
     # --- Figure 1: raw macro panel ---
@@ -349,11 +355,11 @@ cycle.
     fig1.tight_layout()
 
     report.add_results(
-        "The raw panel shows the object a macroeconomist would start from: rates and "
-        "growth rates in their observed units. GDP growth is noisy, while "
-        "unemployment and the funds rate move more slowly. That difference matters "
-        "because the HP filter treats high-frequency movement and slow adjustment "
-        "differently."
+        "The raw panel shows the object a macroeconomist starts from: rates and "
+        "growth rates in their observed units. A model calibration would rarely match "
+        "these raw levels directly. GDP growth is noisy, while unemployment and the "
+        "funds rate move more slowly, so the trend-cycle step affects each series in "
+        "a different way."
     )
     report.add_figure(
         "figures/time-series.png",
@@ -373,9 +379,10 @@ cycle.
 
     report.add_results(
         "After detrending, the comparison is in deviations from each series' own "
-        "smooth path. This is the measurement convention behind the moment table. It "
-        "is useful, but not innocuous: trend-cycle choices can change the size "
-        "and persistence of measured fluctuations."
+        "smooth path. This convention creates the object in the moment table. A "
+        "different trend rule could change the size and persistence of measured "
+        "fluctuations, which is why the data construction belongs in the economic "
+        "discussion."
     )
     report.add_figure(
         "figures/hp-cycles.png",
@@ -468,11 +475,11 @@ cycle.
     fig4.tight_layout()
 
     report.add_results(
-        "The correlation matrix is a compact target, not a causal model. A structural "
-        "RBC or New Keynesian model would have to explain why these variables comove; "
-        "a reduced-form VAR would instead summarize the same object dynamically. Here "
-        "the matrix suffices to check whether the synthetic panel delivers the signs "
-        "built into the calibration."
+        "The correlation matrix gives a compact target for calibration or model "
+        "checking. A structural RBC or New Keynesian model would need mechanisms that "
+        "generate these signs. A reduced-form VAR would summarize the same object "
+        "dynamically. Here the matrix checks whether the synthetic panel delivers the "
+        "relationships built into the calibration."
     )
     report.add_figure(
         "figures/cross-correlation.png",
@@ -493,14 +500,14 @@ cycle.
     )
 
     report.add_takeaway(
-        "Business-cycle measurement is already a modeling choice. In this run, the "
-        "HP-filtered panel recovers the intended signs: GDP growth and unemployment "
-        f"move against each other, with an Okun slope of {sample_okun_slope:.3f} in "
-        "the 50-year sample, and unemployment is the most persistent cycle. The "
-        "long-sample benchmark makes the finite-sample point explicit: the measured "
-        "moments are close to the DGP's implications, but not identical. That is how "
-        "to read these moments before using them as targets for a DSGE, "
-        "RBC, or reduced-form forecasting exercise."
+        "Business-cycle moments are constructed before they are matched. In this run, "
+        "the HP-filtered panel recovers the intended signs: GDP growth and "
+        f"unemployment move against each other, with an Okun slope of {sample_okun_slope:.3f} "
+        "in the 50-year sample, and unemployment is the most persistent cycle. The "
+        "long-sample benchmark shows the finite-sample point: the measured moments "
+        "are close to the DGP's implications, but sampling and filtering keep them "
+        "from matching exactly. Read these moments that way before using them as "
+        "targets for a DSGE, RBC, or reduced-form forecasting exercise."
     )
 
     report.add_references(
