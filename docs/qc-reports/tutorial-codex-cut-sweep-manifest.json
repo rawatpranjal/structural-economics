@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T05:51:33Z",
+  "updated_at": "2026-05-08T05:59:18Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -180,6 +180,17 @@
         "dsge/assetNews/run.py"
       ],
       "updated_at": "2026-05-08T05:51:33Z"
+    },
+    {
+      "tutorial_path": "dsge/rbc-with-labor/",
+      "status": "complete",
+      "commit": "958454b23ae256b2a0bc3ca98463337752eb7ce2",
+      "changed_paths": [
+        "README.md",
+        "dsge/rbc-with-labor/README.md",
+        "dsge/rbc-with-labor/run.py"
+      ],
+      "updated_at": "2026-05-08T05:59:18Z"
     },
     {
       "tutorial_path": "industrial-organization/dynamic-discrete-choice/",
