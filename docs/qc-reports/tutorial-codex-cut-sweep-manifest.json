@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T09:03:01Z",
+  "updated_at": "2026-05-08T09:08:05Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -526,6 +526,17 @@
         "choice/revealed-price-preference/run.py"
       ],
       "updated_at": "2026-05-08T09:03:01Z"
+    },
+    {
+      "tutorial_path": "choice/logit-discrete-choice/",
+      "status": "complete",
+      "commit": "8d2766dabd7329943c5b50d54224acaf5d5babc2",
+      "changed_paths": [
+        "README.md",
+        "choice/logit-discrete-choice/README.md",
+        "choice/logit-discrete-choice/run.py"
+      ],
+      "updated_at": "2026-05-08T09:08:05Z"
     }
   ]
 }
