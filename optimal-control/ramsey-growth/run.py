@@ -135,13 +135,8 @@ def main() -> None:
     )
     eigvals = np.linalg.eigvals(jacobian)
     lambda_stable = float(np.min(eigvals))
-    lambda_unstable = float(np.max(eigvals))
-    half_life = np.log(2.0) / abs(lambda_stable)
-
     ref_solution = solutions[0]
     ref_dev = np.abs(ref_solution.y[0] - k_star) / k_star
-    fit_mask = (t_eval >= 35.0) & (t_eval <= 110.0) & (ref_dev > 1e-10)
-    empirical_rate = float(np.polyfit(t_eval[fit_mask], np.log(ref_dev[fit_mask]), 1)[0])
 
     setup_style()
 
@@ -153,21 +148,15 @@ def main() -> None:
     )
 
     report.add_overview(
-        "The Ramsey-Cass-Koopmans planner starts with an inherited capital stock and decides "
-        "how much output to consume today versus invest for future production. A capital-poor "
-        "economy should save enough to build productive capacity. A capital-rich economy can "
-        "consume more while capital runs down. In both cases, history fixes $k_0$, but "
-        "optimality must select the date-zero consumption jump $c_0$.\n\n"
-        "The difficulty comes from the boundary condition at infinity. Once we pick $c_0$, "
-        "the Euler equation and resource law determine the whole path. Almost every initial "
-        "consumption choice fails: a high guess exhausts capital, while a low guess leaves the "
-        "planner overaccumulating relative to the transversality condition. Shooting turns "
-        "that long-run economic restriction into a scalar root search over $c_0$.\n\n"
-        "The page computes that selection for economies that begin at one quarter, one half, "
-        "three quarters, one and a half, and twice the Ramsey steady-state capital stock. It "
-        "uses the same planner as the neighboring [Ramsey phase-diagram](../phase-diagrams/) "
-        "example and the [HJB growth](../hjb-growth/) tutorial, but represents the stable arm "
-        "as the root of a terminal capital gap."
+        "In Ramsey growth, an economy inherits its capital stock. A capital-poor economy saves "
+        "to build productive capacity. A capital-rich economy can consume more while capital "
+        "falls toward its long-run level.\n\n"
+        "The object is the date-zero consumption choice $c_0$. History fixes $k_0$, but "
+        "consumption can jump. The right jump places the economy on the saddle path to the "
+        "Ramsey steady state.\n\n"
+        "Shooting treats $c_0$ as the unknown. Each guess defines a full path through the "
+        "Euler equation and resource law. A root search chooses the guess whose terminal "
+        "capital is near $k^{*}$."
     )
 
     report.add_equations(
@@ -182,9 +171,9 @@ $$
 \qquad f(k)=Ak^\alpha .
 $$
 
-Here $\rho$ is the continuous-time discount rate, $\delta$ is depreciation,
-$\sigma$ is the CRRA coefficient and inverse intertemporal elasticity of
-substitution, and $A$ is total factor productivity.
+Here $\rho$ is the continuous-time discount rate. The parameter $\delta$ is
+depreciation. The parameter $\sigma$ is the CRRA coefficient and inverse EIS.
+The parameter $A$ is total factor productivity.
 
 The Euler equation is the Keynes-Ramsey rule
 
@@ -212,25 +201,22 @@ k^{{*}}=\left(\frac{{\alpha A}}{{\rho+\delta}}\right)^{{1/(1-\alpha)}},
 c^{{*}}=f(k^{{*}})-\delta k^{{*}}.
 $$
 
-The saddle path is the feasible path that starts from the inherited $k_0$ and
-satisfies the infinite-horizon boundary condition
+The saddle path starts from the inherited $k_0$. It also satisfies the
+infinite-horizon boundary condition
 
 $$
 \lim_{{t\to\infty}} e^{{-\rho t}}u'(c(t))k(t)=0
 $$
 
 along with the two differential equations above. The finite shooting
-calculation approximates this condition by choosing $c_0$ so that the path is
-near $(k^{{*}},c^{{*}})$ at a long terminal date.
+calculation chooses $c_0$ so the path is near $(k^{{*}},c^{{*}})$ at date $T$.
 """
     )
 
     report.add_model_setup(
-        "The calibration is deterministic and stays close to textbook growth examples. "
-        "The low initial states mimic economies that begin with too little capital, and the "
-        "high initial states mimic economies that have accumulated past the long-run Ramsey "
-        "level. The terminal date is a numerical device for approximating the "
-        "infinite-horizon transversality condition; it is not an economic horizon.\n\n"
+        "The calibration is deterministic and close to textbook growth examples. "
+        "Initial states range from scarce capital to excess capital. The terminal date "
+        "approximates the transversality condition; it is not an economic horizon.\n\n"
         f"| Object | Value | Role |\n"
         f"|---|---:|---|\n"
         f"| $\\alpha$ | {alpha:.2f} | Capital share in $Ak^\\alpha$ |\n"
@@ -245,18 +231,13 @@ near $(k^{{*}},c^{{*}})$ at a long terminal date.
     )
 
     report.add_solution_method(
-        "Shooting solves the Ramsey boundary value problem through repeated initial value "
-        "problems. For a fixed $k_0$, define the terminal gap "
-        "$G(c_0;k_0)=k(T;c_0)-k^{*}$. The algorithm guesses $c_0$, integrates the Ramsey "
-        "system forward, and reads the sign of $G$ as an economic mistake: too much terminal "
-        "capital means the planner consumed too little early on, while too little terminal "
-        "capital means the planner consumed too much.\n\n"
-        "For this calibration, the relevant bracket has a single crossing. A low $c_0$ leaves "
-        "too much capital at $T$; a high $c_0$ exhausts capital before the terminal date or "
-        "leaves too little capital. The bracket must be wide enough for initial states above "
-        "$k^{*}$, where the optimal path begins with consumption above net output so that "
-        "capital decumulates. Brent's bracketing method then searches for the jump variable "
-        "that makes the terminal gap zero.\n\n"
+        "Shooting solves the Ramsey boundary value problem with repeated initial value "
+        "problems. For fixed $k_0$, define the terminal gap "
+        "$G(c_0;k_0)=k(T;c_0)-k^{*}$. A trial $c_0$ gives a sign: positive $G$ means "
+        "early consumption was too low, and negative $G$ means it was too high.\n\n"
+        "The algorithm brackets $c_0$ with one low guess and one high guess. Brent's "
+        "method then searches for the jump that makes the terminal gap zero. The final "
+        "integration gives the selected capital and consumption paths.\n\n"
         "```text\n"
         "Algorithm: finite-horizon shooting for Ramsey growth\n"
         "Inputs: primitives (alpha, delta, rho, sigma, A), initial capital k0, terminal date T\n"
@@ -269,13 +250,7 @@ near $(k^{{*}},c^{{*}})$ at a long terminal date.
         "4. Use bisection/Brent updates on c0 until abs(k(T; c0) - k*) is small.\n"
         "5. Reintegrate the ODE with the selected c0 to obtain k(t) and c(t).\n"
         "Output: the saddle-path initial consumption c0(k0) and transition path.\n"
-        "```\n\n"
-        "The local speed check comes from the Jacobian of $(\\dot{k},\\dot{c})$ at the "
-        "steady state. Its eigenvalues are "
-        f"$\\lambda_s={lambda_stable:.4f}$ and $\\lambda_u={lambda_unstable:.4f}$, so the "
-        f"local half-life is $\\ln(2)/|\\lambda_s|={half_life:.1f}$ time units. On the "
-        f"computed path from $0.25k^{{*}}$, the fitted late-transition rate is "
-        f"$\\hat{{\\lambda}}={empirical_rate:.4f}$."
+        "```"
     )
 
     # Figure 1: phase diagram and selected saddle paths.
@@ -310,12 +285,11 @@ near $(k^{{*}},c^{{*}})$ at a long terminal date.
         "Ramsey phase diagram with selected saddle paths from different initial capital stocks",
         fig1,
         description=(
-            "The phase diagram shows the economic selection behind the shooting calculation. "
-            "The dashed curve is net output, where $\\dot{k}=0$; the vertical line is "
-            "$k^{*}$, where $\\dot{c}=0$. Each colored path starts from a different $k_0$ and "
-            "uses the $c_0$ found by shooting. Below $k^{*}$, consumption starts low enough "
-            "for investment to build capital. Above $k^{*}$, consumption starts above net "
-            "output, so capital is run down."
+            "The phase diagram shows how shooting selects the path. The dashed curve is net "
+            "output, where $\\dot{k}=0$. The vertical line is $k^{*}$, where $\\dot{c}=0$. "
+            "Each colored path starts from a different $k_0$ and uses the chosen $c_0$. "
+            "Below $k^{*}$, consumption starts low enough to build capital. Above $k^{*}$, "
+            "consumption starts high enough to run capital down."
         ),
     )
 
@@ -344,11 +318,10 @@ near $(k^{{*}},c^{{*}})$ at a long terminal date.
         "Ramsey transition paths for capital and consumption after shooting selects c0",
         fig2,
         description=(
-            "The time paths make the saving logic easier to read. A capital-poor economy "
-            "keeps consumption below output and lets capital rise; a capital-rich economy "
-            "consumes more than current net output and moves down. Consumption is not fixed "
-            "at a constant saving rate. It moves with the Euler equation as the marginal "
-            "product of capital changes along the transition."
+            "The time paths show the saving rule along the selected path. A capital-poor "
+            "economy keeps consumption below output and lets capital rise. A capital-rich "
+            "economy consumes more than net output and lets capital fall. Consumption moves "
+            "with the Euler equation as the marginal product changes."
         ),
     )
 
@@ -381,10 +354,9 @@ near $(k^{{*}},c^{{*}})$ at a long terminal date.
         "Log convergence of capital to the Ramsey steady state with the stable eigenvalue benchmark",
         fig3,
         description=(
-            "The log-scale convergence plot separates nonlinear transition dynamics from the "
-            "local stable-root approximation. Far from the steady state, the paths bend because "
-            "the marginal product changes quickly. Once the economy is close to $k^{*}$, the "
-            "decline in $|k(t)-k^{*}|$ is approximately exponential at the stable eigenvalue."
+            "The log-scale plot shows convergence after the saddle path is selected. Far from "
+            "the steady state, the paths bend as the marginal product changes. Near $k^{*}$, "
+            "$|k(t)-k^{*}|$ falls close to the stable-eigenvalue rate."
         ),
     )
 
@@ -410,23 +382,19 @@ near $(k^{{*}},c^{{*}})$ at a long terminal date.
         "Shooting Diagnostics",
         df,
         description=(
-            "The table records the jump variable selected by the root search. The consumption "
-            "ratio is below one when the planner is building capital and above one when the "
-            "planner is running capital down. The last column is the finite-horizon shooting "
-            "residual, left visible so the boundary-condition approximation is auditable."
+            "The table records the jump chosen by the root search. The consumption ratio is "
+            "below one when the planner builds capital. It is above one when the planner "
+            "runs capital down. The last column reports the terminal capital gap."
         ),
     )
 
     report.add_takeaway(
-        "The computation enforces the economic restriction that the planner cannot choose "
-        "an arbitrary date-zero consumption jump. History fixes $k_0$, optimality selects "
-        "$c_0$, and the root search finds the value that keeps the path feasible while "
-        "satisfying the transversality condition.\n\n"
-        "Saddle-path systems are easy to state but delicate to compute. A small error in "
-        "$c_0$ sends the economy toward capital exhaustion or overaccumulation. Once the "
-        "correct path is selected, the model delivers the standard Ramsey logic: invest "
-        "when capital is scarce, decumulate when capital is abundant, and converge toward "
-        "the modified golden-rule point $f'(k^{*})=\\rho+\\delta$."
+        "History fixes $k_0$, but optimality selects $c_0$. A wrong jump sends the economy "
+        "toward capital exhaustion or overaccumulation. Shooting finds the jump that keeps "
+        "the path feasible and near the Ramsey steady state.\n\n"
+        "The selected path gives the Ramsey saving logic. Build capital when it is scarce. "
+        "Run capital down when it is abundant. Converge toward the modified golden-rule "
+        "point $f'(k^{*})=\\rho+\\delta$."
     )
 
     report.add_references([
