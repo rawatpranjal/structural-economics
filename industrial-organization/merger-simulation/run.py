@@ -574,23 +574,14 @@ def main():
     )
 
     report.add_overview(
-        "A merger between close substitutes changes pricing incentives even if marginal costs "
-        "do not move. Before the merger, Firm 1 treats sales lost to Firm 2 as business lost "
-        "to a rival. After the merger, some of those consumers stay inside the same portfolio. "
-        "That internalized diversion is the unilateral price effect an antitrust merger "
-        "simulation tries to measure.\n\n"
-        "The missing object is the substitution matrix. Shares, prices, and margins describe "
-        "the observed market, but they do not directly reveal how many consumers leave Product "
-        "1 for Product 3 when Product 1 becomes more expensive. This tutorial fixes a "
-        "six-product market, calibrates logit, linear, and log-linear demand to the same "
-        "observables, changes only ownership, and solves the post-merger Bertrand-Nash pricing "
-        "conditions.\n\n"
-        "GUPPI and CMCR summarize local upward pricing pressure at observed prices. The full "
-        "counterfactual asks what happens after every firm reacts and after claimed cost "
-        "efficiencies shift marginal costs. The logit-only [Bertrand pricing](../bertrand-logit-demand/) "
-        "tutorial isolates the ownership matrix in one demand model. The [BLP random coefficients](../blp-random-coefficients/) "
-        "tutorial shows how richer substitution patterns can be estimated. This page focuses "
-        "on the gap between first-order screens and a solved post-merger equilibrium."
+        "A merger between close substitutes changes pricing incentives even when marginal "
+        "costs stay fixed. Before the merger, Firm 1 loses diverted customers to Firm 2. "
+        "After the merger, some diverted sales remain inside the combined firm.\n\n"
+        "The object is substitution. Shares, prices, and margins describe the observed "
+        "market. They do not reveal how demand moves when one product raises price.\n\n"
+        "The computation calibrates logit, linear, and log-linear demand to one six-product "
+        "market. It changes ownership and solves the post-merger Bertrand-Nash pricing "
+        "conditions. GUPPI and CMCR remain local screens at observed prices."
     )
 
     report.add_equations(r"""
@@ -680,10 +671,9 @@ post-merger ownership.
     )
 
     report.add_solution_method(
-        "Calibration and simulation do different jobs. Calibration makes each demand system "
-        "pass through the observed market. Simulation keeps those demand primitives fixed, "
-        "replaces the pre-merger ownership matrix with the post-merger one, and searches for "
-        "a new Bertrand-Nash price vector.\n\n"
+        "Calibration makes each demand system pass through the observed market. Simulation "
+        "keeps those demand primitives fixed. It changes ownership and searches for a new "
+        "Bertrand-Nash price vector.\n\n"
         "```text\n"
         "Algorithm: calibrated merger simulation\n"
         "Input: observed shares q, prices p, margins m, pre- and post-merger owners f(j)\n"
@@ -707,7 +697,7 @@ post-merger ownership.
         f"linear {np.max(np.abs(foc_check_linear)):.1e}, "
         f"log-linear {np.max(np.abs(foc_check_loglinear)):.1e}). "
         "The results below compare first-order screens with the solved post-merger "
-        "equilibrium, rather than comparing three separately estimated demand models."
+        "equilibrium."
     )
 
     # -----------------------------------------------------------------
@@ -738,13 +728,11 @@ post-merger ownership.
     fig1.tight_layout()
     report.add_figure(
         "figures/price-comparison.png",
-        "Pre- vs post-merger prices across three demand systems. Merging products (1-4) "
-        "see larger price increases, with magnitudes shaped by the calibrated substitution pattern.",
+        "Pre- and post-merger prices for three demand systems.",
         fig1,
-        description="Products 1-4 move inside the same portfolio after the merger, so the "
-        "merged firm internalizes diversion among them. The logit and log-linear systems give "
-        "roughly double-digit average increases for those products. The linear system is more "
-        "muted under this cross-slope calibration.",
+        description="Products 1-4 move inside the same portfolio after the merger. The merged "
+        "firm internalizes diversion among them. Logit and log-linear demand give double-digit "
+        "average increases. Linear demand is more muted under this cross-slope calibration.",
     )
 
     # -----------------------------------------------------------------
@@ -770,12 +758,11 @@ post-merger ownership.
     ax2.legend()
     report.add_figure(
         "figures/welfare-decomposition.png",
-        "Welfare decomposition across demand systems: consumers lose, producers may gain, "
-        "and the net effect depends on the demand model.",
+        "Welfare changes for consumers, producers, and total surplus.",
         fig2,
         description="The welfare bars separate consumer surplus, producer surplus, and their "
-        "sum. Consumers lose in every demand system here. Producer surplus rises, but the gain "
-        "does not offset the consumer loss, so total surplus falls under this calibration.",
+        "sum. Consumers lose in every demand system. Producer gains do not offset consumer "
+        "losses here.",
     )
 
     # -----------------------------------------------------------------
@@ -822,13 +809,11 @@ post-merger ownership.
     fig3.tight_layout()
     report.add_figure(
         "figures/upp-guppi.png",
-        "GUPPI screen versus solved equilibrium price effects, with product-level UPP for "
-        "the products that become newly co-owned.",
+        "GUPPI screens, solved price effects, and product-level UPP.",
         fig3,
-        description="GUPPI uses observed margins and diversion before the counterfactual "
-        "prices are solved. The left panel treats the solved post-merger price increase as "
-        "the benchmark. The gap comes from pass-through, demand curvature, and rival price "
-        "responses.",
+        description="GUPPI uses observed margins and diversion before counterfactual prices "
+        "are solved. The left panel treats the solved price increase as the benchmark. The gap "
+        "reflects pass-through, demand curvature, and rival price responses.",
     )
 
     # -----------------------------------------------------------------
@@ -892,14 +877,11 @@ post-merger ownership.
                  ha="right", va="top")
     report.add_figure(
         "figures/efficiency-frontier.png",
-        "How much marginal cost reduction is needed to offset the merger price increase? "
-        "The break-even point differs substantially across demand models.",
+        "Cost reductions needed to offset merger price increases.",
         fig4,
-        description="The efficiency curve lowers marginal costs for products 1-4 and re-solves "
-        "the post-merger pricing problem. The zero markers are interpolated from a fine "
-        "efficiency grid, so they approximate the solved-equilibrium break-even point. Below "
-        "the zero line, efficiencies are large enough to reverse the average price increase "
-        "on the merged products.",
+        description="The efficiency curve lowers marginal costs for products 1-4. Each point "
+        "re-solves the post-merger pricing problem. Zero markers approximate the break-even "
+        "cost reduction. Below zero, efficiencies reverse the average price increase.",
     )
 
     # -----------------------------------------------------------------
@@ -947,9 +929,9 @@ post-merger ownership.
     df = pd.DataFrame(table_data)
     report.add_table("tables/merger-effects.csv", "Merger Price Effects and Screens", df,
         description="The table puts local screens and solved counterfactuals side by side. "
-        "Average actual price increases come from the post-merger FOC solution. GUPPI and "
-        "CMCR are local screens. The break-even efficiency column comes from re-solving the "
-        "pricing equilibrium on a finer cost-reduction grid.")
+        "Average price increases come from the post-merger FOC solution. GUPPI and CMCR are "
+        "local screens. Break-even efficiencies come from repeated FOC solves over cost "
+        "reductions.")
 
     # -----------------------------------------------------------------
     # Takeaway
@@ -957,13 +939,12 @@ post-merger ownership.
     report.add_takeaway(
         "Merger simulation turns a change in control into an equilibrium price calculation. "
         "The ownership matrix is easy to change. The economic content sits in substitution "
-        "and cost pass-through, so different calibrated demand systems can give different "
+        "and pass-through. Different calibrated demand systems can give different "
         "counterfactuals in the same observed market.\n\n"
         "UPP, GUPPI, and CMCR are useful triage tools. They point to products with strong "
-        "internalized diversion, while the FOC solve accounts for every firm's reaction, "
-        "demand curvature, and cost-efficiency claims. In this calibration, all three systems "
-        "raise prices and lower consumer surplus, but they disagree on magnitudes and on the "
-        "efficiency needed to offset the merger."
+        "internalized diversion at observed prices. The FOC solve adds rival reactions, demand "
+        "curvature, and efficiency claims.\n\n"
+        "Here all three systems raise prices and lower consumer surplus."
     )
 
     report.add_references([
@@ -971,12 +952,6 @@ post-merger ownership.
         "Industries: Logit Demand and Merger Policy.\" *Journal of Law, Economics, & Organization*, 10(2).",
         "Farrell, J. and Shapiro, C. (2010). \"Antitrust Evaluation of Horizontal Mergers: "
         "An Economic Alternative to Market Definition.\" *The B.E. Journal of Theoretical Economics*, 10(1).",
-        "Werden, G. (1996). \"A Robust Test for Consumer Welfare Enhancing Mergers Among "
-        "Sellers of Differentiated Products.\" *Journal of Industrial Economics*, 44(4).",
-        "Nevo, A. (2000). \"Mergers with Differentiated Products: The Case of the Ready-to-Eat "
-        "Cereal Industry.\" *RAND Journal of Economics*, 31(3).",
-        "Berry, S., Levinsohn, J., and Pakes, A. (1995). \"Automobile Prices in Market "
-        "Equilibrium.\" *Econometrica*, 63(4).",
     ])
 
     report.write("README.md")
