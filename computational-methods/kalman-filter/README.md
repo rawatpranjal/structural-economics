@@ -4,9 +4,11 @@
 
 ## Overview
 
-Suppose a policy team tracks current economic activity before the full national accounts arrive. It sees a noisy indicator, perhaps a survey or high-frequency spending series, but the object of interest is the latent state that the indicator only partly reveals. The filter below treats that object as a state vector, lets it evolve with a simple law of motion, and asks how each new signal should change the nowcast.
+A policy team tracks current activity before the full national accounts arrive. It sees a noisy indicator, such as a survey or spending series.
 
-That task creates a numerical object: the distribution of the hidden state conditional on the observations seen so far. In a linear Gaussian model, the Kalman filter carries that distribution with two objects, a mean and a covariance. The same recursion supplies the forecast error, the weight placed on the new signal, and the likelihood used when the state-space parameters are estimated rather than fixed.
+The target is a latent business-cycle state. The indicator reveals part of that state, but it also includes measurement noise.
+
+The computational need is recursive inference. After each signal, the filter updates the nowcast, its covariance, and the likelihood.
 
 ## Equations
 
@@ -65,7 +67,7 @@ the state-space parameters are unknown.
 
 ## Solution Method
 
-The simulation draws the true latent path and the noisy observed indicator. The filter starts from zero, makes a one-period forecast, compares the forecasted indicator with observed $y_t$, and moves the state estimate toward the surprise. The Kalman gain is larger when the signal is precise relative to prior state uncertainty, and smaller when measurement noise is high.
+The simulation draws the true latent path and the noisy observed indicator. The filter starts from zero and makes a one-period forecast. It compares the forecasted indicator with observed $y_t$. The Kalman gain moves the state estimate toward that surprise.
 
 ```text
 Algorithm: nowcasting a latent state with the Kalman filter
@@ -83,19 +85,17 @@ for t = 1, ..., T:
     add log p(nu_t; 0, S_t) to the likelihood
 ```
 
-The stored arrays let the report connect the economic object to the computation: the raw indicator is noisy, the filtered states summarize current conditions, and posterior uncertainty records how much the data have pinned down the hidden state.
-
 ## Results
 
-The observed indicator combines both hidden activity components and measurement error. The filter uses the transition law to separate persistent state movements from observation noise.
+The observed indicator mixes hidden activity with measurement error. The filter separates persistent state movements from noise.
 
 <img src="figures/simulated-signal.png" alt="Observed signal and hidden state paths" width="80%">
 
-The posterior covariance reports how uncertain the nowcast is about each latent component after seeing data through period t.
+The posterior covariance shows uncertainty about each latent component after period t.
 
 <img src="figures/filter-bands.png" alt="Kalman filtered states with credible bands" width="80%">
 
-Forecast errors drive the updates. After a short initialization phase, the Kalman gain settles near constants set by signal noise and state noise.
+Forecast errors drive the updates. The Kalman gain settles near constants set by signal and state noise.
 
 <img src="figures/innovations-gain.png" alt="Forecast innovations and Kalman gains" width="80%">
 
@@ -109,11 +109,11 @@ The table compares filtered state means with the simulated hidden states.
 | s2             | 0.2447 | 0.2106           | 0.2286               |                0.92 |
 | log likelihood |        |                  |                      |              -25.73 |
 
-The total log likelihood for the simulated sample is -25.73. The estimated path follows the two hidden components even though the researcher observes only one noisy scalar indicator. That is the economic payoff: a noisy data release becomes a current estimate of the latent state, with uncertainty attached. The computation matters because the covariance and gain decide how much the new data should move the nowcast.
+The total log likelihood for the simulated sample is -25.73. The estimated path follows the two hidden components from one noisy scalar indicator. The covariance and gain decide how much each signal moves the nowcast.
 
 ## Takeaway
 
-When an economic object is hidden, smoothing the raw series is not enough. A state-space model states what can move over time and how noisy the indicators are. The Kalman filter then computes the conditional state distribution one observation at a time, which makes the same machinery useful for nowcasting, forecasting, and maximum-likelihood estimation of linear Gaussian models.
+When an economic state is hidden, smoothing the raw series is not enough. A state-space model says how the state moves and how noisy signals are. The Kalman filter updates the conditional state distribution one observation at a time.
 
 ## References
 
