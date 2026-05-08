@@ -273,29 +273,6 @@ def forward_simulated_values(
     return values
 
 
-def ccp_table(true_policy: np.ndarray, first_stage: dict[str, np.ndarray], estimate: dict[str, object], q_max: int) -> pd.DataFrame:
-    """State-by-state policy diagnostics."""
-    rows = []
-    states = state_space(q_max)
-    ccp = first_stage["ccp"]
-    counts = first_stage["counts"]
-    p_model = np.asarray(estimate["p_model"], dtype=float)
-    for idx, (own, rival) in enumerate(states):
-        rows.append(
-            {
-                "Own quality": own,
-                "Rival quality": rival,
-                "Observations": int(counts[idx]),
-                "True CCP": true_policy[idx],
-                "First-stage CCP": ccp[idx],
-                "Model-implied CCP": p_model[idx],
-                "First-stage error": ccp[idx] - true_policy[idx],
-                "Model error": p_model[idx] - true_policy[idx],
-            }
-        )
-    return pd.DataFrame(rows)
-
-
 def main() -> None:
     q_max = 3
     beta = 0.90
@@ -329,24 +306,19 @@ def main() -> None:
     setup_style()
     report = ModelReport(
         "Quality Investment Game Estimation with CCPs",
-        "Estimate payoff primitives in a two-firm quality ladder using first-stage policies and forward values.",
+        "Estimate payoff primitives in a two-firm quality ladder using CCPs and forward values.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "Two firms compete by investing in product quality. Each period a firm can spend to "
-        "move up a quality ladder, but the payoff from investing depends on where the rival "
-        "already sits. A laggard may invest to catch up. A leader may save the cost because "
-        "it already earns high current profits.\n\n"
-        "An IO researcher who observes qualities and investment choices wants the payoff "
-        "primitives behind that behavior: the value of a quality rung, the cost of investing, "
-        "and the extra incentive to close a quality gap. The dynamic part is what makes the "
-        "estimation computational. Today's action changes tomorrow's state, so a likelihood "
-        "needs continuation values. A full nested fixed point would solve a Markov-perfect "
-        "equilibrium at every trial parameter. This tutorial instead estimates first-stage "
-        "conditional choice probabilities (CCPs), holds future play fixed at those policies, "
-        "and evaluates forward values under the induced transition law."
+        "Two firms invest to climb a product-quality ladder. A laggard may spend to catch up. "
+        "A leader may save the investment cost.\n\n"
+        "The object is the payoff vector: the value of quality, the cost of investment, and "
+        "the catch-up incentive. The data contain firm qualities and investment choices.\n\n"
+        "A likelihood needs continuation values because today's investment changes tomorrow's "
+        "state. The CCP estimator first estimates investment rates by state. It then evaluates "
+        "values under those policies, instead of solving a new MPE at each trial parameter."
     )
 
     report.add_equations(
@@ -361,26 +333,25 @@ $$
 = \theta_q q_i - \theta_c a_i + \theta_g \max\{q_j-q_i,0\} a_i .
 $$
 
-The catch-up term says that falling behind makes investment more valuable.
+The gap term raises the investment payoff when the rival leads.
+
 First-stage CCPs estimate the state-specific investment rate
-$p(\omega)=\Pr(a_i=1\mid \omega)$. Holding these CCPs fixed, define the policy
-transition $\hat P$ and expected flow payoff $\bar\pi_\theta(\omega;\hat p)$,
-with the logit action shock integrated out. The ex ante value under the
-first-stage policy is
+$p(\omega)=\Pr(a_i=1\mid \omega)$. Holding CCPs fixed gives a policy transition
+$\hat P$ and expected flow payoff $\bar\pi_\theta(\omega;\hat p)$. The logit
+action shock is integrated out. The value under the first-stage policy is
 
 $$
 W_\theta = \bar\pi_\theta(\hat p) + \beta \hat P W_\theta.
 $$
 
-Choice-specific values for the current action use the rival's first-stage CCP
-and the continuation value $W_\theta$:
+Choice-specific values use the rival's first-stage CCP and $W_\theta$:
 
 $$
 v_\theta(a_i,\omega)
 = \pi_i(\omega,a_i;\theta) + \beta E_{\hat p_j}\left[W_\theta(\omega')\mid \omega,a_i\right].
 $$
 
-The second-stage pseudo likelihood is then
+The second-stage pseudo likelihood scores observed investment choices:
 
 $$
 \ell(\theta)=\sum_{i,t}
@@ -404,11 +375,10 @@ $$
     )
 
     report.add_solution_method(
-        "The tutorial solves the soft Markov-perfect equilibrium once to create data with "
-        "known truth. Estimation then treats the observed first-stage policies as the "
-        "description of future play. For each candidate payoff vector, the computer evaluates "
-        "the value of following those policies and uses the resulting choice-specific values "
-        "inside a logit likelihood.\n\n"
+        "The code solves the soft MPE once to create data with known truth.\n\n"
+        "Estimation then treats the first-stage CCPs as future play. For each candidate payoff vector, it "
+        "evaluates the value of following those policies. The resulting invest and no-invest "
+        "values enter a logit likelihood.\n\n"
         "```text\n"
         "Algorithm: CCP forward-value estimation for the quality ladder game\n"
         "Input: panel of qualities and investment choices, transition law, beta\n"
@@ -419,14 +389,11 @@ $$
         "  Solve W_theta = expected_flow_theta(p_hat) + beta P_hat W_theta\n"
         "  Compute invest and no-invest values using W_theta and rival p_hat\n"
         "  Score the observed investment choices with the logit likelihood\n"
-        "Forward-simulation check:\n"
-        "  Simulate future paths under p_hat and compare simulated values with exact W_theta\n"
-        "Output: payoff estimates, policy fit, first-stage diagnostics, value-simulation error\n"
+        "Output: payoff estimates and policy fit\n"
         "```\n\n"
-        "This is the calculation behind NPL, EPL, and BBL-style estimators. The first-stage "
-        "CCPs summarize how rivals are expected to move. The second stage changes payoff "
-        "parameters, not the future policy rule, so each likelihood evaluation needs policy "
-        "evaluation rather than a new equilibrium solve."
+        "The first-stage CCPs describe how rivals move. The second stage changes payoffs "
+        "while holding those policies fixed. Each likelihood evaluation is a linear "
+        "policy-evaluation solve, not a new equilibrium solve."
     )
 
     states = state_space(q_max)
@@ -450,16 +417,15 @@ $$
                 ax.text(rival, own, f"{image[own, rival]:.2f}", ha="center", va="center", color="white", fontsize=8)
     fig1.colorbar(im, ax=axes, fraction=0.025)
     report.add_results(
-        "The first-stage CCPs show the main investment pattern in the data. Firms invest more "
-        "when the rival is ahead, and top-quality firms invest less because the current quality "
-        "payoff is already high. The second-stage model-implied CCPs smooth those empirical "
-        "frequencies through the payoff parameters and the forward-value equation."
+        "The heatmaps show the investment pattern. Firms invest more when the rival is ahead. "
+        "Top-quality firms invest less because current quality already pays. The model-implied "
+        "CCPs smooth empirical frequencies through the payoff vector."
     )
     report.add_figure(
         "figures/ccp-heatmaps.png",
         "True, first-stage, and model-implied investment CCPs",
         fig1,
-        description="Rows are own quality and columns are rival quality in the firm-view state.",
+        description="Rows are own quality and columns are rival quality.",
     )
 
     fig2, ax2 = plt.subplots(figsize=(7, 4.5))
@@ -471,10 +437,9 @@ $$
     ax2.set_title("Policy Fit by State")
     ax2.legend()
     report.add_results(
-        "Policy fit is the main diagnostic because the likelihood is built from state-level "
-        "investment probabilities. The model-implied policy RMSE against known truth is "
-        f"**{policy_rmse:.3f}**, while the first-stage empirical CCP RMSE is "
-        f"**{first_stage_rmse:.3f}**."
+        "Policy fit matters because the likelihood uses state-level investment probabilities. "
+        f"The model-implied RMSE against truth is **{policy_rmse:.3f}**. The first-stage "
+        f"empirical RMSE is **{first_stage_rmse:.3f}**."
     )
     report.add_figure(
         "figures/policy-fit.png",
@@ -492,16 +457,16 @@ $$
     ax3.set_ylabel("Forward-simulated value")
     ax3.set_title("Forward Simulation Check")
     report.add_results(
-        "Forward values are the bridge between the observed policies and the dynamic payoff "
-        "interpretation. Exact finite-state policy evaluation and Monte Carlo forward "
-        f"simulation target the same continuation values. The simulation RMSE is **{forward_rmse:.3f}** "
+        "Forward values connect observed policies to dynamic payoffs. Exact policy evaluation "
+        "and Monte Carlo forward simulation target the same values. The simulation RMSE is "
+        f"**{forward_rmse:.3f}** "
         "with 1,000 paths per state and a 70-period horizon."
     )
     report.add_figure(
         "figures/forward-values.png",
         "Exact versus simulated forward values",
         fig3,
-        description="The simulation check connects the matrix policy evaluation to the forward-simulation logic used in larger BBL-style applications.",
+        description="The check compares matrix policy evaluation with simulated paths under the same CCPs.",
     )
 
     parameter_df = pd.DataFrame(
@@ -516,14 +481,7 @@ $$
         "tables/parameter-recovery.csv",
         "Known-truth parameter recovery",
         parameter_df.round(5),
-        description="The estimated payoff primitives line up with the data-generating values.",
-    )
-
-    report.add_table(
-        "tables/ccp-by-state.csv",
-        "State-level CCP diagnostics",
-        ccp_table(true_policy, first_stage, estimate, q_max).round(5),
-        description="Observation counts show which states pin down the first-stage policies most precisely.",
+        description="The estimates match the data-generating payoffs.",
     )
 
     diagnostics = pd.DataFrame(
@@ -556,15 +514,13 @@ $$
         "tables/estimator-diagnostics.csv",
         "Computation and estimator diagnostics",
         diagnostics,
-        description="The equilibrium solve creates the synthetic panel; the estimator uses first-stage CCPs and forward values.",
+        description="The synthetic panel comes from one equilibrium solve. Estimation then uses CCPs and forward values.",
     )
 
     report.add_takeaway(
-        "CCP estimators turn a dynamic oligopoly estimation problem into policy evaluation "
-        "plus a choice likelihood. In this quality game, empirical investment rates reveal "
-        "where firms fight to catch up. The forward-value step translates those rates into "
-        "continuation payoffs, which lets the second stage recover payoff primitives without "
-        "solving a new MPE at every trial parameter."
+        "In this quality game, empirical investment rates show where firms try to catch up.\n\n"
+        "CCP estimation turns those rates into continuation values and a choice likelihood. "
+        "The second stage recovers payoffs without solving a new MPE for every parameter guess."
     )
 
     report.add_references(
