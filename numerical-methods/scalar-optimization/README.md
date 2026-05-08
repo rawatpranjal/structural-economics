@@ -10,13 +10,9 @@ $$\max_{c \in [0, W]} u(c) + \beta\, V(W - c).$$
 
 Under log utility the closed-form inner optimum is $c^{\ast} = (1 - \beta) W$.
 
-Golden section search contracts a bracket $[a, b]$ around the maximum.
+Golden section search contracts a bracket $[a, b]$ around the maximum. Newton on the first-order condition extrapolates a quadratic surrogate at the current iterate.
 
-Newton on the first-order condition extrapolates a quadratic surrogate at the current iterate.
-
-Golden section needs only unimodality and is globally safe.
-
-Newton is locally fast and depends on the starting point.
+Golden section needs only unimodality and is globally safe. Newton is locally fast and depends on the starting point.
 
 ## Equations
 
@@ -133,9 +129,7 @@ The table summarises both solves on the same calibration. Both land within the c
 
 Golden section is the safe default for a one-state Bellman inner step: it only needs unimodality and a bracket, and contracts at a fixed factor regardless of where the optimum sits.
 
-Newton on the FOC is much faster when $g'$ and $g''$ are available and $x_0$ is inside the basin of attraction.
-
-A far-off start makes the parabolic extrapolation overshoot outside the feasible interval.
+Newton on the FOC is much faster when $g'$ and $g''$ are available and $x_0$ is inside the basin of attraction. A far-off start makes the parabolic extrapolation overshoot outside the feasible interval.
 
 Cake-eating and consumption-savings VFI use golden section for this reason. Smooth problems with cheap derivatives can graduate to Newton.
 

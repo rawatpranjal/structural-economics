@@ -4,15 +4,9 @@
 
 ## Overview
 
-Value function iteration stores $V$ at a finite grid and reads it off-grid every step.
+Value function iteration stores $V$ at a finite grid and reads it off-grid every step. Three classical interpolators are the workhorses: piecewise linear, natural cubic spline, and PCHIP (piecewise cubic Hermite interpolating polynomial).
 
-Three classical interpolators are the workhorses: piecewise linear, natural cubic spline, and PCHIP (piecewise cubic Hermite interpolating polynomial).
-
-This tutorial fits each one to two targets.
-
-The first target is the closed-form cake-eating value function $V(W)$ — smooth and monotone.
-
-The second is a stylized consumption policy with a borrowing-constraint kink: the level is continuous but the slope drops sharply at $a_{\text{kink}}$.
+This tutorial fits each one to two targets. The first target is the closed-form cake-eating value function $V(W)$ — smooth and monotone. The second is a stylized consumption policy with a borrowing-constraint kink: the level is continuous but the slope drops sharply at $a_{\text{kink}}$.
 
 Cubic splines shine on the smooth target. They ring on the kinked one. Linear interpolation and PCHIP do not.
 
@@ -146,11 +140,7 @@ At a fixed budget of 10 nodes the table summarises sup-norm and L2 errors for ea
 
 ## Takeaway
 
-Piecewise linear is the safe default for value functions with borrowing constraints. It preserves shape, never overshoots, and requires no setup.
-
-Natural cubic spline gives the best convergence on smooth functions but rings near kinks and can violate monotonicity.
-
-PCHIP is the right middle ground for monotone-but-non-smooth policies. It beats linear on accuracy and cubic on shape preservation at the same node count.
+Piecewise linear is the safe default for value functions with borrowing constraints. It preserves shape, never overshoots, and requires no setup. Natural cubic spline gives the best convergence on smooth functions but rings near kinks and can violate monotonicity. PCHIP is the right middle ground for monotone-but-non-smooth policies. It beats linear on accuracy and cubic on shape preservation at the same node count.
 
 `lib.interpolate.linear_interp` is what the existing tutorials use today. Promoting cubic and PCHIP wrappers to `lib/interpolate.py` is worth doing once a second tutorial needs them.
 

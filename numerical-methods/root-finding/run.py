@@ -224,12 +224,12 @@ def main() -> None:
 
     report.add_overview(
         "A representative-firm economy with Cobb-Douglas production has a "
-        "closed-form clearing rate $r^{\\ast} = 1/\\beta - 1$.\n\n"
+        "closed-form clearing rate $r^{\\ast} = 1/\\beta - 1$. "
         "The market-clearing condition is one scalar equation in $r$.\n\n"
-        "Bisection halves a sign-change bracket.\n\n"
-        "Secant fits a chord through the last two iterates.\n\n"
+        "Bisection halves a sign-change bracket. "
+        "Secant fits a chord through the last two iterates. "
         "Brent combines bisection's bracket with inverse quadratic "
-        "interpolation when the fast step stays inside.\n\n"
+        "interpolation when the fast step stays inside. "
         "Newton-Raphson uses the analytic derivative.\n\n"
         "These are the four solvers behind $\\mathrm{scipy.optimize.brentq}$ "
         "and the equilibrium clearings in Aiyagari and Huggett."
@@ -347,7 +347,7 @@ maintained at every iteration.
     )
 
     # =========================================================================
-    # Composite figure: 2x2 trajectories + convergence + sensitivity
+    # Figures: trajectories (2x2 grid) + convergence-and-sensitivity (stacked)
     # =========================================================================
     method_colors = {
         "Bisection": "tab:orange",
@@ -360,11 +360,8 @@ maintained at every iteration.
     }
     n_show = 4
 
-    fig = plt.figure(figsize=(12, 14))
-    gs = gridspec.GridSpec(4, 2, figure=fig, height_ratios=[1.0, 1.0, 1.0, 1.0],
-                           hspace=0.45, wspace=0.25)
-
-    # Top: 2x2 trajectory grid
+    # ---- Figure 1: trajectories (2x2 grid) ----
+    fig_traj, axes_traj = plt.subplots(2, 2, figsize=(10, 8))
     r_plot = np.linspace(a0, b0, 400)
     z_plot = Z(r_plot)
     grid_positions = {
@@ -374,7 +371,7 @@ maintained at every iteration.
         "Newton-Raphson": (1, 1),
     }
     for name, (row, col) in grid_positions.items():
-        ax = fig.add_subplot(gs[row, col])
+        ax = axes_traj[row, col]
         ax.plot(r_plot, z_plot, color="tab:blue", linewidth=1.5)
         ax.axhline(0.0, color="black", linewidth=0.6)
         ax.axvline(r_star, color="tab:red", linestyle="--", linewidth=1.0,
@@ -386,9 +383,28 @@ maintained at every iteration.
         ax.set_xlabel(r"$r$")
         ax.set_ylabel(r"$Z(r)$")
         ax.legend(loc="upper right", fontsize=9)
+    fig_traj.tight_layout()
 
-    # Convergence (full-width row)
-    ax_conv = fig.add_subplot(gs[2, :])
+    report.add_results(
+        "Each trajectory subplot plots $Z(r)$ with the first four iterates "
+        "of one method on top.\n\n"
+        "Bisection moves to the midpoint, then halves the bracket each step.\n\n"
+        "Secant draws chords through the last two iterates and accelerates "
+        "near the root.\n\n"
+        "Brent looks like secant but cuts to a bisection step whenever the "
+        "fast extrapolation would leave the bracket.\n\n"
+        "Newton uses the tangent slope, so its iterates can leap further "
+        "than the bracketed methods can."
+    )
+    report.add_figure(
+        "figures/trajectories.png",
+        "First iterates of each method overlaid on $Z(r)$",
+        fig_traj,
+    )
+
+    # ---- Figure 2: convergence (top) + sensitivity (bottom) ----
+    fig_diag, (ax_conv, ax_sens) = plt.subplots(2, 1, figsize=(11, 9))
+
     for name in method_colors:
         h = histories[name]
         err = np.maximum(np.abs(h[:, 1] - r_star), 1e-16)
@@ -400,8 +416,6 @@ maintained at every iteration.
     ax_conv.set_title("Convergence to the closed-form clearing rate")
     ax_conv.legend()
 
-    # Sensitivity (full-width row)
-    ax_sens = fig.add_subplot(gs[3, :])
     width = 0.20
     idx = np.arange(len(starts))
     ax_sens.bar(idx - 1.5 * width, bis_counts, width, color="tab:orange", label="Bisection")
@@ -423,26 +437,14 @@ maintained at every iteration.
     ax_sens.set_ylabel("Iterations to convergence")
     ax_sens.set_title(r"Iteration count vs starting point (tolerance $10^{-10}$)")
     ax_sens.legend(fontsize=9)
+    fig_diag.tight_layout()
 
-    report.add_results(
-        "Each trajectory subplot plots $Z(r)$ with the first four iterates "
-        "of one method on top.\n\n"
-        "Bisection moves to the midpoint, then halves the bracket each step.\n\n"
-        "Secant draws chords through the last two iterates and accelerates "
-        "near the root.\n\n"
-        "Brent looks like secant but cuts to a bisection step whenever the "
-        "fast extrapolation would leave the bracket.\n\n"
-        "Newton uses the tangent slope, so its iterates can leap further "
-        "than the bracketed methods can."
-    )
     report.add_results(
         "On a log axis the convergence rates are easy to read. Bisection "
         "halves its error each step. Secant accelerates once the iterates "
         f"settle near the root. Newton drops off a cliff after the first "
         "quadratic step. Brent matches the late-stage speed of secant or "
-        "inverse quadratic interpolation."
-    )
-    report.add_results(
+        "inverse quadratic interpolation.\n\n"
         "The sensitivity panel changes the starting point or bracket "
         "centre. Bisection and Brent stay flat: bracket halving is "
         "independent of where the bracket sits. Secant and Newton counts "
@@ -451,9 +453,9 @@ maintained at every iteration.
         "marked DNC)."
     )
     report.add_figure(
-        "figures/methods-overview.png",
-        "Method trajectories on $Z(r)$, log-axis convergence, and sensitivity to starting point",
-        fig,
+        "figures/convergence-and-sensitivity.png",
+        "Log-axis convergence (top) and iteration-count sensitivity to the starting point (bottom)",
+        fig_diag,
     )
 
     # =========================================================================
@@ -484,9 +486,9 @@ maintained at every iteration.
         "solves. It inherits bisection's bracket invariant and adds "
         "superlinear speed via inverse quadratic interpolation when the "
         "bracket is preserved.\n\n"
-        "Bisection is the safe fallback when no derivative is available.\n\n"
+        "Bisection is the safe fallback when no derivative is available. "
         "Secant is a no-derivative alternative to Newton with similar "
-        "fragility from far-off seeds.\n\n"
+        "fragility from far-off seeds. "
         "Newton is fastest near a simple root but needs a derivative and a "
         "starting point inside the basin of attraction.\n\n"
         "$\\mathrm{scipy.optimize.brentq}$ is the production default for "

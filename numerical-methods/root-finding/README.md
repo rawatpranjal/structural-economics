@@ -4,17 +4,9 @@
 
 ## Overview
 
-A representative-firm economy with Cobb-Douglas production has a closed-form clearing rate $r^{\ast} = 1/\beta - 1$.
+A representative-firm economy with Cobb-Douglas production has a closed-form clearing rate $r^{\ast} = 1/\beta - 1$. The market-clearing condition is one scalar equation in $r$.
 
-The market-clearing condition is one scalar equation in $r$.
-
-Bisection halves a sign-change bracket.
-
-Secant fits a chord through the last two iterates.
-
-Brent combines bisection's bracket with inverse quadratic interpolation when the fast step stays inside.
-
-Newton-Raphson uses the analytic derivative.
+Bisection halves a sign-change bracket. Secant fits a chord through the last two iterates. Brent combines bisection's bracket with inverse quadratic interpolation when the fast step stays inside. Newton-Raphson uses the analytic derivative.
 
 These are the four solvers behind $\mathrm{scipy.optimize.brentq}$ and the equilibrium clearings in Aiyagari and Huggett.
 
@@ -138,11 +130,13 @@ Brent looks like secant but cuts to a bisection step whenever the fast extrapola
 
 Newton uses the tangent slope, so its iterates can leap further than the bracketed methods can.
 
+<img src="figures/trajectories.png" alt="First iterates of each method overlaid on $Z(r)$" width="80%">
+
 On a log axis the convergence rates are easy to read. Bisection halves its error each step. Secant accelerates once the iterates settle near the root. Newton drops off a cliff after the first quadratic step. Brent matches the late-stage speed of secant or inverse quadratic interpolation.
 
 The sensitivity panel changes the starting point or bracket centre. Bisection and Brent stay flat: bracket halving is independent of where the bracket sits. Secant and Newton counts depend on the start. **1 of 9** Newton starts step outside the feasible range and diverge (hatched bars marked DNC).
 
-<img src="figures/methods-overview.png" alt="Method trajectories on $Z(r)$, log-axis convergence, and sensitivity to starting point" width="80%">
+<img src="figures/convergence-and-sensitivity.png" alt="Log-axis convergence (top) and iteration-count sensitivity to the starting point (bottom)" width="80%">
 
 All four methods reach the closed-form root within tolerance. Brent and Newton finish in roughly an order of magnitude fewer iterations than bisection.
 
@@ -159,11 +153,7 @@ All four methods reach the closed-form root within tolerance. Brent and Newton f
 
 Brent's method is the right default for production equilibrium solves. It inherits bisection's bracket invariant and adds superlinear speed via inverse quadratic interpolation when the bracket is preserved.
 
-Bisection is the safe fallback when no derivative is available.
-
-Secant is a no-derivative alternative to Newton with similar fragility from far-off seeds.
-
-Newton is fastest near a simple root but needs a derivative and a starting point inside the basin of attraction.
+Bisection is the safe fallback when no derivative is available. Secant is a no-derivative alternative to Newton with similar fragility from far-off seeds. Newton is fastest near a simple root but needs a derivative and a starting point inside the basin of attraction.
 
 $\mathrm{scipy.optimize.brentq}$ is the production default for exactly these reasons.
 

@@ -147,13 +147,13 @@ def main() -> None:
 
     report.add_overview(
         "Value function iteration stores $V$ at a finite grid and reads "
-        "it off-grid every step.\n\n"
+        "it off-grid every step. "
         "Three classical interpolators are the workhorses: piecewise "
         "linear, natural cubic spline, and PCHIP (piecewise cubic Hermite "
         "interpolating polynomial).\n\n"
-        "This tutorial fits each one to two targets.\n\n"
+        "This tutorial fits each one to two targets. "
         "The first target is the closed-form cake-eating value function "
-        "$V(W)$ — smooth and monotone.\n\n"
+        "$V(W)$ — smooth and monotone. "
         "The second is a stylized consumption policy with a borrowing-"
         "constraint kink: the level is continuous but the slope drops "
         "sharply at $a_{\\text{kink}}$.\n\n"
@@ -389,9 +389,9 @@ the $C^2$ smoothness of the cubic spline.
     report.add_takeaway(
         "Piecewise linear is the safe default for value functions with "
         "borrowing constraints. It preserves shape, never overshoots, and "
-        "requires no setup.\n\n"
+        "requires no setup. "
         "Natural cubic spline gives the best convergence on smooth "
-        "functions but rings near kinks and can violate monotonicity.\n\n"
+        "functions but rings near kinks and can violate monotonicity. "
         "PCHIP is the right middle ground for monotone-but-non-smooth "
         "policies. It beats linear on accuracy and cubic on shape "
         "preservation at the same node count.\n\n"

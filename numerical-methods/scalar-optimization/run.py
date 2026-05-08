@@ -179,10 +179,10 @@ def main() -> None:
         "$$\\max_{c \\in [0, W]} u(c) + \\beta\\, V(W - c).$$\n\n"
         "Under log utility the closed-form inner optimum is "
         "$c^{\\ast} = (1 - \\beta) W$.\n\n"
-        "Golden section search contracts a bracket $[a, b]$ around the maximum.\n\n"
+        "Golden section search contracts a bracket $[a, b]$ around the maximum. "
         "Newton on the first-order condition extrapolates a quadratic "
         "surrogate at the current iterate.\n\n"
-        "Golden section needs only unimodality and is globally safe.\n\n"
+        "Golden section needs only unimodality and is globally safe. "
         "Newton is locally fast and depends on the starting point."
     )
 
@@ -419,7 +419,7 @@ $q_n(c) = g(x_n) + g'(x_n)(c - x_n) + \tfrac{1}{2} g''(x_n)(c - x_n)^2$.
         "step: it only needs unimodality and a bracket, and contracts at "
         "a fixed factor regardless of where the optimum sits.\n\n"
         "Newton on the FOC is much faster when $g'$ and $g''$ are "
-        "available and $x_0$ is inside the basin of attraction.\n\n"
+        "available and $x_0$ is inside the basin of attraction. "
         "A far-off start makes the parabolic extrapolation overshoot "
         "outside the feasible interval.\n\n"
         "Cake-eating and consumption-savings VFI use golden section for "
