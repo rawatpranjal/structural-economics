@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T08:19:41Z",
+  "updated_at": "2026-05-08T08:25:00Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -436,6 +436,17 @@
         "industrial-organization/dynamic-discrete-choice/run.py"
       ],
       "updated_at": "2026-05-08T02:41:28Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/three-part-tariffs/",
+      "status": "complete",
+      "commit": "dc3e96787af1bc34d5d3a7722aff2481d0c5bebc",
+      "changed_paths": [
+        "README.md",
+        "industrial-organization/three-part-tariffs/README.md",
+        "industrial-organization/three-part-tariffs/run.py"
+      ],
+      "updated_at": "2026-05-08T08:25:00Z"
     }
   ]
 }
