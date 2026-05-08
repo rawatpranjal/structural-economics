@@ -4,15 +4,15 @@
 
 ## Overview
 
-Suppose a researcher has a file of grocery trips. Each row records prices and the bundle the household bought. Afriat's theorem and GARP can say whether all rows fit one stable utility function, but a single rejection is often too blunt for empirical work. One miscoded receipt, a change in household needs, or a row from a different decision problem can make the whole sample fail even when most choices look coherent.
+Revealed-preference data can fail GARP even when most observations fit stable preferences. The failure says the full dataset is not rationalizable.
 
-Houtman-Maks asks for the largest group of observations that remains rationalizable. That is an economic object: the size and composition of the utility-consistent core. The computation needed to find it is a subset search over a revealed-preference graph. This tutorial keeps both pieces visible. It builds the revealed-preference relation, searches for the largest GARP-consistent subset, and compares exact enumeration with a graph-based greedy deletion rule.
+The Houtman-Maks index is the largest number of observations that can be kept while satisfying GARP. It measures the rationalizable core of the dataset.
 
-The example is a small synthetic demand panel where the uncorrupted choices come from Cobb-Douglas budget shares. Two chosen bundles are swapped across receipts. The full dataset fails GARP, but the largest rationalizable core keeps 11 of 12 observations. Because this is simulated data, we know which receipts were swapped, so we can compare the exact Houtman-Maks deletion and the greedy large-sample diagnostic against a known source of contamination.
+Finding the core requires search over subsets of observations. This tutorial builds the revealed-preference graph, checks GARP on candidate subsets, and compares exact search with a greedy graph rule.
 
 ## Equations
 
-There are $T$ observations. Observation $t$ contains prices $p_t \in \mathbb{R}_{+}^{J}$ and the chosen bundle $x_t \in \mathbb{R}_{+}^{J}$. Expenditure is $m_t=p_t \cdot x_t$.
+There are $T$ observations. Observation $t$ has prices $p_t \in \mathbb{R}_{+}^{J}$ and chosen bundle $x_t \in \mathbb{R}_{+}^{J}$. Expenditure is $m_t=p_t \cdot x_t$.
 
 Choice $t$ directly weakly reveals $x_t$ preferred to $x_s$ when $x_s$ was affordable at prices $p_t$:
 
@@ -22,7 +22,7 @@ The direct relation is strict when the inequality is strict. Let $R$ be the tran
 
 $$x_t R x_s \quad \text{and} \quad p_s \cdot x_s > p_s \cdot x_t.$$
 
-For any subset $S$, let $\operatorname{GARP}(S)=1$ when these restrictions hold after keeping only observations in $S$. The Houtman-Maks index is
+Let $\operatorname{GARP}(S)=1$ when these restrictions hold after keeping only observations in $S$. The Houtman-Maks index is
 
 $$HM = \max_{S \subseteq \{1,\ldots,T\}} |S| \quad \text{s.t.} \quad \operatorname{GARP}(S)=1.$$
 
@@ -36,15 +36,15 @@ $$T - HM.$$
 |---|---:|---|
 | Observations $T$ | 12 | Shopping trips with prices and chosen bundles |
 | Goods $J$ | 3 | Small multi-good demand environment |
-| Data-generating preferences | Cobb-Douglas shares $(0.45,0.35,0.20)$ | Rational benchmark before corruption |
-| Synthetic corruption | bundles in rows 3 and 4 swapped | Oracle label available only because this is simulated data |
+| Data-generating preferences | Cobb-Douglas shares $(0.45,0.35,0.20)$ | Choices before the swap |
+| Synthetic corruption | bundles in rows 3 and 4 swapped | Known source of the GARP failure |
 | Full-sample GARP violations | 9 | Contradictions after taking transitive closure |
 | Exact Houtman-Maks index | 11 | Largest rationalizable subset size |
 | Greedy deletion | observation 4 | Same deletion selected by the heuristic |
 
 ## Solution Method
 
-The exact routine treats the dataset as a finite search problem. It builds the revealed-preference graph for a candidate subset, takes the transitive closure, and checks whether any strict budget cycle remains. For $T=12$, enumeration is small enough to give a benchmark.
+The exact routine treats the dataset as a finite search problem. It builds the revealed-preference graph for each candidate subset. It then checks whether any strict budget cycle remains.
 
 ```text
 Algorithm: exact Houtman-Maks core
@@ -59,7 +59,7 @@ for k = T, T-1, ..., 1:
             return S* = S and HM = k
 ```
 
-Enumeration is exact, but the number of subsets grows quickly. The second calculation keeps the same revealed-preference object and uses the graph structure to choose deletions. A violating strongly connected component is a set of observations tied together by revealed-preference paths, with at least one strict comparison closing the cycle.
+Enumeration is exact, but the number of subsets grows quickly. The greedy rule uses the same graph to choose deletions. It removes observations from violating strongly connected components.
 
 ```text
 Algorithm: SCC greedy Houtman-Maks diagnosis
@@ -75,40 +75,40 @@ while GARP(S) fails:
 return S
 ```
 
-In this run, the greedy rule removes observation 4, the same receipt removed by exact search. The exact result is the benchmark; the greedy result is a practical diagnostic for larger panels.
+In this run, the greedy rule removes observation 4, the same receipt removed by exact search. The retained set keeps 11 of 12 observations.
 
 ## Results
 
-The table keeps three objects separate. The synthetic swap column is the oracle label from the simulation. The exact Houtman-Maks action is the maximum rationalizable subset. The greedy action is the approximation one would use when exact subset enumeration is too expensive.
+The table reports how each receipt enters the GARP rejection. Observation 4 has the most conflict participation. Exact search and the greedy rule remove the same receipt.
 
 **Which Receipts Carry the Rejection**
 
-|   Observation |   Violation participation | Synthetic swap row   | Exact HM action   | Greedy action   |   Observed good 1 |   Pre-swap good 1 |
-|--------------:|--------------------------:|:---------------------|:------------------|:----------------|------------------:|------------------:|
-|             1 |                         0 | no                   | keep              | keep            |              2.64 |              2.64 |
-|             2 |                         2 | no                   | keep              | keep            |              2.6  |              2.6  |
-|             3 |                         5 | yes                  | keep              | keep            |              5.94 |              2.73 |
-|             4 |                         6 | yes                  | remove            | remove          |              2.73 |              5.94 |
-|             5 |                         0 | no                   | keep              | keep            |              5.24 |              5.24 |
-|             6 |                         0 | no                   | keep              | keep            |              5.03 |              5.03 |
-|             7 |                         0 | no                   | keep              | keep            |              6.2  |              6.2  |
-|             8 |                         0 | no                   | keep              | keep            |              4.33 |              4.33 |
-|             9 |                         2 | no                   | keep              | keep            |              3.1  |              3.1  |
-|            10 |                         0 | no                   | keep              | keep            |              5.21 |              5.21 |
-|            11 |                         0 | no                   | keep              | keep            |              3.82 |              3.82 |
-|            12 |                         3 | no                   | keep              | keep            |              3.42 |              3.42 |
+|   Observation |   Violation participation | Synthetic swap row   | Exact HM action   | Greedy action   |
+|--------------:|--------------------------:|:---------------------|:------------------|:----------------|
+|             1 |                         0 | no                   | keep              | keep            |
+|             2 |                         2 | no                   | keep              | keep            |
+|             3 |                         5 | yes                  | keep              | keep            |
+|             4 |                         6 | yes                  | remove            | remove          |
+|             5 |                         0 | no                   | keep              | keep            |
+|             6 |                         0 | no                   | keep              | keep            |
+|             7 |                         0 | no                   | keep              | keep            |
+|             8 |                         0 | no                   | keep              | keep            |
+|             9 |                         2 | no                   | keep              | keep            |
+|            10 |                         0 | no                   | keep              | keep            |
+|            11 |                         0 | no                   | keep              | keep            |
+|            12 |                         3 | no                   | keep              | keep            |
 
-The graph shows why one deletion can be enough. Red fill marks the exact Houtman-Maks deletion, the black x marks the greedy deletion, and gold rings mark the two receipts whose bundles were swapped in the simulation. The method does not need to remove both swapped rows; dropping one side of the conflict recovers a GARP-consistent core.
+The conflict graph shows why one deletion restores consistency. Red fill marks the exact deletion. The black x marks the greedy deletion. Gold rings mark the two swapped receipts.
 
 <img src="figures/conflict-graph.png" alt="Preference conflict graph comparing exact, greedy, and synthetic corruption markers." width="80%">
 
-The heat maps are the certificate. The full sample has strict budget-cycle contradictions. After removing the exact Houtman-Maks deletion, the retained core has none.
+The heat maps show GARP violations before and after the deletion. The retained core has no strict budget-cycle contradictions.
 
 <img src="figures/violations-before-after.png" alt="GARP violations before and after removing the Houtman-Maks outlier." width="80%">
 
 ## Takeaway
 
-Houtman-Maks turns a binary revealed-preference rejection into a measurement of the rationalizable core. Here the rejection is local: one deletion restores GARP for 11 of 12 observations. The synthetic oracle also shows the main interpretive limit. The index is not a causal label for every corrupted row; it tells us how much of the finite sample can still support a stable utility model and which observations create the conflict.
+Houtman-Maks turns a GARP rejection into the size of the rationalizable core. In this example, one deletion keeps 11 of 12 observations. The index locates a minimal repair, not every bad receipt.
 
 ## References
 

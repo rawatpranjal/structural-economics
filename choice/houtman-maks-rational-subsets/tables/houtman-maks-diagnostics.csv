@@ -1,13 +1,13 @@
-Observation,Violation participation,Synthetic swap row,Exact HM action,Greedy action,Observed good 1,Pre-swap good 1
-1,0,no,keep,keep,2.64,2.64
-2,2,no,keep,keep,2.60,2.60
-3,5,yes,keep,keep,5.94,2.73
-4,6,yes,remove,remove,2.73,5.94
-5,0,no,keep,keep,5.24,5.24
-6,0,no,keep,keep,5.03,5.03
-7,0,no,keep,keep,6.20,6.20
-8,0,no,keep,keep,4.33,4.33
-9,2,no,keep,keep,3.10,3.10
-10,0,no,keep,keep,5.21,5.21
-11,0,no,keep,keep,3.82,3.82
-12,3,no,keep,keep,3.42,3.42
+Observation,Violation participation,Synthetic swap row,Exact HM action,Greedy action
+1,0,no,keep,keep
+2,2,no,keep,keep
+3,5,yes,keep,keep
+4,6,yes,remove,remove
+5,0,no,keep,keep
+6,0,no,keep,keep
+7,0,no,keep,keep
+8,0,no,keep,keep
+9,2,no,keep,keep
+10,0,no,keep,keep
+11,0,no,keep,keep
+12,3,no,keep,keep
