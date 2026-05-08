@@ -4,9 +4,11 @@
 
 ## Overview
 
-A researcher may observe the same household, city, or market under several price schedules: a baseline tariff, a subsidy, a tax change, or a different insurance menu. The bundles chosen under those schedules can support a familiar GARP test of utility maximization. The same observations can also support a different welfare question: do they rank the price schedules themselves in a consistent way?
+A researcher may observe one household, city, or market under several price schedules. The schedules could be tariffs, taxes, subsidies, or insurance menus. Each schedule produces one chosen bundle.
 
-Revealed price preference keeps the observed price-quantity pairs $(p^t,x^t)$ but changes the object being ranked. For each bundle that was actually chosen, the calculation asks which price vectors would have made that same bundle weakly cheaper. Those pairwise cost comparisons form a directed graph over price vectors. The GAPP test closes that graph transitively and looks for a strict reverse comparison. The examples below show why this extra computation matters: a finite dataset can pass bundle GARP while failing to support a consistent ranking of price regimes.
+The object is the ranking of price schedules. Revealed price preference asks whether the observed bundles can rank those schedules consistently.
+
+The computation compares every chosen bundle under every observed price vector. Those cross-cost comparisons form a directed graph. GAPP closes the graph and checks whether a strict reverse edge creates a cycle.
 
 ## Equations
 
@@ -19,14 +21,13 @@ For price-regime comparisons, define the cross-cost matrix
 $$
 C_{st}=p^s\cdot x^t .
 $$
-Price vector $s$ is directly revealed weakly preferred to price vector $t$ when
-schedule $s$ would have made the bundle chosen under schedule $t$ no more
-expensive than it actually was:
+Use this matrix to define direct weak preference between price vectors:
 $$
 sR_p^D t
 \quad\Longleftrightarrow\quad
 C_{st}\le C_{tt}=m_t .
 $$
+This means schedule $s$ makes bundle $t$ no more expensive than schedule $t$ did.
 
 The strict relation is
 $$
@@ -52,13 +53,13 @@ price-regime analogue of a revealed-preference cycle.
 |---|---:|---|
 | Observations $T$ | 3 | Each case has three price-quantity observations |
 | Goods $L$ | 3 | Bundles are finite consumption vectors |
-| Deterministic cases | 4 | The examples cover every GARP/GAPP pass-fail cell |
-| Focal example | Case A | Bundle GARP passes while price GAPP fails |
-| Focal GAPP violations | 2 | Strict reverse edges close a price-schedule cycle |
+| Deterministic cases | 4 | Examples separate bundle GARP from price GAPP |
+| Main example | Case A | Bundle GARP passes while price GAPP fails |
+| Main GAPP violations | 2 | Strict reverse edges close a price-schedule cycle |
 
 ## Solution Method
 
-The computational object is a directed graph. Each node is an observed price vector. An edge from $s$ to $t$ means price schedule $s$ would have made the bundle chosen under $t$ affordable at weakly lower expenditure. As in the [Afriat revealed-preference test](../revealed-preference-afriat/), the direct edges are not enough because indirect comparisons can matter. A Boolean transitive closure gives exact reachability on the finite observation set, with cost $O(T^3)$.
+The computational object is a directed graph. Each node is an observed price vector. An edge from $s$ to $t$ means schedule $s$ made bundle $t$ weakly cheaper. Direct edges are not enough because indirect comparisons can matter. A Boolean transitive closure gives exact reachability on the finite data.
 
 ```text
 Algorithm: GAPP test for price-regime rankings
@@ -74,13 +75,13 @@ Output: pass/fail GAPP decision and violating price-vector pairs
 6. Accept GAPP when no violating pair remains.
 ```
 
-The script also runs ordinary bundle GARP on the same observations. Comparing the two diagnostics keeps the economic object clear. A dataset can be consistent with stable preferences over bundles and still reject a stable ranking of the price schedules that generated those bundles.
+The script also runs ordinary bundle GARP on the same observations. The two tests answer different questions. Stable bundle choices need not imply a stable ranking of the price schedules.
 
 ## Results
 
-The four synthetic panels occupy all four pass-fail cells. Case A is the focal example because bundle choices look rational there, but the price schedules cannot be ranked consistently.
+Case A is the main example. Bundle choices pass GARP there, but the price schedules fail GAPP.
 
-**Bundle GARP and Price GAPP Diagnostics**
+**Bundle GARP and Price GAPP Tests**
 
 | Case   | Economic comparison                 | GARP   | GAPP   |   Bundle violations |   Price violations |
 |:-------|:------------------------------------|:-------|:-------|--------------------:|-------------------:|
@@ -89,21 +90,21 @@ The four synthetic panels occupy all four pass-fail cells. Case A is the focal e
 | C      | Bundle-inconsistent, price-rational | fail   | pass   |                   4 |                  0 |
 | D      | Both restrictions fail              | fail   | fail   |                   2 |                  2 |
 
-The heat map shows the cross-cost ratio $C_{st}/C_{tt}$. Rows are candidate price vectors and columns are observed bundles. Entries below one mean that the row price vector would have made the column's chosen bundle cheaper than the observed price vector did.
+The heat map shows the cross-cost ratio $C_{st}/C_{tt}$. Rows are candidate price vectors. Columns are observed bundles. Entries below one mark cheaper counterfactual prices for the same bundle.
 
 <img src="figures/price-cost-ratios.png" alt="Cost ratios used to reveal preferences over price vectors." width="80%">
 
-The graph translates those cost comparisons into revealed preferences over price schedules. Each arrow holds a chosen bundle fixed and asks which price vector made that bundle cheaper.
+The graph turns cost comparisons into revealed preferences over price schedules. Each arrow keeps the chosen bundle fixed.
 
 <img src="figures/price-preference-graph.png" alt="A cycle in the price-preference graph rejects GAPP." width="80%">
 
-Across the four deterministic panels, GARP and GAPP separate cleanly. The same price-quantity data can support utility maximization over bundles while rejecting a consistent ordering of price regimes. Another panel can do the reverse.
+Across the four panels, GARP and GAPP separate cleanly. The same data can pass one test and fail the other.
 
 <img src="figures/garp-vs-gapp-cases.png" alt="GARP and GAPP classify the same datasets differently." width="80%">
 
 ## Takeaway
 
-Revealed price preference fits welfare exercises where price schedules, tariffs, or menus are the objects being compared. GARP asks whether one stable utility ordering can rationalize the chosen bundles. GAPP asks whether the observed price vectors can be ranked consistently by the bundles they made affordable. Because the two tests can disagree on the same finite data, a researcher should choose the diagnostic that matches the object of comparison. After a standard [Afriat test](../revealed-preference-afriat/), this page gives the dual check for applications where the price regime itself carries the welfare comparison.
+Revealed price preference fits welfare exercises where schedules are the objects being compared. GARP asks whether one utility ordering rationalizes the bundles. GAPP asks whether observed price vectors have a consistent ranking. The tests can disagree on the same finite data.
 
 ## References
 
