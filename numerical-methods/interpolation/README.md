@@ -4,11 +4,17 @@
 
 ## Overview
 
-Every value-function-iteration loop stores $V$ at a finite set of grid points and evaluates it at off-grid arguments inside the Bellman update. The endogenous grid-points solver does the same for next-period asset choices. Three classical interpolators are the workhorses: piecewise linear, natural cubic spline, and PCHIP (piecewise cubic Hermite interpolating polynomial).
+Value function iteration stores $V$ at a finite grid and reads it off-grid every step.
 
-This tutorial fits each method to two targets that expose the trade-offs. The first is the closed-form cake-eating value function $V(W)$, smooth and monotone. The second is a stylized consumption policy with a borrowing-constraint kink: below the kink the agent consumes all cash-on-hand; above it the agent saves at a much lower marginal rate. The slope drops sharply at the kink, but the level stays continuous.
+Three classical interpolators are the workhorses: piecewise linear, natural cubic spline, and PCHIP (piecewise cubic Hermite interpolating polynomial).
 
-The smooth target is where cubic splines shine. The kinked target is where they ring: the spline overshoots above and below the kink, while linear interpolation and PCHIP do not.
+This tutorial fits each one to two targets.
+
+The first target is the closed-form cake-eating value function $V(W)$ — smooth and monotone.
+
+The second is a stylized consumption policy with a borrowing-constraint kink: the level is continuous but the slope drops sharply at $a_{\text{kink}}$.
+
+Cubic splines shine on the smooth target. They ring on the kinked one. Linear interpolation and PCHIP do not.
 
 ## Equations
 
@@ -59,32 +65,72 @@ the $C^2$ smoothness of the cubic spline.
 
 ## Solution Method
 
-Each method takes nodes $(x_i, y_i)$ and returns a function on the interval $[x_0, x_N]$. Linear interpolation reuses the convex combination above. Cubic spline solves a tridiagonal system once for the second-derivative values. PCHIP applies Fritsch-Carlson slope limiting and then evaluates a Hermite cubic on each interval.
+Each method takes nodes $(x_i, y_i)$ and returns a function on $[x_0, x_N]$.
+
+**Piecewise linear.** Connect adjacent nodes with straight segments. The convex-combination formula evaluates the segment containing the query point.
 
 ```text
-Piecewise linear              | Natural cubic spline           | PCHIP (shape-preserving)
-Inputs: nodes (x_i, y_i)      | Inputs: nodes (x_i, y_i)       | Inputs: nodes (x_i, y_i)
-for query x in [x_i, x_{i+1}]:| (1) form tridiagonal system in | (1) compute secant slopes m_i
-    w <- (x - x_i) / h_i      |     unknowns y'' at interior   |     between adjacent nodes
-    return (1-w) y_i + w y_{i+1}|     nodes, with natural BC   | (2) limit endpoint slopes by
-                              |     y''_0 = y''_N = 0          |     Fritsch-Carlson rule
-                              | (2) solve once -> spline coeffs| (3) evaluate Hermite cubic
-                              | (3) evaluate cubic on interval |
+Algorithm: Piecewise linear
+Input : nodes (x_i, y_i); query x in [x_i, x_{i+1}]
+Output: y_hat
+  h_i   <- x_{i+1} - x_i
+  w     <- (x - x_i) / h_i
+  y_hat <- (1 - w) y_i + w y_{i+1}
 ```
 
-The linear branch reuses `lib.interpolate.linear_interp`; the cubic and PCHIP branches use `scipy.interpolate.CubicSpline` (`bc_type='natural'`) and `scipy.interpolate.PchipInterpolator`.
+**Natural cubic spline.** Fit a piecewise cubic with $C^2$ continuity and zero second derivatives at the endpoints.
+
+```text
+Algorithm: Natural cubic spline
+Input : nodes (x_i, y_i)
+Output: spline S(x)
+  build tridiagonal system in y''_1, ..., y''_{N-1}
+  with natural BC y''_0 = y''_N = 0
+  solve once for the second-derivative values
+  on [x_i, x_{i+1}], evaluate the cubic from
+    y_i, y_{i+1}, y''_i, y''_{i+1}
+```
+
+**PCHIP (shape-preserving).** Fit a piecewise cubic Hermite polynomial whose endpoint slopes are chosen by the Fritsch-Carlson rule so the result preserves monotonicity.
+
+```text
+Algorithm: PCHIP
+Input : nodes (x_i, y_i)
+Output: H(x)
+  m_i <- (y_{i+1} - y_i) / (x_{i+1} - x_i)   # secant slopes
+  pick endpoint slopes d_i by Fritsch-Carlson rule
+    so that monotonicity of {y_i} is preserved
+  on [x_i, x_{i+1}], evaluate Hermite cubic from
+    y_i, y_{i+1}, d_i, d_{i+1}
+```
+
+The linear branch reuses `lib.interpolate.linear_interp`. The cubic and PCHIP branches use `scipy.interpolate.CubicSpline` (`bc_type='natural'`) and `scipy.interpolate.PchipInterpolator`.
 
 ## Results
 
-At 10 nodes the three methods agree closely on the smooth value function. On the kinked policy the cubic spline visibly rings near $a_{\text{kink}}$: its $C^2$ smoothness constraint forces it to oscillate around the slope discontinuity. Piecewise linear and PCHIP track the kink without overshoot, at the cost of a corner where the slope changes.
+At 10 nodes the three methods agree closely on the smooth value function.
+
+On the kinked policy the cubic spline rings near $a_{\text{kink}}$: $C^2$ smoothness forces it to oscillate around the slope discontinuity.
+
+Piecewise linear and PCHIP track the kink without overshoot, at the cost of a corner where the slope changes.
 
 <img src="figures/target-vs-fit.png" alt="Three approximations against the smooth (left) and kinked (right) targets at the same node count" width="80%">
 
-Pointwise errors confirm the visual story. On the smooth target all three errors concentrate in the high-curvature region near $W = 0$, with cubic uniformly smallest. On the kinked target the cubic-spline error oscillates above and below zero in the interval that straddles $a_{\text{kink}}$ (sup-error **4.57e-02**); PCHIP eliminates that ringing at the same node count (sup-error **2.90e-02**); piecewise linear under-shoots in the same interval (sup-error **7.63e-02**) but stays monotone.
+On the smooth target all three errors concentrate near $W = 0$, where curvature is largest. Cubic is uniformly smallest.
+
+On the kinked target the cubic-spline error oscillates above and below zero around $a_{\text{kink}}$ (sup-error **4.57e-02**).
+
+PCHIP eliminates the ringing at the same node count (sup-error **2.90e-02**).
+
+Piecewise linear under-shoots in the same interval (sup-error **7.63e-02**) but stays monotone.
 
 <img src="figures/error-curves.png" alt="Pointwise error of each method on the smooth and kinked targets at $N=10$ nodes" width="80%">
 
-On the smooth target doubling $N$ improves linear error roughly four-fold (slope $-2$), while cubic and PCHIP drop at roughly slope $-4$. The asymptotic gap is large enough that a tutorial with many off-grid evaluations on a smooth target should reach for cubic first. On a kinked target this convergence advantage disappears and PCHIP becomes the right default because it preserves shape.
+On the smooth target, doubling $N$ improves linear error roughly four-fold (slope $-2$).
+
+Cubic and PCHIP drop at roughly slope $-4$.
+
+On a kinked target this advantage disappears, and PCHIP becomes the right default because it preserves shape.
 
 <img src="figures/convergence-vs-nodes.png" alt="Sup-norm error vs node count on the smooth cake-eating target, log-log axes" width="80%">
 
@@ -100,7 +146,13 @@ At a fixed budget of 10 nodes the table summarises sup-norm and L2 errors for ea
 
 ## Takeaway
 
-Piecewise linear is the safe default for value functions with borrowing constraints: it preserves shape, never overshoots, and requires no setup. Natural cubic spline gives the best convergence on smooth functions but rings near kinks and can violate monotonicity. PCHIP is the right middle ground for monotone-but-non-smooth policies — the case EGP and consumption-savings VFI face every period — beating both linear (more accurate) and cubic (no ringing) at the same node count. `lib.interpolate.linear_interp` is what the existing tutorials use today; promoting cubic and PCHIP wrappers to `lib/interpolate.py` is worth doing the moment a second tutorial needs them.
+Piecewise linear is the safe default for value functions with borrowing constraints. It preserves shape, never overshoots, and requires no setup.
+
+Natural cubic spline gives the best convergence on smooth functions but rings near kinks and can violate monotonicity.
+
+PCHIP is the right middle ground for monotone-but-non-smooth policies. It beats linear on accuracy and cubic on shape preservation at the same node count.
+
+`lib.interpolate.linear_interp` is what the existing tutorials use today. Promoting cubic and PCHIP wrappers to `lib/interpolate.py` is worth doing once a second tutorial needs them.
 
 ## References
 
