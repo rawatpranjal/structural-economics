@@ -2,10 +2,10 @@
 """Capital taxes and saving in a stochastic RBC model.
 
 Compare permanent capital income tax rates in a stochastic growth model. The
-government taxes capital income and rebates the revenue lump-sum, so the
-aggregate resource constraint is unchanged while the household's Euler equation
-uses an after-tax return. A global VFI policy gives a stable initializer, then
-Euler-equation iteration imposes the tax wedge on consumption and saving.
+government rebates the revenue lump-sum. Goods are unchanged in the aggregate
+resource constraint, but the household's Euler equation uses an after-tax
+return. A global VFI policy initializes Euler-equation iteration on consumption
+and saving.
 
 References: Chamley (1986), Judd (1985), and the global DSGE examples in
 Cao, Luo, and Nie (2023).
@@ -266,23 +266,19 @@ def main():
 
     report = ModelReport(
         "Capital Taxes and Saving in a Global RBC Model",
-        "A rebated capital tax leaves goods available today unchanged, but it lowers the private return that governs saving.",
+        "A rebated capital tax lowers the private return to saving while the resource constraint keeps all goods.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "Suppose the government taxes capital income and sends the revenue back "
-        "as a lump-sum transfer. No goods disappear from the aggregate resource "
-        "constraint. The representative household still changes its plan, because "
-        "one more unit of capital now pays only the after-tax marginal product. "
-        "The policy experiment is therefore about a wedge between what the economy "
-        "can produce and what the household privately earns by saving.\n\n"
-        "A closed-form steady state gives the long-run benchmark, but it does not "
-        "show how the saving rule changes after productivity shocks. For that we "
-        "solve the stochastic RBC model on a global capital and productivity grid. "
-        "The grid solution lets the tax wedge move the entire policy function, then "
-        "we simulate every tax regime on the same productivity path."
+        "A government taxes capital income and rebates the revenue to the "
+        "household. Current goods are unchanged at the aggregate level.\n\n"
+        "The object is the household saving rule. The tax matters because one more "
+        "unit of capital earns only the after-tax marginal product.\n\n"
+        "The steady state gives the long-run benchmark. A global RBC grid traces "
+        "the saving rule after productivity shocks. The simulation compares every "
+        "tax rate on the same productivity path."
     )
 
     report.add_equations(
@@ -340,14 +336,9 @@ tax revenue $T_{ss}=\tau_k \alpha Y_{ss}$.
     )
 
     report.add_solution_method(
-        "The numerical problem is to recover a saving rule over the full $(z,K)$ "
-        "state space, away from the deterministic steady state as well as at it. "
-        "The solver starts with a resource-feasible Bellman pass, which gives a "
-        "stable global policy on the capital grid. It then iterates directly on "
-        "the Euler equation, replacing the pre-tax marginal product with "
-        "$(1-\\tau_k)MPK$. Howard improvement speeds up the value iteration step, "
-        "while the Euler refinement is the part that makes the tax experiment "
-        "economically meaningful.\n\n"
+        "Given a tax rate, the solver recovers a saving rule on the $(z,K)$ grid. "
+        "A Bellman pass gives a feasible global policy. Euler refinement then "
+        "applies the after-tax return $(1-\\tau_k)MPK$ to consumption and saving.\n\n"
         "```text\n"
         "Algorithm: global saving rule with a capital-tax wedge\n"
         "Input: tax rate tau_k, grids K and Z, transition matrix P, primitives beta, alpha, sigma, delta\n"
@@ -360,7 +351,6 @@ tax revenue $T_{ss}=\tau_k \alpha Y_{ss}$.
         "    for each state (z_i,K_m):\n"
         "        choose K' on the grid to maximize u(c) + beta * sum_j P_ij V_n(z_j,K')\n"
         "        record V_{n+1}, g_K, and g_c\n"
-        "    apply Howard improvement to the fixed policy\n"
         "until the sup-norm value update is below epsilon\n"
         "repeat Euler refinement:\n"
         "    for each state (z_i,K_m):\n"
@@ -371,26 +361,16 @@ tax revenue $T_{ss}=\tau_k \alpha Y_{ss}$.
         "        g_K_new(z_i,K_m) = z_i K_m^alpha + (1-delta)K_m - g_c_new(z_i,K_m)\n"
         "until the consumption policy update is below epsilon\n"
         "Simulate all tax regimes on the same productivity path\n"
-        "```\n\n"
-        "The deterministic steady state anchors the long-run comparison. The "
-        "stochastic policy functions are numerical, so the table below keeps exact "
-        "steady states separate from simulated means. Across the five tax regimes, "
-        f"VFI used at most **{max(sol['iterations'] for sol in solutions.values())}** "
-        "outer iterations and Euler refinement used at most "
-        f"**{max(sol['euler_iterations'] for sol in solutions.values())}** iterations."
+        "```"
     )
 
     report.add_results(
-        f"The exact steady-state formulas show the size of the distortion before "
-        f"we look at any simulated path. "
         f"At $\\tau_k=30\\%$, deterministic capital is "
-        f"{(1 - solutions[0.30]['Kss']/Kss_notax)*100:.1f}% below the no-tax value, "
-        f"output is {(1 - solutions[0.30]['Yss']/Yss_notax)*100:.1f}% lower, and "
+        f"{(1 - solutions[0.30]['Kss']/Kss_notax)*100:.1f}% below the no-tax value. "
+        f"Output is {(1 - solutions[0.30]['Yss']/Yss_notax)*100:.1f}% lower, and "
         f"consumption is {(1 - solutions[0.30]['Css']/Css_notax)*100:.1f}% lower. "
-        f"Consumption falls less because a lower capital stock also reduces replacement "
-        f"investment. The simulations use the same productivity sequence for every tax "
-        f"rate, so the level differences across paths are the tax wedge, not different "
-        f"shock histories."
+        f"Consumption falls less because lower capital also reduces replacement "
+        f"investment. The simulations use one productivity path for all tax rates."
     )
 
     # --- Figure 1: Steady state capital vs tax rate ---
@@ -451,9 +431,9 @@ tax revenue $T_{ss}=\tau_k \alpha Y_{ss}$.
     ax2b.legend(fontsize=8)
     fig2.tight_layout()
     report.add_figure("figures/policy-by-tax.png", "Capital and consumption policies at median TFP by capital tax rate", fig2,
-        description="At the median productivity state, the policy functions show the wedge in decision-rule form. "
-        "Higher taxes move the capital policy down and the consumption policy up: the household saves less "
-        "because tomorrow's marginal product is partly taxed away.")
+        description="At the median productivity state, the policy functions show the tax wedge. "
+        "Higher taxes move the capital policy down. They move the consumption policy up because "
+        "tomorrow's marginal product is partly taxed away.")
 
     # --- Figure 3: Simulated capital paths ---
     fig3, (ax3a, ax3b) = plt.subplots(1, 2, figsize=(13, 5))
@@ -510,24 +490,22 @@ tax revenue $T_{ss}=\tau_k \alpha Y_{ss}$.
     ax4b.legend(fontsize=7)
     fig4.tight_layout()
     report.add_figure("figures/investment-distributions.png", "Investment-rate and capital-output distributions by tax regime", fig4,
-        description="The stationary distributions add another view of the same mechanism. Higher taxes "
-        "shift the investment share and the capital-output ratio left, so the economy "
-        "spends more time in states with a smaller productive base.")
+        description="Higher taxes shift both distributions left. The economy spends more time "
+        "with a smaller productive base.")
 
     # --- Table ---
     df_ss = pd.DataFrame(ss_data)
     report.add_table("tables/steady-state.csv", "Exact Steady States and Simulated Moments by Tax Rate", df_ss,
-        description="The table keeps the closed-form steady-state benchmark separate from the simulated mean. "
-        "Simulated mean capital is slightly above the deterministic value because productivity risk and the "
-        "nonlinear policy shift the invariant distribution, but the ranking across tax regimes is unchanged.")
+        description="The table separates the closed-form steady state from the simulated mean. "
+        "Simulated mean capital is slightly above the deterministic value. Productivity risk and "
+        "the nonlinear policy shift the invariant distribution. The ranking across tax regimes is unchanged.")
 
     report.add_takeaway(
         "The rebate balances the government budget while the intertemporal wedge remains. "
         "Once the household prices saving with $(1-\\tau_k)MPK$, the economy carries less "
-        "capital into every productivity state. The exact steady state gives the clean "
-        "long-run comparison, and the global policy functions show how the same force "
-        "operates away from the steady state. Fiscal wedges can be revenue-neutral in "
-        "resources and still large in allocation."
+        "capital into every productivity state. The steady state gives the clean "
+        "long-run comparison. The global policy functions show the same force away "
+        "from steady state."
     )
 
     report.add_references([
