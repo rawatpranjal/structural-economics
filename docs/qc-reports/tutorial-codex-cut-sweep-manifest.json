@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T07:08:42Z",
+  "updated_at": "2026-05-08T07:15:19Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -308,6 +308,19 @@
         "industrial-organization/vertical-relationships/tables/vertical-contracts.csv"
       ],
       "updated_at": "2026-05-08T07:08:42Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/vertical-contracts/",
+      "status": "complete",
+      "commit": "8ed9c084e0fc2999ec24b608a9dbd8fb72e53751",
+      "changed_paths": [
+        "README.md",
+        "industrial-organization/vertical-contracts/README.md",
+        "industrial-organization/vertical-contracts/figures/profit-incidence.png",
+        "industrial-organization/vertical-contracts/figures/rebate-thresholds.png",
+        "industrial-organization/vertical-contracts/run.py"
+      ],
+      "updated_at": "2026-05-08T07:15:19Z"
     },
     {
       "tutorial_path": "industrial-organization/dynamic-discrete-choice/",
