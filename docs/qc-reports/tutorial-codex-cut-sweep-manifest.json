@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T10:06:24Z",
+  "updated_at": "2026-05-08T10:13:14Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -656,6 +656,17 @@
         "game-theory/quantal-response-equilibrium/tables/qre-summary.csv"
       ],
       "updated_at": "2026-05-08T10:06:24Z"
+    },
+    {
+      "tutorial_path": "time-series/fred-macro-data/",
+      "status": "complete",
+      "commit": "6892071cd4d5d3ce0be432cc31bf166aa3e8805e",
+      "changed_paths": [
+        "README.md",
+        "time-series/fred-macro-data/README.md",
+        "time-series/fred-macro-data/run.py"
+      ],
+      "updated_at": "2026-05-08T10:13:14Z"
     }
   ]
 }
