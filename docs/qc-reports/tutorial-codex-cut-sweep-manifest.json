@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T05:12:42Z",
+  "updated_at": "2026-05-08T05:23:40Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -104,6 +104,19 @@
         "dynamic-programming/diamond-mortensen-pissarides/run.py"
       ],
       "updated_at": "2026-05-08T05:12:42Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/aiyagari/",
+      "status": "complete",
+      "commit": "52e20d7dd20a6f74765569bf563e272f39106f5b",
+      "changed_paths": [
+        "README.md",
+        "dynamic-programming/aiyagari/README.md",
+        "dynamic-programming/aiyagari/figures/savings-policy.png",
+        "dynamic-programming/aiyagari/run.py",
+        "dynamic-programming/aiyagari/tables/equilibrium.csv"
+      ],
+      "updated_at": "2026-05-08T05:23:40Z"
     },
     {
       "tutorial_path": "heterogeneous-agents/endogenous-grid-points/",
