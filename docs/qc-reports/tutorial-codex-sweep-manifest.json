@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-08T00:19:17Z",
+  "updated_at": "2026-05-08T00:22:41Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -734,6 +734,17 @@
         "computational-methods/simulation-based-estimation/run.py"
       ],
       "updated_at": "2026-05-08T00:19:17Z"
+    },
+    {
+      "tutorial_path": "computational-methods/projection-methods/",
+      "status": "complete",
+      "commit": "9651f13d3ef1987b66cd63ab61665f2e8f37769b",
+      "changed_paths": [
+        "README.md",
+        "computational-methods/projection-methods/README.md",
+        "computational-methods/projection-methods/run.py"
+      ],
+      "updated_at": "2026-05-08T00:22:41Z"
     }
   ]
 }
