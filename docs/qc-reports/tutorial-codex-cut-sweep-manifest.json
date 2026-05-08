@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T08:36:59Z",
+  "updated_at": "2026-05-08T08:43:03Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -468,6 +468,18 @@
         "industrial-organization/merger-simulation/run.py"
       ],
       "updated_at": "2026-05-08T08:36:59Z"
+    },
+    {
+      "tutorial_path": "choice/revealed-preference-afriat/",
+      "status": "complete",
+      "commit": "4585de7607b0f752605491cbfce7c85f955f4ce9",
+      "changed_paths": [
+        "choice/revealed-preference-afriat/README.md",
+        "choice/revealed-preference-afriat/figures/garp-power.png",
+        "choice/revealed-preference-afriat/run.py",
+        "choice/revealed-preference-afriat/tables/revealed-preference-matrix.csv"
+      ],
+      "updated_at": "2026-05-08T08:43:03Z"
     }
   ]
 }
