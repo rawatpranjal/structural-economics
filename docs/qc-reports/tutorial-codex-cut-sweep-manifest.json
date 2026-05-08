@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T06:06:02Z",
+  "updated_at": "2026-05-08T06:15:35Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -202,6 +202,20 @@
         "global-dsge/rbc-capital-tax/run.py"
       ],
       "updated_at": "2026-05-08T06:06:02Z"
+    },
+    {
+      "tutorial_path": "global-dsge/rbc-irreversible-investment/",
+      "status": "complete",
+      "commit": "6f8c3f609ebc8086ce555615227bda5eb777f0bd",
+      "changed_paths": [
+        "README.md",
+        "global-dsge/rbc-irreversible-investment/README.md",
+        "global-dsge/rbc-irreversible-investment/figures/policy-functions.png",
+        "global-dsge/rbc-irreversible-investment/figures/thumb.png",
+        "global-dsge/rbc-irreversible-investment/run.py",
+        "global-dsge/rbc-irreversible-investment/tables/numerical-checks.csv"
+      ],
+      "updated_at": "2026-05-08T06:15:35Z"
     },
     {
       "tutorial_path": "industrial-organization/dynamic-discrete-choice/",
