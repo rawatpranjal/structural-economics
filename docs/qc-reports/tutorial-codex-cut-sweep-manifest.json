@@ -1,7 +1,17 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T02:41:28Z",
+  "updated_at": "2026-05-08T02:48:11Z",
   "entries": [
+    {
+      "tutorial_path": "dsge/nkdsge/",
+      "status": "complete",
+      "commit": "77c5e5bf12aba7cb53f98b92f8ef10e5de5bca25",
+      "changed_paths": [
+        "dsge/nkdsge/README.md",
+        "dsge/nkdsge/run.py"
+      ],
+      "updated_at": "2026-05-08T02:48:11Z"
+    },
     {
       "tutorial_path": "industrial-organization/dynamic-discrete-choice/",
       "status": "complete",
