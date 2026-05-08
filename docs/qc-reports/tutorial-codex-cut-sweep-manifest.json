@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T05:23:40Z",
+  "updated_at": "2026-05-08T05:31:06Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -127,6 +127,17 @@
         "heterogeneous-agents/endogenous-grid-points/run.py"
       ],
       "updated_at": "2026-05-08T02:55:03Z"
+    },
+    {
+      "tutorial_path": "heterogeneous-agents/envelope-equation-iteration/",
+      "status": "complete",
+      "commit": "51528f72451fc85d6c85f3af4fb45ec5068574be",
+      "changed_paths": [
+        "README.md",
+        "heterogeneous-agents/envelope-equation-iteration/README.md",
+        "heterogeneous-agents/envelope-equation-iteration/run.py"
+      ],
+      "updated_at": "2026-05-08T05:31:06Z"
     },
     {
       "tutorial_path": "dsge/nkdsge/",
