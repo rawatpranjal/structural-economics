@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T09:35:26Z",
+  "updated_at": "2026-05-08T09:40:56Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -591,6 +591,18 @@
         "choice/risk-aversion-monotone-choice/tables/solver-diagnostics.csv"
       ],
       "updated_at": "2026-05-08T09:35:26Z"
+    },
+    {
+      "tutorial_path": "choice/nested-logit/",
+      "status": "complete",
+      "commit": "77c5d9862233ff130288a2a7ba4144a9ba51d797",
+      "changed_paths": [
+        "README.md",
+        "choice/nested-logit/README.md",
+        "choice/nested-logit/figures/sigma-effect.png",
+        "choice/nested-logit/run.py"
+      ],
+      "updated_at": "2026-05-08T09:40:56Z"
     }
   ]
 }
