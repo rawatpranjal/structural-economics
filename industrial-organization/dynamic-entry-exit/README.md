@@ -1,12 +1,14 @@
 # Entry, Exit, and Market Structure in Oligopoly
 
-> Sunk entry costs, incumbent option values, and the stationary firm-count distribution.
+> Sunk entry costs and persistent firm counts.
 
 ## Overview
 
-Consider a local market with eight active firms. A static concentration measure tells us how crowded the market is today, but it does not tell us whether those firms are entrenched or whether some incumbents are close to leaving while potential entrants wait outside. Entry and exit make the firm count a dynamic state. A firm that already paid the sunk cost may keep operating after a weak period because it owns a continuation option. A potential entrant faces a different calculation: it must pay $K$ before it can earn tomorrow's profits.
+Consider a local market with eight active firms. Some firms may be close to leaving. Potential entrants wait outside because entry requires a sunk cost. The firm count is therefore a state variable.
 
-The model strips that situation down to a symmetric Cournot market. The state is the number of active firms $N_t$. Incumbents pay a fixed operating cost $f$ if they stay, and entrants pay a sunk cost $K$ before becoming incumbents. Computing the model is necessary because today's exit and entry rules depend on tomorrow's distribution of market structures. The tutorial solves that fixed point, then uses the implied Markov chain to read off persistence, turnover, and the long-run distribution of firm counts.
+The model uses a symmetric Cournot market. The state is the active firm count $N_t$. Incumbents pay fixed cost $f$ to operate. Entrants pay sunk cost $K$ before earning future profits.
+
+Exit and entry rules depend on future market sizes. We solve a finite-state Bellman fixed point for incumbent values. The implied Markov chain gives persistence and the long-run firm-count distribution.
 
 ## Equations
 
@@ -33,7 +35,7 @@ V(N)=\sigma_\varepsilon
 \log\left[1+\exp\left(\frac{\Delta(N)}{\sigma_\varepsilon}\right)\right],
 $$
 
-and the incumbent exit probability is
+The incumbent exit probability is
 
 $$
 p_{\mathrm{exit}}(N)=
@@ -53,7 +55,7 @@ $$
 
 with $e(N_t)=0$ when the first entrant does not cover $K$.
 
-The transition law is therefore
+Survival and entry define the transition law.
 
 $$
 S_t\sim \mathrm{Binomial}\!\left(N_t,1-p_{\mathrm{exit}}(N_t)\right),
@@ -78,9 +80,9 @@ $$
 
 ## Solution Method
 
-The numerical object is the finite-state fixed point in incumbent continuation values. Once the continuation value $V(N)$ is known, the stay-or-exit choice, the free-entry cutoff, and the transition matrix all follow from the same object. That fixed point matters economically because it prices incumbency as an option: staying today buys access to future Cournot rents, while entering today requires paying the sunk cost before those rents arrive.
+The numerical object is a fixed point in incumbent continuation values. Given $V(N)$, the exit rule, entry cutoff, and transition matrix follow. The fixed point prices incumbency as an option.
 
-The algorithm iterates on $V(N)$. At each candidate value function it computes smooth incumbent exit probabilities, counts how many entrants would be willing to enter after expected incumbent survival, integrates over realized survivor counts, and updates the log-sum value. Realized exits remain stochastic, so the final policy induces a Markov chain over firm counts. Dampening only stabilizes the numerical update; it is not an economic friction.
+The algorithm iterates on $V(N)$. Each pass computes exit probabilities and the free-entry cutoff. It then integrates over survivor counts and updates the log-sum value. The final policies define a Markov chain over firm counts.
 
 ```text
 Algorithm: symmetric entry-exit fixed point
@@ -106,42 +108,41 @@ The value iteration converged in **667 iterations** with sup-norm error **9.94e-
 
 ## Results
 
-Incumbency value falls as additional competitors erode Cournot rents. The dashed horizontal line is the sunk entry cost: below it, a new firm would not enter even when an incumbent may still prefer to stay. The vertical line is the static zero-flow-profit benchmark; the dynamic cutoff does not have to coincide with it.
+Incumbency value falls as more firms divide Cournot rents. The dashed line is the sunk entry cost. Below it, a new firm would not enter. An incumbent may still stay because it already paid the cost. The vertical line marks the static zero-flow-profit benchmark.
 
 <img src="figures/value-function.png" alt="Incumbent value function by number of active firms" width="80%">
 
-The two policy margins move in opposite directions. Exit risk rises with crowding because current profits are lower and continuation value is weaker. Expected entry is high when the market is thin and falls to almost zero once the post-entry value is below $K$. The gap between the two thresholds is the hysteresis region created by sunk entry.
+Exit risk rises with crowding because profits and continuation values fall. Expected entry is high when the market is thin. It falls once post-entry value drops below $K$. The gap between thresholds is the hysteresis region created by sunk entry.
 
 <img src="figures/entry-exit-probabilities.png" alt="Exit probability and expected entry by market size" width="80%">
 
-The invariant distribution is tightly centered because free entry offsets many departures from the profitable range. The black markers are a long Monte Carlo check from the same policy-induced Markov chain; their maximum distance from the invariant distribution is **5.42e-04** after burn-in.
+The invariant distribution is tightly centered because free entry offsets exits near the profitable range. The black markers show a long simulation from the same Markov chain. The maximum simulation gap is **5.42e-04** after burn-in.
 
 <img src="figures/stationary-distribution.png" alt="Stationary distribution of active firms" width="80%">
 
-The simulated path gives the same object in time-series form. The firm count spends most of its time near the invariant mean, while the flow panel shows the turnover events that keep the market from being absorbing. With this calibration the turnover rate is modest; the figure illustrates the option-value mechanism rather than a claim of large empirical churn.
+The simulated path shows the same object over time. The firm count stays near the invariant mean. The lower panel shows the turnover events that prevent absorption. With this calibration, turnover is modest.
 
 <img src="figures/simulated-market.png" alt="Simulated market structure and turnover flows" width="80%">
 
-The expected market size is below the static zero-profit count because entrants must recover the sunk cost $K$ in addition to the per-period fixed cost. Incumbents still have continuation value, so the exit margin remains smooth rather than a hard static shutdown rule.
+Expected market size lies below the static zero-profit count. Entrants must recover sunk cost $K$ plus the operating cost. Incumbents still have continuation value, so exit remains smooth.
 
 **Equilibrium Statistics**
 
-| Statistic                           |       Value |
-|:------------------------------------|------------:|
-| Expected number of firms E[N]       |    7.98     |
-| Std. deviation of N                 |    0.15     |
-| Modal number of firms               |    8        |
-| Zero-profit N (static)              |   10.3      |
-| Per-firm profit at E[N]             |    0.79     |
-| Net profit (pi - f) at E[N]         |    0.29     |
-| HHI at E[N]                         | 1250        |
-| Expected incumbent exit probability |    0.0027   |
-| Expected exits (firms/period)       |    0.021    |
-| Expected entry (firms/period)       |    0.02     |
-| Max stationary simulation gap       |    0.000542 |
-| VFI iterations                      |  667        |
+| Statistic                           |      Value |
+|:------------------------------------|-----------:|
+| Expected number of firms E[N]       |   7.98     |
+| Std. deviation of N                 |   0.15     |
+| Modal number of firms               |   8        |
+| Zero-profit N (static)              |  10.3      |
+| Per-firm profit at E[N]             |   0.79     |
+| Net profit (pi - f) at E[N]         |   0.29     |
+| Expected incumbent exit probability |   0.0027   |
+| Expected exits (firms/period)       |   0.021    |
+| Expected entry (firms/period)       |   0.02     |
+| Max stationary simulation gap       |   0.000542 |
+| VFI iterations                      | 667        |
 
-The selected states show the entry and exit cutoffs in levels. Thin markets have large incumbent values and attract entrants; crowded markets have low flow profits and high exit risk. In the middle states, entry has mostly shut down before incumbents are certain to leave.
+Thin markets have high incumbent value and attract entrants. Crowded markets have lower profits and higher exit risk. Entry shuts down before incumbents are certain to leave.
 
 **Value Function and Policies at Selected Market Structures**
 
@@ -160,11 +161,9 @@ The selected states show the entry and exit cutoffs in levels. Thin markets have
 
 ## Takeaway
 
-The entry condition and the exit condition separate. Static profits say when a firm covers today's operating cost; dynamic profits say whether preserving the option to operate tomorrow is valuable. A sunk entry cost creates a band in which incumbents stay while entrants wait outside. That band makes market structure persistent in Ericson-Pakes style IO models, even before adding firm heterogeneity, investment, or product differentiation.
+The entry and exit conditions separate. Static profits show whether a firm covers the operating cost. Dynamic values show whether keeping the incumbency option is worthwhile. A sunk entry cost creates a band where incumbents stay and entrants wait. That band makes firm counts persistent in Ericson-Pakes style IO models.
 
 ## References
 
 - Ericson, R. and Pakes, A. (1995). Markov-perfect industry dynamics: A framework for empirical work. *Review of Economic Studies*, 62(1):53-82.
 - Hopenhayn, H. (1992). Entry, exit, and firm dynamics in long run equilibrium. *Econometrica*, 60(5):1127-1150.
-- Rust, J. (1987). Optimal replacement of GMC bus engines: An empirical model of Harold Zurcher. *Econometrica*, 55(5):999-1033.
-- Pakes, A. and McGuire, P. (1994). Computing Markov-perfect Nash equilibria: Numerical implications of a dynamic differentiated product model. *RAND Journal of Economics*, 25(4):555-589.

@@ -316,9 +316,6 @@ def main():
     expected_entry = np.sum(entry_count * stat_dist)
     max_dist_gap = np.max(np.abs(sim_dist - stat_dist))
 
-    # HHI at expected N (symmetric firms: HHI = 10000/N)
-    hhi_at_mean = 10000.0 / max(1, int(np.round(expected_N)))
-
     # Zero-profit N: where pi(N) = f
     # (a-c)^2 / (b*(N+1)^2) = f  =>  N+1 = (a-c)/sqrt(b*f)  =>  N = (a-c)/sqrt(b*f) - 1
     N_zero_profit = (a - c) / np.sqrt(b * f) - 1
@@ -332,25 +329,21 @@ def main():
 
     report = ModelReport(
         "Entry, Exit, and Market Structure in Oligopoly",
-        "Sunk entry costs, incumbent option values, and the stationary firm-count distribution.",
+        "Sunk entry costs and persistent firm counts.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "Consider a local market with eight active firms. A static concentration measure tells "
-        "us how crowded the market is today, but it does not tell us whether those firms are "
-        "entrenched or whether some incumbents are close to leaving while potential entrants "
-        "wait outside. Entry and exit make the firm count a dynamic state. A firm that already "
-        "paid the sunk cost may keep operating after a weak period because it owns a continuation "
-        "option. A potential entrant faces a different calculation: it must pay $K$ before it "
-        "can earn tomorrow's profits.\n\n"
-        "The model strips that situation down to a symmetric Cournot market. The state is the "
-        "number of active firms $N_t$. Incumbents pay a fixed operating cost $f$ if they stay, "
-        "and entrants pay a sunk cost $K$ before becoming incumbents. Computing the model is "
-        "necessary because today's exit and entry rules depend on tomorrow's distribution of "
-        "market structures. The tutorial solves that fixed point, then uses the implied Markov "
-        "chain to read off persistence, turnover, and the long-run distribution of firm counts."
+        "Consider a local market with eight active firms. Some firms may be close to leaving. "
+        "Potential entrants wait outside because entry requires a sunk cost. The firm count is "
+        "therefore a state variable.\n\n"
+        "The model uses a symmetric Cournot market. The state is the active firm count $N_t$. "
+        "Incumbents pay fixed cost $f$ to operate. Entrants pay sunk cost $K$ before earning "
+        "future profits.\n\n"
+        "Exit and entry rules depend on future market sizes. We solve a finite-state Bellman "
+        "fixed point for incumbent values. The implied Markov chain gives persistence and the "
+        "long-run firm-count distribution."
     )
 
     report.add_equations(
@@ -378,7 +371,7 @@ V(N)=\sigma_\varepsilon
 \log\left[1+\exp\left(\frac{\Delta(N)}{\sigma_\varepsilon}\right)\right],
 $$
 
-and the incumbent exit probability is
+The incumbent exit probability is
 
 $$
 p_{\mathrm{exit}}(N)=
@@ -398,7 +391,7 @@ $$
 
 with $e(N_t)=0$ when the first entrant does not cover $K$.
 
-The transition law is therefore
+Survival and entry define the transition law.
 
 $$
 S_t\sim \mathrm{Binomial}\!\left(N_t,1-p_{\mathrm{exit}}(N_t)\right),
@@ -424,18 +417,12 @@ $$
     )
 
     report.add_solution_method(
-        "The numerical object is the finite-state fixed point in incumbent continuation "
-        "values. Once the continuation value $V(N)$ is known, the stay-or-exit choice, the "
-        "free-entry cutoff, and the transition matrix all follow from the same object. That "
-        "fixed point matters economically because it prices incumbency as an option: staying "
-        "today buys access to future Cournot rents, while entering today requires paying the "
-        "sunk cost before those rents arrive.\n\n"
-        "The algorithm iterates on $V(N)$. At each candidate value function it computes smooth "
-        "incumbent exit probabilities, counts how many entrants would be willing to enter after "
-        "expected incumbent survival, integrates over realized survivor counts, and updates the "
-        "log-sum value. Realized exits remain stochastic, so the final policy induces a Markov "
-        "chain over firm counts. Dampening only stabilizes the numerical update; it is not an "
-        "economic friction.\n\n"
+        "The numerical object is a fixed point in incumbent continuation values. Given $V(N)$, "
+        "the exit rule, entry cutoff, and transition matrix follow. The fixed point prices "
+        "incumbency as an option.\n\n"
+        "The algorithm iterates on $V(N)$. Each pass computes exit probabilities and the "
+        "free-entry cutoff. It then integrates over survivor counts and updates the log-sum "
+        "value. The final policies define a Markov chain over firm counts.\n\n"
         "```text\n"
         "Algorithm: symmetric entry-exit fixed point\n"
         "Input: state grid {1,...,N_max}, primitives (a,b,c,f,K,beta,sigma), tolerance epsilon\n"
@@ -476,10 +463,10 @@ $$
         "Incumbent value function by number of active firms",
         fig1,
         description=(
-            "Incumbency value falls as additional competitors erode Cournot rents. The dashed "
-            "horizontal line is the sunk entry cost: below it, a new firm would not enter even "
-            "when an incumbent may still prefer to stay. The vertical line is the static "
-            "zero-flow-profit benchmark; the dynamic cutoff does not have to coincide with it."
+            "Incumbency value falls as more firms divide Cournot rents. The dashed line is the "
+            "sunk entry cost. Below it, a new firm would not enter. An incumbent may still stay "
+            "because it already paid the cost. The vertical line marks the static "
+            "zero-flow-profit benchmark."
         ),
     )
 
@@ -508,11 +495,9 @@ $$
         "Exit probability and expected entry by market size",
         fig2,
         description=(
-            "The two policy margins move in opposite directions. Exit risk rises with crowding "
-            "because current profits are lower and continuation value is weaker. Expected entry "
-            "is high when the market is thin and falls to almost zero once the post-entry value "
-            "is below $K$. The gap between the two thresholds is the hysteresis region created "
-            "by sunk entry."
+            "Exit risk rises with crowding because profits and continuation values fall. Expected "
+            "entry is high when the market is thin. It falls once post-entry value drops below "
+            "$K$. The gap between thresholds is the hysteresis region created by sunk entry."
         ),
     )
 
@@ -531,10 +516,9 @@ $$
         "Stationary distribution of active firms",
         fig3,
         description=(
-            "The invariant distribution is tightly centered because free entry offsets many "
-            "departures from the profitable range. The black markers are a long Monte Carlo "
-            "check from the same policy-induced Markov chain; their maximum distance from the "
-            f"invariant distribution is **{max_dist_gap:.2e}** after burn-in."
+            "The invariant distribution is tightly centered because free entry offsets exits "
+            "near the profitable range. The black markers show a long simulation from the same "
+            f"Markov chain. The maximum simulation gap is **{max_dist_gap:.2e}** after burn-in."
         ),
     )
 
@@ -562,11 +546,9 @@ $$
         "Simulated market structure and turnover flows",
         fig4,
         description=(
-            "The simulated path gives the same object in time-series form. The firm count "
-            "spends most of its time near the invariant mean, while the flow panel shows the "
-            "turnover events that keep the market from being absorbing. With this calibration "
-            "the turnover rate is modest; the figure illustrates the option-value mechanism "
-            "rather than a claim of large empirical churn."
+            "The simulated path shows the same object over time. The firm count stays near the "
+            "invariant mean. The lower panel shows the turnover events that prevent absorption. "
+            "With this calibration, turnover is modest."
         ),
     )
 
@@ -579,7 +561,6 @@ $$
             "Zero-profit N (static)",
             "Per-firm profit at E[N]",
             "Net profit (pi - f) at E[N]",
-            "HHI at E[N]",
             "Expected incumbent exit probability",
             "Expected exits (firms/period)",
             "Expected entry (firms/period)",
@@ -593,7 +574,6 @@ $$
             f"{N_zero_profit:.1f}",
             f"{profits_at_mean:.3f}",
             f"{profits_at_mean - f:.3f}",
-            f"{hhi_at_mean:.0f}",
             f"{expected_exit_rate:.4f}",
             f"{expected_exits:.3f}",
             f"{expected_entry:.2f}",
@@ -604,10 +584,9 @@ $$
     df_stats = pd.DataFrame(stats_data)
     report.add_table("tables/equilibrium-statistics.csv", "Equilibrium Statistics", df_stats,
         description=(
-            "The expected market size is below the static zero-profit count because entrants "
-            "must recover the sunk cost $K$ in addition to the per-period fixed cost. Incumbents "
-            "still have continuation value, so the exit margin remains smooth rather than a hard "
-            "static shutdown rule."
+            "Expected market size lies below the static zero-profit count. Entrants must "
+            "recover sunk cost $K$ plus the operating cost. Incumbents still have continuation "
+            "value, so exit remains smooth."
         ))
 
     # --- Table 2: Value and Policies by N ---
@@ -627,27 +606,22 @@ $$
         "Value Function and Policies at Selected Market Structures",
         df_detail,
         description=(
-            "The selected states show the entry and exit cutoffs in levels. Thin markets have "
-            "large incumbent values and attract entrants; crowded markets have low flow profits "
-            "and high exit risk. In the middle states, entry has mostly shut down before "
-            "incumbents are certain to leave."
+            "Thin markets have high incumbent value and attract entrants. Crowded markets have "
+            "lower profits and higher exit risk. Entry shuts down before incumbents are certain "
+            "to leave."
         ),
     )
 
     report.add_takeaway(
-        "The entry condition and the exit condition separate. Static profits say when a firm "
-        "covers today's operating cost; dynamic profits say whether preserving the option to "
-        "operate tomorrow is valuable. A sunk entry cost creates a band in which incumbents stay "
-        "while entrants wait outside. That band makes market structure persistent in "
-        "Ericson-Pakes style IO models, even before adding firm heterogeneity, investment, or "
-        "product differentiation."
+        "The entry and exit conditions separate. Static profits show whether a firm covers the "
+        "operating cost. Dynamic values show whether keeping the incumbency option is "
+        "worthwhile. A sunk entry cost creates a band where incumbents stay and entrants wait. "
+        "That band makes firm counts persistent in Ericson-Pakes style IO models."
     )
 
     report.add_references([
         "Ericson, R. and Pakes, A. (1995). Markov-perfect industry dynamics: A framework for empirical work. *Review of Economic Studies*, 62(1):53-82.",
         "Hopenhayn, H. (1992). Entry, exit, and firm dynamics in long run equilibrium. *Econometrica*, 60(5):1127-1150.",
-        "Rust, J. (1987). Optimal replacement of GMC bus engines: An empirical model of Harold Zurcher. *Econometrica*, 55(5):999-1033.",
-        "Pakes, A. and McGuire, P. (1994). Computing Markov-perfect Nash equilibria: Numerical implications of a dynamic differentiated product model. *RAND Journal of Economics*, 25(4):555-589.",
     ])
 
     report.write("README.md")
