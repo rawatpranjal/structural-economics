@@ -131,17 +131,13 @@ def main() -> None:
     )
 
     report.add_overview(
-        "A macro model often asks what happens after an economy is pushed away from its "
-        "steady state. Think of a productivity surprise, a demand shock, or a policy change "
-        "that moves a state variable above its normal level. The researcher wants the path "
-        "back to steady state and wants to know whether an equally sized negative shock would "
-        "unwind in the same way.\n\n"
-        "The hard part is that the full nonlinear law of motion may be expensive to solve or "
-        "awkward to interpret. Perturbation replaces that law with a Taylor approximation near "
-        "the steady state. First order gives the familiar linearized impulse response. Higher "
-        "orders keep local curvature, so positive and negative shocks can produce different "
-        "adjustment paths. This tutorial keeps the exact nonlinear transition in view, which "
-        "lets us see what the local approximation gains and what it misses."
+        "A macro model tracks an aggregate state after a shock. Here $x_t$ is a deviation "
+        "from steady state. The shock can be positive or negative.\n\n"
+        "The object is the path back to steady state. Equal shocks need not unwind "
+        "symmetrically when the transition is nonlinear.\n\n"
+        "Solving the full nonlinear model can be expensive. Perturbation replaces the "
+        "transition with a Taylor approximation near steady state. Higher orders add local "
+        "curvature."
     )
 
     report.add_equations(
@@ -153,8 +149,8 @@ $$
 F(x) = \rho x + \gamma x^2 - \eta x^3 + \kappa x^4.
 $$
 
-The coefficients are chosen to create persistent adjustment, local curvature,
-and asymmetric responses. A Taylor perturbation of order $n$ around zero keeps
+These coefficients create persistence, curvature, and asymmetric responses.
+A Taylor perturbation of order $n$ around zero keeps
 the derivatives through order $n$:
 
 $$
@@ -191,25 +187,21 @@ $$
     )
 
     report.add_solution_method(
-        "The calculation treats the exact transition as a benchmark and asks how much of it a "
-        "local expansion recovers. The map error answers a numerical question: how close is the "
-        "approximated law of motion at nearby states? The impulse-response error answers the "
-        "economic question the researcher would usually care about: does the computed shock "
-        "path tell the same adjustment story as the nonlinear model?\n\n"
+        "The computation compares each Taylor map with the exact transition. Map error checks "
+        "the law of motion at nearby states. IRF error checks the full path after a shock.\n\n"
         "```text\n"
         "Algorithm: perturbation check for a shock response\n"
         "Input: nonlinear law F(x), steady state x_bar = 0, order n, shock epsilon\n"
-        "Output: approximate law F_n, map errors, IRF errors, asymmetry statistic\n"
+        "Output: Taylor law, map errors, IRF errors, asymmetry statistic\n"
         "1. Differentiate F at x_bar and keep terms through order n\n"
         "2. Build the local law F_n(x) from those Taylor coefficients\n"
-        "3. Compare F_n(x) with F(x) on a tight neighborhood and a wider interval\n"
+        "3. Compare F_n(x) with F(x) near and away from x_bar\n"
         "4. Starting from x_0 = epsilon, iterate x_{t+1} = F_n(x_t)\n"
-        "5. Repeat from x_0 = -epsilon and add the two response paths\n"
-        "6. Read nonzero sums as nonlinear asymmetry, not as linear adjustment\n"
+        "5. Repeat from x_0 = -epsilon and add the two paths\n"
+        "6. Use nonzero sums to measure nonlinear asymmetry\n"
         "```\n\n"
-        "Large DSGE systems apply the same idea to a vector of equilibrium conditions. This "
-        "scalar example strips that machinery away, leaving the main discipline: a local "
-        "solution is useful only for the shocks and states that stay near the expansion point."
+        "The useful range is local. Check whether simulated paths stay near $x=0$ before "
+        "trusting the approximation."
     )
 
     fig1, ax1 = plt.subplots()
@@ -228,8 +220,8 @@ $$
         "Taylor approximations around the steady state",
         fig1,
         description=(
-            "The curves agree at the steady state because each approximation is built there. "
-            "Away from zero, the missing curvature changes the next-period state."
+            "The maps match at the steady state. Away from zero, omitted curvature changes "
+            "the next-period state."
         ),
     )
 
@@ -246,9 +238,8 @@ $$
         "Approximation error by distance from the expansion point",
         fig2,
         description=(
-            "Higher-order terms lower error near the steady state. Error still rises with "
-            "distance, so the relevant accuracy check depends on the states reached by the "
-            "shock experiment."
+            "Higher orders lower error near steady state. Error rises with distance from "
+            "the expansion point."
         ),
     )
 
@@ -277,8 +268,8 @@ $$
         "Impulse responses under exact and approximated dynamics",
         fig3,
         description=(
-            "The first-order path is symmetric by construction. Higher-order paths can let a "
-            "positive shock and a negative shock unwind at different speeds."
+            "First order is symmetric by construction. Higher orders allow positive and "
+            "negative shocks to unwind at different speeds."
         ),
     )
 
@@ -297,8 +288,8 @@ $$
         "Nonlinear asymmetry in positive and negative responses",
         fig4,
         description=(
-            "In a linearized model, the positive and negative impulse responses cancel exactly. "
-            "A nonzero sum shows how much nonlinear asymmetry the local solution preserves."
+            "In a linear model, positive and negative responses cancel. A nonzero sum measures "
+            "nonlinear asymmetry preserved by the approximation."
         ),
     )
 
@@ -308,24 +299,21 @@ $$
         format_table(table),
         description=(
             "Map errors compare transition rules. IRF errors compare the full adjustment path "
-            "after the same shock."
+            "after a shock."
         ),
     )
 
     report.add_results(
-        "The first-order approximation works well in a tight neighborhood of the steady state, "
-        "but it misses the curvature that shapes asymmetric adjustment. Second and third order "
-        "terms reduce local map error and follow the nonlinear impulse responses more closely "
-        "for this shock size. The asymmetry plot gives the most direct economic reading: the "
-        "linearized model forces the positive and negative responses to cancel, while the "
-        "nonlinear economy does not."
+        "First order works in a tight neighborhood, but it misses curvature. Second and third "
+        "order follow the nonlinear responses more closely here. The asymmetry plot shows the "
+        "economic cost of linearization. Linear dynamics force positive and negative responses "
+        "to cancel."
     )
 
     report.add_takeaway(
-        "Linearization is often enough for small deviations, but its symmetry is an economic "
-        "restriction. Higher-order perturbation adds curvature without solving the full global "
-        "model. The practical check is simple: trace the simulated or impulse-response path and "
-        "ask whether it remains in the neighborhood where the local approximation is accurate."
+        "Linearization is useful for small deviations. It also imposes symmetric responses. "
+        "Higher-order perturbation adds curvature without solving the full nonlinear model. "
+        "Always trace the path and check that it stays near the expansion point."
     )
 
     report.add_references(
