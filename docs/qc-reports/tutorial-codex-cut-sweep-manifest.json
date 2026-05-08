@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T08:12:54Z",
+  "updated_at": "2026-05-08T08:19:41Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -414,6 +414,17 @@
         "industrial-organization/dynamic-games-estimation/tables/ccp-by-state.csv"
       ],
       "updated_at": "2026-05-08T08:12:54Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/dynamic-entry-exit/",
+      "status": "complete",
+      "commit": "35b914d5e67f21f67a1b0556cc0a8fdec65a11be",
+      "changed_paths": [
+        "industrial-organization/dynamic-entry-exit/README.md",
+        "industrial-organization/dynamic-entry-exit/run.py",
+        "industrial-organization/dynamic-entry-exit/tables/equilibrium-statistics.csv"
+      ],
+      "updated_at": "2026-05-08T08:19:41Z"
     },
     {
       "tutorial_path": "industrial-organization/dynamic-discrete-choice/",
