@@ -1,36 +1,36 @@
 # Firm Boundaries, Hold-Up, and Vertical Integration
 
-> Relationship-specific investment, asset ownership, and the surplus cost of hierarchy.
+> Relationship-specific investment, ownership, and hierarchy cost.
 
 ## Overview
 
-An automaker may ask a supplier to buy tooling that has little value outside their relationship. The tooling raises joint surplus, but the supplier pays for it before the buyer and supplier bargain over delivery terms. If a court cannot verify the relevant investment or adaptation effort, the supplier invests for its expected bargaining payoff rather than for total surplus. That gap is the hold-up problem.
+A supplier may invest in tooling useful only for one buyer. The asset raises joint surplus. After the asset is sunk, bargaining may leave the supplier with too little of the return. The supplier then invests for private surplus.
 
-The tutorial studies how ownership and contracting change that investment incentive. Asset specificity $s\in[0,1]$ indexes how hard the asset is to redeploy. Spot exchange has low governance cost and weak protection at high $s$. A long-term contract preserves more of the investment return, but it uses resources in drafting and monitoring. Vertical integration gives stronger residual control rights while adding the internal cost of hierarchy.
+The object is a governance choice. Asset specificity $s\in[0,1]$ measures how hard the asset is to redeploy. The choices are spot exchange, a long-term contract, and vertical integration. Each form changes investment incentives and governance cost.
 
-For each value of $s$, the code computes private investment under each governance form and then compares total surplus net of governance cost. The calculation turns the property-rights tradeoff into threshold regions for market exchange, contracting, and integration.
+For each $s$, the code computes investment and surplus under each form. A grid search then selects the surplus-maximizing boundary choice. The output is a set of specificity thresholds.
 
 ## Equations
 
-Let $s$ denote asset specificity and let $g\in\mathcal G$ index governance
-regimes: spot exchange, a long-term contract, and vertical integration.
+Let $s$ denote asset specificity.
+Let $g\in\mathcal G$ index spot exchange, a long-term contract, and vertical
+integration.
 Relationship-specific investment $x$ creates gross value
 $$V(x) = \theta x - \frac{1}{2}x^2$$
 
-so the first-best investment, before contracting frictions, is
+First-best investment solves $V'(x)=0$, so
 $$x^{\ast} = \theta$$
 
-Under regime $g$, the investor internalizes only share $b_g(s)$ of the marginal
-return. The private first-order condition is
+Regime $g$ lets the investor capture share $b_g(s)$ of marginal value.
+The private first-order condition is
 $$b_g(s)\theta - x = 0,$$
-which gives the regime-specific investment rule
+which gives
 $$x_g(s) = b_g(s)\theta$$
 
-Total surplus nets out the governance cost $F_g(s)$:
+Total surplus subtracts governance cost $F_g(s)$:
 $$W_g(s) = \theta x_g(s) - \frac{1}{2}x_g(s)^2 - F_g(s)$$
 
-The calibration uses simple schedules for the share of marginal returns that
-the investor captures:
+The incentive schedules are
 $$b_{\text{spot}}(s)=0.72-0.55s,\quad
 b_{\text{contract}}(s)=0.72-0.25s,\quad
 b_{\text{integration}}(s)=0.74-0.03s.$$
@@ -43,14 +43,12 @@ F_{\text{integration}}(s)=1.05-0.35s.$$
 The selected governance form is
 $$g^{\ast}(s)=\arg\max_{g\in\mathcal G} W_g(s).$$
 
-The first-best surplus line used in the figures is
-$$W^{\ast}=\frac{1}{2}\theta^2,$$
-which is a benchmark, not an attainable governance regime once hold-up and
-governance costs are present.
+The first-best surplus benchmark is
+$$W^{\ast}=\frac{1}{2}\theta^2$$
 
 ## Model Setup
 
-The calibration is a transparent comparative static, not an estimate of a particular industry. The schedules make the Williamson/Grossman-Hart-Moore logic visible: higher specificity weakens market incentives, contracting protects some returns at a cost, and integration becomes cheaper relative to market governance when redeployment is poor.
+The calibration is illustrative. Higher specificity weakens market incentives. Contracts protect some returns at a cost. Integration gives control rights but carries hierarchy cost.
 
 | Object | Interpretation |
 |--------|----------------|
@@ -64,7 +62,7 @@ The calibration is a transparent comparative static, not an estimate of a partic
 
 ## Solution Method
 
-The private investment problem has a closed-form first-order condition once $b_g(s)$ is fixed. The remaining numerical step is a grid comparison over asset specificity. At each grid point, the algorithm computes the investment chosen under each governance form, evaluates total surplus, and records the surplus-maximizing regime. This separation matters because integration can raise investment and still lose if hierarchy costs absorb the gain.
+Given $b_g(s)$, private investment has the closed form $x_g(s)=b_g(s)\theta$. The only numerical step is a grid comparison over $s$. At each point, the code evaluates $W_g(s)$ for the three governance forms. It keeps the form with the largest surplus.
 
 ```text
 Inputs: specificity grid S, regimes G, productivity theta,
@@ -83,23 +81,23 @@ For each s in S:
 Outputs: investment schedules, surplus schedules, and governance regions
 ```
 
-In this calibration the approximate surplus-maximizing regions are: Spot contract for $s\lesssim 0.21$; Long-term contract for $0.21\lesssim s\lesssim 0.37$; Vertical integration for $s\gtrsim 0.37$. The switch points are not parameters of the model; they come from comparing stronger investment incentives with the resource costs of writing contracts or running hierarchy.
+In this calibration, spot exchange wins for $s\lesssim 0.21$. Long-term contracts win for $0.21\lesssim s\lesssim 0.37$. Vertical integration wins for $s\gtrsim 0.37$. These thresholds come from surplus comparisons.
 
 ## Results
 
-The dashed line is the first-best investment $x^{\ast}=\theta$. Spot exchange loses investment incentives as specificity rises because the investor expects more bargaining over quasi-rents after the asset is sunk. Integration keeps investment close to the benchmark, but surplus also depends on the cost of organizing the relationship inside the firm.
+The dashed line is the first-best investment. Spot exchange falls quickly as specificity rises. Integration stays close to first best. Surplus decides whether higher investment is worth hierarchy cost.
 
 <img src="figures/investment-incentives.png" alt="Relationship-specific investment by governance regime" width="80%">
 
-The surplus ranking changes because each governance form moves two objects at once: investment incentives and governance cost. Spot contracts are best when assets are easy to redeploy. Vertical integration becomes attractive after the hold-up cost of market exchange dominates the internal cost of hierarchy.
+Surplus changes with incentives and governance cost. Spot contracts win when redeployment is easy. Vertical integration wins when hold-up losses exceed hierarchy cost.
 
 <img src="figures/surplus-by-regime.png" alt="Surplus by governance regime" width="80%">
 
-The governance regions summarize the same comparison without the surplus levels. In the middle interval, a long-term contract can dominate both spot exchange and integration when it protects enough investment without bringing the full internal governance cost.
+These regions plot the surplus winner for each specificity value. Long-term contracts occupy the middle. They protect investment at lower cost than integration.
 
 <img src="figures/governance-regions.png" alt="Governance regions over asset specificity" width="80%">
 
-Four values of $s$ show the accounting behind the regions. At low specificity, cheap market exchange wins despite underinvestment. Around the middle of the grid, a long-term contract can protect enough investment without the full hierarchy cost. At higher specificity, integration's incentive effect is large enough to offset its governance cost.
+The table shows the accounting at four specificity values. Low specificity favors market exchange. Middle values favor a contract. High specificity favors integration.
 
 **Governance comparison at selected levels of asset specificity**
 
@@ -120,7 +118,7 @@ Four values of $s$ show the accounting behind the regions. At low specificity, c
 
 ## Takeaway
 
-The firm boundary is not a generic preference for hierarchy. Integration is valuable when noncontractible, relationship-specific investment is important enough that stronger control rights pay for themselves. When assets are easy to redeploy, market exchange can dominate because it avoids the internal costs of hierarchy. Between those cases, a long-term contract is often the surplus-maximizing compromise.
+Firm boundaries follow the hold-up tradeoff. Market exchange works when assets are easy to redeploy. Integration pays when stronger control rights offset hierarchy cost. Long-term contracts fill the middle range.
 
 ## References
 
