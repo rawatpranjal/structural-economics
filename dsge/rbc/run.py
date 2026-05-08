@@ -349,29 +349,25 @@ def main() -> None:
     )
 
     report.add_overview(
-        "Imagine TFP rises by 1 percent this quarter. The existing capital stock "
-        "can produce more right away, so output jumps. Capital itself was chosen "
-        "last period, though. The household can only carry the shock forward by "
-        "investing part of today's extra output.\n\n"
-        "This tutorial follows that tradeoff. A persistent TFP shock changes the "
-        "marginal product of capital. The Euler equation then tells the household "
-        "how much consumption to postpone. Investment is the adjustment margin, and "
-        "capital moves with a lag.\n\n"
-        "To compute the path, we log-linearize the RBC model around its steady "
-        "state and solve for the capital decision rule. In this fixed-labor example, "
-        "coefficient matching gives the rule directly. Klein's generalized Schur "
-        "(QZ) solver gives the same coefficients, which is useful because QZ scales "
-        "to larger DSGE systems. The figure also includes the exact nonlinear "
-        "transition for the same decaying TFP path. At this shock size, the local "
-        "solution and nonlinear path nearly coincide."
+        "When TFP rises, the existing capital stock produces more output. "
+        "Capital was chosen last period. The household can carry the shock "
+        "forward only by investing some extra output.\n\n"
+        "The object is the impulse response of output, consumption, investment, "
+        "and capital. A persistent TFP shock raises the marginal product of "
+        "capital. The Euler equation governs how much consumption the household "
+        "postpones.\n\n"
+        "We log-linearize the fixed-labor RBC model around steady state. "
+        "Coefficient matching gives a stable capital decision rule. A Klein QZ "
+        "solve checks the same coefficients. The figure compares that local rule "
+        "with the exact nonlinear transition for the same shock path."
     )
 
     report.add_equations(
         rf"""
-This is a representative-agent RBC allocation after a one-time technology
-innovation. Let $A_t$ denote total factor productivity,
-$K_{{t-1}}$ the capital stock chosen last period, $C_t$ consumption,
-$I_t$ investment, and $Y_t$ output. Production and goods-market clearing are
+This representative-agent RBC model follows a one-time technology innovation.
+Let $A_t$ denote total factor productivity, $K_{{t-1}}$ predetermined capital,
+$C_t$ consumption, $I_t$ investment, and $Y_t$ output.
+Production and goods-market clearing are
 
 $$
 Y_t = A_t K_{{t-1}}^\alpha,
@@ -383,8 +379,9 @@ $$
 K_t = I_t + (1-\delta)K_{{t-1}},
 $$
 
-so investment is the only way to move the state. The representative household's
-Euler equation is
+Investment is the only choice that moves capital after the shock.
+The household chooses consumption and investment subject to this law.
+The Euler equation is
 
 $$
 C_t^{{-\sigma}} =
@@ -394,7 +391,7 @@ C_{{t+1}}^{{-\sigma}}
 \right].
 $$
 
-Technology follows
+The TFP process is
 
 $$
 \log A_t = \rho \log A_{{t-1}} + \varepsilon_t,
@@ -402,9 +399,7 @@ $$
 \varepsilon_t \sim N(0,\sigma_\varepsilon^2).
 $$
 
-The accompanying `model.mod` spec stores $y,c,i,k,a$ as logs for documentation,
-so expressions such as `exp(y)` are level variables. Around the deterministic
-steady state with $A=1$,
+At the deterministic steady state with $A=1$,
 
 $$
 \alpha K^{{\alpha-1}} = \frac{{1}}{{\beta}} - 1 + \delta,
@@ -438,17 +433,17 @@ The calibration implies $K/Y={ss["K_Y"]:.2f}$ and $C/Y={ss["C_Y"]:.2f}$.
     )
 
     report.add_solution_method(
-        "The computation needs a stable law of motion for capital. Write "
-        "$\\hat k_t=\\log(K_t/K)$ and $\\hat a_t=\\log A_t$. Since capital is the "
-        "only endogenous state, the decision rule is linear in last period's "
-        "capital and current productivity:\n\n"
+        "The computation solves for the stable law of motion for capital. Write "
+        "$\\hat k_t=\\log(K_t/K)$ and $\\hat a_t=\\log A_t$. The log-linear "
+        "decision rule is:\n\n"
         "$$\n"
         f"\\hat k_t = {policy['p']:.4f}\\hat k_{{t-1}} + {policy['q']:.4f}\\hat a_t.\n"
         "$$\n\n"
-        "Once we have this rule, production and the resource constraint give output, "
-        "consumption, and investment. The stable capital root is below one. A "
-        "temporary productivity shock can raise investment today, but capital still "
-        "builds gradually because today's state inherits yesterday's choice.\n\n"
+        "This rule maps inherited capital and current productivity into next "
+        "capital. Production and the resource constraint then recover output, "
+        "investment, and consumption.\n\n"
+        "Because the capital root is below one, "
+        "investment moves first and capital builds gradually.\n\n"
         "```text\n"
         "Algorithm: first-order RBC impulse response\n"
         "Inputs: alpha, beta, delta, rho, sigma, shock size eps_0, horizon T\n"
@@ -458,21 +453,14 @@ The calibration implies $K/Y={ss["K_Y"]:.2f}$ and $C/Y={ss["C_Y"]:.2f}$.
         "3. Guess khat_t = p khat_{t-1} + q ahat_t.\n"
         "4. Substitute the guess into the linearized equations and match the\n"
         "   coefficients on khat_{t-1} and ahat_t.\n"
-        "5. Select the stable solution for p and q.\n"
-        "6. Set ahat_0 = eps_0 and ahat_t = rho ahat_{t-1}.\n"
-        "7. Iterate the decision rule and recover yhat_t, ihat_t, and chat_t from\n"
-        "   production, capital accumulation, and goods-market clearing.\n"
-        "8. As a local accuracy check, solve the exact nonlinear perfect-foresight\n"
-        "   transition for the same TFP path and compare the two IRFs.\n"
+        "5. Iterate the decision rule along ahat_t = rho^t eps_0.\n"
+        "6. Recover output, investment, and consumption from the model equations.\n"
+        "7. Compare with the nonlinear transition for the same shock path.\n"
         "```\n\n"
-        f"The coefficient-matching residual is {policy['max_residual']:.1e}. Klein's "
-        "(2000) generalized Schur (QZ) decomposition solves the same linearized "
-        "system and agrees to "
-        f"{qz_diff:.1e}, machine precision for this problem. The stable eigenvalues "
-        f"are {qz['eigenvalues'][0].real:.4f} and {qz['eigenvalues'][1].real:.4f}; "
-        "they are the roots that govern capital and TFP propagation. The nonlinear "
-        "benchmark is not a second stochastic model. It is the exact deterministic "
-        "transition implied by the same one-time shock path."
+        f"The coefficient-matching residual is {policy['max_residual']:.1e}. Klein "
+        f"QZ agrees to {qz_diff:.1e}, so the first-order system is solved correctly. "
+        "The nonlinear transition uses the same shock path without later "
+        "innovations. Its small gap is a local accuracy check."
     )
 
     periods = np.arange(periods_irf)
@@ -551,9 +539,9 @@ The calibration implies $K/Y={ss["K_Y"]:.2f}$ and $C/Y={ss["C_Y"]:.2f}$.
 
     summary = pd.DataFrame(rows)
     report.add_results(
-        "The summary statistics separate impact effects from delayed peaks. Capital "
-        "and consumption peak well after the shock because the state is slow-moving; "
-        "investment peaks immediately because it is the margin that changes the state."
+        "The table separates impact effects from delayed peaks. Capital and "
+        "consumption peak well after the shock because the state moves slowly. "
+        "Investment peaks immediately because it changes the state."
     )
     report.add_table(
         "tables/irf-summary.csv",
@@ -562,19 +550,11 @@ The calibration implies $K/Y={ss["K_Y"]:.2f}$ and $C/Y={ss["C_Y"]:.2f}$.
     )
 
     report.add_takeaway(
-        "In this RBC model, a productivity shock is both a level effect and an "
-        "intertemporal price signal. Output rises on impact because firms are more "
-        "productive. Investment responds strongly because the marginal product of "
-        "capital is temporarily high. Consumption moves more smoothly, and capital "
-        "accumulates only gradually. The first-order perturbation isolates that "
-        "propagation mechanism by solving for the stable capital decision rule near "
-        "steady state.\n\n"
-        "This tutorial is the equilibrium counterpart to the "
-        "[persistent-shock tutorial](../../time-series/ar-processes/): the AR(1) process supplies "
-        "the shock's timing, while the Euler equation and capital law of motion decide "
-        "how that timing shows up in macro quantities. For a global Bellman version of "
-        "the same RBC mechanism, compare this local solution with the "
-        "[dynamic-programming RBC tutorial](../../dynamic-programming/rbc/)."
+        "In this RBC model, a productivity shock raises output on impact. "
+        "Investment responds strongly because the marginal product of capital is "
+        "temporarily high. Consumption moves more smoothly, and capital accumulates "
+        "only gradually. First-order perturbation isolates that propagation "
+        "mechanism near steady state."
     )
 
     report.add_references(
