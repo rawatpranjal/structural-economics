@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T10:30:31Z",
+  "updated_at": "2026-05-08T10:36:37Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -702,6 +702,17 @@
         "computational-methods/numerical-optimization/run.py"
       ],
       "updated_at": "2026-05-08T10:30:31Z"
+    },
+    {
+      "tutorial_path": "computational-methods/simulation-based-estimation/",
+      "status": "complete",
+      "commit": "2bb657e97744dced2cc97f5f1dbbb39418d9dfde",
+      "changed_paths": [
+        "computational-methods/simulation-based-estimation/README.md",
+        "computational-methods/simulation-based-estimation/run.py",
+        "computational-methods/simulation-based-estimation/tables/estimator-diagnostics.csv"
+      ],
+      "updated_at": "2026-05-08T10:36:37Z"
     }
   ]
 }
