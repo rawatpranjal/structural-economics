@@ -1,12 +1,14 @@
-# RBC Labor Supply and TFP Shocks by Klein QZ
+# RBC Labor Supply and TFP Shocks
 
-> Endogenous hours shape business-cycle responses, and generalized Schur decomposition solves the local rational-expectations system.
+> Endogenous hours shape a productivity shock, and Klein QZ solves the local rational-expectations system.
 
 ## Overview
 
-A positive productivity shock makes firms want more inputs today. Capital is largely inherited from yesterday, but hours can move at once, so the household must decide how much of the higher wage to take as labor income, consumption, and investment. In this small RBC economy, a one percent TFP innovation is enough to show the main tension: output jumps immediately, capital builds gradually, and hours absorb part of the short-run adjustment.
+A positive TFP shock raises the marginal product of inputs. Capital is mostly inherited, so hours carry much of the impact response.
 
-The computation starts after log-linearizing the equilibrium around steady state. The local system has lagged capital and current TFP as predetermined variables, with consumption and labor as jump variables. Hand-solving those coefficients is possible but unappealing once labor enters. Klein's (2000) generalized Schur decomposition finds the stable subspace of the linear rational-expectations system and converts it into a state transition plus decision rules. Those rules let us trace impulse responses and compare the local solution with a nonlinear perfect-foresight path near steady state.
+The object is the local impulse response of output, consumption, investment, capital, and labor. The household chooses consumption and hours while firms use capital and labor to produce output.
+
+Log-linearization gives a rational-expectations system with two states and two jump variables. Klein QZ selects the stable path and returns decision rules for consumption and labor.
 
 ## Equations
 
@@ -27,10 +29,9 @@ and the Euler equation for capital is
 
 $$C_t^{-\sigma}=\beta \mathbb{E}_t\left[C_{t+1}^{-\sigma}\left(\alpha A_{t+1}K_t^{\alpha-1}N_{t+1}^{1-\alpha}+1-\delta\right)\right].$$
 
-After log-linearization around the deterministic steady state, the local object
-is a decision rule for consumption and labor as functions of lagged capital and
-current TFP. Output and investment are then recovered from production and the
-resource constraint.
+Log-linearization turns the model into decision rules for consumption and labor.
+The states are lagged capital and current TFP. Output and investment follow from
+production and the resource constraint.
 
 ## Model Setup
 
@@ -58,13 +59,21 @@ resource constraint.
 
 ## Solution Method
 
-Stack the linearized equilibrium as $A\,\mathbb{E}_t s_{t+1}=B\,s_t$ with $s_t=(\hat k_{t-1},\hat a_t,\hat c_t,\hat n_t)'$. The first two entries are states, and the last two are jump variables. The rows collect capital accumulation, the TFP law of motion, intratemporal labor supply, and the Euler equation for capital. The solution is a pair of matrices
+Stack the linearized equilibrium as
+
+$$A\,\mathbb{E}_t s_{t+1}=B\,s_t.$$
+
+Use $s_t=(\hat k_{t-1},\hat a_t,\hat c_t,\hat n_t)'$. The first two entries are states. The last two entries are jump variables.
+
+The rows are capital accumulation, TFP, labor supply, and the Euler equation.
+
+The solution is a pair of matrices
 
 $$x_{t+1}=F x_t,\qquad y_t=P x_t,$$
 
-where $x_t=(\hat k_{t-1},\hat a_t)'$ and $y_t=(\hat c_t,\hat n_t)'$. The economic content of $P$ is immediate: it tells us how consumption and hours respond when productivity rises or when the inherited capital stock changes.
+where $x_t=(\hat k_{t-1},\hat a_t)'$ and $y_t=(\hat c_t,\hat n_t)'$. The matrix $P$ maps states into consumption and labor.
 
-Klein's algorithm computes an ordered generalized Schur decomposition. The ordering separates the stable roots from the explosive roots, then uses the stable subspace to pick the unique non-explosive path for the jump variables.
+Klein QZ orders the generalized eigenvalues. The stable block gives the non-explosive path for the two jump variables.
 
 ```text
 Algorithm: Klein QZ for the linearized RBC system
@@ -79,15 +88,17 @@ Outputs: state transition F, decision rule P, and impulse responses
 6. Start from x_0 = (0, sigma_e) and iterate x_{t+1} = F x_t, y_t = P x_t.
 ```
 
-For this calibration the Blanchard-Kahn condition holds: 2 stable eigenvalues for 2 state variables, and 2 explosive eigenvalues for 2 jump variables. The stable eigenvalues are 0.9500 and 0.9531. Once these roots are ordered, the rest of the calculation is linear algebra.
+The Blanchard-Kahn count matches: 2 stable roots for 2 states. The stable roots are 0.9500 and 0.9531. This selects one local equilibrium path.
 
 ## Results
 
-The productivity innovation raises output on impact because TFP is higher and hours rise with the temporarily higher marginal product of labor. Investment moves more than consumption because capital is the state that carries the shock forward. Consumption responds smoothly through the Euler equation, while capital accumulates over many quarters. The nonlinear perfect-foresight path is included as a local benchmark. It preserves the same ranking of margins, with larger percentage-point gaps for investment and capital because investment is the residual margin that moves the stock.
+The productivity innovation raises output on impact because TFP and hours rise together. Investment moves more than consumption because capital carries the shock forward. Consumption adjusts smoothly through the Euler equation.
+
+The dashed nonlinear path is a local check on the linear solution. It keeps the same ranking of margins. The largest gaps appear for investment and capital, which move through the resource constraint.
 
 <img src="figures/irf-tfp-shock.png" alt="Linear Klein QZ vs nonlinear perfect-foresight responses to a 1% TFP shock" width="80%">
 
-**Linear vs Nonlinear IRF Summary**
+**IRF Summary**
 
 | Variable    |   Impact (%) |   Peak (%) |   Peak quarter |   Max linear-vs-PF gap (pp) |
 |:------------|-------------:|-----------:|---------------:|----------------------------:|
@@ -100,7 +111,9 @@ The productivity innovation raises output on impact because TFP is higher and ho
 
 ## Takeaway
 
-Endogenous labor makes the TFP shock partly a labor-hours response and partly a capital-accumulation response. The labor decision rule $\hat n_t=-0.1677\hat k_{t-1}+0.4612\hat a_t$ says that hours rise strongly with productivity but fall as inherited capital becomes abundant. Klein QZ matters because it delivers that economic object from the stable subspace of the log-linear system. Adding more DSGE variables would enlarge the matrices, but the solution logic would stay the same.
+The TFP shock splits into an hours response and a capital response. The labor rule $\hat n_t=-0.1677\hat k_{t-1}+0.4612\hat a_t$ rises with productivity and falls with inherited capital.
+
+Klein QZ delivers that rule from the stable subspace.
 
 ## References
 
