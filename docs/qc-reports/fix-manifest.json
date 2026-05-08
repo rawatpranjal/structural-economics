@@ -1,0 +1,69 @@
+{
+  "pass_name": "tutorial-fix-sweep-v1",
+  "updated_at": "2026-05-08T17:56:09Z",
+  "entries": [
+    {
+      "tutorial_path": "dynamic-programming/shock-discretization/",
+      "status": "failed",
+      "model": "claude-sonnet-4-6",
+      "stage": "validate",
+      "error": "validate_catalog exited 1:   - docs/qc-reports/proofread/dynamic-programming-cake-eating.md:80 uses an unbraced star script in math; write ^{\\ast} or _{\\ast}",
+      "exit_code": 1,
+      "updated_at": "2026-05-08T17:21:23Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/cake-eating/",
+      "status": "failed",
+      "model": "claude-sonnet-4-6",
+      "stage": "validate",
+      "error": "validate_catalog exited 1:   - docs/qc-reports/proofread/dynamic-programming-cake-eating.md:80 uses an unbraced star script in math; write ^{\\ast} or _{\\ast}",
+      "exit_code": 1,
+      "updated_at": "2026-05-08T17:27:30Z"
+    },
+    {
+      "tutorial_path": "numerical-methods/root-finding/",
+      "status": "failed",
+      "model": "claude-sonnet-4-6",
+      "stage": "validate",
+      "error": "validate_catalog exited 1:   - docs/qc-reports/proofread/dynamic-programming-job-search-mccall.md:96 uses an unbraced star script in math; write ^{\\ast} or _{\\ast}",
+      "exit_code": 1,
+      "updated_at": "2026-05-08T17:49:16Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/optimal-growth/",
+      "status": "failed",
+      "model": "claude-sonnet-4-6",
+      "stage": "validate",
+      "error": "validate_catalog exited 1:   - docs/qc-reports/proofread/dynamic-programming-job-search-mccall.md:96 uses an unbraced star script in math; write ^{\\ast} or _{\\ast}",
+      "exit_code": 1,
+      "updated_at": "2026-05-08T17:51:02Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/solow-growth/",
+      "status": "failed",
+      "model": "claude-sonnet-4-6",
+      "stage": "scope_violation",
+      "error": "reverted 1 out-of-scope path(s): ['numerical-methods/interpolation']",
+      "exit_code": 0,
+      "updated_at": "2026-05-08T17:52:53Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/consumption-savings/",
+      "status": "failed",
+      "model": "claude-sonnet-4-6",
+      "stage": "validate",
+      "error": "validate_catalog exited 1:   - docs/qc-reports/proofread/dynamic-programming-job-search-mccall.md:96 uses an unbraced star script in math; write ^{\\ast} or _{\\ast}",
+      "exit_code": 1,
+      "updated_at": "2026-05-08T17:54:28Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/job-search-mccall/",
+      "status": "failed",
+      "model": "claude-sonnet-4-6",
+      "stage": "scope_violation",
+      "error": "reverted 1 out-of-scope path(s): ['numerical-methods/interpolation']",
+      "exit_code": 0,
+      "updated_at": "2026-05-08T17:56:09Z"
+    }
+  ]
+}

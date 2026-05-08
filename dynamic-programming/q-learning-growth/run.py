@@ -512,16 +512,16 @@ def main() -> None:
     )
 
     report.add_overview(
-        "A planner allocates output between consumption and productive capital "
-        "while productivity moves stochastically. The saving choice carries "
-        "the response to today's shock into tomorrow's capital stock.\n\n"
-        "The target object is the optimal saving rule $k'(k, z)$. Under log "
-        "utility, Cobb-Douglas production, and full depreciation, the rule "
-        r"has a closed form, $k'(k, z) = \alpha\beta z A k^{\alpha}$, "
-        "which audits any numerical solver.\n\n"
-        "Solving the Bellman equation by value iteration uses the productivity "
+        "A planner allocates output between consumption and productive capital. "
+        "Productivity moves stochastically each period. The saving choice "
+        "carries today's shock into tomorrow's capital stock.\n\n"
+        "The target object is the optimal saving rule $k'(k, z)$. Log utility, "
+        "Cobb-Douglas production, and full depreciation pin down a closed "
+        r"form, $k'(k, z) = \alpha\beta z A k^{\alpha}$. The closed form audits "
+        "any numerical solver.\n\n"
+        "Value iteration solves the Bellman equation through the productivity "
         "transition matrix. Q-learning replaces the matrix with sampled "
-        "transitions and learns the same rule from interaction alone."
+        "transitions. The same saving rule emerges from interaction alone."
     )
 
     report.add_equations(
@@ -569,13 +569,14 @@ def main() -> None:
         "function stops moving. Each sweep evaluates expected continuation "
         "values through the productivity transition matrix.\n\n"
         "Tabular Q-learning sees one transition at a time. Each step samples "
-        "a state and a feasible action uniformly at random, simulates the "
-        "productivity Markov chain, and corrects the action-value estimate "
-        "with the Bellman temporal-difference error. Uniform sampling makes "
-        "coverage of the grid independent of the steady-state distribution, "
-        r"and a Robbins-Monro step size $1 / n_{s,a}^{0.6}$ decays with "
-        "visit counts. Independent runs are averaged to dampen the "
-        "action-argmax variance left on individual seeds.\n\n"
+        "a state and a feasible action uniformly at random. The productivity "
+        "Markov chain delivers the next state. The Bellman temporal-difference "
+        "error corrects the action-value estimate.\n\n"
+        "Uniform sampling makes coverage of the grid independent of the "
+        "steady-state distribution. A Robbins-Monro step size "
+        r"$1 / n_{s,a}^{0.6}$ decays with visit counts. Independent runs are "
+        "averaged to dampen the action-argmax variance left on individual "
+        "seeds.\n\n"
         "```text\n"
         "Algorithm: tabular Q-learning with uniform exploration\n"
         "Input: feasible reward r(s, a), productivity transition, step budget\n"
@@ -589,8 +590,8 @@ def main() -> None:
         "    Q(s_t, a_t) += alpha_t * (r_t + beta * max_a Q(s_{t+1}, a) - Q(s_t, a_t))\n"
         "```\n\n"
         "The deep-RL appendix replaces the table with a small two-layer MLP "
-        r"$Q_\theta(k, z, \cdot)$. A replay buffer stores recent transitions, and "
-        "the loss is a Huber penalty against a slow-moving target network.\n\n"
+        r"$Q_\theta(k, z, \cdot)$. A replay buffer stores recent transitions. "
+        "The loss is a Huber penalty against a slow-moving target network.\n\n"
         "```text\n"
         "Algorithm: deep Q-network on continuous (k, z)\n"
         "Input: discrete next-capital actions, replay buffer, minibatch size\n"
@@ -625,9 +626,9 @@ def main() -> None:
         "Policy RMSE versus number of Q-learning steps",
         fig_curve,
         description=(
-            "Policy error against the closed form falls as the agent visits more "
-            "states. The curve flattens once each region of the grid has been "
-            "sampled enough to anchor the maximizer."
+            "Policy error against the closed form falls as the agent visits "
+            "more states. The curve flattens once each region of the grid has "
+            "enough samples to anchor the maximizer."
         ),
     )
     report.add_figure(
@@ -636,8 +637,8 @@ def main() -> None:
         fig_value,
         description=(
             "The learned value surface is monotone in capital and increasing in "
-            "productivity. White contours mark the closed-form saving rule and "
-            "show how the iso-policy curves rise with $z$."
+            "productivity. White contours mark the closed-form saving rule. "
+            "The iso-policy curves rise with $z$."
         ),
     )
     report.add_table(
@@ -645,14 +646,14 @@ def main() -> None:
         "Algorithm comparison",
         comparison_df,
         description=(
-            "The table compares the two solvers on the same calibration. "
-            "Q-learning uses no transition matrix yet matches the VFI policy "
+            "The table compares the solvers on the same calibration. "
+            "Q-learning uses no transition matrix. It matches the VFI policy "
             "and value to a few hundredths in capital units."
         ),
     )
     closing = (
-        f"VFI converges in {vfi_info['iterations']} sweeps. The averaged "
-        f"Q-learning policy hits a MAE of {ql_mae:.4f} after "
+        f"VFI converges in {vfi_info['iterations']} sweeps. "
+        f"Q-learning hits a policy MAE of {ql_mae:.4f} after "
         f"{ql_info['steps'] * N_QL_SEEDS:,} sampled transitions across "
         f"{N_QL_SEEDS} seeds"
     )
@@ -662,9 +663,9 @@ def main() -> None:
 
     report.add_takeaway(
         "When the transition is unknown, the planner can still recover the "
-        "saving rule from sampled transitions. Q-learning trades a model for "
-        "data, and the closed-form Brock-Mirman policy keeps both the "
-        "model-based and the model-free solvers honest."
+        "saving rule. Sampled transitions are enough.\n\n"
+        "Q-learning trades a model for data. The closed-form Brock-Mirman "
+        "policy keeps both the model-based and the model-free solvers honest."
     )
 
     report.add_references([

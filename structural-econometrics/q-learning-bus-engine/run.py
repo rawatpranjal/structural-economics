@@ -544,15 +544,14 @@ def main() -> None:
     report.add_overview(
         "A bus depot decides each period whether to keep a high-mileage engine "
         "or pay a lump-sum replacement cost. Higher mileage raises operating "
-        "costs and tilts the trade-off toward replacement.\n\n"
+        "costs. The trade-off tilts toward replacement.\n\n"
         r"The target object is the replacement hazard $P(\mathrm{replace} \mid x)$ "
         "at each mileage level. Rust's nested fixed-point estimator computes it "
-        "by iterating the structural Bellman equation through the mileage "
-        "transition matrix.\n\n"
+        "by iterating the structural Bellman equation. NFXP needs the mileage "
+        "transition matrix as an input.\n\n"
         "Soft Q-learning replaces the matrix with the simulated bus panel. "
-        "The agent sees only the same data the econometrician uses for "
-        "estimation, and recovers the hazard from sampled transitions and "
-        "flow payoffs."
+        "The agent sees only the data the econometrician uses for estimation. "
+        "The same hazard emerges from sampled transitions and flow payoffs."
     )
 
     report.add_equations(
@@ -598,14 +597,14 @@ def main() -> None:
     solution_md = (
         "NFXP iterates the structural Bellman operator on the conditional "
         "value function until it stops moving. Each iteration takes the "
-        "log-sum-exp of conditional values, multiplies through the mileage "
-        "transition matrices, and adds the flow payoffs. The implied CCP is "
-        "the softmax of converged conditional values.\n\n"
+        "log-sum-exp of conditional values. The mileage transition matrices "
+        "carry that continuation value back into next-period payoffs. The "
+        "implied CCP is the softmax of the converged conditional values.\n\n"
         "Soft Q-learning uses the same simulated panel that NFXP estimates "
-        "from. For each observed transition, the agent forms the soft "
-        "Bellman target with a log-sum-exp over next-period actions and "
-        "applies a Robbins-Monro step. Independent runs are averaged to "
-        "dampen the residual noise from finite samples.\n\n"
+        "from. For each observed transition, the agent forms a soft Bellman "
+        "target with a log-sum-exp over next-period actions. A Robbins-Monro "
+        "step folds the target into the running estimate. Independent runs "
+        "are averaged to dampen the residual noise from finite samples.\n\n"
         "```text\n"
         "Algorithm: soft Q-learning from observed bus transitions\n"
         "Input: panel (x_t, a_t, x_{t+1}), flow payoffs u(x, a), epoch budget E\n"
@@ -618,8 +617,8 @@ def main() -> None:
         "P(replace | x) <- exp Q(x, replace) / [exp Q(x, replace) + exp Q(x, keep)]\n"
         "```\n\n"
         "The deep-RL appendix replaces the table with a small two-layer MLP "
-        r"$Q_\theta(x, \cdot)$. The minibatch loss is the Huber error against "
-        "a slow target network whose continuation value uses the same "
+        r"$Q_\theta(x, \cdot)$. The minibatch loss is a Huber error against a "
+        "slow target network. The target's continuation value uses the same "
         "soft-Bellman log-sum-exp.\n\n"
         "```text\n"
         "Algorithm: soft DQN on the same observed panel\n"
@@ -655,11 +654,11 @@ def main() -> None:
         "Replacement hazard recovered by soft Q-learning compared with NFXP",
         fig_hazard,
         description=(
-            "The replacement hazard rises smoothly with mileage: low-mileage "
-            "buses keep their engines, high-mileage buses replace. Soft "
+            "The replacement hazard rises smoothly with mileage. Low-mileage "
+            "buses keep their engines. High-mileage buses replace. Soft "
             "Q-learning recovers the same curve over the mileage range the "
             "panel actually visits. Past that range the table has no data "
-            "to update; the DQN appendix extrapolates with the network."
+            "to update. The DQN appendix extrapolates with the network."
         ),
     )
     report.add_figure(
@@ -678,8 +677,8 @@ def main() -> None:
         fig_eff,
         description=(
             "Hazard recovery improves as more buses enter the panel. The "
-            "log-log slope shows a roughly square-root rate, consistent with "
-            "the standard sample-complexity scaling of off-policy evaluation."
+            "log-log slope is roughly square-root. That rate matches the "
+            "standard sample-complexity scaling of off-policy evaluation."
         ),
     )
     report.add_figure(
@@ -688,8 +687,8 @@ def main() -> None:
         fig_traj,
         description=(
             "A representative bus accumulates mileage between replacements. "
-            "Each red marker is a replacement period that resets mileage to "
-            "the low-mileage transition."
+            "Each red marker is a replacement period. Replacement resets "
+            "mileage to the low-mileage transition."
         ),
     )
 
@@ -699,13 +698,13 @@ def main() -> None:
         comparison_df,
         description=(
             "The table compares the three methods on the same calibration. "
-            "Q-learning and DQN see only the simulated panel, yet recover the "
-            "same replacement threshold as NFXP."
+            "Q-learning and DQN see only the simulated panel. Both recover "
+            "the same replacement threshold as NFXP."
         ),
     )
     closing = (
-        f"NFXP converges in {nfxp['iterations']} Bellman iterations. Soft "
-        f"Q-learning hits a hazard MAE of {hazard_mae_ql:.4f} after "
+        f"NFXP converges in {nfxp['iterations']} Bellman iterations. "
+        f"Soft Q-learning hits a hazard MAE of {hazard_mae_ql:.4f} after "
         f"{QL_EPOCHS} passes through {n_samples:,} observed transitions"
     )
     if dqn_result is not None:
@@ -714,9 +713,9 @@ def main() -> None:
 
     report.add_takeaway(
         "Replacement hazards do not require the engineer to write down the "
-        "mileage transition. Soft Q-learning recovers the same hazard from "
-        "observed buses and the model's flow payoffs, which is exactly the "
-        "model-free counterpart of NFXP."
+        "mileage transition.\n\n"
+        "Soft Q-learning recovers the same hazard from observed buses and the "
+        "model's flow payoffs. That is the model-free counterpart of NFXP."
     )
 
     report.add_references([

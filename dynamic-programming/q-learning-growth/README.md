@@ -4,11 +4,11 @@
 
 ## Overview
 
-A planner allocates output between consumption and productive capital while productivity moves stochastically. The saving choice carries the response to today's shock into tomorrow's capital stock.
+A planner allocates output between consumption and productive capital. Productivity moves stochastically each period. The saving choice carries today's shock into tomorrow's capital stock.
 
-The target object is the optimal saving rule $k'(k, z)$. Under log utility, Cobb-Douglas production, and full depreciation, the rule has a closed form, $k'(k, z) = \alpha\beta z A k^{\alpha}$, which audits any numerical solver.
+The target object is the optimal saving rule $k'(k, z)$. Log utility, Cobb-Douglas production, and full depreciation pin down a closed form, $k'(k, z) = \alpha\beta z A k^{\alpha}$. The closed form audits any numerical solver.
 
-Solving the Bellman equation by value iteration uses the productivity transition matrix. Q-learning replaces the matrix with sampled transitions and learns the same rule from interaction alone.
+Value iteration solves the Bellman equation through the productivity transition matrix. Q-learning replaces the matrix with sampled transitions. The same saving rule emerges from interaction alone.
 
 ## Equations
 
@@ -45,7 +45,9 @@ Exploration draws each transition uniformly over feasible state-action pairs $(s
 
 Value iteration sweeps the discrete Bellman operator until the value function stops moving. Each sweep evaluates expected continuation values through the productivity transition matrix.
 
-Tabular Q-learning sees one transition at a time. Each step samples a state and a feasible action uniformly at random, simulates the productivity Markov chain, and corrects the action-value estimate with the Bellman temporal-difference error. Uniform sampling makes coverage of the grid independent of the steady-state distribution, and a Robbins-Monro step size $1 / n_{s,a}^{0.6}$ decays with visit counts. Independent runs are averaged to dampen the action-argmax variance left on individual seeds.
+Tabular Q-learning sees one transition at a time. Each step samples a state and a feasible action uniformly at random. The productivity Markov chain delivers the next state. The Bellman temporal-difference error corrects the action-value estimate.
+
+Uniform sampling makes coverage of the grid independent of the steady-state distribution. A Robbins-Monro step size $1 / n_{s,a}^{0.6}$ decays with visit counts. Independent runs are averaged to dampen the action-argmax variance left on individual seeds.
 
 ```text
 Algorithm: tabular Q-learning with uniform exploration
@@ -60,7 +62,7 @@ for t = 1, ..., T:
     Q(s_t, a_t) += alpha_t * (r_t + beta * max_a Q(s_{t+1}, a) - Q(s_t, a_t))
 ```
 
-The deep-RL appendix replaces the table with a small two-layer MLP $Q_\theta(k, z, \cdot)$. A replay buffer stores recent transitions, and the loss is a Huber penalty against a slow-moving target network.
+The deep-RL appendix replaces the table with a small two-layer MLP $Q_\theta(k, z, \cdot)$. A replay buffer stores recent transitions. The loss is a Huber penalty against a slow-moving target network.
 
 ```text
 Algorithm: deep Q-network on continuous (k, z)
@@ -81,29 +83,31 @@ The greedy policy out of the Q-table tracks the closed-form saving rule across c
 
 <img src="figures/policy-comparison.png" alt="Q-learning saving policy compared with VFI and the closed-form rule" width="80%">
 
-Policy error against the closed form falls as the agent visits more states. The curve flattens once each region of the grid has been sampled enough to anchor the maximizer.
+Policy error against the closed form falls as the agent visits more states. The curve flattens once each region of the grid has enough samples to anchor the maximizer.
 
 <img src="figures/learning-curve.png" alt="Policy RMSE versus number of Q-learning steps" width="80%">
 
-The learned value surface is monotone in capital and increasing in productivity. White contours mark the closed-form saving rule and show how the iso-policy curves rise with $z$.
+The learned value surface is monotone in capital and increasing in productivity. White contours mark the closed-form saving rule. The iso-policy curves rise with $z$.
 
 <img src="figures/value-surface.png" alt="Q-learning value surface with closed-form policy contours" width="80%">
 
-The table compares the two solvers on the same calibration. Q-learning uses no transition matrix yet matches the VFI policy and value to a few hundredths in capital units.
+The table compares the solvers on the same calibration. Q-learning uses no transition matrix. It matches the VFI policy and value to a few hundredths in capital units.
 
 **Algorithm comparison**
 
 | algorithm                         | transition matrix   |   policy MAE |   value sup-norm vs VFI |   samples |   runtime sec |
 |:----------------------------------|:--------------------|-------------:|------------------------:|----------:|--------------:|
-| value iteration                   | yes                 |       0.0038 |                  0      |   2175747 |         0.007 |
-| tabular Q-learning (4 seeds avg.) | no                  |       0.0154 |                  0.6721 |   6000000 |        76.295 |
-| DQN                               | no                  |       0.0299 |                nan      |    250000 |       132.156 |
+| value iteration                   | yes                 |       0.0038 |                  0      |   2175747 |         0.006 |
+| tabular Q-learning (4 seeds avg.) | no                  |       0.0154 |                  0.6721 |   6000000 |        78.458 |
+| DQN                               | no                  |       0.0299 |                nan      |    250000 |       138.765 |
 
-VFI converges in 361 sweeps. The averaged Q-learning policy hits a MAE of 0.0154 after 6,000,000 sampled transitions across 4 seeds. DQN reaches 0.0299 after 250,000 steps.
+VFI converges in 361 sweeps. Q-learning hits a policy MAE of 0.0154 after 6,000,000 sampled transitions across 4 seeds. DQN reaches 0.0299 after 250,000 steps.
 
 ## Takeaway
 
-When the transition is unknown, the planner can still recover the saving rule from sampled transitions. Q-learning trades a model for data, and the closed-form Brock-Mirman policy keeps both the model-based and the model-free solvers honest.
+When the transition is unknown, the planner can still recover the saving rule. Sampled transitions are enough.
+
+Q-learning trades a model for data. The closed-form Brock-Mirman policy keeps both the model-based and the model-free solvers honest.
 
 ## References
 

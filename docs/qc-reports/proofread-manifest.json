@@ -1,0 +1,102 @@
+{
+  "pass_name": "tutorial-proofread-sweep-v1",
+  "updated_at": "2026-05-08T18:55:47Z",
+  "entries": [
+    {
+      "tutorial_path": "dynamic-programming/shock-discretization/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/dynamic-programming-shock-discretization.md",
+      "output_bytes": 9326,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-08T16:49:27Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/cake-eating/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/dynamic-programming-cake-eating.md",
+      "output_bytes": 7573,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-08T16:54:33Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/optimal-growth/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/dynamic-programming-optimal-growth.md",
+      "output_bytes": 9259,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-08T17:26:38Z"
+    },
+    {
+      "tutorial_path": "numerical-methods/root-finding/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/numerical-methods-root-finding.md",
+      "output_bytes": 8381,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-08T17:33:47Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/solow-growth/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/dynamic-programming-solow-growth.md",
+      "output_bytes": 10406,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-08T17:37:46Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/consumption-savings/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/dynamic-programming-consumption-savings.md",
+      "output_bytes": 8595,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-08T17:42:25Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/job-search-mccall/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/dynamic-programming-job-search-mccall.md",
+      "output_bytes": 7504,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-08T17:45:02Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/asset-pricing/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/dynamic-programming-asset-pricing.md",
+      "output_bytes": 7888,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-08T17:48:07Z"
+    },
+    {
+      "tutorial_path": "numerical-methods/interpolation/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/numerical-methods-interpolation.md",
+      "output_bytes": 8549,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-08T18:43:23Z"
+    },
+    {
+      "tutorial_path": "numerical-methods/scalar-optimization/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/numerical-methods-scalar-optimization.md",
+      "output_bytes": 7894,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-08T18:47:39Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/rbc/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/dynamic-programming-rbc.md",
+      "output_bytes": 9075,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-08T18:52:20Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/diamond-mortensen-pissarides/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/dynamic-programming-diamond-mortensen-pissarides.md",
+      "output_bytes": 8884,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-08T18:55:47Z"
+    }
+  ]
+}

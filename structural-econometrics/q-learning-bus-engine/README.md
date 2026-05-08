@@ -4,11 +4,11 @@
 
 ## Overview
 
-A bus depot decides each period whether to keep a high-mileage engine or pay a lump-sum replacement cost. Higher mileage raises operating costs and tilts the trade-off toward replacement.
+A bus depot decides each period whether to keep a high-mileage engine or pay a lump-sum replacement cost. Higher mileage raises operating costs. The trade-off tilts toward replacement.
 
-The target object is the replacement hazard $P(\mathrm{replace} \mid x)$ at each mileage level. Rust's nested fixed-point estimator computes it by iterating the structural Bellman equation through the mileage transition matrix.
+The target object is the replacement hazard $P(\mathrm{replace} \mid x)$ at each mileage level. Rust's nested fixed-point estimator computes it by iterating the structural Bellman equation. NFXP needs the mileage transition matrix as an input.
 
-Soft Q-learning replaces the matrix with the simulated bus panel. The agent sees only the same data the econometrician uses for estimation, and recovers the hazard from sampled transitions and flow payoffs.
+Soft Q-learning replaces the matrix with the simulated bus panel. The agent sees only the data the econometrician uses for estimation. The same hazard emerges from sampled transitions and flow payoffs.
 
 ## Equations
 
@@ -45,9 +45,9 @@ $$Q(x_t, a_t) \leftarrow Q(x_t, a_t) + \alpha_t \Big[ u(x_t, a_t) + \beta\big(\g
 
 ## Solution Method
 
-NFXP iterates the structural Bellman operator on the conditional value function until it stops moving. Each iteration takes the log-sum-exp of conditional values, multiplies through the mileage transition matrices, and adds the flow payoffs. The implied CCP is the softmax of converged conditional values.
+NFXP iterates the structural Bellman operator on the conditional value function until it stops moving. Each iteration takes the log-sum-exp of conditional values. The mileage transition matrices carry that continuation value back into next-period payoffs. The implied CCP is the softmax of the converged conditional values.
 
-Soft Q-learning uses the same simulated panel that NFXP estimates from. For each observed transition, the agent forms the soft Bellman target with a log-sum-exp over next-period actions and applies a Robbins-Monro step. Independent runs are averaged to dampen the residual noise from finite samples.
+Soft Q-learning uses the same simulated panel that NFXP estimates from. For each observed transition, the agent forms a soft Bellman target with a log-sum-exp over next-period actions. A Robbins-Monro step folds the target into the running estimate. Independent runs are averaged to dampen the residual noise from finite samples.
 
 ```text
 Algorithm: soft Q-learning from observed bus transitions
@@ -61,7 +61,7 @@ for epoch = 1, ..., E:
 P(replace | x) <- exp Q(x, replace) / [exp Q(x, replace) + exp Q(x, keep)]
 ```
 
-The deep-RL appendix replaces the table with a small two-layer MLP $Q_\theta(x, \cdot)$. The minibatch loss is the Huber error against a slow target network whose continuation value uses the same soft-Bellman log-sum-exp.
+The deep-RL appendix replaces the table with a small two-layer MLP $Q_\theta(x, \cdot)$. The minibatch loss is a Huber error against a slow target network. The target's continuation value uses the same soft-Bellman log-sum-exp.
 
 ```text
 Algorithm: soft DQN on the same observed panel
@@ -77,7 +77,7 @@ for epoch = 1, ..., E_dqn:
 
 ## Results
 
-The replacement hazard rises smoothly with mileage: low-mileage buses keep their engines, high-mileage buses replace. Soft Q-learning recovers the same curve over the mileage range the panel actually visits. Past that range the table has no data to update; the DQN appendix extrapolates with the network.
+The replacement hazard rises smoothly with mileage. Low-mileage buses keep their engines. High-mileage buses replace. Soft Q-learning recovers the same curve over the mileage range the panel actually visits. Past that range the table has no data to update. The DQN appendix extrapolates with the network.
 
 <img src="figures/replacement-hazard.png" alt="Replacement hazard recovered by soft Q-learning compared with NFXP" width="80%">
 
@@ -85,29 +85,31 @@ The conditional values for replace and keep cross at the mileage where replaceme
 
 <img src="figures/value-comparison.png" alt="Conditional value functions from NFXP and soft Q-learning" width="80%">
 
-Hazard recovery improves as more buses enter the panel. The log-log slope shows a roughly square-root rate, consistent with the standard sample-complexity scaling of off-policy evaluation.
+Hazard recovery improves as more buses enter the panel. The log-log slope is roughly square-root. That rate matches the standard sample-complexity scaling of off-policy evaluation.
 
 <img src="figures/sample-efficiency.png" alt="Hazard MAE versus the number of simulated buses" width="80%">
 
-A representative bus accumulates mileage between replacements. Each red marker is a replacement period that resets mileage to the low-mileage transition.
+A representative bus accumulates mileage between replacements. Each red marker is a replacement period. Replacement resets mileage to the low-mileage transition.
 
 <img src="figures/trajectory.png" alt="Mileage path of one simulated bus with replacement events" width="80%">
 
-The table compares the three methods on the same calibration. Q-learning and DQN see only the simulated panel, yet recover the same replacement threshold as NFXP.
+The table compares the three methods on the same calibration. Q-learning and DQN see only the simulated panel. Both recover the same replacement threshold as NFXP.
 
 **Method comparison**
 
 | method                         | transition matrix   |   hazard MAE |   P=0.5 mileage |   samples |   runtime sec |
 |:-------------------------------|:--------------------|-------------:|----------------:|----------:|--------------:|
-| NFXP (model-based)             | yes                 |       0      |               6 |       228 |        0.0136 |
-| soft Q-learning (4 seeds avg.) | no                  |       0.0105 |               6 |   6120000 |      223.324  |
-| soft DQN                       | no                  |       0.0046 |               6 |   4080000 |       11.646  |
+| NFXP (model-based)             | yes                 |       0      |               6 |       228 |        0.0115 |
+| soft Q-learning (4 seeds avg.) | no                  |       0.0105 |               6 |   6120000 |      229.567  |
+| soft DQN                       | no                  |       0.0046 |               6 |   4080000 |       12.404  |
 
 NFXP converges in 228 Bellman iterations. Soft Q-learning hits a hazard MAE of 0.0105 after 30 passes through 51,000 observed transitions. Soft DQN reaches 0.0046 on the same panel.
 
 ## Takeaway
 
-Replacement hazards do not require the engineer to write down the mileage transition. Soft Q-learning recovers the same hazard from observed buses and the model's flow payoffs, which is exactly the model-free counterpart of NFXP.
+Replacement hazards do not require the engineer to write down the mileage transition.
+
+Soft Q-learning recovers the same hazard from observed buses and the model's flow payoffs. That is the model-free counterpart of NFXP.
 
 ## References
 
