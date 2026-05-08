@@ -1,66 +1,48 @@
 # RBC Capital, Labor, and Business-Cycle Moments
 
-> A representative-household RBC model with endogenous labor and two-state TFP, solved on a global grid and audited against a finer-grid benchmark.
+> A representative-household RBC model with endogenous labor and two-state TFP, solved by global-grid value function iteration.
 
 ## Overview
 
-A representative household owns the capital stock, supplies labor, and chooses investment after observing aggregate productivity. With log consumption and log-leisure utility, this is the original [Kydland-Prescott (1982)](#references) recipe stripped to its essentials: the technology shock is the impulse, and the *capital* and *labor* policies determine how a one-period innovation in $z_t$ propagates into a persistent path for $(y_t,c_t,i_t,l_t)$.
+Aggregate productivity changes over time. A representative household owns capital, supplies labor, and chooses investment after observing productivity. The shock moves output directly and also changes work and saving.
 
-The exercise is intentionally global and nonlinear. Unlike the [linearized RBC](../../dsge/rbc/) tutorial, which log-linearizes the same first-order system around the deterministic steady state and solves it by method of undetermined coefficients (cross-checked against [Klein QZ with endogenous labor](../../dsge/rbc-with-labor/)), here the solution operates on the level of the value function. Productivity lives on a two-state Markov chain rather than a continuous AR(1), so the Bellman operator, the policy functions, and the simulated second moments fit on a single page without losing the canonical King-Plosser-Rebelo (1988) moment pattern.
+The object is a stochastic RBC allocation. The state is capital and a two-state TFP process. The policies choose next-period capital and current labor.
 
-Two neighboring tutorials provide useful contrasts. [Optimal growth](../optimal-growth/) is the same Bellman recursion with deterministic technology and inelastic labor, where the closed form $s=\alpha\beta$ pins down saving exactly. [Aiyagari](../aiyagari/) replaces the single representative agent with a continuum of income-risk-bearing households, and the resulting general equilibrium endogenizes both factor prices that the planner here treats as marginal products.
+The Bellman equation has no closed-form stochastic policy. We solve it on a global grid, simulate the economy, and compare simulated cycles with standard RBC moments.
 
 ## Equations
 
 **Technology and resources.** Capital $k_t$, labor $l_t\in(0,1)$, and TFP $z_t$
-combine through a Cobb-Douglas production function
+produce output through Cobb-Douglas technology:
 
 $$y_t = z_t\,k_t^{\alpha}\,l_t^{1-\alpha},\qquad \alpha\in(0,1),$$
 
-and the resource constraint
+The resource constraint is
 
 $$c_t + k_{t+1} = z_t\,k_t^{\alpha}\,l_t^{1-\alpha} + (1-\delta)\,k_t,$$
 
 with $c_t>0$ and $k_{t+1}\geq 0$.
 
-**Preferences.** Period utility is additively separable in consumption and
-leisure,
+**Preferences.** Period utility uses log consumption and log leisure:
 
 $$u(c,l)=\log c+\phi\log(1-l),\qquad \phi>0,$$
 
-and the household maximizes
-$\mathbb{E}_0\sum_{t=0}^{\infty}\beta^t u(c_t,l_t)$. Log utility makes the
-intertemporal substitution elasticity equal to one and gives a closed form
-for the deterministic steady state below; the leisure weight $\phi$ controls
-the Frisch-elasticity-equivalent margin.
+The household maximizes
+$\mathbb{E}_0\sum_{t=0}^{\infty}\beta^t u(c_t,l_t)$.
 
 **TFP process.** Productivity takes two values $z_t\in\{z_L,z_H\}=\{0.95,1.05\}$
-with persistent symmetric transitions
+with persistent symmetric transitions:
 
 $$P_{ij}=\Pr(z_{t+1}=z_j\mid z_t=z_i),\qquad
 P=\begin{pmatrix}0.95 & 0.05\\ 0.05 & 0.95\end{pmatrix}.$$
 
-The unconditional distribution is uniform; the half-life of a shock is roughly
-$\log 0.5/\log 0.9\approx 6.6$ periods.
-
 **Bellman equation.** Conditioning on the current state $(k,z_i)$, the household
-solves
+solves:
 
 $$V(k,z_i)=\max_{k',\,l\in(0,1)}[\log c+\phi\log(1-l)+\beta\sum_{j}P_{ij}\,V(k',z_j)],$$
 
 subject to $c=z_i k^{\alpha} l^{1-\alpha}+(1-\delta)k-k'>0$. The policy
 functions are $g_k(k,z)=k'$ and $g_l(k,z)=l$.
-
-**Static labor margin.** Because labor enters only the period payoff, its
-optimum at every $(k,z,k')$ satisfies the static intratemporal first-order
-condition $u_l=u_c\cdot \mathrm{MPL}$, i.e.
-
-$$\frac{\phi}{1-l}=\frac{(1-\alpha)\,z\,k^{\alpha}\,l^{-\alpha}}{c},$$
-
-so the labor decision is a wealth-vs-substitution trade-off conditional on
-the saving choice. The solver below sweeps a grid in $(l,k')$ jointly rather
-than substituting this FOC, which keeps the algorithm fully vectorized at
-the cost of a bigger per-iteration tensor.
 
 **Deterministic $z=1$ benchmark.** Setting $z\equiv 1$ in the stochastic
 Bellman, the Euler condition for capital pins down the steady-state
@@ -73,8 +55,7 @@ and the labor first-order condition pins down hours
 $$l_{ss}=\frac{w_{ss}}{w_{ss}+\phi\,(c_{ss}/l_{ss})},\qquad
 w_{ss}=(1-\alpha)(k_{ss}/l_{ss})^{\alpha}.$$
 
-This is the *only* point in $(k,z)$-space where the model has an exact
-analytical solution; the stochastic policy fluctuates around it.
+The stochastic policy fluctuates around this benchmark.
 
 ## Model Setup
 
@@ -98,15 +79,11 @@ analytical solution; the stochastic policy fluctuates around it.
 
 ## Solution Method
 
-**What the algorithm does.** The Bellman operator
+**Bellman update.** The Bellman operator
 
 $$(TV)(k,z_i)=\max_{(l,k')}[\log c(k,z_i,l,k')+\phi\log(1-l)+\beta\sum_{j}P_{ij}V(k',z_j)]$$
 
-is a $\beta$-contraction on bounded continuous functions, so iterates converge geometrically at rate $\beta=0.99$ to the unique fixed point. The ingredients that make a finite-grid implementation behave well are the same as in [optimal growth](../optimal-growth/): a state grid wide enough that the ergodic distribution stays in its interior, a fine-enough $k'$ grid to avoid policy quantization, and a labor grid covering the equilibrium hours range.
-
-**Vectorization.** The inner maximization is over a $50\times 50$ rectangle in $(l,k')$ for each of $50\times 2=100$ states. Precomputing the whole flow-utility tensor $u(k,z,l,k')$ once turns each VFI sweep into a single broadcast addition $\beta\,EV[k',z]+u[k,z,l,k']$ followed by an `argmax` over the joint $(l,k')$ axis. Negative consumption is masked by $-\infty$ before the loop starts, so every iteration is a pure linear-algebra pass.
-
-**Why grid search instead of nesting the labor FOC.** With log-leisure preferences the static labor FOC has the closed form $1-l=\phi c/w$ with $w=(1-\alpha)y/l$, which can be substituted out and reduce the outer maximization to a one-dimensional search over $k'$. The trade-off is between dimensionality and code clarity: grid search makes the algorithm fully vectorized, treats infeasibility uniformly, and keeps the labor policy explicit as a diagnostic. For a small two-state model the cost is negligible; for a continuous AR(1) productivity process with several hundred quadrature nodes the FOC substitution would pay.
+is a $\beta$-contraction. VFI applies it until the value function changes by less than the tolerance. For each state, the code evaluates every labor and next-capital pair. It masks negative consumption and takes a joint argmax. The selected indices define the two policy rules.
 
 **Pseudocode.**
 
@@ -132,31 +109,29 @@ stop when err < epsilon
 g_k(k_i, z_s) <- k_{j*_{i,s}};   g_l(k_i, z_s) <- l_{m*_{i,s}}
 ```
 
-**Hyperparameters and what they buy.** Coarsening the capital grid below $\sim 30$ points starts to cause visible step artefacts in $g_k(k,z)$ near the saving 45-degree line; refining it past $\sim 200$ buys very little economically because the policy is almost linear in $k$ over the ergodic set. The labor grid $[0.2,0.6]$ comfortably brackets the deterministic $l_{ss}=0.333$ and the stochastic policy below, so $50$ points already give policy gaps under one quarter of one percentage point.
+**Fine-grid audit.** The fine grid uses 200 capital nodes and 100 labor nodes on the same domain. It is an audit, not the policy used for simulation. The max relative value error is **2.1e-04**. The max capital-policy gap is **0.0461**. The max hours gap is **0.0150**.
 
-**Audit against a fine grid.** The same VFI is rerun with 200 capital and 100 labor nodes on the same domain. The coarse-grid value function agrees with the fine-grid benchmark to max relative error **2.1e-04** across the state space, the capital policy to max absolute error **0.0461** units of capital, and hours to **0.0150**. The coarse solution is what feeds the simulation; the benchmark only certifies that the moment comparisons below are not driven by discretization.
-
-At baseline calibration the coarse VFI converged in **515 iterations** with sup-norm error **9.95e-06**, and the fine-grid solver in **525 iterations** with error **9.96e-06**.
+The coarse VFI converged in **515 iterations** with sup-norm error **9.95e-06**. The fine-grid VFI converged in **525 iterations** with error **9.96e-06**.
 
 ## Results
 
-The value function is monotone and concave in capital, with a uniform vertical shift between the high- and low-TFP curves: a more productive aggregate state raises the marginal value of every level of installed capital. The dotted lines are the 200-point benchmark and overlay the 50-point solution to within 2e-04 relative error, so any visible structure is economic, not numerical. The vertical reference is the deterministic steady-state capital at $z=1$, which sits between the two stochastic ergodic centers.
+The value function rises with capital. High TFP shifts the curve up because installed capital is more productive. The dotted fine-grid lines sit on the coarse-grid curves. The deterministic steady state sits between the two stochastic centers.
 
 <img src="figures/value-function.png" alt="Value function by capital and TFP state" width="80%">
 
-The capital policy stays close to the 45-degree line over the ergodic set: investment is small relative to the stock, so $k$ moves slowly. Where $g_k(k,z)$ lies above $k$, gross investment exceeds depreciation and capital rises next period; the high-TFP curve sits above the low-TFP curve at every $k$, because productivity raises the after-depreciation marginal return on installed capital. Hours show a small negative slope in $k$ — the wealth effect — and a clear upward shift between low- and high-TFP states. The TFP shift dominates the wealth effect by an order of magnitude, which is why the simulated cyclical comovement of hours is essentially the intertemporal-substitution response to $z$. The fine-grid benchmark traces out a smoother version of the same step pattern; the residual stepping in the coarse solution is grid quantization, not economics.
+The capital policy stays near the 45-degree line, so capital moves slowly. High TFP raises next-period capital at each current capital level. Hours rise in high TFP states and fall slightly with capital. The fine grid shows the same policies with smoother steps.
 
 <img src="figures/policy-functions.png" alt="Capital and labor policy functions" width="80%">
 
-Output reacts to the TFP regime on impact through both the direct Cobb-Douglas channel and the labor response. Consumption is visibly smoother than output: with $\beta R\approx 1$ the household uses capital to buffer the marginal utility profile, so the resource gap between output and consumption — investment, the green line — does most of the absorbing. The investment series spikes at every regime switch and undershoots between switches as the capital stock catches up.
+Output jumps when TFP changes. Consumption moves less because capital buffers resources. Investment absorbs most of the gap between output and consumption. Capital then adjusts slowly after each regime switch.
 
 <img src="figures/simulation.png" alt="Simulated output, consumption, investment, and TFP" width="80%">
 
-Each panel overlays the model output cycle on a second variable, so the RBC second-moment pattern reads off directly. Consumption tracks output but with smaller swings: that is consumption smoothing made visible. Investment moves with output and amplifies it by a factor of about four — investment is the high-frequency margin in the model. Hours move with output through the intertemporal labor-supply channel and are nearly as volatile as a fraction of output as data suggest. Capital barely shows a contemporaneous correlation with output because it is a stock variable that integrates past investment; its lag against the cycle is what creates the model's persistence.
+Consumption is smoother than output. Investment moves with output and is about four times as volatile. Hours are strongly procyclical. Capital is persistent because it accumulates past investment.
 
 <img src="figures/comovements.png" alt="HP-filtered cyclical comovements" width="80%">
 
-Three rows characterize the model. *Investment* is over four times as volatile as output and almost perfectly procyclical; *consumption* is roughly a third as volatile and procyclical but not as much; *hours* are about $0.6$ times as volatile as output and strongly procyclical. These ratios match the qualitative pattern that King-Plosser-Rebelo (1988) report from US data, which is the standard test the RBC model passes by construction. The autocorrelation column shows that capital is the model's stock of persistence: $\rho_k\approx 0.95$ from the integration of investment, against $\rho_y\approx 0.71$ for the flow output.
+The table gives standard HP-filtered moments from the simulated economy. Investment is the most volatile flow. Consumption is smoother than output. Hours are strongly procyclical. Capital has high autocorrelation because it is a stock.
 
 **Business-cycle moments, HP-filtered (lambda=1600), 5000-quarter simulation**
 
@@ -170,7 +145,7 @@ Three rows characterize the model. *Investment* is over four times as volatile a
 
 ## Takeaway
 
-Putting the standard RBC primitives on a finite grid recovers the canonical King-Plosser-Rebelo signature without log-linearization. The technology shock is the impulse, but the *capital* and *labor* policies determine the propagation: investment is the volatile margin (relative std $\approx4.12$), consumption is much smoother ($\approx0.34$), hours are strongly procyclical ($\mathrm{corr}(L,Y)\approx0.94$), and capital is the persistent stock that turns a memoryless Markov chain into an autocorrelated output series ($\rho_y\approx0.71$). The fine-grid benchmark certifies these moments are not artefacts of discretization. Two natural extensions: replacing the two-state TFP process with a discretized AR(1) (see [shock discretization](../shock-discretization/)) moves the analysis closer to the [linearized RBC](../../dsge/rbc/) tutorial and the [Klein QZ solution with endogenous labor](../../dsge/rbc-with-labor/); replacing the single representative agent with a continuum of heterogeneous households gives the [Aiyagari general equilibrium](../aiyagari/).
+The global-grid RBC model turns a two-state productivity shock into familiar business-cycle comovements. Investment is volatile, consumption is smooth, and hours are procyclical. Capital is the persistent state that carries shocks forward. The fine-grid audit shows the moments are not driven by coarse discretization.
 
 ## References
 
