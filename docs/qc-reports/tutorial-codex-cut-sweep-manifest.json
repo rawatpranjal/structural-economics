@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T08:25:00Z",
+  "updated_at": "2026-05-08T08:30:03Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -447,6 +447,16 @@
         "industrial-organization/three-part-tariffs/run.py"
       ],
       "updated_at": "2026-05-08T08:25:00Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/nash-in-nash/",
+      "status": "complete",
+      "commit": "0bb3ce567d1c3d3c76c6cdae64e652a67fcafe22",
+      "changed_paths": [
+        "industrial-organization/nash-in-nash/README.md",
+        "industrial-organization/nash-in-nash/run.py"
+      ],
+      "updated_at": "2026-05-08T08:30:03Z"
     }
   ]
 }
