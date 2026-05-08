@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-08T00:36:48Z",
+  "updated_at": "2026-05-08T00:40:52Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -785,6 +785,21 @@
         "computational-methods/kalman-filter/run.py"
       ],
       "updated_at": "2026-05-08T00:36:48Z"
+    },
+    {
+      "tutorial_path": "computational-methods/particle-filter/",
+      "status": "complete",
+      "commit": "3578499af6316078d414ed7421fb9401d8bae51d",
+      "changed_paths": [
+        "README.md",
+        "computational-methods/particle-filter/README.md",
+        "computational-methods/particle-filter/figures/filter-comparison.png",
+        "computational-methods/particle-filter/figures/measurement-noise.png",
+        "computational-methods/particle-filter/figures/mse-and-ess.png",
+        "computational-methods/particle-filter/figures/thumb.png",
+        "computational-methods/particle-filter/run.py"
+      ],
+      "updated_at": "2026-05-08T00:40:52Z"
     }
   ]
 }
