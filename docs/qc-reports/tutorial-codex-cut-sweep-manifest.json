@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T09:28:15Z",
+  "updated_at": "2026-05-08T09:35:26Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -574,6 +574,23 @@
         "choice/urn-behavioral-mixtures/tables/estimator-diagnostics.csv"
       ],
       "updated_at": "2026-05-08T09:28:15Z"
+    },
+    {
+      "tutorial_path": "choice/risk-aversion-monotone-choice/",
+      "status": "complete",
+      "commit": "533df3138349886a6ec4b3944f4320d0bddbe7f5",
+      "changed_paths": [
+        "README.md",
+        "choice/risk-aversion-monotone-choice/README.md",
+        "choice/risk-aversion-monotone-choice/figures/rho-likelihood.png",
+        "choice/risk-aversion-monotone-choice/figures/risky-choice-fits.png",
+        "choice/risk-aversion-monotone-choice/figures/thumb.png",
+        "choice/risk-aversion-monotone-choice/run.py",
+        "choice/risk-aversion-monotone-choice/tables/model-comparison.csv",
+        "choice/risk-aversion-monotone-choice/tables/row-fits.csv",
+        "choice/risk-aversion-monotone-choice/tables/solver-diagnostics.csv"
+      ],
+      "updated_at": "2026-05-08T09:35:26Z"
     }
   ]
 }
