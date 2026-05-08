@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T06:34:25Z",
+  "updated_at": "2026-05-08T06:44:08Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -243,6 +243,21 @@
         "optimal-control/hjb-growth/tables/steady-state.csv"
       ],
       "updated_at": "2026-05-08T06:34:25Z"
+    },
+    {
+      "tutorial_path": "optimal-control/phase-diagrams/",
+      "status": "complete",
+      "commit": "a8c07986b5441bd0f266a22b5101750479f6406c",
+      "changed_paths": [
+        "README.md",
+        "optimal-control/phase-diagrams/README.md",
+        "optimal-control/phase-diagrams/figures/phase-diagram.png",
+        "optimal-control/phase-diagrams/figures/thumb.png",
+        "optimal-control/phase-diagrams/figures/time-paths.png",
+        "optimal-control/phase-diagrams/run.py",
+        "optimal-control/phase-diagrams/tables/steady-state.csv"
+      ],
+      "updated_at": "2026-05-08T06:44:08Z"
     },
     {
       "tutorial_path": "industrial-organization/dynamic-discrete-choice/",
