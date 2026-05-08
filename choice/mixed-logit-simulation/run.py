@@ -14,6 +14,19 @@ from lib.plotting import setup_style
 
 
 PRODUCTS = ["Budget", "Mainstream", "Premium", "Niche"]
+LIKELIHOOD_FLOOR = 1e-14
+MIXED_START = np.array([-0.75, 0.85, np.log(0.25), np.log(0.35)])
+MIXED_BOUNDS = [
+    (-3.0, -0.05),
+    (0.05, 2.5),
+    (np.log(0.03), np.log(1.3)),
+    (np.log(0.03), np.log(1.3)),
+]
+MIXED_MAXITER = 220
+MIXED_FTOL = 1e-10
+LOGIT_START = np.array([-0.75, 0.85])
+LOGIT_MAXITER = 160
+PROFILE_GRID_SIZE = 21
 
 
 def softmax(utility: np.ndarray) -> np.ndarray:
@@ -98,7 +111,7 @@ def mixed_negative_log_likelihood(
     """Average negative simulated log likelihood."""
     probabilities = mixed_logit_probabilities(theta, price, quality, draws)
     chosen = probabilities[np.arange(len(choices)), choices]
-    return float(-np.log(np.maximum(chosen, 1e-14)).mean())
+    return float(-np.log(np.maximum(chosen, LIKELIHOOD_FLOOR)).mean())
 
 
 def logit_negative_log_likelihood(
@@ -110,7 +123,7 @@ def logit_negative_log_likelihood(
     """Average negative log likelihood for the homogeneous logit."""
     probabilities = logit_probabilities(theta, price, quality)
     chosen = probabilities[np.arange(len(choices)), choices]
-    return float(-np.log(np.maximum(chosen, 1e-14)).mean())
+    return float(-np.log(np.maximum(chosen, LIKELIHOOD_FLOOR)).mean())
 
 
 def estimate_mixed_logit(
@@ -120,15 +133,13 @@ def estimate_mixed_logit(
     draws: np.ndarray,
 ) -> dict[str, object]:
     """Estimate mean and dispersion parameters by simulated likelihood."""
-    start = np.array([-0.75, 0.85, np.log(0.25), np.log(0.35)])
-    bounds = [(-3.0, -0.05), (0.05, 2.5), (np.log(0.03), np.log(1.3)), (np.log(0.03), np.log(1.3))]
     result = minimize(
         mixed_negative_log_likelihood,
-        start,
+        MIXED_START,
         args=(price, quality, choices, draws),
         method="L-BFGS-B",
-        bounds=bounds,
-        options={"maxiter": 220, "ftol": 1e-10},
+        bounds=MIXED_BOUNDS,
+        options={"maxiter": MIXED_MAXITER, "ftol": MIXED_FTOL},
     )
     alpha, beta, log_sigma_alpha, log_sigma_beta = result.x
     theta = np.array([alpha, beta, np.exp(log_sigma_alpha), np.exp(log_sigma_beta)])
@@ -149,10 +160,10 @@ def estimate_plain_logit(
     """Estimate the homogeneous logit restriction."""
     result = minimize(
         logit_negative_log_likelihood,
-        np.array([-0.75, 0.85]),
+        LOGIT_START,
         args=(price, quality, choices),
         method="BFGS",
-        options={"maxiter": 160},
+        options={"maxiter": LOGIT_MAXITER},
     )
     return {
         "theta": np.asarray(result.x, dtype=float),
@@ -220,8 +231,8 @@ def profile_surface(
     draws: np.ndarray,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Profile the simulated likelihood over random-coefficient dispersions."""
-    sigma_alpha_grid = np.linspace(0.05, 0.80, 21)
-    sigma_beta_grid = np.linspace(0.05, 1.05, 21)
+    sigma_alpha_grid = np.linspace(0.05, 0.80, PROFILE_GRID_SIZE)
+    sigma_beta_grid = np.linspace(0.05, 1.05, PROFILE_GRID_SIZE)
     values = np.zeros((len(sigma_beta_grid), len(sigma_alpha_grid)))
     for i, sigma_beta in enumerate(sigma_beta_grid):
         for j, sigma_alpha in enumerate(sigma_alpha_grid):
@@ -288,7 +299,11 @@ def main() -> None:
         "Plain logit compresses everyone into one representative taste vector. Mixed "
         "logit lets those coefficients vary across consumers. The price of that extra "
         "flexibility is numerical integration: each candidate parameter vector requires "
-        "simulated choice probabilities."
+        "simulated choice probabilities.\n\n"
+        "The key economic issue is substitution. A plain logit can match average shares "
+        "and still say that all products are equally close substitutes after conditioning "
+        "on their shares. Mixed logit keeps the logit formula for a simulated consumer "
+        "with fixed tastes, then averages across consumers with different tastes."
     )
 
     report.add_equations(
@@ -315,27 +330,34 @@ $$
 Conditional on a draw $\nu_r$, the logit probability is
 
 $$
+\begin{aligned}
 P_{ij}(\theta,\nu_r)
-=
+&=
 \frac{\exp(\alpha_r p_{ij}+\beta_r q_{ij})}
-{\sum_k \exp(\alpha_r p_{ik}+\beta_r q_{ik})}.
+{\sum_{k\in\mathcal{J}} \exp(\alpha_r p_{ik}+\beta_r q_{ik})}.
+\end{aligned}
 $$
 
 The mixed-logit probability integrates over random tastes. The code approximates
 that integral with fixed simulation draws:
 
 $$
+\begin{aligned}
 \widehat P_{ij}(\theta)
-=
+&=
 \frac{1}{R}\sum_{r=1}^R P_{ij}(\theta,\nu_r).
+\end{aligned}
 $$
 
 Simulated maximum likelihood chooses
 
 $$
+\begin{aligned}
 \hat\theta
-=
-\arg\max_\theta \sum_i \log \widehat P_{i y_i}(\theta).
+&=
+\arg\max_\theta
+\sum_{i=1}^N \log \widehat P_{i y_i}(\theta).
+\end{aligned}
 $$
 """
     )
@@ -349,26 +371,54 @@ $$
         f"| True $\\bar\\alpha$ | {theta_true[0]:.2f} | Mean price taste |\n"
         f"| True $\\bar\\beta$ | {theta_true[1]:.2f} | Mean quality taste |\n"
         f"| True $\\sigma_\\alpha$ | {theta_true[2]:.2f} | Heterogeneity in price sensitivity |\n"
-        f"| True $\\sigma_\\beta$ | {theta_true[3]:.2f} | Heterogeneity in quality taste |"
+        f"| True $\\sigma_\\beta$ | {theta_true[3]:.2f} | Heterogeneity in quality taste |\n\n"
+        f"**Numerical settings**\n\n"
+        f"| Setting | Value | Role |\n"
+        f"|---------|-------|------|\n"
+        f"| Mixed-logit optimizer | L-BFGS-B | Handles simple bounds on mean tastes and log standard deviations |\n"
+        f"| Mixed-logit start | ({MIXED_START[0]:.2f}, {MIXED_START[1]:.2f}, "
+        f"log {np.exp(MIXED_START[2]):.2f}, log {np.exp(MIXED_START[3]):.2f}) | Initial mean tastes and heterogeneity |\n"
+        f"| Price-taste bound | [{MIXED_BOUNDS[0][0]:.2f}, {MIXED_BOUNDS[0][1]:.2f}] | Keeps price sensitivity negative |\n"
+        f"| Quality-taste bound | [{MIXED_BOUNDS[1][0]:.2f}, {MIXED_BOUNDS[1][1]:.2f}] | Keeps quality taste positive |\n"
+        f"| SD bounds | [{np.exp(MIXED_BOUNDS[2][0]):.2f}, {np.exp(MIXED_BOUNDS[2][1]):.2f}] | Applied to both random-coefficient standard deviations |\n"
+        f"| Probability floor | {LIKELIHOOD_FLOOR:.0e} | Prevents log zero during likelihood evaluation |\n"
+        f"| Max iterations | {MIXED_MAXITER} | L-BFGS-B iteration cap |\n"
+        f"| Profile grid | {PROFILE_GRID_SIZE} x {PROFILE_GRID_SIZE} | Grid over $\\sigma_\\alpha$ and $\\sigma_\\beta$ for the likelihood surface |"
     )
 
     report.add_solution_method(
-        "The estimator uses common random numbers. The same simulated taste draws are "
-        "used at every parameter vector, so the likelihood surface is smooth enough for "
-        "a deterministic optimizer.\n\n"
+        "The estimator uses common random numbers. Draws are made once and then held "
+        "fixed while the optimizer moves $\\theta$. This turns the population integral "
+        "into the same finite average at every trial parameter vector. Without common "
+        "draws, fresh simulation noise would move the likelihood surface while the "
+        "optimizer is trying to climb it.\n\n"
+        "The standard deviations are optimized in logs. The optimizer can move freely "
+        "over log standard deviations, while the model sees positive values after "
+        "exponentiation. The bounds are not an economic restriction in this example. "
+        "They keep the teaching likelihood away from numerically irrelevant regions.\n\n"
         "```text\n"
         "Algorithm: simulated maximum likelihood for mixed logit\n"
-        "Input: choices y_i, prices p_ij, qualities q_ij, fixed draws nu_r\n"
-        "For each candidate theta:\n"
-        "  Convert log standard deviations into positive heterogeneity parameters\n"
-        "  For each draw r, compute logit probabilities conditional on nu_r\n"
-        "  Average those probabilities over draws\n"
-        "  Add log probability of each observed choice\n"
-        "Choose theta with the largest simulated log likelihood\n"
-        "Compare fitted shares and substitution to the plain-logit restriction\n"
+        "Input: choices y_i, product data (p_ij, q_ij), fixed normal draws nu_r\n"
+        "Parameters: theta = (alpha_bar, beta_bar, log sigma_alpha, log sigma_beta)\n"
+        "Output: theta_hat, fitted shares, and substitution diagnostics\n"
+        "1. Draw nu_r once for r = 1,...,R and keep these draws fixed.\n"
+        "2. For each trial theta proposed by L-BFGS-B:\n"
+        "       sigma_alpha <- exp(log sigma_alpha)\n"
+        "       sigma_beta  <- exp(log sigma_beta)\n"
+        "       for each draw r:\n"
+        "           alpha_r <- alpha_bar + sigma_alpha * nu_{r,alpha}\n"
+        "           beta_r  <- beta_bar  + sigma_beta  * nu_{r,beta}\n"
+        "           compute conditional logit probabilities P_ij(theta, nu_r)\n"
+        "       average probabilities over r to get P_hat_ij(theta)\n"
+        "       evaluate sum_i log max(P_hat_{i,y_i}, probability floor)\n"
+        "3. Choose the theta with the largest simulated log likelihood.\n"
+        "4. Recompute fitted shares at theta_hat using the same fixed draws.\n"
+        "5. Remove one product and recompute shares to measure diversion.\n"
         "```\n\n"
         "The homogeneous logit is estimated on the same data. Its likelihood is easier "
-        "to evaluate, but it forces substitution to follow existing market shares."
+        "because it does not integrate over tastes. The comparison is useful because "
+        "the homogeneous model can fit mean shares while still forcing diversion to "
+        "follow existing market shares."
     )
 
     fig1, ax1 = plt.subplots(figsize=(7.5, 4.8))

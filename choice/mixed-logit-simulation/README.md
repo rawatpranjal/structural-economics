@@ -8,6 +8,8 @@ Consumers choose among differentiated products. The econometrician observes pric
 
 Plain logit compresses everyone into one representative taste vector. Mixed logit lets those coefficients vary across consumers. The price of that extra flexibility is numerical integration: each candidate parameter vector requires simulated choice probabilities.
 
+The key economic issue is substitution. A plain logit can match average shares and still say that all products are equally close substitutes after conditioning on their shares. Mixed logit keeps the logit formula for a simulated consumer with fixed tastes, then averages across consumers with different tastes.
+
 ## Equations
 
 Consumer $i$ chooses product $j$ with utility
@@ -32,27 +34,34 @@ $$
 Conditional on a draw $\nu_r$, the logit probability is
 
 $$
+\begin{aligned}
 P_{ij}(\theta,\nu_r)
-=
+&=
 \frac{\exp(\alpha_r p_{ij}+\beta_r q_{ij})}
-{\sum_k \exp(\alpha_r p_{ik}+\beta_r q_{ik})}.
+{\sum_{k\in\mathcal{J}} \exp(\alpha_r p_{ik}+\beta_r q_{ik})}.
+\end{aligned}
 $$
 
 The mixed-logit probability integrates over random tastes. The code approximates
 that integral with fixed simulation draws:
 
 $$
+\begin{aligned}
 \widehat P_{ij}(\theta)
-=
+&=
 \frac{1}{R}\sum_{r=1}^R P_{ij}(\theta,\nu_r).
+\end{aligned}
 $$
 
 Simulated maximum likelihood chooses
 
 $$
+\begin{aligned}
 \hat\theta
-=
-\arg\max_\theta \sum_i \log \widehat P_{i y_i}(\theta).
+&=
+\arg\max_\theta
+\sum_{i=1}^N \log \widehat P_{i y_i}(\theta).
+\end{aligned}
 $$
 
 ## Model Setup
@@ -67,23 +76,46 @@ $$
 | True $\sigma_\alpha$ | 0.36 | Heterogeneity in price sensitivity |
 | True $\sigma_\beta$ | 0.55 | Heterogeneity in quality taste |
 
+**Numerical settings**
+
+| Setting | Value | Role |
+|---------|-------|------|
+| Mixed-logit optimizer | L-BFGS-B | Handles simple bounds on mean tastes and log standard deviations |
+| Mixed-logit start | (-0.75, 0.85, log 0.25, log 0.35) | Initial mean tastes and heterogeneity |
+| Price-taste bound | [-3.00, -0.05] | Keeps price sensitivity negative |
+| Quality-taste bound | [0.05, 2.50] | Keeps quality taste positive |
+| SD bounds | [0.03, 1.30] | Applied to both random-coefficient standard deviations |
+| Probability floor | 1e-14 | Prevents log zero during likelihood evaluation |
+| Max iterations | 220 | L-BFGS-B iteration cap |
+| Profile grid | 21 x 21 | Grid over $\sigma_\alpha$ and $\sigma_\beta$ for the likelihood surface |
+
 ## Solution Method
 
-The estimator uses common random numbers. The same simulated taste draws are used at every parameter vector, so the likelihood surface is smooth enough for a deterministic optimizer.
+The estimator uses common random numbers. Draws are made once and then held fixed while the optimizer moves $\theta$. This turns the population integral into the same finite average at every trial parameter vector. Without common draws, fresh simulation noise would move the likelihood surface while the optimizer is trying to climb it.
+
+The standard deviations are optimized in logs. The optimizer can move freely over log standard deviations, while the model sees positive values after exponentiation. The bounds are not an economic restriction in this example. They keep the teaching likelihood away from numerically irrelevant regions.
 
 ```text
 Algorithm: simulated maximum likelihood for mixed logit
-Input: choices y_i, prices p_ij, qualities q_ij, fixed draws nu_r
-For each candidate theta:
-  Convert log standard deviations into positive heterogeneity parameters
-  For each draw r, compute logit probabilities conditional on nu_r
-  Average those probabilities over draws
-  Add log probability of each observed choice
-Choose theta with the largest simulated log likelihood
-Compare fitted shares and substitution to the plain-logit restriction
+Input: choices y_i, product data (p_ij, q_ij), fixed normal draws nu_r
+Parameters: theta = (alpha_bar, beta_bar, log sigma_alpha, log sigma_beta)
+Output: theta_hat, fitted shares, and substitution diagnostics
+1. Draw nu_r once for r = 1,...,R and keep these draws fixed.
+2. For each trial theta proposed by L-BFGS-B:
+       sigma_alpha <- exp(log sigma_alpha)
+       sigma_beta  <- exp(log sigma_beta)
+       for each draw r:
+           alpha_r <- alpha_bar + sigma_alpha * nu_{r,alpha}
+           beta_r  <- beta_bar  + sigma_beta  * nu_{r,beta}
+           compute conditional logit probabilities P_ij(theta, nu_r)
+       average probabilities over r to get P_hat_ij(theta)
+       evaluate sum_i log max(P_hat_{i,y_i}, probability floor)
+3. Choose the theta with the largest simulated log likelihood.
+4. Recompute fitted shares at theta_hat using the same fixed draws.
+5. Remove one product and recompute shares to measure diversion.
 ```
 
-The homogeneous logit is estimated on the same data. Its likelihood is easier to evaluate, but it forces substitution to follow existing market shares.
+The homogeneous logit is estimated on the same data. Its likelihood is easier because it does not integrate over tastes. The comparison is useful because the homogeneous model can fit mean shares while still forcing diversion to follow existing market shares.
 
 ## Results
 
