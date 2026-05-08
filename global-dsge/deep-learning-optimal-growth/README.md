@@ -121,6 +121,7 @@ Algorithm: simulated-state Euler-residual training
 Inputs:
     alpha, beta, A
     training interval K
+    saving-share bounds s_min, s_max
     batch size n
     steps T
 Output:
@@ -128,14 +129,27 @@ Output:
 Initialize theta
 Initialize Adam moments
 Compute the exact steady state k_ss
+Use sigmoid(z) = 1 / (1 + exp(-z))
 For t = 1,...,T:
     Draw minibatch states k_1,...,k_n from K
-    Evaluate saving shares s(k_i; theta)
-    Evaluate consumption c(k_i; theta)
-    Evaluate next capital k'(k_i; theta)
-    Evaluate c(k'(k_i; theta); theta)
-    Compute residuals r(k_i; theta)
-    Set Xi_n(theta) = (1/n) sum_i r(k_i; theta)^2
+    Evaluate saving shares s(k_i; theta):
+        x_i = log(k_i / k_ss)
+        q_i = N_theta(x_i)
+        s_i = s_min + (s_max - s_min) * sigmoid(q_i)
+    Evaluate consumption c(k_i; theta):
+        y_i = A * k_i^alpha
+        c_i = (1 - s_i) * y_i
+    Evaluate next capital k'(k_i; theta):
+        k_i_next = s_i * y_i
+    Evaluate c(k'(k_i; theta); theta):
+        x_i_next = log(k_i_next / k_ss)
+        q_i_next = N_theta(x_i_next)
+        s_i_next = s_min + (s_max - s_min) * sigmoid(q_i_next)
+        y_i_next = A * k_i_next^alpha
+        c_i_next = (1 - s_i_next) * y_i_next
+    Compute residuals r(k_i; theta):
+        r_i = log(beta * alpha * A * k_i_next^(alpha - 1) * c_i / c_i_next)
+    Set Xi_n(theta) = (1/n) sum_i r_i^2
     Update theta with one Adam step using the gradient of Xi_n(theta)
 Audit k'(k; theta) on a holdout grid against the exact rule
 ```
