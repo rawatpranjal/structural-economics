@@ -32,9 +32,6 @@ def main():
     T = 80.0          # Horizon used only for plotting and numerical checks
     n_eval = 500      # Number of evaluation points
 
-    # Discrete-time counterpart parameters
-    beta = np.exp(-rho)  # Equivalent discrete discount factor
-
     # =========================================================================
     # Exact continuous-time solution
     # =========================================================================
@@ -86,22 +83,6 @@ def main():
     max_c_error = np.max(np.abs(c_numerical - c_analytical))
 
     # =========================================================================
-    # Discrete-time reference path
-    # =========================================================================
-    # The finite-period counterpart consumes a geometric sequence. It is useful
-    # context for readers coming from dynamic-programming/cake-eating.
-
-    gamma_discrete = beta ** (1.0 / sigma)  # consumption growth factor
-    c0_discrete = (1 - gamma_discrete) * W_0
-    T_discrete = 60
-    t_discrete = np.arange(T_discrete)
-    c_discrete = c0_discrete * gamma_discrete ** t_discrete
-    W_discrete = np.zeros(T_discrete)
-    W_discrete[0] = W_0
-    for t in range(1, T_discrete):
-        W_discrete[t] = W_discrete[t - 1] - c_discrete[t - 1]
-
-    # =========================================================================
     # Generate Report
     # =========================================================================
     setup_style()
@@ -114,24 +95,20 @@ def main():
     )
 
     report.add_overview(
-        "A planner begins with one fixed stock $W_0$, perhaps an inherited reserve of a "
-        "consumption good, and has to decide how quickly to draw it down. Eating more "
-        "today gives utility now, but it also leaves less for every future date. With "
-        "CRRA utility, the smoothing motive pushes the planner away from spending the "
-        "whole stock early.\n\n"
-        "In discrete time this allocation can be written as a Bellman equation, as in "
-        "[Finite-Resource Cake Eating](../../dynamic-programming/cake-eating/). Here the "
-        "same economic tradeoff is written in continuous time. Instead of searching over "
-        "a grid of next-period stocks, we use Pontryagin's maximum principle to price the "
-        "remaining resource and recover the consumption path $c(t)$ directly. The costate "
-        "variable is the shadow value of one more unit left for the future."
+        "A planner owns a fixed stock $W_0$ of a consumption good. Consuming more today "
+        "leaves less for every future date.\n\n"
+        "The object is a continuous-time consumption path $c(t)$ and remaining stock "
+        "$W(t)$. CRRA utility rewards smoothing, so the path should decline gradually.\n\n"
+        "The computation turns an infinite-horizon control problem into paths that can "
+        "be evaluated and checked. Pontryagin's maximum principle supplies the costate "
+        "equation and the shadow price."
     )
 
     report.add_equations(
         r"""
-For $\sigma \neq 1$, flow utility is
+For $\sigma > 0$ and $\sigma \neq 1$, flow utility is
 $$u(c)=\frac{c^{1-\sigma}}{1-\sigma}, \qquad u'(c)=c^{-\sigma},$$
-with the log case obtained as $\sigma \to 1$. The continuous-time problem is
+and the planner solves
 $$\max_{\{c(t)\}_{t\geq 0}} \int_0^\infty e^{-\rho t} u(c(t)) \, dt$$
 
 subject to
@@ -140,12 +117,12 @@ $$\dot{W}(t)=-c(t), \qquad W(0)=W_0, \qquad c(t)\geq 0, \qquad W(t)\geq 0.$$
 The present-value Hamiltonian is
 $$\mathcal{H}(c,W,\lambda,t)=e^{-\rho t}u(c)-\lambda c.$$
 
-The first-order and costate equations are
+The first-order condition and costate equation are
 $$e^{-\rho t}c(t)^{-\sigma}=\lambda(t), \qquad
 \dot{\lambda}(t)=-\frac{\partial \mathcal{H}}{\partial W}=0.$$
 
-Since $\lambda(t)$ is constant in present value, differentiating the first-order
-condition gives the Euler equation
+Because $W$ has no direct payoff, the present-value costate is constant.
+Differentiating the first-order condition gives
 $$\frac{\dot c(t)}{c(t)}=-\frac{\rho}{\sigma}.$$
 
 The no-waste condition $\int_0^\infty c(t)\,dt=W_0$ pins down the initial
@@ -155,8 +132,8 @@ W(t)=W_0 e^{-\rho t/\sigma}.$$
 
 The current-value shadow price is
 $$\mu(t)=e^{\rho t}\lambda=c(t)^{-\sigma},$$
-so $\dot{\mu}(t)/\mu(t)=\rho$. Scarcity grows in current-value terms even though
-the present-value costate is flat.
+so $\dot{\mu}(t)/\mu(t)=\rho$. Current-value scarcity rises even though the
+present-value costate is flat.
 """
     )
 
@@ -166,17 +143,15 @@ the present-value costate is flat.
         f"| $\\rho$    | {rho} | Continuous discount rate |\n"
         f"| $\\sigma$  | {sigma} | Relative risk aversion; IES $=1/\\sigma$ |\n"
         f"| $W_0$     | {W_0} | Initial resource stock |\n"
-        f"| $\\beta = e^{{-\\rho}}$ | {beta:.4f} | Period-one discount factor for the discrete reference path |\n"
         f"| $T$       | {T} | Plotting horizon; the economic problem has an infinite horizon |\n"
         f"| Evaluation points | {n_eval} | Time points for exact paths and ODE checks |"
     )
 
     report.add_solution_method(
-        "Pontryagin's principle attaches a price to one extra unit of the resource "
-        "stock. At each instant, the planner equates discounted marginal utility from "
-        "current consumption with that shadow price. Since $W$ has no direct payoff, "
-        "the present-value price does not drift. Discounting and preference curvature "
-        "then determine how quickly consumption falls.\n\n"
+        "Pontryagin's principle attaches a price to one extra unit of stock. The "
+        "planner equates discounted marginal utility with that price at each instant. "
+        "Because $W$ has no direct payoff, the present-value price does not drift. "
+        "Discounting and curvature then set the decline in consumption.\n\n"
         "```text\n"
         "Inputs: rho, sigma, W0, evaluation grid {t_m}\n"
         "1. Write the present-value Hamiltonian H = exp(-rho t) u(c) - lambda c.\n"
@@ -187,12 +162,8 @@ the present-value costate is flat.
         "6. Evaluate c(t), W(t), and mu(t) = c(t)^(-sigma) on {t_m}.\n"
         "Output: consumption, remaining stock, and shadow-price paths.\n"
         "```\n\n"
-        "The numerical work evaluates those analytical paths and checks them by ODE "
-        "integration. The ODE check integrates $\\dot{W}=-c$ and "
-        "$\\dot{c}=-(\\rho/\\sigma)c$ from the implied initial consumption rate, then "
-        "compares the result with the closed-form path. The period-one discrete path "
-        "gives a nearby benchmark for the dynamic-programming version of the same "
-        "allocation problem.\n\n"
+        "The numerical check integrates two ODEs from the implied initial consumption "
+        "rate. It then compares the ODE solution with the closed-form path.\n\n"
         f"**Verification:** Max absolute error in $W(t)$: {max_W_error:.2e}, "
         f"in $c(t)$: {max_c_error:.2e}."
     )
@@ -204,9 +175,6 @@ the present-value costate is flat.
              label="Exact continuous path")
     ax1.plot(t_eval[mark_every], c_numerical[mark_every], "o", color="#222222",
              markersize=3, alpha=0.65, label="RK45 ODE check")
-    ax1.step(t_discrete, c_discrete, color="#b23a48", linestyle="--",
-             linewidth=1.5, alpha=0.8, where="post",
-             label="Period-one discrete path")
     ax1.set_xlabel("Time $t$")
     ax1.set_ylabel("Consumption rate $c(t)$")
     ax1.set_title("Smooth Depletion of a Fixed Resource")
@@ -214,13 +182,12 @@ the present-value costate is flat.
     ax1.set_xlim(0, 60)
     report.add_figure(
         "figures/consumption-path.png",
-        "Continuous consumption path with ODE and discrete-time comparisons",
+        "Continuous consumption path with ODE check",
         fig1,
         description="Consumption starts at $(\\rho/\\sigma)W_0$ and falls at the "
-        "constant proportional rate $\\rho/\\sigma$. The ODE markers sit on the closed-form "
-        "path, so the costate calculation and the differential equation give the same "
-        "allocation. The stepped line is the period-one discrete allocation from the "
-        "related finite-resource dynamic-programming problem."
+        "constant proportional rate $\\rho/\\sigma$.\n\n"
+        "The ODE markers sit on the closed-form path. The costate equations and ODE "
+        "system imply the same allocation."
     )
 
     # --- Figure 2: Cake Remaining ---
@@ -229,9 +196,6 @@ the present-value costate is flat.
              label="Exact continuous stock")
     ax2.plot(t_eval[mark_every], W_numerical[mark_every], "o", color="#222222",
              markersize=3, alpha=0.65, label="RK45 ODE check")
-    ax2.step(t_discrete, W_discrete, color="#b23a48", linestyle="--",
-             linewidth=1.5, alpha=0.8, where="post",
-             label="Period-one discrete stock")
     ax2.set_xlabel("Time $t$")
     ax2.set_ylabel("Cake remaining $W(t)$")
     ax2.set_title("Cake Remaining Along the Optimal Path")
@@ -239,11 +203,11 @@ the present-value costate is flat.
     ax2.set_xlim(0, 60)
     report.add_figure(
         "figures/cake-remaining.png",
-        "Exact cake stock with ODE and discrete-time comparisons",
+        "Exact cake stock with ODE check",
         fig2,
         description="The stock is depleted only asymptotically. With CRRA utility and an "
-        "infinite horizon, the planner keeps a tail of future consumption alive because "
-        "marginal utility becomes large as consumption approaches zero."
+        "infinite horizon, the planner preserves future consumption because marginal "
+        "utility rises near zero."
     )
 
     # --- Figure 3: Shadow Price ---
@@ -265,9 +229,8 @@ the present-value costate is flat.
         "Present-value and current-value shadow prices for the resource stock",
         fig3,
         description="The present-value costate is flat because the resource stock has no "
-        "direct payoff term. In current-value units the shadow price rises at rate "
-        "$\\rho$: one unit left for a later date is scarce in utility terms "
-        "even though its discounted value is equalized along the optimum."
+        "direct payoff term. The current-value shadow price rises at rate $\\rho$. "
+        "Later consumption is scarce in utility terms."
     )
 
     # --- Table ---
@@ -287,19 +250,16 @@ the present-value costate is flat.
         "tables/comparison.csv",
         "Selected Checks Against the Continuous-Time Path",
         df,
-        description="The exact solution is a benchmark for the numerical ODE path. "
-        "The small errors below come from ODE solver tolerances rather than a grid over "
-        "choices."
+        description="The exact solution benchmarks the ODE path. The errors come from "
+        "solver tolerances."
     )
 
     report.add_takeaway(
-        "The costate is the intertemporal price of the remaining resource. In this "
-        "problem the present-value price is constant, so optimality requires a declining "
-        "consumption path that keeps discounted marginal utility equal across dates.\n\n"
-        "Higher impatience raises the depletion rate, while higher risk aversion slows it "
-        "through the smoothing motive. The continuous-time formulation also clarifies the "
-        "object behind the discrete cake-eating Bellman problem: a smooth shadow-price "
-        "condition linking current consumption to all future scarcity."
+        "The costate is the intertemporal price of the remaining resource. Here the "
+        "present-value price is constant. Optimal consumption declines at rate "
+        "$\\rho/\\sigma$ and keeps discounted marginal utility equal across dates.\n\n"
+        "Higher impatience raises the depletion rate. Higher risk aversion slows it "
+        "through the smoothing motive."
     )
 
     report.add_references([
