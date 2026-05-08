@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-08T00:06:24Z",
+  "updated_at": "2026-05-08T00:10:53Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -701,6 +701,17 @@
         "time-series/ar-processes/run.py"
       ],
       "updated_at": "2026-05-08T00:06:24Z"
+    },
+    {
+      "tutorial_path": "time-series/stock-watson/",
+      "status": "complete",
+      "commit": "0fd567b8ce8e5da7919e26c688880f85dd3e30a7",
+      "changed_paths": [
+        "README.md",
+        "time-series/stock-watson/README.md",
+        "time-series/stock-watson/run.py"
+      ],
+      "updated_at": "2026-05-08T00:10:53Z"
     }
   ]
 }
