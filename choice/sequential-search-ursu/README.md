@@ -12,7 +12,9 @@ The primitive object is a consideration process. A product can be valuable if in
 
 ## Equations
 
-Product $j$ has known mean match value
+There are $J$ inside products and an outside option with value zero. Product
+$j$ has observable quality $q_j$, price $p_j$, and complexity $x_j$. Before
+search, the consumer knows the product's mean match value
 
 $$
 \begin{aligned}
@@ -22,7 +24,9 @@ $$
 \end{aligned}
 $$
 
-and an uncertain realized match value
+The term $\mu_j$ is not the utility from buying product $j$. It is the expected
+value before the consumer learns whether the product is a good personal fit.
+Inspection reveals an idiosyncratic match component, so the realized value is
 
 $$
 \begin{aligned}
@@ -32,6 +36,10 @@ u_{ij}
 \qquad \varepsilon_{ij}\sim N(0,1).
 \end{aligned}
 $$
+
+The shock $\varepsilon_{ij}$ is consumer-specific. Two consumers can face the
+same price and quality but learn different match values after inspection. This
+is why search paths carry information beyond final purchases.
 
 Inspecting product $j$ costs
 
@@ -43,8 +51,13 @@ c_0 \exp(\gamma x_j),
 \end{aligned}
 $$
 
-where $x_j$ is product complexity. With perfect recall, the Weitzman reservation
-value $z_j$ solves
+where $x_j$ is product complexity. Higher complexity raises the cost of
+learning about the product, not the utility from owning it. The consumer pays
+$c_j$ before observing $u_{ij}$.
+
+With perfect recall, the consumer keeps every inspected value. The Weitzman
+reservation value $z_j$ is the cutoff that makes the option value of inspecting
+product $j$ equal to its search cost:
 
 $$
 \begin{aligned}
@@ -54,7 +67,12 @@ E[\max(u_{ij}-z_j,0)].
 \end{aligned}
 $$
 
-The consumer keeps an inspected set $S_i$ and a current best value
+The expectation is over the unknown match draw for product $j$. A high $z_j$
+means the product is worth inspecting early because it has high mean utility,
+low search cost, or enough upside risk.
+
+After some inspections, the consumer has an inspected set $S_i$ and a current
+best value
 
 $$
 \begin{aligned}
@@ -64,9 +82,14 @@ b_i
 \end{aligned}
 $$
 
-She searches the uninspected product with the highest $z_j$ if that reservation
-value exceeds $b_i$. Otherwise she stops and buys the best inspected product, or
-the outside option when all inspected values are below zero.
+The outside option enters through the zero in $b_i$. If every inspected product
+has negative realized value, the best available action is not to buy.
+
+The search rule is a threshold rule. Among uninspected products, the consumer
+looks at the product with the highest reservation value. If that value exceeds
+$b_i$, she searches it and updates $S_i$ and $b_i$. If the highest remaining
+reservation value is below $b_i$, every other uninspected product has even lower
+option value, so she stops.
 
 The simulated-moments estimator chooses
 
@@ -81,11 +104,21 @@ W
 \end{aligned}
 $$
 
-where moments include product search rates, purchase shares, average searches,
-and the probability of stopping after one search.
+The observed moment vector $m_{obs}$ summarizes search and purchase behavior.
+The simulated vector $m_{sim}(\theta)$ is built by simulating complete search
+paths under the same stopping rule. In this tutorial the moments include product
+search rates, purchase shares, average searches, and the probability of
+stopping after one search.
 
-In this exercise, $\gamma$ is fixed and the estimator recovers the quality taste
-and the base search-cost level.
+The weighting matrix $W$ is diagonal in the implementation. Each moment is
+scaled so that a small purchase or search rate does not dominate the objective
+only because it is measured in smaller units.
+
+In this exercise, the price taste $\alpha$, match-value scale $\sigma$, and
+complexity slope $\gamma$ are fixed. The estimator recovers the quality taste
+$\beta$ and the base search-cost level $c_0$. That two-parameter target keeps
+the tutorial focused on the central identification problem: separating products
+that consumers dislike from products that consumers rarely inspect.
 
 ## Model Setup
 
