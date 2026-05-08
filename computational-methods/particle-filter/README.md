@@ -1,24 +1,25 @@
 # Nowcasting Hidden Economic States with Particle Filters
 
-> Sequential Monte Carlo for noisy signal extraction and latent-state nowcasting.
+> Sequential Monte Carlo for hidden-state nowcasting.
 
 ## Overview
 
-An economist often observes a noisy indicator, such as an activity index, inflation signal, or demand measure, and wants to infer the state that generated it. In a linear Gaussian state-space model, the Kalman filter gives that filtered state distribution exactly. Many structural and empirical models add nonlinear transitions, discrete regime changes, or non-Gaussian shocks. The hidden state still matters for nowcasts, likelihood evaluation, and counterfactual paths, but the closed-form recursion is gone.
+A policy analyst observes a noisy activity indicator and wants a current estimate of the hidden state. The state may combine persistent demand pressure and real activity.
 
-This tutorial uses a two-state signal-extraction model. We keep the model linear and Gaussian so the Kalman filter gives a clean benchmark, then solve the same filtering problem with sequential Monte Carlo. A particle filter carries many simulated candidates for the hidden state, weights them by how well they explain the new observation, and resamples the useful candidates. The comparison shows where the computation can fail: if particles are drawn before seeing an informative signal, most receive tiny weights and Monte Carlo error rises.
+The object is the filtered distribution $p(s_t \mid y_{1:t})$. Its mean is the nowcast used in later likelihood or policy calculations.
+
+A Kalman filter is exact in this linear Gaussian example. We use it as a benchmark for a particle filter. The particle filter is needed when analytic filtering is unavailable.
 
 ## Equations
 
-Let $s_t$ collect latent economic states, such as persistent activity and demand
-pressure, and let $y_t$ be the observed signal. The state-space model is:
+Let $s_t$ collect two latent economic states, and let $y_t$ be the observed
+signal. The state-space model is:
 
 $$
 y_t = \Psi s_t + u_t, \qquad s_t = \Phi s_{t-1} + \epsilon_t.
 $$
 
-After observing data through date $t$, the object of interest is the filtered
-distribution $p(s_t \mid y_{1:t})$ or a moment such as $E[s_t \mid y_{1:t}]$.
+Particles approximate the filtered distribution with weighted simulated states.
 The bootstrap particle filter propagates particles from:
 
 $$
@@ -59,7 +60,9 @@ $$
 
 ## Solution Method
 
-The code compares two ways to place particles before computing the filtered mean. The bootstrap filter draws each candidate state from the transition equation and then asks whether that draw explains the observed signal. The conditionally optimal filter uses the same model but draws from $p(s_t \mid s_{t-1}, y_t)$, so the new signal helps place particles before weights are assigned.
+The bootstrap filter first draws each particle from the state transition. It then weights the draw by the signal likelihood.
+
+The optimal proposal in this example uses the signal before drawing. That timing keeps particles near states that can explain the observation.
 
 ```text
 Algorithm: particle filtering with resampling
@@ -75,27 +78,23 @@ for t = 1, ..., T:
     accumulate the likelihood increment
 ```
 
-The experiment repeats each filter many times and reports Monte Carlo error relative to the Kalman filtered mean. The benchmark is exact in this linear Gaussian model, so the tables measure particle approximation error rather than model misspecification.
+We repeat each filter and compare its mean with the Kalman mean. ESS records how many particles carry meaningful weight.
 
 ## Results
 
-With 500 particles, both particle filters track the latent state estimated by the Kalman benchmark. The main differences appear in repeated-run error and effective sample size.
+Both filters track the Kalman mean in the baseline run. The visible paths look similar, so repeated-run diagnostics are needed.
 
 <img src="figures/filter-comparison.png" alt="Particle filter state estimates compared with the Kalman filter" width="80%">
 
-Effective sample size falls when a few particles receive most of the weight. The conditionally optimal proposal retains more useful particles because it looks at the signal before drawing the new state.
+ESS falls when weights concentrate on a few particles. The optimal proposal keeps ESS close to the particle count.
 
 <img src="figures/mse-and-ess.png" alt="Repeated-run Monte Carlo error and effective sample size" width="80%">
 
-Low measurement noise makes the likelihood sharply peaked. Bootstrap particles drawn from the transition can miss that peak, so the filtered estimate depends on a small set of high-weight draws.
+Sharper signals reduce bootstrap ESS and raise error. The optimal proposal is less sensitive because it conditions on the signal.
 
 <img src="figures/measurement-noise.png" alt="Particle accuracy as measurement noise falls" width="80%">
 
-This stress test treats period 25 as an extreme data release. Likelihood weighting can concentrate particles on that observation and pull the filtered state sharply.
-
-<img src="figures/outlier-stress.png" alt="Filtering after multiplying observation 25 by ten" width="80%">
-
-The baseline repeats each filter 50 times with 500 particles and compares the filtered state mean with the Kalman benchmark.
+The baseline repeats each filter 50 times with 500 particles. It compares each particle mean with the Kalman mean.
 
 **Baseline repeated-run comparison**
 
@@ -104,7 +103,7 @@ The baseline repeats each filter 50 times with 500 particles and compares the fi
 | bootstrap |         500 |              0.0273 |    121.829 |       0.6914 |
 | optimal   |         500 |              0.01   |    492.636 |       0.0397 |
 
-Lower measurement noise makes the observed signal more informative.
+Lower measurement noise makes the signal more informative. That setting reveals weight collapse in the bootstrap filter.
 
 **Measurement-noise sensitivity**
 
@@ -119,26 +118,11 @@ Lower measurement noise makes the observed signal more informative.
 |              0.05 | bootstrap |              0.051  |    42.0492 |       1.4592 |                 0.2062 |
 |              0.05 | optimal   |              0.0117 |   347.331  |       0.0345 |                 0.2062 |
 
-Using the signal inside the proposal often matches bootstrap accuracy with fewer particles.
-
-**Particle-count sensitivity**
-
-|   Particles | Method    |   PF RMSE vs Kalman |   Mean ESS |   Loglike sd |
-|------------:|:----------|--------------------:|-----------:|-------------:|
-|         100 | bootstrap |              0.0637 |    24.5238 |       1.6359 |
-|         100 | optimal   |              0.0224 |    98.5483 |       0.1097 |
-|         250 | bootstrap |              0.0375 |    60.757  |       1.1285 |
-|         250 | optimal   |              0.0142 |   246.333  |       0.0547 |
-|         500 | bootstrap |              0.0276 |   121.579  |       0.6529 |
-|         500 | optimal   |              0.0099 |   492.635  |       0.0406 |
-|        1000 | bootstrap |              0.02   |   244.002  |       0.7239 |
-|        1000 | optimal   |              0.0069 |   985.287  |       0.0324 |
-
-With 500 particles, the bootstrap filter has RMSE 0.0273 relative to the Kalman filtered mean, while the conditionally optimal filter has RMSE 0.0100. Both filters target the same latent economic state. The gap comes from the proposal distribution used to place particles before the weights are normalized. The measurement-noise sweep shows the mechanism: as observations become more informative, bootstrap particles drawn before seeing the signal are more likely to receive near-zero weight.
+With 500 particles, bootstrap RMSE is 0.0273. The optimal proposal lowers RMSE to 0.0100. The tables show the reason. Bootstrap ESS falls when the signal is sharp.
 
 ## Takeaway
 
-Particle filters let economists carry latent-state models beyond the linear Gaussian case by replacing analytic recursions with weighted simulations. The method is only as useful as the particle cloud it maintains. Informative signals and extreme observations expose weak proposal distributions, so ESS, repeated-run error, and likelihood variability should be read before filtered states enter a structural estimate or policy exercise.
+Particle filters nowcast hidden economic states with weighted simulations. The main diagnostic is whether the weights collapse. Use ESS and repeated-run error before treating filtered states as inputs to estimation.
 
 ## References
 

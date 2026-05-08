@@ -240,37 +240,6 @@ def measurement_noise_sweep(
     return pd.DataFrame(rows)
 
 
-def particle_count_sweep(
-    observations: np.ndarray,
-    kalman_mean: np.ndarray,
-    measurement_std: float,
-    n_runs: int,
-) -> pd.DataFrame:
-    """Compare bootstrap and optimal filters over particle counts."""
-    rows = []
-    for n_particles in [100, 250, 500, 1_000]:
-        for method in ["bootstrap", "optimal"]:
-            mse, loglikes, ess = repeated_filter_mse(
-                observations,
-                kalman_mean,
-                measurement_std,
-                n_particles,
-                n_runs,
-                method,
-                seed=12_000 + n_particles,
-            )
-            rows.append(
-                {
-                    "Particles": n_particles,
-                    "Method": method,
-                    "PF RMSE vs Kalman": np.sqrt(np.mean(mse)),
-                    "Mean ESS": np.mean(ess),
-                    "Loglike sd": np.std(loglikes),
-                }
-            )
-    return pd.DataFrame(rows)
-
-
 def format_table(df: pd.DataFrame) -> pd.DataFrame:
     """Format numeric columns for readable Markdown tables."""
     out = df.copy()
@@ -313,17 +282,6 @@ def main() -> None:
         seed=2_000,
     )
     measurement_table = measurement_noise_sweep(n_periods, n_particles=350, n_runs=20)
-    particle_table = particle_count_sweep(
-        observations,
-        kalman["filtered_mean"],
-        measurement_std,
-        n_runs=25,
-    )
-    outlier_observations = observations.copy()
-    outlier_observations[24] *= 10.0
-    outlier_kalman = kalman_filter(outlier_observations, measurement_std)
-    outlier_boot = bootstrap_particle_filter(outlier_observations, measurement_std, n_particles, seed=800)
-    outlier_opt = optimal_particle_filter(outlier_observations, measurement_std, n_particles, seed=801)
     time = np.arange(1, n_periods + 1)
 
     print("Particle filter tutorial")
@@ -333,38 +291,30 @@ def main() -> None:
 
     report = ModelReport(
         "Nowcasting Hidden Economic States with Particle Filters",
-        "Sequential Monte Carlo for noisy signal extraction and latent-state nowcasting.",
+        "Sequential Monte Carlo for hidden-state nowcasting.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "An economist often observes a noisy indicator, such as an activity index, inflation "
-        "signal, or demand measure, and wants to infer the state that generated it. In a linear "
-        "Gaussian state-space model, the Kalman filter gives that filtered state distribution "
-        "exactly. Many structural and empirical models add nonlinear transitions, discrete "
-        "regime changes, or non-Gaussian shocks. The hidden state still matters for nowcasts, "
-        "likelihood evaluation, and counterfactual paths, but the closed-form recursion is gone.\n\n"
-        "This tutorial uses a two-state signal-extraction model. We keep the model linear and "
-        "Gaussian so the Kalman filter gives a clean benchmark, then solve the same filtering "
-        "problem with sequential Monte Carlo. A particle filter carries many simulated candidates "
-        "for the hidden state, weights them by how well they explain the new observation, and "
-        "resamples the useful candidates. The comparison shows where the computation can fail: "
-        "if particles are drawn before seeing an informative signal, most receive tiny weights "
-        "and Monte Carlo error rises."
+        "A policy analyst observes a noisy activity indicator and wants a current estimate of "
+        "the hidden state. The state may combine persistent demand pressure and real activity.\n\n"
+        "The object is the filtered distribution $p(s_t \\mid y_{1:t})$. Its mean is the nowcast "
+        "used in later likelihood or policy calculations.\n\n"
+        "A Kalman filter is exact in this linear Gaussian example. We use it as a benchmark for "
+        "a particle filter. The particle filter is needed when analytic filtering is unavailable."
     )
 
     report.add_equations(
         r"""
-Let $s_t$ collect latent economic states, such as persistent activity and demand
-pressure, and let $y_t$ be the observed signal. The state-space model is:
+Let $s_t$ collect two latent economic states, and let $y_t$ be the observed
+signal. The state-space model is:
 
 $$
 y_t = \Psi s_t + u_t, \qquad s_t = \Phi s_{t-1} + \epsilon_t.
 $$
 
-After observing data through date $t$, the object of interest is the filtered
-distribution $p(s_t \mid y_{1:t})$ or a moment such as $E[s_t \mid y_{1:t}]$.
+Particles approximate the filtered distribution with weighted simulated states.
 The bootstrap particle filter propagates particles from:
 
 $$
@@ -406,11 +356,10 @@ $$
     )
 
     report.add_solution_method(
-        "The code compares two ways to place particles before computing the filtered mean. The "
-        "bootstrap filter draws each candidate state from the transition equation and then asks "
-        "whether that draw explains the observed signal. The conditionally optimal filter uses "
-        "the same model but draws from $p(s_t \\mid s_{t-1}, y_t)$, so the new signal helps place "
-        "particles before weights are assigned.\n\n"
+        "The bootstrap filter first draws each particle from the state transition. It then "
+        "weights the draw by the signal likelihood.\n\n"
+        "The optimal proposal in this example uses the signal before drawing. That timing keeps "
+        "particles near states that can explain the observation.\n\n"
         "```text\n"
         "Algorithm: particle filtering with resampling\n"
         "Input: observations y_t, particles s_0^(i), proposal q, particle count N\n"
@@ -424,9 +373,8 @@ $$
         "    resample particles according to normalized weights\n"
         "    accumulate the likelihood increment\n"
         "```\n\n"
-        "The experiment repeats each filter many times and reports Monte Carlo error relative "
-        "to the Kalman filtered mean. The benchmark is exact in this linear Gaussian model, so "
-        "the tables measure particle approximation error rather than model misspecification."
+        "We repeat each filter and compare its mean with the Kalman mean. ESS records how many "
+        "particles carry meaningful weight."
     )
 
     fig1, axes1 = plt.subplots(2, 1, figsize=(9, 6.4), sharex=True)
@@ -443,9 +391,8 @@ $$
         "Particle filter state estimates compared with the Kalman filter",
         fig1,
         description=(
-            "With 500 particles, both particle filters track the latent state estimated by the "
-            "Kalman benchmark. The main differences appear in repeated-run error and effective "
-            "sample size."
+            "Both filters track the Kalman mean in the baseline run. The visible paths look "
+            "similar, so repeated-run diagnostics are needed."
         ),
     )
 
@@ -469,9 +416,8 @@ $$
         "Repeated-run Monte Carlo error and effective sample size",
         fig2,
         description=(
-            "Effective sample size falls when a few particles receive most of the weight. The "
-            "conditionally optimal proposal retains more useful particles because it looks at "
-            "the signal before drawing the new state."
+            "ESS falls when weights concentrate on a few particles. The optimal proposal keeps "
+            "ESS close to the particle count."
         ),
     )
 
@@ -499,29 +445,8 @@ $$
         "Particle accuracy as measurement noise falls",
         fig3,
         description=(
-            "Low measurement noise makes the likelihood sharply peaked. Bootstrap particles "
-            "drawn from the transition can miss that peak, so the filtered estimate depends on "
-            "a small set of high-weight draws."
-        ),
-    )
-
-    fig4, axes4 = plt.subplots(2, 1, figsize=(9, 6.4), sharex=True)
-    for dim, ax in enumerate(axes4):
-        ax.plot(time, outlier_kalman["filtered_mean"][:, dim], color="black", label="Kalman with outlier")
-        ax.plot(time, outlier_boot["mean"][:, dim], color="tab:blue", label="bootstrap PF")
-        ax.plot(time, outlier_opt["mean"][:, dim], color="tab:orange", label="optimal PF")
-        ax.axvline(25, color="crimson", linestyle="--", linewidth=1.0, label="outlier" if dim == 0 else None)
-        ax.set_ylabel(f"s{dim + 1}")
-        ax.legend(loc="upper right")
-    axes4[0].set_title("Outlier Stress Test")
-    axes4[-1].set_xlabel("Period")
-    report.add_figure(
-        "figures/outlier-stress.png",
-        "Filtering after multiplying observation 25 by ten",
-        fig4,
-        description=(
-            "This stress test treats period 25 as an extreme data release. Likelihood weighting "
-            "can concentrate particles on that observation and pull the filtered state sharply."
+            "Sharper signals reduce bootstrap ESS and raise error. The optimal proposal is less "
+            "sensitive because it conditions on the signal."
         ),
     )
 
@@ -546,43 +471,30 @@ $$
         "Baseline repeated-run comparison",
         format_table(pd.DataFrame(summary_rows)),
         description=(
-            "The baseline repeats each filter 50 times with 500 particles and compares the "
-            "filtered state mean with the Kalman benchmark."
+            "The baseline repeats each filter 50 times with 500 particles. It compares each "
+            "particle mean with the Kalman mean."
         ),
     )
     report.add_table(
         "tables/measurement-noise-sweep.csv",
         "Measurement-noise sensitivity",
         format_table(measurement_table),
-        description="Lower measurement noise makes the observed signal more informative.",
-    )
-    report.add_table(
-        "tables/particle-count-sweep.csv",
-        "Particle-count sensitivity",
-        format_table(particle_table),
         description=(
-            "Using the signal inside the proposal often matches bootstrap accuracy with fewer "
-            "particles."
+            "Lower measurement noise makes the signal more informative. That setting reveals "
+            "weight collapse in the bootstrap filter."
         ),
     )
 
     report.add_results(
-        f"With {n_particles} particles, the bootstrap filter has RMSE "
-        f"{np.sqrt(np.mean(mse_boot)):.4f} relative to the Kalman filtered mean, while the "
-        f"conditionally optimal filter has RMSE {np.sqrt(np.mean(mse_opt)):.4f}. Both filters "
-        "target the same latent economic state. The gap comes from the proposal distribution "
-        "used to place particles before the weights are normalized. The measurement-noise sweep "
-        "shows the mechanism: as observations become more informative, bootstrap particles drawn "
-        "before seeing the signal are more likely to receive near-zero weight."
+        f"With {n_particles} particles, bootstrap RMSE is {np.sqrt(np.mean(mse_boot)):.4f}. "
+        f"The optimal proposal lowers RMSE to {np.sqrt(np.mean(mse_opt)):.4f}. The tables show "
+        "the reason. Bootstrap ESS falls when the signal is sharp."
     )
 
     report.add_takeaway(
-        "Particle filters let economists carry latent-state models beyond the linear Gaussian "
-        "case by replacing analytic recursions with weighted simulations. The method is only as "
-        "useful as the particle cloud it maintains. Informative signals and extreme observations "
-        "expose weak proposal distributions, so ESS, repeated-run error, and likelihood "
-        "variability should be read before filtered states enter a structural estimate or policy "
-        "exercise."
+        "Particle filters nowcast hidden economic states with weighted simulations. The main "
+        "diagnostic is whether the weights collapse. Use ESS and repeated-run error before "
+        "treating filtered states as inputs to estimation."
     )
 
     report.add_references(
