@@ -1,0 +1,4 @@
+Method,Smooth sup-error,Smooth L2 error,Kinked sup-error,Kinked L2 error
+Piecewise linear,1.58e+00,3.95e-01,7.63e-02,1.47e-02
+Cubic spline (natural),1.09e+00,2.58e-01,4.57e-02,9.93e-03
+PCHIP (shape-preserving),7.81e-01,1.71e-01,2.90e-02,6.49e-03

@@ -33,6 +33,7 @@ These tutorials cover the scalar building blocks the rest of the catalog uses: s
 |---|---|---|
 | [<img src="numerical-methods/root-finding/figures/thumb.png" width="160">](numerical-methods/root-finding/figures/excess-demand.png) | **[Scalar Root Finding for Equilibrium Rates](numerical-methods/root-finding/)** | A stylized bond market clears at the rate that sets aggregate excess demand to zero. Bisection, secant, Brent, and Newton-Raphson recover the rate; the comparison shows where bracket safety beats local speed. |
 | [<img src="numerical-methods/scalar-optimization/figures/thumb.png" width="160">](numerical-methods/scalar-optimization/figures/golden-section-trace.png) | **[One-Dimensional Optimization for Bellman Inner Steps](numerical-methods/scalar-optimization/)** | The cake-eating per-state max $u(c) + \beta V(W-c)$ has a log-utility closed-form argmax. Golden section contracts a unimodal bracket; Newton on the FOC is faster locally but overshoots feasibility from far-off starts. |
+| [<img src="numerical-methods/interpolation/figures/thumb.png" width="160">](numerical-methods/interpolation/figures/target-vs-fit.png) | **[Off-Grid Function Approximation by Interpolation](numerical-methods/interpolation/)** | Stored value functions need off-grid evaluation in every VFI loop. Piecewise linear, natural cubic spline, and PCHIP differ on smooth and kinked targets; PCHIP is the right default for value functions with borrowing constraints. |
 
 ## Dynamic Programming
 
