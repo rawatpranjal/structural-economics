@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T06:56:26Z",
+  "updated_at": "2026-05-08T07:02:31Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -283,6 +283,16 @@
         "optimal-control/continuous-cake-eating/run.py"
       ],
       "updated_at": "2026-05-08T06:56:26Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/theory-of-the-firm/",
+      "status": "complete",
+      "commit": "87556ead7c6c71ccc2f10f99f8877125f6248182",
+      "changed_paths": [
+        "industrial-organization/theory-of-the-firm/README.md",
+        "industrial-organization/theory-of-the-firm/run.py"
+      ],
+      "updated_at": "2026-05-08T07:02:31Z"
     },
     {
       "tutorial_path": "industrial-organization/dynamic-discrete-choice/",
