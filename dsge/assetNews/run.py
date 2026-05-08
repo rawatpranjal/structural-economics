@@ -242,26 +242,21 @@ def main() -> None:
     )
 
     report.add_overview(
-        "An investor owns a claim to a dividend tree. Today she hears credible news that "
-        "next period's dividend will be higher, while today's dividend and consumption "
-        "have not moved. The price should react today, because the payoff forecast has "
-        "changed. The direction is less mechanical than the timing: the same dividend "
-        "news also changes the stochastic discount factor used to value that payoff.\n\n"
-        "This tutorial works through that timing problem in a representative-agent "
-        "Lucas tree. A surprise shock $z_t$ moves today's dividend immediately. A news "
-        "shock $n_t$ is observed today and moves tomorrow's dividend. We compute the "
-        "linear pricing rule that maps the current dividend state and the news signal "
-        "into the asset price, then compare it with a nonlinear perfect-foresight path "
-        "for the same realized dividend sequence. With $\\gamma=2$, the discount-rate "
-        "effect is strong enough that good dividend news slightly lowers the impact "
-        "price before the dividend itself rises."
+        "An investor owns a claim to a dividend tree. Today she learns that next "
+        "period's dividend will be higher. Today's dividend has not moved.\n\n"
+        "The object is a representative-agent Lucas tree. A surprise shock $z_t$ "
+        "moves today's dividend. A news shock $n_t$ is observed today and moves "
+        "tomorrow's dividend.\n\n"
+        "The computational task is a first-order pricing rule. It maps the dividend "
+        "state and the news signal into today's asset price."
     )
 
     report.add_equations(
         rf"""
 Let $d_t$ be the tree dividend and the representative household's consumption,
-and define $x_t=\log d_t$. The accompanying `model.mod` spec writes the
-dividend process as
+and define $x_t=\log d_t$.
+
+The accompanying `model.mod` spec writes the dividend process as
 
 ```text
 d = exp(rho*log(d(-1)) + sigma1*n(-1) + sigma2*z)
@@ -274,7 +269,9 @@ x_t = \rho x_{{t-1}} + \sigma_1 n_{{t-1}} + \sigma_2 z_t.
 $$
 
 The surprise innovation $z_t$ is contemporaneous. The news innovation $n_t$ is
-known at date $t$ but enters dividends at date $t+1$. The asset-pricing equation is
+known at date $t$ but enters dividends at date $t+1$.
+
+The asset-pricing equation is
 
 $$
 p_t d_t^{{-\gamma}}
@@ -345,16 +342,12 @@ For this calibration, $A={coeffs["A"]:.3f}$ and $B={coeffs["B"]:.3f}$.
     )
 
     report.add_solution_method(
-        "The computation starts from a first-order perturbation of the Euler equation. "
-        "Because the state vector is only the current dividend state $x_t$ and the news "
-        "signal $n_t$, coefficient matching gives the closed-form rule $q_t=A x_t+B n_t$. "
-        "The coefficient $B$ is the impact price of news before the cash flow moves.\n\n"
-        "`run.py` also writes the same linear system in Klein's generalized-Schur form. "
-        "The QZ solution matches the hand-derived coefficients to numerical precision, "
-        "so the algebra and the rational-expectations root selection agree. For scale, "
-        "the figures add an exact nonlinear perfect-foresight transition along the same "
-        "realized dividend path, computed by backward recursion on the level Euler "
-        "equation.\n\n"
+        "First-order perturbation turns the Euler equation into coefficient matching. "
+        "The state is $(x_t,n_t)$. The solution is $q_t=A x_t+B n_t$. "
+        "The coefficient $B$ is the impact price of news.\n\n"
+        "A Klein QZ check solves the same system. It matches the hand-derived "
+        "coefficients.\n\n"
+        "A nonlinear perfect-foresight path gives a scale check.\n\n"
         "```text\n"
         "Algorithm: Lucas-tree news and surprise IRFs\n"
         "Inputs: beta, gamma, rho, sigma1, sigma2, shock type, horizon T\n"
@@ -370,9 +363,8 @@ For this calibration, $A={coeffs["A"]:.3f}$ and $B={coeffs["B"]:.3f}$.
         "   future and solve p_t=beta(d_{t+1}/d_t)^(-gamma)(p_{t+1}+d_{t+1})\n"
         "   backward from the terminal steady-state price.\n"
         "```\n\n"
-        "Here $B<0$. A positive signal about future dividends slightly lowers today's "
-        "price because the cash flow arrives in a future high-consumption state, where "
-        "marginal utility is lower."
+        "Here $B<0$. Good dividend news slightly lowers today's price. The payoff "
+        "arrives in a high-consumption state, where marginal utility is lower."
     )
 
     periods = np.arange(horizon)
@@ -418,13 +410,11 @@ For this calibration, $A={coeffs["A"]:.3f}$ and $B={coeffs["B"]:.3f}$.
     fig1.tight_layout(rect=[0, 0, 1, 0.96])
 
     report.add_results(
-        "A surprise shock moves dividends immediately, so the price response mainly "
-        "reflects the current dividend state. The nonlinear benchmark is nearly "
-        "indistinguishable from the first-order rule at this scale. A news shock has a "
-        "different timing pattern. The dividend is still at steady state on impact, but "
-        "the price moves because agents already know $x_1$ will be higher. In this "
-        "calibration the impact movement is slightly negative because the "
-        "marginal-utility effect dominates until the dividend realizes."
+        "A surprise shock moves dividends immediately. The price response mainly "
+        "reflects the current dividend state. The nonlinear path is close to the "
+        "first-order rule.\n\n"
+        "A news shock has different timing. The dividend is still at steady state on "
+        "impact. The price moves because agents know $x_1$ will be higher."
     )
     report.add_figure(
         "figures/irf-surprise-vs-news.png",
@@ -464,12 +454,11 @@ For this calibration, $A={coeffs["A"]:.3f}$ and $B={coeffs["B"]:.3f}$.
     fig2.tight_layout()
 
     report.add_results(
-        "The date-0 news response decomposes into expected resale value, next-period "
-        "dividend payoff, and marginal-utility discounting. Higher expected future "
-        "prices raise today's value, and the next dividend payoff adds a small positive "
-        "term. The stochastic discount factor moves the other way because future "
-        "dividends are paid in a high-consumption state. With $\\gamma=2$, that "
-        "discounting term is large enough to make the net impact negative."
+        "The date-0 news response separates three terms. Expected resale value raises "
+        "today's price. The next dividend payoff adds a small positive term.\n\n"
+        "The stochastic discount factor moves the other way. Future dividends are paid "
+        "in a high-consumption state. With $\\gamma=2$, this term makes the net "
+        "impact negative."
     )
     report.add_figure(
         "figures/price-dynamics.png",
@@ -523,10 +512,9 @@ For this calibration, $A={coeffs["A"]:.3f}$ and $B={coeffs["B"]:.3f}$.
     fig3.tight_layout()
 
     report.add_results(
-        "In the simulated path, prices track persistent dividends closely because the "
-        "coefficient on the current dividend state is large. News matters at signal "
-        "dates. It enters the price rule immediately through $B n_t$ and then enters "
-        "the dividend process one period later through $\\sigma_1 n_t$."
+        "In the simulated path, prices track persistent dividends closely. News matters "
+        "at signal dates. It enters the price rule through $B n_t$. One period later, "
+        "it enters dividends through $\\sigma_1 n_t$."
     )
     report.add_figure(
         "figures/simulated-paths.png",
@@ -565,11 +553,10 @@ For this calibration, $A={coeffs["A"]:.3f}$ and $B={coeffs["B"]:.3f}$.
     )
 
     report.add_results(
-        "The impact table is in percent log deviations. The news experiment has zero "
-        "dividend movement at date 0 by construction, yet the price and price-dividend "
-        "ratio already move. The date-1 column shows the delayed cash-flow realization. "
-        "The nonlinear benchmark is close to the first-order solution, so the negative "
-        "impact response comes from the pricing equation rather than the approximation."
+        "The impact table reports percent log deviations. The news experiment has zero "
+        "dividend movement at date 0. The price-dividend ratio already moves.\n\n"
+        "The date-1 column shows the delayed cash-flow realization. The nonlinear "
+        "path is close to the first-order solution."
     )
     report.add_table(
         "tables/impact-responses.csv",
@@ -578,18 +565,9 @@ For this calibration, $A={coeffs["A"]:.3f}$ and $B={coeffs["B"]:.3f}$.
     )
 
     report.add_takeaway(
-        "The computed experiment shows why news shocks are about information timing, "
-        "not mechanically about higher prices. The Lucas-tree Euler equation prices a "
-        "future dividend with the future marginal utility of consumption. If the "
-        "dividend is paid in a high-consumption state, the stochastic discount factor "
-        "can offset the cash-flow effect. In this calibration, positive dividend news "
-        "moves the price before the dividend, and the impact sign is slightly negative.\n\n"
-        "That makes this tutorial a companion to the "
-        "[Lucas-tree dynamic-programming asset-pricing tutorial](../../dynamic-programming/asset-pricing/): "
-        "both price payoffs with marginal utility, while this one isolates the timing "
-        "distinction between surprise and anticipated shocks. The "
-        "[RBC tutorial](../rbc/) uses the same local-solution logic for real "
-        "quantities rather than asset prices."
+        "News shocks change prices before cash flows arrive. The Lucas-tree Euler "
+        "equation prices a future dividend with future marginal utility. Here positive "
+        "dividend news moves the price on impact, and the sign is slightly negative."
     )
 
     report.add_references(
