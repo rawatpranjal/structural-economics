@@ -1,96 +1,67 @@
 # Huggett Equilibrium and the Risk-Free Rate
 
-> A continuous-time pure-exchange economy where idiosyncratic income risk and a hard borrowing limit pin down the equilibrium bond return below the rate of time preference, $r^{\ast} < \rho$.
+> A continuous-time exchange economy where income risk and a borrowing limit lower the equilibrium bond return below $\rho$.
 
 ## Overview
 
-The Huggett (1993) economy is the canonical pure-exchange model of an incomplete-markets
-risk-free rate. A continuum of households face idiosyncratic income risk, can lend or
-borrow in a single non-state-contingent bond at return $r$, and are bounded below by a
-hard borrowing limit $a \geq \underline a$. The bond is in zero net supply: every unit lent
-matches a unit borrowed, so the cross-sectional asset demand has to integrate to zero.
-The price that makes that integral vanish is the equilibrium return $r^{\ast}$.
+Households receive stochastic income and trade one risk-free bond. They can borrow only
+down to $a \geq \underline a$. Since the bond is in zero net supply, aggregate asset
+demand must equal zero.
 
-The interesting comparison is the complete-markets benchmark. Without idiosyncratic risk,
-the household Euler equation pins $r$ at exactly the rate of time preference $\rho$.
-Once insurance is incomplete, the marginal value of buffer wealth is strictly positive
-at any household with little cash on hand, and aggregate desired bond holdings are
-positive at $r = \rho$. Markets only clear at a strictly lower bond return; the size of
-the wedge $\rho - r^{\ast}$ is the price the economy puts on the missing insurance
-contract. In this calibration the wedge is $\rho - r^{\ast} = 0.0150$ (about $30\%$ of $\rho$) — a quantitatively non-trivial precautionary discount on the risk-free rate even with only two income states.
+The object is the equilibrium return $r^{\ast}$. It is the rate that makes stationary
+bond demand $S(r^{\ast})$ equal zero. With incomplete insurance, households want buffer
+wealth at $r = \rho$. Market clearing therefore requires $r^{\ast} < \rho$.
 
-The continuous-time HJB/KFE representation of [Achdou et al. (2022)](https://benjaminmoll.com/lectures/)
-is what `run.py` here implements. It carries two equilibrium objects in parallel: the
-asset drift implied by household consumption decisions, $s_i(a) = z_i + ra - c_i(a)$, and
-the stationary distribution that drift induces, $g_i(a)$. Bisection on $r$ closes the
-loop. The neighbouring [Aiyagari tutorial](../../dynamic-programming/aiyagari/) runs
-the same equilibrium logic in discrete time, but closes the model with a representative
-firm so the asset in fixed supply is physical capital $K$ rather than a bond — a useful
-distinction when comparing $r^{\ast}$ to $1/\beta - 1$ (the discrete-time mirror of $\rho$).
-The household block in this tutorial is solved by an HJB upwind finite-difference scheme;
-the Euler-equation analogues for discrete time, [EGP](../endogenous-grid-points/) and
-[EEI](../envelope-equation-iteration/), live in the same section and target the same
-buffer-stock policy.
+The computation links household policy to the cross section. The HJB gives consumption
+and savings drift at a candidate $r$. The KFE turns that drift into a stationary density.
+Bisection updates $r$ until aggregate bond demand clears.
 
 ## Equations
 
-A continuum of households is indexed by current income state $i \in \{L, H\}$ with
-endowment $z_i$ and Poisson switching intensity $\lambda_i$ into the other state $j$. A
-household holds assets $a$, earns the bond return $r$, and consumes $c_i(a)$; the asset
-position evolves deterministically between income jumps according to the drift
+A household in income state $i \in \{L, H\}$ receives endowment $z_i$. Income jumps to
+the other state $j$ with Poisson intensity $\lambda_i$. Assets move between jumps by
 
 $$\dot a \;=\; s_i(a) \;=\; z_i + r\,a - c_i(a), \qquad a \geq \underline a.$$
 
-The state space is the half-line $a \in [\underline a, \infty)$ together with the
-two-point chain over $i$. With CRRA flow utility $u(c) = c^{1-\sigma}/(1-\sigma)$ and
-discount rate $\rho > 0$, the Hamilton-Jacobi-Bellman equation is
+The value function solves the HJB equation. With CRRA utility and discount rate $\rho$,
+the equation is
 
 $$\rho\,V_i(a) \;=\; \max_{c > 0}\,
 [\,u(c) \;+\; V_i'(a)\,(z_i + r\,a - c) \;+\; \lambda_i\,(V_j(a) - V_i(a))\,].$$
 
-The first two terms are the certainty-equivalent piece — current utility plus the
-deterministic continuation value implied by $\dot a$ — and the last term is the
-expected jump in the value function when income switches. The first-order condition
-delivers the Euler/envelope identity
+The first-order condition links marginal value to consumption. It also defines the
+savings drift used by the density equation:
 
 $$c_i(a) \;=\; [V_i'(a)]^{-1/\sigma}, \qquad
 s_i(a) \;=\; z_i + r\,a - c_i(a).$$
 
-The borrowing constraint enters as a *state constraint*: at $a = \underline a$ the asset
-drift cannot point further left, so
+The borrowing limit is a state constraint. At $a = \underline a$, the drift cannot point
+outside the grid:
 
 $$s_i(\underline a) \;\geq\; 0
 \quad\Longleftrightarrow\quad
 V_i'(\underline a) \;\geq\; u'(z_i + r\,\underline a),$$
 
-with equality whenever the constraint is slack and inequality when it binds. This is the
-continuous-time counterpart to the Kuhn-Tucker margin in [EGP](../endogenous-grid-points/).
+with equality only when the constraint is slack.
 
-The cross-sectional density $g_i(a)$ on $(\underline a, \infty)$ satisfies the Kolmogorov
-Forward Equation
+The stationary density $g_i(a)$ satisfies the KFE. It moves mass along the asset drift
+and across income states:
 
 $$0 \;=\; -\frac{\partial}{\partial a}[s_i(a)\,g_i(a)]
 \;-\; \lambda_i\,g_i(a) \;+\; \lambda_j\,g_j(a),
 \qquad \int g_L + g_H \;=\; 1,$$
 
-with a delta-mass component at $\underline a$ for income states whose drift hits the
-constraint with positive probability. Equilibrium in the bond market is the
-zero-net-supply condition
+The bond market clears when aggregate assets are zero:
 
 $$S(r) \;\equiv\; \int_{\underline a}^{\bar a} a\,[g_L(a) + g_H(a)]\,da \;=\; 0.$$
 
-In the deterministic mirror of the model, the household Euler equation reduces to
-$\dot c / c = (r - \rho)/\sigma$, and a non-degenerate stationary equilibrium exists
-only at $r = \rho$. Incomplete markets break that result: $S(\rho) > 0$ because households
-want positive precautionary asset holdings, so equilibrium requires $r^{\ast} < \rho$.
-Quantifying that wedge is the headline output here.
+The equilibrium return is the root of this function. In this run,
+$r^{\ast} = 0.03499$ and the residual is $5.43e-06$.
 
 ## Model Setup
 
-The calibration is intentionally compact — two income states, symmetric switching, a
-one-dimensional asset grid — so that the precautionary-saving mechanism is the only
-source of action. Larger income chains (Tauchen or Rouwenhorst) plug into the same
-solver but obscure the Huggett wedge with calibration noise.
+The calibration keeps only the ingredients needed for Huggett pricing. There are two
+income states, symmetric switching, one bond, and a borrowing limit.
 
 | Object | Value | Role |
 |---|---:|---|
@@ -106,46 +77,30 @@ solver but obscure the Huggett wedge with calibration noise.
 | HJB tolerance | 1e-06 | Sup-norm on successive value functions |
 | Bisection tolerance | $10^{-5}$ | On the bond-market residual $\lvert S(r)\rvert$ |
 
-The two switching intensities are equal so the income chain has symmetric stationary
-probabilities $p_L = p_H = 0.5$, and expected income is $\bar z = 0.1500$.
-At the working solution the cross-sectional probabilities recover this prediction to
-$|p_L - 0.5| = 1.11e-16$, a basic sanity check on the KFE solve.
+The symmetric income chain implies $p_L = p_H = 0.5$. Expected income is
+$\bar z = 0.1500$. The KFE solution recovers
+$|p_L - 0.5| = 1.11e-16$.
 
 ## Solution Method
 
-The household block at a candidate $r$ is solved by an implicit upwind
-finite-difference scheme on the asset grid. The two delicate pieces are the choice of
-derivative for $V_i'(a)$ at each grid point and the construction of the discrete generator
-$A$ that approximates $\partial/\partial a[s_i(a)\,\cdot] + \lambda$-switching.
+At a candidate $r$, the code solves the household HJB on the asset grid. It uses an
+upwind finite-difference scheme because the asset drift can point left or right.
 
-**Upwind derivative.** At each $(a_k, i)$ the algorithm computes both the forward and
-backward finite-difference approximations of $V_i'(a_k)$, converts each into a candidate
-consumption via $c = (V_i')^{-1/\sigma}$, and then picks the one whose implied drift
-$s_i(a_k) = z_i + r a_k - c$ points *into* the grid (forward when $s>0$, backward when $s<0$).
-This upwinding is what makes the discrete generator a sub-stochastic Markov matrix and
-keeps the borrowing limit from being crossed numerically. Centred differences would
-break that property and admit unphysical reflections off $\underline a$.
+**Upwind derivative.** The algorithm computes forward and backward derivatives of
+$V_i(a_k)$. Each derivative implies a consumption choice and a drift. The update keeps
+the derivative whose drift points into the grid.
 
-**Implicit step.** Stack $V$ over income states into a vector of length $2I$. The
-implicit HJB update is
+**Implicit step.** The HJB update stacks both income states into one vector:
 
 $$[(\Delta^{-1} + \rho)\,\mathbf I - A^{n}]\,V^{n+1} \;=\; u(c^{n}) + \Delta^{-1} V^{n},$$
 
-where $A^{n}$ is the upwind transition generator built from the current drift and the
-income-switching intensities $\lambda_i$. With a large step $\Delta = 1000$ this update
-behaves like a Newton step on the steady-state HJB $\rho V = u(c) + AV$, so convergence
-is essentially quadratic; in this calibration the inner loop terminates in single-digit
-iterations.
+where $A^n$ is the upwind generator. It combines asset drift and income switching.
 
-**KFE.** Once $V$ converges, the same generator delivers the stationary distribution as
-the left null space of $A$: solve $A^{\top} g = 0$ subject to $\int g = 1$. The system
-is singular (the generator has a zero eigenvalue), so the algorithm pins one row of
-$A^{\top}$ and rescales the solution to integrate to one.
+**KFE.** Once $V$ converges, the same generator gives the stationary distribution. The
+code solves $A^{\top} g = 0$ and rescales $g$ to integrate to one.
 
-**Equilibrium.** The bond-market excess demand $S(r) = \int a\,(g_L + g_H)\,da$ is
-strictly increasing in $r$ on the relevant range — higher returns make saving more
-attractive and discourage borrowing — so a single bisection on $[r_{\min}, r_{\max}]$
-locates $r^{\ast}$ to any desired tolerance.
+**Equilibrium.** The outer loop computes $S(r)$ and updates $r$ by bisection. Higher
+returns raise saving and reduce borrowing, so the zero of $S(r)$ is well defined here.
 
 ```text
 Algorithm: Huggett equilibrium by HJB-KFE bisection
@@ -183,37 +138,29 @@ repeat (outer bisection)
     else       : r_lo = r              # too much borrowing; raise r
 ```
 
-**Working solve.** The HJB inner loop converged in **9 iterations** (sup-norm change $7.91e-07$), and the outer bisection located $r^{\ast} = 0.03499$ with bond-market residual $5.43e-06$ on the 2000-point asset grid.
+**Working solve.** The HJB inner loop converged in **9 iterations**. The final sup-norm change was $7.91e-07$. Bisection found $r^{\ast} = 0.03499$ on the 2000-point grid. The bond-market residual is $5.43e-06$.
 
-**Reference solve and audit.** The same equilibrium is recomputed on a $I_{\rm ref} = 6000$-point reference grid as a discretisation audit. The reference equilibrium is $r^{\ast}_{\rm ref} = 0.03572$, so the interest-rate gap is $|r^{\ast}_{2000} - r^{\ast}_{6000}| = 7.30e-04$. On the active asset range $a \in [\underline a, 1]$ the working savings policy
-$s_i(a)$ lies within $1.57e-03$ of the interpolated reference policy in
-sup norm; the value function gap is $2.23e-01$, or about $0.16\%$ relative to the value scale. The grid convergence of $r^{\ast}$ in this
-calibration is genuinely slow — uniform-grid HJB is first-order accurate at the borrowing
-limit, where the policy has a kink — so refining beyond $I = 6000$ would
-shift $r^{\ast}$ further toward $\rho$ at a rate that scales like $1/I$. A non-uniform
-asset grid concentrated near $\underline a$ (cf. Achdou et al. 2022, App. C) tightens this
-quickly. For the qualitative wedge $\rho - r^{\ast} > 0$ and the cross-sectional shapes
-the working grid is more than enough.
+**Reference solve.** The reference grid repeats the solve with $I_{\rm ref} = 6000$ points. It gives $r^{\ast}_{\rm ref} = 0.03572$. The interest-rate gap is $7.30e-04$. On $a \in [\underline a, 1]$, the savings-policy gap is $1.57e-03$ in sup norm.
 
 ## Results
 
-The first figure plots $V_L(a)$ and $V_H(a)$ at $r^{\ast}$ on the working grid (solid) and the reference equilibrium values on the finer grid (dashed). Both curves are increasing and concave in $a$, with $V_H > V_L$ uniformly because income enters cash on hand linearly. Near the borrowing limit $\underline a$ both curves steepen sharply: a marginal dollar of wealth there relaxes the state constraint $s_i(\underline a) \geq 0$ and buys insurance against staying in the low-income state. The reference and working curves are visually indistinguishable on the active range — the relative gap in $V$ is about $0.16\%$ — while the small vertical level shift at the right edge reflects the discretisation in the equilibrium price ($|r^{\ast}_{2000} - r^{\ast}_{6000}| = 7.30e-04$).
+The value functions are increasing and concave in assets. $V_H(a)$ lies above $V_L(a)$ because high income raises cash on hand. Both curves steepen near the borrowing limit. The relative value gap against the reference grid is $0.16\%$.
 
 <img src="figures/value-function.png" alt="Value functions by income state at r*" width="80%">
 
-The savings policy is the asset drift $\dot a = s_i(a)$ at the equilibrium price. The low-income household decumulates ($s_L < 0$) almost everywhere above the borrowing limit and is pushed onto the constraint by the state-constraint boundary condition; this is the visible kink of $s_L$ at $\underline a$. The high-income household saves ($s_H > 0$) at small $a$ to rebuild buffer wealth and crosses zero at the income-state-specific asset target where $z_H + r^{\ast} a = c_H(a)$. Income switching keeps the cross section moving across the two drift fields — a household never stays on a single curve. The reference overlay agrees to $1.57e-03$ in sup norm on $[\underline a, 1]$.
+The savings policy is the asset drift at $r^{\ast}$. Low-income households decumulate above the borrowing limit. High-income households save near the limit to rebuild buffer wealth. Income switching moves households between the two drift fields. The reference gap is $1.57e-03$ in sup norm on $[\underline a, 1]$.
 
 <img src="figures/savings-policy.png" alt="Savings drift by income state at r*" width="80%">
 
-The KFE turns the drift fields above into a cross-sectional density. The low-income $g_L$ piles up at the borrowing limit because $s_L < 0$ pushes households toward $\underline a$ and the state constraint stops them there; the kink in the low-income drift translates into a sharp spike that becomes more concentrated as the grid is refined. The high-income $g_H$ is flatter and supported on a wider range because $s_H > 0$ near $\underline a$ moves households to the right. Together the two densities place $5.8\%$ of the population within $0.02$ of the borrowing limit, the visible signature of incomplete insurance. The reference density (dashed) shows a slightly taller and narrower spike at $\underline a$ — finer discretisation resolves the constraint mass more sharply — but the away-from-constraint shape is unchanged.
+The KFE turns drift into a cross-sectional density. Low-income mass piles near the borrowing limit because negative drift pushes left. High-income density is flatter because positive drift moves households right. The population share within $0.02$ of the limit is $5.8\%$.
 
 <img src="figures/wealth-distribution.png" alt="Stationary asset densities by income state at r*" width="80%">
 
-The supply curve $S(r)$ is the equilibrium-pricing argument made visible. At any $r$, every household solves the HJB with that bond return as a primitive, and $S(r)$ aggregates their stationary asset positions. The curve is monotone in $r$ because higher returns simultaneously raise desired saving and discourage borrowing. The dashed horizontal line at $r = \rho$ is the complete-markets benchmark — the rate at which a representative household with no insurance demand would price the bond. The Huggett equilibrium sits strictly below it: even at $r$ as low as $r^{\ast} = 0.0350$ (red dot), aggregate asset demand only just clears zero, and the precautionary wedge is $\rho - r^{\ast} = 0.0150$. The reference equilibrium $r^{\ast}_{\rm ref} = 0.0357$ (black cross) lies on top of the working solution at this resolution.
+The supply curve plots aggregate asset demand against $r$. Higher returns raise saving and reduce borrowing, so $S(r)$ rises with $r$. The complete-markets benchmark is $r = \rho$. The Huggett equilibrium is lower, at $r^{\ast} = 0.0350$. The precautionary wedge is $\rho - r^{\ast} = 0.0150$.
 
 <img src="figures/bond-market.png" alt="Aggregate asset demand against the interest rate" width="80%">
 
-The table separates economic outputs from numerical diagnostics. The top block is the equilibrium price and its precautionary wedge; the middle block reports cross-sectional moments; the bottom block bounds the discretisation by comparing the working grid against the finer reference grid. Mean assets are numerically zero by construction — the bisection chose $r^{\ast}$ to enforce $S(r^{\ast}) = 0$ to the tolerance shown in the residual row.
+The table reports prices, cross-sectional moments, and discretisation diagnostics. Mean assets are zero because bisection chose $r^{\ast}$ to satisfy $S(r^{\ast}) = 0$.
 
 **Equilibrium and Discretisation Summary**
 
@@ -239,29 +186,16 @@ The table separates economic outputs from numerical diagnostics. The top block i
 
 ## Takeaway
 
-The Huggett pricing mechanism is the lesson. With incomplete insurance and a hard
-borrowing limit, every household's problem assigns strictly positive marginal value to
-buffer wealth, so aggregate desired bond holdings at the deterministic-benchmark rate
-$r = \rho$ are positive. Markets clear only at a strictly lower bond return, and the
-wedge $\rho - r^{\ast}$ — $\,0.0150$ on the working grid, about $30\%$ of $\rho$ — is the price the economy charges for the missing state-contingent insurance
-contract. That number tightens by about $7.3e-04$ when the grid is
-refined from $I = 2000$ to $I = 6000$, but the qualitative wedge does not.
+The Huggett price is a market-clearing return. Income risk and the borrowing limit make
+households want buffer wealth at $r = \rho$. The bond market clears only at a lower
+return. In this run the wedge is $\rho - r^{\ast} = 0.0150$.
 
-The continuous-time HJB/KFE machinery is what keeps the household decision and the
-induced cross section in the same equilibrium loop. The state-constraint boundary
-condition $V_i'(\underline a) \geq u'(z_i + r\underline a)$ is the natural analogue of the
-discrete-time Kuhn-Tucker margin in [EGP](../endogenous-grid-points/) and
-[EEI](../envelope-equation-iteration/), and the upwind finite-difference scheme is what
-makes that boundary condition hold without spurious mass leakage across $\underline a$.
-The discrete-time mirror is the [Aiyagari tutorial](../../dynamic-programming/aiyagari/),
-where the asset in fixed supply is physical capital and the wedge becomes
-$1/\beta - 1 - r^{\ast}$. The Euler-based household solvers from EGP and EEI would slot
-directly into the inner step of either equilibrium computation, with the bisection on $r$
-unchanged.
+The HJB/KFE loop ties the household policy to the stationary cross section. The upwind
+HJB respects the borrowing limit. The KFE then measures aggregate asset demand. Bisection
+on $r$ closes the zero-net-supply bond market.
 
 ## References
 
 - Huggett, M. (1993). "The risk-free rate in heterogeneous-agent incomplete-insurance economies." *Journal of Economic Dynamics and Control* 17(5-6), 953-969.
-- Aiyagari, S. R. (1994). "Uninsured Idiosyncratic Risk and Aggregate Saving." *Quarterly Journal of Economics* 109(3), 659-684.
 - Achdou, Y., Han, J., Lasry, J.-M., Lions, P.-L., and Moll, B. (2022). "Income and Wealth Distribution in Macroeconomics: A Continuous-Time Approach." *Review of Economic Studies* 89(1), 45-86.
 - Moll, B. "Lecture notes on continuous-time heterogeneous-agent models." https://benjaminmoll.com/lectures/
