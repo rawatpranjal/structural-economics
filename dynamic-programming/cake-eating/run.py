@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Cake-Eating: the cleanest dynamic-programming benchmark.
+"""Cake-Eating: a one-state dynamic-programming check.
 
 A non-renewable resource of size $W_0$ is consumed over an infinite horizon.
 With log utility the problem has a closed form, so the numerical value and
-policy functions can be audited directly against the exact answer.
+policy functions can be checked directly against the exact answer.
 
 Reference: Stokey, Lucas, and Prescott (1989), Ch. 4.
 """
@@ -120,86 +120,68 @@ def main() -> None:
 
     report = ModelReport(
         "Finite-Resource Cake Eating",
-        "A non-renewable resource consumed over an infinite horizon, with a closed-form audit.",
+        "A fixed resource allocated over time, with a log-utility closed-form check.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "Cake eating is the smallest non-trivial dynamic programming problem. The state "
-        "is one-dimensional, there is no production, no income, no uncertainty, and the "
-        "agent's only decision is how to slice a fixed pie across an infinite horizon. "
-        "Saving a unit returns nothing extra tomorrow — the gross interest rate is one — "
-        "so the entire trade-off lives inside the discount factor $\\beta$ and the "
-        "curvature of $u(c)$.\n\n"
-        "Despite that simplicity, the model exposes the recursive structure that the "
-        "rest of the dynamic programming section reuses. The Bellman operator is a "
-        "contraction with modulus $\\beta$; the optimum delivers a Hotelling-style "
-        "Euler equation that pins down the *growth rate* of the shadow value of "
-        "wealth; and under log utility the closed form $c_t = (1-\\beta)W_t$ provides "
-        "a direct audit for any numerical solver. That last point is what makes this "
-        "tutorial useful as a benchmark: every figure and table here shows the "
-        "computed object next to its analytical twin, so the residuals are pure "
-        "numerical error rather than economic disagreement.\n\n"
-        "Once production is added, the same recursion becomes [optimal "
-        "growth](../optimal-growth/); once income risk and a borrowing constraint are "
-        "added, it becomes [consumption-savings](../consumption-savings/). The "
-        "closed-form check disappears in both, which is why it is worth having a clean "
-        "instance of it first."
+        "A household owns a fixed cake and chooses consumption each period. "
+        "The cake does not grow, and there is no income or uncertainty. "
+        "Consuming more today leaves less cake for every future period.\n\n"
+        "The state is remaining cake $W_t$. The control is consumption $c_t$. "
+        "The policy rule maps each stock into consumption. "
+        "The value function prices the remaining stock.\n\n"
+        "Value function iteration solves the Bellman equation on a grid. "
+        "Log utility gives a closed-form Euler rule. "
+        "That rule lets us check the computed value and policy directly."
     )
 
     report.add_equations(
         r"""
-Let $W_t$ denote remaining cake at the start of period $t$. The agent picks
-consumption $c_t \in [0, W_t]$ and faces the resource constraint
+Let $W_t$ be remaining cake at the start of period $t$.
+The household chooses $c_t \in [0, W_t]$ and leaves next-period cake:
 
 $$W_{t+1} = W_t - c_t, \qquad W_0 \text{ given}.$$
 
-Preferences are time-separable with discount factor $\beta \in (0,1)$ and
-CRRA flow utility,
+Preferences use discount factor $\beta \in (0,1)$ and CRRA flow utility:
 
 $$\sum_{t=0}^{\infty} \beta^t u(c_t),
 \qquad u(c)=\frac{c^{1-\sigma}}{1-\sigma},
 \qquad u(c)=\log c \text{ when } \sigma=1.$$
 
-The Bellman equation collapses the lifetime problem onto the one-dimensional
-state $W$:
+The value function solves a one-state Bellman equation:
 
 $$V(W) = \max_{0 \le c \le W} \{\, u(c) + \beta\, V(W-c) \,\}.$$
 
-Differentiating inside the max and using the envelope theorem $V'(W)=u'(c^{\ast}(W))$
-gives the **Euler equation**
+The first-order condition and envelope condition give the Euler equation:
 
 $$u'(c_t) = \beta\, u'(c_{t+1}).$$
 
-Because the gross return on saved cake is one, marginal utility must rise at
-rate $1/\beta$ along the optimal path — the discrete-time analog of
-Hotelling's rule for a non-renewable resource. With log utility, this
-collapses to $c_{t+1}/c_t = \beta$, so consumption itself decays geometrically
-at rate $\beta$.
+This says marginal utility rises as the cake stock falls.
+In the log case, consumption falls at rate $\beta$.
 
-Conjecturing $c^{\ast}(W) = \kappa W$ and substituting into the Bellman
-equation pins down $\kappa = 1-\beta$, so
+Guessing a constant consumption share gives the closed-form policy:
 
 $$c^{\ast}(W) = (1-\beta)\, W,
 \qquad g(W) = W - c^{\ast}(W) = \beta\, W,$$
+
+The matching value function is:
 
 $$V(W) = \frac{\ln((1-\beta) W)}{1-\beta}
 + \frac{\beta \ln \beta}{(1-\beta)^2},
 \qquad V'(W) = \frac{1}{(1-\beta)\,W}.$$
 
-The shadow value $V'(W)$ blows up as $W \to 0$: the last crumb is
-infinitely valuable, which is what disciplines the agent against eating
-everything immediately.
+This closed form is the target for the numerical check.
 """
     )
 
     report.add_model_setup(
         f"| Symbol | Value | Role |\n"
         f"|--------|-------|------|\n"
-        f"| $\\beta$ | {beta} | Discount factor; pins down the saving rate $\\beta$ and the consumption rate $1-\\beta$ |\n"
-        f"| $\\sigma$ | {sigma} | CRRA curvature; $\\sigma=1$ is the log case used for the closed-form audit |\n"
-        f"| $W$ | $[{w_min},\\, {w_max}]$ | Wealth domain on which $V$ and $c^{{\\ast}}$ are tabulated |\n"
+        f"| $\\beta$ | {beta} | Discount factor; closed-form saving rate is $\\beta$ |\n"
+        f"| $\\sigma$ | {sigma} | CRRA curvature; $\\sigma=1$ gives the log closed form |\n"
+        f"| $W$ | $[{w_min},\\, {w_max}]$ | Wealth grid for $V$ and $c^{{\\ast}}$ |\n"
         f"| $N_W$ | {n_grid} | Uniform grid points for the state $W$ |\n"
         f"| $N_c$ | {n_cons} | Inner grid for the consumption choice at each state |\n"
         f"| Tolerance $\\varepsilon$ | {tol:.0e} | Sup-norm convergence threshold for the Bellman operator |\n"
@@ -210,20 +192,13 @@ everything immediately.
         "Define the Bellman operator\n\n"
         r"$$(TV)(W) \;=\; \max_{0 \le c \le W} \{\, u(c) + \beta\, V(W-c) \,\}."
         "$$\n\n"
-        "Blackwell's sufficient conditions hold (monotonicity and discounting), so $T$ "
-        "is a contraction on bounded continuous functions with modulus $\\beta$. Any "
-        "guess $V_0$ delivers $\\|V_n - V\\|_{\\infty} \\le \\beta^n \\|V_0 - V\\|_{\\infty}$, "
-        "which gives the convergence rate and the stopping rule.\n\n"
-        "Numerically the algorithm is brute-force VFI: tabulate $V$ on a uniform "
-        "grid for $W$, search for the optimal $c$ on a finer inner grid at each state, "
-        "and **interpolate** $V$ at the off-grid point $W-c$ because the resource "
-        "constraint moves the next state continuously. Below the grid floor $W_{\\min}$ "
-        "we extrapolate using the closed-form $V$; this matters only because the "
-        "log-utility benchmark makes that small detail testable. In a generic problem "
-        "the same role is played by a polynomial or shape-preserving extrapolation.\n\n"
+        "The computation applies this operator repeatedly. "
+        "At each grid point, it searches over feasible consumption. "
+        "The next stock $W-c$ is usually off grid. "
+        "The continuation value is therefore interpolated.\n\n"
         "```text\n"
-        "Algorithm — Cake-Eating VFI with continuous c, interpolated continuation\n"
-        "Input : grid {W_i}_{i=1..N_W}, choice grid size N_c, tolerance epsilon\n"
+        "Algorithm: Cake-eating VFI\n"
+        "Input : wealth grid, choice grid size N_c, tolerance epsilon\n"
         "Output: value V*(W_i), consumption policy c*(W_i)\n"
         "  initialise V_0(W_i) = u(W_i)                     # guess: eat everything\n"
         "  for n = 0, 1, 2, ... :\n"
@@ -237,16 +212,13 @@ everything immediately.
         "      err <- max_i | V_{n+1}(W_i) - V_n(W_i) |\n"
         "      stop when err < epsilon\n"
         "```\n\n"
-        f"With the calibration above the iteration converges in **{info['iterations']} "
-        f"steps** to a sup-norm residual of **{info['error']:.2e}**. The closed form is "
-        "computed afterward and used only for verification. For this problem the Euler "
-        "equation $u'(c_t)=\\beta\\, u'(c_{t+1})$ would also support endogenous-grid or "
-        "shooting solvers in a single pass; VFI is overkill but instructive because the "
-        "same operator carries unchanged into stochastic models in later tutorials."
+        f"The iteration converges in **{info['iterations']} steps**. "
+        f"The final sup-norm residual is **{info['error']:.2e}**. "
+        "The closed form is then computed on the same wealth grid."
     )
 
     # ------------------------------------------------------------------
-    # Figure 1 — value function vs closed form
+    # Figure 1: value function vs closed form
     # ------------------------------------------------------------------
     fig1, ax1 = plt.subplots()
     ax1.plot(w_grid, v_star, color="tab:blue", linewidth=2, label="Numerical (VFI)")
@@ -256,12 +228,10 @@ everything immediately.
     ax1.set_title("Value Function vs Closed Form")
     ax1.legend()
     report.add_results(
-        "The value function is concave in $W$: marginal cake is worth a lot when the "
-        "stock is nearly gone and very little when it is plentiful. The numerical curve "
-        "sits on top of the closed-form curve almost everywhere — visually the two are "
-        "indistinguishable on the bulk of the grid. The largest sup-norm gap outside "
-        f"the bottom decile is **{max_value_error:.2e}**; the wider deviation near $W=0$ "
-        "comes from the log singularity, which is hard to resolve on any uniform grid."
+        "Concavity is the main shape restriction on the value function. "
+        "The numerical value curve lies on the closed-form curve except near the lower boundary. "
+        f"Outside the bottom decile, the largest sup-norm gap is **{max_value_error:.2e}**. "
+        "The lower-boundary gap comes from the log singularity."
     )
     report.add_figure(
         "figures/value-function.png",
@@ -270,7 +240,7 @@ everything immediately.
     )
 
     # ------------------------------------------------------------------
-    # Figure 2 — consumption policy vs closed form
+    # Figure 2: consumption policy vs closed form
     # ------------------------------------------------------------------
     fig2, ax2 = plt.subplots()
     ax2.plot(w_grid, consumption_policy, color="tab:blue", linewidth=2, label=r"Numerical $c^{\ast}(W)$")
@@ -283,15 +253,10 @@ everything immediately.
     ax2.set_title("Consumption Policy")
     ax2.legend()
     report.add_results(
-        "The economic content of the model lives in this picture. Under log utility the "
-        f"agent eats a constant share $1-\\beta$, equal to **{1 - beta:.0%}** of available "
-        "wealth, in every period regardless of how rich she currently is — a scale invariance "
-        "that survives because both the utility increment and the continuation value "
-        "scale logarithmically. The numerical policy traces this line and lies well "
-        "below the $45^{\\circ}$ line, which would correspond to eating all remaining "
-        f"cake immediately. The largest pointwise policy gap above the bottom decile is "
-        f"**{max_policy_error:.2e}**, dominated by the discretization of the inner "
-        "consumption grid."
+        f"Under log utility, the household consumes **{1 - beta:.0%}** of remaining cake. "
+        "The numerical policy follows the closed-form line. "
+        "The dotted line marks immediate exhaustion. "
+        f"Above the bottom decile, the largest policy gap is **{max_policy_error:.2e}**."
     )
     report.add_figure(
         "figures/policy-function.png",
@@ -300,7 +265,7 @@ everything immediately.
     )
 
     # ------------------------------------------------------------------
-    # Figure 3 — depletion and consumption paths
+    # Figure 3: depletion and consumption paths
     # ------------------------------------------------------------------
     fig3, (ax3a, ax3b) = plt.subplots(1, 2, figsize=(12, 5))
     ax3a.plot(periods, cake_path, "o-", color="tab:blue", markersize=3, linewidth=1.5, label="Numerical")
@@ -320,13 +285,10 @@ everything immediately.
     ax3b.legend()
     fig3.tight_layout()
     report.add_results(
-        "Forward-iterating the policy from $W_0=1$ traces the depletion path. Both "
-        "wealth and consumption decay geometrically at rate $\\beta$, as the Euler "
-        "equation predicts: nothing is ever eaten in finite time, but the asymptote is "
-        "zero. The black dashed paths $W_t = \\beta^t W_0$ and $c_t = (1-\\beta)\\beta^t "
-        "W_0$ are the closed-form trajectories, and the numerical path tracks them to "
-        f"a sup-norm error of **{max_path_error:.2e}** over the simulation horizon — "
-        "below grid resolution and not visible at this scale."
+        "Starting from $W_0=1$, the policy produces geometric depletion. "
+        "Wealth follows $W_t = \\beta^t W_0$. "
+        "Consumption follows $c_t = (1-\\beta)\\beta^t W_0$. "
+        f"The numerical path stays within **{max_path_error:.2e}** of the closed form."
     )
     report.add_figure(
         "figures/simulation.png",
@@ -335,7 +297,7 @@ everything immediately.
     )
 
     # ------------------------------------------------------------------
-    # Pointwise audit table
+    # Pointwise check table
     # ------------------------------------------------------------------
     sample_idx = jnp.linspace(valid_start, n_grid - 1, 8, dtype=jnp.int32)
     table_data = {
@@ -349,14 +311,8 @@ everything immediately.
     }
     df = pd.DataFrame(table_data)
     report.add_results(
-        "The audit table reports both objects at eight representative wealth states. "
-        "Reading the rightmost columns confirms that the residuals are small and "
-        "smooth in $W$: there are no sign reversals, no kinks, and the errors shrink "
-        "in absolute terms as $W$ grows away from the singular boundary. This is the "
-        "kind of diagnostic that disappears in the [optimal "
-        "growth](../optimal-growth/) and [consumption-savings](../consumption-savings/) "
-        "tutorials, where the closed form goes away and the only checks left are "
-        "Euler-equation residuals and steady-state consistency."
+        "The table checks value and policy at eight wealth states. "
+        "The residuals are smooth and small away from the lower boundary."
     )
     report.add_table(
         "tables/comparison.csv",
@@ -365,23 +321,16 @@ everything immediately.
     )
 
     report.add_takeaway(
-        "Cake eating is the dynamic programming problem stripped down to one state and "
-        "no risk, which is exactly why it is useful as a calibration target for any "
-        "Bellman solver. The Euler equation $u'(c_t)=\\beta\\, u'(c_{t+1})$ delivers a "
-        "Hotelling-style growth rule for the marginal value of wealth; under log "
-        "utility it pins consumption to a constant share $1-\\beta$ and forces wealth "
-        "to decay at rate $\\beta$. The numerical residuals reported above are "
-        "interpolation and inner-grid error, not features of the model. Once "
-        "production, income risk, or borrowing constraints are added, the closed form "
-        "vanishes — and the calibration habits learned here (audit against ground "
-        "truth, watch the boundary, keep the inner choice grid finer than the state "
-        "grid) become the only line of defense."
+        "Cake eating isolates Bellman logic in a one-state resource problem. "
+        "The computed policy should consume a constant share of remaining cake. "
+        "In this log case, the share is $1-\\beta$. "
+        "The closed form makes value function iteration easy to inspect. "
+        "The remaining errors are interpolation and choice-grid error."
     )
 
     report.add_references([
         "Stokey, N., Lucas, R., and Prescott, E. (1989). *Recursive Methods in Economic Dynamics*. Harvard University Press, Ch. 4.",
         "Ljungqvist, L. and Sargent, T. (2018). *Recursive Macroeconomic Theory*. MIT Press, 4th edition, Ch. 3.",
-        "Hotelling, H. (1931). The Economics of Exhaustible Resources. *Journal of Political Economy*, 39(2), 137-175.",
     ])
 
     report.write("README.md")
