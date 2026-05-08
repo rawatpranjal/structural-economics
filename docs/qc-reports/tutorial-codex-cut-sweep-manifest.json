@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T05:03:54Z",
+  "updated_at": "2026-05-08T05:12:42Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -93,6 +93,17 @@
         "dynamic-programming/rbc/run.py"
       ],
       "updated_at": "2026-05-08T05:03:54Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/diamond-mortensen-pissarides/",
+      "status": "complete",
+      "commit": "fef02134268fac561ad81aeea2eda43190c20653",
+      "changed_paths": [
+        "README.md",
+        "dynamic-programming/diamond-mortensen-pissarides/README.md",
+        "dynamic-programming/diamond-mortensen-pissarides/run.py"
+      ],
+      "updated_at": "2026-05-08T05:12:42Z"
     },
     {
       "tutorial_path": "heterogeneous-agents/endogenous-grid-points/",
