@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T10:51:37Z",
+  "updated_at": "2026-05-08T10:55:26Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -745,6 +745,17 @@
         "computational-methods/metropolis-hastings/run.py"
       ],
       "updated_at": "2026-05-08T10:51:37Z"
+    },
+    {
+      "tutorial_path": "computational-methods/kalman-filter/",
+      "status": "complete",
+      "commit": "a2e743df3087f9bc339b96d2a54dfdd03745e808",
+      "changed_paths": [
+        "README.md",
+        "computational-methods/kalman-filter/README.md",
+        "computational-methods/kalman-filter/run.py"
+      ],
+      "updated_at": "2026-05-08T10:55:26Z"
     }
   ]
 }
