@@ -143,17 +143,13 @@ def main() -> None:
     )
 
     report.add_overview(
-        "Think about two firms in a product market where quality carries over. "
-        "A firm can spend today to improve its product, but the payoff depends on "
-        "where its rival will be tomorrow as well as where the firm is today. A small "
-        "lead raises current demand and can make future leadership more valuable.\n\n"
-        "The tutorial turns that rivalry into a two-firm Ericson-Pakes style quality "
-        "ladder. The state is the pair of quality levels, each firm chooses whether "
-        "to invest, and the object of interest is a Markov-perfect policy: a map from "
-        "industry states into investment actions and continuation values. Computing "
-        "the policy requires a fixed point because today's best response depends on "
-        "the value of tomorrow's state, while tomorrow's value depends on today's "
-        "equilibrium investment."
+        "Two firms sell differentiated products whose quality carries over. "
+        "A firm can invest today to raise tomorrow's quality, while its rival "
+        "moves too.\n\n"
+        "The model is a two-firm Ericson-Pakes quality ladder. The state is the "
+        "pair of quality levels. The policy maps each state into wait or invest.\n\n"
+        "The policy needs a fixed point. Today's best response uses tomorrow's "
+        "value, and tomorrow's value depends on today's equilibrium actions."
     )
 
     report.add_equations(r"""
@@ -213,12 +209,11 @@ with $V_i(\omega)=G_i(a_i^{*},a_j^{*};\omega,V)$ at every state.
     )
 
     report.add_solution_method(
-        "The computation looks for a fixed point in Markov strategies. Start with "
-        "a guess for each firm's value at every quality pair. At a given state, that "
-        "guess turns the dynamic problem into a two-by-two normal-form game whose "
-        "payoffs include current profit, investment cost, and expected continuation "
-        "value. Solve the state game, record the selected equilibrium actions, update "
-        "values, and repeat until the state-contingent values stop moving.\n\n"
+        "The fixed point is over Markov strategies. Start with values for each "
+        "firm at each quality pair. At one state, those values define a "
+        "two-by-two game. Payoffs combine current profit, investment cost, and "
+        "expected continuation value. Solve that state game, update values, and "
+        "repeat.\n\n"
         "```text\n"
         "Inputs: quality cap Q, discount factor beta, investment cost kappa,\n"
         "        transition kernel P(q' | q, a), tolerance epsilon\n"
@@ -233,9 +228,8 @@ with $V_i(\omega)=G_i(a_i^{*},a_j^{*};\omega,V)$ at every state.
         "  Stop when max_{i,omega} |T_i V^n(omega)-V_i^n(omega)| < epsilon.\n"
         "Output: MPE policy a_i^{*}(omega), values V_i(omega), and deviation gains.\n"
         "```\n\n"
-        "There is no closed-form benchmark for this strategic dynamic game. The useful "
-        "accuracy check is an equilibrium residual: at the reported policy, no firm "
-        "should gain from a one-step deviation at any state."
+        "After convergence, compute one-step deviation gains. At the reported "
+        "policy, every gain should be zero."
     )
 
     fig1, ax1 = plt.subplots(figsize=(7, 6))
@@ -251,10 +245,8 @@ with $V_i(\omega)=G_i(a_i^{*},a_j^{*};\omega,V)$ at every state.
         "figures/investment-policy.png",
         "Firm 1 investment policy over the quality state space",
         fig1,
-        description="The policy is simple in this calibration: firm 1 invests at every "
-        "interior quality state and waits only at the top rung. Rival quality changes "
-        "the continuation value, but the incentive to climb remains strong until the "
-        "ladder cap binds.",
+        description="Firm 1 invests at every interior quality state. It waits at "
+        "the top rung because the ladder cap binds.",
     )
 
     fig2, ax2 = plt.subplots(figsize=(7, 6))
@@ -268,9 +260,8 @@ with $V_i(\omega)=G_i(a_i^{*},a_j^{*};\omega,V)$ at every state.
         "figures/value-advantage.png",
         "Value advantage across states",
         fig2,
-        description="The diagonal is symmetric, while off-diagonal states measure the "
-        "value of a quality lead. The heat map is steepest when one firm is far ahead "
-        "because quality affects today's share and tomorrow's continuation value.",
+        description="The diagonal is symmetric. Off-diagonal states show the value "
+        "of a quality lead. The lead affects current share and continuation value.",
     )
 
     fig3, ax3 = plt.subplots(figsize=(8, 5))
@@ -287,10 +278,9 @@ with $V_i(\omega)=G_i(a_i^{*},a_j^{*};\omega,V)$ at every state.
         "figures/simulated-quality-path.png",
         "Simulated quality paths under Markov-perfect policies",
         fig3,
-        description="The simulated path shows the policy as a stochastic industry process. "
-        "Investment periods are marked by light vertical lines. Leadership persists, "
-        "while depreciation and catch-up investment keep the identity of the "
-        "high-quality firm from being fixed permanently.",
+        description="The simulation turns the policy into a stochastic industry "
+        "path. Light vertical lines mark investment periods. Quality leadership "
+        "persists, but depreciation and catch-up investment create turnover.",
     )
 
     rows = []
@@ -309,17 +299,16 @@ with $V_i(\omega)=G_i(a_i^{*},a_j^{*};\omega,V)$ at every state.
         "tables/policy-by-state.csv",
         "Selected state policies, values, and deviation checks",
         pd.DataFrame(rows),
-        description="The selected states show the economic content of the equilibrium: "
-        "symmetric states have symmetric values, a quality lead is valuable, and the "
-        "one-step-deviation gain is zero at the reported actions.",
+        description="Symmetric states have symmetric values. States with a quality "
+        "lead show a value advantage. Deviation gains are zero at the reported "
+        "actions.",
     )
 
     report.add_takeaway(
-        "A quality-ladder game turns investment rivalry into a state-transition "
-        "problem. The computed object is the mapping from industry states into "
-        "actions and continuation values. In this calibration, the cap pins down "
-        "where investment stops, and off-diagonal states show why leadership is "
-        "valuable before the cap is reached."
+        "The quality-ladder game makes investment rivalry a state-transition "
+        "problem. The computed policy maps quality states into actions and "
+        "continuation values. In this calibration, firms invest until the cap "
+        "binds. Off-diagonal states show why a quality lead is valuable."
     )
 
     report.add_references([
