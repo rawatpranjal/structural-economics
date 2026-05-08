@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T08:47:42Z",
+  "updated_at": "2026-05-08T08:52:10Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -491,6 +491,18 @@
         "choice/preference-recoverability/run.py"
       ],
       "updated_at": "2026-05-08T08:47:42Z"
+    },
+    {
+      "tutorial_path": "choice/money-pump-index/",
+      "status": "complete",
+      "commit": "b050316dd4f03b4c9851ce839e866efb0feae692",
+      "changed_paths": [
+        "choice/money-pump-index/README.md",
+        "choice/money-pump-index/figures/mpi-severity-comparison.png",
+        "choice/money-pump-index/run.py",
+        "choice/money-pump-index/tables/mpi-summary.csv"
+      ],
+      "updated_at": "2026-05-08T08:52:10Z"
     }
   ]
 }
