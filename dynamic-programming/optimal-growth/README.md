@@ -1,12 +1,14 @@
 # Optimal Growth by Value Function Iteration
 
-> Productive capital, the Ramsey transition, and a closed-form audit for VFI.
+> A one-capital planner problem with an exact check on VFI.
 
 ## Overview
 
-This is the discrete-time Ramsey-Cass-Koopmans planner: one good, one factor (capital), and a representative agent who chooses consumption to maximize discounted utility. Compared with [cake eating](../cake-eating/), the only new ingredient is that the state is *productive*. Saving a unit of output as capital delivers $\alpha A k^{\alpha-1}$ extra units of output tomorrow rather than the gross return of one that disciplines the cake problem. That single change introduces diminishing returns, an interior steady state, and the trade-off between the impatience rate $1/\beta - 1$ and the marginal product of capital.
+A planner allocates output between consumption today and capital tomorrow. Capital produces future output, so saving has a return that falls with $k$. The economy settles where impatience balances the marginal product of capital.
 
-With log utility, Cobb-Douglas production, and full depreciation, the planner's problem has a closed form: the optimal saving rate is the constant $\alpha\beta$, the value function is affine in $\log k$, and the transition to the Ramsey steady state $k_{ss}=(\alpha\beta A)^{1/(1-\alpha)}$ is monotone. This is the only one-sector growth calibration where every numerical object has an exact analytical twin, which is what makes it the natural audit for a generic Bellman solver before risk, partial depreciation, labor, or equilibrium prices break the closed form. The same recursion reappears, with different state spaces, in the [RBC tutorial](../rbc/) once productivity shocks are added and in [Aiyagari](../aiyagari/) once the planner is replaced by a continuum of constrained households facing market-determined factor prices.
+The object is the policy rule $g(k)$ for next-period capital. Given $g(k)$, consumption is $c^{\ast}(k)=A k^{\alpha}-g(k)$.
+
+The log Cobb-Douglas case has the closed-form saving rate $\alpha\beta$. Value function iteration solves the Bellman equation on a grid. Here the closed form audits the computed value and policy point by point.
 
 ## Equations
 
@@ -28,15 +30,11 @@ $$V(k) \;=\; \max_{0 < k' < A k^{\alpha}}
 \{\, \log(A k^{\alpha}-k') + \beta\, V(k') \,\}.$$
 
 Let $g(k)$ denote the optimal $k'$ and $c^{\ast}(k) = A k^{\alpha} - g(k)$ the
-implied consumption. Differentiating inside the max and applying the envelope
-theorem $V'(k) = u'(c^{\ast}(k))\, f'(k)$ delivers the **Euler equation**
+implied consumption. The first-order and envelope conditions deliver the
+Euler equation
 
 $$u'(c_t) \;=\; \beta\, f'(k_{t+1})\, u'(c_{t+1}),
 \qquad f'(k) = \alpha A k^{\alpha-1}.$$
-
-The shadow value of capital today equals discounted shadow value tomorrow
-*scaled by the gross return on capital*. The cake-eating Euler equation is the
-$f'(k)\equiv 1$ special case.
 
 For log utility and Cobb-Douglas production, conjecture $g(k) = s A k^{\alpha}$
 with constant saving rate $s$. Substituting into the Euler equation gives
@@ -62,12 +60,6 @@ The steady state solves $k = g(k)$, equivalently $\beta f'(k_{ss}) = 1$:
 $$k_{ss} \;=\; (\alpha\beta A)^{1/(1-\alpha)},
 \qquad c_{ss} \;=\; A k_{ss}^{\alpha} - k_{ss}.$$
 
-The closed form depends on all three assumptions jointly. Drop log utility,
-introduce partial depreciation, or replace the production function and the
-Ramsey transition still exists, but $g$ and $V$ have to be solved numerically.
-That generic case is exactly what VFI is for; the calibration here is the
-sharpest available test of whether the solver gets it right.
-
 ## Model Setup
 
 | Symbol | Value | Role |
@@ -90,12 +82,10 @@ Define the Bellman operator on bounded continuous functions of capital,
 
 $$(TV)(k) \;=\; \max_{0 < k' < A k^{\alpha}}\{\, \log(A k^{\alpha} - k') + \beta\, V(k') \,\}.$$
 
-Blackwell's monotonicity and discounting conditions hold, so $T$ is a contraction with modulus $\beta$. Successive iterates satisfy $\|V_n - V\|_{\infty} \le \beta^{n}\|V_0 - V\|_{\infty}$, which fixes the convergence rate and the stopping rule. With $\beta=0.9$ the bound predicts roughly $\log(\varepsilon)/\log(\beta)$ iterations to reach tolerance $\varepsilon$.
-
-Numerically, $V$ is tabulated on a uniform state grid for $k$. At each state, the maximizer is searched on a finer grid of candidate next-period capital values, and the continuation $V(k')$ is recovered by linear interpolation against the current iterate. Two implementation choices matter economically: (i) the upper end of the state grid sits well above $k_{ss}$ so that the policy converges to $g(k)<k$ before hitting the boundary, and (ii) the inner choice grid is at least as fine as the state grid, because policy errors propagate directly into the simulated transition. The closed-form policy is *not* used inside the loop; it is computed afterwards solely as a benchmark.
+VFI starts from an initial value on the capital grid. At each $k_i$, the code searches over feasible $k'$ values. It chooses the $k'$ with the highest current utility plus interpolated continuation value. The loop stops when the sup-norm change in $V$ is below $\varepsilon$.
 
 ```text
-Algorithm — Optimal-Growth VFI with continuous k', interpolated continuation
+Algorithm: Optimal-growth VFI with continuous k'
 Input : capital grid {k_i}_{i=1..N_k}, choice grid size N_kp,
         primitives (A, alpha, beta), utility u(c) = log c, tolerance epsilon
 Output: value V*(k_i), capital policy g(k_i)
@@ -114,23 +104,23 @@ Output: value V*(k_i), capital policy g(k_i)
       stop when err < epsilon
 ```
 
-With the calibration above the iteration converges in **143 steps** to a sup-norm residual of **9.32e-07**, consistent with the geometric bound. The Euler equation could also be solved in one pass by endogenous-grid points or a shooting method, but VFI is what generalizes to the stochastic and constrained problems later in the catalog.
+The iteration converges in **143 steps** with sup-norm residual **9.32e-07**. The closed-form rule is computed only after VFI finishes.
 
 ## Results
 
-The value function is increasing and concave because more capital relaxes the resource constraint while marginal product diminishes. With log utility and Cobb-Douglas production it is exactly affine in $\log k$, and the numerical curve sits on top of the closed-form curve over the whole economically relevant range. Outside the bottom decile of the grid the largest sup-norm gap is **1.91e-05**, which is essentially interpolation noise; the wider deviation near $k=0$ is the usual artifact of the log singularity on a uniform grid.
+The value function rises and bends because capital has diminishing returns. The numerical curve matches $E+B\log k$ except near the lowest grid points. Outside the bottom decile, the largest value gap is **1.91e-05**.
 
 <img src="figures/value-function.png" alt="Numerical value function plotted against the closed-form $E + B\log k$" width="80%">
 
-The economic content of the model lives in this picture. The policy crosses the $45^{\circ}$ line exactly at $k_{ss}$: below the steady state the planner accumulates ($k' > k$), above it the planner runs capital down ($k' < k$). The slope at the crossing is less than one, which is what makes the steady state stable and the transition monotone. Under log utility the saving rate is the constant $\alpha\beta = 0.27$ regardless of the level of capital; off log utility, $g$ would still cross the $45^{\circ}$ line at $k_{ss}$ but its curvature would shift with the intertemporal elasticity. The largest pointwise policy gap outside the bottom decile is **2.87e-02**, with a corresponding consumption-policy gap of **2.87e-02**.
+The policy crosses the $45^{\circ}$ line at $k_{ss}$. Below $k_{ss}$, the planner accumulates capital. Above $k_{ss}$, the planner runs capital down. The log case saves the constant share $\alpha\beta = 0.27$ of output. The largest policy gap outside the bottom decile is **2.87e-02**.
 
 <img src="figures/policy-function.png" alt="Capital policy $g(k)$ versus the closed-form rule $\alpha\beta A k^{\alpha}$" width="80%">
 
-Iterating $k_{t+1}=g(k_t)$ from $k_0 = 0.1\,k_{ss}$ traces the Ramsey transition. Capital rises quickly at first because marginal product is high when capital is scarce, then convergence slows as $f'(k)$ falls toward $1/\beta$. Consumption inherits the same hump-free monotonicity here because the saving rate is constant; with non-log utility the consumption path could overshoot or undershoot $c_{ss}$ even when capital does not. The numerical and closed-form trajectories are visually indistinguishable, with sup-norm capital-path error **2.39e-02**.
+Starting from $0.1\,k_{ss}$, capital rises toward the steady state. It rises fastest when capital is scarce. Consumption also rises because the saving share is constant. The maximum capital-path error is **2.39e-02**.
 
 <img src="figures/simulation.png" alt="Capital and consumption transitions starting from $k_0=1.00$" width="80%">
 
-The audit table reports both objects at eight representative capital states. Value-function residuals are uniformly tight; policy residuals are larger but smooth in $k$ and never reverse sign in a way that would suggest a spurious local optimum. The relevant diagnostic for downstream simulations is the policy column, since policies are what get forward-iterated.
+The table checks eight representative capital states. Value errors are tiny at each selected state. Policy errors are larger because $k'$ is chosen on a finite grid.
 
 **Numerical vs closed-form solution at selected capital states**
 
@@ -147,7 +137,7 @@ The audit table reports both objects at eight representative capital states. Val
 
 ## Takeaway
 
-Optimal growth is the cake-eating Bellman equation with one extra ingredient: the resource constraint runs through a production function, so saving today delivers $f'(k_{t+1})$ extra units of consumption tomorrow. The Euler equation absorbs that change cleanly, and under log utility, Cobb-Douglas production, and full depreciation it collapses to a constant saving rate $\alpha\beta = 0.27$ and a closed-form transition toward $k_{ss} = 9.95$. VFI recovers that policy to interpolation accuracy, which is the right calibration to take into the stochastic, partially depreciated, or constrained settings later in the catalog, where Euler residuals and equilibrium consistency replace the closed form as the only available checks.
+The one-capital growth problem makes saving productive. In the log Cobb-Douglas case, the exact policy saves $\alpha\beta = 0.27$ of output. VFI recovers that rule to grid accuracy. The example shows how to audit a Bellman solver when an exact benchmark exists.
 
 ## References
 

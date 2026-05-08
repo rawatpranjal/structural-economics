@@ -163,31 +163,20 @@ def main() -> None:
 
     report = ModelReport(
         "Optimal Growth by Value Function Iteration",
-        "Productive capital, the Ramsey transition, and a closed-form audit for VFI.",
+        "A one-capital planner problem with an exact check on VFI.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "This is the discrete-time Ramsey-Cass-Koopmans planner: one good, one factor "
-        "(capital), and a representative agent who chooses consumption to maximize "
-        "discounted utility. Compared with [cake eating](../cake-eating/), the only new "
-        "ingredient is that the state is *productive*. Saving a unit of output as capital "
-        "delivers $\\alpha A k^{\\alpha-1}$ extra units of output tomorrow rather than "
-        "the gross return of one that disciplines the cake problem. That single change "
-        "introduces diminishing returns, an interior steady state, and the trade-off "
-        "between the impatience rate $1/\\beta - 1$ and the marginal product of capital.\n\n"
-        "With log utility, Cobb-Douglas production, and full depreciation, the planner's "
-        "problem has a closed form: the optimal saving rate is the constant "
-        "$\\alpha\\beta$, the value function is affine in $\\log k$, and the transition "
-        "to the Ramsey steady state $k_{ss}=(\\alpha\\beta A)^{1/(1-\\alpha)}$ is "
-        "monotone. This is the only one-sector growth calibration where every numerical "
-        "object has an exact analytical twin, which is what makes it the natural audit "
-        "for a generic Bellman solver before risk, partial depreciation, labor, or "
-        "equilibrium prices break the closed form. The same recursion reappears, with "
-        "different state spaces, in the [RBC tutorial](../rbc/) once productivity shocks "
-        "are added and in [Aiyagari](../aiyagari/) once the planner is replaced by a "
-        "continuum of constrained households facing market-determined factor prices."
+        "A planner allocates output between consumption today and capital tomorrow. "
+        "Capital produces future output, so saving has a return that falls with $k$. "
+        "The economy settles where impatience balances the marginal product of capital.\n\n"
+        "The object is the policy rule $g(k)$ for next-period capital. "
+        "Given $g(k)$, consumption is $c^{*}(k)=A k^{\\alpha}-g(k)$.\n\n"
+        "The log Cobb-Douglas case has the closed-form saving rate $\\alpha\\beta$. "
+        "Value function iteration solves the Bellman equation on a grid. "
+        "Here the closed form audits the computed value and policy point by point."
     )
 
     report.add_equations(
@@ -210,15 +199,11 @@ $$V(k) \;=\; \max_{0 < k' < A k^{\alpha}}
 \{\, \log(A k^{\alpha}-k') + \beta\, V(k') \,\}.$$
 
 Let $g(k)$ denote the optimal $k'$ and $c^{*}(k) = A k^{\alpha} - g(k)$ the
-implied consumption. Differentiating inside the max and applying the envelope
-theorem $V'(k) = u'(c^{*}(k))\, f'(k)$ delivers the **Euler equation**
+implied consumption. The first-order and envelope conditions deliver the
+Euler equation
 
 $$u'(c_t) \;=\; \beta\, f'(k_{t+1})\, u'(c_{t+1}),
 \qquad f'(k) = \alpha A k^{\alpha-1}.$$
-
-The shadow value of capital today equals discounted shadow value tomorrow
-*scaled by the gross return on capital*. The cake-eating Euler equation is the
-$f'(k)\equiv 1$ special case.
 
 For log utility and Cobb-Douglas production, conjecture $g(k) = s A k^{\alpha}$
 with constant saving rate $s$. Substituting into the Euler equation gives
@@ -243,12 +228,6 @@ The steady state solves $k = g(k)$, equivalently $\beta f'(k_{ss}) = 1$:
 
 $$k_{ss} \;=\; (\alpha\beta A)^{1/(1-\alpha)},
 \qquad c_{ss} \;=\; A k_{ss}^{\alpha} - k_{ss}.$$
-
-The closed form depends on all three assumptions jointly. Drop log utility,
-introduce partial depreciation, or replace the production function and the
-Ramsey transition still exists, but $g$ and $V$ have to be solved numerically.
-That generic case is exactly what VFI is for; the calibration here is the
-sharpest available test of whether the solver gets it right.
 """
     )
 
@@ -273,24 +252,12 @@ sharpest available test of whether the solver gets it right.
         r"$$(TV)(k) \;=\; \max_{0 < k' < A k^{\alpha}}"
         r"\{\, \log(A k^{\alpha} - k') + \beta\, V(k') \,\}."
         "$$\n\n"
-        "Blackwell's monotonicity and discounting conditions hold, so $T$ is a "
-        "contraction with modulus $\\beta$. Successive iterates satisfy "
-        "$\\|V_n - V\\|_{\\infty} \\le \\beta^{n}\\|V_0 - V\\|_{\\infty}$, which "
-        "fixes the convergence rate and the stopping rule. With $\\beta=" f"{beta}$ "
-        "the bound predicts roughly $\\log(\\varepsilon)/\\log(\\beta)$ iterations "
-        "to reach tolerance $\\varepsilon$.\n\n"
-        "Numerically, $V$ is tabulated on a uniform state grid for $k$. At each "
-        "state, the maximizer is searched on a finer grid of candidate next-period "
-        "capital values, and the continuation $V(k')$ is recovered by linear "
-        "interpolation against the current iterate. Two implementation choices "
-        "matter economically: (i) the upper end of the state grid sits well above "
-        "$k_{ss}$ so that the policy converges to $g(k)<k$ before hitting the "
-        "boundary, and (ii) the inner choice grid is at least as fine as the state "
-        "grid, because policy errors propagate directly into the simulated "
-        "transition. The closed-form policy is *not* used inside the loop; it is "
-        "computed afterwards solely as a benchmark.\n\n"
+        "VFI starts from an initial value on the capital grid. "
+        "At each $k_i$, the code searches over feasible $k'$ values. "
+        "It chooses the $k'$ with the highest current utility plus interpolated continuation value. "
+        "The loop stops when the sup-norm change in $V$ is below $\\varepsilon$.\n\n"
         "```text\n"
-        "Algorithm — Optimal-Growth VFI with continuous k', interpolated continuation\n"
+        "Algorithm: Optimal-growth VFI with continuous k'\n"
         "Input : capital grid {k_i}_{i=1..N_k}, choice grid size N_kp,\n"
         "        primitives (A, alpha, beta), utility u(c) = log c, tolerance epsilon\n"
         "Output: value V*(k_i), capital policy g(k_i)\n"
@@ -308,15 +275,13 @@ sharpest available test of whether the solver gets it right.
         "      err <- max_i | V_{n+1}(k_i) - V_n(k_i) |\n"
         "      stop when err < epsilon\n"
         "```\n\n"
-        f"With the calibration above the iteration converges in **{info['iterations']} "
-        f"steps** to a sup-norm residual of **{info['error']:.2e}**, consistent with the "
-        "geometric bound. The Euler equation could also be solved in one pass by "
-        "endogenous-grid points or a shooting method, but VFI is what generalizes to "
-        "the stochastic and constrained problems later in the catalog."
+        f"The iteration converges in **{info['iterations']} "
+        f"steps** with sup-norm residual **{info['error']:.2e}**. "
+        "The closed-form rule is computed only after VFI finishes."
     )
 
     # ------------------------------------------------------------------
-    # Figure 1 — value function vs closed form
+    # Figure 1: value function vs closed form
     # ------------------------------------------------------------------
     fig1, ax1 = plt.subplots()
     ax1.plot(k_grid, v_star, color="tab:blue", linewidth=2, label="Numerical (VFI)")
@@ -328,14 +293,9 @@ sharpest available test of whether the solver gets it right.
     ax1.set_title("Value Function vs Closed Form")
     ax1.legend()
     report.add_results(
-        "The value function is increasing and concave because more capital relaxes "
-        "the resource constraint while marginal product diminishes. With log utility "
-        "and Cobb-Douglas production it is exactly affine in $\\log k$, and the "
-        "numerical curve sits on top of the closed-form curve over the whole "
-        "economically relevant range. Outside the bottom decile of the grid the "
-        f"largest sup-norm gap is **{max_value_error:.2e}**, which is essentially "
-        "interpolation noise; the wider deviation near $k=0$ is the usual artifact of "
-        "the log singularity on a uniform grid."
+        "The value function rises and bends because capital has diminishing returns. "
+        "The numerical curve matches $E+B\\log k$ except near the lowest grid points. "
+        f"Outside the bottom decile, the largest value gap is **{max_value_error:.2e}**."
     )
     report.add_figure(
         "figures/value-function.png",
@@ -344,7 +304,7 @@ sharpest available test of whether the solver gets it right.
     )
 
     # ------------------------------------------------------------------
-    # Figure 2 — capital policy vs closed form
+    # Figure 2: capital policy vs closed form
     # ------------------------------------------------------------------
     fig2, ax2 = plt.subplots()
     ax2.plot(k_grid, policy_kprime_jnp, color="tab:blue", linewidth=2, label="Numerical $g(k)$")
@@ -359,17 +319,11 @@ sharpest available test of whether the solver gets it right.
     ax2.set_title("Capital Policy")
     ax2.legend()
     report.add_results(
-        "The economic content of the model lives in this picture. The policy crosses "
-        "the $45^{\\circ}$ line exactly at $k_{ss}$: below the steady state the "
-        "planner accumulates ($k' > k$), above it the planner runs capital down "
-        "($k' < k$). The slope at the crossing is less than one, which is what makes "
-        "the steady state stable and the transition monotone. Under log utility the "
-        f"saving rate is the constant $\\alpha\\beta = {alpha*beta:.2f}$ regardless "
-        "of the level of capital; off log utility, $g$ would still cross the "
-        "$45^{\\circ}$ line at $k_{ss}$ but its curvature would shift with the "
-        "intertemporal elasticity. The largest pointwise policy gap outside the "
-        f"bottom decile is **{max_policy_error:.2e}**, with a corresponding "
-        f"consumption-policy gap of **{max_consumption_error:.2e}**."
+        "The policy crosses the $45^{\\circ}$ line at $k_{ss}$. "
+        "Below $k_{ss}$, the planner accumulates capital. "
+        "Above $k_{ss}$, the planner runs capital down. "
+        f"The log case saves the constant share $\\alpha\\beta = {alpha*beta:.2f}$ of output. "
+        f"The largest policy gap outside the bottom decile is **{max_policy_error:.2e}**."
     )
     report.add_figure(
         "figures/policy-function.png",
@@ -378,7 +332,7 @@ sharpest available test of whether the solver gets it right.
     )
 
     # ------------------------------------------------------------------
-    # Figure 3 — transition paths
+    # Figure 3: transition paths
     # ------------------------------------------------------------------
     fig3, (ax3a, ax3b) = plt.subplots(1, 2, figsize=(12, 5))
     periods = jnp.arange(T_sim)
@@ -406,14 +360,10 @@ sharpest available test of whether the solver gets it right.
     ax3b.legend()
     fig3.tight_layout()
     report.add_results(
-        "Iterating $k_{t+1}=g(k_t)$ from $k_0 = 0.1\\,k_{ss}$ traces the Ramsey "
-        "transition. Capital rises quickly at first because marginal product is high "
-        "when capital is scarce, then convergence slows as $f'(k)$ falls toward "
-        "$1/\\beta$. Consumption inherits the same hump-free monotonicity here "
-        "because the saving rate is constant; with non-log utility the consumption "
-        "path could overshoot or undershoot $c_{ss}$ even when capital does not. "
-        "The numerical and closed-form trajectories are visually indistinguishable, "
-        f"with sup-norm capital-path error **{max_path_error:.2e}**."
+        "Starting from $0.1\\,k_{ss}$, capital rises toward the steady state. "
+        "It rises fastest when capital is scarce. "
+        "Consumption also rises because the saving share is constant. "
+        f"The maximum capital-path error is **{max_path_error:.2e}**."
     )
     report.add_figure(
         "figures/simulation.png",
@@ -436,11 +386,9 @@ sharpest available test of whether the solver gets it right.
     }
     df = pd.DataFrame(table_data)
     report.add_results(
-        "The audit table reports both objects at eight representative capital states. "
-        "Value-function residuals are uniformly tight; policy residuals are larger "
-        "but smooth in $k$ and never reverse sign in a way that would suggest a "
-        "spurious local optimum. The relevant diagnostic for downstream simulations "
-        "is the policy column, since policies are what get forward-iterated."
+        "The table checks eight representative capital states. "
+        "Value errors are tiny at each selected state. "
+        "Policy errors are larger because $k'$ is chosen on a finite grid."
     )
     report.add_table(
         "tables/comparison.csv",
@@ -449,17 +397,10 @@ sharpest available test of whether the solver gets it right.
     )
 
     report.add_takeaway(
-        "Optimal growth is the cake-eating Bellman equation with one extra ingredient: "
-        "the resource constraint runs through a production function, so saving today "
-        "delivers $f'(k_{t+1})$ extra units of consumption tomorrow. The Euler "
-        "equation absorbs that change cleanly, and under log utility, Cobb-Douglas "
-        "production, and full depreciation it collapses to a constant saving rate "
-        f"$\\alpha\\beta = {alpha*beta:.2f}$ and a closed-form transition toward "
-        f"$k_{{ss}} = {kss:.2f}$. VFI recovers that policy to interpolation accuracy, "
-        "which is the right calibration to take into the stochastic, partially "
-        "depreciated, or constrained settings later in the catalog, where Euler "
-        "residuals and equilibrium consistency replace the closed form as the only "
-        "available checks."
+        "The one-capital growth problem makes saving productive. "
+        f"In the log Cobb-Douglas case, the exact policy saves $\\alpha\\beta = {alpha*beta:.2f}$ of output. "
+        "VFI recovers that rule to grid accuracy. "
+        "The example shows how to audit a Bellman solver when an exact benchmark exists."
     )
 
     report.add_references([
