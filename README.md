@@ -31,6 +31,7 @@ These tutorials cover the scalar building blocks the rest of the catalog uses: s
 | Preview | Tutorial | Description |
 |---|---|---|
 | [<img src="numerical-methods/root-finding/figures/thumb.png" width="160">](numerical-methods/root-finding/figures/residual-and-bracket.png) | **[Scalar Root Finding for Market Clearing](numerical-methods/root-finding/)** | Bracketed bisection and quadratic-rate Newton-Raphson solve $F(k) = 0$ for the steady-state capital stock. The two methods trade global safety for local speed; far-above starts make Newton overshoot into negative capital. |
+| [<img src="numerical-methods/scalar-optimization/figures/thumb.png" width="160">](numerical-methods/scalar-optimization/figures/golden-section-trace.png) | **[One-Dimensional Optimization for Bellman Inner Steps](numerical-methods/scalar-optimization/)** | Golden section search and Newton-on-FOC find the cake-eating inner argmax with a log-utility closed-form check. Bracketed search is robust on a unimodal payoff; Newton uses curvature for fast local steps but overshoots feasibility from far-off starts. |
 
 ## Dynamic Programming
 

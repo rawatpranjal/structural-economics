@@ -1,0 +1,3 @@
+Method,Start,Iterations,Final residual,Error in c,Convergence rate
+Golden section,"[1e-03, 0.999]",48,1.77e-07,1.59e-09,linear (phi)
+Newton on FOC,x_0 = 0.05,6,0.00e+00,0.00e+00,quadratic
