@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T06:44:08Z",
+  "updated_at": "2026-05-08T06:50:06Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -258,6 +258,17 @@
         "optimal-control/phase-diagrams/tables/steady-state.csv"
       ],
       "updated_at": "2026-05-08T06:44:08Z"
+    },
+    {
+      "tutorial_path": "optimal-control/ramsey-growth/",
+      "status": "complete",
+      "commit": "2c1ecfa52d34e13818f7ff352bb0bb795c319957",
+      "changed_paths": [
+        "README.md",
+        "optimal-control/ramsey-growth/README.md",
+        "optimal-control/ramsey-growth/run.py"
+      ],
+      "updated_at": "2026-05-08T06:50:06Z"
     },
     {
       "tutorial_path": "industrial-organization/dynamic-discrete-choice/",
