@@ -2,4 +2,3 @@ Contract,Retail price,Wholesale price,Fixed fee,Quantity,Channel profit,Consumer
 Integrated benchmark,6.50,2.00,0.00,7.00,24.50,12.25,36.75,0.00,24.50
 Linear wholesale,8.25,5.50,0.00,3.50,18.38,3.06,21.44,12.25,6.12
 Two-part tariff,6.50,2.00,24.50,7.00,24.50,12.25,36.75,24.50,0.00
-Resale price maintenance,6.50,5.50,0.00,7.00,24.50,12.25,36.75,24.50,0.00
