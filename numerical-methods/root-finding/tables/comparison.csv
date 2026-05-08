@@ -1,0 +1,3 @@
+Method,Start,Iterations,Final residual,Error in k,Convergence rate
+Bisection,"[0.1, 30.0]",31,8.19e-11,5.73e-09,linear (1/2)
+Newton-Raphson,x_0 = 1.0,7,0.00e+00,0.00e+00,quadratic
