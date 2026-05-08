@@ -100,7 +100,6 @@ def simulate_panel(
 
     return {
         "n_draws": n_draws,
-        "state_high": state_high,
         "k_red": k_red,
         "type_id": type_id,
         "choices": choices,
@@ -158,32 +157,6 @@ def allocation_table(true_type: np.ndarray, assigned_type: np.ndarray) -> pd.Dat
     return df
 
 
-def bayes_diagnostics(
-    n_draws: np.ndarray,
-    k_red: np.ndarray,
-    state_high: np.ndarray,
-    prior_h: float,
-    p_red_h: float,
-    p_red_l: float,
-) -> pd.DataFrame:
-    """Task-level sufficient statistics and exact Bayesian classifications."""
-    posterior = posterior_high(k_red, n_draws, prior_h, p_red_h, p_red_l)
-    log_lr = log_likelihood_ratio(k_red, n_draws, p_red_h, p_red_l)
-    bayes_choice = (posterior >= 0.5).astype(int)
-    return pd.DataFrame(
-        {
-            "Task": np.arange(1, len(n_draws) + 1),
-            "Draws": n_draws,
-            "Red count": k_red,
-            "True high urn": state_high,
-            "Log likelihood ratio": log_lr,
-            "Posterior high": posterior,
-            "Bayes choice high": bayes_choice,
-            "Bayes correct": bayes_choice == state_high,
-        }
-    )
-
-
 def main() -> None:
     rng = np.random.default_rng(1234)
     n_subjects = 600
@@ -214,15 +187,6 @@ def main() -> None:
     assigned = np.argmax(responsibilities, axis=1)
     max_posterior = np.max(responsibilities, axis=1)
     type_accuracy = float(np.mean(assigned == panel["type_id"]))
-    bayes_table = bayes_diagnostics(
-        panel["n_draws"],
-        panel["k_red"],
-        panel["state_high"],
-        prior_h,
-        p_red_h,
-        p_red_l,
-    )
-    bayes_accuracy = float(bayes_table["Bayes correct"].mean())
     weight_l1 = float(np.sum(np.abs(weights_hat - true_weights)))
     rule_choices = np.asarray(panel["rule_choices"])
     bayes_conservative_split = int(np.sum(rule_choices[0] != rule_choices[1]))
@@ -243,17 +207,12 @@ def main() -> None:
     )
 
     report.add_overview(
-        "Consider a lab task in which a subject sees a small sample from one of two urns "
-        "and must decide whether the urn is the high-red state. The setting is attractive "
-        "for studying belief-based choice because the Bayesian benchmark is fully pinned "
-        "down. For any red count and sample size, Bayes' rule gives the posterior "
-        "probability of the high state.\n\n"
-        "Repeated choices make the inference problem more interesting. The researcher "
-        "observes a sequence of high-urn choices, not the rule each subject used. The code "
-        "first turns each signal into a likelihood-ratio state variable. It then estimates "
-        "a finite mixture by EM, treating each person's decision rule as a latent class. "
-        "That gives the researcher two outputs: population shares for the rules and "
-        "subject-level probabilities over candidate behavioral types."
+        "In an urn experiment, a subject sees a small sample from one of two urns. "
+        "The choice is whether the hidden state is high red.\n\n"
+        "The object is a decision rule. It maps red counts and sample sizes into "
+        "a high-urn choice.\n\n"
+        "Bayes' rule gives a benchmark for each task. Repeated choices need EM "
+        "because the researcher observes choices, not each subject's rule."
     )
 
     report.add_equations(
@@ -315,11 +274,10 @@ $$
     )
 
     report.add_solution_method(
-        "The calculation has two layers. First, each urn task is reduced to a likelihood "
-        "ratio, so the Bayesian benchmark depends on $(k,n)$ rather than the full signal "
-        "history. Second, EM estimates the population shares of the candidate rules. Each "
-        "E step computes the probability that a subject followed each rule, and each M "
-        "step averages those probabilities into new mixture weights.\n\n"
+        "Each task is first reduced to the log likelihood ratio. This statistic is "
+        "enough for the Bayesian posterior.\n\n"
+        "EM then estimates the shares of fixed "
+        "candidate rules.\n\n"
         "```text\n"
         "Algorithm: EM for latent decision rules\n"
         "Input: repeated choices d_it, task counts (k_t, n_t), candidate rules m=1,...,M\n"
@@ -329,13 +287,9 @@ $$
         "4. Repeat until the log likelihood changes by less than the tolerance:\n"
         "   E step: tau_im = w_m L_im / sum_h w_h L_ih\n"
         "   M step: w_m = mean_i tau_im\n"
-        "5. Assign each subject to argmax_m tau_im for diagnostics\n"
+        "5. Assign each subject to argmax_m tau_im\n"
         "Output: mixture shares, posterior responsibilities, allocation accuracy\n"
-        "```\n\n"
-        "Because the rule-specific choice probabilities are fixed here, the M step is just "
-        "a normalized average of responsibilities. With unknown cutoff points or response "
-        "noise, the same likelihood would optimize those rule-specific parameters inside "
-        "the M step."
+        "```"
     )
 
     display_draws = 5
@@ -355,17 +309,16 @@ $$
     ax1.set_title("Bayesian State Variable")
     ax1.legend()
     report.add_results(
-        "The likelihood ratio is the sufficient statistic for the Bayesian state "
-        f"classification. With {display_draws} draws, three red balls put the posterior "
-        "above one half but below the conservative 0.75 cutoff. Those middle signals "
-        "help the repeated-choice panel distinguish exact Bayesian updating from a "
-        "stricter decision rule."
+        "The likelihood ratio orders tasks by evidence for the high-red urn. "
+        f"With {display_draws} draws, a count of three red balls crosses the Bayes threshold. "
+        "It does not cross the conservative cutoff. Such tasks separate exact "
+        "Bayesian updating from stricter rules."
     )
     report.add_figure(
         "figures/bayes-likelihood-ratio.png",
         "Bayesian posterior as a function of the likelihood ratio",
         fig1,
-        description="Exact Bayesian updating converts the signal count into a posterior belief before classification.",
+        description="Signal counts become posterior beliefs before classification.",
     )
 
     x_pos = np.arange(len(RULES))
@@ -379,16 +332,16 @@ $$
     ax2.set_title("Latent Rule Shares")
     ax2.legend()
     report.add_results(
-        "The EM estimator recovers the population shares of the fixed candidate rules. "
+        "EM estimates the population share of each fixed rule. "
         f"The L1 distance between estimated and true weights is **{weight_l1:.3f}**. "
-        "The exercise keeps the candidate rules fixed, so the estimate answers a concrete "
-        "heterogeneity question: what share of subjects behave like each rule?"
+        "The estimate answers one heterogeneity question: how many subjects behave "
+        "like each rule?"
     )
     report.add_figure(
         "figures/mixture-weights.png",
         "True and estimated latent rule shares",
         fig2,
-        description="Mixture weights are recovered from repeated choices, not from observing rule labels.",
+        description="Repeated choices identify shares without observing rule labels.",
     )
 
     fig3, ax3 = plt.subplots(figsize=(7, 4.5))
@@ -397,19 +350,17 @@ $$
     ax3.set_ylabel("Subjects")
     ax3.set_title("Classification Confidence")
     report.add_results(
-        "Posterior responsibilities measure subject-level classification confidence. "
-        "A subject with choices that several rules can explain receives diffuse "
-        "responsibilities, even if the aggregate mixture weights are accurate. The hard "
-        f"allocation accuracy in this run is **{type_accuracy:.3f}**. In the simulated "
-        f"task menu, Bayes differs from the conservative rule on {bayes_conservative_split} "
-        f"tasks, from the red-share rule on {bayes_share_split} tasks, and from the "
-        f"raw-count rule on {bayes_count_split} tasks."
+        "Responsibilities give subject-level rule probabilities. Diffuse responsibilities "
+        "mark choice histories that several rules can explain. Hard allocation accuracy "
+        f"is **{type_accuracy:.3f}**. Bayes differs from the conservative rule on "
+        f"{bayes_conservative_split} tasks. It differs from the red-share rule on "
+        f"{bayes_share_split} tasks and the raw-count rule on {bayes_count_split} tasks."
     )
     report.add_figure(
         "figures/classification-confidence.png",
         "Posterior confidence in assigned latent rule",
         fig3,
-        description="The distribution of max responsibilities separates confident rule assignments from ambiguous choice histories.",
+        description="Max responsibilities show how confident the type assignment is.",
     )
 
     weights_table = pd.DataFrame(
@@ -426,8 +377,8 @@ $$
         "Latent rule weight recovery",
         weights_table.round({"True weight": 4, "Estimated weight": 4, "Error": 4}),
         description=(
-            f"The EM likelihood converged in {estimates['iterations']} iterations with "
-            f"log likelihood {float(estimates['log_likelihood']):.2f}."
+            f"EM converges in {estimates['iterations']} iterations; log likelihood is "
+            f"{float(estimates['log_likelihood']):.2f}."
         ),
     )
 
@@ -436,56 +387,14 @@ $$
         "True versus assigned latent rule counts",
         allocation_table(panel["type_id"], assigned),
         description=(
-            "Rows are true simulated rules and columns are posterior-modal assignments. "
-            "The labels are known only because this is a Monte Carlo tutorial."
+            "Rows are true simulated rules. Columns are posterior-modal assignments."
         ),
-    )
-
-    task_table = bayes_table.head(12).copy()
-    report.add_table(
-        "tables/bayes-task-diagnostics.csv",
-        "Bayesian classifier diagnostics for the first twelve tasks",
-        task_table.round({"Log likelihood ratio": 4, "Posterior high": 4}),
-        description=(
-            f"The exact Bayes classifier is correct on {bayes_accuracy:.1%} of the task "
-            "states in this simulated set. The table keeps the likelihood-ratio statistic "
-            "visible because it is the state variable for the later rule estimator."
-        ),
-    )
-
-    diagnostics = pd.DataFrame(
-        {
-            "Diagnostic": [
-                "EM converged",
-                "EM iterations",
-                "Mixture weight L1 error",
-                "Hard type allocation accuracy",
-                "Mean max posterior responsibility",
-                "Bayes task-state accuracy",
-            ],
-            "Value": [
-                float(bool(estimates["converged"])),
-                float(estimates["iterations"]),
-                weight_l1,
-                type_accuracy,
-                float(np.mean(max_posterior)),
-                bayes_accuracy,
-            ],
-        }
-    )
-    report.add_table(
-        "tables/estimator-diagnostics.csv",
-        "Estimator and known-truth diagnostics",
-        diagnostics,
-        description="The diagnostics separate aggregate share recovery from individual-level type classification.",
     )
 
     report.add_takeaway(
-        "Likelihood ratios turn each urn signal into a belief benchmark. The EM mixture "
-        "then turns repeated choices into estimates of latent behavioral-rule shares. "
-        "This is the reusable lesson for nearby choice data: when several simple rules "
-        "are economically meaningful, a finite mixture can estimate population shares "
-        "and show which individuals are hard to classify."
+        "The likelihood ratio gives a task-level belief benchmark. EM uses repeated "
+        "choices to estimate shares of latent decision rules. The method is useful "
+        "when simple rules are meaningful but rule labels are unobserved."
     )
 
     report.add_references(

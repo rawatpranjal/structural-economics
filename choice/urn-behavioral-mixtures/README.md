@@ -4,9 +4,11 @@
 
 ## Overview
 
-Consider a lab task in which a subject sees a small sample from one of two urns and must decide whether the urn is the high-red state. The setting is attractive for studying belief-based choice because the Bayesian benchmark is fully pinned down. For any red count and sample size, Bayes' rule gives the posterior probability of the high state.
+In an urn experiment, a subject sees a small sample from one of two urns. The choice is whether the hidden state is high red.
 
-Repeated choices make the inference problem more interesting. The researcher observes a sequence of high-urn choices, not the rule each subject used. The code first turns each signal into a likelihood-ratio state variable. It then estimates a finite mixture by EM, treating each person's decision rule as a latent class. That gives the researcher two outputs: population shares for the rules and subject-level probabilities over candidate behavioral types.
+The object is a decision rule. It maps red counts and sample sizes into a high-urn choice.
+
+Bayes' rule gives a benchmark for each task. Repeated choices need EM because the researcher observes choices, not each subject's rule.
 
 ## Equations
 
@@ -66,7 +68,9 @@ $$
 
 ## Solution Method
 
-The calculation has two layers. First, each urn task is reduced to a likelihood ratio, so the Bayesian benchmark depends on $(k,n)$ rather than the full signal history. Second, EM estimates the population shares of the candidate rules. Each E step computes the probability that a subject followed each rule, and each M step averages those probabilities into new mixture weights.
+Each task is first reduced to the log likelihood ratio. This statistic is enough for the Bayesian posterior.
+
+EM then estimates the shares of fixed candidate rules.
 
 ```text
 Algorithm: EM for latent decision rules
@@ -77,33 +81,31 @@ Input: repeated choices d_it, task counts (k_t, n_t), candidate rules m=1,...,M
 4. Repeat until the log likelihood changes by less than the tolerance:
    E step: tau_im = w_m L_im / sum_h w_h L_ih
    M step: w_m = mean_i tau_im
-5. Assign each subject to argmax_m tau_im for diagnostics
+5. Assign each subject to argmax_m tau_im
 Output: mixture shares, posterior responsibilities, allocation accuracy
 ```
 
-Because the rule-specific choice probabilities are fixed here, the M step is just a normalized average of responsibilities. With unknown cutoff points or response noise, the same likelihood would optimize those rule-specific parameters inside the M step.
-
 ## Results
 
-The likelihood ratio is the sufficient statistic for the Bayesian state classification. With 5 draws, three red balls put the posterior above one half but below the conservative 0.75 cutoff. Those middle signals help the repeated-choice panel distinguish exact Bayesian updating from a stricter decision rule.
+The likelihood ratio orders tasks by evidence for the high-red urn. With 5 draws, a count of three red balls crosses the Bayes threshold. It does not cross the conservative cutoff. Such tasks separate exact Bayesian updating from stricter rules.
 
-Exact Bayesian updating converts the signal count into a posterior belief before classification.
+Signal counts become posterior beliefs before classification.
 
 <img src="figures/bayes-likelihood-ratio.png" alt="Bayesian posterior as a function of the likelihood ratio" width="80%">
 
-The EM estimator recovers the population shares of the fixed candidate rules. The L1 distance between estimated and true weights is **0.028**. The exercise keeps the candidate rules fixed, so the estimate answers a concrete heterogeneity question: what share of subjects behave like each rule?
+EM estimates the population share of each fixed rule. The L1 distance between estimated and true weights is **0.028**. The estimate answers one heterogeneity question: how many subjects behave like each rule?
 
-Mixture weights are recovered from repeated choices, not from observing rule labels.
+Repeated choices identify shares without observing rule labels.
 
 <img src="figures/mixture-weights.png" alt="True and estimated latent rule shares" width="80%">
 
-Posterior responsibilities measure subject-level classification confidence. A subject with choices that several rules can explain receives diffuse responsibilities, even if the aggregate mixture weights are accurate. The hard allocation accuracy in this run is **0.998**. In the simulated task menu, Bayes differs from the conservative rule on 6 tasks, from the red-share rule on 4 tasks, and from the raw-count rule on 10 tasks.
+Responsibilities give subject-level rule probabilities. Diffuse responsibilities mark choice histories that several rules can explain. Hard allocation accuracy is **0.998**. Bayes differs from the conservative rule on 6 tasks. It differs from the red-share rule on 4 tasks and the raw-count rule on 10 tasks.
 
-The distribution of max responsibilities separates confident rule assignments from ambiguous choice histories.
+Max responsibilities show how confident the type assignment is.
 
 <img src="figures/classification-confidence.png" alt="Posterior confidence in assigned latent rule" width="80%">
 
-The EM likelihood converged in 6 iterations with log likelihood -8816.71.
+EM converges in 6 iterations; log likelihood is -8816.71.
 
 **Latent rule weight recovery**
 
@@ -114,7 +116,7 @@ The EM likelihood converged in 6 iterations with log likelihood -8816.71.
 | Share cutoff | Choose high when at least half of sampled balls are red.                          |          0.2  |             0.2019 |  0.0019 |
 | Count cutoff | Choose high when at least four sampled balls are red, ignoring sample size.       |          0.1  |             0.0883 | -0.0117 |
 
-Rows are true simulated rules and columns are posterior-modal assignments. The labels are known only because this is a Monte Carlo tutorial.
+Rows are true simulated rules. Columns are posterior-modal assignments.
 
 **True versus assigned latent rule counts**
 
@@ -125,41 +127,9 @@ Rows are true simulated rules and columns are posterior-modal assignments. The l
 | Share cutoff |       1 |              0 |            120 |              0 |
 | Count cutoff |       0 |              0 |              0 |             53 |
 
-The exact Bayes classifier is correct on 86.7% of the task states in this simulated set. The table keeps the likelihood-ratio statistic visible because it is the state variable for the later rule estimator.
-
-**Bayesian classifier diagnostics for the first twelve tasks**
-
-|   Task |   Draws |   Red count |   True high urn |   Log likelihood ratio |   Posterior high |   Bayes choice high | Bayes correct   |
-|-------:|--------:|------------:|----------------:|-----------------------:|-----------------:|--------------------:|:----------------|
-|      1 |      12 |           5 |               0 |                -2.1565 |           0.0865 |                   0 | True            |
-|      2 |       6 |           5 |               1 |                 3.1673 |           0.951  |                   1 | True            |
-|      3 |      12 |           8 |               1 |                 2.9382 |           0.9392 |                   1 | True            |
-|      4 |       5 |           5 |               1 |                 4.0547 |           0.9792 |                   1 | True            |
-|      5 |       5 |           2 |               0 |                -1.04   |           0.2243 |                   0 | True            |
-|      6 |       3 |           0 |               0 |                -2.6619 |           0.054  |                   0 | True            |
-|      7 |       5 |           5 |               1 |                 4.0547 |           0.9792 |                   1 | True            |
-|      8 |       5 |           1 |               0 |                -2.7383 |           0.0503 |                   0 | True            |
-|      9 |      12 |           5 |               0 |                -2.1565 |           0.0865 |                   0 | True            |
-|     10 |       5 |           2 |               0 |                -1.04   |           0.2243 |                   0 | True            |
-|     11 |       6 |           4 |               1 |                 1.4691 |           0.7805 |                   1 | True            |
-|     12 |       7 |           2 |               0 |                -2.8147 |           0.0467 |                   0 | True            |
-
-The diagnostics separate aggregate share recovery from individual-level type classification.
-
-**Estimator and known-truth diagnostics**
-
-| Diagnostic                        |    Value |
-|:----------------------------------|---------:|
-| EM converged                      | 1        |
-| EM iterations                     | 6        |
-| Mixture weight L1 error           | 0.028395 |
-| Hard type allocation accuracy     | 0.998333 |
-| Mean max posterior responsibility | 0.996831 |
-| Bayes task-state accuracy         | 0.866667 |
-
 ## Takeaway
 
-Likelihood ratios turn each urn signal into a belief benchmark. The EM mixture then turns repeated choices into estimates of latent behavioral-rule shares. This is the reusable lesson for nearby choice data: when several simple rules are economically meaningful, a finite mixture can estimate population shares and show which individuals are hard to classify.
+The likelihood ratio gives a task-level belief benchmark. EM uses repeated choices to estimate shares of latent decision rules. The method is useful when simple rules are meaningful but rule labels are unobserved.
 
 ## References
 
