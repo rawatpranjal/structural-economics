@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T10:00:30Z",
+  "updated_at": "2026-05-08T10:06:24Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -643,6 +643,19 @@
         "game-theory/first-price-auctions/tables/auction-summary.csv"
       ],
       "updated_at": "2026-05-08T10:00:30Z"
+    },
+    {
+      "tutorial_path": "game-theory/quantal-response-equilibrium/",
+      "status": "complete",
+      "commit": "803484100a025bbc2eab40db89c30955796a1821",
+      "changed_paths": [
+        "README.md",
+        "game-theory/quantal-response-equilibrium/README.md",
+        "game-theory/quantal-response-equilibrium/run.py",
+        "game-theory/quantal-response-equilibrium/tables/final-diagnostic.csv",
+        "game-theory/quantal-response-equilibrium/tables/qre-summary.csv"
+      ],
+      "updated_at": "2026-05-08T10:06:24Z"
     }
   ]
 }
