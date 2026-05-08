@@ -12,7 +12,7 @@ This repository gives graduate students and researchers short, executable exampl
 - [Computational Game Theory](#computational-game-theory)
 - [Time Series and Data](#time-series-and-data)
 - [Computational Methods](#computational-methods)
-- [Other Code Repositories](#other-code-repositories)
+- [Selected External Resources](#selected-external-resources)
 
 ## Quick Start
 
@@ -162,25 +162,31 @@ These tutorials are standalone references for optimization, approximation, simul
 | [<img src="computational-methods/kalman-filter/figures/thumb.png" width="160">](computational-methods/kalman-filter/figures/simulated-signal.png) | **[Nowcasting a Latent Business-Cycle State](computational-methods/kalman-filter/)** | Nowcast hidden activity from a noisy indicator. The Kalman filter weighs each signal with model-implied uncertainty and records the likelihood. |
 | [<img src="computational-methods/particle-filter/figures/thumb.png" width="160">](computational-methods/particle-filter/figures/filter-comparison.png) | **[Nowcasting Hidden Economic States with Particle Filters](computational-methods/particle-filter/)** | Nowcast a hidden economic state from a noisy signal. Particle filters approximate the filtered distribution with weighted simulations, and ESS reveals proposal failure. |
 
-## Other Code Repositories
+## Selected External Resources
+
+### Core Computational Economics
 
 - [QuantEcon](https://github.com/QuantEcon) - Open-source lectures and libraries for quantitative economics.
-- [John Stachurski GitHub](https://github.com/jstac) - Repositories on computational economics, stochastic dynamics, and econometric theory.
-- [Dynamic Structural Econometrics (DSE 2023)](https://github.com/dseconf/DSE2023) - Summer-school materials on solving and estimating dynamic models.
+- [John Stachurski GitHub](https://github.com/jstac) - Computational economics, stochastic dynamics, and numerical-methods code.
+- [OpenSourceEcon CompMethods](https://github.com/OpenSourceEcon/CompMethods) - Executable course materials on computational methods for economists.
+- [OpenSourceEconomics](https://github.com/OpenSourceEconomics) - Open-source tools for structural modeling, simulation, and policy analysis.
+
+### Heterogeneous-Agent & HANK Models
+
+- [Sequence-Jacobian](https://github.com/shade-econ/sequence-jacobian) - Python toolkit for solving heterogeneous-agent macro models with sequence-space Jacobians.
+- [Rognlie ECON 411-3](https://github.com/mrognlie/econ411-3) - Graduate macro materials on heterogeneous-agent models and sequence-space methods.
+- [HARK](https://github.com/econ-ark/HARK) - Econ-ARK toolkit for heterogeneous-agent consumption, saving, and portfolio models.
+- [Benjamin Moll Codes](https://benjaminmoll.com/codes/) - Finite-difference codes for continuous-time heterogeneous-agent models.
+
+### Empirical IO & Structural Estimation
+
+- [PyBLP](https://github.com/jeffgortmaker/pyblp) - Python package for estimating differentiated-products demand and supply models.
+- [Chris Conlon Grad IO](https://github.com/chrisconlon/Grad-IO) - PhD empirical IO course materials with practical estimation code.
+- [Courthoud PhD Industrial Organization](https://github.com/matteocourthoud/Phd-Industrial-Organization) - Applied IO notes and code for demand, auctions, and structural estimation.
+- [respy](https://github.com/OpenSourceEconomics/respy) - Python package for estimating and simulating dynamic discrete-choice models.
+
+### DSGE, Dynamics, and Filtering
+
 - [New York Fed DSGE.jl](https://github.com/FRBNY-DSGE/DSGE.jl) - Julia tools for solving and estimating DSGE models.
 - [GDSGE](https://github.com/gdsge/gdsge) - Toolbox for global nonlinear DSGE solution.
-- [DSGE_mod](https://github.com/JohannesPfeifer/DSGE_mod) - Dynare `.mod` files for canonical DSGE models.
-- [Chris Conlon Grad IO](https://github.com/chrisconlon/Grad-IO) - PhD empirical IO course materials.
-- [Kenneth Train Software](https://eml.berkeley.edu/~train/software.html) - Mixed logit and discrete-choice estimation code.
-- [Victor Aguirregabiria Computer Code](https://sites.google.com/view/victoraguirregabiriaswebsite/computer-code?authuser=0) - Dynamic discrete-choice and dynamic-game estimation code.
-- [EconRL](https://github.com/SimonHashtag/EconRL) - Bibliography of economics and finance papers using reinforcement learning.
-- [CompEcon](https://github.com/fediskhakov/CompEcon) - Foundations of Computational Economics course materials.
-- [CompEcon Fall 2017](https://github.com/ScPo-CompEcon/CoursePack) - Sciences Po computational economics course pack.
-- [EmpiricalIO](https://github.com/kohei-kawaguchi/EmpiricalIO) - Empirical IO lecture notes, assignments, and R code.
-- [Quantitative Macro Models](https://github.com/hessjacob/Quantitative-Macro-Models) - Python implementations of heterogeneous-agent and firm-dynamics models.
-- [Benjamin Moll Codes](https://benjaminmoll.com/codes/) - Finite-difference codes for continuous-time heterogeneous-agent models.
-- [Archive of Empirical Dynamic Programming Research](https://github.com/CForg/Archive-of-Empirical-Dynamic-Programming-Research) - Replication materials for empirical dynamic programming.
-- [Dynamical Systems](https://github.com/JuliaDynamics/DynamicalSystems.jl) - Julia library for nonlinear dynamics and time-series analysis.
-- [Heterogeneous Agents Bayes](https://github.com/BASEforHANK) - Julia toolboxes for Bayesian HANK solution and estimation.
-- [Kalman and Bayesian Filters in Python](https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python) - Interactive book on Kalman and Bayesian filters.
-- [OpenSourceEcon CompMethods](https://github.com/OpenSourceEcon/CompMethods) - Executable Jupyter Book on computational methods for economists.
+- [Kalman and Bayesian Filters in Python](https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python) - Interactive book on Kalman filtering, particle filtering, and Bayesian state estimation.
