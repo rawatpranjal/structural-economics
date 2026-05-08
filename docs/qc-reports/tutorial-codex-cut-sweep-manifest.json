@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T04:19:35Z",
+  "updated_at": "2026-05-08T04:26:22Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -25,6 +25,17 @@
         "dynamic-programming/cake-eating/run.py"
       ],
       "updated_at": "2026-05-08T04:19:35Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/optimal-growth/",
+      "status": "complete",
+      "commit": "1fabd13d2bf35275c786f2ee872232d93c365955",
+      "changed_paths": [
+        "README.md",
+        "dynamic-programming/optimal-growth/README.md",
+        "dynamic-programming/optimal-growth/run.py"
+      ],
+      "updated_at": "2026-05-08T04:26:22Z"
     },
     {
       "tutorial_path": "heterogeneous-agents/endogenous-grid-points/",
