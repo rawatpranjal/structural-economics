@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T07:48:50Z",
+  "updated_at": "2026-05-08T07:55:22Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -370,6 +370,17 @@
         "industrial-organization/production-functions-markups/run.py"
       ],
       "updated_at": "2026-05-08T07:48:50Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/effective-hhi/",
+      "status": "complete",
+      "commit": "913436360db95264958e4d84234a006a8030ef87",
+      "changed_paths": [
+        "industrial-organization/effective-hhi/README.md",
+        "industrial-organization/effective-hhi/figures/lorenz-curves.png",
+        "industrial-organization/effective-hhi/run.py"
+      ],
+      "updated_at": "2026-05-08T07:55:22Z"
     },
     {
       "tutorial_path": "industrial-organization/dynamic-discrete-choice/",
