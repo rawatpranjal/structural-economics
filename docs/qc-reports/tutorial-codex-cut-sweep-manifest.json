@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T04:42:41Z",
+  "updated_at": "2026-05-08T04:48:50Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -61,6 +61,17 @@
         "dynamic-programming/consumption-savings/tables/policy-functions.csv"
       ],
       "updated_at": "2026-05-08T04:42:41Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/job-search-mccall/",
+      "status": "complete",
+      "commit": "30e335289cc88608057699b6d24b68b934e5aacd",
+      "changed_paths": [
+        "README.md",
+        "dynamic-programming/job-search-mccall/README.md",
+        "dynamic-programming/job-search-mccall/run.py"
+      ],
+      "updated_at": "2026-05-08T04:48:50Z"
     },
     {
       "tutorial_path": "heterogeneous-agents/endogenous-grid-points/",
