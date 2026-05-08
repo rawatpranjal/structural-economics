@@ -1,0 +1,17 @@
+{
+  "pass_name": "codex-cut-not-compress-v1",
+  "updated_at": "2026-05-08T02:41:28Z",
+  "entries": [
+    {
+      "tutorial_path": "industrial-organization/dynamic-discrete-choice/",
+      "status": "complete",
+      "commit": "9f0caf0861b3b0fd423fd08475f0a4dc0382a2aa",
+      "changed_paths": [
+        "README.md",
+        "industrial-organization/dynamic-discrete-choice/README.md",
+        "industrial-organization/dynamic-discrete-choice/run.py"
+      ],
+      "updated_at": "2026-05-08T02:41:28Z"
+    }
+  ]
+}
