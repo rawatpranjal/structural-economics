@@ -16,11 +16,11 @@ Let $k_t$ be capital and $z_t$ a productivity shock. Output is $y_t = z_t A k_t^
 
 The planner's value function solves the Bellman equation:
 
-$$V(k, z) = \max_{k' \in [0, y]} \big\{ \log(z A k^{\alpha} - k') + \beta\, \mathbb{E}[V(k', z') \mid z] \big\}.$$
+$$V(k, z) = \max_{k' \in [0, y]} \{\, \log(z A k^{\alpha} - k') + \beta\, \mathbb{E}[V(k', z') \mid z] \,\}.$$
 
 Tabular Q-learning stores an action-value $Q(s, a)$ for each state-action pair and updates it from observed transitions:
 
-$$Q(s, a) \leftarrow Q(s, a) + \alpha_t \big[ r + \beta \max_{a'} Q(s', a') - Q(s, a) \big].$$
+$$Q(s, a) \leftarrow Q(s, a) + \alpha_t [\, r + \beta \max_{a'} Q(s', a') - Q(s, a) \,].$$
 
 Exploration draws each transition uniformly over feasible state-action pairs $(s, a)$, so every region of the grid receives updates regardless of the on-policy distribution. The greedy policy is read off the table as $a^{\ast}(s) = \arg\max_a Q(s, a)$.
 
@@ -98,8 +98,8 @@ The table compares the solvers on the same calibration. Q-learning uses no trans
 | algorithm                         | transition matrix   |   policy MAE |   value sup-norm vs VFI |   samples |   runtime sec |
 |:----------------------------------|:--------------------|-------------:|------------------------:|----------:|--------------:|
 | value iteration                   | yes                 |       0.0038 |                  0      |   2175747 |         0.006 |
-| tabular Q-learning (4 seeds avg.) | no                  |       0.0154 |                  0.6721 |   6000000 |        78.458 |
-| DQN                               | no                  |       0.0299 |                nan      |    250000 |       138.765 |
+| tabular Q-learning (4 seeds avg.) | no                  |       0.0154 |                  0.6721 |   6000000 |        82.109 |
+| DQN                               | no                  |       0.0299 |                nan      |    250000 |       139.194 |
 
 VFI converges in 361 sweeps. Q-learning hits a policy MAE of 0.0154 after 6,000,000 sampled transitions across 4 seeds. DQN reaches 0.0299 after 250,000 steps.
 
