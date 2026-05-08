@@ -354,42 +354,22 @@ def main() -> None:
     )
 
     report.add_overview(
-        "An impatient household with CRRA preferences faces IID labor-income risk "
-        "and a no-borrowing constraint $\\underline a = 0$. The economic content is "
-        "the buffer-stock logic of Deaton (1991) and Carroll (1997): assets are held "
-        "purely to self-insure against bad income draws, and the constraint binds "
-        "with strictly positive probability, so the Euler equation holds with "
-        "complementary slackness. The "
-        "[buffer-stock VFI tutorial](../../dynamic-programming/consumption-savings/) "
-        "solves the persistent-income version by grid maximization over $a'$. The "
-        "exercise here is to compute the same kind of policy without that inner "
-        "maximization.\n\n"
-        "The trick is Carroll's (2006) endogenous-grid trade. VFI iterates on "
-        "$V(a,y)$ by asking, at each current $a$, which $a'$ delivers the highest "
-        "$u(c) + \\beta\\,\\mathbb{E}V(a',y')$. EGP fixes a grid for *next-period* "
-        "assets $a'$ instead, evaluates the Euler equation pointwise to recover the "
-        "consumption that rationalizes each $a'$, and reads the implied current "
-        "asset level off the budget identity. The map $a'\\mapsto a$ is then "
-        "inverted by interpolation to deliver $g_a(a,y)$ on the original grid. No "
-        "argmax, no gradient, just one expectation, one inverse marginal utility, "
-        "and one univariate interpolation per income state per iteration.\n\n"
-        "The reversal pays off whenever the household block is solved repeatedly "
-        "inside an outer loop. The [Aiyagari tutorial](../../dynamic-programming/aiyagari/) "
-        "bisects on $r$ around the household problem; "
-        "[Huggett](../huggett-incomplete-markets/) does the same for a bond economy "
-        "in continuous time. The neighbouring "
-        "[envelope-equation iteration](../envelope-equation-iteration/) tutorial keeps "
-        "the same Euler discipline but iterates on $W_a(a)$ rather than the consumption "
-        "policy itself, and shows that grid VFI, EGP, and EEI all coincide on the "
-        "buffer-stock policy at the resolution used here."
+        "An impatient household faces IID labor-income risk and cannot borrow "
+        "below zero. Bad income draws make the household hold assets as a "
+        "buffer.\n\n"
+        "The object is the consumption and saving policy over assets and current "
+        "income. The same policy also implies a stationary wealth distribution "
+        "and MPCs.\n\n"
+        "Grid search over next assets is slow inside household blocks. EGP avoids "
+        "that search by inverting the Euler equation on a next-asset grid."
     )
 
     report.add_equations(
         r"""
-The household enters the period with assets $a$ and observes income $y_j$ drawn
-IID from $\{y_1,\dots,y_{n_y}\}$ with probabilities $\pi_j$. With gross return
-$R=1+r$, it chooses next-period assets $a'=g(a,y_j)$, consumes the residual,
-and faces a non-borrowing constraint:
+The household enters the period with assets $a$ and income $y_j$. Income is IID
+on $\{y_1,\dots,y_{n_y}\}$ with probabilities $\pi_j$. With gross return
+$R=1+r$, the household chooses next-period assets $a'=g(a,y_j)$. Consumption is
+the residual, and the borrowing limit is $\underline a$:
 
 $$
 V(a,y_j) = \max_{a'\geq \underline a}
@@ -398,8 +378,7 @@ V(a,y_j) = \max_{a'\geq \underline a}
 $$
 
 Because income is IID, the continuation $\mathbb{E}V(a',y')$ depends only on
-$a'$, which is what makes EGP especially clean here. Preferences are CRRA, so
-the marginal utility map and its analytic inverse are
+$a'$. Preferences are CRRA, so marginal utility has an analytic inverse:
 
 $$
 u'(c) = c^{-\gamma}, \qquad (u')^{-1}(\mu) = \mu^{-1/\gamma}.
@@ -414,13 +393,15 @@ $$
 \underbrace{\sum_{\ell=1}^{n_y}\pi_\ell\,u'\!(c(g(a,y_j),y_\ell))}_{\text{expected marginal utility tomorrow}}.
 $$
 
-When the borrowing limit binds, $g(a,y_j)=\underline a$ and the Euler condition
-holds as an inequality,
-$u'(c(a,y_j)) \geq \beta R \sum_\ell \pi_\ell u'(c(\underline a,y_\ell))$.
-This Kuhn-Tucker margin is what generates large MPCs at low wealth: a marginal
-dollar of cash relaxes a slack constraint dollar-for-dollar, so $\partial c/\partial a$
-can be close to $R$ rather than the small perfect-foresight value
-$1-(\beta R)^{1/\gamma}/R$.
+When the borrowing limit binds, $g(a,y_j)=\underline a$. The Euler condition
+holds as an inequality:
+
+$$
+u'(c(a,y_j)) \geq \beta R \sum_\ell \pi_\ell u'(c(\underline a,y_\ell)).
+$$
+
+This constraint margin creates high MPCs at low wealth. A small transfer relaxes
+the constraint before it mainly raises saving.
 """
     )
 
@@ -444,12 +425,10 @@ $1-(\beta R)^{1/\gamma}/R$.
 
     report.add_solution_method(
         rf"""
-**The key trade.** VFI on this problem maximizes $u((1+r)a+y_j-a')+\beta\,
-\mathbb{{E}} V(a',y')$ over $a'$ at every state, paying a one-dimensional search
-per grid point per iteration. EGP holds the grid $\{{a_i'\}}_{{i=1}}^{{N_a}}$ fixed
-in the *next-period* assets, evaluates the Euler equation pointwise to recover
-the consumption that is consistent with stepping to each $a_i'$, and reads the
-implied current asset off the budget line:
+EGP places the grid on candidate next assets. For each $a_i'$, the current
+policy guess gives expected marginal utility tomorrow. Euler inversion turns
+that expectation into current consumption $c_i$. The budget identity then gives
+the current asset that would choose $a_i'$:
 
 $$
 c_i = (u')^{{-1}}\!(\beta R \sum_{{\ell}} \pi_\ell\, u'(c_n(a_i', y_\ell))),
@@ -457,16 +436,13 @@ c_i = (u')^{{-1}}\!(\beta R \sum_{{\ell}} \pi_\ell\, u'(c_n(a_i', y_\ell))),
 a^{{\text{{endo}}}}_{{ij}} = \frac{{c_i + a_i' - y_j}}{{R}}.
 $$
 
-Because $c$ is strictly increasing in cash on hand and $u'$ is strictly
-decreasing, the map $a_i' \mapsto a^{{\text{{endo}}}}_{{ij}}$ is monotone for each
-$y_j$. Inverting it is therefore a single sorted interpolation onto the
-exogenous grid $A$. The borrowing constraint enters as a left-tail boundary
-correction: any $a < a^{{\text{{endo}}}}_{{1j}}$ cannot rationalize an interior
-saving choice given $y_j$, so the policy is pinned at $g_a = \underline a$.
+Each income state produces a monotone endogenous grid. Linear interpolation maps
+it back to the exogenous current-asset grid. Points below the first endogenous
+asset use the borrowing limit.
 
 ```text
 Algorithm: EGP for IID-income buffer-stock saving
-Inputs    grid {{a_i'}} (also serves as the exogenous current-asset grid),
+Inputs    grid {{a_i'}} (also the exogenous current-asset grid),
           income chain ({{y_j}}, {{pi_j}}), primitives (beta, R, gamma),
           borrowing limit a_min, tolerance eps
 Output    consumption policy c(a, y), saving policy g(a, y)
@@ -494,27 +470,12 @@ repeat n = 0, 1, 2, ...
 until err < eps
 ```
 
-Three observations help in practice. First, EGP inherits the geometric
-contraction rate of the underlying Bellman operator, so iteration counts scale
-with $\beta$, not with $N_a$. Second, the interpolation is over a sorted
-sequence; using `np.interp` is fine and the extrapolation branch on the right
-end matters only if the grid bound $\bar a$ is set aggressively low. Third,
-when income is persistent (not the case here) the endogenous-current-asset
-grid depends on $y_j$, and the inversion has to be done income state by income
-state — the IID simplification used in this tutorial is a clean expository
-benchmark, not a structural assumption.
-
 **Convergence and accuracy.** The {n_asset}-point grid converged in
-**{int(solution["iterations"])} EGP iterations** with a consumption sup-norm
-residual of {float(solution["error"]):.2e}. To audit the discretization, the
-same EGP solve was rerun on a {n_asset_refined}-point grid at the identical
-calibration and the two policies were compared on $a \leq {accuracy_asset_max:g}$,
-the asset range that holds essentially all of the simulated mass. The maximum
-consumption-policy gap is {consumption_gap:.2e} and the next-asset gap is
-{savings_gap:.2e}; both are pure grid-and-interpolation wedges with no
-economic content. The fine grid is not used in the simulation — it appears
-only as the dashed reference in the policy plots and as the diagnostic row in
-the summary table.
+**{int(solution["iterations"])} EGP iterations**. The final consumption
+sup-norm residual is {float(solution["error"]):.2e}. A {n_asset_refined}-point
+grid gives a reference policy on the same calibration. On
+$a \leq {accuracy_asset_max:g}$, the consumption and saving gaps are both
+{consumption_gap:.2e}. The fine grid is only an accuracy check.
 """
     )
 
@@ -554,21 +515,11 @@ the summary table.
         "Consumption policy with fine-grid EGP reference",
         fig1,
         description=(
-            "The first figure shows the EGP consumption policy at five income "
-            "states (the two extreme states bolded, the three interior states in "
-            "grey) with the dashed fine-grid reference overlaid for the lowest "
-            "and highest $y_j$. The shape is the same buffer-stock policy that "
-            "VFI delivers in the [persistent-income tutorial]"
-            "(../../dynamic-programming/consumption-savings/): concave, increasing "
-            "in $a$, and shifted vertically by income because IID $y_j$ enters "
-            "cash on hand directly. Slopes near $\\underline a$ are close to the "
-            "45-degree reference $c=Ra+y_j$, the certainty-equivalent rule for a "
-            "constrained agent who consumes everything; far from the constraint "
-            "the slope falls toward the perfect-foresight limit "
-            f"$\\kappa^{{\\ast}} \\approx {mpclim:.3f}$ derived from "
-            "$c_{t+1}/c_t=(\\beta R)^{1/\\gamma}$. The coarse and fine-grid "
-            "policies are visually indistinguishable on the plotted range, which "
-            "is the discretization audit."
+            "The consumption policy is increasing and concave in assets. Higher "
+            "income shifts consumption up because IID income enters cash on hand. "
+            "Slopes are steep near the borrowing limit, where households consume "
+            "most extra resources. The dashed fine-grid policy overlaps the main "
+            "grid on the plotted range."
         ),
     )
 
@@ -621,16 +572,11 @@ the summary table.
         "Net saving policy with fine-grid EGP reference",
         fig2,
         description=(
-            "Net saving $g_a(a,y_j)-a$ separates income states more cleanly than "
-            "consumption does. After a low income draw the household decumulates "
-            "to consume more than $Ra+y_j$ for $a$ above the constraint, and "
-            "rolls onto $g_a=\\underline a$ once cash on hand can no longer "
-            "support an interior Euler-equation choice — that is the discrete "
-            "kink at the left end of the lowest-income curve. A high draw flips "
-            "the sign and rebuilds the buffer. The zero crossings are not steady "
-            "states: with IID income, the household keeps cycling across asset "
-            "states as draws arrive, and the simulated cross section averages "
-            "over those cycles."
+            "Net saving separates low and high income states. Low-income "
+            "households draw down assets and hit the borrowing limit near zero "
+            "wealth. High-income households rebuild the buffer. The zero "
+            "crossings are not steady states because IID income keeps households "
+            "moving across asset states."
         ),
     )
 
@@ -657,21 +603,12 @@ the summary table.
         "Endogenous current asset grid for the low income state",
         fig3,
         description=(
-            "This third figure makes the EGP construction visible. For each "
-            "$a_i'$ on the exogenous grid, the Euler inversion fixes "
-            "$c_i = (u')^{-1}(\\beta R\\,\\mathbb{E}u'(c_n(a_i',y')))$, and the "
-            "budget identity $a^{\\mathrm{endo}} = (c_i + a_i' - y_j)/R$ then "
-            "pins down the current asset level that would have rationalized "
-            "stepping to $a_i'$ after observing the lowest income draw "
-            f"$y_1={income_grid[low]:.2f}$. The 45-degree line is the static "
-            "no-saving rule $a^{\\mathrm{endo}}=a'$; the policy curve sits "
-            "above it because the household with the lowest current income "
-            "wants to draw down assets, so a given $a'$ requires a larger "
-            "current $a$ to finance. The first endogenous point "
-            f"$a^{{\\mathrm{{endo}}}}_{{1,1}}={endogenous_assets[0, low]:.3f}$ "
-            "is the kink threshold: any current $a$ below it would force "
-            "negative interior consumption, so the borrowing constraint "
-            "supplies $g_a=\\underline a$ on that left tail."
+            "The endogenous grid shows the asset level that makes each candidate "
+            "$a_i'$ optimal after the lowest income draw. The curve lies above "
+            "the 45-degree line because low-income households want to draw down "
+            "assets. The first endogenous point, "
+            f"$a^{{\\mathrm{{endo}}}}_{{1,1}}={endogenous_assets[0, low]:.3f}$, "
+            "marks the constraint threshold."
         ),
     )
 
@@ -700,19 +637,11 @@ the summary table.
         "Simulated terminal wealth distribution",
         fig4,
         description=(
-            f"Forward-iterating $g_a$ for {periods} periods on {n_agents:,} "
-            "households gives the cross section in the fourth figure. The "
-            f"distribution is right-skewed with mean $\\bar a={mean_assets:.2f}$ "
-            "and a small mass exactly at the constraint "
-            f"({frac_constrained:.1f}\\% of agents); the spike at zero is the "
-            "Kuhn-Tucker margin showing up in the marginal distribution. The "
-            "scale is modest because income is IID — there is no persistence to "
-            "amplify good histories — and because $\\beta R<1$ rules out a "
-            "drifting asset target. Replacing IID income with the persistent "
-            "[Rouwenhorst chain](../../dynamic-programming/shock-discretization/) "
-            "and closing the model with capital-market clearing produces the "
-            "much wider Aiyagari cross section in the "
-            "[Aiyagari tutorial](../../dynamic-programming/aiyagari/)."
+            "Forward simulation gives a right-skewed wealth distribution. Mean "
+            f"assets are $\\bar a={mean_assets:.2f}$, and "
+            f"{frac_constrained:.1f}\\% of households are at the borrowing "
+            "limit. The scale is modest because income is IID and "
+            "$\\beta R<1$."
         ),
     )
 
@@ -742,20 +671,10 @@ the summary table.
         "Distribution of marginal propensities to consume",
         fig5,
         description=(
-            "The fifth figure plots the cross-sectional distribution of MPCs "
-            "out of a small transfer of 0.10 — about ten percent of mean income. "
-            f"The average MPC is {mean_mpc_large:.3f}, an order of magnitude above "
-            f"the perfect-foresight limit $\\kappa^{{\\ast}}\\approx{mpclim:.3f}$ "
-            "marked by the dotted line. The high values come from constrained or "
-            "near-constrained households, for whom an extra dollar of cash is "
-            "spent dollar-for-dollar; the right tail near 1 is exactly the "
-            "Kuhn-Tucker margin from the equations section made empirical. The "
-            "low-MPC mode near $\\kappa^{\\ast}$ is the wealth-rich subpopulation "
-            "for whom the constraint is slack and the Euler equation pins the "
-            "consumption response. This bimodality is the proximate reason "
-            "heterogeneous-agent models can deliver aggregate consumption "
-            "responses to fiscal transfers far above what a representative-agent "
-            "PIH model implies — see the discussion in Kaplan and Violante (2022)."
+            "The MPC distribution is high near the constraint and low for "
+            "wealthy households. The average MPC out of a 0.10 transfer is "
+            f"{mean_mpc_large:.3f}. The dotted line marks the perfect-foresight "
+            f"limit, $\\kappa^{{\\ast}}\\approx{mpclim:.3f}$."
         ),
     )
 
@@ -789,32 +708,21 @@ the summary table.
         "Simulation and Accuracy Summary",
         df,
         description=(
-            "The summary table separates the economic outputs of the cross "
-            "section (mean wealth, Gini, average MPCs, mass at the constraint) "
-            "from the discretization diagnostics (consumption and savings gaps "
-            "against the fine-grid solve). The Gini and the high average MPC "
-            "are model results that depend on $\\gamma$, $\\beta R$, and the "
-            "income process; the policy gaps are pure numerical wedges that "
-            "shrink toward zero as $N_a\\to\\infty$."
+            "The table reports cross-section statistics and the fine-grid policy "
+            "gaps. Wealth inequality and MPCs are economic outputs. The last two "
+            "gap rows are numerical accuracy checks."
         ),
     )
 
     report.add_takeaway(
-        "Carroll's grid reversal is a workhorse precisely because it is not a new "
-        "model. The same buffer-stock policy that VFI computes by maximizing over "
-        f"$a'$ at every state falls out of EGP in {int(solution['iterations'])} "
-        "iterations of one expectation, one analytic inverse marginal utility, and "
-        "one univariate interpolation per income state. The two solutions agree to "
-        f"{consumption_gap:.0e} on the asset range that holds the simulated mass — "
-        "a discretization wedge, not a different economic object.\n\n"
-        f"The economic content stays put: a Gini of {gini_wealth:.3f} on assets "
-        "alone, average MPCs many times the perfect-foresight benchmark, and a "
-        "non-trivial fraction of agents pinned at the borrowing limit. What EGP "
-        "buys is the ability to use that household block as the inner step of a "
-        "general-equilibrium fixed point or a structural estimation loop without "
-        "the inner search becoming the binding cost — exactly the role it plays "
-        "in the [Aiyagari](../../dynamic-programming/aiyagari/) and "
-        "[Huggett](../huggett-incomplete-markets/) computations next door."
+        "EGP solves the same buffer-stock household problem while avoiding an "
+        "inner search over next assets.\n\n"
+        "At this calibration, the policy converges "
+        f"in {int(solution['iterations'])} iterations and matches the fine-grid "
+        f"reference within {consumption_gap:.0e}.\n\n"
+        f"The simulated cross section has a {gini_wealth:.3f} asset Gini and "
+        "high MPCs near the borrowing limit. Those outcomes come from income "
+        "risk, impatience, and the constraint, not from the grid reversal itself."
     )
 
     report.add_references(
