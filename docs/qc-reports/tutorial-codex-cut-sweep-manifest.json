@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T09:47:01Z",
+  "updated_at": "2026-05-08T09:54:56Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -615,6 +615,21 @@
         "game-theory/normal-form-games/tables/mixed-payoffs.csv"
       ],
       "updated_at": "2026-05-08T09:47:01Z"
+    },
+    {
+      "tutorial_path": "game-theory/static-games/",
+      "status": "complete",
+      "commit": "1770ed651f12b3e52f0616b98f68dfa3691a2c4a",
+      "changed_paths": [
+        "README.md",
+        "game-theory/static-games/README.md",
+        "game-theory/static-games/figures/cournot-best-response.png",
+        "game-theory/static-games/figures/thumb.png",
+        "game-theory/static-games/figures/welfare-analysis.png",
+        "game-theory/static-games/run.py",
+        "game-theory/static-games/tables/cournot-comparison.csv"
+      ],
+      "updated_at": "2026-05-08T09:54:56Z"
     }
   ]
 }
