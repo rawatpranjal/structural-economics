@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T08:30:03Z",
+  "updated_at": "2026-05-08T08:36:59Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -457,6 +457,17 @@
         "industrial-organization/nash-in-nash/run.py"
       ],
       "updated_at": "2026-05-08T08:30:03Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/merger-simulation/",
+      "status": "complete",
+      "commit": "d773c7c10710bc04619ea28aa1899e2d5c478742",
+      "changed_paths": [
+        "README.md",
+        "industrial-organization/merger-simulation/README.md",
+        "industrial-organization/merger-simulation/run.py"
+      ],
+      "updated_at": "2026-05-08T08:36:59Z"
     }
   ]
 }
