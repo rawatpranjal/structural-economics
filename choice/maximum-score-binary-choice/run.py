@@ -158,23 +158,18 @@ def main() -> None:
     setup_style()
     report = ModelReport(
         "Binary Participation with Maximum Score",
-        "Recover a binary participation index with a nonsmooth semiparametric estimator.",
+        "Estimate a participation boundary without specifying the full error distribution.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "Suppose an applied microeconomist observes whether people enroll in a job-training "
-        "program after seeing wage gains, commuting costs, and other covariates. A binary "
-        "choice model describes the sign of latent net surplus, but the researcher may not "
-        "want to assume a correctly specified logit error. Maximum score estimates the "
-        "direction of that surplus index from the side of the boundary each observation "
-        "falls on.\n\n"
-        "The computation is awkward because the estimator maximizes the share of choices "
-        "classified correctly. A small change in the slope can leave all classifications "
-        "unchanged, then another change can flip several observations at once. This tutorial "
-        "uses direct grid search for Manski's original score and a smoothed Horowitz-style "
-        "score to compute the same median-choice target."
+        "A worker enrolls in training when expected gains exceed travel and time costs. "
+        "The econometrician observes participation and covariates, not latent surplus.\n\n"
+        "The object is the sign boundary of a binary choice index. We normalize the benefit "
+        "coefficient to one and estimate the relative cost weight.\n\n"
+        "Maximum score searches for the index that classifies the most choices correctly. "
+        "Its objective is flat and jumpy, so smoothing gives a cleaner numerical target."
     )
 
     report.add_equations(
@@ -185,9 +180,10 @@ $$
 y_i = 1\{x^B_i+\beta x^C_i+\varepsilon_i \geq 0\}.
 $$
 
-Here $x^B_i$ is a benefit shifter, $x^C_i$ is a cost shifter, and
-$\beta<0$ makes high costs reduce participation. Only the direction of the
-index is identified, so the coefficient on $x^B_i$ is normalized to one.
+Here $x^B_i$ is the benefit shifter, and $x^C_i$ is the cost shifter.
+A negative $\beta$ means higher costs lower participation.
+Only the index direction is identified.
+The coefficient on $x^B_i$ is normalized to one.
 Manski's maximum-score estimator solves
 
 $$
@@ -196,7 +192,7 @@ $$
 \left[y_i 1\{x^B_i+b x^C_i\geq 0\} + (1-y_i)1\{x^B_i+b x^C_i<0\}\right].
 $$
 
-The smoothed version replaces the hard indicator with a normal CDF:
+Smoothing replaces the hard indicator with a normal CDF:
 
 $$
 S_h(b)=\frac{1}{n}\sum_i
@@ -219,11 +215,10 @@ $$
     )
 
     report.add_solution_method(
-        "Because the score is a step function, derivative methods do not see the objective's "
-        "jumps. The code first evaluates every candidate cost weight on a grid. It then "
-        "replaces the indicator with Phi((x^B_i+b x^C_i)/h) and optimizes the smooth "
-        "approximation. The bandwidth controls how sharply observations near the boundary "
-        "switch classifications.\n\n"
+        "The score is a step function, so local derivatives miss the jumps. The code first "
+        "evaluates candidate cost weights on a grid. It then replaces the indicator with "
+        "Phi((x^B_i+b x^C_i)/h) and optimizes the smooth approximation. The bandwidth "
+        "controls how sharply points near the boundary switch classifications.\n\n"
         "```text\n"
         "Algorithm: estimate a binary participation index\n"
         "Input: choices y_i, benefit shifter x^B_i, cost shifter x^C_i, grid B, bandwidth h\n"
@@ -238,10 +233,9 @@ $$
         "Bootstrap observations and repeat the smoothed estimate\n"
         "Output: normalized cost weight, classification score, and bootstrap interval\n"
         "```\n\n"
-        "The normalization matters for interpretation. If every coefficient were multiplied "
-        "by a positive constant, the sign of latent surplus would not change. The estimate "
-        "is a cost weight relative to the normalized benefit shifter, not an absolute utility "
-        "scale."
+        "The normalization fixes the scale. Multiplying every coefficient by a positive "
+        "constant leaves the surplus sign unchanged. The estimate is a cost weight relative "
+        "to the benefit shifter."
     )
 
     raw_scores = np.asarray(grid_est["scores"])
@@ -256,17 +250,16 @@ $$
     ax1.set_title("Nonsmooth and Smoothed Participation Scores")
     ax1.legend()
     report.add_results(
-        "The raw score is flat across ranges of beta because a boundary that does not cross "
-        "any observation classifies the same people. The smoothed curve peaks at "
-        f"**{float(smooth_est['beta']):.3f}**, close to the true normalized cost weight "
-        f"**{beta_true:.3f}**. In this sample, maximum score recovers a negative cost effect "
-        "even though the logit likelihood is misspecified."
+        "The raw score is flat when moving the boundary changes no classifications. "
+        f"The smoothed curve peaks at **{float(smooth_est['beta']):.3f}**, close to the true "
+        f"cost weight **{beta_true:.3f}**. The estimate keeps the negative cost effect without "
+        "using the logit likelihood."
     )
     report.add_figure(
         "figures/score-objectives.png",
         "Maximum-score and smoothed-score objective functions",
         fig1,
-        description="Both objectives point to a similar participation boundary; smoothing mainly makes the search surface easier to optimize.",
+        description="Smoothing keeps the same boundary target while making the search surface easier to optimize.",
     )
 
     fig2, ax2 = plt.subplots(figsize=(6.8, 6.2))
@@ -282,16 +275,15 @@ $$
     ax2.set_title("Participation Boundary")
     ax2.legend(loc="upper right")
     report.add_results(
-        "The scatterplot shows why the estimator is a boundary problem. People with larger "
-        "benefit shifters are more likely to participate, while large cost shifters push "
-        "against participation when beta is negative. Noise means the regions overlap, so "
-        "the best boundary cannot classify everyone correctly."
+        "The scatterplot shows the boundary problem. Benefit shifters raise participation, "
+        "while cost shifters move choices the other way. Noise leaves overlap, so no linear "
+        "boundary classifies everyone correctly."
     )
     report.add_figure(
         "figures/classification-boundary.png",
         "Observed participation choices and estimated surplus boundary",
         fig2,
-        description="The estimated median-surplus boundary tracks the simulated boundary despite heteroskedastic choice noise.",
+        description="The estimated median-surplus boundary tracks the simulated boundary despite heteroskedastic noise.",
     )
 
     fig3, ax3 = plt.subplots(figsize=(7.2, 4.6))
@@ -306,15 +298,13 @@ $$
     ax3.legend()
     report.add_results(
         f"The nonparametric bootstrap interval is **[{ci_low:.3f}, {ci_high:.3f}]**. "
-        "It gives a finite-sample read on how stable the smoothed estimate is. It is not a "
-        "replacement for the full nonstandard asymptotic theory; here it keeps uncertainty "
-        "connected to the computation the tutorial just ran."
+        "It summarizes how much the smoothed estimate moves across resampled data."
     )
     report.add_figure(
         "figures/bootstrap-estimates.png",
         "Bootstrap distribution of smoothed maximum-score estimates",
         fig3,
-        description="The bootstrap distribution summarizes finite-sample uncertainty for the smoothed estimator.",
+        description="The bootstrap distribution shows finite-sample uncertainty for the smoothed estimator.",
     )
 
     estimates = classification_table(x1, x2, y, beta_true, grid_est, smooth_est, logit)
@@ -322,7 +312,6 @@ $$
         "tables/estimator-comparison.csv",
         "Estimator comparison",
         estimates.round(5),
-        description="The logit coefficient vector is normalized by the benefit-shifter coefficient so its cost slope can be compared with maximum score.",
     )
 
     diagnostics = pd.DataFrame(
@@ -355,15 +344,13 @@ $$
         "tables/estimator-diagnostics.csv",
         "Score and bootstrap diagnostics",
         diagnostics,
-        description="The score is the share of choices classified by the sign of the normalized surplus index.",
+        description="The score is the share of choices classified by the normalized index.",
     )
 
     report.add_takeaway(
-        "For binary participation models, maximum score separates the median-surplus "
-        "boundary from a full probability model. The computation maximizes correct "
-        "classifications, so the objective is nonsmooth and inference is less automatic "
-        "than in logit MLE. Smoothing turns the boundary search into a continuous problem "
-        "while preserving the normalized index interpretation."
+        "Maximum score estimates the median-surplus boundary without a full probability "
+        "model. The objective counts correct classifications, so it is nonsmooth. Smoothing "
+        "gives a continuous search target while preserving the normalized-index interpretation."
     )
 
     report.add_references(
