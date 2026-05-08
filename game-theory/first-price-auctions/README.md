@@ -1,37 +1,32 @@
 # First-Price Auctions, Bid Shading, and Deviation Checks
 
-> Private-value bidding, the symmetric equilibrium rule, and a direct grid audit.
+> Private-value bidding, the symmetric rule, and a direct deviation check.
 
 ## Overview
 
-A first-price sealed-bid auction forces each bidder to price its private information. Suppose a bidder values the object at 0.80. A bid close to 0.80 wins often but leaves little surplus. A lower bid gives a larger margin if it wins, but it loses more often to rival bids. Equilibrium bidding balances those two forces for every possible value, not only for this one bidder.
+In a first-price sealed-bid auction, each bidder pays its own bid if it wins. Bidding value helps win, but it leaves no surplus.
 
-The uniform independent-private-values model lets us write the symmetric Bayesian Nash bid rule in closed form. The computation then has a clear job: take that candidate rule and check it type by type. If rivals use the analytic rule, a grid best response over possible bids should return the same bid, up to grid error. This is the Bayesian-game version of the no-deviation checks in [normal-form games](../normal-form-games/), with private values replacing payoff-table cells.
+The object is a symmetric bid rule for independent private values. With uniform values and risk-neutral bidders, equilibrium bids are a constant fraction of value.
+
+The computation checks whether that rule is optimal type by type. Given rival strategies, a bid grid should recover the analytic bid as the best response.
 
 ## Equations
 
 An auction has $n$ risk-neutral bidders. Bidder $i$ observes a private value
 $v_i \sim U[0,1]$, independently across bidders, and submits one sealed bid.
-The winner pays its own bid. A pure symmetric strategy is an increasing bid
-function $b(v)$.
+The highest bid wins, and the winner pays its own bid. A symmetric Bayesian
+Nash strategy is an increasing bid function $b(v)$.
 
-For a general distribution $F$, the symmetric first-price bid rule satisfies
-
-$$
-b(v)
-= v-\frac{\int_0^v F(t)^{n-1}\,dt}{F(v)^{n-1}},
-\qquad v>0,
-$$
-
-with $b(0)=0$. With $F(v)=v$ on $[0,1]$, this becomes
+Under uniform values, the equilibrium bid is
 
 $$
 b^{\ast}(v)=\frac{n-1}{n}v.
 $$
 
-The bid is below value because the winner pays its own bid. To check the
-equilibrium restriction, fix a type $v$ and let that bidder deviate to dollar
-bid $\hat b$ while opponents use $b^{\ast}$. The rival value threshold beaten by
+The rule shades value by $v/n$.
+
+To check optimality, fix a type $v$. Let that bidder choose a dollar bid
+$\hat b$ while opponents use $b^{\ast}$. The rival value threshold beaten by
 $\hat b$ is
 
 $$
@@ -44,22 +39,11 @@ $$
 \Pr(\text{win}\mid \hat b)=x(\hat b)^{n-1},
 $$
 
-and expected payoff is
+Expected payoff is
 
 $$
 \pi(v,\hat b)=(v-\hat b)x(\hat b)^{n-1}.
 $$
-
-Expected revenue under the equilibrium is
-
-$$
-R_n = E[b^{\ast}(V_{n:n})]
-    = \frac{n-1}{n}E[V_{n:n}]
-    = \frac{n-1}{n+1},
-$$
-
-which is also $E[V_{n-1:n}]$, the expected second-highest value in the uniform
-auction.
 
 ## Model Setup
 
@@ -67,18 +51,17 @@ auction.
 |---|---:|---|
 | Value distribution | $U[0,1]$ | Independent private values |
 | Risk preferences | Risk neutral | Payoff is value minus payment when winning |
-| Reserve price | None | Every nonnegative bid is admissible |
-| Bidder counts | 2, 3, 5, 10 | Comparative statics in competition |
+| Bidder counts | 2, 3, 5, 10 | More or fewer rivals |
 | Deviation grid | 2,001 bids per value | Best-response check for each $v$ |
 | Check values | 19 values in [0.05, 0.95] | Types used for residuals |
 | Focal deviation plot | $n=3$, $v=0.8$ | Payoff shape for one bidder type |
 
 ## Solution Method
 
-The analytic bid function gives the equilibrium benchmark. The numerical work asks whether that benchmark satisfies the type-by-type optimality condition. For each bidder count, the code evaluates the closed-form rule, searches a fine grid of deviations for each checked value, and records the largest distance between the grid best response and the analytic bid.
+The code treats the formula as a candidate equilibrium. It holds opponent behavior fixed and computes a grid best response for each checked type.
 
 ```text
-Algorithm: bid shading and unilateral-deviation audit
+Algorithm: bid shading and unilateral-deviation check
 Inputs: bidder count n, type grid V, bid grid B(v) on [0,v]
 Outputs: exact bid rule b*(v) and max best-response residual Delta_n
 
@@ -89,32 +72,28 @@ Outputs: exact bid rule b*(v) and max best-response residual Delta_n
 5. Report Delta_n = max_v |BR(v)-b*(v)|.
 ```
 
-This audit approximates the best response against the candidate strategy. It does not estimate a new equilibrium. A small residual means the finite bid grid selects the analytic bid that the Bayesian Nash equilibrium prescribes.
+Each residual is the distance between the grid best response and the analytic bid. Small residuals mean the candidate passes the no-deviation check.
 
 ## Results
 
-The bid functions show how competition disciplines shading. With two bidders, the equilibrium bid is one half of value. As the number of rivals rises, a small bid reduction gives up more win probability, so the bidder shades less. The dashed 45-degree line is truthful bidding. First-price bidders stay below it because the payment equals their own bid.
+The bid functions show less shading when more bidders compete. With two bidders, a bidder bids one half of value. With ten bidders, the bid is close to value. Extra rivals make low bids more costly because they reduce win probability.
 
 <img src="figures/bid-functions.png" alt="Equilibrium first-price bid functions by bidder count" width="80%">
 
-For a bidder with value 0.8 facing 2 rivals, the payoff curve is single-peaked at the exact bid. Bidding lower raises surplus only when the bidder still wins, while bidding higher buys extra win probability at a higher payment. The red point is the grid best response, and its overlap with the analytic vertical line is the equilibrium check for this type.
+For value 0.8 with 2 rivals, the payoff curve peaks at the analytic bid. Lower bids raise margin only when they still win. Higher bids buy win probability at a higher payment. The grid best response sits on the analytic bid.
 
 <img src="figures/best-response-check.png" alt="Grid best response compared with the exact equilibrium bid" width="80%">
 
-The revenue curve is not a simulation artifact. In the uniform model, the expected first-price winning bid equals the expected second-highest value. The points and dashed benchmark coincide, which is the revenue-equivalence result in this simple risk-neutral environment.
-
-<img src="figures/revenue-by-bidders.png" alt="Expected first-price revenue and second-highest-value benchmark" width="80%">
-
 **Auction Summary**
 
-|   Bidders | Equilibrium bid rule   |   Shading at v=1 |   Expected revenue |
-|----------:|:-----------------------|-----------------:|-------------------:|
-|         2 | b*(v)=1/2 v            |            0.5   |              0.333 |
-|         3 | b*(v)=2/3 v            |            0.333 |              0.5   |
-|         5 | b*(v)=4/5 v            |            0.2   |              0.667 |
-|        10 | b*(v)=9/10 v           |            0.1   |              0.818 |
+|   Bidders | Equilibrium bid rule   |   Shading at v=1 |
+|----------:|:-----------------------|-----------------:|
+|         2 | b*(v)=1/2 v            |            0.5   |
+|         3 | b*(v)=2/3 v            |            0.333 |
+|         5 | b*(v)=4/5 v            |            0.2   |
+|        10 | b*(v)=9/10 v           |            0.1   |
 
-The table keeps the model implication separate from the grid diagnostic. Residuals are largest when the exact bid falls between adjacent grid bids.
+Residuals measure grid error. Some exact bids lie between grid points.
 
 **Best-Response Check**
 
@@ -127,7 +106,9 @@ The table keeps the model implication separate from the grid diagnostic. Residua
 
 ## Takeaway
 
-The first-price auction turns private information into bid shading. In the uniform symmetric benchmark, the equilibrium bid is a constant fraction of value, and that fraction rises with competition. The reusable computational move is to express a candidate equilibrium as a type-indexed payoff comparison, then check that no type has a profitable unilateral deviation given the strategy used by rival types.
+First-price auctions reward bid shading. In the uniform symmetric benchmark, the equilibrium bid is $((n-1)/n)v$.
+
+The useful computational check is type by type. Hold rival strategies fixed and verify that no bid on the grid improves payoff.
 
 ## References
 
