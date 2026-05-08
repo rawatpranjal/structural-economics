@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T07:33:15Z",
+  "updated_at": "2026-05-08T07:43:20Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -348,6 +348,17 @@
         "industrial-organization/logit-supply-side/run.py"
       ],
       "updated_at": "2026-05-08T07:33:15Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/blp-random-coefficients/",
+      "status": "complete",
+      "commit": "73d7577fac546a2ab41a06d83a24a0ec67f43bc1",
+      "changed_paths": [
+        "industrial-organization/blp-random-coefficients/README.md",
+        "industrial-organization/blp-random-coefficients/figures/own-price-elasticities.png",
+        "industrial-organization/blp-random-coefficients/run.py"
+      ],
+      "updated_at": "2026-05-08T07:43:20Z"
     },
     {
       "tutorial_path": "industrial-organization/dynamic-discrete-choice/",
