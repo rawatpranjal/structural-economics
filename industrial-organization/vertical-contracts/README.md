@@ -4,9 +4,11 @@
 
 ## Overview
 
-Imagine a vending operator with seven slots and twelve snack products. Consumers only see products that make it into the machine, so a manufacturer can change demand without changing the posted retail price directly: it can make its own products more profitable to stock. An all-unit discount lowers the wholesale price once enough Mars products are carried. A slotting fee pays the operator for placement.
+Vending space is scarce. A retailer has seven slots and twelve snack products. A manufacturer can use contract terms to make its products more attractive to stock.
 
-The model turns that business problem into an assortment choice. Each selected product has linear retail demand and a wholesale cost, then the retailer prices the products it decided to carry. The computation is needed because each possible assortment can change wholesale terms, fixed transfers, quantities, and upstream profit. Exact enumeration lets the tutorial compare the retailer's preferred assortment under each contract.
+The object is the retailer's assortment. Each selected product has linear demand, a wholesale price, and a retail price chosen after stocking. The contracts are wholesale pricing, an all-unit discount, and slotting fees.
+
+Exact enumeration checks every feasible seven-product subset. One extra Mars item can trigger a rebate on all Mars items. The script compares the retailer's best assortment under each contract.
 
 ## Equations
 
@@ -27,9 +29,8 @@ $$
 p_j^{\ast}(w_j)=\frac{a_j+bw_j}{2b}.
 $$
 
-Contract $C$ maps an assortment $A$ into a wholesale price
-$w_j^C(A)$ and a fixed transfer $F_j^C(A)$ paid by the upstream side to the
-retailer. The retailer chooses
+Contract $C$ maps assortment $A$ into wholesale prices and fixed transfers.
+The upstream side pays $F_j^C(A)$ to the retailer. The retailer chooses
 $$
 A_C^{\ast}
 =\arg\max_{A\subset\mathcal J:\ |A|=K}
@@ -42,9 +43,9 @@ $$
 \sum_{j\in A}\left[(w_j^C(A)-c_j)q_j(p_j^{\ast})-F_j^C(A)\right].
 $$
 
-In the all-unit discount case, the retailer pays a lower wholesale price on
-Mars products only if the selected assortment contains at least $\tau$ Mars
-products:
+In the all-unit discount case, Mars products can receive a lower wholesale
+price. The discount applies only if the assortment contains at least $\tau$
+Mars products:
 $$
 w_j^C(A)=c_j+\mu-d\,\mathbf 1\{m(j)=\text{Mars}\}\mathbf 1\{M(A)\geq\tau\},
 \quad
@@ -55,7 +56,7 @@ $F_j^C(A)$.
 
 ## Model Setup
 
-One machine can hold seven of twelve products. Products differ in demand intercepts and costs; Mars controls five products and rivals control seven. The calibration is stylized, but it keeps the assortment tradeoff transparent. The retailer selects the assortment and prices selected products. Upstream profit is shown separately because discounts and slotting fees shift money between the two sides of the vertical relationship.
+One machine can hold seven of twelve products. Mars controls five products, and rivals control seven. Demand intercepts and costs differ by product. The retailer chooses the assortment and then sets selected product prices. Upstream profit is reported because transfers move surplus across the channel.
 
 | Object | Value |
 |--------|-------|
@@ -68,14 +69,13 @@ One machine can hold seven of twelve products. Products differ in demand interce
 
 ## Solution Method
 
-The assortment optimum is a finite subset search. There are only
-$\binom{12}{7}=792$ feasible assortments, so the script can evaluate every
-candidate exactly. A heuristic is unnecessary, and the plotted choices are
-the finite-catalog optimum rather than a simulation approximation.
+The assortment problem is a finite subset search. With twelve products and
+seven slots, there are 792 feasible assortments. The script evaluates each
+subset exactly and keeps the one with the highest retailer objective.
 
 ```text
-Inputs: product catalog J, capacity K, contract C, rebate threshold tau
-Output: optimal assortment A*_C and payoff diagnostics
+Inputs: product catalog J, capacity K, contract C
+Output: optimal assortment A*_C and payoffs
 
 for each feasible assortment A with |A| = K:
     count Mars products M(A)
@@ -87,28 +87,19 @@ for each feasible assortment A with |A| = K:
     add product-level payoffs to get Pi^D_C(A) and Pi^U_C(A)
 
 choose A*_C in argmax_A Pi^D_C(A)
-repeat over rebate thresholds tau to see where the all-unit discount binds
 ```
 
-Enumeration has a useful economic role here. When the contract changes the payoff
-from one Mars product, it can also activate a discount on all selected Mars products.
-The algorithm keeps that discrete shelf-space response visible.
+Enumeration keeps the shelf-space margin visible. One Mars slot can activate
+lower wholesale prices on other Mars products. No simulation approximation is
+needed.
 
 ## Results
 
-The heat map reads the assortment outcome directly. Wholesale-only pricing leaves the retailer with four Mars products. The rebate and slotting-fee contracts both move one more scarce slot toward Mars, even though retail prices are still chosen product by product.
+The heat map shows selected products. Wholesale pricing leaves the retailer with four Mars items. The rebate and slotting fee each add one Mars slot. Average retail prices change little, so availability carries the response.
 
 <img src="figures/assortment-selection.png" alt="Assortment selected under each vertical contract" width="80%">
 
-The incidence plot separates the retailer's objective from upstream profit. Slotting fees raise the retailer's payoff because they enter the downstream objective as transfers. Upstream profit falls in this calibration, which is the cost of buying placement.
-
-<img src="figures/profit-incidence.png" alt="Retailer and upstream payoffs by contract" width="80%">
-
-Rebate design is not monotone in the target. A low target gives away margin on products the retailer would have stocked anyway. A high target may fail to move the assortment. The useful region is where the threshold changes the exact assortment optimum relative to the wholesale-only benchmark.
-
-<img src="figures/rebate-thresholds.png" alt="Mars slots and upstream profit as the all-unit discount threshold changes" width="80%">
-
-The table collects the objects behind the figures. Average retail prices move little compared with product availability, which is why the assortment choice is the object of interest.
+The table gives the payoff objects behind the assortment choice. The retailer objective includes fixed fees. Upstream profit subtracts those transfers.
 
 **Contract outcomes**
 
@@ -120,7 +111,7 @@ The table collects the objects behind the figures. Average retail prices move li
 
 ## Takeaway
 
-The main lesson is about availability. In this calibration, all-unit discounts and slotting fees change which products get scarce slots while average retail prices move only a little. Empirical work on vertical contracts therefore needs product availability and transfers, not only posted prices.
+Vertical contracts can change availability without large retail price movement. In this example, rebates and slotting fees move scarce slots toward Mars. Empirical work on vertical contracts needs product availability and transfers.
 
 ## References
 
