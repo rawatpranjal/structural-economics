@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T10:26:12Z",
+  "updated_at": "2026-05-08T10:30:31Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -689,6 +689,19 @@
         "time-series/stock-watson/run.py"
       ],
       "updated_at": "2026-05-08T10:26:12Z"
+    },
+    {
+      "tutorial_path": "computational-methods/numerical-optimization/",
+      "status": "complete",
+      "commit": "8de7ff07659390412b3b91d51967bcf6d78a6487",
+      "changed_paths": [
+        "computational-methods/numerical-optimization/README.md",
+        "computational-methods/numerical-optimization/figures/convergence.png",
+        "computational-methods/numerical-optimization/figures/optimizer-paths.png",
+        "computational-methods/numerical-optimization/figures/thumb.png",
+        "computational-methods/numerical-optimization/run.py"
+      ],
+      "updated_at": "2026-05-08T10:30:31Z"
     }
   ]
 }
