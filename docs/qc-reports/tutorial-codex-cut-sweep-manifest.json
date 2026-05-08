@@ -1,7 +1,20 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T02:55:03Z",
+  "updated_at": "2026-05-08T04:12:36Z",
   "entries": [
+    {
+      "tutorial_path": "dynamic-programming/shock-discretization/",
+      "status": "complete",
+      "commit": "f6363059b84ed806d9aac3ec12337e0c6bbb79bd",
+      "changed_paths": [
+        "README.md",
+        "dynamic-programming/shock-discretization/README.md",
+        "dynamic-programming/shock-discretization/figures/stationary-mass.png",
+        "dynamic-programming/shock-discretization/figures/thumb.png",
+        "dynamic-programming/shock-discretization/run.py"
+      ],
+      "updated_at": "2026-05-08T04:12:36Z"
+    },
     {
       "tutorial_path": "heterogeneous-agents/endogenous-grid-points/",
       "status": "complete",
