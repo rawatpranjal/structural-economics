@@ -30,6 +30,8 @@ Divide by $A_tL_t$ to work in effective-labor units:
 $$k_t = \frac{K_t}{A_t L_t}, \qquad
 y_t = \frac{Y_t}{A_t L_t} = k_t^\alpha,$$
 
+with consumption per effective worker $c_t = (1-s)\,y_t$.
+
 In these units, the law of motion is one scalar equation:
 
 $$k_{t+1} = \phi(k_t) := \frac{(1-\delta)\,k_t + s\,k_t^\alpha}{(1+g)(1+n)}.$$
@@ -66,9 +68,9 @@ There is no Bellman equation here. Once $s$ is fixed, the model is the scalar ma
 
 A local linearization gives the convergence rate near the steady state:
 
-$$k_{t+1} - k^{\ast} \pprox\ \lambda\,(k_t - k^{\ast}), \qquad \lambda \\equiv\ \phi'(k^{\ast}) \=\ \frac{(1-\delta) + s\alpha\,(k^{\ast})^{\alpha-1}}{(1+g)(1+n)}.$$
+$$k_{t+1} - k^{\ast} \approx \lambda\,(k_t - k^{\ast}), \qquad \lambda \equiv \phi'(k^{\ast}) = \frac{(1-\delta) + s\alpha\,(k^{\ast})^{\alpha-1}}{(1+g)(1+n)}.$$
 
-When $\lambda \in (0,1)$, deviations shrink at a geometric rate. The half-life is $\ln(0.5)/\ln(\lambda)$.
+When $\lambda \in (0,1)$, deviations shrink at a geometric rate. The half-life is $H := \ln(0.5)/\ln(\lambda)$.
 
 ```text
 Algorithm: Solow transition in effective-labor units

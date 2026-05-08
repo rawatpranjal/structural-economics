@@ -218,8 +218,9 @@ Rejecting pays $b$ today.
 Tomorrow the worker draws again.
 Because today's rejected offer is gone, rejection has one value:
 
-$$C=b+\beta\,\mathbb{E}_{F}[V(W')].$$
+$$C=b+\beta\,\mathbb{E}_{F}[V(W')],$$
 
+where $W'\sim F$ is the next-period wage draw.
 The Bellman equation compares the two values:
 
 $$V(w)=\max\left(\frac{w}{1-\beta}, C\right).$$
@@ -245,7 +246,9 @@ The right tail of $F$ matters through the expectation.
         f"|---|---:|---|\n"
         f"| Discount factor $\\beta$ | {beta:.2f} | Weight on the next draw |\n"
         f"| Flow benefit $b$ | {b:.1f} | Per-period payoff while unemployed |\n"
-        f"| Wage law | $\\log W\\sim N({mu:.1f},{sigma:.1f}^2)$ | Lognormal offer distribution |\n"
+        f"| Wage law | $\\log W\\sim N(\\mu,\\sigma^2)$ | Lognormal offer distribution |\n"
+        f"| Location $\\mu$ | {mu:.1f} | Mean of $\\log W$; lognormal location parameter |\n"
+        f"| Scale $\\sigma$ | {sigma:.1f} | Std. dev. of $\\log W$; lognormal scale parameter |\n"
         f"| Median offer | {median_wage:.4f} | $e^{{\\mu}}$ for the lognormal |\n"
         f"| Mean offer $\\mathbb{{E}}[W]$ | {mean_wage:.4f} | Reference level for the cutoff |\n"
         f"| Wage grid | {n_w} equiprobable bins | Each bin represented by its conditional mean |\n"
@@ -281,8 +284,8 @@ The right tail of $F$ matters through the expectation.
         "The continuous lognormal case gives a benchmark. The scalar "
         "fixed-point equation\n\n"
         "$$r = (1-\\beta)\\,b+\\beta\\,m(r),\\qquad m(r)=\\mathbb{E}_{F}[\\max(W,r)],$$\n\n"
-        "has a closed-form $m(r)$ from lognormal moments. The code solves the "
-        "residual by Brent's method.\n\n"
+        "where $r$ is the reservation wage, has a closed-form $m(r)$ from lognormal moments. "
+        "The code solves the residual by Brent's method.\n\n"
         f"At baseline, finite-grid VFI converges in **{info['iterations']} "
         f"iterations**. The sup-norm error is **{info['error']:.2e}**. The grid "
         f"cutoff is $w^{{\\ast}}_{{\\text{{grid}}}}={w_star:.4f}$. The continuous "

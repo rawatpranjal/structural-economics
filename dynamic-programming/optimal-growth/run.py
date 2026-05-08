@@ -173,8 +173,10 @@ def main() -> None:
         "Capital produces future output, so saving has a return that falls with $k$. "
         "The economy settles where impatience balances the marginal product of capital.\n\n"
         "The object is the policy rule $g(k)$ for next-period capital. "
-        "Given $g(k)$, consumption is $c^{*}(k)=A k^{\\alpha}-g(k)$.\n\n"
-        "The log Cobb-Douglas case has the closed-form saving rate $\\alpha\\beta$. "
+        "Given $g(k)$, consumption is $c^{*}(k)=A k^{\\alpha}-g(k)$, "
+        "where $A>0$ is total factor productivity and $\\alpha\\in(0,1)$ is the capital share.\n\n"
+        "The log Cobb-Douglas case has the closed-form saving rate $\\alpha\\beta$, "
+        "where $\\beta\\in(0,1)$ is the discount factor. "
         "Value function iteration solves the Bellman equation on a grid. "
         "Here the closed form audits the computed value and policy point by point."
     )
@@ -258,15 +260,16 @@ $$k_{ss} = (\alpha\beta A)^{1/(1-\alpha)},
         "The loop stops when the sup-norm change in $V$ is below $\\varepsilon$.\n\n"
         "```text\n"
         "Algorithm: Optimal-growth VFI with continuous k'\n"
-        "Input : capital grid {k_i}_{i=1..N_k}, choice grid size N_kp,\n"
-        "        primitives (A, alpha, beta), utility u(c) = log c, tolerance epsilon\n"
+        "Input : capital grid {k_i}_{i=1..N_k}, choice grid size N_k',\n"
+        "        k_min (lower bound on k'; = 0.01), primitives (A, alpha, beta),\n"
+        "        utility u(c) = log c, tolerance epsilon\n"
         "Output: value V*(k_i), capital policy g(k_i)\n"
         "  initialise V_0(k_i) = u(A k_i^alpha)             # eat-everything guess\n"
         "  for n = 0, 1, 2, ... :\n"
         "      for each state k_i :\n"
         "          y_i    <- A * k_i^alpha\n"
         "          kp_max <- min(y_i, k_max)\n"
-        "          kp     <- N_kp points uniform on [k_min, kp_max)\n"
+        "          kp     <- N_k' points uniform on [k_min, kp_max)\n"
         "          c      <- y_i - kp                         # period consumption\n"
         "          V_cont <- interp(V_n, kp)                  # off-grid continuation\n"
         "          obj    <- log(c) + beta * V_cont\n"
@@ -367,7 +370,7 @@ $$k_{ss} = (\alpha\beta A)^{1/(1-\alpha)},
     )
     report.add_figure(
         "figures/simulation.png",
-        f"Capital and consumption transitions starting from $k_0={k0:.2f}$",
+        f"Capital and consumption transitions starting from $k_0={k0:.4f}$",
         fig3,
     )
 

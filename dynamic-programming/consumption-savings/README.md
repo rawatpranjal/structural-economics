@@ -31,7 +31,7 @@ Log income follows:
 $$\log z_{t+1}=\rho \log z_t+\varepsilon_{t+1},\qquad
 \varepsilon_{t+1}\sim N(0,\sigma_\varepsilon^2),$$
 
-It is approximated by income states $z_1,\ldots,z_J$ with transition matrix
+It is approximated by $J$ income states $z_1,\ldots,z_J$ with transition matrix
 $P$. Here $P_{jk}=\Pr(z_{t+1}=z_k\mid z_t=z_j)$. The Bellman equation is
 
 $$
@@ -43,7 +43,7 @@ u(Ra+z_j-a')+
 \right].
 $$
 
-The asset policy is $g_a(a,z)=a'$. The consumption policy is
+Here $\beta\in(0,1)$ is the discount factor. The asset policy is $g_a(a,z)=a'$. The consumption policy is
 $c^{\ast}(a,z)=Ra+z-g_a(a,z)$. At an interior choice, the Euler equation is:
 
 $$u'(c_t)=\beta R\,\mathbb{E}_t[u'(c_{t+1})],$$
@@ -79,7 +79,7 @@ The Bellman operator is
 
 $$(TV)(a,z_j)=\max_{0\leq a'\leq Ra+z_j}\left[u(Ra+z_j-a')+\beta\sum_{k=1}^J P_{jk}V(a',z_k)\right],$$
 
-a $\beta$-contraction on bounded functions of $(a,z)$. For each income state, the code computes expected continuation value on the asset grid. It interpolates that value onto a denser grid for $a'$.
+a $\beta$-contraction on bounded functions of $(a,z)$ (the grid upper bound $\bar{a}$ is always slack at an interior solution). For each income state, the code computes expected continuation value on the asset grid. It interpolates that value onto a denser grid for $a'$.
 
 At each $(a,z)$, infeasible choices with $a'>Ra+z$ receive value $-\infty$. The algorithm picks the best $a'$ and repeats until the sup-norm change is below tolerance.
 

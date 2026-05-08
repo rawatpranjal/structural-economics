@@ -562,7 +562,7 @@ def main() -> None:
         r"value choice shocks $\varepsilon_t$." + "\n\n"
         "The conditional value functions solve" + "\n\n"
         "$$"
-        r"v(x, a) = u(x, a) + \beta\, \mathbb{E}\big[\gamma + \log \sum_{a'} \exp v(x', a') \,\big|\, x, a\big],"
+        r"v(x, a) = u(x, a) + \beta\, \mathbb{E}[\, \gamma + \log \textstyle\sum_{a'} \exp v(x', a') \mid x, a \,],"
         "$$" + "\n\n"
         r"and the structural CCP is the softmax of conditional values:" + "\n\n"
         "$$"
@@ -571,7 +571,7 @@ def main() -> None:
         r"Soft Q-learning treats $v$ as an action-value $Q(x, a)$ and updates "
         r"it from observed $(x_t, a_t, x_{t+1})$ triples:" + "\n\n"
         "$$"
-        r"Q(x_t, a_t) \leftarrow Q(x_t, a_t) + \alpha_t \Big[ u(x_t, a_t) + \beta\big(\gamma + \log \textstyle\sum_{a'} \exp Q(x_{t+1}, a')\big) - Q(x_t, a_t) \Big]."
+        r"Q(x_t, a_t) \leftarrow Q(x_t, a_t) + \alpha_t [\, u(x_t, a_t) + \beta(\gamma + \log \textstyle\sum_{a'} \exp Q(x_{t+1}, a')) - Q(x_t, a_t) \,]."
         "$$"
     )
 

@@ -131,12 +131,11 @@ $$
 Logit QRE smooths the exact best response:
 
 $$
+\begin{aligned}
 QBR(q;\lambda)
-=
-\frac{\exp(\lambda \Delta(q))}
-     {1+\exp(\lambda \Delta(q))}
-=
-\left[1+\exp(-\lambda(2-3q))\right]^{-1}.
+&= \frac{\exp(\lambda \Delta(q))}{1+\exp(\lambda \Delta(q))} \\
+&= [1+\exp(-\lambda(2-3q))]^{-1}.
+\end{aligned}
 $$
 
 A symmetric logit-QRE is a fixed point:

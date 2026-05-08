@@ -154,6 +154,10 @@ The continuation value averages over next-period shock states:
 $$V(a,z_i) = \max_{{a' \in \mathcal{{A}}}}
 [ u(Ra+\exp(z_i)-a') + \beta \sum_{{j=1}}^N P_{{ij}} V(a',z_j) ].$$
 
+Here $R$ is the gross return factor, $\beta \in (0,1)$ is the discount factor,
+and $u(\cdot)$ is a concave increasing utility function. $\mathcal{{A}}$ is the
+feasible asset set.
+
 The finite object is the grid $\{{z_1,\dots,z_N\}}$ and transition matrix $P$.
 The continuous target is the Gaussian AR(1)
 
@@ -173,8 +177,8 @@ A finite chain replaces the conditional Gaussian law with
 $P\in\mathbb{{R}}^{{N\times N}}$. Each row gives probabilities
 $P_{{ij}}=\Pr(z_{{t+1}}=z_j\mid z_t=z_i)$. The conditional expectation becomes
 
-$$\mathbb{{E}}[V(x_{{t+1}},z_{{t+1}})\mid z_t=z_i]
-= \sum_{{j=1}}^N P_{{ij}} V(x_{{t+1}}, z_j).$$
+$$\mathbb{{E}}[V(a',z_{{t+1}})\mid z_t=z_i]
+= \sum_{{j=1}}^N P_{{ij}} V(a', z_j).$$
 
 The chain has an invariant distribution $\pi$ satisfying $\pi=\pi P$ and
 $\sum_i \pi_i = 1$. Two diagnostics matter:
@@ -207,7 +211,8 @@ values after good and bad shocks.
         "### Tauchen (1986): integrate Gaussian mass between cell midpoints\n\n"
         "Tauchen places an evenly spaced grid over $[-m\\sigma_z,\\, m\\sigma_z]$. "
         "For each $z_i$, $z_{t+1}$ is normal with mean $\\rho z_i$. "
-        "$P_{ij}$ is the conditional mass assigned to the cell around $z_j$. "
+        "$P_{ij}$ is the conditional mass assigned to the cell around $z_j$, "
+        "computed using the standard normal CDF $\\Phi(\\cdot)$. "
         "Endpoint cells collect remaining tail mass.\n\n"
         "```text\n"
         "Algorithm 1: Tauchen\n"
@@ -384,7 +389,7 @@ values after good and bad shocks.
     report.add_references([
         "[Tauchen, G. (1986). Finite State Markov-Chain Approximations to Univariate and Vector Autoregressions. *Economics Letters*, 20(2), 177-181.](https://doi.org/10.1016/0165-1765%2886%2990168-0)",
         "[Rouwenhorst, K. G. (1995). Asset Pricing Implications of Equilibrium Business Cycle Models. In T. Cooley (ed.), *Frontiers of Business Cycle Research*. Princeton University Press.](https://doi.org/10.1515/9780691218052-014)",
-        "[Kopecky, K. A. and Suen, R. M. H. (2010). Finite State Markov-Chain Approximations to Highly Persistent Processes. *Review of Economic Dynamics*, 13(3), 701-714.](https://doi.org/10.1016/j.red.2009.07.002)",
+        "[Kopecky, K. A. and Suen, R. M. H. (2010). Finite State Markov-Chain Approximations to Highly Persistent Processes. *Review of Economic Dynamics*, 13(3), 701-714.](https://doi.org/10.1016/j.red.2010.02.002)",
     ])
     report.write()
 

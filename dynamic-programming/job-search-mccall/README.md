@@ -24,8 +24,9 @@ Rejecting pays $b$ today.
 Tomorrow the worker draws again.
 Because today's rejected offer is gone, rejection has one value:
 
-$$C=b+\beta\,\mathbb{E}_{F}[V(W')].$$
+$$C=b+\beta\,\mathbb{E}_{F}[V(W')],$$
 
+where $W'\sim F$ is the next-period wage draw.
 The Bellman equation compares the two values:
 
 $$V(w)=\max\left(\frac{w}{1-\beta}, C\right).$$
@@ -50,7 +51,9 @@ The right tail of $F$ matters through the expectation.
 |---|---:|---|
 | Discount factor $\beta$ | 0.95 | Weight on the next draw |
 | Flow benefit $b$ | 1.0 | Per-period payoff while unemployed |
-| Wage law | $\log W\sim N(0.0,1.0^2)$ | Lognormal offer distribution |
+| Wage law | $\log W\sim N(\mu,\sigma^2)$ | Lognormal offer distribution |
+| Location $\mu$ | 0.0 | Mean of $\log W$; lognormal location parameter |
+| Scale $\sigma$ | 1.0 | Std. dev. of $\log W$; lognormal scale parameter |
 | Median offer | 1.0000 | $e^{\mu}$ for the lognormal |
 | Mean offer $\mathbb{E}[W]$ | 1.6487 | Reference level for the cutoff |
 | Wage grid | 50 equiprobable bins | Each bin represented by its conditional mean |
@@ -87,7 +90,7 @@ The continuous lognormal case gives a benchmark. The scalar fixed-point equation
 
 $$r = (1-\beta)\,b+\beta\,m(r),\qquad m(r)=\mathbb{E}_{F}[\max(W,r)],$$
 
-has a closed-form $m(r)$ from lognormal moments. The code solves the residual by Brent's method.
+where $r$ is the reservation wage, has a closed-form $m(r)$ from lognormal moments. The code solves the residual by Brent's method.
 
 At baseline, finite-grid VFI converges in **178 iterations**. The sup-norm error is **9.84e-09**. The grid cutoff is $w^{\ast}_{\text{grid}}=4.7054$. The continuous cutoff is $w^{\ast}_{\text{cont}}=4.7055$. Absolute grid error is **9.1e-05**.
 

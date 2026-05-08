@@ -180,45 +180,74 @@ def main() -> None:
     )
 
     report.add_overview(
-        "What do bids reveal about values? In a first-price auction the answer is not "
-        "the bid itself. Bidders shade below value because paying more reduces surplus "
-        "when they win.\n\n"
-        "The object is the latent distribution of private values. The data contain all "
-        "bids and the number of bidders, but the econometrician does not observe values.\n\n"
-        "The tutorial simulates a known-truth auction, discards the values during "
-        "estimation, estimates the bid distribution, and inverts the first-order "
-        "condition into pseudo-values. The known truth is used only to check recovery."
+        "We observe bids from repeated first-price auctions.\n\n"
+        "We do not observe the private values that bidders place on the object.\n\n"
+        "In a first-price auction, the winner pays its own bid. A bidder therefore "
+        "shades below value because a higher bid raises the payment exactly when the "
+        "bidder wins.\n\n"
+        "The tutorial uses equilibrium structure to undo that shading. It estimates "
+        "the bid distribution, applies the GPV inversion, and checks recovered "
+        "pseudo-values against simulated truth."
     )
 
     report.add_equations(r"""
-There are $n$ symmetric risk-neutral bidders in each first-price sealed-bid
-auction. Bidder $i$ observes a private value $v_i$ drawn independently from a
-common distribution $F_v$ and submits bid $b_i$. The highest bidder wins and
-pays its own bid.
+There are $n$ risk-neutral bidders. Values are independent private values
+$v_i \sim F_v$ with density $f_v$. Each bidder submits a sealed bid. The highest
+bid wins, and the winner pays its own bid.
 
-Let $s(v)$ be a strictly increasing symmetric equilibrium bid rule. A bidder
-with value $v$ who bids as if its type were $x$ earns
+In a symmetric monotone Bayesian Nash equilibrium, type $v$ submits
+
+$$
+b=s(v).
+$$
+
+To derive the equilibrium condition, let a bidder with true value $v$ deviate
+by bidding $s(x)$, as if its type were $x$.
+
+Because $s(\cdot)$ is increasing, the bid $s(x)$ beats a rival exactly when the
+rival's value is below $x$. With $n-1$ rivals,
+
+$$
+\Pr(\text{win}\mid x)=F_v(x)^{n-1}.
+$$
+
+If the bidder wins, surplus is $v-s(x)$. Expected payoff from the deviation is
 
 $$
 \pi(v,x) = (v-s(x))F_v(x)^{n-1}.
 $$
 
-The first-order condition at $x=v$ is
+Differentiate with respect to $x$:
 
 $$
-s'(v)F_v(v) + (n-1)(s(v)-v)f_v(v) = 0.
+\frac{\partial \pi(v,x)}{\partial x}
+= (v-s(x))(n-1)F_v(x)^{n-2}f_v(x) - s'(x)F_v(x)^{n-1}.
 $$
 
-This condition implies the equilibrium bid schedule
+In equilibrium, the best deviation for type $v$ is $x=v$. The first-order
+condition is therefore
 
 $$
-s(v)=v-\frac{\int_0^v F_v(t)^{n-1}dt}{F_v(v)^{n-1}}.
+s'(v)F_v(v) = (n-1)(v-s(v))f_v(v).
 $$
 
-For estimation, write the same condition in terms of the observed bid
-distribution. If $G$ and $g$ are the CDF and density of bids, then monotonicity
-gives $G(b)=F_v(v)$ and $g(b)=f_v(v)/s'(v)$. Solving for value gives the
-GPV-style pseudo-value inversion:
+Solving for $v$ gives the value behind an equilibrium bid:
+
+$$
+v = s(v) + \frac{s'(v)F_v(v)}{(n-1)f_v(v)}.
+$$
+
+The econometrician observes bids, not values. Let $G$ and $g$ be the CDF and
+density of bids. Monotonicity gives
+
+$$
+G(b)=F_v(v),
+\qquad
+g(b)=\frac{f_v(v)}{s'(v)}.
+$$
+
+Substitute these bid objects into the value formula. For $b_i=s(v_i)$, the GPV
+inversion is
 
 $$
 \hat v_i = b_i + \frac{\hat G(b_i)}{(n-1)\hat g(b_i)}.
@@ -241,23 +270,23 @@ exercise trims low and high bid quantiles before evaluating recovery.
     )
 
     report.add_solution_method(
-        "The computation has two parts. First it creates auction data from the symmetric "
-        "equilibrium. Then it acts like an econometrician who only sees bids.\n\n"
+        "Let $N$ be the number of observed bids. The estimator uses empirical ranks for "
+        "$\\hat G$ and a kernel density estimate for $\\hat g$.\n\n"
         "```text\n"
-        "Algorithm: GPV-style value recovery\n"
-        "Input: all bids b_i from auctions with n bidders\n"
-        "Output: pseudo-values vhat_i and an estimated value distribution\n\n"
-        "1. Simulate private values from a known distribution F_v.\n"
-        "2. Compute the monotone first-price equilibrium bid rule s(v).\n"
-        "3. Store the bids b_i = s(v_i), then hide the values from the estimator.\n"
-        "4. Estimate the bid CDF Ghat(b_i) with empirical ranks.\n"
-        "5. Estimate the bid density ghat(b_i) with a kernel density estimate.\n"
-        "6. Drop the lowest and highest bid tails.\n"
-        "7. Recover pseudo-values vhat_i = b_i + Ghat(b_i) / [(n-1) ghat(b_i)].\n"
-        "8. Compare the pseudo-value distribution with the hidden true values.\n"
+        "Input: bids {b_i}_{i=1}^N, bidder count n, trim q\n"
+        "Simulation object: F_v and monotone s(v)\n"
+        "Output: pseudo-values {\\hat v_i}\n\n"
+        "1. Draw v_i ~ F_v and set b_i = s(v_i).\n"
+        "2. Hide {v_i}; keep only {b_i} and n.\n"
+        "3. Estimate \\hat G(b_i) = rank(b_i) / N.\n"
+        "4. Estimate \\hat g(b_i) from a KDE on {b_i}.\n"
+        "5. Keep I_q = {i: Q_q <= b_i <= Q_{1-q}, \\hat g(b_i) > 0}.\n"
+        "6. For i in I_q, set\n"
+        "      \\hat v_i = b_i + \\hat G(b_i) / [(n-1) \\hat g(b_i)].\n"
+        "7. Compare {\\hat v_i: i in I_q} with the hidden {v_i: i in I_q}.\n"
         "```\n\n"
-        "The key economic input is monotonicity. It lets the rank of a bid stand in for "
-        "the rank of a value."
+        "The rank step is where monotonicity enters. A high bid has the same rank as the "
+        "high value that generated it."
     )
 
     fig1, ax1 = plt.subplots(figsize=(8, 5))

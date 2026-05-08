@@ -6,9 +6,9 @@
 
 A planner allocates output between consumption today and capital tomorrow. Capital produces future output, so saving has a return that falls with $k$. The economy settles where impatience balances the marginal product of capital.
 
-The object is the policy rule $g(k)$ for next-period capital. Given $g(k)$, consumption is $c^{\ast}(k)=A k^{\alpha}-g(k)$.
+The object is the policy rule $g(k)$ for next-period capital. Given $g(k)$, consumption is $c^{\ast}(k)=A k^{\alpha}-g(k)$, where $A>0$ is total factor productivity and $\alpha\in(0,1)$ is the capital share.
 
-The log Cobb-Douglas case has the closed-form saving rate $\alpha\beta$. Value function iteration solves the Bellman equation on a grid. Here the closed form audits the computed value and policy point by point.
+The log Cobb-Douglas case has the closed-form saving rate $\alpha\beta$, where $\beta\in(0,1)$ is the discount factor. Value function iteration solves the Bellman equation on a grid. Here the closed form audits the computed value and policy point by point.
 
 ## Equations
 
@@ -86,15 +86,16 @@ VFI starts from an initial value on the capital grid. At each $k_i$, the code se
 
 ```text
 Algorithm: Optimal-growth VFI with continuous k'
-Input : capital grid {k_i}_{i=1..N_k}, choice grid size N_kp,
-        primitives (A, alpha, beta), utility u(c) = log c, tolerance epsilon
+Input : capital grid {k_i}_{i=1..N_k}, choice grid size N_k',
+        k_min (lower bound on k'; = 0.01), primitives (A, alpha, beta),
+        utility u(c) = log c, tolerance epsilon
 Output: value V*(k_i), capital policy g(k_i)
   initialise V_0(k_i) = u(A k_i^alpha)             # eat-everything guess
   for n = 0, 1, 2, ... :
       for each state k_i :
           y_i    <- A * k_i^alpha
           kp_max <- min(y_i, k_max)
-          kp     <- N_kp points uniform on [k_min, kp_max)
+          kp     <- N_k' points uniform on [k_min, kp_max)
           c      <- y_i - kp                         # period consumption
           V_cont <- interp(V_n, kp)                  # off-grid continuation
           obj    <- log(c) + beta * V_cont
@@ -118,7 +119,7 @@ The policy crosses the $45^{\circ}$ line at $k_{ss}$. Below $k_{ss}$, the planne
 
 Starting from $0.1\,k_{ss}$, capital rises toward the steady state. It rises fastest when capital is scarce. Consumption also rises because the saving share is constant. The maximum capital-path error is **2.39e-02**.
 
-<img src="figures/simulation.png" alt="Capital and consumption transitions starting from $k_0=1.00$" width="80%">
+<img src="figures/simulation.png" alt="Capital and consumption transitions starting from $k_0=0.9952$" width="80%">
 
 The table checks eight representative capital states. Value errors are tiny at each selected state. Policy errors are larger because $k'$ is chosen on a finite grid.
 

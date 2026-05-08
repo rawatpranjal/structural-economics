@@ -1,0 +1,5 @@
+Model,Penalty,Test RMSE,Relative RMSE,Corr. with true systematic policy,Shock correlation,Selected indicators
+Lag-only,not tuned,0.5989,1.0,0.031,0.3654,0
+Wide OLS,0,0.3748,0.6258,0.886,0.5995,120
+Ridge,0.0381,0.2699,0.4506,0.9523,0.7728,120
+Lasso,0.0079,0.2476,0.4134,0.9781,0.8826,56

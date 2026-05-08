@@ -181,6 +181,7 @@ This closed form is the target for the numerical check.
         f"|--------|-------|------|\n"
         f"| $\\beta$ | {beta} | Discount factor; closed-form saving rate is $\\beta$ |\n"
         f"| $\\sigma$ | {sigma} | CRRA curvature; $\\sigma=1$ gives the log closed form |\n"
+        f"| $W_0$ | {w_max} | Initial cake endowment |\n"
         f"| $W$ | $[{w_min},\\, {w_max}]$ | Wealth grid for $V$ and $c^{{\\ast}}$ |\n"
         f"| $N_W$ | {n_grid} | Uniform grid points for the state $W$ |\n"
         f"| $N_c$ | {n_cons} | Inner grid for the consumption choice at each state |\n"

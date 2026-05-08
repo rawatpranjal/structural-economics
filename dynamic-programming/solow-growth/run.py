@@ -182,6 +182,8 @@ Divide by $A_tL_t$ to work in effective-labor units:
 $$k_t = \frac{K_t}{A_t L_t}, \qquad
 y_t = \frac{Y_t}{A_t L_t} = k_t^\alpha,$$
 
+with consumption per effective worker $c_t = (1-s)\,y_t$.
+
 In these units, the law of motion is one scalar equation:
 
 $$k_{t+1} = \phi(k_t) := \frac{(1-\delta)\,k_t + s\,k_t^\alpha}{(1+g)(1+n)}.$$
@@ -220,12 +222,12 @@ y^{\ast}=(k^{\ast})^\alpha, \qquad c^{\ast}=(1-s)\,y^{\ast}.$$
         "scalar map $\\phi$. The simulation applies $\\phi$ from $k_0$ until the "
         "path is close to $k^{\\ast}$.\n\n"
         "A local linearization gives the convergence rate near the steady state:\n\n"
-        "$$k_{t+1} - k^{\\ast} \\\approx\ \\lambda\\,(k_t - k^{\\ast}), "
-        "\\qquad \\lambda \\\equiv\ \\phi'(k^{\\ast}) "
-        "\=\ \\frac{(1-\\delta) + s\\alpha\\,(k^{\\ast})^{\\alpha-1}}"
+        "$$k_{t+1} - k^{\\ast} \\approx \\lambda\\,(k_t - k^{\\ast}), "
+        "\\qquad \\lambda \\equiv \\phi'(k^{\\ast}) "
+        "= \\frac{(1-\\delta) + s\\alpha\\,(k^{\\ast})^{\\alpha-1}}"
         "{(1+g)(1+n)}.$$\n\n"
         "When $\\lambda \\in (0,1)$, deviations shrink at a geometric rate. The "
-        "half-life is $\\ln(0.5)/\\ln(\\lambda)$.\n\n"
+        "half-life is $H := \\ln(0.5)/\\ln(\\lambda)$.\n\n"
         "```text\n"
         "Algorithm: Solow transition in effective-labor units\n"
         "Input : primitives (alpha, s, delta, n, g), initial k0, horizon T\n"

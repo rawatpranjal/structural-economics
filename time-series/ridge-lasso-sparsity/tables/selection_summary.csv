@@ -1,0 +1,8 @@
+Statistic,Value
+True nonzero policy indicators,120
+Lasso-selected policy indicators,56
+False inclusions by lasso,0
+True indicators missed by lasso,64
+Dense-signal share missed by lasso,0.510
+Ridge coefficient correlation with truth,0.644
+Lasso coefficient correlation with truth,0.740
