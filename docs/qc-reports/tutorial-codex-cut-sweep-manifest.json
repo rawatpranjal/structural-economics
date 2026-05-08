@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T07:15:19Z",
+  "updated_at": "2026-05-08T07:24:16Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -321,6 +321,21 @@
         "industrial-organization/vertical-contracts/run.py"
       ],
       "updated_at": "2026-05-08T07:15:19Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/bertrand-logit-demand/",
+      "status": "complete",
+      "commit": "5cb3a0de575cc718dcfefce4d732326d9af1d38a",
+      "changed_paths": [
+        "README.md",
+        "industrial-organization/bertrand-logit-demand/README.md",
+        "industrial-organization/bertrand-logit-demand/figures/price-comparison.png",
+        "industrial-organization/bertrand-logit-demand/figures/share-comparison.png",
+        "industrial-organization/bertrand-logit-demand/figures/thumb.png",
+        "industrial-organization/bertrand-logit-demand/run.py",
+        "industrial-organization/bertrand-logit-demand/tables/merger-results.csv"
+      ],
+      "updated_at": "2026-05-08T07:24:16Z"
     },
     {
       "tutorial_path": "industrial-organization/dynamic-discrete-choice/",
