@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T08:52:10Z",
+  "updated_at": "2026-05-08T08:57:31Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -503,6 +503,18 @@
         "choice/money-pump-index/tables/mpi-summary.csv"
       ],
       "updated_at": "2026-05-08T08:52:10Z"
+    },
+    {
+      "tutorial_path": "choice/houtman-maks-rational-subsets/",
+      "status": "complete",
+      "commit": "40d0cd56c46bd1d13fe761429474bc0859c9fec5",
+      "changed_paths": [
+        "README.md",
+        "choice/houtman-maks-rational-subsets/README.md",
+        "choice/houtman-maks-rational-subsets/run.py",
+        "choice/houtman-maks-rational-subsets/tables/houtman-maks-diagnostics.csv"
+      ],
+      "updated_at": "2026-05-08T08:57:31Z"
     }
   ]
 }
