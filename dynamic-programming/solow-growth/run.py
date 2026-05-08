@@ -49,16 +49,12 @@ def simulate_solow_path(
     y_path = np.empty(periods)
     c_path = np.empty(periods)
     investment_path = np.empty(periods)
-    mpk_path = np.empty(periods)
-    wage_eff_path = np.empty(periods)
 
     k_path[0] = k0
     for t in range(periods):
         y_path[t] = output_per_effective_worker(k_path[t], alpha)
         c_path[t] = (1.0 - savings_rate) * y_path[t]
         investment_path[t] = savings_rate * y_path[t]
-        mpk_path[t] = alpha * k_path[t] ** (alpha - 1.0)
-        wage_eff_path[t] = (1.0 - alpha) * y_path[t]
         if t < periods - 1:
             k_path[t + 1] = solow_next_k(
                 k_path[t],
@@ -76,8 +72,6 @@ def simulate_solow_path(
             "y": y_path,
             "c": c_path,
             "investment": investment_path,
-            "mpk": mpk_path,
-            "wage_per_effective_worker": wage_eff_path,
         }
     )
 
@@ -114,8 +108,6 @@ def main() -> None:
     )
     y_star = output_per_effective_worker(k_star, alpha)
     c_star = (1.0 - savings_rate) * y_star
-    mpk_star = alpha * k_star ** (alpha - 1.0)
-    wage_eff_star = (1.0 - alpha) * y_star
 
     path = simulate_solow_path(
         k0,
@@ -154,29 +146,20 @@ def main() -> None:
 
     report = ModelReport(
         "Solow Growth and Conditional Convergence",
-        "Exogenous saving, a one-line transition map, and a closed-form steady state for the level-versus-trend split.",
+        "Capital per effective worker follows one transition map toward a closed-form steady state.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "Solow strips out the household optimization problem. With saving fixed at "
-        "a constant fraction of output, capital accumulation reduces to a one-line "
-        "scalar map and the entire model can be solved with a calculator. That is "
-        "not a limitation; it is what makes the model useful. The level effects of "
-        "saving and depreciation become legible without taking a stand on "
-        "preferences or the intertemporal elasticity of substitution.\n\n"
+        "A Solow economy saves a fixed share of output each period. Capital grows "
+        "through investment and shrinks through depreciation. Labor and technology "
+        "growth make each unit of capital serve more effective workers.\n\n"
         "The state is $k_t = K_t/(A_t L_t)$, capital per unit of effective labor. "
-        "Whether $k_t$ rises or falls depends only on whether gross investment "
-        "$s k_t^\\alpha$ exceeds the dilution required to keep $k_t$ constant "
-        "against depreciation, population growth, and labor-augmenting technical "
-        "change. Below the cutoff capital deepens; above it dilution wins. "
-        "Concavity of $f(k)=k^\\alpha$ pins down a unique nonzero fixed point.\n\n"
-        "Solow sits between two nearby tutorials. [Cake eating](../cake-eating/) "
-        "has a Bellman equation but no production. [Optimal growth](../optimal-growth/) "
-        "has both production and an Euler equation. Solow keeps the production "
-        "side and drops the Euler equation by fiat, which is what makes the "
-        "level-versus-trend split so easy to read off."
+        "If investment exceeds break-even investment, $k_t$ rises. If investment "
+        "falls short, $k_t$ falls. Concavity gives one positive steady state.\n\n"
+        "The computation iterates the law of motion from an initial $k_0$. A "
+        "closed-form steady state checks the path and makes convergence visible."
     )
 
     report.add_equations(
@@ -191,35 +174,30 @@ Capital, technology, and labor evolve as
 $$K_{t+1}=(1-\delta)K_t + sY_t, \qquad
 A_{t+1}=(1+g)A_t, \qquad L_{t+1}=(1+n)L_t,$$
 
-where $s$ is the saving rate, $\delta$ is depreciation, $g$ is
-labor-augmenting productivity growth, and $n$ is labor-force growth. Switching
-to effective-labor units,
+Here $s$ is the saving rate, $\delta$ is depreciation, $g$ is technology
+growth, and $n$ is labor-force growth.
+
+Divide by $A_tL_t$ to work in effective-labor units:
 
 $$k_t = \frac{K_t}{A_t L_t}, \qquad
 y_t = \frac{Y_t}{A_t L_t} = k_t^\alpha,$$
 
-the discrete-time law of motion collapses to a single scalar equation,
+In these units, the law of motion is one scalar equation:
 
 $$k_{t+1} = \phi(k_t) \;:=\; \frac{(1-\delta)\,k_t + s\,k_t^\alpha}{(1+g)(1+n)}.$$
 
-The steady state $k^{\ast}$ solves $\phi(k^{\ast})=k^{\ast}$, equivalently
-$s(k^{\ast})^\alpha = \Delta k^{\ast}$, where
+Define break-even investment as
 
 $$\Delta \;:=\; (1+g)(1+n) - 1 + \delta$$
 
-is the per-unit break-even investment required to keep $k$ constant. Hence
+The steady state $k^{\ast}$ solves $\phi(k^{\ast})=k^{\ast}$. This is
+equivalent to $s(k^{\ast})^\alpha = \Delta k^{\ast}$.
+
+The closed-form values are
 
 $$k^{\ast}=\left(\frac{s}{\Delta}\right)^{1/(1-\alpha)}, \qquad
 y^{\ast}=(k^{\ast})^\alpha, \qquad c^{\ast}=(1-s)\,y^{\ast}.$$
 
-Competitive factor prices follow from marginal products:
-
-$$MPK_t = \alpha\, k_t^{\alpha-1}, \qquad
-\frac{w_t}{A_t} = (1-\alpha)\, k_t^\alpha.$$
-
-The plotted wage is $w_t/A_t$, the wage per unit of effective labor. The wage
-per raw worker is $w_t = (1-\alpha)\,A_t\,k_t^\alpha$ and grows with $A_t$
-along the balanced-growth path.
 """
     )
 
@@ -232,37 +210,26 @@ along the balanced-growth path.
         f"| $n$ | {population_growth:.2f} | Labor-force growth |\n"
         f"| $g$ | {technology_growth:.2f} | Labor-augmenting productivity growth |\n"
         f"| $K_0,A_0,L_0$ | {K0:.1f}, {A0:.1f}, {L0:.1f} | Initial stocks; implies $k_0={k0:.1f}$ |\n"
-        f"| Horizon $T$ | {periods} | Long enough to make the residual finite-horizon gap visible |\n"
+        f"| Horizon $T$ | {periods} | Long enough to make the terminal gap small |\n"
         f"| $\\Delta$ | {effective_depreciation:.4f} | Break-even investment per unit of $k$ |\n"
         f"| $k^{{\\ast}}$ | {k_star:.4f} | Closed-form steady-state capital per effective worker |"
     )
 
     report.add_solution_method(
         "There is no Bellman equation here. Once $s$ is fixed, the model is the "
-        "scalar map $\\phi$ from the previous section, and $k^{\\ast}$ has a "
-        "closed form. The simulation iterates $\\phi$ from $k_0$, and the "
-        "closed-form steady state plays the role that a finely solved benchmark "
-        "plays in less tractable problems: ground truth that the iteration is "
-        "audited against.\n\n"
-        "Local convergence is read off the linearization of $\\phi$ at the "
-        "steady state:\n\n"
+        "scalar map $\\phi$. The simulation applies $\\phi$ from $k_0$ until the "
+        "path is close to $k^{\\ast}$.\n\n"
+        "A local linearization gives the convergence rate near the steady state:\n\n"
         "$$k_{t+1} - k^{\\ast} \\;\\approx\\; \\lambda\\,(k_t - k^{\\ast}), "
         "\\qquad \\lambda \\;\\equiv\\; \\phi'(k^{\\ast}) "
         "\\;=\\; \\frac{(1-\\delta) + s\\alpha\\,(k^{\\ast})^{\\alpha-1}}"
         "{(1+g)(1+n)}.$$\n\n"
-        "When $\\lambda \\in (0,1)$, deviations from the balanced-growth path "
-        "decay geometrically with half-life $\\ln(0.5)/\\ln(\\lambda)$. With "
-        "saving rates and depreciation rates calibrated to advanced economies, "
-        "$\\lambda$ is typically close to one and the half-life runs to decades. "
-        "That slow rate is the empirical fact behind Mankiw, Romer, and Weil "
-        "(1992): countries do converge to their own balanced-growth paths, but "
-        "slowly enough that initial conditions still show up in cross-section "
-        "growth regressions a generation later.\n\n"
+        "When $\\lambda \\in (0,1)$, deviations shrink at a geometric rate. The "
+        "half-life is $\\ln(0.5)/\\ln(\\lambda)$.\n\n"
         "```text\n"
         "Algorithm: Solow transition in effective-labor units\n"
         "Input : primitives (alpha, s, delta, n, g), initial k0, horizon T\n"
-        "Output: paths {k_t, y_t, c_t, MPK_t, w_t/A_t};\n"
-        "        closed-form k_star, local rate lambda, half-life H\n"
+        "Output: paths {k_t, y_t, c_t}; closed-form k_star, lambda, half-life H\n"
         "\n"
         "Delta   <- (1 + g)(1 + n) - 1 + delta              # break-even per unit k\n"
         "k_star  <- (s / Delta)^(1 / (1 - alpha))           # closed-form fixed point\n"
@@ -274,17 +241,13 @@ along the balanced-growth path.
         "    y_t       <- k^alpha\n"
         "    c_t       <- (1 - s) * y_t\n"
         "    invest_t  <- s * y_t\n"
-        "    MPK_t     <- alpha * k^(alpha - 1)\n"
-        "    w_t / A_t <- (1 - alpha) * k^alpha\n"
         "    k         <- ((1 - delta) * k + s * y_t) / ((1 + g)(1 + n))\n"
         "\n"
         "audit         : |k_T - k_star|, |y_T - y_star|, |c_T - c_star|\n"
         "linearization : compare k_t to k_star + (k_0 - k_star) * lambda^t\n"
         "```\n\n"
         f"For this calibration, $\\lambda \\approx {local_lambda:.3f}$ and the "
-        f"local half-life is roughly {half_life:.1f} periods. Annual "
-        "$g+n+\\delta$ near nine percent makes the transition feel slow no "
-        "matter what $s$ is set to."
+        f"local half-life is roughly {half_life:.1f} periods."
     )
 
     # ------------------------------------------------------------------
@@ -307,12 +270,9 @@ along the balanced-growth path.
     ax1.legend()
     report.add_results(
         f"At $k_0={k0:.2f}$ the curved schedule $s k^\\alpha$ sits above the linear "
-        f"break-even line $\\Delta k$, so $k_t$ deepens from the start. The two curves "
-        f"cross at $k^{{\\ast}}={k_star:.3f}$, the unique nonzero fixed point. "
-        "Concavity of $f(k)=k^\\alpha$ guarantees a single intersection and a stable "
-        "one: above $k^{\\ast}$ the linear schedule grows faster than the concave one "
-        "and dilution wins. The crossing is not estimated from the simulation; it is "
-        "the closed-form $(s/\\Delta)^{1/(1-\\alpha)}$ implied by the primitives."
+        f"break-even line $\\Delta k$. Capital deepens from the start. The curves "
+        f"cross at $k^{{\\ast}}={k_star:.3f}$, the unique positive steady state. "
+        "Above $k^{\\ast}$, break-even investment exceeds saving."
     )
     report.add_figure(
         "figures/solow-diagram.png",
@@ -338,16 +298,12 @@ along the balanced-growth path.
     ax2.set_title("Transition toward the balanced-growth path")
     ax2.legend()
     report.add_results(
-        "All three series are normalized by their balanced-growth values. Output and "
-        "consumption track each other identically because $c_t=(1-s)y_t$; the saving "
-        "rate is the choice the model has refused to make. Capital lags both because "
-        "it inherits its own past stock, and the gap closes at the geometric rate "
-        "$\\lambda$ derived above. The dotted black line is the linear-approximation "
-        "prediction $k^{\\ast}+(k_0-k^{\\ast})\\lambda^t$, plotted in the same "
-        "normalized units. Linearization tracks the simulation closely as $k_t$ nears "
-        "$k^{\\ast}$ but is visibly off early on, where the curvature of $\\phi$ "
-        "still matters. By the terminal period, the simulated $k$ sits within "
-        f"{abs(terminal['k']-k_star):.2e} of $k^{{\\ast}}$ in absolute terms."
+        "The transition plot normalizes each series by its steady-state value. "
+        "Output and consumption move together because $c_t=(1-s)y_t$. Capital "
+        "moves more slowly because it inherits the past stock.\n\n"
+        "The dotted line is $k^{\\ast}+(k_0-k^{\\ast})\\lambda^t$. It tracks the "
+        f"path well near $k^{{\\ast}}$. By period {periods - 1}, simulated $k$ is "
+        f"within {abs(terminal['k']-k_star):.2e} of $k^{{\\ast}}$."
     )
     report.add_figure(
         "figures/transition-effective-units.png",
@@ -356,43 +312,7 @@ along the balanced-growth path.
     )
 
     # ------------------------------------------------------------------
-    # Figure 3 - factor prices
-    # ------------------------------------------------------------------
-    fig3, (ax3a, ax3b) = plt.subplots(1, 2, figsize=(12, 4.8))
-    ax3a.plot(periods_array, path["mpk"], linewidth=2.1)
-    ax3a.axhline(mpk_star, color="black", linestyle="--", linewidth=1.2,
-                 label=fr"$MPK^{{\ast}}={mpk_star:.3f}$")
-    ax3a.set_xlabel(r"Period $t$")
-    ax3a.set_ylabel(r"$MPK_t$")
-    ax3a.set_title("Marginal product of capital")
-    ax3a.legend()
-
-    ax3b.plot(periods_array, path["wage_per_effective_worker"], linewidth=2.1, color="tab:green")
-    ax3b.axhline(wage_eff_star, color="black", linestyle="--", linewidth=1.2,
-                 label=fr"$(w/A)^{{\ast}}={wage_eff_star:.3f}$")
-    ax3b.set_xlabel(r"Period $t$")
-    ax3b.set_ylabel(r"$w_t / A_t$")
-    ax3b.set_title("Effective wage")
-    ax3b.legend()
-    fig3.tight_layout()
-    report.add_results(
-        "Factor prices read the same convergence story from the firm side. Early on, "
-        "capital is scarce, so $MPK_t$ is high and the effective wage is depressed. "
-        f"As $k_t$ deepens, both move monotonically toward the steady-state values "
-        f"implied by $k^{{\\ast}}$: $MPK^{{\\ast}}={mpk_star:.3f}$ and "
-        f"$(w/A)^{{\\ast}}={wage_eff_star:.3f}$. In a multi-country reading this is "
-        "the textbook prediction that the return on capital should be falling and "
-        "wages rising as poorer economies catch up to richer ones with the same "
-        "technology."
-    )
-    report.add_figure(
-        "figures/factor-prices.png",
-        "Factor prices along the Solow transition",
-        fig3,
-    )
-
-    # ------------------------------------------------------------------
-    # Figure 4 - conditional convergence (multi-start) and comparative statics on s
+    # Figure 3 - conditional convergence (multi-start) and comparative statics on s
     # ------------------------------------------------------------------
     starts = [0.2 * k_star, 1.0 * k_star, 2.0 * k_star]
     horizon_cc = 200
@@ -448,19 +368,12 @@ along the balanced-growth path.
     ax4b.legend()
     fig4.tight_layout()
     report.add_results(
-        "Two ways to read the same model. The left panel runs three economies with "
-        "identical primitives but different starting capital: $k_0$ at one fifth, "
-        "one, and twice the steady state. All three converge to the same "
-        "$k^{\\ast}=1$ in normalized units. *Conditional* matters here, because the "
-        "common steady state is the one pinned down by $(s,n,g,\\delta,\\alpha)$, "
-        "not a common world level. The right panel makes the same point algebraic. "
-        "Three saving rates, $s\\in\\{0.18, 0.24, 0.30\\}$, slide the investment "
-        "schedule up while leaving $\\Delta k$ fixed; the new intersections give "
-        f"$k^{{\\ast}}\\in\\{{{ks_alt[0]:.2f},\\,{ks_alt[1]:.2f},\\,{ks_alt[2]:.2f}\\}}$. "
-        "Doubling $s$ raises $k^{\\ast}$ by a factor of "
-        f"$2^{{1/(1-\\alpha)}}\\approx {2 ** (1 / (1 - alpha)):.2f}$, but once at "
-        "the new steady state output per worker still grows at $g$. Permanently "
-        "faster growth in this model has to come from $g$, not $s$."
+        "The left panel starts three economies from different capital stocks. "
+        "They share the same primitives, so they converge to the same normalized "
+        "$k^{\\ast}$. Conditional convergence means convergence to that own steady state.\n\n"
+        "The right panel changes the saving rate. Higher $s$ shifts investment up "
+        f"and gives $k^{{\\ast}}\\in\\{{{ks_alt[0]:.2f},\\,{ks_alt[1]:.2f},\\,{ks_alt[2]:.2f}\\}}$. "
+        "It raises the level of output per worker, not the long-run growth rate."
     )
     report.add_figure(
         "figures/convergence-and-comparative-statics.png",
@@ -477,38 +390,27 @@ along the balanced-growth path.
                 "Capital per effective worker k",
                 "Output per effective worker y",
                 "Consumption per effective worker c",
-                "Marginal product of capital MPK",
-                "Effective wage w/A",
             ],
             "Closed form": [
                 f"{k_star:.6f}",
                 f"{y_star:.6f}",
                 f"{c_star:.6f}",
-                f"{mpk_star:.6f}",
-                f"{wage_eff_star:.6f}",
             ],
             f"Simulated t={periods - 1}": [
                 f"{terminal['k']:.6f}",
                 f"{terminal['y']:.6f}",
                 f"{terminal['c']:.6f}",
-                f"{terminal['mpk']:.6f}",
-                f"{terminal['wage_per_effective_worker']:.6f}",
             ],
             "Absolute gap": [
                 f"{abs(terminal['k'] - k_star):.2e}",
                 f"{abs(terminal['y'] - y_star):.2e}",
                 f"{abs(terminal['c'] - c_star):.2e}",
-                f"{abs(terminal['mpk'] - mpk_star):.2e}",
-                f"{abs(terminal['wage_per_effective_worker'] - wage_eff_star):.2e}",
             ],
         }
     )
     report.add_results(
-        "Both the transition map and the steady state are analytical, so any "
-        "remaining gap in the table is finite-horizon truncation, not numerical "
-        "error. The bound is the geometric residual "
-        f"$|k_0-k^{{\\ast}}|\\,\\lambda^{{T-1}}$, which at "
-        f"$\\lambda={local_lambda:.3f}$ and $T={periods}$ is on the order of "
+        "The table compares the closed form with the terminal simulation. Any gap "
+        "comes from finite horizon truncation. The geometric residual is about "
         f"{abs(k0 - k_star) * local_lambda ** (periods - 1):.2e}."
     )
     report.add_table(
@@ -520,13 +422,10 @@ along the balanced-growth path.
     report.add_takeaway(
         "Solow disciplines what saving can and cannot do. A higher $s$ raises the "
         "level of $k^{\\ast}$ but leaves the long-run growth rate of output per "
-        "worker equal to $g$. The same logic delivers conditional convergence: "
-        "economies with the same primitives approach the same balanced-growth path, "
-        "while economies that differ in $s$, $n$, or $\\delta$ approach different "
-        "ones. [Optimal growth](../optimal-growth/) lifts the constant-saving "
-        "assumption and lets an Euler equation choose $s$ endogenously; what "
-        "survives is the same level-versus-trend split that Solow puts on a single "
-        "line of algebra."
+        "worker equal to $g$.\n\n"
+        "Conditional convergence follows from the same steady-state logic. "
+        "Economies with the same primitives approach the same balanced-growth path. "
+        "Different primitives imply different paths."
     )
 
     report.add_references(
