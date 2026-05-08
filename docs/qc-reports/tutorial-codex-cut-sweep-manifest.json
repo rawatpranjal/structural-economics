@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T10:13:14Z",
+  "updated_at": "2026-05-08T10:19:44Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -667,6 +667,17 @@
         "time-series/fred-macro-data/run.py"
       ],
       "updated_at": "2026-05-08T10:13:14Z"
+    },
+    {
+      "tutorial_path": "time-series/ar-processes/",
+      "status": "complete",
+      "commit": "905523ea339fca450ea0078d20273c2309081e9e",
+      "changed_paths": [
+        "README.md",
+        "time-series/ar-processes/README.md",
+        "time-series/ar-processes/run.py"
+      ],
+      "updated_at": "2026-05-08T10:19:44Z"
     }
   ]
 }
