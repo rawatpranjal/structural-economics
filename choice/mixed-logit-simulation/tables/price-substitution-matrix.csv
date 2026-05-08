@@ -1,0 +1,9 @@
+Model,Receiving product,Price up: Budget,Price up: Mainstream,Price up: Premium,Price up: Niche
+Plain logit,Budget,-1.0,0.3788,0.3716,0.3481
+Plain logit,Mainstream,0.368,-1.0,0.3508,0.337
+Plain logit,Premium,0.3461,0.3364,-1.0,0.3149
+Plain logit,Niche,0.2859,0.2848,0.2776,-1.0
+Mixed logit,Budget,-1.0,0.4646,0.3964,0.391
+Mixed logit,Mainstream,0.426,-1.0,0.3425,0.3293
+Mixed logit,Premium,0.2985,0.2821,-1.0,0.2798
+Mixed logit,Niche,0.2755,0.2532,0.2611,-1.0

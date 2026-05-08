@@ -96,23 +96,49 @@ The estimator uses common random numbers. Draws are made once and then held fixe
 The standard deviations are optimized in logs. The optimizer can move freely over log standard deviations, while the model sees positive values after exponentiation. The bounds are not an economic restriction in this example. They keep the teaching likelihood away from numerically irrelevant regions.
 
 ```text
-Algorithm: simulated maximum likelihood for mixed logit
-Input: choices y_i, product data (p_ij, q_ij), fixed normal draws nu_r
-Parameters: theta = (alpha_bar, beta_bar, log sigma_alpha, log sigma_beta)
-Output: theta_hat, fitted shares, and substitution diagnostics
-1. Draw nu_r once for r = 1,...,R and keep these draws fixed.
-2. For each trial theta proposed by L-BFGS-B:
-       sigma_alpha <- exp(log sigma_alpha)
-       sigma_beta  <- exp(log sigma_beta)
-       for each draw r:
-           alpha_r <- alpha_bar + sigma_alpha * nu_{r,alpha}
-           beta_r  <- beta_bar  + sigma_beta  * nu_{r,beta}
-           compute conditional logit probabilities P_ij(theta, nu_r)
-       average probabilities over r to get P_hat_ij(theta)
-       evaluate sum_i log max(P_hat_{i,y_i}, probability floor)
-3. Choose the theta with the largest simulated log likelihood.
-4. Recompute fitted shares at theta_hat using the same fixed draws.
-5. Remove one product and recompute shares to measure diversion.
+Algorithm 1: evaluate the simulated log likelihood
+Inputs   data {y_i,p_ij,q_ij}_{i=1..N,j=1..J};
+         fixed draws nu_r=(nu_{r alpha},nu_{r beta}) for r=1,...,R;
+         trial theta=(alpha_bar,beta_bar,ell_alpha,ell_beta)
+Output   Q_R(theta), the negative simulated log likelihood
+
+sigma_alpha <- exp(ell_alpha)
+sigma_beta  <- exp(ell_beta)
+initialise P_hat_ij(theta) <- 0 for every i,j
+
+for r = 1,...,R:
+    alpha_r <- alpha_bar + sigma_alpha * nu_{r alpha}
+    beta_r  <- beta_bar  + sigma_beta  * nu_{r beta}
+    V_ijr   <- alpha_r p_ij + beta_r q_ij
+    P_ijr   <- exp(V_ijr) / sum_{k=1}^J exp(V_ikr)
+    P_hat_ij(theta) <- P_hat_ij(theta) + P_ijr / R
+
+ell_R(theta) <- sum_{i=1}^N log max(P_hat_{i y_i}(theta), eta)
+Q_R(theta)   <- -ell_R(theta) / N
+return Q_R(theta)
+```
+
+```text
+Algorithm 2: estimate theta and compute price substitution
+Inputs   starting value theta_0; bounds B; price step Delta p;
+         common draws {nu_r}; observed data {y_i,p_ij,q_ij}
+Outputs  theta_hat; fitted shares s_j; price-substitution matrix D_jk
+
+repeat until L-BFGS-B stops:
+    choose a candidate theta^m in B
+    evaluate Q_R(theta^m) using Algorithm 1
+    update the inverse-Hessian approximation and propose the next theta
+
+theta_hat <- argmin_theta Q_R(theta)
+s_j       <- N^{-1} sum_i P_hat_ij(theta_hat)
+
+for each shocked product k:
+    set p_{ik}^{+k} <- p_{ik} + Delta p for all i
+    recompute shares s_j^{+k} with the same theta_hat and the same draws
+    lost_k <- s_k - s_k^{+k}
+    for each receiving product j != k:
+        D_jk <- (s_j^{+k} - s_j) / lost_k
+    set D_kk <- -1
 ```
 
 The homogeneous logit is estimated on the same data. Its likelihood is easier because it does not integrate over tastes. The comparison is useful because the homogeneous model can fit mean shares while still forcing diversion to follow existing market shares.
@@ -130,6 +156,21 @@ The profiled likelihood is lowest near positive taste dispersion. Setting the st
 When Premium is removed, the two models make different recapture predictions. Plain logit reallocates the lost demand according to average shares. Mixed logit moves more demand toward products that appeal to similar simulated consumers.
 
 <img src="figures/substitution-patterns.png" alt="Diversion after removing one product" width="80%">
+
+The price-substitution matrix asks where demand goes when one product becomes 0.10 price units more expensive. Each column is the product whose price is raised. Each off-diagonal entry is the share gain for the receiving product divided by the shocked product's lost share.
+
+**Plain and mixed logit price substitution matrix**
+
+| Model       | Receiving product   |   Price up: Budget |   Price up: Mainstream |   Price up: Premium |   Price up: Niche |
+|:------------|:--------------------|-------------------:|-----------------------:|--------------------:|------------------:|
+| Plain logit | Budget              |            -1      |                 0.3788 |              0.3716 |            0.3481 |
+| Plain logit | Mainstream          |             0.368  |                -1      |              0.3508 |            0.337  |
+| Plain logit | Premium             |             0.3461 |                 0.3364 |             -1      |            0.3149 |
+| Plain logit | Niche               |             0.2859 |                 0.2848 |              0.2776 |           -1      |
+| Mixed logit | Budget              |            -1      |                 0.4646 |              0.3964 |            0.391  |
+| Mixed logit | Mainstream          |             0.426  |                -1      |              0.3425 |            0.3293 |
+| Mixed logit | Premium             |             0.2985 |                 0.2821 |             -1      |            0.2798 |
+| Mixed logit | Niche               |             0.2755 |                 0.2532 |              0.2611 |           -1      |
 
 The parameter and fit tables separate two diagnostics. The parameter table checks known-truth recovery. The share table checks whether the fitted model matches observed product choices.
 
@@ -154,6 +195,14 @@ The parameter and fit tables separate two diagnostics. The parameter table check
 ## Takeaway
 
 Mixed logit is a simulation estimator because choice probabilities require an integral over unobserved tastes. Fixed draws turn that integral into a smooth sample average. The payoff is economic: aggregate substitution is no longer forced to satisfy IIA, even though each simulated consumer still has a logit choice rule conditional on tastes.
+
+**Computational tricks used here**
+
+- Fixed draws make $\widehat P_{ij}(\theta)$ deterministic at each trial $\theta$.
+- Log standard deviations keep $\sigma_\alpha$ and $\sigma_\beta$ positive.
+- L-BFGS-B bounds keep the optimizer out of irrelevant parameter regions.
+- The probability floor $\eta$ prevents one simulated zero from breaking the log likelihood.
+- The finite price step $\Delta p$ turns substitution into a readable recapture matrix.
 
 ## References
 

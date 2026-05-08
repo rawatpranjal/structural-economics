@@ -27,6 +27,7 @@ MIXED_FTOL = 1e-10
 LOGIT_START = np.array([-0.75, 0.85])
 LOGIT_MAXITER = 160
 PROFILE_GRID_SIZE = 21
+PRICE_SUBSTITUTION_STEP = 0.10
 
 
 def softmax(utility: np.ndarray) -> np.ndarray:
@@ -188,6 +189,40 @@ def diversion_rates(full_shares: np.ndarray, restricted_shares: np.ndarray, remo
     return diversion
 
 
+def price_substitution_table(
+    logit_theta: np.ndarray,
+    mixed_theta: np.ndarray,
+    price: np.ndarray,
+    quality: np.ndarray,
+    draws: np.ndarray,
+) -> pd.DataFrame:
+    """Share recapture from a finite price increase in each product."""
+    rows: list[dict[str, object]] = []
+    models = [
+        ("Plain logit", lambda p: logit_probabilities(logit_theta, p, quality).mean(axis=0)),
+        ("Mixed logit", lambda p: mixed_logit_probabilities(mixed_theta, p, quality, draws).mean(axis=0)),
+    ]
+    for model_name, share_func in models:
+        base_shares = share_func(price)
+        matrix = np.zeros((len(PRODUCTS), len(PRODUCTS)))
+        for shocked in range(len(PRODUCTS)):
+            perturbed_price = price.copy()
+            perturbed_price[:, shocked] += PRICE_SUBSTITUTION_STEP
+            perturbed_shares = share_func(perturbed_price)
+            lost_share = base_shares[shocked] - perturbed_shares[shocked]
+            for receiver in range(len(PRODUCTS)):
+                if receiver == shocked:
+                    matrix[receiver, shocked] = -1.0
+                else:
+                    matrix[receiver, shocked] = (perturbed_shares[receiver] - base_shares[receiver]) / lost_share
+        for receiver, product in enumerate(PRODUCTS):
+            row: dict[str, object] = {"Model": model_name, "Receiving product": product}
+            for shocked, shocked_product in enumerate(PRODUCTS):
+                row[f"Price up: {shocked_product}"] = matrix[receiver, shocked]
+            rows.append(row)
+    return pd.DataFrame(rows)
+
+
 def parameter_table(theta_true: np.ndarray, logit: dict[str, object], mixed: dict[str, object]) -> pd.DataFrame:
     """Parameter recovery table."""
     logit_theta = np.asarray(logit["theta"], dtype=float)
@@ -268,6 +303,13 @@ def main() -> None:
     mixed_restricted = mixed_logit_probabilities(np.asarray(mixed["raw_theta"], dtype=float), price, quality, simulation_draws, available).mean(axis=0)
     logit_diversion = diversion_rates(logit_probs, logit_restricted, removed_product)
     mixed_diversion = diversion_rates(mixed_probs, mixed_restricted, removed_product)
+    substitution_table = price_substitution_table(
+        np.asarray(logit["theta"], dtype=float),
+        np.asarray(mixed["raw_theta"], dtype=float),
+        price,
+        quality,
+        simulation_draws,
+    )
 
     sigma_alpha_grid, sigma_beta_grid, surface = profile_surface(
         np.asarray(mixed["raw_theta"], dtype=float)[0],
@@ -387,38 +429,59 @@ $$
     )
 
     report.add_solution_method(
-        "The estimator uses common random numbers. Draws are made once and then held "
-        "fixed while the optimizer moves $\\theta$. This turns the population integral "
-        "into the same finite average at every trial parameter vector. Without common "
-        "draws, fresh simulation noise would move the likelihood surface while the "
-        "optimizer is trying to climb it.\n\n"
-        "The standard deviations are optimized in logs. The optimizer can move freely "
-        "over log standard deviations, while the model sees positive values after "
-        "exponentiation. The bounds are not an economic restriction in this example. "
-        "They keep the teaching likelihood away from numerically irrelevant regions.\n\n"
-        "```text\n"
-        "Algorithm: simulated maximum likelihood for mixed logit\n"
-        "Input: choices y_i, product data (p_ij, q_ij), fixed normal draws nu_r\n"
-        "Parameters: theta = (alpha_bar, beta_bar, log sigma_alpha, log sigma_beta)\n"
-        "Output: theta_hat, fitted shares, and substitution diagnostics\n"
-        "1. Draw nu_r once for r = 1,...,R and keep these draws fixed.\n"
-        "2. For each trial theta proposed by L-BFGS-B:\n"
-        "       sigma_alpha <- exp(log sigma_alpha)\n"
-        "       sigma_beta  <- exp(log sigma_beta)\n"
-        "       for each draw r:\n"
-        "           alpha_r <- alpha_bar + sigma_alpha * nu_{r,alpha}\n"
-        "           beta_r  <- beta_bar  + sigma_beta  * nu_{r,beta}\n"
-        "           compute conditional logit probabilities P_ij(theta, nu_r)\n"
-        "       average probabilities over r to get P_hat_ij(theta)\n"
-        "       evaluate sum_i log max(P_hat_{i,y_i}, probability floor)\n"
-        "3. Choose the theta with the largest simulated log likelihood.\n"
-        "4. Recompute fitted shares at theta_hat using the same fixed draws.\n"
-        "5. Remove one product and recompute shares to measure diversion.\n"
-        "```\n\n"
-        "The homogeneous logit is estimated on the same data. Its likelihood is easier "
-        "because it does not integrate over tastes. The comparison is useful because "
-        "the homogeneous model can fit mean shares while still forcing diversion to "
-        "follow existing market shares."
+        r"""
+The estimator uses common random numbers. Draws are made once and then held fixed while the optimizer moves $\theta$. This turns the population integral into the same finite average at every trial parameter vector. Without common draws, fresh simulation noise would move the likelihood surface while the optimizer is trying to climb it.
+
+The standard deviations are optimized in logs. The optimizer can move freely over log standard deviations, while the model sees positive values after exponentiation. The bounds are not an economic restriction in this example. They keep the teaching likelihood away from numerically irrelevant regions.
+
+```text
+Algorithm 1: evaluate the simulated log likelihood
+Inputs   data {y_i,p_ij,q_ij}_{i=1..N,j=1..J};
+         fixed draws nu_r=(nu_{r alpha},nu_{r beta}) for r=1,...,R;
+         trial theta=(alpha_bar,beta_bar,ell_alpha,ell_beta)
+Output   Q_R(theta), the negative simulated log likelihood
+
+sigma_alpha <- exp(ell_alpha)
+sigma_beta  <- exp(ell_beta)
+initialise P_hat_ij(theta) <- 0 for every i,j
+
+for r = 1,...,R:
+    alpha_r <- alpha_bar + sigma_alpha * nu_{r alpha}
+    beta_r  <- beta_bar  + sigma_beta  * nu_{r beta}
+    V_ijr   <- alpha_r p_ij + beta_r q_ij
+    P_ijr   <- exp(V_ijr) / sum_{k=1}^J exp(V_ikr)
+    P_hat_ij(theta) <- P_hat_ij(theta) + P_ijr / R
+
+ell_R(theta) <- sum_{i=1}^N log max(P_hat_{i y_i}(theta), eta)
+Q_R(theta)   <- -ell_R(theta) / N
+return Q_R(theta)
+```
+
+```text
+Algorithm 2: estimate theta and compute price substitution
+Inputs   starting value theta_0; bounds B; price step Delta p;
+         common draws {nu_r}; observed data {y_i,p_ij,q_ij}
+Outputs  theta_hat; fitted shares s_j; price-substitution matrix D_jk
+
+repeat until L-BFGS-B stops:
+    choose a candidate theta^m in B
+    evaluate Q_R(theta^m) using Algorithm 1
+    update the inverse-Hessian approximation and propose the next theta
+
+theta_hat <- argmin_theta Q_R(theta)
+s_j       <- N^{-1} sum_i P_hat_ij(theta_hat)
+
+for each shocked product k:
+    set p_{ik}^{+k} <- p_{ik} + Delta p for all i
+    recompute shares s_j^{+k} with the same theta_hat and the same draws
+    lost_k <- s_k - s_k^{+k}
+    for each receiving product j != k:
+        D_jk <- (s_j^{+k} - s_j) / lost_k
+    set D_kk <- -1
+```
+
+The homogeneous logit is estimated on the same data. Its likelihood is easier because it does not integrate over tastes. The comparison is useful because the homogeneous model can fit mean shares while still forcing diversion to follow existing market shares.
+"""
     )
 
     fig1, ax1 = plt.subplots(figsize=(7.5, 4.8))
@@ -476,6 +539,18 @@ $$
     report.add_figure("figures/substitution-patterns.png", "Diversion after removing one product", fig3)
 
     report.add_results(
+        "The price-substitution matrix asks where demand goes when one product becomes "
+        f"{PRICE_SUBSTITUTION_STEP:.2f} price units more expensive. Each column is the "
+        "product whose price is raised. Each off-diagonal entry is the share gain for "
+        "the receiving product divided by the shocked product's lost share."
+    )
+    report.add_table(
+        "tables/price-substitution-matrix.csv",
+        "Plain and mixed logit price substitution matrix",
+        substitution_table.round(4),
+    )
+
+    report.add_results(
         "The parameter and fit tables separate two diagnostics. The parameter table "
         "checks known-truth recovery. The share table checks whether the fitted model "
         "matches observed product choices."
@@ -492,11 +567,17 @@ $$
     )
 
     report.add_takeaway(
-        "Mixed logit is a simulation estimator because choice probabilities require an "
-        "integral over unobserved tastes. Fixed draws turn that integral into a smooth "
-        "sample average. The payoff is economic: aggregate substitution is no longer "
-        "forced to satisfy IIA, even though each simulated consumer still has a logit "
-        "choice rule conditional on tastes."
+        r"""
+Mixed logit is a simulation estimator because choice probabilities require an integral over unobserved tastes. Fixed draws turn that integral into a smooth sample average. The payoff is economic: aggregate substitution is no longer forced to satisfy IIA, even though each simulated consumer still has a logit choice rule conditional on tastes.
+
+**Computational tricks used here**
+
+- Fixed draws make $\widehat P_{ij}(\theta)$ deterministic at each trial $\theta$.
+- Log standard deviations keep $\sigma_\alpha$ and $\sigma_\beta$ positive.
+- L-BFGS-B bounds keep the optimizer out of irrelevant parameter regions.
+- The probability floor $\eta$ prevents one simulated zero from breaking the log likelihood.
+- The finite price step $\Delta p$ turns substitution into a readable recapture matrix.
+"""
     )
 
     report.add_references(
