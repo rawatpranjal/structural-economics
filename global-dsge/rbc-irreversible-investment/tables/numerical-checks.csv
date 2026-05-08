@@ -1,7 +1,0 @@
-Check,Value,Interpretation
-Irreversible VFI iterations,49,Coarse-grid constrained solution
-Standard VFI iterations,49,Unconstrained comparison on the same grid
-Binding states on coarse grid,9.5%,"Fraction of (z,K) states where the policy chooses I=0"
-Overhang episode binding frequency,13.3%,Share of periods with I=0 in the displayed recession experiment
-Stationary binding frequency,0.42%,Share of simulated periods with I=0 from K_ss
-Fine-grid low-z investment gap,0.2941,Max absolute gap between 72- and 150-point irreversible policies

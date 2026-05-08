@@ -7,8 +7,8 @@ in low-productivity states the unconstrained model wants to run capital down
 faster than depreciation, while the irreversible model must carry a capital
 overhang.
 
-References: Abel and Eberly (1996), Bertola and Caballero (1994), and the
-global-solution examples in Cao, Luo, and Nie (2023).
+References: Abel and Eberly (1996), Bertola and Caballero (1994), and
+Cao, Luo, and Nie (2023).
 """
 import sys
 from pathlib import Path
@@ -280,11 +280,6 @@ def main() -> None:
         constrained=False, beta=beta, alpha=alpha, sigma=sigma, delta=delta,
         rho=rho, sigma_e=sigma_e, n_k=n_k, n_z=n_z, verbose=True
     )
-    sol_fine = solve_rbc(
-        constrained=True, beta=beta, alpha=alpha, sigma=sigma, delta=delta,
-        rho=rho, sigma_e=sigma_e, n_k=150, n_z=n_z, tol=2e-6, verbose=False
-    )
-
     k_grid = sol_irr["K_grid"]
     z_grid = sol_irr["z_grid"]
     k_ss = float(sol_irr["Kss"])
@@ -295,9 +290,6 @@ def main() -> None:
     inv_irr = sol_irr["policy_k"] - (1.0 - delta) * k_grid[None, :]
     inv_std = sol_std["policy_k"] - (1.0 - delta) * k_grid[None, :]
     inv_irr = np.maximum(inv_irr, 0.0)
-    inv_fine_low = sol_fine["policy_k"][0] - (1.0 - delta) * sol_fine["K_grid"]
-    inv_fine_low_on_coarse = np.interp(k_grid, sol_fine["K_grid"], np.maximum(inv_fine_low, 0.0))
-    max_fine_gap = float(np.max(np.abs(inv_irr[0] - inv_fine_low_on_coarse)))
 
     stress_idx = overhang_path(n_z)
     k0_stress = 1.25 * k_ss
@@ -328,67 +320,23 @@ def main() -> None:
             "I=0 frequency": f"{100.0 * sim['binding'][burn:].mean():.2f}%",
         }
 
-    diagnostics = pd.DataFrame([
-        {
-            "Check": "Irreversible VFI iterations",
-            "Value": f"{sol_irr['iterations']}",
-            "Interpretation": "Coarse-grid constrained solution",
-        },
-        {
-            "Check": "Standard VFI iterations",
-            "Value": f"{sol_std['iterations']}",
-            "Interpretation": "Unconstrained comparison on the same grid",
-        },
-        {
-            "Check": "Binding states on coarse grid",
-            "Value": f"{100.0 * binding_share_states:.1f}%",
-            "Interpretation": "Fraction of (z,K) states where the policy chooses I=0",
-        },
-        {
-            "Check": "Overhang episode binding frequency",
-            "Value": f"{100.0 * binding_share_stress:.1f}%",
-            "Interpretation": "Share of periods with I=0 in the displayed recession experiment",
-        },
-        {
-            "Check": "Stationary binding frequency",
-            "Value": f"{100.0 * binding_share_stationary:.2f}%",
-            "Interpretation": "Share of simulated periods with I=0 from K_ss",
-        },
-        {
-            "Check": "Fine-grid low-z investment gap",
-            "Value": f"{max_fine_gap:.4f}",
-            "Interpretation": "Max absolute gap between 72- and 150-point irreversible policies",
-        },
-    ])
-
     setup_style()
     report = ModelReport(
         "Capital Overhang from Irreversible Investment in RBC",
-        "Installed capital is easy to add and hard to undo, so recessions can leave the economy stuck with too much capital.",
+        "Installed capital depreciates slowly, so a bad shock can leave the economy carrying unwanted capital.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "Think of a firm that installed machines before learning that productivity "
-        "would be low for several years. It can stop adding machines, and the old "
-        "capital can depreciate, but it cannot turn installed capital back into "
-        "consumption goods. The RBC version of that situation is simple: the "
-        "household chooses next period's capital after seeing productivity, while "
-        "net investment cannot be negative.\n\n"
-        "That friction matters only in particular states. Near the deterministic "
-        "steady state, replacement investment is positive and the constraint is "
-        "slack. After a bad productivity draw with high installed capital, the "
-        "standard model wants to run capital down faster than depreciation. The "
-        "irreversible model cannot, so it carries a capital overhang until "
-        "depreciation and future investment decisions bring the state back toward "
-        "the usual region.\n\n"
-        "This tutorial sits between the local [linearized RBC](../../dsge/rbc/) "
-        "shock-propagation example and the global [capital-tax RBC](../rbc-capital-tax/) "
-        "tutorial. We solve the model globally because the object of interest is "
-        "a state-space boundary, $I=0$, rather than a smooth response around the "
-        "steady state. A local linear solution cannot show where that boundary "
-        "binds or how much value is lost there."
+        "A firm can install machines before it learns that productivity will be low. "
+        "It can stop new investment. Installed capital only leaves through depreciation.\n\n"
+        "The model is a stochastic RBC economy with capital $K$ and productivity $z$. "
+        "The household chooses $K'$ after observing $z$. Irreversible investment imposes "
+        "$K' \\geq (1-\\delta)K$, or $I\\geq 0$.\n\n"
+        "The object of interest is the zero-investment boundary. It can bind far from "
+        "the steady state. Global value function iteration keeps that boundary on the grid. "
+        "The solution can then show the binding region and the overhang path."
     )
 
     equations = r"""
@@ -416,13 +364,8 @@ $$I_t\equiv K_{t+1}-(1-\delta)K_t\geq 0,
 \Gamma^{irr}(K,z)=\{K'\geq (1-\delta)K:
 zK^\alpha+(1-\delta)K-K'>0\}.$$
 
-With multiplier $\lambda_t\geq 0$ on $K_{t+1}-(1-\delta)K_t\geq 0$,
-
-$$u_c(c_t)-\lambda_t
-=\beta E_t\left[
-u_c(c_{t+1})\left(\alpha z_{t+1}K_{t+1}^{\alpha-1}+1-\delta\right)
--\lambda_{t+1}(1-\delta)
-\right],$$
+Let $\lambda_t$ denote the multiplier on irreversible investment.
+The kink is summarized by
 
 $$\lambda_t\geq 0,\qquad I_t\geq 0,\qquad \lambda_t I_t=0.$$
 
@@ -446,18 +389,15 @@ $I_{ss}=\delta K_{ss}>0$.
         f"| $\\sigma_\\varepsilon$ | {sigma_e} | Innovation std for log productivity |\n"
         f"| Capital grid | {n_k} points on [{float(sol_irr['K_min']):.2f}, {float(sol_irr['K_max']):.2f}] | State grid and candidate $K'$ grid |\n"
         f"| TFP grid | {n_z} Tauchen states | Common shock grid for both models |\n"
-        f"| Fine-grid check | 150 capital points | Used only to benchmark the low-productivity investment policy |\n"
         f"| Overhang experiment | $K_0=1.25K_{{ss}}$ plus a low-$z$ episode | A stress path, not a stationary moment |"
     )
 
     report.add_solution_method(
-        "The computation uses global value function iteration. It solves a standard "
-        "RBC model and an irreversible model on the same capital and productivity "
-        "grids, then compares their policies at each state. For the irreversible "
-        "model, the feasible set changes with current capital because the lower "
-        "bound is $K'=(1-\\delta)K$. The grid search adds that exact boundary "
-        "choice even when it falls between grid nodes, since the economic kink is "
-        "at zero net investment.\n\n"
+        "The computation uses global value function iteration. It solves the standard "
+        "and irreversible models on the same grids. In the irreversible model, the "
+        "feasible lower bound is $K'=(1-\\delta)K$. The code evaluates that boundary "
+        "even when it falls between grid nodes. The binding indicator records states "
+        "where the boundary choice wins.\n\n"
         "```text\n"
         "Algorithm: global VFI with an irreversible-investment boundary\n"
         "Input: grids K and Z, transition matrix P, primitives beta, alpha, sigma, delta\n"
@@ -472,16 +412,13 @@ $I_{ss}=\delta K_{ss}>0$.
         "        set b(z_i,K_m)=1 if the boundary K'=(1-delta)K_m is chosen\n"
         "    apply Howard improvement to the fixed policy\n"
         "until the sup-norm Bellman update is below epsilon\n"
-        "Solve a finer-grid irreversible model and compare the low-z investment policy\n"
-        "Simulate the standard and irreversible policies on the same productivity paths\n"
+        "Simulate both policies on the same productivity paths\n"
         "```\n\n"
-        f"The irreversible model converged in **{sol_irr['iterations']}** VFI iterations; "
-        f"the standard comparison converged in **{sol_std['iterations']}**. "
-        f"The fine-grid check changes the low-productivity investment policy by at most "
-        f"**{max_fine_gap:.4f}** units of capital on the coarse grid."
+        f"The irreversible model converged in **{sol_irr['iterations']}** VFI iterations. "
+        f"The standard comparison converged in **{sol_std['iterations']}**."
     )
 
-    # Figure 1: policy functions with fine-grid check.
+    # Figure 1: policy functions.
     fig1, (ax1a, ax1b) = plt.subplots(1, 2, figsize=(13, 5))
     colors = plt.cm.viridis(np.linspace(0.15, 0.85, n_z))
     selected_z = [0, n_z // 2]
@@ -489,7 +426,6 @@ $I_{ss}=\delta K_{ss}>0$.
         label = f"$z={z_grid[iz]:.3f}$"
         ax1a.plot(k_grid, inv_irr[iz], "-", color=colors[iz], linewidth=2.1, label=f"Irrev {label}")
         ax1a.plot(k_grid, inv_std[iz], "--", color=colors[iz], linewidth=1.3, label=f"Std {label}")
-    ax1a.plot(k_grid, inv_fine_low_on_coarse, "k:", linewidth=2.0, label="Fine-grid low $z$")
     ax1a.axhline(0, color="black", linewidth=1.0)
     ax1a.axvline(k_ss, color="0.35", linewidth=1.0, linestyle=":", label="$K_{ss}$")
     ax1a.set_xlabel("Capital $K$")
@@ -512,10 +448,8 @@ $I_{ss}=\delta K_{ss}>0$.
         "Investment and consumption policies for standard and irreversible RBC models",
         fig1,
         description=(
-            "The policy comparison shows where irreversibility binds. At low productivity and "
-            "high capital, the standard model chooses negative investment and runs capital down. "
-            "The irreversible policy flattens at $I=0$. The dotted fine-grid line in "
-            "the investment panel is a local check that the coarse-grid kink is not a plotting artifact."
+            "The policy comparison locates the constraint. At low productivity and high capital, "
+            "the standard model chooses negative investment. The irreversible policy flattens at $I=0$."
         ),
     )
 
@@ -546,17 +480,15 @@ $I_{ss}=\delta K_{ss}>0$.
         "State-space region where nonnegative investment binds",
         fig2,
         description=(
-            "The binding set is away from the deterministic steady state. It sits in states "
-            "with too much installed capital for the current productivity level. A stationary "
-            "simulation can therefore spend little time constrained, while the constraint "
-            "still shapes recession states."
+            "The binding set lies away from the steady state. It appears when capital is high "
+            "relative to productivity. The constraint can matter in recessions even if average "
+            "periods are slack."
         ),
     )
 
     # Figure 3: overhang experiment.
     fig3, axes = plt.subplots(2, 2, figsize=(13, 8))
     t = np.arange(len(stress_idx))
-    shock_window = (t >= 8) & (t < 32)
     for ax in axes.flat:
         ax.axvspan(8, 32, color="#eeeeee", alpha=0.8)
         ax.set_xlabel("Period")
@@ -598,10 +530,10 @@ $I_{ss}=\delta K_{ss}>0$.
         "Stress-path comparison after a low-productivity episode",
         fig3,
         description=(
-            "The stress path starts with capital above steady state and then sends productivity "
+            "The stress path starts with capital above steady state. Productivity then falls "
             "to its lowest grid state. The standard model disinvests immediately. The irreversible "
-            "model cannot do that, so investment sits at zero and capital remains high until "
-            "depreciation works through the overhang. The gray band is the adverse productivity episode."
+            "model holds investment at zero until depreciation lowers capital. The gray band marks "
+            "the low-productivity episode."
         ),
     )
 
@@ -621,10 +553,9 @@ $I_{ss}=\delta K_{ss}>0$.
         "Value-function difference between irreversible and standard RBC models",
         fig4,
         description=(
-            "The value loss is concentrated near the same high-capital, low-productivity states "
-            "where the boundary binds. Near the steady state the loss is small because normal "
-            "replacement investment is positive. The friction mainly prices bad states reached "
-            "with too much installed capital."
+            "The value loss is largest where the boundary binds. Near the steady state, normal "
+            "replacement investment is positive. The friction mainly prices bad states with too "
+            "much installed capital."
         ),
     )
 
@@ -637,51 +568,35 @@ $I_{ss}=\delta K_{ss}>0$.
         "Stationary Simulation Moments",
         stationary_table,
         description=(
-            "The stationary simulation starts at $K_{ss}$ and uses the same productivity draws "
-            "for both policies. The binding frequency is modest because the economy does not "
-            "often enter the high-capital, low-productivity region. That is a property of the "
-            "calibration, not evidence that the constraint is irrelevant."
-        ),
-    )
-
-    report.add_table(
-        "tables/numerical-checks.csv",
-        "Solution and Boundary Checks",
-        diagnostics,
-        description=(
-            "The numerical checks separate three objects: the global state-space binding set, "
-            "the deliberately adverse overhang path, and the ordinary stationary simulation. "
-            "Only the first two are designed to stress the kink."
+            "The stationary simulation starts at $K_{ss}$ and uses common productivity draws. "
+            "The binding frequency is low in this calibration. That does not make the constraint "
+            "irrelevant for high-capital recessions."
         ),
     )
 
     report.add_results(
-        "The figures give the main economic message. The investment floor does not move "
-        "the deterministic steady state, because replacement investment is strictly "
-        "positive there. It changes the state-contingent policy. Once productivity is "
-        "low enough relative to installed capital, the unconstrained Euler equation asks "
-        "for disinvestment, but the feasible policy is pinned at $I=0$.\n\n"
-        "The comparison with the standard RBC model should therefore be read state by "
-        "state. Around ordinary states, the two policies are close. In overhang states, "
-        "the irreversible model has a kink, a binding multiplier, and a value loss. "
-        "A global grid solution preserves those objects directly."
+        "The investment floor leaves the steady state unchanged because replacement "
+        "investment is positive. It changes policy in high-capital recession states. "
+        "In this run, the boundary covers "
+        f"{100.0 * binding_share_states:.1f}% of grid states. It binds for "
+        f"{100.0 * binding_share_stress:.1f}% of the stress path and "
+        f"{100.0 * binding_share_stationary:.2f}% of stationary periods.\n\n"
+        "The average simulation rarely reaches the bad overhang region. "
+        "The stress path is designed to enter it."
     )
 
     report.add_takeaway(
-        "Irreversibility is not a different steady-state theory of capital accumulation. "
-        "It is a theory of bad states. When the economy has too much installed capital "
-        "for current productivity, the standard RBC model adjusts by selling or scrapping "
-        "capital immediately. The irreversible model adjusts only through depreciation and "
-        "future low investment. For nearby DSGE applications, the practical lesson is that "
-        "occasionally binding constraints matter because they create state-dependent kinks, "
-        "not because they necessarily bind in the average period."
+        "Irreversibility is a theory of bad states. It does not change the deterministic "
+        "steady state here. When capital is too high for productivity, the standard "
+        "model disinvests immediately. The irreversible model waits for depreciation "
+        "and later low investment. Occasionally binding constraints matter because "
+        "they create state-dependent kinks."
     )
 
     report.add_references([
         "Abel, A. and Eberly, J. (1996). *Optimal Investment with Costly Reversibility*. Review of Economic Studies.",
         "Bertola, G. and Caballero, R. (1994). *Irreversibility and Aggregate Investment*. Review of Economic Studies.",
         "Cao, D., Luo, W., and Nie, G. (2023). *Global DSGE Models*. Review of Economic Dynamics.",
-        "Khan, A. and Thomas, J. (2008). *Idiosyncratic Shocks and the Role of Nonconvexities*. Econometrica.",
     ])
 
     report.write("README.md")
