@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T09:22:19Z",
+  "updated_at": "2026-05-08T09:28:15Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -562,6 +562,18 @@
         "choice/bayesian-learning/tables/accuracy-comparison.csv"
       ],
       "updated_at": "2026-05-08T09:22:19Z"
+    },
+    {
+      "tutorial_path": "choice/urn-behavioral-mixtures/",
+      "status": "complete",
+      "commit": "ce0d5af14c39ba180aa387e207849d886ee7a837",
+      "changed_paths": [
+        "choice/urn-behavioral-mixtures/README.md",
+        "choice/urn-behavioral-mixtures/run.py",
+        "choice/urn-behavioral-mixtures/tables/bayes-task-diagnostics.csv",
+        "choice/urn-behavioral-mixtures/tables/estimator-diagnostics.csv"
+      ],
+      "updated_at": "2026-05-08T09:28:15Z"
     }
   ]
 }
