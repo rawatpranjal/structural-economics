@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T05:38:29Z",
+  "updated_at": "2026-05-08T05:44:52Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -149,6 +149,17 @@
         "heterogeneous-agents/huggett-incomplete-markets/run.py"
       ],
       "updated_at": "2026-05-08T05:38:29Z"
+    },
+    {
+      "tutorial_path": "dsge/rbc/",
+      "status": "complete",
+      "commit": "43b46245c362bc0302dedd79a953a5942cf5e065",
+      "changed_paths": [
+        "README.md",
+        "dsge/rbc/README.md",
+        "dsge/rbc/run.py"
+      ],
+      "updated_at": "2026-05-08T05:44:52Z"
     },
     {
       "tutorial_path": "dsge/nkdsge/",
