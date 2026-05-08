@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T09:40:56Z",
+  "updated_at": "2026-05-08T09:47:01Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -603,6 +603,18 @@
         "choice/nested-logit/run.py"
       ],
       "updated_at": "2026-05-08T09:40:56Z"
+    },
+    {
+      "tutorial_path": "game-theory/normal-form-games/",
+      "status": "complete",
+      "commit": "485f4bc7473bf3826b833895add1c4c26bae1101",
+      "changed_paths": [
+        "README.md",
+        "game-theory/normal-form-games/README.md",
+        "game-theory/normal-form-games/run.py",
+        "game-theory/normal-form-games/tables/mixed-payoffs.csv"
+      ],
+      "updated_at": "2026-05-08T09:47:01Z"
     }
   ]
 }
