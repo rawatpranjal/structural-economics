@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T09:15:30Z",
+  "updated_at": "2026-05-08T09:22:19Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -547,6 +547,21 @@
         "choice/maximum-score-binary-choice/run.py"
       ],
       "updated_at": "2026-05-08T09:15:30Z"
+    },
+    {
+      "tutorial_path": "choice/bayesian-learning/",
+      "status": "complete",
+      "commit": "7d419c08ceedc84ae303c62a30937e5eaa59ac43",
+      "changed_paths": [
+        "README.md",
+        "choice/bayesian-learning/README.md",
+        "choice/bayesian-learning/figures/learning-speed.png",
+        "choice/bayesian-learning/figures/roc-comparison.png",
+        "choice/bayesian-learning/figures/stopping-boundary.png",
+        "choice/bayesian-learning/run.py",
+        "choice/bayesian-learning/tables/accuracy-comparison.csv"
+      ],
+      "updated_at": "2026-05-08T09:22:19Z"
     }
   ]
 }
