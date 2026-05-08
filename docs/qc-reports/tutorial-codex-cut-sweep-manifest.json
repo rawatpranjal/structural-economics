@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T08:43:03Z",
+  "updated_at": "2026-05-08T08:47:42Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -480,6 +480,17 @@
         "choice/revealed-preference-afriat/tables/revealed-preference-matrix.csv"
       ],
       "updated_at": "2026-05-08T08:43:03Z"
+    },
+    {
+      "tutorial_path": "choice/preference-recoverability/",
+      "status": "complete",
+      "commit": "6c22761cd50d970257ca1fb1de7864d04cc2e1ab",
+      "changed_paths": [
+        "README.md",
+        "choice/preference-recoverability/README.md",
+        "choice/preference-recoverability/run.py"
+      ],
+      "updated_at": "2026-05-08T08:47:42Z"
     }
   ]
 }
