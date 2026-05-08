@@ -1,7 +1,17 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T02:48:11Z",
+  "updated_at": "2026-05-08T02:55:03Z",
   "entries": [
+    {
+      "tutorial_path": "heterogeneous-agents/endogenous-grid-points/",
+      "status": "complete",
+      "commit": "a36be9d3db91295347ddc3c17e9832712fd7dd73",
+      "changed_paths": [
+        "heterogeneous-agents/endogenous-grid-points/README.md",
+        "heterogeneous-agents/endogenous-grid-points/run.py"
+      ],
+      "updated_at": "2026-05-08T02:55:03Z"
+    },
     {
       "tutorial_path": "dsge/nkdsge/",
       "status": "complete",
