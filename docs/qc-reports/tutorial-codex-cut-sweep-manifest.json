@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T06:50:06Z",
+  "updated_at": "2026-05-08T06:56:26Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -269,6 +269,20 @@
         "optimal-control/ramsey-growth/run.py"
       ],
       "updated_at": "2026-05-08T06:50:06Z"
+    },
+    {
+      "tutorial_path": "optimal-control/continuous-cake-eating/",
+      "status": "complete",
+      "commit": "ca6f6127c8012c82752d7903ce4f678779998e5e",
+      "changed_paths": [
+        "README.md",
+        "optimal-control/continuous-cake-eating/README.md",
+        "optimal-control/continuous-cake-eating/figures/cake-remaining.png",
+        "optimal-control/continuous-cake-eating/figures/consumption-path.png",
+        "optimal-control/continuous-cake-eating/figures/thumb.png",
+        "optimal-control/continuous-cake-eating/run.py"
+      ],
+      "updated_at": "2026-05-08T06:56:26Z"
     },
     {
       "tutorial_path": "industrial-organization/dynamic-discrete-choice/",
