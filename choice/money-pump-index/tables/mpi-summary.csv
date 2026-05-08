@@ -1,5 +1,5 @@
-Dataset,GARP rejects,Best cycle,Designed slack,Enumerated mean,Karp MPI,Violating pairs
-No cycle,no,none,none,0.000,0.000,0
-Small cycle,yes,1 -> 2 -> 3 -> 1,"3%, 4%, 2%",0.030,0.030,3
-Medium cycle,yes,1 -> 2 -> 3 -> 1,"10%, 13%, 8%",0.103,0.103,3
-Severe cycle,yes,1 -> 2 -> 3 -> 1,"18%, 24%, 8%",0.167,0.167,3
+Dataset,GARP rejects,Best cycle,Designed slack,Karp MPI
+No cycle,no,none,none,0.000
+Small cycle,yes,1 -> 2 -> 3 -> 1,"3%, 4%, 2%",0.030
+Medium cycle,yes,1 -> 2 -> 3 -> 1,"10%, 13%, 8%",0.103
+Severe cycle,yes,1 -> 2 -> 3 -> 1,"18%, 24%, 8%",0.167
