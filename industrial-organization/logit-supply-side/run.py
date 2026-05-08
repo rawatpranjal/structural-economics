@@ -407,52 +407,25 @@ def main():
     report.add_equations(r"""
 Markets are indexed by $t$. Products are indexed by $j$.
 Mean utility collects characteristics, price, and unobserved quality:
-$$
-\delta_{jt}
-=\beta_0+\beta_{\text{sugar}}x^{\text{sugar}}_{jt}
-+\beta_{\text{fiber}}x^{\text{fiber}}_{jt}
--\alpha p_{jt}+\xi_{jt}.
-$$
+$$\delta_{jt} =\beta_0+\beta_{\text{sugar}}x^{\text{sugar}}_{jt} +\beta_{\text{fiber}}x^{\text{fiber}}_{jt} -\alpha p_{jt}+\xi_{jt}.$$
 
 Simple logit shares satisfy
-$$
-s_{jt}=\frac{\exp(\delta_{jt})}{1+\sum_k \exp(\delta_{kt})},
-\qquad
-s_{0t}=\frac{1}{1+\sum_k \exp(\delta_{kt})}.
-$$
+$$s_{jt}=\frac{\exp(\delta_{jt})}{1+\sum_k \exp(\delta_{kt})}, \qquad s_{0t}=\frac{1}{1+\sum_k \exp(\delta_{kt})}.$$
 Berry's inversion turns observed shares into a linear estimating equation:
-$$
-\log s_{jt}-\log s_{0t}
-=\beta_0+\beta_{\text{sugar}}x^{\text{sugar}}_{jt}
-+\beta_{\text{fiber}}x^{\text{fiber}}_{jt}
--\alpha p_{jt}+\xi_{jt}.
-$$
+$$\log s_{jt}-\log s_{0t} =\beta_0+\beta_{\text{sugar}}x^{\text{sugar}}_{jt} +\beta_{\text{fiber}}x^{\text{fiber}}_{jt} -\alpha p_{jt}+\xi_{jt}.$$
 Identification needs price variation excluded from $\xi_{jt}$. The cost shifter
 plays that role in the simulation.
 
 The supply inversion uses the logit derivative matrix:
-$$
-\frac{\partial s_k}{\partial p_j}
-=\begin{cases}
-{}-\alpha s_j(1-s_j), & k=j,\\
-\alpha s_k s_j, & k\neq j.
-\end{cases}
-$$
+$$\frac{\partial s_k}{\partial p_j} =\begin{cases} {}-\alpha s_j(1-s_j), & k=j,\\ \alpha s_k s_j, & k\neq j. \end{cases}$$
 
 Firm $f$ chooses prices for its products. Product $j$'s FOC is
-$$
-0=s_j(p)+\sum_k
-\mathbf 1[f(j)=f(k)](p_k-c_k)\frac{\partial s_k(p)}{\partial p_j}.
-$$
+$$0=s_j(p)+\sum_k \mathbf 1[f(j)=f(k)](p_k-c_k)\frac{\partial s_k(p)}{\partial p_j}.$$
 Let $O_{jk}=1$ when products $j$ and $k$ share an owner. Define the pricing
 matrix
-$$
-\Omega_{jk}=-O_{jk}\frac{\partial s_k}{\partial p_j}.
-$$
+$$\Omega_{jk}=-O_{jk}\frac{\partial s_k}{\partial p_j}.$$
 The markup vector $m=p-c$ solves
-$$
-\Omega m=s.
-$$
+$$\Omega m=s.$$
 The recovered cost vector is then $c=p-m$. Ownership matters because a firm
 internalizes lost sales across its own products.
 """)

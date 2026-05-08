@@ -589,65 +589,37 @@ The target object is the counterfactual price vector after ownership changes.
 There are $J$ inside products. Product $j$ has price $p_j$, marginal cost
 $c_j$, quantity or share $q_j(p)$, and owner $f(j)$. The ownership matrix is
 
-$$
-\Omega_{jk}=\mathbf 1\{f(j)=f(k)\}.
-$$
+$$\Omega_{jk}=\mathbf 1\{f(j)=f(k)\}.$$
 
 For a multi-product Bertrand firm, the pricing equation is
 
-$$
-0=q_j(p)+\sum_{k=1}^J
-\Omega_{jk}(p_k-c_k)\frac{\partial q_k(p)}{\partial p_j},
-\qquad j=1,\ldots,J .
-$$
+$$0=q_j(p)+\sum_{k=1}^J \Omega_{jk}(p_k-c_k)\frac{\partial q_k(p)}{\partial p_j}, \qquad j=1,\ldots,J .$$
 
 With $\Delta_{kj}(p)=\partial q_k(p)/\partial p_j$, the vector equation is
 
-$$
-q(p)+(\Omega\circ \Delta(p)') (p-c)=0.
-$$
+$$q(p)+(\Omega\circ \Delta(p)') (p-c)=0.$$
 
 The three demand systems are calibrated to the same observed market:
 
-$$
-s_j^{L}(p)=
-\frac{\exp(\xi_j+\alpha p_j)}
-{1+\sum_{\ell=1}^J \exp(\xi_\ell+\alpha p_\ell)},
-\qquad \alpha<0,
-$$
+$$s_j^{L}(p)= \frac{\exp(\xi_j+\alpha p_j)} {1+\sum_{\ell=1}^J \exp(\xi_\ell+\alpha p_\ell)}, \qquad \alpha<0,$$
 
-$$
-q_j^{A}(p)=a_j-\sum_{k=1}^J B_{jk}p_k,
-$$
+$$q_j^{A}(p)=a_j-\sum_{k=1}^J B_{jk}p_k,$$
 
 and
 
-$$
-\log q_j^{E}(p)=a_j^E+\sum_{k=1}^J E_{jk}\log p_k .
-$$
+$$\log q_j^{E}(p)=a_j^E+\sum_{k=1}^J E_{jk}\log p_k .$$
 
 The local diversion ratio from product $j$ to product $k$ is
 
-$$
-D_{j\to k}=
--\frac{\partial q_k(p)/\partial p_j}
-{\partial q_j(p)/\partial p_j}, \qquad j\neq k.
-$$
+$$D_{j\to k}= -\frac{\partial q_k(p)/\partial p_j} {\partial q_j(p)/\partial p_j}, \qquad j\neq k.$$
 
 For products that become newly co-owned after the merger,
 
-$$
-UPP_j=\sum_{k:\Omega^{post}_{jk}=1,\ \Omega^{pre}_{jk}=0}
-D_{j\to k}(p_k-c_k),
-$$
+$$UPP_j=\sum_{k:\Omega^{post}_{jk}=1,\ \Omega^{pre}_{jk}=0} D_{j\to k}(p_k-c_k),$$
 
 with
 
-$$
-GUPPI_j=\frac{UPP_j}{p_j},
-\qquad
-CMCR_j=\frac{UPP_j}{c_j}.
-$$
+$$GUPPI_j=\frac{UPP_j}{p_j}, \qquad CMCR_j=\frac{UPP_j}{c_j}.$$
 
 GUPPI is a first-order screen for upward pricing pressure. CMCR reports the
 product-level marginal-cost reduction that would offset that pressure at the

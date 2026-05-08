@@ -264,61 +264,35 @@ d = exp(rho*log(d(-1)) + sigma1*n(-1) + sigma2*z)
 
 or, in log deviations,
 
-$$
-x_t = \rho x_{{t-1}} + \sigma_1 n_{{t-1}} + \sigma_2 z_t.
-$$
+$$x_t = \rho x_{{t-1}} + \sigma_1 n_{{t-1}} + \sigma_2 z_t.$$
 
 The surprise innovation $z_t$ is contemporaneous. The news innovation $n_t$ is
 known at date $t$ but enters dividends at date $t+1$.
 
 The asset-pricing equation is
 
-$$
-p_t d_t^{{-\gamma}}
-=
-\beta \mathbb{{E}}_t\left[
-d_{{t+1}}^{{-\gamma}}(p_{{t+1}}+d_{{t+1}})
-\right],
-$$
+$$p_t d_t^{{-\gamma}} = \beta \mathbb{{E}}_t\left[ d_{{t+1}}^{{-\gamma}}(p_{{t+1}}+d_{{t+1}}) \right],$$
 
 which is equivalently
 
-$$
-p_t = \mathbb{{E}}_t\left[
-M_{{t+1}}(p_{{t+1}}+d_{{t+1}})
-\right],
-\qquad
-M_{{t+1}}=\beta\left(\frac{{d_{{t+1}}}}{{d_t}}\right)^{{-\gamma}}.
-$$
+$$p_t = \mathbb{{E}}_t\left[ M_{{t+1}}(p_{{t+1}}+d_{{t+1}}) \right], \qquad M_{{t+1}}=\beta\left(\frac{{d_{{t+1}}}}{{d_t}}\right)^{{-\gamma}}.$$
 
 At the deterministic steady state $d=1$,
 
-$$
-p = \beta(p+1), \qquad p=\frac{{\beta}}{{1-\beta}}={ss["p"]:.2f}.
-$$
+$$p = \beta(p+1), \qquad p=\frac{{\beta}}{{1-\beta}}={ss["p"]:.2f}.$$
 
 Write $q_t=\log(p_t/p)$. A first-order expansion of the Euler equation gives
 
-$$
-q_t =
-\gamma x_t + \beta\mathbb{{E}}_t q_{{t+1}}
-+(1-\beta-\gamma)\mathbb{{E}}_t x_{{t+1}}.
-$$
+$$q_t = \gamma x_t + \beta\mathbb{{E}}_t q_{{t+1}} +(1-\beta-\gamma)\mathbb{{E}}_t x_{{t+1}}.$$
 
 Since $\mathbb{{E}}_t x_{{t+1}}=\rho x_t+\sigma_1 n_t$, the linear solution has
 the form
 
-$$
-q_t = A x_t + B n_t,
-$$
+$$q_t = A x_t + B n_t,$$
 
 with
 
-$$
-A=\frac{{\gamma+\rho(1-\beta-\gamma)}}{{1-\beta\rho}},
-\qquad
-B=\sigma_1\left(\beta A+1-\beta-\gamma\right).
-$$
+$$A=\frac{{\gamma+\rho(1-\beta-\gamma)}}{{1-\beta\rho}}, \qquad B=\sigma_1\left(\beta A+1-\beta-\gamma\right).$$
 
 For this calibration, $A={coeffs["A"]:.3f}$ and $B={coeffs["B"]:.3f}$.
 """

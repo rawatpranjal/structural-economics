@@ -17,10 +17,7 @@ $q_j$ is rival quality. Both qualities lie on the four-rung ladder
 $\{0,1,2,3\}$. Firm $i$ chooses $a_i\in\{0,1\}$, where one means invest.
 Flow payoff is
 
-$$
-\pi_i(\omega,a_i;\theta)
-= \theta_q q_i - \theta_c a_i + \theta_g \max\{q_j-q_i,0\} a_i .
-$$
+$$\pi_i(\omega,a_i;\theta) = \theta_q q_i - \theta_c a_i + \theta_g \max\{q_j-q_i,0\} a_i .$$
 
 The gap term raises the investment payoff when the rival leads.
 
@@ -29,24 +26,15 @@ $p(\omega)=\Pr(a_i=1\mid \omega)$. Holding CCPs fixed gives a policy transition
 $\hat P$ and expected flow payoff $\bar\pi_\theta(\omega;\hat p)$. The logit
 action shock is integrated out. The value under the first-stage policy is
 
-$$
-W_\theta = \bar\pi_\theta(\hat p) + \beta \hat P W_\theta.
-$$
+$$W_\theta = \bar\pi_\theta(\hat p) + \beta \hat P W_\theta.$$
 
 Choice-specific values use the rival's first-stage CCP and $W_\theta$:
 
-$$
-v_\theta(a_i,\omega)
-= \pi_i(\omega,a_i;\theta) + \beta E_{\hat p_j}\left[W_\theta(\omega')\mid \omega,a_i\right].
-$$
+$$v_\theta(a_i,\omega) = \pi_i(\omega,a_i;\theta) + \beta E_{\hat p_j}\left[W_\theta(\omega')\mid \omega,a_i\right].$$
 
 The second-stage pseudo likelihood scores observed investment choices:
 
-$$
-\ell(\theta)=\sum_{i,t}
-d_{it}\log \Lambda[v_\theta(1,\omega_{it})-v_\theta(0,\omega_{it})]
-+(1-d_{it})\log\{1-\Lambda[v_\theta(1,\omega_{it})-v_\theta(0,\omega_{it})]\}.
-$$
+$$\ell(\theta)=\sum_{i,t} d_{it}\log \Lambda[v_\theta(1,\omega_{it})-v_\theta(0,\omega_{it})] +(1-d_{it})\log\{1-\Lambda[v_\theta(1,\omega_{it})-v_\theta(0,\omega_{it})]\}.$$
 
 ## Model Setup
 

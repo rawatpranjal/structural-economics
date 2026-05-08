@@ -124,11 +124,7 @@ Let $i$ index firms and $t$ index years. Output, labor, capital, and materials
 are logs. They are denoted by $y_{it}$, $l_{it}$, $k_{it}$, and $m_{it}$. The
 plant technology is Cobb-Douglas:
 
-$$
-y_{it}
-= \beta_l l_{it}+\beta_k k_{it}+\beta_m m_{it}
-+\omega_{it}+\varepsilon_{it}.
-$$
+$$y_{it} = \beta_l l_{it}+\beta_k k_{it}+\beta_m m_{it} +\omega_{it}+\varepsilon_{it}.$$
 
 The firm observes productivity $\omega_{it}$ before choosing flexible inputs.
 This timing makes $l_{it}$ and $m_{it}$ correlated with $\omega_{it}$. Naive
@@ -137,33 +133,21 @@ OLS therefore has a nonzero input-error covariance.
 The proxy variable is investment $I_{it}$. In the synthetic data, investment
 follows a monotone policy:
 
-$$
-I_{it}=h(k_{it},\omega_{it})+\nu_{it},
-\qquad \frac{\partial h(k,\omega)}{\partial \omega}>0.
-$$
+$$I_{it}=h(k_{it},\omega_{it})+\nu_{it}, \qquad \frac{\partial h(k,\omega)}{\partial \omega}>0.$$
 
 The control-function estimator uses this monotonicity to form a productivity
 control $\tilde \omega_{it}=h^{-1}(k_{it},I_{it})$. It estimates
 
-$$
-y_{it}
-= \beta_l l_{it}+\beta_k k_{it}+\beta_m m_{it}
-+\rho \tilde\omega_{it}+u_{it}.
-$$
+$$y_{it} = \beta_l l_{it}+\beta_k k_{it}+\beta_m m_{it} +\rho \tilde\omega_{it}+u_{it}.$$
 
 Markup recovery uses materials as the variable input. For Cobb-Douglas
 production, the materials elasticity is $\theta^m=\beta_m$. Let
 
-$$
-\alpha^m_{it}
-= \frac{\text{materials expenditure}_{it}}{\text{revenue}_{it}}
-$$
+$$\alpha^m_{it} = \frac{\text{materials expenditure}_{it}}{\text{revenue}_{it}}$$
 
 be the materials revenue share. Cost minimization implies the gross markup
 
-$$
-\mu_{it}=\frac{\theta^m}{\alpha^m_{it}}.
-$$
+$$\mu_{it}=\frac{\theta^m}{\alpha^m_{it}}.$$
 """)
 
     report.add_model_setup(

@@ -158,38 +158,22 @@ $\omega_t=(q_{1t},q_{2t})$, with $q_{it}\in\{0,\ldots,Q\}$.
 Each firm chooses $a_{it}\in\{0,1\}$, where $a_{it}=1$ means invest.
 Flow profit uses a logit-share reduced form:
 
-$$
-\pi_i(q_i,q_j)
-= M\frac{\exp(\eta q_i)}
-{1+\exp(\eta q_i)+\exp(\eta q_j)}
-+\lambda q_i .
-$$
+$$\pi_i(q_i,q_j) = M\frac{\exp(\eta q_i)} {1+\exp(\eta q_i)+\exp(\eta q_j)} +\lambda q_i .$$
 
 Investment raises the chance of moving one rung up the ladder. Waiting avoids
 the investment cost but leaves a small depreciation risk:
 
-$$
-\Pr(q_i'=\min\{q_i+1,Q\}\mid q_i,a_i=1)=0.62,
-\qquad
-\Pr(q_i'=\max\{q_i-1,0\}\mid q_i,a_i=0)=0.12 .
-$$
+$$\Pr(q_i'=\min\{q_i+1,Q\}\mid q_i,a_i=1)=0.62, \qquad \Pr(q_i'=\max\{q_i-1,0\}\mid q_i,a_i=0)=0.12 .$$
 
 Given candidate continuation values $V_i$, each state contains a simultaneous
 two-action game. Firm $i$'s payoff from action profile $(a_1,a_2)$ is
 
-$$
-G_i(a_i,a_j;\omega,V)
-= \pi_i(\omega)-\kappa a_i
-+\beta\sum_{\omega'} P(\omega'\mid \omega,a_i,a_j)V_i(\omega').
-$$
+$$G_i(a_i,a_j;\omega,V) = \pi_i(\omega)-\kappa a_i +\beta\sum_{\omega'} P(\omega'\mid \omega,a_i,a_j)V_i(\omega').$$
 
 A pure-strategy Markov-perfect equilibrium is a policy
 $a^{*}(\omega)=(a_1^{*}(\omega),a_2^{*}(\omega))$ and values satisfying
 
-$$
-G_i(a_i^{*},a_j^{*};\omega,V)\geq G_i(a_i,a_j^{*};\omega,V)
-\quad\text{for all }a_i\in\{0,1\},
-$$
+$$G_i(a_i^{*},a_j^{*};\omega,V)\geq G_i(a_i,a_j^{*};\omega,V) \quad\text{for all }a_i\in\{0,1\},$$
 
 with $V_i(\omega)=G_i(a_i^{*},a_j^{*};\omega,V)$ at every state.
 """)

@@ -15,45 +15,28 @@ The panel has 100 series and 200 months. A forecast regression cannot use every 
 Let $X_t=(X_{1t},\ldots,X_{Nt})'$ collect the macro panel at date $t$. The
 static factor model writes each indicator as common movement plus series noise:
 
-$$
-X_{it}=\lambda_i'F_t+e_{it},
-\qquad i=1,\ldots,N,\quad t=1,\ldots,T.
-$$
+$$X_{it}=\lambda_i'F_t+e_{it}, \qquad i=1,\ldots,N,\quad t=1,\ldots,T.$$
 
 Here $F_t\in\mathbb{R}^r$ is the common macro factor. The loading
 $\lambda_i\in\mathbb{R}^r$ measures exposure. The error $e_{it}$ is
 series-specific noise. In this simulated panel, $r=1$ and
 
-$$
-F_t=\rho_F F_{t-1}+\eta_t,\qquad \eta_t\sim N(0,1),
-\qquad
-\lambda_i\sim N(1,0.5^2),
-\qquad
-e_{it}\sim N(0,\sigma_{e,i}^2).
-$$
+$$F_t=\rho_F F_{t-1}+\eta_t,\qquad \eta_t\sim N(0,1), \qquad \lambda_i\sim N(1,0.5^2), \qquad e_{it}\sim N(0,\sigma_{e,i}^2).$$
 
 Each series is standardized before PCA:
 
-$$
-Z_{it}=\frac{X_{it}-\bar X_i}{s_i}.
-$$
+$$Z_{it}=\frac{X_{it}-\bar X_i}{s_i}.$$
 
 PCA uses the eigenvectors with the largest eigenvalues of $T^{-1}Z'Z$. The
 estimated factor projects each date's standardized panel onto those directions:
 
-$$
-\hat F_t=(Z_t'v_1,\ldots,Z_t'v_r)'.
-$$
+$$\hat F_t=(Z_t'v_1,\ldots,Z_t'v_r)'.$$
 
 Factors are identified only up to scale, sign, and rotation. The plots align
 signs and compare standardized factors. The forecast regression adds the
 estimated factor to own lags of a target series:
 
-$$
-y_{t+h}
-=\alpha+\sum_{\ell=1}^{p}\beta_\ell y_{t-\ell+1}
-+\gamma'\hat F_t+\varepsilon_{t+h}.
-$$
+$$y_{t+h} =\alpha+\sum_{\ell=1}^{p}\beta_\ell y_{t-\ell+1} +\gamma'\hat F_t+\varepsilon_{t+h}.$$
 
 The AR benchmark sets $\gamma=0$. A true-factor benchmark replaces $\hat F_t$
 with the simulated $F_t$.
