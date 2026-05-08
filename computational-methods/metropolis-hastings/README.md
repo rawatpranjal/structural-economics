@@ -1,21 +1,28 @@
-# Metropolis-Hastings for a Bimodal Posterior
+# Sampling a Two-Regime Structural Posterior
 
-> Random-walk MCMC diagnostics for structural parameters with two posterior modes.
+> Random-walk Metropolis-Hastings for structural parameters with two posterior modes.
 
 ## Overview
 
-Bayesian structural work often has a posterior density that can be evaluated pointwise but not integrated analytically. Metropolis-Hastings turns that density into dependent draws. The draws are useful only if the chain explores the economically relevant parts of the posterior in the finite run actually used for inference.
+Suppose a structural model leaves the researcher with two plausible stories about the same data. In a demand application, one parameter region might explain observed choices through strong price sensitivity, while another explains them through stronger latent taste heterogeneity. The posterior over the structural parameter vector matters because counterfactual prices, welfare, and elasticities can differ across those regions.
 
-The target below is a two-mode posterior over a parameter vector $\theta$. It is small enough to plot, but it carries the same practical problem as larger models: a proposal scale can look acceptable by one diagnostic and fail by another. Small proposals accept often but move slowly. Large proposals jump farther but spend time being rejected. The point is not to chase a universal acceptance rate; it is to diagnose mixing for the posterior at hand.
+The posterior density can often be evaluated up to a constant, but its moments and counterfactual averages require integration. Metropolis-Hastings replaces that hard integral with a Markov chain whose stationary distribution is the posterior. This page uses a small two-mode target so the failure modes are visible: a finite chain may accept many moves and still spend too long in one structural region.
 
 ## Equations
 
-Let $\theta=(\theta_1,\theta_2)$ be a structural parameter vector. The posterior
-kernel used in the tutorial is a two-component mixture:
+Let $D$ denote the data and let $\theta=(\theta_1,\theta_2)$ collect two
+structural parameters. A Bayesian analysis targets the posterior kernel
+
+$$
+\pi(\theta \mid D) \propto L(D \mid \theta) p_0(\theta).
+$$
+
+The tutorial uses a two-component mixture as a transparent stand-in for this
+posterior:
 
 $$
 \begin{aligned}
-p(\theta)
+\pi(\theta \mid D)
 &= \omega \phi(\theta; \mu_1, \Sigma) \\
 &\quad + (1-\omega)\phi(\theta; \mu_2, \Sigma).
 \end{aligned}
@@ -31,13 +38,18 @@ Because the proposal is symmetric, the Metropolis-Hastings acceptance probabilit
 
 $$
 \alpha(\theta_t,\theta^\star)
-= \min[1,\frac{p(\theta^\star)}{p(\theta_t)}].
+= \min[1, \pi(\theta^\star \mid D) / \pi(\theta_t \mid D)].
 $$
+
+For any counterfactual object $g(\theta)$, the retained draws approximate
+$E[g(\theta) \mid D]$. That approximation is weak when the chain rarely crosses
+between posterior modes.
 
 ## Model Setup
 
 | Object | Value |
 |--------|-------|
+| Posterior interpretation | Two empirically plausible structural regimes |
 | $\mu_1$ | (1.5, 1.5) |
 | $\mu_2$ | (-1.5, -1.5) |
 | $\Sigma$ | [[1.0, 0.5], [0.5, 1.0]] |
@@ -49,13 +61,13 @@ $$
 
 ## Solution Method
 
-The script evaluates the log posterior kernel directly and runs Gaussian random-walk chains at three proposal scales. All acceptance decisions are made in log space to avoid numerical underflow.
+Random-walk Metropolis-Hastings only needs the posterior kernel at proposed and current parameter values. The normalizing constant cancels from the acceptance ratio, which is why the algorithm is useful in structural Bayesian work where likelihood evaluation is available but integration is not. The script runs three chains with different proposal scales to show the tuning tradeoff.
 
 ```text
 Algorithm: random-walk Metropolis-Hastings
-Input: log posterior ell(theta), proposal scale s, initial theta_0, draws T
-Output: Markov chain theta_1, ..., theta_T and diagnostics
-1. Set current state theta = theta_0 and current log density ell(theta)
+Input: log posterior kernel ell(theta), proposal scale s, initial theta_0, draws T
+Output: draws from pi(theta | D), plus mixing diagnostics
+1. Set theta = theta_0 and compute ell(theta)
 2. For t = 1, ..., T:
        propose theta_star = theta + s * eta_t, eta_t ~ N(0, I)
        compute log alpha = ell(theta_star) - ell(theta)
@@ -65,23 +77,23 @@ Output: Markov chain theta_1, ..., theta_T and diagnostics
 4. Report acceptance, mode switches, posterior mean error, and ESS
 ```
 
-The true mixture mean is known here, so the posterior mean error is a ground-truth diagnostic. In empirical applications, trace plots, multiple chains, posterior moments, and economically meaningful functionals serve the same role.
+The proposal scale $s$ controls the size of local moves. Tiny proposals accept often but crawl through the posterior. Large proposals can cross the low-density region between modes, but they are rejected more often. The toy target has a known mean, so the code can compare each chain with ground truth. In an empirical model, researchers would instead compare traces, multiple chains, posterior moments, and policy-relevant functions of $\theta$.
 
 ## Results
 
-With proposal step 0.6, the chain explores both modes while still accepting 69.9% of proposed moves.
+With proposal step 0.6, the chain visits both structural regimes while still accepting 69.9% of proposed moves.
 
-<img src="figures/mh-walk.png" alt="Metropolis-Hastings walk over target-density contours" width="80%">
+<img src="figures/mh-walk.png" alt="Metropolis-Hastings walk over structural-posterior contours" width="80%">
 
-Trace plots show whether the chain has left its starting point, whether it moves between modes, and whether the retained draws are still highly persistent.
+The traces show whether the sampler has left its distant starting value, how often it moves between posterior regimes, and whether retained draws remain persistent.
 
 <img src="figures/trace-plots.png" alt="Trace plots for the middle-step random-walk chain" width="80%">
 
-A tiny proposal can have a comfortable acceptance rate but still move too slowly. A large proposal can switch modes, but rejection creates persistence. The best choice is empirical and target-specific.
+The running mean and autocorrelation make the finite-chain problem concrete. A sampler that stays too long in one mode gives the wrong weight to that structural regime, even when every acceptance decision uses the correct posterior kernel.
 
-<img src="figures/tuning-diagnostics.png" alt="Proposal tuning changes bias and persistence" width="80%">
+<img src="figures/tuning-diagnostics.png" alt="Proposal tuning changes posterior bias and persistence" width="80%">
 
-The true mixture mean is zero. The true marginal variance of each coordinate is 3.25, which is much larger than the within-component variance because the two modes are far apart.
+The true posterior mean is zero. The true marginal variance of each coordinate is 3.25, which is much larger than the within-regime variance because the two posterior regimes are far apart.
 
 **Proposal-scale diagnostics**
 
@@ -91,11 +103,11 @@ The true mixture mean is zero. The true marginal variance of each coordinate is 
 |            0.6  |             0.699 |             319 |        0.255 |          120 |          118 |
 |            2    |             0.304 |             689 |        0.048 |          467 |          494 |
 
-The middle proposal step, 0.6, is used in the path and trace plots; it gives acceptance 69.9% and visible movement between modes. The small proposal accepts more often but has more persistent draws. The largest proposal is useful for jumping across the low-density middle region, but many jumps are rejected. The table shows why no single diagnostic is sufficient: acceptance, mode switching, mean error, and effective sample size rank the proposal scales differently.
+The middle proposal step, 0.6, is used in the path and trace plots. It gives acceptance 69.9% and visible movement between regimes. The smallest proposal accepts most often, but its posterior mean remains far from truth because the chain moves slowly. The largest proposal crosses modes more often and has the smallest mean error in this run, despite a lower acceptance rate. A useful Bayesian computation therefore asks whether the retained draws weight the economically relevant regions well enough for the moments or counterfactuals being reported.
 
 ## Takeaway
 
-Metropolis-Hastings is correct asymptotically under weak conditions, but finite-run Bayesian inference depends on mixing. Acceptance rates, trace plots, cumulative means, mode switching, and autocorrelation diagnose different failures. A sampler can target the right posterior in theory and still produce weak empirical inference if it explores that posterior too slowly.
+Metropolis-Hastings turns a pointwise posterior kernel into draws that can summarize structural uncertainty and counterfactual objects. The asymptotic guarantee is not the same as a useful finite run. Acceptance rates, traces, cumulative means, mode switches, and autocorrelation tell the researcher whether the chain has actually explored the posterior regions that matter for the economic conclusion.
 
 ## References
 
