@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T10:55:26Z",
+  "updated_at": "2026-05-08T11:00:56Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -756,6 +756,19 @@
         "computational-methods/kalman-filter/run.py"
       ],
       "updated_at": "2026-05-08T10:55:26Z"
+    },
+    {
+      "tutorial_path": "computational-methods/particle-filter/",
+      "status": "complete",
+      "commit": "44dbdad17b89a11fdf2a3fff338e4442d0d0061e",
+      "changed_paths": [
+        "README.md",
+        "computational-methods/particle-filter/README.md",
+        "computational-methods/particle-filter/figures/outlier-stress.png",
+        "computational-methods/particle-filter/run.py",
+        "computational-methods/particle-filter/tables/particle-count-sweep.csv"
+      ],
+      "updated_at": "2026-05-08T11:00:56Z"
     }
   ]
 }
