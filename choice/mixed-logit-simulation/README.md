@@ -101,13 +101,29 @@ The estimator uses common random numbers. Draws are made once and then held fixe
 
 The standard deviations are optimized in logs. The optimizer can move freely over log standard deviations, while the model sees positive values after exponentiation. The bounds are not an economic restriction in this example. They keep the teaching likelihood away from numerically irrelevant regions.
 
-**Algorithm 1. Simulated likelihood at a trial $\theta$.**
+### Algorithm 1. Simulated likelihood at a trial $\theta$
 
-Inputs are observed choices and characteristics $\{y_i,p_{ij},q_{ij}\}_{i=1,j=1}^{N,J}$, fixed draws $\nu_r=(\nu_{r\alpha},\nu_{r\beta})$ for $r=1,\ldots,R$, and $\theta=(\bar\alpha,\bar\beta,\ell_\alpha,\ell_\beta)$.
+**Inputs.** Observed choices and characteristics $\{y_i,p_{ij},q_{ij}\}_{i=1,j=1}^{N,J}$, fixed draws $\nu_r=(\nu_{r\alpha},\nu_{r\beta})$ for $r=1,\ldots,R$, and a trial parameter vector $\theta=(\bar\alpha,\bar\beta,\ell_\alpha,\ell_\beta)$.
 
-1. Map logs into standard deviations: $\sigma_\alpha=\exp(\ell_\alpha)$ and $\sigma_\beta=\exp(\ell_\beta)$.
-2. For each draw $r$, form $\alpha_r=\bar\alpha+\sigma_\alpha\nu_{r\alpha}$ and $\beta_r=\bar\beta+\sigma_\beta\nu_{r\beta}$.
-3. Compute the draw-specific logit probability
+**Output.** The simulated objective $Q_R(\theta)$.
+
+1. Convert log standard deviations into positive standard deviations:
+
+$$
+\sigma_\alpha=\exp(\ell_\alpha),
+\qquad
+\sigma_\beta=\exp(\ell_\beta).
+$$
+
+2. For each draw $r$, construct simulated tastes:
+
+$$
+\alpha_r=\bar\alpha+\sigma_\alpha\nu_{r\alpha},
+\qquad
+\beta_r=\bar\beta+\sigma_\beta\nu_{r\beta}.
+$$
+
+3. For each consumer-product pair $(i,j)$, compute the draw-specific logit probability:
 
 $$
 P_{ijr}(\theta)=
@@ -115,13 +131,15 @@ P_{ijr}(\theta)=
 {\sum_{k=1}^J \exp(\alpha_r p_{ik}+\beta_r q_{ik})}.
 $$
 
-4. Average over the fixed draws:
+4. Average those probabilities over the fixed simulation draws:
 
 $$
 \widehat P_{ij}(\theta)=\frac{1}{R}\sum_{r=1}^R P_{ijr}(\theta).
 $$
 
-5. Evaluate the simulated log likelihood and the minimized objective:
+5. Score the observed choice $y_i$ with the simulated probability $\widehat P_{i y_i}(\theta)$.
+
+6. Return the simulated log likelihood and the minimized objective:
 
 $$
 \ell_R(\theta)=
@@ -130,17 +148,35 @@ $$
 Q_R(\theta)=-\ell_R(\theta)/N.
 $$
 
-**Algorithm 2. Optimization and price substitution.**
+### Algorithm 2. Optimization and price substitution
 
-Starting from $\theta_0$ and bounds $B$, L-BFGS-B searches over candidates $\theta^m\in B$ and repeatedly evaluates $Q_R(\theta^m)$. The estimate is $\hat\theta=\arg\min_{\theta\in B} Q_R(\theta)$, equivalently the maximizer of $\ell_R(\theta)$.
+**Inputs.** Starting value $\theta_0$, bounds $B$, common draws $\{\nu_r\}_{r=1}^R$, data $\{y_i,p_{ij},q_{ij}\}$, and price step $\Delta p$.
 
-Fitted shares average the simulated probabilities:
+**Outputs.** Estimate $\hat\theta$, fitted shares $\hat s_j$, and substitution matrix $D$.
+
+1. Start L-BFGS-B at $\theta_0$ within bounds $B$.
+
+2. At each candidate $\theta^m\in B$, evaluate $Q_R(\theta^m)$ using Algorithm 1.
+
+3. Continue until the optimizer stops and set
+
+$$
+\hat\theta=\arg\min_{\theta\in B} Q_R(\theta),
+$$
+
+which is the same as maximizing $\ell_R(\theta)$.
+
+4. Compute fitted shares from the estimated simulated probabilities:
 
 $$
 \hat s_j=\frac{1}{N}\sum_{i=1}^N \widehat P_{ij}(\hat\theta).
 $$
 
-For a shocked product $k$, raise $p_{ik}$ by $\Delta p$ for every consumer and recompute shares $\hat s_j^{+k}$ using the same $\hat\theta$ and the same draws $\nu_r$. The substitution entry is
+5. For each shocked product $k$, raise $p_{ik}$ by $\Delta p$ for every consumer.
+
+6. Recompute shares $\hat s_j^{+k}$ using the same $\hat\theta$ and the same draws $\nu_r$.
+
+7. Fill column $k$ of the substitution matrix:
 
 $$
 D_{jk}=
@@ -149,6 +185,8 @@ D_{jk}=
 \qquad
 D_{kk}=-1.
 $$
+
+8. Repeat steps 5-7 for every shocked product $k=1,\ldots,J$.
 
 The homogeneous logit is estimated on the same data. Its likelihood is easier because it does not integrate over tastes. The comparison is useful because the homogeneous model can fit mean shares while still forcing diversion to follow existing market shares.
 
@@ -208,14 +246,6 @@ The parameter and fit tables separate two diagnostics. The parameter table check
 ## Takeaway
 
 Mixed logit is a simulation estimator because choice probabilities require an integral over unobserved tastes. Fixed draws turn that integral into a smooth sample average. The payoff is economic: aggregate substitution is no longer forced to satisfy IIA, even though each simulated consumer still has a logit choice rule conditional on tastes.
-
-**Computational tricks used here**
-
-- Fixed draws make $\widehat P_{ij}(\theta)$ deterministic at each trial $\theta$.
-- Log standard deviations keep $\sigma_\alpha$ and $\sigma_\beta$ positive.
-- L-BFGS-B bounds keep the optimizer out of irrelevant parameter regions.
-- The probability floor $\eta$ prevents one simulated zero from breaking the log likelihood.
-- The finite price step $\Delta p$ turns substitution into a readable recapture matrix.
 
 ## References
 
