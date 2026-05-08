@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T10:41:54Z",
+  "updated_at": "2026-05-08T10:46:37Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -723,6 +723,17 @@
         "computational-methods/projection-methods/run.py"
       ],
       "updated_at": "2026-05-08T10:41:54Z"
+    },
+    {
+      "tutorial_path": "computational-methods/perturbation-linearization/",
+      "status": "complete",
+      "commit": "0efab3920019bdaf96b15aec1f9baf6dba6f5cbe",
+      "changed_paths": [
+        "README.md",
+        "computational-methods/perturbation-linearization/README.md",
+        "computational-methods/perturbation-linearization/run.py"
+      ],
+      "updated_at": "2026-05-08T10:46:37Z"
     }
   ]
 }
