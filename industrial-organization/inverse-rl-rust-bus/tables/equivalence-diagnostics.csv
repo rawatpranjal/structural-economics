@@ -1,0 +1,11 @@
+Diagnostic,Value
+NFXP success,1.0
+MCE-IRL success,1.0
+NFXP log likelihood,-27591.041835597436
+MCE-IRL log likelihood,-27591.04183559958
+Absolute log likelihood difference,2.142769517377019e-09
+Max replacement-policy difference,1.3126594744505837e-07
+Repair rate,0.2531809523809524
+Average mileage,2.210109523809524
+Bellman iterations at truth,228.0
+Bellman error at MCE-IRL estimate,9.187672844745975e-11
