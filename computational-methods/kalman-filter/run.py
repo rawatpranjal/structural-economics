@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Kalman filtering for latent economic states.
+"""Kalman filtering for a latent economic indicator.
 
-The tutorial uses a two-state signal extraction model. The hidden state is
-observed only through a noisy scalar signal, so the Kalman filter shows how
-prediction, updating, uncertainty, and likelihood evaluation fit together.
+A policymaker observes a noisy activity signal and wants the hidden state that
+moves with the economy. The tutorial shows how recursive prediction, updating,
+uncertainty, and likelihood evaluation work in a linear Gaussian state-space
+model.
 """
 
 import sys
@@ -155,57 +156,76 @@ def main() -> None:
     )
 
     report = ModelReport(
-        "Kalman Filtering a Latent Economic State",
-        "Recursive signal extraction, uncertainty, and likelihood in a linear Gaussian model.",
+        "Nowcasting a Latent Business-Cycle State",
+        "Kalman filtering turns noisy economic indicators into state estimates, uncertainty bands, and a likelihood.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "Many economic states are not directly observed. A policymaker may see noisy indicators "
-        "of the business cycle, an econometrician may observe prices but not latent demand, and "
-        "a forecaster may want the persistent component of a volatile series. The Kalman filter "
-        "is the canonical linear-Gaussian answer to that signal-extraction problem.\n\n"
-        "The model below has two states observed through one noisy scalar signal. Each period "
-        "has two economically distinct steps: predict the latent state using the law of motion, "
-        "then update that prediction using the surprise in the new observation. The same "
-        "recursion gives filtered states, posterior uncertainty, forecast innovations, Kalman "
-        "gains, and the likelihood."
+        "Suppose a policy team tracks current economic activity before the full national "
+        "accounts arrive. It sees a noisy indicator, perhaps a survey or high-frequency "
+        "spending series, but the object of interest is the latent state that the indicator "
+        "only partly reveals. The filter below treats that object as a state vector, lets it "
+        "evolve with a simple law of motion, and asks how each new signal should change the "
+        "nowcast.\n\n"
+        "That task creates a numerical object: the distribution of the hidden state "
+        "conditional on the observations seen so far. In a linear Gaussian model, the Kalman "
+        "filter carries that distribution with two objects, a mean and a covariance. The same "
+        "recursion supplies the forecast error, the weight placed on the new signal, and the "
+        "likelihood used when the state-space parameters are estimated rather than fixed."
     )
 
     report.add_equations(
         r"""
-The state-space model is:
+Let $s_t$ collect two latent components of economic activity. The researcher
+observes a scalar indicator $y_t$ that loads on both components and adds
+measurement noise:
 
 $$
 y_t = \Psi s_t + u_t, \qquad u_t \sim N(0, R).
 $$
 
+The hidden state follows a linear transition equation:
+
 $$
 s_t = \Phi s_{t-1} + \epsilon_t, \qquad \epsilon_t \sim N(0, Q).
 $$
 
-The Kalman prediction and update are:
+Given data through $t-1$, the filter predicts the next state and its covariance:
 
 $$
 \begin{aligned}
 \hat{s}_{t|t-1} &= \Phi \hat{s}_{t-1|t-1}, \\
-P_{t|t-1} &= \Phi P_{t-1|t-1}\Phi' + Q, \\
-K_t &= P_{t|t-1}\Psi'(\Psi P_{t|t-1}\Psi' + R)^{-1}, \\
-\hat{s}_{t|t} &= \hat{s}_{t|t-1} + K_t(y_t - \Psi\hat{s}_{t|t-1}).
+P_{t|t-1} &= \Phi P_{t-1|t-1}\Phi' + Q.
 \end{aligned}
 $$
 
-The innovation $\nu_t=y_t-\Psi\hat{s}_{t|t-1}$ has variance
-$S_t=\Psi P_{t|t-1}\Psi' + R$, so the likelihood contribution is the Gaussian
-density of $\nu_t$ under variance $S_t$.
+The new signal produces a forecast surprise, a signal variance, and a Kalman
+gain:
+
+$$
+\begin{aligned}
+\nu_t &= y_t - \Psi\hat{s}_{t|t-1}, \\
+S_t &= \Psi P_{t|t-1}\Psi' + R, \\
+K_t &= P_{t|t-1}\Psi'(\Psi P_{t|t-1}\Psi' + R)^{-1}, \\
+\hat{s}_{t|t} &= \hat{s}_{t|t-1} + K_t\nu_t, \\
+P_{t|t} &= P_{t|t-1} - K_t\Psi P_{t|t-1}.
+\end{aligned}
+$$
+
+The likelihood contribution is the Gaussian density of $\nu_t$ under variance
+$S_t$. The same scalar density is what maximum-likelihood estimation uses when
+the state-space parameters are unknown.
 """
     )
 
     report.add_model_setup(
         "| Object | Value |\n"
         "|--------|-------|\n"
-        "| Observation matrix $\\Psi$ | [1.0, 0.9] |\n"
+        "| Latent state $s_t=(s_{1t}, s_{2t})$ | two activity components |\n"
+        "| Observed signal $y_t$ | noisy indicator of current activity |\n"
+        "| Loading matrix $\\Psi$ | [1.0, 0.9] |\n"
         "| Transition matrix $\\Phi$ | diag(0.4, 0.5) |\n"
         f"| Measurement std | {MEASUREMENT_STD:.2f} |\n"
         f"| Process std | ({PROCESS_STD[0]:.2f}, {PROCESS_STD[1]:.2f}) |\n"
@@ -214,12 +234,13 @@ density of $\nu_t$ under variance $S_t$.
     )
 
     report.add_solution_method(
-        "The code simulates the hidden state and observed signal, then runs the Kalman filter "
-        "from an initial state known to be zero. At each date it stores the one-step-ahead "
-        "prediction, the filtered state mean, posterior covariance, Kalman gain, innovation, "
-        "and log-likelihood increment.\n\n"
+        "The simulation draws the true latent path and the noisy observed indicator. The "
+        "filter starts from zero, makes a one-period forecast, compares the forecasted "
+        "indicator with observed $y_t$, and moves the state estimate toward the surprise. "
+        "The Kalman gain is larger when the signal is precise relative to prior state "
+        "uncertainty, and smaller when measurement noise is high.\n\n"
         "```text\n"
-        "Algorithm: Kalman filtering in a linear Gaussian state-space model\n"
+        "Algorithm: nowcasting a latent state with the Kalman filter\n"
         "Input: observations y_t, transition Phi, loading Psi, covariances Q and R\n"
         "Output: filtered means, filtered covariances, innovations, likelihood\n"
         "Initialize s_hat_{0|0} and P_{0|0}\n"
@@ -233,9 +254,9 @@ density of $\nu_t$ under variance $S_t$.
         "    update covariance:  P_{t|t} = P_{t|t-1} - K_t Psi P_{t|t-1}\n"
         "    add log p(nu_t; 0, S_t) to the likelihood\n"
         "```\n\n"
-        "The figures show the recursion: the raw observation is noisy, the filtered states are "
-        "smoother than the signal, and uncertainty changes with the information in the state "
-        "equation and measurement equation."
+        "The stored arrays let the report connect the economic object to the computation: "
+        "the raw indicator is noisy, the filtered states summarize current conditions, and "
+        "posterior uncertainty records how much the data have pinned down the hidden state."
     )
 
     fig1, axes1 = plt.subplots(3, 1, figsize=(9, 7.4), sharex=True)
@@ -248,7 +269,7 @@ density of $\nu_t$ under variance $S_t$.
         label="signal without measurement noise",
     )
     axes1[0].set_ylabel("Observation")
-    axes1[0].set_title("Noisy Observations of a Hidden Two-State System")
+    axes1[0].set_title("Noisy Indicator of a Hidden Activity State")
     axes1[0].legend(loc="upper right")
     for dim, ax in enumerate(axes1[1:]):
         ax.plot(time, states[:, dim], color="black", label=f"true s{dim + 1}")
@@ -261,8 +282,9 @@ density of $\nu_t$ under variance $S_t$.
         "Observed signal and hidden state paths",
         fig1,
         description=(
-            "The scalar observation combines both hidden states and measurement error. The filter "
-            "uses the transition law to separate persistent state movements from observation noise."
+            "The observed indicator combines both hidden activity components and measurement "
+            "error. The filter uses the transition law to separate persistent state movements "
+            "from observation noise."
         ),
     )
 
@@ -276,15 +298,15 @@ density of $\nu_t$ under variance $S_t$.
         ax.plot(time, states[:, dim], color="black", linestyle="--", label="true state")
         ax.set_ylabel(f"s{dim + 1}")
         ax.legend(loc="upper right")
-    axes2[0].set_title("Filtered Means and 90% Credible Bands")
+    axes2[0].set_title("Filtered Activity States and 90% Credible Bands")
     axes2[-1].set_xlabel("Period")
     report.add_figure(
         "figures/filter-bands.png",
         "Kalman filtered states with credible bands",
         fig2,
         description=(
-            "The posterior covariance is not a side product. It records how uncertain the "
-            "filter is about each latent state after seeing data through period t."
+            "The posterior covariance reports how uncertain the nowcast is about each latent "
+            "component after seeing data through period t."
         ),
     )
 
@@ -293,12 +315,12 @@ density of $\nu_t$ under variance $S_t$.
     axes3[0].axhline(0.0, color="black", linewidth=0.8)
     axes3[0].set_xlabel("Period")
     axes3[0].set_ylabel("Innovation")
-    axes3[0].set_title("One-Step Forecast Errors")
+    axes3[0].set_title("One-Period Forecast Errors")
     axes3[1].plot(time, filtered["gains"][:, 0], label="gain on s1")
     axes3[1].plot(time, filtered["gains"][:, 1], label="gain on s2")
     axes3[1].set_xlabel("Period")
     axes3[1].set_ylabel("Kalman gain")
-    axes3[1].set_title("Kalman Gain Stabilizes")
+    axes3[1].set_title("Kalman Gain Weights the New Signal")
     axes3[1].legend()
     fig3.tight_layout()
     report.add_figure(
@@ -306,8 +328,8 @@ density of $\nu_t$ under variance $S_t$.
         "Forecast innovations and Kalman gains",
         fig3,
         description=(
-            "The innovation is the surprise in the new observation. The Kalman gain converts "
-            "that surprise into a state update, with weights set by signal and state noise."
+            "Forecast errors drive the updates. After a short initialization phase, the Kalman "
+            "gain settles near constants set by signal noise and state noise."
         ),
     )
 
@@ -315,22 +337,24 @@ density of $\nu_t$ under variance $S_t$.
         "tables/filter-diagnostics.csv",
         "Filter diagnostics",
         table,
-        description="The table compares filtered state means to the simulated hidden states.",
+        description="The table compares filtered state means with the simulated hidden states.",
     )
 
     report.add_results(
         f"The total log likelihood for the simulated sample is "
-        f"{filtered['loglike_increment'].sum():.2f}. The filter tracks both states well despite "
-        "observing only one noisy scalar signal because the transition equation supplies dynamic "
-        "discipline. The Kalman gain stabilizes once the filter learns the relative precision of "
-        "the transition equation and the measurement equation."
+        f"{filtered['loglike_increment'].sum():.2f}. The estimated path follows the two hidden "
+        "components even though the researcher observes only one noisy scalar indicator. That "
+        "is the economic payoff: a noisy data release becomes a current estimate of the latent "
+        "state, with uncertainty attached. The computation matters because the covariance and "
+        "gain decide how much the new data should move the nowcast."
     )
 
     report.add_takeaway(
-        "The Kalman filter is more than a smoother. It is an accounting system for uncertainty: "
-        "prior state uncertainty, measurement noise, forecast surprises, posterior uncertainty, "
-        "and likelihood update together. The same recursion serves nowcasting, forecasting, "
-        "latent-state estimation, and maximum-likelihood estimation of linear Gaussian models."
+        "When an economic object is hidden, smoothing the raw series is not enough. A "
+        "state-space model states what can move over time and how noisy the indicators are. "
+        "The Kalman filter then computes the conditional state distribution one observation "
+        "at a time, which makes the same machinery useful for nowcasting, forecasting, and "
+        "maximum-likelihood estimation of linear Gaussian models."
     )
 
     report.add_references(
