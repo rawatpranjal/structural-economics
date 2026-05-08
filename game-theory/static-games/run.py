@@ -76,37 +76,6 @@ def profit(
     return (price(q_i + q_j, a, b) - c) * q_i
 
 
-def surplus_table(a: float, b: float, c: float, q_nash: float) -> pd.DataFrame:
-    """Compare monopoly, duopoly, and competitive output levels."""
-    q_monopoly = (a - c) / (2.0 * b)
-    q_competitive = (a - c) / b
-    rows = []
-
-    for name, total_output, firms in [
-        ("Monopoly", q_monopoly, 1),
-        ("Cournot duopoly", 2.0 * q_nash, 2),
-        ("Perfect competition", q_competitive, np.inf),
-    ]:
-        market_price = price(total_output, a, b)
-        if np.isinf(firms):
-            firm_profit = 0.0
-        elif firms == 1:
-            firm_profit = (market_price - c) * total_output
-        else:
-            firm_profit = profit(q_nash, q_nash, a, b, c)
-
-        rows.append(
-            {
-                "Market structure": name,
-                "Total output": f"{total_output:.3f}",
-                "Price": f"{market_price:.3f}",
-                "Profit per firm": f"{firm_profit:.3f}",
-            }
-        )
-
-    return pd.DataFrame(rows)
-
-
 def main() -> None:
     a = 10.0
     b = 1.0
@@ -118,8 +87,6 @@ def main() -> None:
     q_star = (a - c) / (3.0 * b)
     p_star = price(2.0 * q_star, a, b)
     pi_star = profit(q_star, q_star, a, b, c)
-    q_monopoly = (a - c) / (2.0 * b)
-    q_competitive = (a - c) / b
     paths = {
         q0: iterate_best_responses(q0, a, b, c, steps=steps, damping=damping)
         for q0 in starts
@@ -128,22 +95,20 @@ def main() -> None:
     setup_style()
     report = ModelReport(
         "Cournot Quantity Competition and Best-Response Iteration",
-        "A quantity-setting oligopoly solved by Nash first-order conditions and checked by fixed-point iteration.",
+        "A quantity-setting duopoly solved by Nash first-order conditions and checked by best-response iteration.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "Two firms sell a homogeneous good, such as cement in one local market. "
-        "Each firm chooses output before the market price clears. Producing more "
-        "raises the firm's own sales, but it also lowers the price paid on every "
-        "unit. Cournot equilibrium asks where those incentives balance when each "
-        "firm treats the rival's quantity as given.\n\n"
-        "This linear duopoly has a closed-form Nash quantity, so the equilibrium "
-        "condition is easy to see. The computation treats the same condition as a "
-        "fixed point of best responses. That numerical view is useful because most "
-        "oligopoly games lose the one-line formula once demand, costs, or the number "
-        "of firms become richer."
+        "Two firms sell a homogeneous good in one market. Each firm chooses output "
+        "before the market price clears. Extra output raises own sales and lowers "
+        "the price on every unit.\n\n"
+        "Cournot equilibrium is a quantity pair. Each firm must maximize profit "
+        "given the rival's output.\n\n"
+        "The linear game has a closed-form Nash quantity. Best-response iteration "
+        "treats the same condition as a fixed point. The residual checks whether a "
+        "firm still wants to change output."
     )
 
     report.add_equations(
@@ -174,16 +139,6 @@ $$
 q^{*}=\frac{a-c}{3b},\qquad
 P^{*}=a-2bq^{*}.
 $$
-
-The comparison points are also useful:
-
-$$
-Q^{M}=\frac{a-c}{2b},\qquad
-Q^{C}=\frac{a-c}{b},
-$$
-
-where $Q^{M}$ is monopoly output and $Q^{C}$ is the competitive output at
-price equal to marginal cost.
 """
     )
 
@@ -200,10 +155,9 @@ price equal to marginal cost.
     )
 
     report.add_solution_method(
-        "The analytic solution solves the two first-order conditions directly. "
-        "The numerical calculation keeps the economic object the same: a Nash "
-        "quantity pair where both firms best respond. It searches for a fixed point "
-        "of the map $BR(q_1,q_2)=(BR_1(q_2),BR_2(q_1))$.\n\n"
+        "The first-order conditions solve the linear game directly. The numerical "
+        "check keeps the same economic object. It searches for a fixed point of "
+        "the map $BR(q_1,q_2)=(BR_1(q_2),BR_2(q_1))$.\n\n"
         "```text\n"
         "Algorithm: damped Cournot best-response iteration\n"
         "Inputs: demand parameters a, b, marginal cost c, start q_0, damping lambda\n"
@@ -215,8 +169,8 @@ price equal to marginal cost.
         "5. Compare the numerical fixed point with q* = (a-c)/(3b).\n"
         "```\n\n"
         "The residual links the iteration back to game theory. A path can look stable "
-        "on a figure while still leaving a firm with a profitable output change. "
-        "A small residual checks the no-deviation condition directly."
+        "while still leaving a profitable output change. A small residual checks "
+        "the no-deviation condition directly."
     )
 
     q_grid = np.linspace(0.0, 8.0, 240)
@@ -226,15 +180,6 @@ price equal to marginal cost.
     ax1.plot(q_grid, br, linewidth=2.3, label="$BR_1(q_2)$")
     ax1.plot(br, q_grid, linewidth=2.3, label="$BR_2(q_1)$")
     ax1.scatter(q_star, q_star, color="black", s=60, zorder=5, label=f"Nash q={q_star:.2f}")
-    ax1.scatter(
-        q_monopoly / 2.0,
-        q_monopoly / 2.0,
-        color="#4b8f29",
-        marker="s",
-        s=55,
-        zorder=5,
-        label="Joint monopoly split",
-    )
     for q0, path in paths.items():
         ax1.plot(path[:, 1], path[:, 0], marker="o", markersize=2.5, alpha=0.65, label=f"Start {q0}")
     ax1.set_xlabel("$q_2$")
@@ -245,10 +190,9 @@ price equal to marginal cost.
     ax1.legend(fontsize=8)
 
     report.add_results(
-        "The best-response curves cross at the Nash quantity. The joint-monopoly "
-        "split sits below that crossing. If one firm expected the rival to stay at "
-        "the collusive quantity, it would expand output and gain profit. The damped "
-        "paths show the same Nash condition reached from several starting quantities."
+        "The best-response curves cross at the Nash quantity. Each damped path "
+        "moves toward that crossing. Different starting quantities produce the "
+        "same Nash condition."
     )
     report.add_figure(
         "figures/cournot-best-response.png",
@@ -267,44 +211,13 @@ price equal to marginal cost.
 
     report.add_results(
         "The residual falls quickly because damping stabilizes this linear "
-        "best-response map. The final residual answers a game-theoretic question: "
-        "at the computed quantities, how large is the best remaining unilateral "
-        "output adjustment?"
+        "best-response map. The final residual measures the largest remaining "
+        "unilateral output adjustment."
     )
     report.add_figure(
         "figures/residuals.png",
         "Fixed-point residuals for damped best-response iteration",
         fig2,
-    )
-
-    total_output = np.linspace(0.0, a / b, 240)
-    market_price = price(total_output, a, b)
-    consumer_surplus = 0.5 * b * total_output**2
-    producer_surplus = (market_price - c) * total_output
-    total_surplus = consumer_surplus + producer_surplus
-
-    fig3, ax3 = plt.subplots(figsize=(7, 4.8))
-    ax3.plot(total_output, consumer_surplus, linewidth=2.0, label="Consumer surplus")
-    ax3.plot(total_output, producer_surplus, linewidth=2.0, label="Producer surplus")
-    ax3.plot(total_output, total_surplus, color="black", linestyle="--", linewidth=1.8, label="Total surplus")
-    ax3.axvline(q_monopoly, color="#b85c00", linestyle=":", label=f"Monopoly Q={q_monopoly:.1f}")
-    ax3.axvline(2.0 * q_star, color="#1b6ca8", linestyle=":", label=f"Cournot Q={2*q_star:.1f}")
-    ax3.axvline(q_competitive, color="#4b8f29", linestyle=":", label=f"Competitive Q={q_competitive:.1f}")
-    ax3.set_xlabel("Total output $Q$")
-    ax3.set_ylabel("Surplus")
-    ax3.set_title("Output and Surplus Benchmarks")
-    ax3.legend(fontsize=8)
-
-    report.add_results(
-        "The output comparison gives the equilibrium an economic interpretation. "
-        "Cournot output lies between monopoly and perfect competition, and so does "
-        "the price. The exact levels come from the calibration, while the ranking "
-        "comes from the strategic output effect."
-    )
-    report.add_figure(
-        "figures/welfare-analysis.png",
-        "Monopoly, Cournot, and competitive output benchmarks",
-        fig3,
     )
 
     rows = []
@@ -332,19 +245,12 @@ price equal to marginal cost.
         "Best-Response Convergence",
         pd.DataFrame(rows),
     )
-    report.add_table(
-        "tables/cournot-comparison.csv",
-        "Cournot Benchmarks",
-        surplus_table(a, b, c, q_star),
-    )
 
     report.add_takeaway(
-        "Cournot equilibrium is a fixed point with economic content: each firm is "
-        "already choosing its profit-maximizing quantity given the rival's output. "
-        "The closed form makes that condition transparent in a linear duopoly. "
-        "Best-response iteration turns the same idea into a numerical procedure, "
-        "and the residual checks whether the computed quantities satisfy Nash "
-        "incentives."
+        "Cournot equilibrium is a best-response fixed point. Each firm already "
+        "chooses its profit-maximizing quantity given the rival's output.\n\n"
+        "The closed form makes this condition transparent. Best-response iteration "
+        "provides a numerical check. The residual tests Nash incentives."
     )
 
     report.add_references(

@@ -1,12 +1,14 @@
 # Cournot Quantity Competition and Best-Response Iteration
 
-> A quantity-setting oligopoly solved by Nash first-order conditions and checked by fixed-point iteration.
+> A quantity-setting duopoly solved by Nash first-order conditions and checked by best-response iteration.
 
 ## Overview
 
-Two firms sell a homogeneous good, such as cement in one local market. Each firm chooses output before the market price clears. Producing more raises the firm's own sales, but it also lowers the price paid on every unit. Cournot equilibrium asks where those incentives balance when each firm treats the rival's quantity as given.
+Two firms sell a homogeneous good in one market. Each firm chooses output before the market price clears. Extra output raises own sales and lowers the price on every unit.
 
-This linear duopoly has a closed-form Nash quantity, so the equilibrium condition is easy to see. The computation treats the same condition as a fixed point of best responses. That numerical view is useful because most oligopoly games lose the one-line formula once demand, costs, or the number of firms become richer.
+Cournot equilibrium is a quantity pair. Each firm must maximize profit given the rival's output.
+
+The linear game has a closed-form Nash quantity. Best-response iteration treats the same condition as a fixed point. The residual checks whether a firm still wants to change output.
 
 ## Equations
 
@@ -37,16 +39,6 @@ q^{\ast}=\frac{a-c}{3b},\qquad
 P^{\ast}=a-2bq^{\ast}.
 $$
 
-The comparison points are also useful:
-
-$$
-Q^{M}=\frac{a-c}{2b},\qquad
-Q^{C}=\frac{a-c}{b},
-$$
-
-where $Q^{M}$ is monopoly output and $Q^{C}$ is the competitive output at
-price equal to marginal cost.
-
 ## Model Setup
 
 | Object | Value | Meaning |
@@ -61,7 +53,7 @@ price equal to marginal cost.
 
 ## Solution Method
 
-The analytic solution solves the two first-order conditions directly. The numerical calculation keeps the economic object the same: a Nash quantity pair where both firms best respond. It searches for a fixed point of the map $BR(q_1,q_2)=(BR_1(q_2),BR_2(q_1))$.
+The first-order conditions solve the linear game directly. The numerical check keeps the same economic object. It searches for a fixed point of the map $BR(q_1,q_2)=(BR_1(q_2),BR_2(q_1))$.
 
 ```text
 Algorithm: damped Cournot best-response iteration
@@ -75,21 +67,17 @@ Output: quantity path q_t and fixed-point residuals
 5. Compare the numerical fixed point with q* = (a-c)/(3b).
 ```
 
-The residual links the iteration back to game theory. A path can look stable on a figure while still leaving a firm with a profitable output change. A small residual checks the no-deviation condition directly.
+The residual links the iteration back to game theory. A path can look stable while still leaving a profitable output change. A small residual checks the no-deviation condition directly.
 
 ## Results
 
-The best-response curves cross at the Nash quantity. The joint-monopoly split sits below that crossing. If one firm expected the rival to stay at the collusive quantity, it would expand output and gain profit. The damped paths show the same Nash condition reached from several starting quantities.
+The best-response curves cross at the Nash quantity. Each damped path moves toward that crossing. Different starting quantities produce the same Nash condition.
 
 <img src="figures/cournot-best-response.png" alt="Cournot best-response curves and damped iteration paths" width="80%">
 
-The residual falls quickly because damping stabilizes this linear best-response map. The final residual answers a game-theoretic question: at the computed quantities, how large is the best remaining unilateral output adjustment?
+The residual falls quickly because damping stabilizes this linear best-response map. The final residual measures the largest remaining unilateral output adjustment.
 
 <img src="figures/residuals.png" alt="Fixed-point residuals for damped best-response iteration" width="80%">
-
-The output comparison gives the equilibrium an economic interpretation. Cournot output lies between monopoly and perfect competition, and so does the price. The exact levels come from the calibration, while the ranking comes from the strategic output effect.
-
-<img src="figures/welfare-analysis.png" alt="Monopoly, Cournot, and competitive output benchmarks" width="80%">
 
 **Best-Response Convergence**
 
@@ -100,17 +88,11 @@ The output comparison gives the equilibrium an economic interpretation. Cournot 
 | (7.0, 7.0)  |     2.6667 |     2.6667 |   4.44e-16 |
 | Closed form |     2.6667 |     2.6667 |   4.44e-16 |
 
-**Cournot Benchmarks**
-
-| Market structure    |   Total output |   Price |   Profit per firm |
-|:--------------------|---------------:|--------:|------------------:|
-| Monopoly            |          4     |   6     |            16     |
-| Cournot duopoly     |          5.333 |   4.667 |             7.111 |
-| Perfect competition |          8     |   2     |             0     |
-
 ## Takeaway
 
-Cournot equilibrium is a fixed point with economic content: each firm is already choosing its profit-maximizing quantity given the rival's output. The closed form makes that condition transparent in a linear duopoly. Best-response iteration turns the same idea into a numerical procedure, and the residual checks whether the computed quantities satisfy Nash incentives.
+Cournot equilibrium is a best-response fixed point. Each firm already chooses its profit-maximizing quantity given the rival's output.
+
+The closed form makes this condition transparent. Best-response iteration provides a numerical check. The residual tests Nash incentives.
 
 ## References
 
