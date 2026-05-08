@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T05:59:18Z",
+  "updated_at": "2026-05-08T06:06:02Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -191,6 +191,17 @@
         "dsge/rbc-with-labor/run.py"
       ],
       "updated_at": "2026-05-08T05:59:18Z"
+    },
+    {
+      "tutorial_path": "global-dsge/rbc-capital-tax/",
+      "status": "complete",
+      "commit": "47d88dc69708f5480447674fdf6f5d21e506068f",
+      "changed_paths": [
+        "README.md",
+        "global-dsge/rbc-capital-tax/README.md",
+        "global-dsge/rbc-capital-tax/run.py"
+      ],
+      "updated_at": "2026-05-08T06:06:02Z"
     },
     {
       "tutorial_path": "industrial-organization/dynamic-discrete-choice/",
