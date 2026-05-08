@@ -165,22 +165,12 @@ def main() -> None:
     )
 
     report.add_overview(
-        "Households often choose a broadband contract before they know exactly how much "
-        "data they will want over the month. A cheap plan may carry a small allowance and "
-        "overage charges. A more expensive plan may include a larger allowance or unlimited "
-        "use. The allowance matters before the bill crosses the cap: if a household streams "
-        "an extra 4 GB in the first week, it carries less insurance against a heavy final "
-        "week.\n\n"
-        "To study plan choice, the tutorial treats cumulative usage as the state variable "
-        "inside the billing cycle. For each contract and taste type, a finite-horizon "
-        "dynamic program chooses daily usage. The resulting value of each plan, after the "
-        "fixed fee and speed are counted, determines sorting across metered, three-part, "
-        "and unlimited contracts. Backward induction on the usage state is the computation "
-        "that turns unused allowance into a comparable plan value. The logic is close to "
-        "the continuation-value reasoning in "
-        "[bus replacement](../dynamic-discrete-choice/), while the fixed-fee role connects "
-        "to the two-part-tariff discussion in "
-        "[vertical relationships](../vertical-relationships/)."
+        "Broadband plans often combine a fixed fee, a monthly data allowance, and an "
+        "overage price. A household chooses the plan before it knows monthly usage.\n\n"
+        "The object is a three-part tariff. Unused allowance is valuable because it "
+        "protects later usage from overage charges.\n\n"
+        "The computation treats cumulative usage as the state. Backward induction chooses "
+        "daily usage and turns each plan into a comparable value."
     )
 
     report.add_equations(r"""
@@ -223,11 +213,12 @@ d_i=\arg\max_k W_i(k).$$
     report.add_model_setup(
         f"The calibration uses a {BILLING_DAYS}-day billing cycle, "
         f"$\\psi={SATIATION}$, daily choices $c_t\\in[0,{DAILY_ACTION_MAX:.0f}]$, "
-        "and the speed shifter $B(s_k)=2.6\\log(s_k)$. The numbers create a clean "
-        "teaching example: the metered plan is cheap but tight, the three-part plan buys "
-        "a larger monthly allowance, and the unlimited plan removes overage risk at a "
-        "higher fixed fee. Consumer heterogeneity is a small discrete taste distribution. "
-        "The weights aggregate type-specific choices into plan shares and average outcomes.\n\n"
+        "and the speed shifter $B(s_k)=2.6\\log(s_k)$.\n\n"
+        "The metered plan is cheap but "
+        "tight. The three-part plan buys a larger allowance. The unlimited plan removes "
+        "overage risk at a higher fixed fee.\n\n"
+        "Consumer heterogeneity is a discrete taste distribution. The weights aggregate "
+        "choices into plan shares and average outcomes.\n\n"
         "| Plan | Fixed fee | Allowance | Overage price | Speed |\n"
         "|------|-----------|-----------|---------------|-------|\n"
         f"| Metered | {PLANS['Metered']['fixed_fee']:.0f} | {PLANS['Metered']['allowance']:.0f} GB | {PLANS['Metered']['overage_price']:.2f} | {PLANS['Metered']['speed']:.0f} Mbps |\n"
@@ -241,13 +232,11 @@ d_i=\arg\max_k W_i(k).$$
     report.add_solution_method(
         "Backward induction works here because the billing cycle has a known final day. "
         "On the last day, unused allowance has no continuation value. Moving backward from "
-        "that date, the algorithm asks how much an extra GB of remaining allowance is worth "
-        "tomorrow. That continuation value is what makes a consumer conserve data early in "
-        "the month even when current usage is still below the cap.\n\n"
+        "that date, the algorithm values an extra GB of remaining allowance. That value "
+        "makes early usage respond before the cap is reached.\n\n"
         "For each type-plan pair, the code solves the Bellman recursion on a grid for "
-        "cumulative monthly usage. The fixed fee stays outside the daily recursion because "
-        "it is paid once at plan choice. The overage price stays inside the recursion "
-        "because today's usage can move the household closer to the cap or past it.\n\n"
+        "cumulative monthly usage. The fixed fee stays outside the recursion. The overage "
+        "price stays inside because today's usage changes remaining allowance.\n\n"
         "```text\n"
         "Algorithm: finite-horizon usage and plan choice\n"
         "Input: plans (F_k, A_k, q_k, s_k), type distribution (h_i, omega_i), usage grid C\n"
@@ -264,9 +253,7 @@ d_i=\arg\max_k W_i(k).$$
         "    compute W_i(k) = V_{k,1}(0; h_i) + B(s_k) - F_k\n"
         "choose d_i = argmax_k W_i(k), then aggregate shares with weights omega_i\n"
         "```\n\n"
-        "The focal policy uses a 0.5 GB cumulative-usage grid. The same model is also "
-        "solved on a 0.25 GB grid for the billing-cycle path, which checks whether the "
-        "main economic pattern comes from the contract rather than the coarser grid."
+        "The focal policy uses a 0.5 GB grid. A 0.25 GB grid checks the billing-cycle path."
     )
 
     policy = np.asarray(focal_dp["policy"])
@@ -324,8 +311,7 @@ d_i=\arg\max_k W_i(k).$$
             "treating it as a hard constraint. The finer-grid benchmark matches total "
             "usage within "
             f"**{total_usage_gap:.2f} GB**, while the largest cumulative-path gap is "
-            f"**{max_cumulative_gap:.2f} GB**. The dynamics come from the nonlinear contract, "
-            "not from time-varying daily tastes."
+            f"**{max_cumulative_gap:.2f} GB**."
         ),
     )
 
@@ -354,8 +340,7 @@ d_i=\arg\max_k W_i(k).$$
         description=(
             "The value curves show plan sorting. Low-usage types choose the low fixed fee, "
             "middle types value the allowance, and high-usage types pay for unlimited "
-            "access. The circled points are the contracts selected by the discrete type "
-            "distribution."
+            "access."
         ),
     )
 
@@ -366,13 +351,13 @@ d_i=\arg\max_k W_i(k).$$
 
     report.add_takeaway(
         "A three-part tariff changes demand before the cap is reached. Unused allowance "
-        "has a shadow value because it can be spent later in the billing cycle, so a "
-        "forward-looking household responds to expected overage risk. The contract menu "
-        "sorts consumers by usage intensity: low types avoid the fixed fee, middle types "
-        "buy the allowance, and high types choose unlimited access. The finer-grid check "
-        f"keeps the numerical claim modest: net consumer value differs by "
-        f"**{consumer_value_gap:.3f}**, about **{consumer_value_relative_gap:.1%}** of the "
-        "baseline value."
+        "is valuable because it can be spent later in the billing cycle. The household "
+        "responds to expected overage risk.\n\n"
+        "The contract menu sorts consumers by usage intensity. Low types avoid the fixed "
+        "fee, middle types buy the allowance, and high types choose unlimited access.\n\n"
+        "The finer-grid check keeps the numerical claim modest. Net consumer value "
+        f"differs by **{consumer_value_gap:.3f}**, about "
+        f"**{consumer_value_relative_gap:.1%}** of the baseline value."
     )
 
     report.add_references([
