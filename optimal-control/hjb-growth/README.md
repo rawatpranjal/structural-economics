@@ -1,14 +1,14 @@
 # Ramsey Capital Accumulation by HJB Upwinding
 
-> A Ramsey planner allocates output between consumption and investment in continuous time; an implicit upwind HJB computes the shadow value of capital.
+> A Ramsey planner allocates output between consumption and investment. An implicit upwind HJB computes the shadow value of capital.
 
 ## Overview
 
-Consider a planner who inherits aggregate capital $k$. Output can be consumed now or reinvested, and the marginal product of capital changes along the path. When capital is scarce, investment is valuable. When capital is abundant, the planner can afford more current consumption. The tutorial computes this Ramsey transition in continuous time.
+A Ramsey planner inherits aggregate capital $k$. Output can be consumed today or invested for future production. Scarce capital raises investment value. Abundant capital makes current consumption cheaper.
 
-The Hamilton-Jacobi-Bellman equation records the lifetime value of starting with each capital stock. Its derivative, $V'(k)$, is the shadow value of one more unit of capital, and the first-order condition maps that shadow value directly into consumption. Computation is needed because the nonlinear HJB does not give a closed-form policy on the capital grid.
+The object is the consumption policy $c(k)$ and the capital drift $\dot{k}$. Together they describe how the economy returns to its steady state.
 
-Implicit upwind finite differences approximate $V'(k)$ from the side consistent with the policy-implied capital drift. That is why the method matters for the economics: the derivative choice and the direction of capital movement have to agree. The same Ramsey dynamics also appear in the neighboring [Ramsey phase-diagram](../phase-diagrams/) and [Ramsey shooting](../ramsey-growth/) tutorials; here the HJB representation makes the planner's shadow value explicit.
+The HJB gives the value of starting from each capital stock. Its derivative is the shadow value that pins down consumption. A finite-difference scheme is needed because the nonlinear HJB has no closed-form policy on the grid. Upwinding chooses the derivative side using the policy-implied drift.
 
 ## Equations
 
@@ -21,8 +21,8 @@ $$
 \dot{k}(t)=f(k(t))-\delta k(t)-c(t),
 $$
 
-where $f(k)=Ak^\alpha$, $u(c)=c^{1-\sigma}/(1-\sigma)$ for
-$\sigma \neq 1$, and $\rho$ is the continuous-time discount rate.
+Here $f(k)=Ak^\alpha$ and $u(c)=c^{1-\sigma}/(1-\sigma)$ for
+$\sigma \neq 1$. The parameter $\rho$ is the continuous-time discount rate.
 
 The HJB equation is
 
@@ -66,7 +66,7 @@ $$
 
 ## Model Setup
 
-The model keeps the economics deliberately clean: one aggregate capital state, Cobb-Douglas production, CRRA utility, and no shocks. The baseline HJB grid produces the reported policies. A finer HJB grid is solved only as a same-model reference for the figures; it is not a different economic environment.
+The calibration uses one aggregate capital state, Cobb-Douglas production, CRRA utility, and no shocks. The grid spans low and high capital around the Ramsey steady state.
 
 | Parameter | Value | Description |
 |-----------|-------|-------------|
@@ -76,15 +76,13 @@ The model keeps the economics deliberately clean: one aggregate capital state, C
 | $\delta$ | 0.05 | Depreciation rate |
 | $A$       | 1.0 | TFP |
 | Baseline HJB grid | 500 points | $k \in [0.1, 14.80]$ |
-| Fine-grid reference | 1600 points | Same capital interval |
-| Discrete-time check | 200 points | Same capital interval |
 | $k_{ss}$ | 7.3998 | Steady-state capital |
 | $c_{ss}$ | 1.6855 | Steady-state consumption |
 | $y_{ss}$ | 2.0555 | Steady-state output |
 
 ## Solution Method
 
-Start from a guessed value function on the capital grid. The update compares forward and backward slopes, converts each slope into a consumption rule, and then uses the slope whose direction matches the implied motion of capital. That upwind choice keeps the finite-difference derivative aligned with the economic law of motion.
+Start from a guessed value function on the capital grid. The update compares forward and backward slopes, maps each slope into consumption, and chooses the slope consistent with capital drift. That choice aligns the derivative with the economic law of motion.
 
 ```text
 Inputs: grid {k_i}, primitives (rho, sigma, alpha, delta, A), tolerance eps
@@ -105,48 +103,48 @@ For n = 0, 1, ... until ||V^{n+1} - V^n||_infinity < eps:
 Output: value V, consumption policy c(k), and drift s(k)=dot{k}
 ```
 
-The implicit step then solves one sparse tridiagonal linear system. The large pseudo-time step $\Delta=1000$ is a numerical device, not an economic period length; it stabilizes the fixed-point update while leaving the continuous-time HJB as the target equation.
+The implicit step solves one sparse tridiagonal linear system. The large pseudo-time step $\Delta=1000$ is numerical, not a model period. It stabilizes the fixed-point update while keeping the continuous-time HJB as the target.
 
-The baseline continuous-time HJB converged in **16 iterations** (change = 5.34e-07). The fine-grid HJB reference converged in **14 iterations** (change = 6.94e-07). A coarse discrete-time VFI check, used only for orientation, converged in **243 iterations** (error = 9.87e-07).
+The HJB converged in **16 iterations** with final change 5.34e-07.
 
 ## Results
 
-The value function is increasing and concave because extra capital raises future consumption possibilities but at a diminishing marginal product. The baseline HJB solution lies almost on top of the fine-grid HJB reference, while the discrete-time VFI line is best read as a separate Bellman-equation check rather than the target continuous-time object.
+The value function is increasing and concave. Extra capital raises future consumption, but diminishing marginal product lowers the marginal gain.
 
-<img src="figures/value-function.png" alt="Value function with baseline HJB, fine-grid HJB reference, and discrete-time VFI check" width="80%">
+<img src="figures/value-function.png" alt="Value function from the upwind HJB" width="80%">
 
-The consumption rule comes directly from marginal value: $c(k)=(V'(k))^{-1/\sigma}$. Below the steady state, consumption stays below net output so the planner accumulates capital. Above it, consumption exceeds net output and capital is run down. The fine-grid reference confirms that the baseline grid is already resolving the policy shape.
+The consumption rule comes from marginal value. Below the steady state, consumption stays below net output, so capital rises. Above it, consumption exceeds net output, so capital falls.
 
-<img src="figures/consumption-policy.png" alt="Consumption policy with fine-grid HJB reference and net output" width="80%">
+<img src="figures/consumption-policy.png" alt="Consumption policy and net output" width="80%">
 
-The drift $s(k)=\dot{k}$ determines both economic transitions and the upwind derivative. Positive drift means the economy moves toward higher capital; negative drift means it moves back down. The zero crossing is the Ramsey steady state, and the fine-grid line shows that the baseline grid locates it accurately.
+The drift $s(k)=\dot{k}$ drives transitions and selects the upwind derivative. Positive drift points to capital accumulation. Negative drift points to decumulation. The zero crossing is the Ramsey steady state.
 
 <img src="figures/savings-policy.png" alt="Capital drift with accumulation below steady state and decumulation above it" width="80%">
 
-Integrating the policy-implied law of motion produces the standard convergence picture. Low-capital economies invest because marginal product is high; high-capital economies consume more than net output and move down. The single-state planner has a unique stable path back to $k_{ss}$.
+The policy-implied law of motion sends each initial capital stock toward $k_{ss}$. Low-capital economies invest because marginal product is high. High-capital economies consume more than net output and move down.
 
 <img src="figures/transition-dynamics.png" alt="Transition dynamics k(t) from different initial conditions converging to steady state" width="80%">
 
-The steady state has a closed-form target, which provides a check on the finite-difference solution. The baseline grid locates the zero drift within one grid step, and the finer grid tightens that comparison without changing the economic calculation.
+The closed-form steady state checks the finite-difference solution. The grid locates zero drift within one step.
 
 **Steady-State Values and HJB Diagnostics**
 
-| Variable                              | Analytical   |   Baseline HJB |   Fine-grid HJB |
-|:--------------------------------------|:-------------|---------------:|----------------:|
-| $k_{ss}$ (capital)                    | 7.3998       |       7.4057   |        7.3993   |
-| $c_{ss}$ (consumption)                | 1.6855       |       1.6858   |        1.6855   |
-| $y_{ss}$ (output)                     | 2.0555       |       2.0561   |        2.0555   |
-| $i_{ss} = \delta k_{ss}$ (investment) | 0.3700       |       0.3703   |        0.37     |
-| $s = i/y$ (saving rate)               | 0.1800       |       0.1801   |        0.18     |
-| $f'(k_{ss})$ (MPK)                    | 0.1000       |       0.0999   |        0.1      |
-| HJB iterations                        | --           |      16        |       14        |
-| HJB residual                          | --           |       5.34e-07 |        6.94e-07 |
+| Variable                              | Analytical   |   Baseline HJB |
+|:--------------------------------------|:-------------|---------------:|
+| $k_{ss}$ (capital)                    | 7.3998       |       7.4057   |
+| $c_{ss}$ (consumption)                | 1.6855       |       1.6858   |
+| $y_{ss}$ (output)                     | 2.0555       |       2.0561   |
+| $i_{ss} = \delta k_{ss}$ (investment) | 0.3700       |       0.3703   |
+| $s = i/y$ (saving rate)               | 0.1800       |       0.1801   |
+| $f'(k_{ss})$ (MPK)                    | 0.1000       |       0.0999   |
+| HJB iterations                        | --           |      16        |
+| HJB residual                          | --           |       5.34e-07 |
 
 ## Takeaway
 
-The Ramsey logic is visible in the computed policy: invest when the marginal product of capital is high, consume more when capital is abundant, and converge to the point where $f'(k)=\rho+\delta$. The HJB makes that logic operational through the marginal value $V'(k)$. Once the derivative is approximated from the correct side, consumption follows from the FOC and the remaining update is a sparse linear solve.
+The computed policy follows the Ramsey Euler logic. Investment is high when capital has high marginal product. Consumption rises once capital is abundant. The path converges to $f'(k)=\rho+\delta$.
 
-Upwinding is an economic consistency check as well as a numerical choice. It uses the direction of capital movement to pick the derivative. The same idea becomes central in continuous-time heterogeneous-agent models, where the HJB policy and the forward equation for the distribution must use compatible drift directions.
+The HJB turns this logic into a value derivative. Upwinding uses the direction of capital movement to choose the derivative. After that choice, the update is a sparse linear solve.
 
 ## References
 

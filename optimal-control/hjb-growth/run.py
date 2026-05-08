@@ -207,66 +207,6 @@ def solve_hjb_growth(params, verbose=True):
 
 
 # =============================================================================
-# Discrete-time VFI solver (for comparison)
-# =============================================================================
-
-def solve_discrete_vfi(params):
-    """Solve the discrete-time neoclassical growth model by VFI.
-
-    Bellman equation:
-        V(k) = max_{k'} { u(f(k) + (1-delta)*k - k') + beta*V(k') }
-
-    Returns:
-        v: value function
-        c: consumption policy
-        info: dict with convergence information
-    """
-    rho = params["rho"]
-    sigma = params["sigma"]
-    alpha = params["alpha"]
-    delta = params["delta"]
-    A = params["A"]
-    k = params["k"]
-    I = len(k)
-    tol = params["tol"]
-
-    beta = 1.0 / (1.0 + rho)  # continuous-time rho -> discrete beta
-
-    # Total resources at each k: f(k) + (1-delta)*k
-    f_k = production(k, A, alpha)
-    resources = f_k + (1.0 - delta) * k  # (I,)
-
-    # Initial guess
-    v = crra_utility(f_k, sigma) / rho
-
-    for n in range(1, 2001):
-        v_old = v.copy()
-
-        # Vectorized: consumption = resources[i] - k[j] for all (i,j)
-        # resources is (I,), k is (I,); form (I, I) matrix
-        c_mat = resources[:, np.newaxis] - k[np.newaxis, :]  # (I, I)
-        c_mat = np.where(c_mat > 0, c_mat, np.nan)
-
-        val_mat = crra_utility(np.where(np.isnan(c_mat), 1e-15, c_mat), sigma)
-        val_mat = np.where(np.isnan(c_mat), -1e15, val_mat)
-        val_mat += beta * v_old[np.newaxis, :]  # (I, I)
-
-        best_idx = np.nanargmax(val_mat, axis=1)
-        v = val_mat[np.arange(I), best_idx]
-        c_policy = resources - k[best_idx]
-
-        error = np.max(np.abs(v - v_old))
-        if n % 100 == 0:
-            print(f"  VFI iteration {n:3d}, error = {error:.2e}")
-        if error < tol:
-            print(f"  VFI converged in {n} iterations (error = {error:.2e})")
-            break
-
-    info = {"iterations": n, "converged": error < tol, "error": error}
-    return v, c_policy, info
-
-
-# =============================================================================
 # Transition dynamics
 # =============================================================================
 
@@ -342,28 +282,6 @@ def main():
     print("\n--- Continuous-Time HJB (Upwind Finite Differences) ---")
     v_ct, c_ct, kdot_ct, info_ct = solve_hjb_growth(params)
 
-    # A finer HJB grid gives a same-model reference for the main figures.
-    print("\n--- Fine-Grid HJB Reference ---")
-    n_k_ref = 1600
-    k_grid_ref = np.linspace(k_min, k_max, n_k_ref)
-    params_ref = params.copy()
-    params_ref["k"] = k_grid_ref
-    v_ref, c_ref, kdot_ref, info_ref = solve_hjb_growth(params_ref, verbose=False)
-    print(
-        f"  Fine-grid HJB converged in {info_ref['iterations']} iterations "
-        f"(change = {info_ref['error']:.2e})"
-    )
-
-    # =========================================================================
-    # Solve discrete-time VFI (coarser grid for speed)
-    # =========================================================================
-    print("\n--- Discrete-Time VFI ---")
-    n_k_dt = 200
-    k_grid_dt = np.linspace(k_min, k_max, n_k_dt)
-    params_dt = params.copy()
-    params_dt["k"] = k_grid_dt
-    v_dt, _c_dt, info_dt = solve_discrete_vfi(params_dt)
-
     # =========================================================================
     # Transition dynamics from different initial conditions
     # =========================================================================
@@ -383,30 +301,22 @@ def main():
 
     report = ModelReport(
         "Ramsey Capital Accumulation by HJB Upwinding",
-        "A Ramsey planner allocates output between consumption and investment in "
-        "continuous time; an implicit upwind HJB computes the shadow value of capital.",
+        "A Ramsey planner allocates output between consumption and investment. "
+        "An implicit upwind HJB computes the shadow value of capital.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "Consider a planner who inherits aggregate capital $k$. Output can be consumed "
-        "now or reinvested, and the marginal product of capital changes along the path. "
-        "When capital is scarce, investment is valuable. When capital is abundant, the "
-        "planner can afford more current consumption. The tutorial computes this Ramsey "
-        "transition in continuous time.\n\n"
-        "The Hamilton-Jacobi-Bellman equation records the lifetime value of starting "
-        "with each capital stock. Its derivative, $V'(k)$, is the shadow value of one "
-        "more unit of capital, and the first-order condition maps that shadow value "
-        "directly into consumption. Computation is needed because the nonlinear HJB does "
-        "not give a closed-form policy on the capital grid.\n\n"
-        "Implicit upwind finite differences approximate $V'(k)$ from the side consistent "
-        "with the policy-implied capital drift. That is why the method matters for the "
-        "economics: the derivative choice and the direction of capital movement have to "
-        "agree. The same Ramsey dynamics also appear in the neighboring "
-        "[Ramsey phase-diagram](../phase-diagrams/) and "
-        "[Ramsey shooting](../ramsey-growth/) tutorials; here the HJB representation "
-        "makes the planner's shadow value explicit."
+        "A Ramsey planner inherits aggregate capital $k$. Output can be consumed today "
+        "or invested for future production. Scarce capital raises investment value. "
+        "Abundant capital makes current consumption cheaper.\n\n"
+        "The object is the consumption policy $c(k)$ and the capital drift $\\dot{k}$. "
+        "Together they describe how the economy returns to its steady state.\n\n"
+        "The HJB gives the value of starting from each capital stock. Its derivative is "
+        "the shadow value that pins down consumption. A finite-difference scheme is "
+        "needed because the nonlinear HJB has no closed-form policy on the grid. "
+        "Upwinding chooses the derivative side using the policy-implied drift."
     )
 
     report.add_equations(r"""
@@ -419,8 +329,8 @@ $$
 \dot{k}(t)=f(k(t))-\delta k(t)-c(t),
 $$
 
-where $f(k)=Ak^\alpha$, $u(c)=c^{1-\sigma}/(1-\sigma)$ for
-$\sigma \neq 1$, and $\rho$ is the continuous-time discount rate.
+Here $f(k)=Ak^\alpha$ and $u(c)=c^{1-\sigma}/(1-\sigma)$ for
+$\sigma \neq 1$. The parameter $\rho$ is the continuous-time discount rate.
 
 The HJB equation is
 
@@ -464,10 +374,9 @@ $$
 """)
 
     report.add_model_setup(
-        "The model keeps the economics deliberately clean: one aggregate capital state, "
-        "Cobb-Douglas production, CRRA utility, and no shocks. The baseline HJB grid "
-        "produces the reported policies. A finer HJB grid is solved only as a same-model "
-        "reference for the figures; it is not a different economic environment.\n\n"
+        "The calibration uses one aggregate capital state, Cobb-Douglas production, "
+        "CRRA utility, and no shocks. The grid spans low and high capital around the "
+        "Ramsey steady state.\n\n"
         f"| Parameter | Value | Description |\n"
         f"|-----------|-------|-------------|\n"
         f"| $\\rho$   | {rho} | Discount rate |\n"
@@ -476,8 +385,6 @@ $$
         f"| $\\delta$ | {delta} | Depreciation rate |\n"
         f"| $A$       | {A} | TFP |\n"
         f"| Baseline HJB grid | {n_k} points | $k \\in [{k_min}, {k_max:.2f}]$ |\n"
-        f"| Fine-grid reference | {n_k_ref} points | Same capital interval |\n"
-        f"| Discrete-time check | {n_k_dt} points | Same capital interval |\n"
         f"| $k_{{ss}}$ | {k_ss:.4f} | Steady-state capital |\n"
         f"| $c_{{ss}}$ | {c_ss:.4f} | Steady-state consumption |\n"
         f"| $y_{{ss}}$ | {y_ss:.4f} | Steady-state output |"
@@ -485,10 +392,9 @@ $$
 
     report.add_solution_method(
         "Start from a guessed value function on the capital grid. The update compares "
-        "forward and backward slopes, converts each slope into a consumption rule, and "
-        "then uses the slope whose direction matches the implied motion of capital. "
-        "That upwind choice keeps the finite-difference derivative aligned with the "
-        "economic law of motion.\n\n"
+        "forward and backward slopes, maps each slope into consumption, and chooses the "
+        "slope consistent with capital drift. That choice aligns the derivative with "
+        "the economic law of motion.\n\n"
         "```text\n"
         "Inputs: grid {k_i}, primitives (rho, sigma, alpha, delta, A), tolerance eps\n"
         "Initialize V^0_i = u(f(k_i)) / rho\n"
@@ -507,26 +413,17 @@ $$
         "       = u(c^n) + V^n / Delta.\n"
         "Output: value V, consumption policy c(k), and drift s(k)=dot{k}\n"
         "```\n\n"
-        "The implicit step then solves one sparse tridiagonal linear system. The large "
-        "pseudo-time step $\\Delta=1000$ is a numerical device, not an economic period "
-        "length; it stabilizes the fixed-point update while leaving the continuous-time "
-        "HJB as the target equation.\n\n"
-        f"The baseline continuous-time HJB converged in **{info_ct['iterations']} "
-        f"iterations** (change = {info_ct['error']:.2e}). The fine-grid HJB reference "
-        f"converged in **{info_ref['iterations']} iterations** (change = "
-        f"{info_ref['error']:.2e}). A coarse discrete-time VFI check, used only "
-        f"for orientation, converged in **{info_dt['iterations']} iterations** "
-        f"(error = {info_dt['error']:.2e})."
+        "The implicit step solves one sparse tridiagonal linear system. The large "
+        "pseudo-time step $\\Delta=1000$ is numerical, not a model period. It stabilizes "
+        "the fixed-point update while keeping the continuous-time HJB as the target.\n\n"
+        f"The HJB converged in **{info_ct['iterations']} iterations** with final change "
+        f"{info_ct['error']:.2e}."
     )
 
     # --- Figure 1: Value Function ---
     fig1, ax1 = plt.subplots()
-    ax1.plot(k_grid_ref, v_ref, color="0.35", linestyle="--", linewidth=1.5,
-             label="Fine-grid HJB reference")
     ax1.plot(k_grid, v_ct, color="#1f77b4", linewidth=2.1,
-             label="Baseline HJB")
-    ax1.plot(k_grid_dt, v_dt, color="#b04a4a", linestyle=":", linewidth=1.6,
-             label="Discrete-time VFI check")
+             label="Upwind HJB")
     ax1.axvline(k_ss, color="k", linestyle=":", linewidth=0.8, alpha=0.6,
                 label=f"$k_{{ss}} = {k_ss:.2f}$")
     ax1.set_xlabel("Capital $k$")
@@ -535,22 +432,17 @@ $$
     ax1.legend()
     report.add_figure(
         "figures/value-function.png",
-        "Value function with baseline HJB, fine-grid HJB reference, and discrete-time VFI check",
+        "Value function from the upwind HJB",
         fig1,
-        description="The value function is increasing and concave because extra capital raises "
-        "future consumption possibilities but at a diminishing marginal product. The "
-        "baseline HJB solution lies almost on top of the fine-grid HJB reference, while "
-        "the discrete-time VFI line is best read as a separate Bellman-equation check "
-        "rather than the target continuous-time object.",
+        description="The value function is increasing and concave. Extra capital raises "
+        "future consumption, but diminishing marginal product lowers the marginal gain.",
     )
 
     # --- Figure 2: Consumption Policy ---
     fig2, ax2 = plt.subplots()
     net_output = production(k_grid, A, alpha) - delta * k_grid
-    ax2.plot(k_grid_ref, c_ref, color="0.35", linestyle="--", linewidth=1.5,
-             label="Fine-grid HJB reference")
     ax2.plot(k_grid, c_ct, color="#1f77b4", linewidth=2.1,
-             label="Baseline HJB")
+             label="Upwind HJB")
     ax2.plot(k_grid, net_output, color="#6b6b6b", linestyle=":", linewidth=1.5,
              label=r"Net output $f(k)-\delta k$")
     ax2.axvline(k_ss, color="k", linestyle=":", linewidth=0.8, alpha=0.6)
@@ -562,21 +454,17 @@ $$
     ax2.legend()
     report.add_figure(
         "figures/consumption-policy.png",
-        "Consumption policy with fine-grid HJB reference and net output",
+        "Consumption policy and net output",
         fig2,
-        description="The consumption rule comes directly from marginal value: "
-        "$c(k)=(V'(k))^{-1/\\sigma}$. Below the steady state, consumption stays below "
-        "net output so the planner accumulates capital. Above it, consumption exceeds "
-        "net output and capital is run down. The fine-grid reference confirms that the "
-        "baseline grid is already resolving the policy shape.",
+        description="The consumption rule comes from marginal value. Below the steady "
+        "state, consumption stays below net output, so capital rises. Above it, "
+        "consumption exceeds net output, so capital falls.",
     )
 
     # --- Figure 3: Savings / Investment Policy ---
     fig3, ax3 = plt.subplots()
-    ax3.plot(k_grid_ref, kdot_ref, color="0.35", linestyle="--", linewidth=1.5,
-             label="Fine-grid HJB reference")
     ax3.plot(k_grid, kdot_ct, color="#1f77b4", linewidth=2.1,
-             label=r"Baseline drift $\dot{k}$")
+             label=r"Drift $\dot{k}$")
     ax3.axhline(0, color="k", linestyle="--", linewidth=0.8)
     ax3.axvline(k_ss, color="k", linestyle=":", linewidth=0.8, alpha=0.6,
                 label=f"$k_{{ss}} = {k_ss:.2f}$")
@@ -592,11 +480,9 @@ $$
         "figures/savings-policy.png",
         "Capital drift with accumulation below steady state and decumulation above it",
         fig3,
-        description="The drift $s(k)=\\dot{k}$ determines both economic transitions and "
-        "the upwind derivative. Positive drift means the economy moves toward higher "
-        "capital; negative drift means it moves back down. The zero crossing is the "
-        "Ramsey steady state, and the fine-grid line shows that the baseline grid "
-        "locates it accurately.",
+        description="The drift $s(k)=\\dot{k}$ drives transitions and selects the "
+        "upwind derivative. Positive drift points to capital accumulation. Negative "
+        "drift points to decumulation. The zero crossing is the Ramsey steady state.",
     )
 
     # --- Figure 4: Transition Dynamics ---
@@ -616,10 +502,9 @@ $$
         "figures/transition-dynamics.png",
         "Transition dynamics k(t) from different initial conditions converging to steady state",
         fig4,
-        description="Integrating the policy-implied law of motion produces the standard "
-        "convergence picture. Low-capital economies invest because marginal product is "
-        "high; high-capital economies consume more than net output and move down. The "
-        "single-state planner has a unique stable path back to $k_{ss}$.",
+        description="The policy-implied law of motion sends each initial capital stock "
+        "toward $k_{ss}$. Low-capital economies invest because marginal product is high. "
+        "High-capital economies consume more than net output and move down.",
     )
 
     # --- Table: Steady-State Values ---
@@ -630,12 +515,6 @@ $$
     y_ss_num = production(k_ss_num, A, alpha)
     inv_ss_num = delta * k_ss_num
     saving_rate = inv_ss_num / y_ss_num
-    ss_idx_ref = np.argmin(np.abs(kdot_ref))
-    k_ss_ref = k_grid_ref[ss_idx_ref]
-    c_ss_ref = c_ref[ss_idx_ref]
-    y_ss_ref = production(k_ss_ref, A, alpha)
-    inv_ss_ref = delta * k_ss_ref
-    saving_rate_ref = inv_ss_ref / y_ss_ref
 
     table_data = {
         "Variable": [
@@ -668,40 +547,23 @@ $$
             f"{info_ct['iterations']}",
             f"{info_ct['error']:.2e}",
         ],
-        "Fine-grid HJB": [
-            f"{k_ss_ref:.4f}",
-            f"{c_ss_ref:.4f}",
-            f"{y_ss_ref:.4f}",
-            f"{inv_ss_ref:.4f}",
-            f"{saving_rate_ref:.4f}",
-            f"{alpha * A * k_ss_ref ** (alpha - 1):.4f}",
-            f"{info_ref['iterations']}",
-            f"{info_ref['error']:.2e}",
-        ],
     }
     df = pd.DataFrame(table_data)
     report.add_table(
         "tables/steady-state.csv",
         "Steady-State Values and HJB Diagnostics",
         df,
-        description="The steady state has a closed-form target, which provides a check on "
-        "the finite-difference solution. The baseline grid locates the zero drift within "
-        "one grid step, and the finer grid tightens that comparison without changing the "
-        "economic calculation.",
+        description="The closed-form steady state checks the finite-difference solution. "
+        "The grid locates zero drift within one step.",
     )
 
     report.add_takeaway(
-        "The Ramsey logic is visible in the computed policy: invest when the marginal "
-        "product of capital is high, consume more when capital is abundant, and converge "
-        "to the point where $f'(k)=\\rho+\\delta$. The HJB makes that logic operational "
-        "through the marginal value $V'(k)$. Once the derivative is approximated from "
-        "the correct side, consumption follows from the FOC and the remaining update is "
-        "a sparse linear solve.\n\n"
-        "Upwinding is an economic consistency check as well as a numerical choice. It "
-        "uses the direction of capital movement to pick the derivative. The same idea "
-        "becomes central in continuous-time heterogeneous-agent models, where the HJB "
-        "policy and the forward equation for the distribution must use compatible drift "
-        "directions."
+        "The computed policy follows the Ramsey Euler logic. Investment is high when "
+        "capital has high marginal product. Consumption rises once capital is abundant. "
+        "The path converges to $f'(k)=\\rho+\\delta$.\n\n"
+        "The HJB turns this logic into a value derivative. Upwinding uses the direction "
+        "of capital movement to choose the derivative. After that choice, the update is "
+        "a sparse linear solve."
     )
 
     report.add_references([
