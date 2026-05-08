@@ -144,7 +144,7 @@ These tutorials cover stochastic processes, macroeconomic data, and forecasting.
 
 | Preview | Tutorial | Description |
 |---|---|---|
-| [<img src="time-series/fred-macro-data/figures/thumb.png" width="160">](time-series/fred-macro-data/figures/time-series.png) | **[Business-Cycle Moments from a FRED-Style Macro Panel](time-series/fred-macro-data/)** | Build macro business-cycle targets from GDP, inflation, unemployment, and policy-rate series. HP filtering turns the panel into cycles, comovement, persistence, and an Okun slope. |
+| [<img src="time-series/fred-macro-data/figures/thumb.png" width="160">](time-series/fred-macro-data/figures/time-series.png) | **[Business-Cycle Moments from a FRED-Style Macro Panel](time-series/fred-macro-data/)** | Measure business-cycle moments for GDP, inflation, unemployment, and a policy rate. HP filtering turns the panel into cycles, comovement, persistence, and an Okun slope. |
 | [<img src="time-series/ar-processes/figures/thumb.png" width="160">](time-series/ar-processes/figures/ar1-irfs.png) | **[Fiscal-Shock Persistence and Income Dynamics](time-series/ar-processes/)** | Trace how a spending innovation becomes a persistent income path. AR(1) impulse responses, autocorrelations, and spectra separate the shock law from multiplier-accelerator propagation. |
 | [<img src="time-series/stock-watson/figures/thumb.png" width="160">](time-series/stock-watson/figures/factor-comparison.png) | **[Macro Forecasting with Stock-Watson Diffusion Indexes](time-series/stock-watson/)** | Forecast a macro target from a crowded panel of business-cycle indicators. PCA estimates the common state before an expanding-window factor forecast compares it with own-lag benchmarks. |
 

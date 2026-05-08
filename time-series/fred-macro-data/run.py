@@ -187,7 +187,7 @@ def main() -> None:
     print("\nComputing HP-filtered business-cycle moments...")
     cycles_df, trends_df, sample_stats = compute_business_cycle_stats(df, lamb=lamb_hp)
 
-    print("Computing a long-sample benchmark from the same DGP...")
+    print("Computing a long-sample benchmark from the same process...")
     benchmark_df = generate_synthetic_macro_data(
         T=T_benchmark,
         seed=2026,
@@ -221,22 +221,14 @@ def main() -> None:
     )
 
     report.add_overview(
-        "Suppose you want to compare an RBC or New Keynesian model with "
-        "business-cycle facts. The model reports cyclical movements in output, "
-        "inflation, unemployment, and interest rates. The raw macro data arrive as "
-        "quarterly series with their own units, trends, and sampling noise. Before the "
-        "model can be judged, the researcher has to turn those series into moments "
-        "defined on the same object.\n\n"
-        "This tutorial builds that object in a controlled setting. It simulates a "
-        "small FRED-style panel, so the example stays reproducible without an API key "
-        "or a changing data release. The calibration gives the panel familiar "
-        "co-movement: output and unemployment move in opposite directions, inflation "
-        "falls when slack rises, and the policy rate moves with inflation.\n\n"
-        "The computation applies the HP filter to each series, forms deviations from "
-        "smooth trends, and summarizes the cyclical panel with volatility, GDP "
-        "comovement, persistence, and an Okun slope. A long simulation from the same "
-        "data-generating process gives a benchmark for reading the finite 50-year "
-        "sample."
+        "Macroeconomic models are often judged by business-cycle moments. The "
+        "researcher starts with quarterly output growth, inflation, unemployment, "
+        "and a policy rate.\n\n"
+        "The object here is a small FRED-style panel. It is simulated so the page "
+        "can run without an API key or a changing data release.\n\n"
+        "The computational need is detrending. HP filtering puts each series into "
+        "a cycle. Sample moments then summarize volatility, comovement, persistence, "
+        "and an Okun slope."
     )
 
     report.add_equations(
@@ -260,7 +252,7 @@ y_t=\mu+\sigma\odot s_t.
 $$
 
 Here $\odot$ is element-by-element multiplication. The correlation matrix $C$
-sets the contemporaneous macro relationships built into the example, while
+sets the contemporaneous macro relationships in the example. The parameter
 $\rho_j$ controls how slowly each series adjusts after an innovation.
 
 For each observed series $y_{j,t}$, the HP filter chooses a trend $\tau_{j,t}$
@@ -296,7 +288,7 @@ cycle.
         "| Object | Value | Role |\n"
         "|---|---:|---|\n"
         f"| $T$ | {T} | Main sample, 50 years of quarters |\n"
-        f"| $T_B$ | {T_benchmark} | Long simulation used only as a DGP benchmark |\n"
+        f"| $T_B$ | {T_benchmark} | Long simulation used only as a benchmark |\n"
         f"| $\\lambda$ | {lamb_hp:.0f} | HP smoothing parameter for quarterly data |\n\n"
         "**Series-level primitives**\n\n"
         "| Series | Mean | Std. dev. | Persistence | Economic role |\n"
@@ -315,20 +307,18 @@ cycle.
     )
 
     report.add_solution_method(
-        "The computation turns a macro panel into the moment vector a modeler might "
-        "match or inspect. The HP filter solves one sparse linear system for each "
-        "series. It chooses a trend that stays close to the data while penalizing "
-        "changes in trend growth. The remaining deviations define the cycles, and the "
-        "moment table uses ordinary sample statistics on those cycles.\n\n"
-        "The long simulation has a narrower role. It runs the same data-generating "
-        "process for many quarters, then applies the same HP filter and moment "
-        "calculation. That comparison separates sampling variation in a 50-year panel "
-        "from the co-movement imposed by the DGP.\n\n"
+        "The HP filter solves one sparse linear system for each series. It chooses "
+        "a trend that tracks the data and smooths trend growth.\n\n"
+        "The residual from that trend is the cycle. The moment table then reports "
+        "standard deviations, GDP correlations, autocorrelations, and the Okun "
+        "slope.\n\n"
+        "The long simulation repeats the same calculation on many quarters. It gives "
+        "a benchmark for sampling variation in the 50-year panel.\n\n"
         "```text\n"
         "Algorithm: HP-filtered business-cycle moments\n"
         "Inputs: quarterly panel y_t, HP parameter lambda, benchmark horizon T_B\n"
         "Outputs: cycles c_t, moment table M, Okun slope beta_O\n\n"
-        "1. Simulate the four-variable macro vector y_t from the calibrated DGP.\n"
+        "1. Simulate the four-variable macro vector y_t from the calibrated process.\n"
         "2. For each series j:\n"
         "      solve (I + lambda K'K) tau_j = y_j\n"
         "      set c_j = y_j - tau_j\n"
@@ -338,10 +328,8 @@ cycle.
         "5. Repeat steps 1-4 with T_B quarters and use those moments only as a\n"
         "   long-sample benchmark for the finite 50-year run.\n"
         "```\n\n"
-        "Interpretation starts when the cycles are defined. A positive GDP-growth "
-        "cycle means output growth is above its smooth trend. A positive unemployment "
-        "cycle means labor-market slack is above trend. The signs have to be read by "
-        "series before the moments can be used as economic targets."
+        "Signs matter by series. A positive GDP-growth cycle means output growth is "
+        "above trend. A positive unemployment cycle means slack is above trend."
     )
 
     # --- Figure 1: raw macro panel ---
@@ -355,11 +343,9 @@ cycle.
     fig1.tight_layout()
 
     report.add_results(
-        "The raw panel shows the object a macroeconomist starts from: rates and "
-        "growth rates in their observed units. A model calibration would rarely match "
-        "these raw levels directly. GDP growth is noisy, while unemployment and the "
-        "funds rate move more slowly, so the trend-cycle step affects each series in "
-        "a different way."
+        "The raw panel is the starting object: rates and growth rates in observed "
+        "units. GDP growth moves quickly, while unemployment and the policy rate "
+        "move slowly."
     )
     report.add_figure(
         "figures/time-series.png",
@@ -378,11 +364,8 @@ cycle.
     fig2.tight_layout()
 
     report.add_results(
-        "After detrending, the comparison is in deviations from each series' own "
-        "smooth path. This convention creates the object in the moment table. A "
-        "different trend rule could change the size and persistence of measured "
-        "fluctuations, which is why the data construction belongs in the economic "
-        "discussion."
+        "The HP cycles put each series on its own detrended scale. These cycles are "
+        "the inputs for the moment table."
     )
     report.add_figure(
         "figures/hp-cycles.png",
@@ -433,11 +416,9 @@ cycle.
     fig3.tight_layout()
 
     report.add_results(
-        "The Okun scatter makes the economic content easiest to see. Output "
-        "above trend is associated with unemployment below trend. The dashed line is "
-        f"a {T_benchmark:,}-quarter simulation from the same DGP, so it is a numerical "
-        "benchmark for the finite sample rather than a claim about historical U.S. "
-        f"data. The 50-year sample correlation is {sample_okun_corr:.3f}; the "
+        "Output above trend is associated with unemployment below trend. The dashed "
+        "line shows the long simulation benchmark, not a historical U.S. estimate. "
+        f"The 50-year sample correlation is {sample_okun_corr:.3f}; the "
         f"long-sample benchmark is {benchmark_okun_corr:.3f}."
     )
     report.add_figure(
@@ -475,11 +456,9 @@ cycle.
     fig4.tight_layout()
 
     report.add_results(
-        "The correlation matrix gives a compact target for calibration or model "
-        "checking. A structural RBC or New Keynesian model would need mechanisms that "
-        "generate these signs. A reduced-form VAR would summarize the same object "
-        "dynamically. Here the matrix checks whether the synthetic panel delivers the "
-        "relationships built into the calibration."
+        "The correlation matrix checks the full cycle panel. The signs match the "
+        "calibration. Unemployment is countercyclical. Inflation and the policy "
+        "rate are procyclical."
     )
     report.add_figure(
         "figures/cross-correlation.png",
@@ -492,22 +471,19 @@ cycle.
         "Business-cycle moments from HP-filtered quarterly cycles",
         display_stats,
         description=(
-            "The table separates the finite 50-year sample from the long-sample "
-            "benchmark. The benchmark columns come from the same synthetic DGP, so "
-            "their role is to show sampling variation and HP-filter effects, not to "
-            "replace actual empirical validation."
+            "The table reports the finite sample and benchmark moments. Benchmark "
+            "columns use the same process, so they show sampling variation rather "
+            "than validation with real data."
         ),
     )
 
     report.add_takeaway(
-        "Business-cycle moments are constructed before they are matched. In this run, "
-        "the HP-filtered panel recovers the intended signs: GDP growth and "
-        f"unemployment move against each other, with an Okun slope of {sample_okun_slope:.3f} "
-        "in the 50-year sample, and unemployment is the most persistent cycle. The "
-        "long-sample benchmark shows the finite-sample point: the measured moments "
-        "are close to the DGP's implications, but sampling and filtering keep them "
-        "from matching exactly. Read these moments that way before using them as "
-        "targets for a DSGE, RBC, or reduced-form forecasting exercise."
+        "Business-cycle moments are constructed before they are matched.\n\n"
+        "In this run, GDP growth and unemployment move against each other. The Okun "
+        f"slope is {sample_okun_slope:.3f}. Unemployment is the most persistent "
+        "cycle.\n\n"
+        "Sampling and filtering keep the 50-year sample from matching the long "
+        "simulation exactly."
     )
 
     report.add_references(
@@ -516,7 +492,6 @@ cycle.
             "Hodrick, R. and Prescott, E. (1997). \"Postwar U.S. Business Cycles: An Empirical Investigation.\" *Journal of Money, Credit and Banking*, 29(1), 1-16.",
             "Stock, J. and Watson, M. (1999). \"Business Cycle Fluctuations in U.S. Macroeconomic Time Series.\" *Handbook of Macroeconomics*, Vol. 1A, Ch. 1.",
             "Okun, A. (1962). \"Potential GNP: Its Measurement and Significance.\" *Proceedings of the Business and Economic Statistics Section*, ASA.",
-            "Phillips, A. W. (1958). \"The Relation Between Unemployment and the Rate of Change of Money Wage Rates in the United Kingdom, 1861-1957.\" *Economica*, 25(100), 283-299.",
         ]
     )
 
