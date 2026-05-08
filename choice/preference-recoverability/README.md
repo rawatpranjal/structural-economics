@@ -4,16 +4,17 @@
 
 ## Overview
 
-Suppose we watch a consumer face several two-good budgets. At each price vector, the consumer buys one bundle and leaves every other affordable bundle unchosen. An economist may want to use those choices to compare welfare across policies or to discipline a later demand model, but finite budget observations cannot reveal the whole utility function.
+Suppose we observe a consumer choosing bundles from several two-good budgets. Prices rotate the budget line, and income shifts it. The analyst sees prices and chosen bundles, not the utility function.
 
-Revealed preference gives a middle ground. After the observations pass GARP, Afriat's theorem turns the same price-bundle pairs into utility numbers and supporting slopes. The computation solves a linear feasibility problem and then evaluates the lower envelope of supporting planes. In this two-good example, that envelope draws one concave upper-contour boundary through a target bundle. The synthetic choices come from Cobb-Douglas demand, so the true contour is available only to judge what finite data recover.
+The object is the preference ordering implied by these finite choices. A GARP-consistent sample can be rationalized by many utility functions. We recover one upper-contour boundary through a chosen bundle.
+
+The computation uses Afriat inequalities. A linear program finds utility scores and supporting slopes. The lower envelope of those supports draws the contour.
 
 ## Equations
 
-There are two goods and $T$ budget-choice observations. At observation $t$,
-prices are $p_t=(p_{1t},p_{2t})\in\mathbb{R}_{++}^{2}$, the chosen bundle is
-$x_t=(x_{1t},x_{2t})\in\mathbb{R}_{+}^{2}$, and expenditure is
-$m_t=p_t\cdot x_t$.
+There are two goods and $T$ budget-choice observations. Observation $t$ has
+prices $p_t=(p_{1t},p_{2t})\in\mathbb{R}_{++}^{2}$ and chosen bundle
+$x_t=(x_{1t},x_{2t})\in\mathbb{R}_{+}^{2}$. Expenditure is $m_t=p_t\cdot x_t$.
 
 Afriat recovery asks for ordinal utility scores $u_t$ and positive supporting
 slopes $\lambda_t$ such that
@@ -86,23 +87,21 @@ Output: recovered utility index U_hat and contour through x_k
        U_hat((y_1,y_2)) >= u_k.
 ```
 
-A more general implementation could let the $\lambda_t$ values vary inside the linear program. The fixed expenditure normalization used here keeps the example focused on the recoverable preference restrictions rather than on equivalent ordinal scalings.
-
 ## Results
 
-Each line is an observed budget set, and each dot is the bundle chosen from that set. Price variation rotates budgets, while income variation shifts them outward or inward. The starred bundle is the observation whose upper-contour boundary is recovered below. The computation treats the Cobb-Douglas origin of the choices as unknown.
+Each line is an observed budget set. Each dot is the chosen bundle. Prices rotate budget lines, and income shifts them. The starred bundle is the target contour. The recovery ignores the Cobb-Douglas source.
 
 <img src="figures/budget-lines.png" alt="Observed budget lines and chosen bundles with the target observation starred" width="80%">
 
-The blue curve is not a parametric estimate of Cobb-Douglas demand. It is one concave utility contour that passes through the target choice and rationalizes every observed bundle. The dashed curve is the true contour from the simulation and is shown only because this example has a known benchmark. On the plotted overlap, the median recovered-to-true $x_2$ ratio is **0.86**, and the largest absolute contour gap is **9.89** units of good 2.
+The blue curve is not a Cobb-Douglas estimate. It is one concave contour through the target choice. It also rationalizes every observed bundle. The dashed curve is the true simulation contour. It is shown only as a benchmark. On the plotted overlap, the median recovered-to-true $x_2$ ratio is **0.86**. The largest absolute contour gap is **9.89** units of good 2.
 
 <img src="figures/indifference-curve.png" alt="Recovered Afriat contour and the held-out Cobb-Douglas contour" width="80%">
 
-The Afriat numbers should be read as a finite-data certificate, not as structural parameters. The scores $u_t$ rank observed bundles in a way that respects all budget comparisons, and $\lambda_t$ gives the supporting hyperplane slope in utility units. Since the sample is simulated, we can compare the recovered ordering with the true utility index. The correlation is **0.973**.
+Afriat numbers are a finite-data certificate. The scores $u_t$ rank observed bundles while respecting budget comparisons. The $\lambda_t$ values give supporting slopes in utility units. The simulated sample lets us compare the recovered ordering with true utility. The correlation is **0.973**.
 
 <img src="figures/afriat-numbers.png" alt="Afriat utility levels and marginal utility normalizations" width="80%">
 
-The last column checks that the recovered utility evaluates to $u_t$ at each observed bundle. The normalized true utility column is a simulation diagnostic, not an input to the recovery algorithm.
+The last column checks that recovered utility equals $u_t$ at each observed bundle. The true-utility column is a simulation diagnostic, not an input.
 
 **Afriat numbers and fit diagnostics**
 
@@ -129,9 +128,7 @@ The last column checks that the recovered utility evaluates to $u_t$ at each obs
 
 ## Takeaway
 
-Finite choice data can say more than pass/fail rationalizability, but less than a fully specified utility function. Afriat numbers recover one utility index and one local contour that respect every observed budget comparison. The Cobb-Douglas overlay shows how to read the result: budgets discipline the preference ordering where they create support, and areas with little price variation remain weakly pinned down.
-
-If the data fail GARP, this exercise should stop and the analyst should ask which observations break rationalizability; see the [money pump index](../money-pump-index/) and [Houtman-Maks rational subsets](../houtman-maks-rational-subsets/) tutorials. If the data pass, Afriat recovery gives a nonparametric object that a later parametric demand model has to respect.
+Finite choices can do more than test rationalizability. They still do not identify one full utility function. Afriat numbers recover one utility index and one local contour. Those objects respect every observed budget comparison. Budgets pin down preferences only where prices create support.
 
 ## References
 
