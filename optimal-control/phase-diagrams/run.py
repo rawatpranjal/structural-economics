@@ -3,9 +3,8 @@
 
 The tutorial studies the continuous-time Ramsey-Cass-Koopmans planner in the
 (k, c) plane. It plots nullclines, the local linearization, and a nonlinear
-stable-arm reference obtained by integrating the Ramsey ODE backward from the
-steady state. The stable arm selects the initial consumption level for a given
-initial capital stock.
+stable arm from backward ODE integration. The stable arm selects initial
+consumption for a given capital stock.
 
 Reference: Barro and Sala-i-Martin (2004), "Economic Growth," Ch. 2.
 """
@@ -15,7 +14,6 @@ from pathlib import Path
 import numpy as np
 from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
-import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from lib.plotting import setup_style
@@ -48,9 +46,6 @@ def main():
 
     k_ss = ((alpha * A) / (rho + delta)) ** (1 / (1 - alpha))
     c_ss = f(k_ss) - delta * k_ss
-    y_ss = f(k_ss)
-    k_gr = ((alpha * A) / delta) ** (1 / (1 - alpha))
-    c_gr = f(k_gr) - delta * k_gr
 
     jacobian = np.array([
         [f_prime(k_ss) - delta, -1.0],
@@ -129,10 +124,6 @@ def main():
     c_linear = c_ss + slope * (k_range - k_ss)
     c_linear_plot = np.where(c_linear > 0, c_linear, np.nan)
 
-    local = (k_stable >= 0.5 * k_ss) & (k_stable <= 1.5 * k_ss)
-    linear_on_stable = c_ss + slope * (k_stable[local] - k_ss)
-    max_linear_gap = float(np.max(np.abs(c_stable[local] - linear_on_stable)))
-
     k_grid = np.linspace(0.35, k_ss * 2.25, 22)
     c_grid = np.linspace(0.08, c_ss * 2.05, 22)
     K, C = np.meshgrid(k_grid, c_grid)
@@ -146,18 +137,6 @@ def main():
     start_idx = left_indices[np.argmin(np.abs(k_stable[left_indices] - 0.4 * k_ss))]
     k0_path = float(k_stable[start_idx])
     c0_path = float(c_stable[start_idx])
-
-    sol_time = solve_ivp(
-        dynamics,
-        (0.0, 120.0),
-        [k0_path, c0_path],
-        max_step=0.2,
-        rtol=1e-8,
-        atol=1e-10,
-        dense_output=True,
-    )
-    t_eval = np.linspace(0.0, sol_time.t[-1], 500)
-    y_eval = sol_time.sol(t_eval)
 
     def integrate_forward(y0, horizon=65.0):
         sol = solve_ivp(
@@ -195,29 +174,21 @@ def main():
 
     report = ModelReport(
         "Ramsey Consumption Choice and Saddle Paths",
-        "Trace the stable arm that selects initial consumption in continuous-time growth.",
+        "Trace the stable arm that selects initial Ramsey consumption.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "A Ramsey planner inherits an initial capital stock and must choose consumption "
-        "today before the rest of the path is known. Starting below the steady state makes "
-        "the tradeoff concrete: consuming too much leaves too little investment, while "
-        "consuming too little builds capital that the planner would rather have consumed "
-        "earlier.\n\n"
-        "The phase diagram turns that intertemporal choice into geometry. Capital is the "
-        "state, consumption is the control, and each point $(k,c)$ has an arrow showing "
-        "how the economy moves next. The nullclines show where capital or consumption is "
-        "temporarily flat, and their intersection gives the Ramsey steady state. The "
-        "optimum needs one more object: the stable arm, the curve of initial $(k,c)$ pairs "
-        "that converges to the saddle-point steady state and satisfies the present-value "
-        "boundary condition.\n\n"
-        "The computation traces that curve. We linearize the differential equation system "
-        "at the steady state, take the stable eigenvector as a local guide, and integrate "
-        "the nonlinear Ramsey ODE backward to draw the stable arm away from the steady "
-        "state. The same selection problem appears in shooting and HJB methods, but the "
-        "phase plane lets the reader see the economics before choosing a numerical solver."
+        "An economy begins with inherited capital. A Ramsey planner chooses consumption "
+        "today and lets investment carry capital forward. The wrong choice either runs "
+        "capital down or delays consumption too long.\n\n"
+        "The object is the phase diagram in $(k,c)$. Capital is the state. Consumption "
+        "is the control. Nullclines show where each variable stops moving. The stable arm "
+        "is the curve of choices that converges to the saddle steady state.\n\n"
+        "The computation traces that arm. The code linearizes the ODE at the steady state, "
+        "uses the stable eigenvector, and integrates backward. Forward paths then show "
+        "which initial consumption choices miss the boundary condition."
     )
 
     report.add_equations(r"""
@@ -259,10 +230,8 @@ k=k^{*}
 =\left(\frac{\alpha A}{\rho+\delta}\right)^{1/(1-\alpha)} .
 $$
 
-Steady-state consumption is $c^{*}=f(k^{*})-\delta k^{*}$. The golden-rule
-capital stock satisfies $f'(k_{GR})=\delta$, so with $\rho>0$ the Ramsey steady
-state lies to the left of the golden rule. The boundary condition selecting the
-planner's path is the transversality condition
+Steady-state consumption is $c^{*}=f(k^{*})-\delta k^{*}$. The boundary
+condition selecting the planner's path is transversality:
 
 $$
 \lim_{t\to\infty} e^{-\rho t}u'(c(t))k(t)=0 .
@@ -270,10 +239,9 @@ $$
 """)
 
     report.add_model_setup(
-        "The calibration is deterministic, so every arrow in the diagram reflects the "
-        "planner's consumption-investment tradeoff. Output is Cobb-Douglas, preferences "
-        "are CRRA, and the discount rate places the Ramsey steady state below the "
-        "golden-rule capital stock.\n\n"
+        "The calibration keeps the mechanics visible. Output is Cobb-Douglas. "
+        "Preferences are CRRA. There are no shocks, so each arrow shows the same law "
+        "of motion.\n\n"
         "| Parameter | Value | Description |\n"
         "|-----------|-------|-------------|\n"
         f"| $\\alpha$ | {alpha:.2f} | Capital share |\n"
@@ -282,13 +250,11 @@ $$
         f"| $\\sigma$ | {sigma:.1f} | CRRA coefficient and inverse EIS |\n"
         f"| $A$ | {A:.1f} | Total factor productivity |\n"
         f"| $k^{{*}}$ | {k_ss:.4f} | Ramsey steady-state capital |\n"
-        f"| $c^{{*}}$ | {c_ss:.4f} | Ramsey steady-state consumption |\n"
-        f"| $k_{{GR}}$ | {k_gr:.4f} | Golden-rule capital |\n"
-        f"| $c_{{GR}}$ | {c_gr:.4f} | Golden-rule sustainable consumption |"
+        f"| $c^{{*}}$ | {c_ss:.4f} | Ramsey steady-state consumption |"
     )
 
     report.add_solution_method(
-        "The steady state anchors the calculation because the saddle structure is local. "
+        "The steady state anchors the stable-arm calculation. "
         "The Jacobian of $(\\dot{k},\\dot{c})$ at $(k^{*},c^{*})$ is\n\n"
         "$$\n"
         "J=\n"
@@ -298,12 +264,11 @@ $$
         "\\end{bmatrix}.\n"
         "$$\n\n"
         f"The eigenvalues are $\\lambda_s={lambda_stable:.4f}$ and "
-        f"$\\lambda_u={lambda_unstable:.4f}$. One is negative and one is positive, so "
-        f"nearby paths split into stable and unstable directions. The stable eigenvector "
-        f"has local slope $dc/dk={slope:.4f}$. That line gives the slope of the planner's "
-        "path at the steady state, but it is only a first-order approximation. To draw "
-        "the nonlinear stable arm, the code starts near the steady state along that "
-        "eigenvector and integrates the full Ramsey system backward.\n\n"
+        f"$\\lambda_u={lambda_unstable:.4f}$. One is negative and one is positive. "
+        "Nearby paths split into stable and unstable directions. "
+        f"The stable eigenvector has local slope $dc/dk={slope:.4f}$. "
+        "That line is only local. To draw the nonlinear arm, the code starts near "
+        "the steady state and integrates backward.\n\n"
         "```text\n"
         "Algorithm: trace the Ramsey stable arm\n"
         "Inputs: primitives (alpha, delta, rho, sigma, A), bounds for plotted k and c\n"
@@ -316,9 +281,8 @@ $$
         "7. Sort the branches by k and read c(k) as the selected initial consumption rule.\n"
         "Output: nullclines, local linear arm, nonlinear stable arm, and sample forward paths.\n"
         "```\n\n"
-        "Backward integration is a drawing device. Forward in economic time, points on "
-        "the traced arm converge to the steady state; points above or below it miss the "
-        "present-value boundary condition."
+        "Backward integration is a plotting device. In economic time, points on the arm "
+        "converge to the steady state. Points above or below it miss transversality."
     )
 
     fig1, ax1 = plt.subplots(figsize=(9, 7))
@@ -335,7 +299,6 @@ $$
     )
     ax1.plot(k_range, c_nullcline, color="#1f77b4", linewidth=2.5, label="$\\dot{k}=0$")
     ax1.axvline(k_ss, color="#c44e52", linewidth=2.5, label="$\\dot{c}=0$")
-    ax1.axvline(k_gr, color="#55a868", linestyle=":", linewidth=2.0, label="$k_{GR}$")
     ax1.plot(k_range, c_linear_plot, color="0.35", linestyle="--", linewidth=2.0,
              label="local linear arm")
     ax1.plot(k_stable, c_stable, color="black", linewidth=3.0, label="nonlinear stable arm")
@@ -359,45 +322,11 @@ $$
         "Ramsey phase plane with nullclines, local linear arm, and nonlinear stable arm",
         fig1,
         description=(
-            "The blue curve and red line give sign information. Below net output, capital "
-            "accumulates; left of $k^{*}$, consumption grows because the marginal product "
-            "is high. The black curve does more than show local motion. For each capital "
-            "stock on the plotted branch, it gives the initial consumption level that "
-            "converges to the steady state and satisfies the transversality condition. "
-            "The dashed line shows that linearization works near the steady state but "
-            f"not globally; over $k \\in [0.5k^{{*}},1.5k^{{*}}]$ its largest consumption gap "
-            f"from the nonlinear reference is {max_linear_gap:.3f}."
-        ),
-    )
-
-    fig2, (ax2a, ax2b) = plt.subplots(1, 2, figsize=(12, 5))
-    valid = (y_eval[0] > 0) & (y_eval[1] > 0)
-    t_valid = t_eval[valid]
-    ax2a.plot(t_valid, y_eval[0][valid], color="#1f77b4", linewidth=2.2)
-    ax2a.axhline(k_ss, color="k", linestyle="--", alpha=0.55, label=f"$k^{{*}}={k_ss:.2f}$")
-    ax2a.set_xlabel("Time")
-    ax2a.set_ylabel("Capital $k(t)$")
-    ax2a.set_title("Capital Along the Stable Arm")
-    ax2a.legend()
-
-    ax2b.plot(t_valid, y_eval[1][valid], color="#c44e52", linewidth=2.2)
-    ax2b.axhline(c_ss, color="k", linestyle="--", alpha=0.55, label=f"$c^{{*}}={c_ss:.2f}$")
-    ax2b.set_xlabel("Time")
-    ax2b.set_ylabel("Consumption $c(t)$")
-    ax2b.set_title("Consumption Along the Stable Arm")
-    ax2b.legend()
-    fig2.tight_layout()
-    report.add_figure(
-        "figures/time-paths.png",
-        "Capital and consumption converge to the Ramsey steady state along the stable arm",
-        fig2,
-        description=(
-            "Starting below steady-state capital, the selected path keeps consumption low "
-            "enough for investment to be high. As capital approaches $k^{*}$, the marginal "
-            "product falls, investment slows, and consumption rises toward $c^{*}$. The "
-            f"local stable eigenvalue implies a half-life of about "
-            f"$\\ln(2)/|\\lambda_s|={np.log(2)/abs(lambda_stable):.1f}$ time units near "
-            "the steady state; the early part of the transition is nonlinear."
+            "The blue curve is the capital nullcline. The red line is the consumption "
+            "nullcline. Below the blue curve, capital rises. Left of $k^{*}$, consumption "
+            "rises because the marginal product is high. The black curve is the stable "
+            "arm. For each capital stock shown, it gives the initial consumption that "
+            "reaches the steady state. The dashed line is the local linear approximation."
         ),
     )
 
@@ -423,80 +352,23 @@ $$
         "Forward trajectories from the same initial capital but different initial consumption",
         fig3,
         description=(
-            "Holding initial capital fixed makes the saddle-path logic explicit. A higher "
-            "initial consumption choice starts above the stable arm and runs capital down. "
-            "A lower choice starts below it and accumulates too much capital relative to "
-            "the present-value boundary condition. The arrows help explain motion, but "
-            "they do not select the path. The planner needs the one initial consumption "
-            "level that puts the economy on the stable arm."
-        ),
-    )
-
-    df = pd.DataFrame({
-        "Quantity": [
-            "$k^{*}$",
-            "$c^{*}$",
-            "$y^{*}$",
-            "$r^{*}=f'(k^{*})-\\delta$",
-            "$k_{GR}$",
-            "$c_{GR}$",
-            "$\\lambda_s$",
-            "$\\lambda_u$",
-            "$dc/dk$ on local stable arm",
-            "Max nonlinear-linear gap",
-        ],
-        "Value": [
-            f"{k_ss:.4f}",
-            f"{c_ss:.4f}",
-            f"{y_ss:.4f}",
-            f"{f_prime(k_ss)-delta:.4f}",
-            f"{k_gr:.4f}",
-            f"{c_gr:.4f}",
-            f"{lambda_stable:.4f}",
-            f"{lambda_unstable:.4f}",
-            f"{slope:.4f}",
-            f"{max_linear_gap:.4f}",
-        ],
-        "Description": [
-            "Ramsey steady-state capital",
-            "Ramsey steady-state consumption",
-            "Steady-state output",
-            "Net return equals rho in steady state",
-            "Capital that maximizes sustainable consumption",
-            "Maximum sustainable consumption",
-            "Stable eigenvalue",
-            "Unstable eigenvalue",
-            "Consumption slope of the linearized stable arm",
-            "Largest c gap on k in [0.5 k*, 1.5 k*]",
-        ],
-    })
-    report.add_table(
-        "tables/steady-state.csv",
-        "Steady-State and Stable-Arm Diagnostics",
-        df,
-        description=(
-            "The table keeps the main numbers auditable. The Ramsey steady state has "
-            "$r^{*}=\\rho$, while the golden-rule point has more capital because it ignores "
-            "impatience. The eigenvalue pair verifies the saddle classification. The last "
-            "row records how far the nonlinear stable arm moves away from the local "
-            "linear approximation over the central part of the graph."
+            "Holding initial capital fixed shows the selection problem. A higher "
+            "consumption choice starts above the stable arm and runs capital down. "
+            "A lower choice starts below it and builds too much capital. Arrows explain "
+            "motion, but the stable arm selects the path."
         ),
     )
 
     report.add_takeaway(
-        "A Ramsey phase diagram is an economic selection device. Nullclines say which way "
-        "capital and consumption move, but they do not choose the initial consumption "
-        "level. The transversality condition selects the stable arm. Linearization gives "
-        "the local slope and convergence speed; backward integration of the nonlinear "
-        "ODE shows how the selected path bends away from the steady state. Shooting "
-        "algorithms and HJB methods solve the same selection problem in different ways, "
-        "while the phase plane keeps the consumption-investment tradeoff visible."
+        "The phase diagram shows direction. It does not choose initial consumption. "
+        "The transversality condition selects the stable arm. Local linearization gives "
+        "the slope near the steady state. Backward integration draws the nonlinear path "
+        "away from it."
     )
 
     report.add_references([
         "Ramsey, F. (1928). \"A Mathematical Theory of Saving.\" *Economic Journal*, 38(152).",
         "Barro, R. and Sala-i-Martin, X. (2004). *Economic Growth*. MIT Press, 2nd edition, Ch. 2.",
-        "Acemoglu, D. (2009). *Introduction to Modern Economic Growth*. Princeton University Press, Ch. 8.",
     ])
 
     report.write("README.md")
