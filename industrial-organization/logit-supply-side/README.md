@@ -4,14 +4,16 @@
 
 ## Overview
 
-Think of a cereal aisle where a researcher sees product characteristics, prices, market shares, and which firm owns each box. The researcher wants markups and marginal costs, because those objects drive counterfactual prices and market-power measurement. Accounting marginal costs are usually missing, so the costs have to be inferred from an economic pricing model.
+A cereal market has differentiated products, observed shares, observed prices, and multi-product owners.
 
-The example uses five cereal products sold by three firms. Firms charge more for products with high unobserved quality, which makes price endogenous in the demand equation. Berry inversion turns shares into mean utilities, IV/2SLS uses cost shifters and rival characteristics to estimate price sensitivity, and the Bertrand-Nash first-order condition converts demand curvature into markups and marginal costs. The logit model keeps the mechanics transparent, while the elasticity figures show the cost of that transparency: substitution follows IIA.
+The target object is the marginal cost vector behind those prices. Markups are the wedge between observed prices and recovered costs.
+
+Accounting costs are missing, so the model infers costs from demand and firm optimality. Berry inversion turns shares into mean utilities. IV/2SLS estimates the price slope using excluded cost variation. Bertrand-Nash FOCs then map demand derivatives and ownership into markups.
 
 ## Equations
 
-There are markets $t$, products $j$, and an outside option. Mean utility collects
-observed characteristics, price, and unobserved quality:
+Markets are indexed by $t$. Products are indexed by $j$.
+Mean utility collects characteristics, price, and unobserved quality:
 $$
 \delta_{jt}
 =\beta_0+\beta_{\text{sugar}}x^{\text{sugar}}_{jt}
@@ -32,26 +34,25 @@ $$
 +\beta_{\text{fiber}}x^{\text{fiber}}_{jt}
 -\alpha p_{jt}+\xi_{jt}.
 $$
-The price coefficient is identified from price variation that is excluded from
-$\xi_{jt}$. In the simulated data, cost shifters and rival characteristics play
-that role.
+Identification needs price variation excluded from $\xi_{jt}$. The cost shifter
+plays that role in the simulation.
 
-The logit elasticity matrix is
+The supply inversion uses the logit derivative matrix:
 $$
-\eta_{jj}=-\alpha p_j(1-s_j), \qquad
-\eta_{jk}=\alpha p_k s_k, \quad j\neq k.
+\frac{\partial s_k}{\partial p_j}
+=\begin{cases}
+{}-\alpha s_j(1-s_j), & k=j,\\
+\alpha s_k s_j, & k\neq j.
+\end{cases}
 $$
-The cross-elasticity $\eta_{jk}$ depends on product $k$'s price and share, but
-not on how close products $j$ and $k$ are. That restriction is what makes simple
-logit easy to invert and too rigid for many product-space applications.
 
-On the supply side, firm $f$ chooses prices for its products. Product $j$'s FOC is
+Firm $f$ chooses prices for its products. Product $j$'s FOC is
 $$
 0=s_j(p)+\sum_k
 \mathbf 1[f(j)=f(k)](p_k-c_k)\frac{\partial s_k(p)}{\partial p_j}.
 $$
-Let $O_{jk}=1$ when products $j$ and $k$ are owned by the same firm, and define
-the pricing matrix
+Let $O_{jk}=1$ when products $j$ and $k$ share an owner. Define the pricing
+matrix
 $$
 \Omega_{jk}=-O_{jk}\frac{\partial s_k}{\partial p_j}.
 $$
@@ -59,13 +60,12 @@ The markup vector $m=p-c$ solves
 $$
 \Omega m=s.
 $$
-The recovered cost vector is then $c=p-m$. Multi-product firms internalize
-business stolen from their own products, so ownership enters directly into the
-cost recovery.
+The recovered cost vector is then $c=p-m$. Ownership matters because a firm
+internalizes lost sales across its own products.
 
 ## Model Setup
 
-The data are simulated so the true demand parameters and marginal costs are known. This lets the run separate two mistakes that real data often mix together: estimating the wrong price slope because price is endogenous, and recovering the wrong marginal costs because the demand curvature is wrong.
+The simulation fixes true demand parameters and marginal costs. This makes demand bias and cost-recovery error observable.
 
 | Parameter | Value | Description |
 |-----------|-------|-------------|
@@ -79,7 +79,7 @@ The data are simulated so the true demand parameters and marginal costs are know
 
 ## Solution Method
 
-The computation separates the demand step from the supply inversion. Demand estimation recovers the price slope that governs substitution. The supply step then treats observed prices as firm choices and asks which marginal costs make those choices optimal under Bertrand-Nash pricing.
+The calculation has two stages. Demand estimation recovers the price slope that drives substitution. The supply inversion asks which costs make observed prices optimal.
 
 ```text
 Inputs: product characteristics, prices, shares, instruments, firm labels
@@ -94,29 +94,25 @@ Outputs: demand estimates, elasticities, markups, recovered marginal costs
 7. Compare recovered costs with the simulated marginal costs.
 ```
 
-The first-stage F-statistic is 303.1, so the instrument set is strong in this synthetic design. The strength is built in because the lesson is the chain from demand-side IV to supply-side markup recovery, rather than weak-instrument diagnostics.
-
 ## Results
 
-OLS recovers a price-sensitivity estimate of 1.009, far below the true value 1.500, because high-$\xi$ products are more popular and more expensive. IV/2SLS moves the estimate to 1.465. In market 0, the recovered marginal costs have mean absolute error 0.455 dollars. The figures connect those numbers to the economic objects: biased demand slopes, rigid substitution, and the price decomposition into markup and cost.
+OLS estimates alpha at 1.009, below the true value 1.500. Unobserved quality raises both demand and price. IV/2SLS estimates alpha at 1.465.
 
-The red OLS bar misses the true alpha because unobserved quality raises demand and price at the same time. The blue IV/2SLS bar moves back toward the truth by using cost-driven price variation.
+In market 0, recovered marginal costs have mean absolute error 0.455 dollars. These outputs show how demand bias moves recovered costs.
+
+OLS misses alpha because unobserved quality raises demand and price together. IV uses cost-driven price variation and moves toward the truth.
 
 <img src="figures/estimation-comparison.png" alt="Parameter estimates: true, OLS, and IV/2SLS. OLS attenuates price sensitivity because high-xi products command higher prices." width="80%">
 
-Each column of cross-elasticities is identical because the logit model forces all products to be equally substitutable. When a sugary cereal raises its price, the model sends consumers to a similar sugary cereal and to a dissimilar fiber cereal in the same proportional way.
+The heatmap shows the demand curvature used by the FOC. Logit cross-elasticities depend on rival shares, not product similarity.
 
-<img src="figures/elasticity-heatmap.png" alt="Elasticity matrix. Cross-elasticities in each column are identical, the IIA limitation of the simple logit." width="80%">
+<img src="figures/elasticity-heatmap.png" alt="Elasticity matrix from the estimated logit demand system." width="80%">
 
-The decomposition is the supply-side accounting exercise: demand estimates plus the Bertrand-Nash FOC turn observed prices into markup and marginal-cost components. Estimated costs are imperfect product by product because the estimated demand slope is not exactly the true slope, but the exercise recovers the economic object needed for counterfactual pricing. Multi-product firms (Choco-Bombs and Store-Frosted, both owned by Firm 1) charge higher markups because they internalize cannibalization across their own products.
+Demand estimates and ownership turn prices into costs plus markups. Product-level errors remain because the estimated price slope is not exact. Multi-product firms internalize cannibalization across their own products.
 
 <img src="figures/price-decomposition.png" alt="Price = marginal cost + markup. Estimated MC (green, from Bertrand-Nash FOC) compared with true MC (blue)." width="80%">
 
-Within each panel, all bars have the same height because every rival gains the same cross-elasticity regardless of product similarity. That is the IIA property. The BLP random coefficients model (see blp-random-coefficients/) breaks the restriction by allowing consumer heterogeneity.
-
-<img src="figures/iia-demonstration.png" alt="IIA demonstration. When any product raises its price, substitution to each rival is proportional to that rival's market share, rather than how similar the products are." width="80%">
-
-Compare the OLS and IV/2SLS columns: the bias is concentrated in alpha (price sensitivity) because price is the endogenous variable. The characteristic coefficients (sugar, fiber) are less affected because product attributes have weaker correlation with the unobserved quality term.
+The main demand error is alpha, the endogenous price coefficient. That error carries into the supply inversion.
 
 **Estimation Results: True vs OLS vs IV/2SLS**
 
@@ -129,11 +125,10 @@ Compare the OLS and IV/2SLS columns: the bias is concentrated in alpha (price se
 
 ## Takeaway
 
-The recovered supply-side object is the marginal cost vector that rationalizes observed prices under the estimated demand system and ownership matrix. A biased price coefficient therefore changes more than a demand table: it changes markups and costs. Simple logit makes Berry inversion and markup recovery easy to see, but its IIA substitution pattern is too rigid for many merger and product-space applications. Random-coefficients demand in [BLP](../blp-random-coefficients/) lets substitution vary with consumer heterogeneity and product characteristics.
+Markup recovery is only as credible as the estimated demand slope. Berry inversion and IV/2SLS estimate that slope from shares, prices, and instruments. The Bertrand-Nash FOC then converts demand derivatives and ownership into marginal costs. Simple logit makes the inversion clear but imposes rigid substitution.
 
 ## References
 
 - Berry, S. (1994). "Estimating Discrete-Choice Models of Product Differentiation." *RAND Journal of Economics* 25(2), 242-262.
-- Berry, S., Levinsohn, J., and Pakes, A. (1995). "Automobile Prices in Market Equilibrium." *Econometrica* 63(4), 841-890.
 - Nevo, A. (2001). "Measuring Market Power in the Ready-to-Eat Cereal Industry." *Econometrica* 69(2), 307-342.
 - Train, K. (2009). *Discrete Choice Methods with Simulation*. Cambridge University Press, 2nd edition, Ch. 3.
