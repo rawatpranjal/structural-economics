@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T06:27:29Z",
+  "updated_at": "2026-05-08T06:34:25Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -227,6 +227,22 @@
         "global-dsge/heaton-lucas/tables/euler-errors.csv"
       ],
       "updated_at": "2026-05-08T06:27:29Z"
+    },
+    {
+      "tutorial_path": "optimal-control/hjb-growth/",
+      "status": "complete",
+      "commit": "f9f06b79cee50f4d0234a2a83e7f95e3c9ecdffe",
+      "changed_paths": [
+        "README.md",
+        "optimal-control/hjb-growth/README.md",
+        "optimal-control/hjb-growth/figures/consumption-policy.png",
+        "optimal-control/hjb-growth/figures/savings-policy.png",
+        "optimal-control/hjb-growth/figures/thumb.png",
+        "optimal-control/hjb-growth/figures/value-function.png",
+        "optimal-control/hjb-growth/run.py",
+        "optimal-control/hjb-growth/tables/steady-state.csv"
+      ],
+      "updated_at": "2026-05-08T06:34:25Z"
     },
     {
       "tutorial_path": "industrial-organization/dynamic-discrete-choice/",
