@@ -1,3 +1,5 @@
-Method,Start,Iterations,Final residual,Error in k,Convergence rate
-Bisection,"[0.1, 30.0]",31,8.19e-11,5.73e-09,linear (1/2)
-Newton-Raphson,x_0 = 1.0,7,0.00e+00,0.00e+00,quadratic
+Method,Inputs,Iterations,Final residual,Error in r,Convergence rate
+Bisection,sign-change bracket,29,7.23e-09,1.03e-10,linear (1/2)
+Secant,two starting points,9,2.04e-14,2.91e-16,superlinear (~1.618)
+Brent,sign-change bracket,7,9.06e-14,1.28e-15,superlinear
+Newton-Raphson,x_0 and Z',5,8.88e-16,6.94e-18,quadratic

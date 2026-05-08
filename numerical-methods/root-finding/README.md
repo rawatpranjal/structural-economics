@@ -1,43 +1,47 @@
-# Scalar Root Finding for Market Clearing
+# Scalar Root Finding for Equilibrium Rates
 
-> Bisection and Newton-Raphson find the steady-state capital stock that clears a Cobb-Douglas capital market.
+> Bisection, secant, Brent, and Newton-Raphson recover the rate that clears a stylized bond market with a closed-form root.
 
 ## Overview
 
-A representative-firm economy reaches a steady state when the net marginal product of capital equals the rate of time preference plus depreciation. With Cobb-Douglas production that condition is a scalar equation in $k$.
+A representative-firm economy with Cobb-Douglas production and a target aggregate capital stock has a closed-form clearing rate $r^{\ast} = 1/\beta - 1$. The market-clearing condition is a scalar equation in $r$, and the four basic root finders all solve the same problem.
 
-The unknown is the steady-state capital stock $k^{\ast}$. The equation has a closed form, so any solver can be checked directly. This is the cleanest setup for comparing two basic root finders.
+Bisection halves a sign-change bracket. Secant fits a line through the last two iterates. Brent's method combines bisection's bracket invariant with inverse quadratic interpolation when accepting the fast step preserves the bracket. Newton-Raphson uses the analytic derivative for quadratic local convergence.
 
-Bisection halves a sign-change bracket. Newton-Raphson extrapolates the tangent line at the current iterate. The first is globally safe and slow; the second is locally fast and depends on the starting point.
+These are the four solvers a first-year PhD student needs when Aiyagari- or Huggett-style equilibrium code stops converging. $\mathrm{scipy.optimize.brentq}$ is the production default for exactly this reason.
 
 ## Equations
 
-The capital market clears when the marginal product of capital nets out
-the user cost:
+Aggregate capital demand from the firm-side first-order condition is
 
-$$F'(k^{\ast}) = \tfrac{1}{\beta} - 1 + \delta.$$
+$$K_d(r) = \left( \frac{\alpha}{r + \delta} \right)^{\frac{1}{1 - \alpha}}.$$
 
-For Cobb-Douglas technology $f(k) = k^{\alpha}$ this is the scalar equation
+Setting target aggregate supply at the deterministic clearing rate
+$r^{\ast} = 1/\beta - 1$ gives $K^{\ast} \equiv K_d(r^{\ast})$. Excess
+demand is
 
-$$F(k) = \alpha\, k^{\alpha - 1} - \bar{r} = 0,
-\qquad \bar{r} \equiv \tfrac{1}{\beta} - 1 + \delta.$$
+$$Z(r) = K_d(r) - K^{\ast},
+\qquad Z(r^{\ast}) = 0,
+\qquad r^{\ast} = \tfrac{1}{\beta} - 1.$$
 
-The closed-form root is
+The derivative used by Newton is
 
-$$k^{\ast} = \left( \frac{\alpha}{\bar{r}} \right)^{\frac{1}{1 - \alpha}}.$$
+$$Z'(r) = -\frac{1}{1 - \alpha}\, \frac{K_d(r)}{r + \delta} < 0.$$
 
-Bisection halves a sign-change bracket $[a, b]$ around the root:
+The four iterations are
 
-$$m_n = \tfrac{a_n + b_n}{2},
-\qquad \mathrm{sign}\, F(a_{n+1}) \neq \mathrm{sign}\, F(b_{n+1}),
-\qquad b_{n+1} - a_{n+1} = \tfrac{1}{2}(b_n - a_n).$$
+$$\text{Bisection: } m_n = \tfrac{a_n + b_n}{2}, \quad
+\text{keep the half with the sign change}.$$
 
-Newton-Raphson follows the tangent line at the current iterate:
+$$\text{Secant: } x_{n+1} = x_n - Z(x_n)\, \frac{x_n - x_{n-1}}{Z(x_n) - Z(x_{n-1})}.$$
 
-$$x_{n+1} = x_n - \frac{F(x_n)}{F'(x_n)}.$$
+$$\text{Newton-Raphson: } x_{n+1} = x_n - \frac{Z(x_n)}{Z'(x_n)}.$$
 
-Near a simple root, the bracket of bisection contracts at a linear rate of
-$\tfrac{1}{2}$ per step, while the Newton residual squares each step.
+Brent's method is a hybrid: it tries inverse quadratic interpolation
+through the last three ordinates, falls back to secant when ordinates
+coincide, and falls back to bisection when the proposed step would leave
+the bracket or fails to halve the previous step length. The bracket
+invariant is maintained at every iteration.
 
 ## Model Setup
 
@@ -46,60 +50,66 @@ $\tfrac{1}{2}$ per step, while the Newton residual squares each step.
 | $\alpha$ | 0.36 | Capital share in Cobb-Douglas production |
 | $\beta$ | 0.96 | Discount factor |
 | $\delta$ | 0.08 | Depreciation rate |
-| $\bar{r}$ | 0.1217 | User cost $1/\beta - 1 + \delta$ |
-| $k^{\ast}$ | 5.4468 | Closed-form steady-state capital |
-| Bracket $[a_0, b_0]$ | $[0.1,\, 30.0]$ | Initial sign-change bracket for bisection |
-| Newton start $x_0$ | 1.0 | Starting iterate for Newton-Raphson |
-| Tolerance $\varepsilon$ | 1e-10 | Stopping rule on the residual and the bracket width |
+| $r^{\ast}$ | 0.041667 | Closed-form clearing rate $1/\beta - 1$ |
+| $K^{\ast}$ | 5.4468 | Target aggregate capital at $r^{\ast}$ |
+| Bracket $[a_0, b_0]$ | $[1e-06,\, 0.1]$ | Sign-change bracket for bisection and Brent |
+| Secant seeds | $[1e-06,\, 0.1]$ | Two starting points for the secant iteration |
+| Newton start $x_0$ | 0.02 | Starting iterate for Newton-Raphson |
+| Tolerance $\varepsilon$ | 1e-10 | Stopping rule on residual and bracket width |
 
 ## Solution Method
 
-Both methods solve the same scalar equation $F(k) = 0$. Bisection needs only a sign-change bracket; Newton-Raphson needs the derivative and a single starting point.
+All four methods solve the same scalar equation $Z(r) = 0$. They differ in what they need (bracket, two seeds, derivative) and how fast they converge.
 
 ```text
-Bisection                       | Newton-Raphson
-Input: a, b with F(a)F(b) < 0   | Input: x_0, tolerance eps
-       tolerance eps            |        F, F'
-for n = 1, 2, ... :             | for n = 0, 1, ... :
-    m <- (a + b) / 2            |     x_{n+1} <- x_n - F(x_n) / F'(x_n)
-    fm <- F(m)                  |     stop when |F(x_n)| < eps
-    if |fm| < eps: stop         |
-    if F(a) * fm < 0: b <- m    |
-    else            : a <- m    |
-    stop when (b - a) < eps     |
+Bisection           | Secant                      | Brent                              | Newton-Raphson
+Inputs: a, b, eps   | Inputs: x_0, x_1, eps       | Inputs: a, b, eps                  | Inputs: x_0, eps, Z, Z'
+fa <- Z(a)          | f0 <- Z(x_0); f1 <- Z(x_1)  | (use IQI when 3 distinct values,   | for n = 0, 1, ... :
+fb <- Z(b)          | for n = 2, 3, ... :         |  else secant; fall back to bisect  |     x_{n+1} <- x_n - Z(x_n)/Z'(x_n)
+for n = 1, 2, ... : |     dx <- (x_1 - x_0)       |  if step leaves bracket or fails   |     stop when |Z(x_n)| < eps
+    m <- (a+b)/2    |     dn <- f1 - f0           |  half-step progress test)          |
+    fm <- Z(m)      |     x_2 <- x_1 - f1 dx/dn   | maintain sign-change bracket each  |
+    if fa fm < 0:   |     stop when |f(x_2)| < eps|  iteration                         |
+        b, fb<-m,fm |     shift x_0 <- x_1        |                                    |
+    else:           |             x_1 <- x_2      |                                    |
+        a, fa<-m,fm |                             |                                    |
+    stop on tol     |                             |                                    |
 ```
 
-Starting from the bracket $[0.1,\, 30.0]$, bisection converges in **31 iterations** with residual $|F(k)|$ = **8.19e-11**. Starting from $x_0 = 1.0$, Newton-Raphson converges in **7 iterations** with residual $|F(k)|$ = **0.00e+00**.
+Starting from the bracket $[1e-06,\, 0.1]$, bisection takes **29 iterations**, secant takes **9**, and Brent takes **7**. Newton from $x_0 = 0.02$ takes **5 iterations**. The hand-coded Brent root matches $\mathrm{scipy.optimize.brentq}$ to **0.00e+00**.
 
 ## Results
 
-The residual $F(k)$ is monotone and crosses zero exactly once at $k^{\ast} = 5.447$. The first six bisection brackets, drawn below the curve, halve in width each iteration while keeping the sign change.
+Excess demand $Z(r)$ is monotone decreasing and crosses zero at $r^{\ast} = 0.0417$. The first 4 iterates of each method, plotted at $(x_n, Z(x_n))$, sit on the curve and march toward the root from different directions: bisection from the midpoint, secant along the chord, Brent mostly via the chord but occasionally bisecting, and Newton along the tangent.
 
-<img src="figures/residual-and-bracket.png" alt="Market-clearing residual $F(k)$ with the first bisection brackets contracting to the root" width="80%">
+<img src="figures/excess-demand.png" alt="Excess demand $Z(r)$ with the first iterates of bisection, secant, Brent, and Newton overlaid" width="80%">
 
-Both methods reach the closed-form root, but at different rates. Bisection halves its error each step and needs **31 iterations** to hit the tolerance. Newton-Raphson squares its residual once near the root and needs only **7 iterations** from the same problem. The Newton curve drops off a cliff once the iterate enters the basin of quadratic convergence.
+On a log axis the convergence rates are easy to read off. Bisection halves its error each step (a straight line with slope $\log_{10}(1/2)$). Secant accelerates once the iterates settle near the root. Newton drops off a cliff after the first quadratic step. Brent inherits the bracket safety of bisection and the late-stage speed of secant or inverse quadratic interpolation, hitting the tolerance in only a handful of iterations.
 
-<img src="figures/convergence.png" alt="Distance from the closed-form root vs iteration, log axis" width="80%">
+<img src="figures/convergence.png" alt="Distance from the closed-form clearing rate vs iteration, log axis, all four methods" width="80%">
 
-Bisection iteration counts are flat across starting points: each step halves the bracket regardless of where it is centred. Newton iteration counts climb when the start is far below $k^{\ast}$, where the tangent step is small relative to the gap, and collapse near the root, where quadratic convergence kicks in. From **2 of 9** starting points above $k^{\ast}$, the Newton step overshoots into $k < 0$ where the Cobb-Douglas residual is undefined and the iteration diverges (hatched bars marked DNC).
+Bracketed methods (bisection, Brent) are insensitive to where the bracket is centred: the bisection counts are flat and Brent's stays in single digits. Secant and Newton iteration counts depend on the start; **1 of 9** Newton starts step outside the feasible range and diverge (hatched bars marked DNC). Brent is the right production default precisely because it matches secant's late-stage speed without losing bisection's bracket invariant.
 
-<img src="figures/sensitivity.png" alt="Iterations to converge as a function of starting point for both methods" width="80%">
+<img src="figures/sensitivity.png" alt="Iterations to converge as a function of starting point or bracket centre, all four methods" width="80%">
 
-The table summarises the two solves on the same calibration. Both land within machine tolerance of the closed-form root.
+The table summarises the four solves on the same calibration. All four reach the closed-form root within tolerance; Brent and Newton do so in roughly an order of magnitude fewer iterations than bisection.
 
-**Bisection vs Newton-Raphson on the steady-state capital market**
+**Bisection, secant, Brent, and Newton-Raphson on the stylized bond market**
 
-| Method         | Start       |   Iterations |   Final residual |   Error in k | Convergence rate   |
-|:---------------|:------------|-------------:|-----------------:|-------------:|:-------------------|
-| Bisection      | [0.1, 30.0] |           31 |         8.19e-11 |     5.73e-09 | linear (1/2)       |
-| Newton-Raphson | x_0 = 1.0   |            7 |         0        |     0        | quadratic          |
+| Method         | Inputs              |   Iterations |   Final residual |   Error in r | Convergence rate     |
+|:---------------|:--------------------|-------------:|-----------------:|-------------:|:---------------------|
+| Bisection      | sign-change bracket |           29 |         7.23e-09 |     1.03e-10 | linear (1/2)         |
+| Secant         | two starting points |            9 |         2.04e-14 |     2.91e-16 | superlinear (~1.618) |
+| Brent          | sign-change bracket |            7 |         9.06e-14 |     1.28e-15 | superlinear          |
+| Newton-Raphson | x_0 and Z'          |            5 |         8.88e-16 |     6.94e-18 | quadratic            |
 
 ## Takeaway
 
-Bisection is the safe default when only a sign-change bracket is available: it halves the error every step and never leaves the bracket. Newton-Raphson is much faster once the iterate is near a simple root, because the tangent extrapolation squares the residual each step. The trade-off shows up at large $x_0$, where the Newton step here overshoots into $k < 0$ and the Cobb-Douglas residual becomes undefined. Aiyagari- and Huggett-style interest-rate solves later in the catalog use bisection on $r$ for exactly this reason.
+Brent's method is the right default for production equilibrium solves: it inherits bisection's bracket invariant and adds superlinear speed via inverse quadratic interpolation when the bracket is preserved. Bisection is the safe fallback when the derivative is unavailable. Secant is a no-derivative alternative to Newton with similar fragility from far-off seeds. Newton is fastest near a simple root but needs a derivative and a starting point inside the basin of attraction. This is the trade-off behind $\mathrm{scipy.optimize.brentq}$ in Aiyagari- and Huggett-style equilibrium clearings later in the catalog.
 
 ## References
 
 - Mukoyama, T. (2021). *Basic Numerical Methods*. ECON 606 lecture slides, Georgetown University.
+- Brent, R. P. (1973). *Algorithms for Minimization without Derivatives*. Prentice-Hall, Ch. 4.
 - Press, W. H., Teukolsky, S. A., Vetterling, W. T., and Flannery, B. P. (2007). *Numerical Recipes*. Cambridge University Press, 3rd edition, Ch. 9.
 - Judd, K. L. (1998). *Numerical Methods in Economics*. MIT Press, Ch. 5.
