@@ -4,35 +4,15 @@
 
 ## Overview
 
-A planner chooses how much output to consume today.
+A planner chooses how much output to consume today. Remaining output becomes capital tomorrow. The log Cobb-Douglas case has an exact saving rule. That exact rule makes the neural solver easy to audit.
 
-Remaining output becomes capital tomorrow.
+Deep-learning macro methods often rewrite dynamic models as empirical-risk problems. Some solvers optimize lifetime rewards. Some solvers minimize Euler residuals. Some solvers minimize Bellman residuals.
 
-The log Cobb-Douglas case has an exact saving rule.
-
-That exact rule makes the neural solver easy to audit.
-
-Deep-learning macro methods often rewrite dynamic models as empirical-risk problems.
-
-Some solvers optimize lifetime rewards.
-
-Some solvers minimize Euler residuals.
-
-Some solvers minimize Bellman residuals.
-
-This tutorial uses an Euler-residual loss.
-
-The neural net proposes a feasible saving share.
-
-Gradient steps fit the policy on simulated capital states.
-
-The Brock-Mirman formula audits the trained rule point by point.
+This tutorial uses an Euler-residual loss. The neural net proposes a feasible saving share. Gradient steps fit the policy on simulated capital states. The Brock-Mirman formula audits the trained rule point by point.
 
 ## Equations
 
-Capital fully depreciates each period.
-
-With state $k_t$, output is
+Capital fully depreciates each period. With state $k_t$, output is
 
 $$
 y_t = A k_t^{\alpha}, \qquad 0<\alpha<1,
@@ -69,9 +49,7 @@ r(k;\theta)
 \right].
 $$
 
-The residual is zero when the Euler equation holds.
-
-Training chooses parameters that make this residual small.
+The residual is zero when the Euler equation holds. Training chooses parameters that make this residual small.
 
 The population risk is
 
@@ -79,9 +57,7 @@ $$
 \Xi(\theta) = E\left[r(k;\theta)^2\right].
 $$
 
-The program replaces that expectation with simulated capital draws.
-
-With draws $k_1,\ldots,k_n$, it solves the empirical problem
+The program replaces that expectation with simulated capital draws. With draws $k_1,\ldots,k_n$, it solves the empirical problem
 
 $$
 \Xi_n(\theta) = \frac{1}{n}\sum_{i=1}^{n} r(k_i;\theta)^2,
@@ -136,23 +112,9 @@ $$
 
 ## Solution Method
 
-The method starts with a parameterized policy.
+The method starts with a parameterized policy. It draws states from a training interval. It evaluates an economic residual at those states. It minimizes the average squared residual.
 
-It draws states from a training interval.
-
-It evaluates an economic residual at those states.
-
-It minimizes the average squared residual.
-
-Richer DSGE examples can optimize lifetime rewards.
-
-Other DSGE examples can minimize Bellman residuals.
-
-This model only needs Euler residuals.
-
-JAX autodiff provides the gradient.
-
-Adam updates the weights.
+Richer DSGE examples can optimize lifetime rewards. Other DSGE examples can minimize Bellman residuals. This model only needs Euler residuals. JAX autodiff provides the gradient. Adam updates the weights.
 
 ```text
 Algorithm: simulated-state Euler-residual training
@@ -178,69 +140,31 @@ For t = 1,...,T:
 Audit k'(k; theta) on a holdout grid against the exact rule
 ```
 
-The audit is not part of the training loss.
-
-It exists because this Brock-Mirman case has the closed-form rule $k'=\alpha\beta A k^\alpha$.
-
-The comparison shows what the residual-trained neural policy learned.
+The audit is not part of the training loss. It exists because this Brock-Mirman case has the closed-form rule $k'=\alpha\beta A k^\alpha$. The comparison shows what the residual-trained neural policy learned.
 
 ## Results
 
-The trained policy is almost the exact constant-saving rule.
-
-The x-axis uses capital relative to the steady state.
-
-The main object is the saving rule away from $k_{ss}$.
-
-The exact and neural policy functions lie nearly on top of each other.
+The trained policy is almost the exact constant-saving rule. The x-axis uses capital relative to the steady state. The main object is the saving rule away from $k_{ss}$. The exact and neural policy functions lie nearly on top of each other.
 
 <img src="figures/policy-comparison.png" alt="Neural and closed-form capital policy" width="80%">
 
-The training curves show the fitting process.
+The training curves show the fitting process. The Euler-residual loss falls sharply. The mean policy error falls with it.
 
-The Euler-residual loss falls sharply.
-
-The mean policy error falls with it.
-
-Both series drop by several orders of magnitude.
-
-The loss curve uses fresh minibatches.
-
-The error curve uses a fixed audit grid.
+Both series drop by several orders of magnitude. The loss curve uses fresh minibatches. The error curve uses a fixed audit grid.
 
 <img src="figures/training-curves.png" alt="Training loss and mean policy error" width="80%">
 
-The residual plot is the numerical check.
+The residual plot is the numerical check. A small log Euler residual means the Euler equation is nearly satisfied. The policy-error panel compares the neural rule with the closed-form rule. That direct comparison is available only in this teaching example.
 
-A small log Euler residual means the Euler equation is nearly satisfied.
-
-The policy-error panel compares the neural rule with the closed-form rule.
-
-That direct comparison is available only in this teaching example.
-
-Residuals stay small across the grid.
-
-The remaining policy error is centered near zero.
+Residuals stay small across the grid. The remaining policy error is centered near zero.
 
 <img src="figures/euler-residuals.png" alt="Euler residuals and policy errors over the audit grid" width="80%">
 
-Starting below the steady state gives a transition path.
-
-The exact path converges to the steady state.
-
-The neural path follows the same transition.
-
-The neural policy tracks the closed-form transition path from the same initial capital.
+Starting below the steady state gives a transition path. The exact path converges to the steady state. The neural path follows the same transition. Both paths start from the same initial capital.
 
 <img src="figures/simulated-path.png" alt="Capital transition under neural and closed-form policies" width="80%">
 
-The table reports the holdout audit on the plotted grid.
-
-Policy errors are in capital units.
-
-The Euler residual column is the maximum absolute log residual.
-
-Values near zero mean the Euler equation is nearly satisfied.
+The table reports the holdout audit on the plotted grid. Policy errors are in capital units. The Euler residual column is the maximum absolute log residual. Values near zero mean the Euler equation is nearly satisfied.
 
 **Policy Approximation Accuracy**
 
@@ -248,31 +172,15 @@ Values near zero mean the Euler equation is nearly satisfied.
 |-------------:|--------------------:|-------------------:|---------------------:|----------------------:|-----------------:|
 |  2.31559e-08 |         4.43835e-05 |        0.000162423 |          0.000282804 |           0.000116169 |             6000 |
 
-The estimated policy is nearly identical to the exact Brock-Mirman policy.
+The estimated policy is nearly identical to the exact Brock-Mirman policy. The learned saving share is nearly flat. Its mean is 0.3420. The exact saving share is $\alpha\beta=0.3420$.
 
-The learned saving share is nearly flat.
-
-Its mean is 0.3420.
-
-The exact saving share is $\alpha\beta=0.3420$.
-
-The policy figure is the main evidence.
-
-The table records the diagnostics behind the plot.
+The policy figure is the main evidence. The table records the diagnostics behind the plot.
 
 ## Takeaway
 
-Deep learning is not needed to solve this Brock-Mirman model.
+Deep learning is not needed to solve this Brock-Mirman model. The example is useful because the answer is known. The same residual-minimization machinery appears in larger nonlinear macro models.
 
-The example is useful because the answer is known.
-
-The same residual-minimization machinery appears in larger nonlinear macro models.
-
-Feasibility comes from the policy parameterization.
-
-Training comes from Euler residuals on simulated states.
-
-Credibility comes from the out-of-sample closed-form audit.
+Feasibility comes from the policy parameterization. Training comes from Euler residuals on simulated states. Credibility comes from the out-of-sample closed-form audit.
 
 ## References
 

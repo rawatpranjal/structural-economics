@@ -282,25 +282,23 @@ def main() -> None:
     )
 
     report.add_overview(
-        "A planner chooses how much output to consume today.\n\n"
-        "Remaining output becomes capital tomorrow.\n\n"
-        "The log Cobb-Douglas case has an exact saving rule.\n\n"
+        "A planner chooses how much output to consume today. "
+        "Remaining output becomes capital tomorrow. "
+        "The log Cobb-Douglas case has an exact saving rule. "
         "That exact rule makes the neural solver easy to audit.\n\n"
-        "Deep-learning macro methods often rewrite dynamic models as empirical-risk problems.\n\n"
-        "Some solvers optimize lifetime rewards.\n\n"
-        "Some solvers minimize Euler residuals.\n\n"
+        "Deep-learning macro methods often rewrite dynamic models as empirical-risk problems. "
+        "Some solvers optimize lifetime rewards. "
+        "Some solvers minimize Euler residuals. "
         "Some solvers minimize Bellman residuals.\n\n"
-        "This tutorial uses an Euler-residual loss.\n\n"
-        "The neural net proposes a feasible saving share.\n\n"
-        "Gradient steps fit the policy on simulated capital states.\n\n"
+        "This tutorial uses an Euler-residual loss. "
+        "The neural net proposes a feasible saving share. "
+        "Gradient steps fit the policy on simulated capital states. "
         "The Brock-Mirman formula audits the trained rule point by point."
     )
 
     report.add_equations(
         r"""
-Capital fully depreciates each period.
-
-With state $k_t$, output is
+Capital fully depreciates each period. With state $k_t$, output is
 
 $$
 y_t = A k_t^{\alpha}, \qquad 0<\alpha<1,
@@ -337,9 +335,7 @@ r(k;\theta)
 \right].
 $$
 
-The residual is zero when the Euler equation holds.
-
-Training chooses parameters that make this residual small.
+The residual is zero when the Euler equation holds. Training chooses parameters that make this residual small.
 
 The population risk is
 
@@ -347,9 +343,7 @@ $$
 \Xi(\theta) = E\left[r(k;\theta)^2\right].
 $$
 
-The program replaces that expectation with simulated capital draws.
-
-With draws $k_1,\ldots,k_n$, it solves the empirical problem
+The program replaces that expectation with simulated capital draws. With draws $k_1,\ldots,k_n$, it solves the empirical problem
 
 $$
 \Xi_n(\theta) = \frac{1}{n}\sum_{i=1}^{n} r(k_i;\theta)^2,
@@ -405,14 +399,14 @@ $$
     )
 
     report.add_solution_method(
-        "The method starts with a parameterized policy.\n\n"
-        "It draws states from a training interval.\n\n"
-        "It evaluates an economic residual at those states.\n\n"
+        "The method starts with a parameterized policy. "
+        "It draws states from a training interval. "
+        "It evaluates an economic residual at those states. "
         "It minimizes the average squared residual.\n\n"
-        "Richer DSGE examples can optimize lifetime rewards.\n\n"
-        "Other DSGE examples can minimize Bellman residuals.\n\n"
-        "This model only needs Euler residuals.\n\n"
-        "JAX autodiff provides the gradient.\n\n"
+        "Richer DSGE examples can optimize lifetime rewards. "
+        "Other DSGE examples can minimize Bellman residuals. "
+        "This model only needs Euler residuals. "
+        "JAX autodiff provides the gradient. "
         "Adam updates the weights.\n\n"
         "```text\n"
         "Algorithm: simulated-state Euler-residual training\n"
@@ -437,16 +431,17 @@ $$
         "    Update theta with one Adam step using the gradient of Xi_n(theta)\n"
         "Audit k'(k; theta) on a holdout grid against the exact rule\n"
         "```\n\n"
-        "The audit is not part of the training loss.\n\n"
+        "The audit is not part of the training loss. "
         "It exists because this Brock-Mirman case has the closed-form rule "
-        "$k'=\\alpha\\beta A k^\\alpha$.\n\n"
+        "$k'=\\alpha\\beta A k^\\alpha$. "
         "The comparison shows what the residual-trained neural policy learned."
     )
 
     report.add_results(
-        "The trained policy is almost the exact constant-saving rule.\n\n"
-        "The x-axis uses capital relative to the steady state.\n\n"
-        "The main object is the saving rule away from $k_{ss}$."
+        "The trained policy is almost the exact constant-saving rule. "
+        "The x-axis uses capital relative to the steady state. "
+        "The main object is the saving rule away from $k_{ss}$. "
+        "The exact and neural policy functions lie nearly on top of each other."
     )
     fig, ax = plt.subplots(figsize=(7, 4.5))
     ax.plot(k_grid_np / k_ss, exact_kp / k_ss, label="Closed form", color="#1b5e20")
@@ -460,12 +455,11 @@ $$
         "figures/policy-comparison.png",
         "Neural and closed-form capital policy",
         fig,
-        description="The exact and neural policy functions lie nearly on top of each other.",
     )
 
     report.add_results(
-        "The training curves show the fitting process.\n\n"
-        "The Euler-residual loss falls sharply.\n\n"
+        "The training curves show the fitting process. "
+        "The Euler-residual loss falls sharply. "
         "The mean policy error falls with it."
     )
     fig, axes = plt.subplots(1, 2, figsize=(10, 4.2))
@@ -488,16 +482,16 @@ $$
         "Training loss and mean policy error",
         fig,
         description=(
-            "Both series drop by several orders of magnitude.\n\n"
-            "The loss curve uses fresh minibatches.\n\n"
+            "Both series drop by several orders of magnitude. "
+            "The loss curve uses fresh minibatches. "
             "The error curve uses a fixed audit grid."
         ),
     )
 
     report.add_results(
-        "The residual plot is the numerical check.\n\n"
-        "A small log Euler residual means the Euler equation is nearly satisfied.\n\n"
-        "The policy-error panel compares the neural rule with the closed-form rule.\n\n"
+        "The residual plot is the numerical check. "
+        "A small log Euler residual means the Euler equation is nearly satisfied. "
+        "The policy-error panel compares the neural rule with the closed-form rule. "
         "That direct comparison is available only in this teaching example."
     )
     fig, axes = plt.subplots(1, 2, figsize=(10, 4.2))
@@ -516,15 +510,16 @@ $$
         "Euler residuals and policy errors over the audit grid",
         fig,
         description=(
-            "Residuals stay small across the grid.\n\n"
+            "Residuals stay small across the grid. "
             "The remaining policy error is centered near zero."
         ),
     )
 
     report.add_results(
-        "Starting below the steady state gives a transition path.\n\n"
-        "The exact path converges to the steady state.\n\n"
-        "The neural path follows the same transition."
+        "Starting below the steady state gives a transition path. "
+        "The exact path converges to the steady state. "
+        "The neural path follows the same transition. "
+        "Both paths start from the same initial capital."
     )
     fig, ax = plt.subplots(figsize=(7, 4.5))
     t_grid = np.arange(periods)
@@ -539,13 +534,12 @@ $$
         "figures/simulated-path.png",
         "Capital transition under neural and closed-form policies",
         fig,
-        description="The neural policy tracks the closed-form transition path from the same initial capital.",
     )
 
     report.add_results(
-        "The table reports the holdout audit on the plotted grid.\n\n"
-        "Policy errors are in capital units.\n\n"
-        "The Euler residual column is the maximum absolute log residual.\n\n"
+        "The table reports the holdout audit on the plotted grid. "
+        "Policy errors are in capital units. "
+        "The Euler residual column is the maximum absolute log residual. "
         "Values near zero mean the Euler equation is nearly satisfied."
     )
     report.add_table(
@@ -555,20 +549,20 @@ $$
     )
 
     report.add_results(
-        "The estimated policy is nearly identical to the exact Brock-Mirman policy.\n\n"
-        "The learned saving share is nearly flat.\n\n"
-        f"Its mean is {mean_saving_share:.4f}.\n\n"
+        "The estimated policy is nearly identical to the exact Brock-Mirman policy. "
+        "The learned saving share is nearly flat. "
+        f"Its mean is {mean_saving_share:.4f}. "
         f"The exact saving share is $\\alpha\\beta={exact_saving_share:.4f}$.\n\n"
-        "The policy figure is the main evidence.\n\n"
+        "The policy figure is the main evidence. "
         "The table records the diagnostics behind the plot."
     )
 
     report.add_takeaway(
-        "Deep learning is not needed to solve this Brock-Mirman model.\n\n"
-        "The example is useful because the answer is known.\n\n"
+        "Deep learning is not needed to solve this Brock-Mirman model. "
+        "The example is useful because the answer is known. "
         "The same residual-minimization machinery appears in larger nonlinear macro models.\n\n"
-        "Feasibility comes from the policy parameterization.\n\n"
-        "Training comes from Euler residuals on simulated states.\n\n"
+        "Feasibility comes from the policy parameterization. "
+        "Training comes from Euler residuals on simulated states. "
         "Credibility comes from the out-of-sample closed-form audit."
     )
 
