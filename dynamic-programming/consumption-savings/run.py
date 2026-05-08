@@ -10,7 +10,6 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from lib.discretize import rouwenhorst
@@ -249,30 +248,13 @@ def main() -> None:
     )
 
     report.add_overview(
-        "A single household holds one risk-free asset, faces persistent labor income, "
-        "and cannot borrow. The decision is recursive in $(a,z)$: how much of "
-        "current cash-on-hand to carry forward as $a'$, given that next period's "
-        "$z'$ is random and that $a'$ has to stay nonnegative.\n\n"
-        "Two extensions of the deterministic Bellman problem are doing the work. "
-        "Continuation values now involve an expectation over $z'$, so the income "
-        "discretization shows up directly in the recursion rather than only in "
-        "simulations. And the no-borrowing constraint is a complementary-slackness "
-        "condition on the Euler equation: it binds with positive probability for "
-        "low-income, low-asset states, which is exactly where consumption is most "
-        "responsive to a marginal dollar of wealth. [Cake eating]"
-        "(../cake-eating/) and [optimal growth](../optimal-growth/) keep neither.\n\n"
-        "The interest rate $r$ is fixed so the focus stays on individual behaviour. "
-        "Closing the loop is what [Aiyagari](../aiyagari/) does for capital and what "
-        "[Huggett](../../heterogeneous-agents/huggett-incomplete-markets/) does for "
-        "a zero-net-supply bond, using exactly this household block. The Rouwenhorst "
-        "chain entering $\\mathbb{E}_t V(a',z')$ is the same object built in "
-        "[shock discretization](../shock-discretization/). Faster solvers for the "
-        "same primitives live next door: [endogenous grid points]"
-        "(../../heterogeneous-agents/endogenous-grid-points/) inverts the Euler "
-        "equation, and [envelope-equation iteration]"
-        "(../../heterogeneous-agents/envelope-equation-iteration/) iterates marginal "
-        "values directly. Doing brute VFI here first is useful because the operator "
-        "is the one that reappears throughout the catalog."
+        "Households often face income paths they cannot insure. A worker with low "
+        "assets must absorb a bad income draw through current consumption.\n\n"
+        "The object is a household savings rule. The state is assets $a$ and income "
+        "$z$. The control is next-period assets $a'$ under a no-borrowing limit.\n\n"
+        "Income is persistent, so today's choice changes future cash-on-hand risk. "
+        "Value function iteration solves the Bellman equation on an asset grid and "
+        "a finite Markov chain for income."
     )
 
     report.add_equations(
@@ -283,22 +265,21 @@ $a_{t+1}=a'$ and consumes the residual
 
 $$c_t = R a_t + z_t - a_{t+1}.$$
 
-Assets are bounded below by the no-borrowing constraint
+Assets must respect the no-borrowing constraint:
 
 $$a_{t+1}\geq \underline a = 0,$$
 
-and the numerical problem also uses an upper grid bound $\bar a$. Preferences are
-CRRA,
+The numerical problem also uses an upper grid bound $\bar a$. Utility is CRRA:
 
 $$u(c)=\frac{c^{1-\sigma}}{1-\sigma}, \qquad \sigma>0,\quad \sigma\neq 1.$$
 
-Log income follows
+Log income follows:
 
 $$\log z_{t+1}=\rho \log z_t+\varepsilon_{t+1},\qquad
 \varepsilon_{t+1}\sim N(0,\sigma_\varepsilon^2),$$
 
-and is approximated by income states $z_1,\ldots,z_J$ with transition matrix
-$P$, where $P_{jk}=\Pr(z_{t+1}=z_k\mid z_t=z_j)$. The Bellman equation is
+It is approximated by income states $z_1,\ldots,z_J$ with transition matrix
+$P$. Here $P_{jk}=\Pr(z_{t+1}=z_k\mid z_t=z_j)$. The Bellman equation is
 
 $$
 V(a,z_j)=
@@ -309,13 +290,14 @@ u(Ra+z_j-a')+
 \right].
 $$
 
-The asset policy is $g_a(a,z)=a'$ and the consumption policy is
-$c^{\ast}(a,z)=Ra+z-g_a(a,z)$. At an interior choice the Euler equation reads
+The asset policy is $g_a(a,z)=a'$. The consumption policy is
+$c^{\ast}(a,z)=Ra+z-g_a(a,z)$. At an interior choice, the Euler equation is:
 
 $$u'(c_t)=\beta R\,\mathbb E_t[u'(c_{t+1})],$$
 
-and the no-borrowing constraint replaces it by $u'(c_t)\geq \beta R\,\mathbb
-E_t[u'(c_{t+1})]$ whenever it binds, with $a_{t+1}=0$.
+When the constraint binds, $a_{t+1}=0$ and the Euler inequality holds:
+
+$$u'(c_t)\geq \beta R\,\mathbb E_t[u'(c_{t+1})].$$
 """
     )
 
@@ -339,30 +321,17 @@ E_t[u'(c_{t+1})]$ whenever it binds, with $a_{t+1}=0$.
     )
 
     report.add_solution_method(
-        "The state is the pair $(a,z)$, with $a$ continuous and $z$ on a five-point "
-        "Rouwenhorst grid for $\\log z$. The Bellman operator is\n\n"
+        "The value function is stored on a grid for assets and income. Income uses "
+        "a five-point Rouwenhorst chain for $\\log z$.\n\n"
+        "The Bellman operator is\n\n"
         "$$(TV)(a,z_j)=\\max_{0\\leq a'\\leq Ra+z_j}\\left[u(Ra+z_j-a')+\\beta\\sum_{k=1}^J "
         "P_{jk}V(a',z_k)\\right],$$\n\n"
-        "a $\\beta$-contraction on bounded continuous functions of $(a,z)$. The "
-        "expectation enters only through the sum $\\sum_k P_{jk} V(\\cdot,z_k)$, which "
-        "is recomputed on the asset state grid at every sweep and then interpolated "
-        "onto the (denser) choice grid. The state grid is exponentially spaced near "
-        "$\\underline{a}$, where the policy is steepest; the choice grid is finer "
-        f"({n_choice} vs {n_asset} points) because policy noise dominates value-function "
-        "noise once it is forward-iterated through simulations.\n\n"
-        "Two pieces of structure are worth flagging because they shape every figure "
-        "below.\n\n"
-        f"First, $\\beta R = {beta * gross_return:.4f} < 1$. Without uncertainty the "
-        "household would prefer current consumption and decumulate to the constraint. "
-        "With persistent risk and prudence ($u'''>0$), a precautionary motive pushes "
-        "in the opposite direction. The two forces balance at a finite *target* "
-        "wealth around the modal income state, and the policy inherits the "
-        "buffer-stock shape that Carroll (1997) characterizes analytically in a "
-        "neighbourhood of that target.\n\n"
-        "Second, the no-borrowing constraint binds for low-income, low-asset states. "
-        "At those points the FOC is replaced by the kink $a'=0$ and $c=Ra+z$, so "
-        "consumption tracks current cash-on-hand one-for-one. This is what produces "
-        "high MPCs near the constraint and the visible kink in the asset policy.\n\n"
+        "a $\\beta$-contraction on bounded functions of $(a,z)$. For each income "
+        "state, the code computes expected continuation value on the asset grid. "
+        "It interpolates that value onto a denser grid for $a'$.\n\n"
+        "At each $(a,z)$, infeasible choices with $a'>Ra+z$ receive value "
+        "$-\\infty$. The algorithm picks the best $a'$ and repeats until the "
+        "sup-norm change is below tolerance.\n\n"
         "```text\n"
         "Algorithm  Income-fluctuation VFI\n"
         "Inputs   asset state grid A = {a_i}, asset choice grid G = {g_l},\n"
@@ -385,11 +354,9 @@ E_t[u'(c_{t+1})]$ whenever it binds, with $a_{t+1}=0$.
         "    stop when err < epsilon\n"
         "```\n\n"
         f"The main grid converges in **{solution['iterations']} iterations** to "
-        f"sup-norm residual **{solution['error']:.2e}**. There is no closed form to "
-        "audit against here, so the same Bellman equation is also resolved on a "
-        f"refined grid ({n_asset_refined} state points, {n_choice_refined} choice "
-        "points). The median-income consumption policy from that refined solve is "
-        "overlaid on the figure below and acts as ground truth."
+        f"sup-norm residual **{solution['error']:.2e}**. A refined grid repeats the "
+        f"same solve with {n_asset_refined} state points and {n_choice_refined} "
+        "choice points. Its median-income policy is plotted below as a diagnostic."
     )
 
     colors = plt.cm.viridis(np.linspace(0.15, 0.85, n_income))
@@ -402,13 +369,9 @@ E_t[u'(c_{t+1})]$ whenever it binds, with $a_{t+1}=0$.
     ax1.set_title("Value by Income State")
     ax1.legend(fontsize=9)
     report.add_results(
-        "$V(a,z_j)$ is increasing in both arguments and concave in $a$. The vertical "
-        "spread across income states is largest near $\\underline{a}=0$, because at "
-        "low assets the household has no cushion against mean reversion: a bad "
-        "$z_j$ today translates almost one-for-one into low cash-on-hand and a "
-        "binding constraint tomorrow. Deeper into the asset grid the spread "
-        "compresses, exactly as the precautionary motive predicts: assets "
-        "substitute for the missing insurance market."
+        "$V(a,z_j)$ rises with assets and income. Near $\\underline{a}=0$, income "
+        "states have large value gaps. Low assets give the household little "
+        "insurance against a bad draw."
     )
     report.add_figure(
         "figures/value-functions.png",
@@ -432,17 +395,13 @@ E_t[u'(c_{t+1})]$ whenever it binds, with $a_{t+1}=0$.
     ax2.set_title("Consumption Policy")
     ax2.legend(fontsize=8)
     report.add_results(
-        "Consumption is increasing and concave in $a$ at every income state, with the "
-        "steepest slope right at the constraint. For the median income state the "
-        f"average MPC is about **{low_asset_mpc:.2f}** in the bottom-decile of the "
-        f"asset grid and falls to **{high_asset_mpc:.2f}** near the top. The drop is "
-        "the buffer-stock mechanism in one number: an extra dollar of wealth is "
-        "almost entirely consumed when assets are scarce and liquidity matters, "
-        "but mostly saved once the household has built up enough buffer to absorb "
-        "bad income draws on its own. The dashed line is the median-income policy "
-        f"from the {n_asset_refined}-state refined solve; the maximum vertical "
-        f"distance to the main-grid policy is **{max_refined_gap_mid:.2e}**, which "
-        "is interpolation noise rather than economic disagreement."
+        "Consumption rises with assets and is steepest near the borrowing limit. "
+        f"For the median income state, average MPC is **{low_asset_mpc:.2f}** near "
+        f"zero assets and **{high_asset_mpc:.2f}** near the top. The fall measures "
+        "buffer-stock saving. An extra dollar is mostly consumed when assets are "
+        "scarce. It is mostly saved after the buffer is large.\n\n"
+        "The dashed line is the refined-grid median-income policy. Its maximum gap "
+        f"from the main grid is **{max_refined_gap_mid:.2e}**."
     )
     report.add_figure(
         "figures/consumption-policy.png",
@@ -459,16 +418,10 @@ E_t[u'(c_{t+1})]$ whenever it binds, with $a_{t+1}=0$.
     ax3.set_title("Net Saving Policy")
     ax3.legend(fontsize=9)
     report.add_results(
-        "Plotting $g_a(a,z_j)-a$ separates the insurance motive from the level of "
-        "consumption. After a high $z_j$ the household saves out of the windfall, "
-        "and most of that saving happens at low $a$ where the constraint is closest "
-        "to binding next period. After a low $z_j$ it dissaves to smooth consumption, "
-        "but the no-borrowing constraint truncates dissaving from below: the bottom "
-        "income curve runs along the floor for small $a$ before drift pulls it back. "
-        "The level at which the median-income net-saving curve crosses zero is the "
-        "buffer-stock target for the modal $z$, the analogue of $k_{ss}$ in "
-        "[optimal growth](../optimal-growth/) but stochastic and "
-        "income-state-dependent."
+        "Net saving $g_a(a,z_j)-a$ shows when the household builds the buffer. High "
+        "income raises saving, especially close to the borrowing limit. Low income "
+        "leads to dissaving until the constraint stops it. The zero crossing is the "
+        "buffer-stock target for the median income state."
     )
     report.add_figure(
         "figures/savings-policy.png",
@@ -494,19 +447,14 @@ E_t[u'(c_{t+1})]$ whenever it binds, with $a_{t+1}=0$.
     ax4b.legend(fontsize=8)
     fig4.tight_layout()
     report.add_results(
-        "Forward-iterating the policy under the Rouwenhorst chain turns the "
-        "static rule into asset dynamics. Five sample agents start with identical "
-        "median income but quickly disperse: each path is a long sequence of "
-        "buffer accumulation interrupted by runs of bad luck that grind assets "
-        "back to the constraint. Persistence is what makes those runs visible; "
-        "with i.i.d. income the histories would look much smoother.\n\n"
-        "The right panel collapses 3,000 such agents into a cross-section after "
-        f"400 periods. Median wealth is **{median_assets:.2f}**, the 90th "
-        f"percentile is **{p90_assets:.2f}**, and **{constraint_share:.1%}** of "
-        "agents sit essentially at $\\underline{a}$. The pile-up at the constraint "
-        "and the long right tail are exactly the features that show up in "
-        "Aiyagari's stationary distribution once $r$ is endogenized; here they "
-        "are pure consequences of policy plus persistence."
+        "Forward simulation applies the policy after each income draw. Five agents "
+        "start with identical median income. Persistent shocks spread their assets "
+        "over time. Runs of bad income push assets back toward the constraint.\n\n"
+        "A panel of 3,000 agents shows the cross-section after 400 periods. Median "
+        f"wealth is **{median_assets:.2f}**, and the 90th percentile is "
+        f"**{p90_assets:.2f}**. About **{constraint_share:.1%}** of agents sit near "
+        "$\\underline{a}$. The pile-up at zero and the right tail come from the "
+        "policy and persistent risk."
     )
     report.add_figure(
         "figures/simulated-paths.png",
@@ -514,56 +462,15 @@ E_t[u'(c_{t+1})]$ whenever it binds, with $a_{t+1}=0$.
         fig4,
     )
 
-    sample_a_idx = np.linspace(0, n_asset - 1, 8, dtype=int)
-    iz_low, iz_mid, iz_high = 0, median_z_idx, n_income - 1
-    table_data = {
-        "Assets a": [f"{a_grid[i]:.2f}" for i in sample_a_idx],
-        "c*(a,z_low)": [f"{policy_c[i, iz_low]:.4f}" for i in sample_a_idx],
-        "c*(a,z_mid)": [f"{policy_c[i, iz_mid]:.4f}" for i in sample_a_idx],
-        "c*(a,z_high)": [f"{policy_c[i, iz_high]:.4f}" for i in sample_a_idx],
-        "g_a(a,z_low)": [f"{policy_a[i, iz_low]:.4f}" for i in sample_a_idx],
-        "g_a(a,z_mid)": [f"{policy_a[i, iz_mid]:.4f}" for i in sample_a_idx],
-        "g_a(a,z_high)": [f"{policy_a[i, iz_high]:.4f}" for i in sample_a_idx],
-    }
-    df = pd.DataFrame(table_data)
-    report.add_table(
-        "tables/policy-functions.csv",
-        "Policy functions at selected asset states",
-        df,
-        description=(
-            "Reading the rows confirms what the figures show. At $a=0$ and the lowest "
-            "income state, $g_a=0$ exactly: the constraint binds and consumption is "
-            "the entire cash-on-hand $z_{\\rm low}$. At the same $a$ but the highest "
-            "income, the household saves part of the windfall instead of consuming "
-            "all of it, anticipating mean reversion. Higher up the asset grid, the "
-            "income spread in $g_a$ stays roughly constant in level but shrinks as a "
-            "share of $a$, which is the discrete-state version of the buffer-stock "
-            "target shrinking the marginal value of an extra dollar."
-        ),
-    )
-
     report.add_takeaway(
-        "Persistent income risk plus a no-borrowing constraint make the asset "
-        "policy nonlinear, state-contingent, and steepest right at the constraint. "
-        f"With $\\beta R = {beta * gross_return:.4f}<1$, the deterministic "
-        "household would run assets to zero; prudence is what stops it, and the "
-        "balance shows up as a stochastic buffer-stock target that depends on $z$. "
-        "The same household block is what gets aggregated in "
-        "[Aiyagari](../aiyagari/) and "
-        "[Huggett](../../heterogeneous-agents/huggett-incomplete-markets/) once "
-        "$r$ is forced to clear capital or bond markets, and what gets solved more "
-        "efficiently in [endogenous grid points]"
-        "(../../heterogeneous-agents/endogenous-grid-points/) and "
-        "[envelope-equation iteration]"
-        "(../../heterogeneous-agents/envelope-equation-iteration/)."
+        "Persistent income risk and no borrowing make saving state-contingent. "
+        "Value function iteration turns the recursive choice into a policy on "
+        "the asset-income grid. "
+        "The computed policy has high MPCs near zero assets, positive saving after "
+        "high income, and a finite buffer-stock target."
     )
 
     report.add_references([
-        "Aiyagari, S. R. (1994). Uninsured Idiosyncratic Risk and Aggregate Saving. "
-        "*Quarterly Journal of Economics*, 109(3), 659-684.",
-        "Bewley, T. (1986). Stationary Monetary Equilibrium with a Continuum of Independently "
-        "Fluctuating Consumers. In W. Hildenbrand and A. Mas-Colell (eds.), *Contributions to "
-        "Mathematical Economics in Honor of Gerard Debreu*. North-Holland.",
         "Carroll, C. D. (1997). Buffer-Stock Saving and the Life Cycle/Permanent Income "
         "Hypothesis. *Quarterly Journal of Economics*, 112(1), 1-55.",
         "Deaton, A. (1991). Saving and Liquidity Constraints. *Econometrica*, 59(5), 1221-1248.",
