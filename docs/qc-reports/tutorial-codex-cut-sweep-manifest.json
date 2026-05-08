@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T07:43:20Z",
+  "updated_at": "2026-05-08T07:48:50Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -359,6 +359,17 @@
         "industrial-organization/blp-random-coefficients/run.py"
       ],
       "updated_at": "2026-05-08T07:43:20Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/production-functions-markups/",
+      "status": "complete",
+      "commit": "8e0740c8ac5a11314ebd5bec8c74d5b71a1c4327",
+      "changed_paths": [
+        "README.md",
+        "industrial-organization/production-functions-markups/README.md",
+        "industrial-organization/production-functions-markups/run.py"
+      ],
+      "updated_at": "2026-05-08T07:48:50Z"
     },
     {
       "tutorial_path": "industrial-organization/dynamic-discrete-choice/",
