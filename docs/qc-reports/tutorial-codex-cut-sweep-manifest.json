@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T07:24:16Z",
+  "updated_at": "2026-05-08T07:33:15Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -336,6 +336,18 @@
         "industrial-organization/bertrand-logit-demand/tables/merger-results.csv"
       ],
       "updated_at": "2026-05-08T07:24:16Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/logit-supply-side/",
+      "status": "complete",
+      "commit": "94dbc24a643b8f326bc7133937bac50ad9d19f38",
+      "changed_paths": [
+        "README.md",
+        "industrial-organization/logit-supply-side/README.md",
+        "industrial-organization/logit-supply-side/figures/iia-demonstration.png",
+        "industrial-organization/logit-supply-side/run.py"
+      ],
+      "updated_at": "2026-05-08T07:33:15Z"
     },
     {
       "tutorial_path": "industrial-organization/dynamic-discrete-choice/",
