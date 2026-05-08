@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 """Afriat's revealed-preference test for finite consumer-choice data.
 
-Checks whether observed consumption data can be rationalized by a well-behaved
-utility function using the Generalized Axiom of Revealed Preference (GARP)
-and Afriat's theorem. Implements Warshall's algorithm for transitive closure
-of the revealed preference relation.
+Builds the revealed-preference relation, computes transitive closure, and checks
+the Generalized Axiom of Revealed Preference.
 
-Reference: Afriat (1967), Varian (1982) "The Nonparametric Approach to Demand Analysis"
+References: Afriat (1967), Varian (1982) "The Nonparametric Approach to Demand Analysis"
 """
 import sys
 from pathlib import Path
@@ -14,7 +12,6 @@ from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-import pandas as pd
 
 # Add repo root to path for lib/ imports
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
@@ -151,25 +148,6 @@ def generate_inconsistent_data(T, n_goods, rng):
     return prices, quantities, violations
 
 
-def power_of_garp_test(n_trials, T_values, n_goods, rng):
-    """Compute the fraction of random datasets that violate GARP.
-
-    For purely random (price, quantity) pairs, GARP violations become
-    more likely as T increases -- this measures the 'power' of the test.
-    """
-    violation_rates = []
-    for T in T_values:
-        n_violations = 0
-        for _ in range(n_trials):
-            prices = rng.uniform(0.5, 3.0, size=(T, n_goods))
-            quantities = rng.uniform(0.5, 5.0, size=(T, n_goods))
-            satisfies, _, _, _ = check_garp(prices, quantities)
-            if not satisfies:
-                n_violations += 1
-        violation_rates.append(n_violations / n_trials)
-    return violation_rates
-
-
 # =============================================================================
 # Visualization helpers
 # =============================================================================
@@ -286,22 +264,6 @@ def plot_revealed_preference_graph(R, R_star, title, violations=None):
     return fig
 
 
-def plot_garp_power(T_values, random_violation_rates, rational_violation_rates):
-    """Plot the power of the GARP test: violation rate vs number of observations."""
-    fig, ax = plt.subplots(figsize=(8, 5))
-    ax.plot(T_values, random_violation_rates, "o-", linewidth=2, markersize=6,
-            color="steelblue", label="Random prices and quantities")
-    ax.plot(T_values, rational_violation_rates, "--", linewidth=2,
-            color="#b3202a", label="Cobb-Douglas benchmark")
-    ax.fill_between(T_values, 0, random_violation_rates, alpha=0.12, color="steelblue")
-    ax.set_xlabel("Number of observations $T$")
-    ax.set_ylabel("Fraction of datasets violating GARP")
-    ax.set_title("GARP Rejects Random Choice, Not Rational Choice")
-    ax.set_ylim(0, 1.05)
-    ax.legend(frameon=False, loc="lower right")
-    return fig
-
-
 # =============================================================================
 # Main
 # =============================================================================
@@ -348,22 +310,6 @@ def main():
     print()
 
     # =========================================================================
-    # Power of the GARP test
-    # =========================================================================
-    print("=" * 60)
-    print("Power of GARP test (random data)")
-    print("=" * 60)
-
-    n_trials = 500
-    T_values = [2, 3, 5, 8, 10, 15, 20, 30, 50]
-    violation_rates = power_of_garp_test(n_trials, T_values, n_goods, rng)
-    rational_violation_rates = [0.0 for _ in T_values]
-
-    for Tv, vr in zip(T_values, violation_rates):
-        print(f"  T = {Tv:3d}: {vr:.1%} violation rate")
-    print()
-
-    # =========================================================================
     # Generate Report
     # =========================================================================
     setup_style()
@@ -376,36 +322,30 @@ def main():
     )
 
     report.add_overview(
-        "Picture a household observed over several shopping trips. Prices for three "
-        "goods move, the budget changes, and each trip leaves one chosen bundle. An "
-        "economist may first want a modest answer before estimating a demand curve: "
-        "could one stable utility function have made all of these choices optimal?\n\n"
-        "The data answer through budget comparisons. At trip $i$, the chosen bundle "
-        "$x_i$ costs exactly the observed expenditure. If another observed bundle "
-        "$x_j$ was affordable at the same prices, then choosing $x_i$ reveals it as "
-        "at least as good as $x_j$. The hard part is that these comparisons travel "
-        "through chains: $x_i$ can reveal a preference for $x_k$ through intermediate "
-        "budgets even when the direct comparison is missing.\n\n"
-        "Afriat's theorem makes that chain logic decisive. The sample is "
-        "rationalizable by a locally nonsatiated, monotone, concave utility function "
-        "exactly when revealed-preference chains avoid a strict return cycle. The "
-        "computation builds the revealed-preference graph, takes its transitive "
-        "closure, and checks the GARP contradiction. The run compares a "
-        "Cobb-Douglas sample, a corrupted sample, and random choices to show when "
-        "the test accepts or rejects rationalizability."
+        "Prices and budgets change across shopping trips. Each trip leaves one "
+        "chosen bundle, so the data show choices under different budget sets. "
+        "The economic question is whether one stable utility function could have "
+        "chosen all bundles.\n\n"
+        "The object is a finite revealed-preference relation. If bundle $x_j$ "
+        "was affordable when $x_i$ was chosen, the data reveal $x_i$ as weakly "
+        "preferred to $x_j$. A violation appears when chained comparisons return "
+        "to a bundle that was strictly cheaper at a later budget.\n\n"
+        "The computation builds that relation, closes it transitively, and checks "
+        "the GARP contradiction. The run compares a rational Cobb-Douglas sample "
+        "with one corrupted sample."
     )
 
     report.add_equations(
         r"""
-Let the data be $\mathcal{D}=\{(p_t,x_t)\}_{t=1}^T$, where $p_t\in\mathbb{R}_{++}^L$ and $x_t\in\mathbb{R}_{+}^L$. Expenditure at observation $t$ is $m_t=p_t\cdot x_t$.
+Let $\mathcal{D}=\{(p_t,x_t)\}_{t=1}^T$ denote the observed data. Price vectors are positive, and bundles are nonnegative. Expenditure at observation $t$ is $m_t=p_t\cdot x_t$.
 
-Observation $i$ is directly revealed weakly preferred to observation $j$, written $iRj$, when
+Direct revealed preference is written as $iRj$:
 $$
 p_i\cdot x_i \geq p_i\cdot x_j .
 $$
 The bundle $x_j$ was affordable when $x_i$ was chosen.
 
-Let $R^{\ast}$ denote the transitive closure of $R$. GARP requires that no pair $(i,j)$ satisfies both
+Let $R^{\ast}$ denote the transitive closure of $R$. GARP rules out this pair of statements:
 $$
 iR^{\ast}j
 \quad\text{and}\quad
@@ -413,16 +353,7 @@ p_j\cdot x_j > p_j\cdot x_i .
 $$
 The first statement says $x_i$ is revealed at least as good as $x_j$ through a chain of budgets. The second says that, at budget $j$, $x_i$ was strictly cheaper than the bundle actually chosen.
 
-Afriat's inequalities give the constructive equivalent condition. The data are rationalizable if and only if there exist numbers $u_t$ and $\lambda_t>0$ such that
-$$
-u_i-u_j \leq \lambda_j p_j\cdot(x_i-x_j)
-\quad \forall i,j .
-$$
-When those inequalities are feasible, a rationalizing utility can be written as
-$$
-\widehat U(x)=\min_j\{u_j+\lambda_j p_j\cdot(x-x_j)\}.
-$$
-This run checks GARP directly; the neighboring [preference-recoverability](../preference-recoverability/) tutorial uses the Afriat numbers to draw preference bounds.
+Afriat's theorem makes this finite test enough. If GARP holds, the data are rationalizable by a monotone concave utility function.
 """
     )
 
@@ -433,17 +364,14 @@ This run checks GARP directly; the neighboring [preference-recoverability](../pr
         f"| Goods $L$ | {n_goods} | Three-good bundles, with figures projected onto goods 1 and 2 |\n"
         f"| Cobb-Douglas weights | {', '.join(f'{a:.3f}' for a in alpha)} | Ground-truth rational benchmark |\n"
         f"| Corrupted sample | {len(violations_inc)} violations | Two chosen bundles are swapped until GARP fails |\n"
-        f"| Power exercise | {n_trials} trials | Random independent prices and quantities for each $T$ |\n"
         f"| Rational benchmark | 0 violations | Utility-maximizing Cobb-Douglas choices should always pass GARP |"
     )
 
     report.add_solution_method(
-        "The code uses the graph version of Afriat's theorem. Nodes are observed "
+        "The code uses the graph version of Afriat's test. Nodes are observed "
         "budgets and bundles. An edge $i\\to j$ means bundle $x_j$ was affordable "
-        "when $x_i$ was chosen, so the data reveal $x_i$ to be weakly preferred. "
-        "Warshall's algorithm then fills in every indirect comparison. That "
-        "reachability step turns scattered pairwise budget facts into the finite "
-        "restriction an economist can interpret.\n\n"
+        "when $x_i$ was chosen. Warshall's algorithm then fills in every indirect "
+        "comparison.\n\n"
         "```text\n"
         "Input: prices p_t and chosen bundles x_t for t=1,...,T\n"
         "Output: pass/fail GARP decision and violating observation pairs\n\n"
@@ -455,20 +383,14 @@ This run checks GARP directly; the neighboring [preference-recoverability](../pr
         "4. For each reachable pair (i,j), flag a violation if p_j . x_j > p_j . x_i.\n"
         "5. The data pass GARP exactly when the violation set is empty.\n"
         "```\n\n"
-        "The algorithm costs $O(T^3)$. That cost is small for the examples here, "
-        "and the objects map cleanly to the theory. In larger revealed-preference "
-        "panels, the same comparison matrix can be handled with sparse graph "
-        "operations or specialized reachability routines.\n\n"
         f"The Cobb-Douglas sample passes with {len(violations_con)} violations. "
         f"The corrupted sample fails with {len(violations_inc)} violating pairs."
     )
 
     report.add_results(
         "The first pair of figures plots the residual budget line for goods 1 and 2, "
-        "holding the third good at its observed quantity. The projection is not the "
-        "full three-good budget set, but it makes the revealed-preference comparison "
-        "visible. Rational data can look irregular across budgets without creating a "
-        "strict cycle."
+        "holding the third good fixed. Rational data can look irregular across "
+        "budgets without creating a strict cycle."
     )
 
     # --- Figure 1: Budget lines and bundles ---
@@ -482,8 +404,7 @@ This run checks GARP directly; the neighboring [preference-recoverability](../pr
         "Budget lines and chosen bundles for the GARP-satisfying sample.",
         fig1,
         description="In the rational benchmark, every observation comes from the same "
-        "Cobb-Douglas preference vector. The chosen bundles need not line up on a "
-        "smooth two-dimensional curve because prices and income vary, but the budget "
+        "Cobb-Douglas preference vector. Prices and income vary, but the budget "
         "comparisons do not contradict one another.",
     )
 
@@ -497,16 +418,14 @@ This run checks GARP directly; the neighboring [preference-recoverability](../pr
         "Budget lines and chosen bundles for the GARP-violating sample.",
         fig1b,
         description="After two bundles are swapped, the same price variation now creates "
-        "a strict revealed-preference cycle. The failure is not a bad functional-form "
-        "fit; it is a logical inconsistency under the maintained utility-maximization "
-        "model.",
+        "a strict revealed-preference cycle. The failure is a logical inconsistency "
+        "under the maintained utility-maximization model.",
     )
 
     report.add_results(
-        "The graph view is often the cleanest way to read the test. An arrow from "
-        "$i$ to $j$ means the data reveal $x_i$ to be weakly preferred to $x_j$. "
-        "The right panel adds indirect comparisons. Red arrows mark pairs involved "
-        "in the strict GARP contradiction."
+        "The graph view shows the test directly. An arrow from $i$ to $j$ means "
+        "$x_j$ was affordable when $x_i$ was chosen. The right panel adds indirect "
+        "comparisons. Red arrows mark strict GARP contradictions."
     )
 
     # --- Figure 2: Revealed preference graph ---
@@ -520,8 +439,7 @@ This run checks GARP directly; the neighboring [preference-recoverability](../pr
         "Revealed-preference graph for the GARP-satisfying sample.",
         fig2,
         description="The rational sample has many revealed-preference links, especially "
-        "after transitive closure, but none of those links returns to a strictly "
-        "cheaper rejected bundle. That is the finite-data content of GARP.",
+        "after transitive closure. None returns to a strictly cheaper rejected bundle.",
     )
 
     fig2b = plot_revealed_preference_graph(
@@ -534,79 +452,23 @@ This run checks GARP directly; the neighboring [preference-recoverability](../pr
         "Revealed-preference graph for the GARP-violating sample.",
         fig2b,
         description="In the corrupted sample, transitive revealed preference points one "
-        "way while a later budget strictly reveals the reverse comparison. Those red "
-        "pairs are enough to reject rationalizability for the whole dataset.",
-    )
-
-    report.add_results(
-        "The power exercise asks whether this test has bite. Independent random "
-        "prices and quantities are not an economic model; they are a useful null for "
-        "seeing how quickly arbitrary behavior violates revealed preference. The "
-        "Cobb-Douglas line is the known rational benchmark."
-    )
-
-    # --- Figure 3: Power of the GARP test ---
-    fig3 = plot_garp_power(T_values, violation_rates, rational_violation_rates)
-    report.add_figure(
-        "figures/garp-power.png",
-        "GARP violation rates for random choice data and a rational Cobb-Douglas benchmark.",
-        fig3,
-        description="Random behavior begins to fail with only a few observations and is "
-        "almost always rejected by $T=50$. The zero line is the ground-truth rational "
-        "benchmark: utility-maximizing Cobb-Douglas choices satisfy GARP by construction.",
-    )
-
-    # --- Table: Revealed preference matrix (consistent example) ---
-    labels = [f"Obs {i+1}" for i in range(T)]
-    rp_data = {"": labels}
-    for j in range(T):
-        col = []
-        for i in range(T):
-            if i == j:
-                col.append("--")
-            elif Rstar_con[i, j]:
-                col.append("R*" if not R_con[i, j] else "R")
-            else:
-                col.append("")
-        rp_data[f"Obs {j+1}"] = col
-
-    df_rp = pd.DataFrame(rp_data)
-    report.add_table(
-        "tables/revealed-preference-matrix.csv",
-        "Pairwise revealed-preference relation in the Cobb-Douglas sample",
-        df_rp,
-        description="The matrix records the same object algebraically. `R` is a direct "
-        "budget comparison; `R*` is an indirect comparison added by transitive closure. "
-        "Because this sample is rationalizable, these chains never produce a strict "
-        "GARP contradiction.",
+        "way while a later budget strictly reveals the reverse comparison. Those "
+        "pairs reject rationalizability for the full dataset.",
     )
 
     report.add_takeaway(
         "Afriat's test asks whether finite household choice data can still be read "
-        "as utility maximization after all observed budget comparisons are linked. "
-        "Passing GARP does not identify a unique utility function, and it does not "
-        "say preferences are Cobb-Douglas or smooth in any parametric sense. It says "
-        "the observed choices can be ordered by some monotone concave utility "
-        "function. Failing GARP has a different interpretation: under the maintained "
-        "revealed-preference assumptions, no single utility function in that class "
-        "can rationalize the full dataset.\n\n"
-        "This tutorial is the entry point for the revealed-preference sequence. "
-        "Use [preference recoverability](../preference-recoverability/) when the data "
-        "pass and the question is what utility or welfare bounds are implied. Use "
-        "[Houtman-Maks](../houtman-maks-rational-subsets/) and the "
-        "[money pump index](../money-pump-index/) when the data fail and the question "
-        "is which observations drive the failure or how severe the cycle is."
+        "as utility maximization after all budget comparisons are linked. Passing "
+        "GARP does not identify a unique utility function. It says some monotone "
+        "concave utility function can rationalize the observed bundles. Failing "
+        "GARP says no such utility function rationalizes the full dataset."
     )
 
     report.add_references([
         "Afriat, S. N. (1967). The Construction of Utility Functions from Expenditure Data. "
         "*International Economic Review*, 8(1), 67-77.",
-        "Bronars, S. G. (1987). The Power of Nonparametric Tests of Preference Maximization. "
-        "*Econometrica*, 55(3), 693-698.",
         "Varian, H. R. (1982). The Nonparametric Approach to Demand Analysis. "
         "*Econometrica*, 50(4), 945-973.",
-        "Varian, H. R. (2006). Revealed Preference. In M. Szenberg et al. (Eds.), "
-        "*Samuelsonian Economics and the Twenty-First Century*. Oxford University Press.",
     ])
 
     report.write("README.md")
