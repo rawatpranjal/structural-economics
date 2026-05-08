@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Simulation-based estimation by MSM and indirect inference."""
+"""Simulation-based estimation of a search acceptance rule."""
 import sys
 from pathlib import Path
 
@@ -212,41 +212,50 @@ def main() -> None:
 
     setup_style()
     report = ModelReport(
-        "Simulation-Based Estimation: MSM and Indirect Inference",
-        "Estimate one stochastic search DGP by direct moment matching and auxiliary-model matching.",
+        "Estimating a Search Acceptance Rule by Simulation",
+        "Recover offer-distribution and reservation-wage parameters with MSM and indirect inference.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "Many structural models are easy to simulate but hard to write as a closed-form "
-        "likelihood. This tutorial uses a small search environment: each worker receives "
-        "a log wage offer and accepts it with a smooth probability that rises above a "
-        "reservation log wage. The econometrician sees offers and acceptances.\n\n"
-        "The same simulated data are estimated two ways. Method of simulated moments "
-        "(MSM) matches economic moments such as acceptance rates and accepted wages. "
-        "Indirect inference instead fits an auxiliary acceptance model to both observed "
-        "and simulated data and matches the auxiliary coefficients. Common random numbers "
-        "keep criterion surfaces smooth enough to inspect."
+        "Suppose a researcher observes wage offers and worker acceptances but does not "
+        "observe the reservation wage that turns an offer into a job. The object of "
+        "interest is an acceptance rule: how the distribution of offers and the latent "
+        "reservation wage shape employment decisions.\n\n"
+        "The model is easy to simulate. Draw an offer, pass it through a smooth "
+        "acceptance rule, and record whether the worker takes the job. Writing and "
+        "maximizing the exact likelihood is not the point here. The computation replaces "
+        "that likelihood with simulated data and asks which parameter values make the "
+        "simulated search economy look like the observed one.\n\n"
+        "The tutorial estimates the same search environment two ways. Method of "
+        "simulated moments (MSM) matches economic summaries such as acceptance rates and "
+        "accepted wages. Indirect inference fits a simple auxiliary acceptance model to "
+        "observed and simulated samples, then matches the fitted coefficients. Fixed "
+        "simulation draws make the criterion surfaces readable, so the reader can see "
+        "where the parameters are identified and where tradeoffs remain."
     )
 
     report.add_equations(
         r"""
-The structural data-generating process is
+Worker $i$ receives a log wage offer,
 
 $$
 \log w_i = \mu + \sigma z_i,\qquad z_i\sim N(0,1),
 $$
 
-and the acceptance decision is stochastic:
+and accepts with probability
 
 $$
 \Pr(d_i=1\mid w_i;\theta)
 = \frac{1}{1+\exp[-(\log w_i-r)/s]}.
 $$
 
-The parameter vector is $\theta=(\mu,\sigma,r)$, while $s$ is fixed. MSM chooses
-$\theta$ to match a vector of economic moments:
+The parameter vector is $\theta=(\mu,\sigma,r)$. The mean and dispersion of
+offers are $\mu$ and $\sigma$, the reservation log wage is $r$, and $s$ fixes
+how sharply acceptance changes around the reservation wage.
+
+MSM chooses $\theta$ to match a vector of economic moments:
 
 $$
 \hat\theta_{MSM}
@@ -256,8 +265,8 @@ W_m
 \left[m_{sim}(\theta)-m_{obs}\right].
 $$
 
-Indirect inference fits an auxiliary model $a(d_i,\log w_i)$ and matches its
-estimated statistics:
+Indirect inference takes a different route. It fits an auxiliary model
+$a(d_i,\log w_i)$ and matches its estimated statistics:
 
 $$
 \hat\theta_{II}
@@ -268,42 +277,49 @@ W_b
 $$
 
 Here the auxiliary model is a linear probability regression of acceptance on
-log wages, augmented with offer-distribution and acceptance statistics.
+log wages, augmented with offer-distribution and acceptance statistics. It is
+not the structural model. It is a low-dimensional description of the acceptance
+pattern that the structural simulator has to reproduce.
 """
     )
 
     report.add_model_setup(
         f"| Object | Value | Role |\n"
         f"|--------|-------|------|\n"
-        f"| True $\\mu$ | {theta_true[0]:.2f} | Mean log offer wage |\n"
-        f"| True $\\sigma$ | {theta_true[1]:.2f} | Dispersion of log offers |\n"
-        f"| True $r$ | {theta_true[2]:.2f} | Reservation log wage |\n"
+        f"| True $\\mu$ | {theta_true[0]:.2f} | Mean of the latent log offer distribution |\n"
+        f"| True $\\sigma$ | {theta_true[1]:.2f} | Dispersion of latent log offers |\n"
+        f"| True $r$ | {theta_true[2]:.2f} | Latent reservation log wage |\n"
         f"| Choice scale $s$ | {choice_scale:.2f} | Smoothness of acceptance rule |\n"
         f"| Observed sample | {n_observed:,} | Synthetic data generated once from the DGP |\n"
         f"| Simulation draws | {n_simulated:,} | Common random numbers used in both criteria |\n"
-        f"| MSM targets | {len(target_moments)} | Acceptance and wage moments |\n"
-        f"| II targets | {len(target_aux)} | Auxiliary coefficients and auxiliary moments |"
+        f"| MSM targets | {len(target_moments)} | Acceptance rate and offer-wage moments |\n"
+        f"| II targets | {len(target_aux)} | Auxiliary acceptance coefficients and moments |"
     )
 
     report.add_solution_method(
-        "Both estimators use the same simulator and the same fixed simulation draws. That "
-        "keeps objective changes attributable to parameters rather than new Monte Carlo "
-        "noise at each trial value.\n\n"
+        "The computation uses one simulator and two choices of summary statistics. For "
+        "a candidate parameter vector, the code simulates a large search panel with fixed "
+        "random draws, computes the requested summaries, scales their differences from "
+        "the observed targets, and minimizes the resulting quadratic distance. Reusing "
+        "the same draws at every trial value keeps changes in the objective tied to "
+        "parameters rather than fresh Monte Carlo noise.\n\n"
         "```text\n"
-        "Algorithm: simulation-based estimation with common random numbers\n"
-        "Input: observed data, simulator S(theta, eps), fixed simulation shocks eps_sim\n"
-        "Observed targets:\n"
-        "  MSM: economic moments m_obs\n"
-        "  II: auxiliary statistics b_obs from a simple acceptance model\n"
+        "Algorithm: estimate the search rule by simulation\n"
+        "Input: observed offers and decisions, simulator S(theta, eps), fixed shocks eps_sim\n"
+        "Observed targets\n"
+        "  MSM: m_obs, acceptance and wage moments\n"
+        "  II: b_obs, auxiliary acceptance-model statistics\n"
         "For each candidate theta:\n"
-        "  Simulate log wages and acceptances using eps_sim\n"
-        "  Compute m_sim(theta) or b_sim(theta)\n"
-        "  Minimize the scaled quadratic distance from observed targets\n"
-        "Report parameter recovery, criterion values, residuals, and criterion surfaces\n"
+        "  Draw simulated offers and acceptances using eps_sim\n"
+        "  Compute m_sim(theta) for MSM or b_sim(theta) for indirect inference\n"
+        "  Evaluate the scaled quadratic distance from the observed targets\n"
+        "Choose the theta with the smallest distance\n"
+        "Output: estimated offer distribution, reservation wage, residuals, and surfaces\n"
         "```\n\n"
-        "MSM makes moment choice explicit. Indirect inference moves that choice into an "
-        "auxiliary model: if the auxiliary regression summarizes the behavior that matters, "
-        "matching its coefficients can be more informative than matching raw moments alone."
+        "MSM keeps the economist's moment choice in the foreground. Indirect inference "
+        "moves some of that choice into an auxiliary regression. If the regression slope "
+        "captures how acceptance changes with wages, matching it gives the structural "
+        "estimator information about the reservation rule."
     )
 
     fig1, axes = plt.subplots(1, 2, figsize=(11, 4.5), sharex=True, sharey=True)
@@ -324,10 +340,10 @@ log wages, augmented with offer-distribution and acceptance statistics.
     axes[1].legend(loc="upper left")
     fig1.colorbar(im1, ax=axes[1], fraction=0.046)
     report.add_results(
-        "The criterion surfaces show the key simulation-estimation object: a smooth enough "
-        "mapping from parameters to simulated targets. Both surfaces are drawn at the true "
-        "offer dispersion. The valleys slope because a higher offer mean and a higher "
-        "reservation wage can partly offset each other in acceptance behavior."
+        "The criterion surfaces show how the simulated search economy maps parameters "
+        "into target statistics. Both surfaces hold offer dispersion at its true value. "
+        "The valleys tilt because a higher offer mean and a higher reservation wage can "
+        "partly offset each other in the acceptance rate."
     )
     report.add_figure(
         "figures/criterion-surfaces.png",
@@ -350,9 +366,10 @@ log wages, augmented with offer-distribution and acceptance statistics.
     ax2.legend()
     report.add_results(
         "The observed sample has an acceptance rate of "
-        f"**{observed_accept.mean():.3f}**. Accepted wages are drawn from the upper tail, "
-        "but stochastic choice leaves overlap around the reservation wage. That overlap is "
-        "why the smooth simulator is useful."
+        f"**{observed_accept.mean():.3f}**. Accepted wages come mostly from the upper "
+        "tail of the offer distribution, but stochastic choice leaves overlap around "
+        "the reservation wage. That overlap is the evidence the estimator uses to locate "
+        "the latent threshold."
     )
     report.add_figure(
         "figures/search-data.png",
@@ -374,9 +391,9 @@ log wages, augmented with offer-distribution and acceptance statistics.
     ax3.set_title("Recovered Acceptance Rule")
     ax3.legend()
     report.add_results(
-        "Both simulation estimators recover the acceptance rule because their targets use "
-        "variation around the threshold. The remaining differences are finite-sample and "
-        "simulation error, not a change in the DGP."
+        "Both simulation estimators recover the acceptance rule because their targets "
+        "use variation near the threshold. The remaining differences come from the "
+        "observed sample and the finite simulation, not from a different search model."
     )
     report.add_figure(
         "figures/acceptance-rule.png",
@@ -436,12 +453,12 @@ log wages, augmented with offer-distribution and acceptance statistics.
     )
 
     report.add_takeaway(
-        "Simulation-based estimation replaces closed-form likelihood evaluation with a "
-        "simulator and a distance metric. MSM asks the researcher to choose economic "
-        "moments directly. Indirect inference asks the researcher to choose an auxiliary "
-        "model whose fitted coefficients summarize the behavior to match. In both cases, "
-        "common random numbers and residual diagnostics are not cosmetic: they determine "
-        "whether the criterion surface is informative enough to trust."
+        "Simulation-based estimation lets a researcher estimate a structural search rule "
+        "when simulation is easier than likelihood evaluation. MSM asks the researcher "
+        "to choose economic moments directly. Indirect inference asks for an auxiliary "
+        "model whose fitted coefficients summarize the same behavior. In this example, "
+        "both routes recover the offer distribution and reservation wage because their "
+        "targets discipline the acceptance pattern around the latent threshold."
     )
 
     report.add_references(

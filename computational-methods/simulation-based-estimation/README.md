@@ -1,30 +1,35 @@
-# Simulation-Based Estimation: MSM and Indirect Inference
+# Estimating a Search Acceptance Rule by Simulation
 
-> Estimate one stochastic search DGP by direct moment matching and auxiliary-model matching.
+> Recover offer-distribution and reservation-wage parameters with MSM and indirect inference.
 
 ## Overview
 
-Many structural models are easy to simulate but hard to write as a closed-form likelihood. This tutorial uses a small search environment: each worker receives a log wage offer and accepts it with a smooth probability that rises above a reservation log wage. The econometrician sees offers and acceptances.
+Suppose a researcher observes wage offers and worker acceptances but does not observe the reservation wage that turns an offer into a job. The object of interest is an acceptance rule: how the distribution of offers and the latent reservation wage shape employment decisions.
 
-The same simulated data are estimated two ways. Method of simulated moments (MSM) matches economic moments such as acceptance rates and accepted wages. Indirect inference instead fits an auxiliary acceptance model to both observed and simulated data and matches the auxiliary coefficients. Common random numbers keep criterion surfaces smooth enough to inspect.
+The model is easy to simulate. Draw an offer, pass it through a smooth acceptance rule, and record whether the worker takes the job. Writing and maximizing the exact likelihood is not the point here. The computation replaces that likelihood with simulated data and asks which parameter values make the simulated search economy look like the observed one.
+
+The tutorial estimates the same search environment two ways. Method of simulated moments (MSM) matches economic summaries such as acceptance rates and accepted wages. Indirect inference fits a simple auxiliary acceptance model to observed and simulated samples, then matches the fitted coefficients. Fixed simulation draws make the criterion surfaces readable, so the reader can see where the parameters are identified and where tradeoffs remain.
 
 ## Equations
 
-The structural data-generating process is
+Worker $i$ receives a log wage offer,
 
 $$
 \log w_i = \mu + \sigma z_i,\qquad z_i\sim N(0,1),
 $$
 
-and the acceptance decision is stochastic:
+and accepts with probability
 
 $$
 \Pr(d_i=1\mid w_i;\theta)
 = \frac{1}{1+\exp[-(\log w_i-r)/s]}.
 $$
 
-The parameter vector is $\theta=(\mu,\sigma,r)$, while $s$ is fixed. MSM chooses
-$\theta$ to match a vector of economic moments:
+The parameter vector is $\theta=(\mu,\sigma,r)$. The mean and dispersion of
+offers are $\mu$ and $\sigma$, the reservation log wage is $r$, and $s$ fixes
+how sharply acceptance changes around the reservation wage.
+
+MSM chooses $\theta$ to match a vector of economic moments:
 
 $$
 \hat\theta_{MSM}
@@ -34,8 +39,8 @@ W_m
 \left[m_{sim}(\theta)-m_{obs}\right].
 $$
 
-Indirect inference fits an auxiliary model $a(d_i,\log w_i)$ and matches its
-estimated statistics:
+Indirect inference takes a different route. It fits an auxiliary model
+$a(d_i,\log w_i)$ and matches its estimated statistics:
 
 $$
 \hat\theta_{II}
@@ -46,55 +51,58 @@ W_b
 $$
 
 Here the auxiliary model is a linear probability regression of acceptance on
-log wages, augmented with offer-distribution and acceptance statistics.
+log wages, augmented with offer-distribution and acceptance statistics. It is
+not the structural model. It is a low-dimensional description of the acceptance
+pattern that the structural simulator has to reproduce.
 
 ## Model Setup
 
 | Object | Value | Role |
 |--------|-------|------|
-| True $\mu$ | 3.00 | Mean log offer wage |
-| True $\sigma$ | 0.45 | Dispersion of log offers |
-| True $r$ | 3.15 | Reservation log wage |
+| True $\mu$ | 3.00 | Mean of the latent log offer distribution |
+| True $\sigma$ | 0.45 | Dispersion of latent log offers |
+| True $r$ | 3.15 | Latent reservation log wage |
 | Choice scale $s$ | 0.18 | Smoothness of acceptance rule |
 | Observed sample | 5,000 | Synthetic data generated once from the DGP |
 | Simulation draws | 30,000 | Common random numbers used in both criteria |
-| MSM targets | 5 | Acceptance and wage moments |
-| II targets | 6 | Auxiliary coefficients and auxiliary moments |
+| MSM targets | 5 | Acceptance rate and offer-wage moments |
+| II targets | 6 | Auxiliary acceptance coefficients and moments |
 
 ## Solution Method
 
-Both estimators use the same simulator and the same fixed simulation draws. That keeps objective changes attributable to parameters rather than new Monte Carlo noise at each trial value.
+The computation uses one simulator and two choices of summary statistics. For a candidate parameter vector, the code simulates a large search panel with fixed random draws, computes the requested summaries, scales their differences from the observed targets, and minimizes the resulting quadratic distance. Reusing the same draws at every trial value keeps changes in the objective tied to parameters rather than fresh Monte Carlo noise.
 
 ```text
-Algorithm: simulation-based estimation with common random numbers
-Input: observed data, simulator S(theta, eps), fixed simulation shocks eps_sim
-Observed targets:
-  MSM: economic moments m_obs
-  II: auxiliary statistics b_obs from a simple acceptance model
+Algorithm: estimate the search rule by simulation
+Input: observed offers and decisions, simulator S(theta, eps), fixed shocks eps_sim
+Observed targets
+  MSM: m_obs, acceptance and wage moments
+  II: b_obs, auxiliary acceptance-model statistics
 For each candidate theta:
-  Simulate log wages and acceptances using eps_sim
-  Compute m_sim(theta) or b_sim(theta)
-  Minimize the scaled quadratic distance from observed targets
-Report parameter recovery, criterion values, residuals, and criterion surfaces
+  Draw simulated offers and acceptances using eps_sim
+  Compute m_sim(theta) for MSM or b_sim(theta) for indirect inference
+  Evaluate the scaled quadratic distance from the observed targets
+Choose the theta with the smallest distance
+Output: estimated offer distribution, reservation wage, residuals, and surfaces
 ```
 
-MSM makes moment choice explicit. Indirect inference moves that choice into an auxiliary model: if the auxiliary regression summarizes the behavior that matters, matching its coefficients can be more informative than matching raw moments alone.
+MSM keeps the economist's moment choice in the foreground. Indirect inference moves some of that choice into an auxiliary regression. If the regression slope captures how acceptance changes with wages, matching it gives the structural estimator information about the reservation rule.
 
 ## Results
 
-The criterion surfaces show the key simulation-estimation object: a smooth enough mapping from parameters to simulated targets. Both surfaces are drawn at the true offer dispersion. The valleys slope because a higher offer mean and a higher reservation wage can partly offset each other in acceptance behavior.
+The criterion surfaces show how the simulated search economy maps parameters into target statistics. Both surfaces hold offer dispersion at its true value. The valleys tilt because a higher offer mean and a higher reservation wage can partly offset each other in the acceptance rate.
 
 Common random numbers make the surfaces interpretable rather than dominated by fresh simulation noise.
 
 <img src="figures/criterion-surfaces.png" alt="MSM and indirect-inference criterion surfaces" width="80%">
 
-The observed sample has an acceptance rate of **0.401**. Accepted wages are drawn from the upper tail, but stochastic choice leaves overlap around the reservation wage. That overlap is why the smooth simulator is useful.
+The observed sample has an acceptance rate of **0.401**. Accepted wages come mostly from the upper tail of the offer distribution, but stochastic choice leaves overlap around the reservation wage. That overlap is the evidence the estimator uses to locate the latent threshold.
 
 The reservation wage is not observed directly; it is inferred from the acceptance pattern around the offer distribution.
 
 <img src="figures/search-data.png" alt="Offer and accepted-wage distributions" width="80%">
 
-Both simulation estimators recover the acceptance rule because their targets use variation around the threshold. The remaining differences are finite-sample and simulation error, not a change in the DGP.
+Both simulation estimators recover the acceptance rule because their targets use variation near the threshold. The remaining differences come from the observed sample and the finite simulation, not from a different search model.
 
 The estimated reservation wages map directly into the smooth acceptance curves.
 
@@ -146,7 +154,7 @@ The RMSE is computed against the known DGP parameters, which are available only 
 
 ## Takeaway
 
-Simulation-based estimation replaces closed-form likelihood evaluation with a simulator and a distance metric. MSM asks the researcher to choose economic moments directly. Indirect inference asks the researcher to choose an auxiliary model whose fitted coefficients summarize the behavior to match. In both cases, common random numbers and residual diagnostics are not cosmetic: they determine whether the criterion surface is informative enough to trust.
+Simulation-based estimation lets a researcher estimate a structural search rule when simulation is easier than likelihood evaluation. MSM asks the researcher to choose economic moments directly. Indirect inference asks for an auxiliary model whose fitted coefficients summarize the same behavior. In this example, both routes recover the offer distribution and reservation wage because their targets discipline the acceptance pattern around the latent threshold.
 
 ## References
 
