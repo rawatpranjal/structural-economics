@@ -43,7 +43,11 @@ P_{ij}(\theta,\nu_r)
 $$
 
 The mixed-logit probability integrates over random tastes. The code approximates
-that integral with fixed simulation draws:
+that integral with fixed simulation draws. The exact integral
+$\int P_{ij}(\theta,\nu)\phi(\nu)d\nu$ has no closed form here because the
+logit probability is nonlinear in the random coefficients. The code draws
+$\nu_1,\ldots,\nu_R$ once and replaces the integral with the same finite
+average at every candidate $\theta$:
 
 $$
 \begin{aligned}
@@ -53,7 +57,9 @@ $$
 \end{aligned}
 $$
 
-Simulated maximum likelihood chooses
+Simulated maximum likelihood picks the parameter vector that assigns high
+probability to the observed choices $y_i$ after averaging over simulated taste
+heterogeneity:
 
 $$
 \begin{aligned}
@@ -95,51 +101,54 @@ The estimator uses common random numbers. Draws are made once and then held fixe
 
 The standard deviations are optimized in logs. The optimizer can move freely over log standard deviations, while the model sees positive values after exponentiation. The bounds are not an economic restriction in this example. They keep the teaching likelihood away from numerically irrelevant regions.
 
-```text
-Algorithm 1: evaluate the simulated log likelihood
-Inputs   data {y_i,p_ij,q_ij}_{i=1..N,j=1..J};
-         fixed draws nu_r=(nu_{r alpha},nu_{r beta}) for r=1,...,R;
-         trial theta=(alpha_bar,beta_bar,ell_alpha,ell_beta)
-Output   Q_R(theta), the negative simulated log likelihood
+**Algorithm 1. Simulated likelihood at a trial $\theta$.**
 
-sigma_alpha <- exp(ell_alpha)
-sigma_beta  <- exp(ell_beta)
-initialise P_hat_ij(theta) <- 0 for every i,j
+Inputs are observed choices and characteristics $\{y_i,p_{ij},q_{ij}\}_{i=1,j=1}^{N,J}$, fixed draws $\nu_r=(\nu_{r\alpha},\nu_{r\beta})$ for $r=1,\ldots,R$, and $\theta=(\bar\alpha,\bar\beta,\ell_\alpha,\ell_\beta)$.
 
-for r = 1,...,R:
-    alpha_r <- alpha_bar + sigma_alpha * nu_{r alpha}
-    beta_r  <- beta_bar  + sigma_beta  * nu_{r beta}
-    V_ijr   <- alpha_r p_ij + beta_r q_ij
-    P_ijr   <- exp(V_ijr) / sum_{k=1}^J exp(V_ikr)
-    P_hat_ij(theta) <- P_hat_ij(theta) + P_ijr / R
+1. Map logs into standard deviations: $\sigma_\alpha=\exp(\ell_\alpha)$ and $\sigma_\beta=\exp(\ell_\beta)$.
+2. For each draw $r$, form $\alpha_r=\bar\alpha+\sigma_\alpha\nu_{r\alpha}$ and $\beta_r=\bar\beta+\sigma_\beta\nu_{r\beta}$.
+3. Compute the draw-specific logit probability
 
-ell_R(theta) <- sum_{i=1}^N log max(P_hat_{i y_i}(theta), eta)
-Q_R(theta)   <- -ell_R(theta) / N
-return Q_R(theta)
-```
+$$
+P_{ijr}(\theta)=
+\frac{\exp(\alpha_r p_{ij}+\beta_r q_{ij})}
+{\sum_{k=1}^J \exp(\alpha_r p_{ik}+\beta_r q_{ik})}.
+$$
 
-```text
-Algorithm 2: estimate theta and compute price substitution
-Inputs   starting value theta_0; bounds B; price step Delta p;
-         common draws {nu_r}; observed data {y_i,p_ij,q_ij}
-Outputs  theta_hat; fitted shares s_j; price-substitution matrix D_jk
+4. Average over the fixed draws:
 
-repeat until L-BFGS-B stops:
-    choose a candidate theta^m in B
-    evaluate Q_R(theta^m) using Algorithm 1
-    update the inverse-Hessian approximation and propose the next theta
+$$
+\widehat P_{ij}(\theta)=\frac{1}{R}\sum_{r=1}^R P_{ijr}(\theta).
+$$
 
-theta_hat <- argmin_theta Q_R(theta)
-s_j       <- N^{-1} sum_i P_hat_ij(theta_hat)
+5. Evaluate the simulated log likelihood and the minimized objective:
 
-for each shocked product k:
-    set p_{ik}^{+k} <- p_{ik} + Delta p for all i
-    recompute shares s_j^{+k} with the same theta_hat and the same draws
-    lost_k <- s_k - s_k^{+k}
-    for each receiving product j != k:
-        D_jk <- (s_j^{+k} - s_j) / lost_k
-    set D_kk <- -1
-```
+$$
+\ell_R(\theta)=
+\sum_{i=1}^N \log \max\{\widehat P_{i y_i}(\theta),\eta\},
+\qquad
+Q_R(\theta)=-\ell_R(\theta)/N.
+$$
+
+**Algorithm 2. Optimization and price substitution.**
+
+Starting from $\theta_0$ and bounds $B$, L-BFGS-B searches over candidates $\theta^m\in B$ and repeatedly evaluates $Q_R(\theta^m)$. The estimate is $\hat\theta=\arg\min_{\theta\in B} Q_R(\theta)$, equivalently the maximizer of $\ell_R(\theta)$.
+
+Fitted shares average the simulated probabilities:
+
+$$
+\hat s_j=\frac{1}{N}\sum_{i=1}^N \widehat P_{ij}(\hat\theta).
+$$
+
+For a shocked product $k$, raise $p_{ik}$ by $\Delta p$ for every consumer and recompute shares $\hat s_j^{+k}$ using the same $\hat\theta$ and the same draws $\nu_r$. The substitution entry is
+
+$$
+D_{jk}=
+\frac{\hat s_j^{+k}-\hat s_j}{\hat s_k-\hat s_k^{+k}}
+\quad\text{for }j\neq k,
+\qquad
+D_{kk}=-1.
+$$
 
 The homogeneous logit is estimated on the same data. Its likelihood is easier because it does not integrate over tastes. The comparison is useful because the homogeneous model can fit mean shares while still forcing diversion to follow existing market shares.
 
@@ -158,6 +167,10 @@ When Premium is removed, the two models make different recapture predictions. Pl
 <img src="figures/substitution-patterns.png" alt="Diversion after removing one product" width="80%">
 
 The price-substitution matrix asks where demand goes when one product becomes 0.10 price units more expensive. Each column is the product whose price is raised. Each off-diagonal entry is the share gain for the receiving product divided by the shocked product's lost share.
+
+<img src="figures/price-substitution-matrix.png" alt="Price-substitution recapture matrix" width="80%">
+
+Read each heatmap column as the product whose price is shocked and each row as the product receiving lost demand. The off-diagonal cells are recapture shares. The diagonal is labeled -1 because the shocked product is the losing product.
 
 **Plain and mixed logit price substitution matrix**
 
