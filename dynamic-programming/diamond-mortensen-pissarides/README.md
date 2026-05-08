@@ -4,27 +4,23 @@
 
 ## Overview
 
-An unemployed worker meets a posted vacancy through a matching technology, the resulting match generates surplus $z_t-b$ which is split by Nash bargaining, and free entry of vacancies pins down how many firms find it profitable to post. The single equilibrium price is labor-market tightness $\theta_t=v_t/u_t$: high tightness means firms are competing for workers, raising the worker's job-finding rate and lowering the firm's vacancy-filling rate.
+Unemployed workers and posted vacancies meet through a matching technology. A formed match produces surplus $z_t-b$, and Nash bargaining splits it.
 
-The mechanism is direct. A productivity shock changes the present value $J_t$ of a filled job, which through the free-entry condition $k=\beta q(\theta_t)\mathbb{E}_t[J_{t+1}]$ pulls $\theta_t$ in the same direction. Higher tightness then raises $f(\theta_t)$, drains unemployment through the matching rate, and produces the downward-sloping Beveridge curve in $(u,v)$-space.
+The equilibrium object is labor-market tightness $\theta_t=v_t/u_t$. Free entry pins down tightness because firms post vacancies until expected job value covers vacancy cost.
 
-Quantitatively the model has a problem. With Shimer's (2005) calibration the surplus $z-b=0.60$ is large relative to the vacancy cost $k=0.211$, so a small productivity innovation barely moves the present-value calculus that drives entry. The simulated standard deviation ratio of tightness to productivity is roughly $1.7$ here, while in U.S. data it is closer to $19$. Hagedorn and Manovskii (2008) trace the amplification gap to this single calibration choice: with $b$ near $\bar z$ the surplus is small, the elasticity coefficient $C$ explodes, and the model can match observed labor-market volatility.
-
-Two solvers compute the equilibrium and confirm that the puzzle is *economic*, not numerical. The log-linear local rule writes $\hat\theta_t=C\hat z_t$ with $C$ derived analytically from the linearized free-entry condition. The nonlinear rule discretizes $\hat z$ on a Rouwenhorst grid and iterates the free-entry fixed point at every node. Both produce nearly the same equilibrium because shocks are small and the relevant nonlinearity sits in $\theta\to q(\theta)$, which is nearly log-linear over the ergodic range.
-
-Two cross-references frame this tutorial. The [McCall search tutorial](../job-search-mccall/) keeps only the worker side: a known wage offer distribution and an optimal-stopping reservation rule. Here vacancy posting is endogenous and the wage is bargained, so the worker's outside option matters in equilibrium. The [RBC tutorial](../rbc/) drives a representative-agent business cycle with the same persistent productivity shock; in DMP that shock propagates through match formation rather than capital accumulation.
+The code compares a log-linear rule with a finite-state free-entry fixed point. This asks whether the Shimer amplification puzzle comes from the solver or from surplus calibration.
 
 ## Equations
 
-**Matching technology.** Let $u_t$ be the unemployment rate, $v_t$ the vacancy
-rate, and $\theta_t=v_t/u_t$ tightness. Constant-returns matching gives
+**Matching technology.** Let $u_t$ be unemployment, $v_t$ vacancies, and
+$\theta_t=v_t/u_t$ tightness. Constant-returns matching gives
 
 $$m(u_t,v_t)=\chi u_t^{1-\eta}v_t^\eta,\qquad
 f(\theta_t)=\chi\theta_t^{\eta},\qquad
 q(\theta_t)=\chi\theta_t^{\eta-1},$$
 
-where $f$ is the worker's job-finding rate and $q$ is the firm's
-vacancy-filling rate. Both depend on $\theta_t$ only.
+Here $f$ is the worker job-finding rate. The term $q$ is the firm
+vacancy-filling rate.
 
 **Productivity.** Aggregate productivity is a stationary AR(1) in logs,
 
@@ -37,41 +33,37 @@ surplus and yields the equilibrium wage
 
 $$w_t=\gamma(z_t+k\theta_t)+(1-\gamma)b,$$
 
-where $b$ is the flow value of unemployment (benefits, leisure, home
-production) and $k$ is the per-period cost of an open vacancy. The term
-$k\theta_t$ enters because tighter markets are more costly in expectation
-for the worker to walk away from.
+Here $b$ is the flow value of unemployment. The parameter $k$ is the
+per-period cost of an open vacancy.
 
-**Job value and free entry.** A filled job satisfies the recursive identity
+**Job value and free entry.** A filled job has value
 
 $$J_t=z_t-w_t+\beta(1-\sigma)\,\mathbb{E}_t[J_{t+1}],$$
 
-with $\sigma$ the exogenous separation rate. Free entry of vacancies equates
-the expected discounted job value with the cost of one open vacancy,
+where $\sigma$ is the exogenous separation rate. Free entry equates expected
+discounted job value with vacancy cost:
 
 $$k=\beta\,q(\theta_t)\,\mathbb{E}_t[J_{t+1}].$$
 
-This is the equilibrium condition that pins down $\theta_t$.
+This condition pins down $\theta_t$.
 
-**Stock dynamics.** Once $\theta_t$ is determined, unemployment evolves
-mechanically and vacancies follow as a residual:
+**Stock dynamics.** Once $\theta_t$ is known, unemployment follows
 
 $$u_{t+1}=\sigma(1-u_t)+(1-f(\theta_t))u_t,\qquad
 v_t=\theta_t u_t.$$
 
-The deterministic steady state has $u_{ss}=\sigma/(\sigma+f(\theta_{ss}))$,
-the textbook Beveridge relation.
+The deterministic steady state has $u_{ss}=\sigma/(\sigma+f(\theta_{ss}))$.
 
-**Local linearization.** Writing $\hat\theta_t=\log\theta_t-\log\theta_{ss}$ and
-linearizing the free-entry condition at $\theta_{ss}=1$ delivers a closed-form
-elasticity rule $\hat\theta_t=C\hat z_t$ with
+**Local linearization.** Write
+$\hat\theta_t=\log\theta_t-\log\theta_{ss}$. Linearizing free entry at
+$\theta_{ss}=1$ gives $\hat\theta_t=C\hat z_t$, with
 
 $$C=\frac{\rho}{A-B\rho},\qquad
 A=\frac{\eta k}{(1-\gamma)\beta\chi},\qquad
 B=\beta A(1-\sigma)-\frac{\gamma k}{1-\gamma}.$$
 
-At the baseline calibration $A=1.1098$ and $B=0.5262$, so a one-percent
-productivity innovation raises tightness by $C=1.55$ percent.
+At baseline, $A=1.1098$ and $B=0.5262$. A one-percent productivity
+innovation raises tightness by $C=1.55$ percent.
 
 ## Model Setup
 
@@ -95,15 +87,15 @@ productivity innovation raises tightness by $C=1.55$ percent.
 
 ## Solution Method
 
-Two solvers run in parallel.
+Two solvers compute the same tightness rule.
 
-**Log-linear local rule.** Linearizing the free-entry condition and the productivity AR(1) around the deterministic steady state delivers the closed-form elasticity $C=\rho/(A-B\rho)$ above. The mapping $\theta_t=\exp(C\hat z_t)$ is exact to first order in $\hat z$ and carries no discretization error. Its weakness is that it forces a single elasticity at every productivity level, which would matter if the underlying $\theta(z)$ were strongly curved over the ergodic set.
+**Log-linear local rule.** The local rule linearizes free entry and the AR(1) around the deterministic steady state. It gives $C=\rho/(A-B\rho)$ and sets $\theta_t=\exp(C\hat z_t)$.
 
-**Nonlinear free-entry fixed point.** Discretize $\hat z_t$ on a Rouwenhorst grid with $N_z=41$ nodes and transition matrix $P_{ij}=\Pr(\hat z_{t+1}=\hat z_j\mid\hat z_t=\hat z_i)$. Substitute the free-entry condition for $\theta_i$ inside the job-value Bellman to get a recursion in $J_i=J(z_i)$ alone:
+**Nonlinear free-entry fixed point.** The nonlinear solver discretizes $\hat z_t$ on a Rouwenhorst grid with $N_z=41$ nodes. It substitutes free entry inside the job-value Bellman:
 
-$$J_i=(1-\gamma)(z_i-b)-\gamma k\theta_i+\beta(1-\sigma)\sum_j P_{ij}J_j,\qquad \theta_i=(\tfrac{\beta\chi}{k}\sum_j P_{ij}J_j)^{1/(1-\eta)}.$$
+$$J_i=(1-\gamma)(z_i-b)-\gamma k\theta_i+\beta(1-\sigma)\sum_j P_{ij}J_j,\qquad \theta_i=(\frac{\beta\chi}{k}\sum_j P_{ij}J_j)^{1/(1-\eta)}.$$
 
-The right-hand side defines a contraction in the sup norm with modulus $\beta(1-\sigma)=0.9621$, so iterates converge geometrically at that rate independent of $N_z$.
+The operator is a contraction with modulus $\beta(1-\sigma)=0.9621$.
 
 ```text
 Algorithm 1: Log-linear local rule
@@ -136,25 +128,25 @@ repeat n = 0, 1, 2, ...:
 until err < ε
 ```
 
-**Discretization audit.** The same nonlinear solver is rerun with $N_z=121$ nodes on a wider Rouwenhorst grid that brackets the coarse one. Interpolating the fine solution onto the coarse $\hat z$ grid gives a max relative gap in $\theta(z)$ of **3.97e-04%**, so the $N_z=41$ tutorial run is essentially the discretization-free answer.
+**Discretization audit.** The same nonlinear solver is rerun with $N_z=121$ nodes. The interpolated gap in $\theta(z)$ is **3.97e-04%**.
 
-At baseline calibration: log-linear $C=1.554$; nonlinear $N_z=41$ converged in **26 iterations** to sup-norm error **5.32e-12**; nonlinear $N_z=121$ converged in **31 iterations** to **7.99e-12**. The maximum relative gap between the nonlinear coarse solution and the log-linear rule is **3.23%** across the productivity grid.
+At baseline, the log-linear elasticity is $C=1.554$. The $N_z=41$ fixed point converges in **26 iterations**. The maximum policy gap between the nonlinear and log-linear rules is **3.23%**.
 
 ## Results
 
-The nonlinear free-entry rule (black) and the log-linear local rule (red dashed) trace nearly the same path through $(z,\theta)$-space, and the fine-grid benchmark (green dotted) sits indistinguishably on top of the coarse-grid solution. The blue cloud is where the simulated economy actually spends time. Reading off the cloud, $\theta_t$ moves about 1.72 times more than $z_t$ in log deviations — well below the order-of-magnitude amplification that Shimer (2005) measures in U.S. labor-market data. The puzzle is economic, not numerical: switching from the local rule to the global solver leaves the volatility ratio essentially unchanged.
+The nonlinear rule, fine-grid rule, and local rule are close over the simulated productivity range. Tightness moves about 1.72 times as much as productivity, far below Shimer's value near 19. The mismatch remains after switching solvers.
 
 <img src="figures/productivity-tightness.png" alt="Tightness as a function of productivity: log-linear, nonlinear coarse, and nonlinear fine-grid benchmark, with simulated months overlaid." width="80%">
 
-Once tightness is determined, the rest is mechanics. Vacancy posting jumps because free entry makes $v_t$ the firm's contemporaneous choice variable; unemployment moves with a lag because it is a stock — today's hires only show up as a smaller pool of searchers tomorrow. The result is a co-movement of low-frequency $u$ and high-frequency $v$ that produces the cyclical asymmetry the Beveridge curve below traces out.
+Given tightness, unemployment follows the stock law and vacancies equal $\theta_t u_t$. Vacancies jump with entry. Unemployment falls more slowly because hires reduce tomorrow's search pool.
 
 <img src="figures/unemployment-vacancies.png" alt="Simulated unemployment and vacancy paths under the nonlinear tightness rule." width="80%">
 
-Productivity shocks move the economy along the curve; what makes the locus downward-sloping is the matching technology, which trades unemployment for vacancies through the constant-returns matching function. The cluster is one-dimensional because $z_t$ is the only shock — separations and matching efficiency are held fixed. Reallocation shocks to $\sigma$ or $\chi$ would shift this curve outward or inward instead of moving along it, which is the standard empirical decomposition of Beveridge-curve movements.
+The simulated pairs trace a Beveridge curve. Productivity shocks move the economy along that curve because separations and matching efficiency stay fixed.
 
 <img src="figures/beveridge-curve.png" alt="Simulated unemployment and vacancy pairs trace a downward-sloping Beveridge curve around the steady state." width="80%">
 
-The signs are right: tightness and vacancies are strongly procyclical, unemployment is strongly countercyclical, and the log-linear and nonlinear simulations agree closely. The amplification ratios are wrong: Shimer (2005) reports an empirical $\sigma_\theta/\sigma_z\approx 19$, this calibration delivers about $1.7$. Switching solvers does not move that number.
+The signs match the model logic. Tightness and vacancies are procyclical, unemployment is countercyclical, and both solvers give similar volatility.
 
 **Simulated business-cycle moments**
 
@@ -166,7 +158,7 @@ The signs are right: tightness and vacancies are strongly procyclical, unemploym
 | Tightness theta             | 0.9959 |          0.0372 |          1.72 |          1     |
 | Tightness theta, log-linear | 0.9965 |          0.0336 |          1.55 |          1     |
 
-Where the surplus comes from is the entire computational story. Holding the matching technology and bargaining weight fixed and raising $b$ from Shimer's $0.40$ to Hagedorn-Manovskii's $0.95$ shrinks the surplus $\bar z-b$ by an order of magnitude and drives the elasticity $C$ from about $1.55$ to roughly $19$ — the empirical volatility ratio Shimer measures. A small-surplus economy amplifies productivity shocks because the vacancy cost $k$ is then a substantial fraction of expected match value, so a small move in $z$ is a large move in the ratio $\beta\chi\,\mathbb{E}[J']/k$ that drives free entry.
+Raising $b$ shrinks surplus and raises elasticity $C$. Moving from $b=0.40$ to $b=0.95$ takes $C$ from 1.55 to 18.65. The surplus calibration drives amplification.
 
 **Tightness elasticity by flow value of unemployment**
 
@@ -180,7 +172,7 @@ Where the surplus comes from is the entire computational story. Holding the matc
 
 ## Takeaway
 
-DMP gives an equilibrium account of the Beveridge curve. Productivity raises match surplus, vacancy posting expands through free entry, and unemployment falls as the job-finding rate rises. Switching from a log-linear local rule to a global nonlinear free-entry fixed point leaves the volatility ratios essentially unchanged, so the Shimer (2005) amplification puzzle is *not* a numerical artefact: with $b=0.40$ the surplus $\bar z-b=0.60$ is large enough that modest productivity shocks are barely transmitted through the firm's free-entry decision. The sensitivity table makes the lever explicit: amplification depends mechanically on the size of the surplus, exactly the channel Hagedorn and Manovskii (2008) exploit. Two natural extensions: replacing exogenous separations by an endogenous match-destruction margin (Mortensen-Pissarides 1994) gives the Beveridge curve a second source of variation; embedding the same search block inside the heterogeneous-agent saving problem in [Aiyagari](../aiyagari/) lets idiosyncratic income risk and frictional unemployment interact.
+DMP links productivity to vacancies and unemployment through free entry. The local rule and nonlinear fixed point give almost the same volatility. The Shimer puzzle therefore comes from the large baseline surplus, not from the numerical method. The sensitivity table shows how a smaller surplus raises tightness amplification.
 
 ## References
 
