@@ -1,0 +1,7 @@
+Model,Product,Base share,After shock,Recapture
+Plain logit,Saver,0.3568,0.3813,0.4989
+Plain logit,Standard,0.3171,0.3417,0.5011
+Plain logit,Premium,0.326,0.277,-1.0
+RUMnet,Saver,0.3605,0.3896,0.5251
+RUMnet,Standard,0.3138,0.3401,0.4749
+RUMnet,Premium,0.3257,0.2704,-1.0

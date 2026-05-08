@@ -1,0 +1,9 @@
+Training choices,Model,Test NLL,Test accuracy
+300,Plain logit,1.0508,0.456
+300,RUMnet,1.2033,0.41
+600,Plain logit,1.0505,0.456
+600,RUMnet,1.101,0.4367
+1200,Plain logit,1.0462,0.4527
+1200,RUMnet,1.0545,0.4513
+3000,Plain logit,1.0474,0.452
+3000,RUMnet,1.0339,0.464
