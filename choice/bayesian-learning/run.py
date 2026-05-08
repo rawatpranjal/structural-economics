@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Sequential investment under Bayesian learning.
 
-A firm is uncertain about a binary project type and observes noisy signals
-before deciding whether to invest. The sufficient state is the posterior belief,
-which can be updated recursively and used in both classification and
-finite-horizon stopping.
+A firm observes noisy signals about a binary project type before deciding
+whether to invest. The posterior belief is the state variable for the
+finite-horizon stopping problem.
 
 Reference: DeGroot (1970), Chamley (2004).
 """
@@ -13,10 +12,7 @@ from pathlib import Path
 
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
 from scipy.stats import binom
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import roc_curve, auc, accuracy_score
 
 # Add repo root to path for lib/ imports
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
@@ -81,21 +77,6 @@ def exact_mean_posterior_path(
         posterior = posterior_from_counts(k_grid, t, prior_H, p_red_H, p_red_L)
         means[t] = np.sum(binom.pmf(k_grid, t, p_red) * posterior)
     return means
-
-
-def exact_bayes_accuracy(
-    T: int,
-    prior_H: float,
-    p_red_H: float,
-    p_red_L: float,
-) -> float:
-    """Bayes classifier accuracy integrated over the signal distribution."""
-    k_grid = np.arange(T + 1)
-    posterior = posterior_from_counts(k_grid, T, prior_H, p_red_H, p_red_L)
-    predict_H = posterior >= 0.5
-    correct_if_H = np.sum(binom.pmf(k_grid[predict_H], T, p_red_H))
-    correct_if_L = np.sum(binom.pmf(k_grid[~predict_H], T, p_red_L))
-    return prior_H * correct_if_H + (1.0 - prior_H) * correct_if_L
 
 
 def simulate_belief_path(true_state: str, T: int, prior_H: float,
@@ -200,48 +181,6 @@ def compute_optimal_stopping_boundary(T: int, payoff_invest_H: float,
     return upper_bounds, lower_bounds
 
 
-# =============================================================================
-# ML classifier for comparison
-# =============================================================================
-
-def train_ml_classifier(n_train: int, T: int, p_red_H: float, p_red_L: float,
-                        rng: np.random.Generator):
-    """Train a logistic regression classifier on signal sequences.
-
-    For each sequence, features = cumulative signal counts at each step.
-    Labels = true state (1=H, 0=L).
-
-    Returns the trained model and training data.
-    """
-    # Generate training data
-    states = rng.binomial(1, 0.5, size=n_train)  # 1=H, 0=L
-    X_all = np.zeros((n_train, T))
-
-    for i in range(n_train):
-        p_red = p_red_H if states[i] == 1 else p_red_L
-        signals = rng.binomial(1, p_red, size=T)
-        X_all[i, :] = np.cumsum(signals) / np.arange(1, T + 1)  # running fraction of red
-
-    # Train logistic regression on full signal history
-    model = LogisticRegression(max_iter=1000, random_state=42)
-    model.fit(X_all, states)
-
-    return model, X_all, states
-
-
-def bayes_classifier_probs(X: np.ndarray, T: int, p_red_H: float, p_red_L: float):
-    """Compute Bayesian posterior P(H) for each sample using sufficient statistics.
-
-    Given the running fraction of reds at time T, the sufficient statistic is
-    the total number of red signals k out of T draws.
-    """
-    # X[:, -1] is the running fraction of reds at the final period
-    k = np.round(X[:, -1] * T).astype(int)  # number of red signals
-    k = np.clip(k, 0, T)
-
-    return posterior_from_counts(k, T, 0.5, p_red_H, p_red_L)
-
-
 def main():
     # =========================================================================
     # Parameters
@@ -251,8 +190,6 @@ def main():
     prior_H = 0.5         # Prior belief P(H)
     T = 50                # Number of signals
     n_paths = 200         # Number of simulation paths per state
-    n_train = 5000        # Training samples for ML classifier
-    n_test = 2000         # Test samples for comparison
     seed = 42
 
     # Optimal stopping payoffs
@@ -276,27 +213,6 @@ def main():
     exact_mean_L = exact_mean_posterior_path("L", T, prior_H, p_red_H, p_red_L)
 
     # =========================================================================
-    # Speed of learning vs signal informativeness
-    # =========================================================================
-    print("Computing learning speed across informativeness levels...")
-    informativeness_levels = np.linspace(0.55, 0.95, 20)
-    convergence_times = np.zeros(len(informativeness_levels))
-    threshold = 0.95  # Belief threshold for "learned"
-
-    for idx, p_h in enumerate(informativeness_levels):
-        p_l = 1.0 - p_h  # Symmetric: P(red|L) = 1 - P(red|H)
-        times = []
-        for _ in range(500):
-            beliefs, _ = simulate_belief_path("H", T, prior_H, p_h, p_l, rng)
-            # Find first time belief exceeds threshold
-            above = np.where(beliefs > threshold)[0]
-            if len(above) > 0:
-                times.append(above[0])
-            else:
-                times.append(T)
-        convergence_times[idx] = np.mean(times)
-
-    # =========================================================================
     # Optimal stopping boundary
     # =========================================================================
     print("Computing optimal stopping boundary...")
@@ -306,88 +222,26 @@ def main():
     )
 
     # =========================================================================
-    # ML comparison: train classifier and compare to Bayes
-    # =========================================================================
-    print("Training ML classifier...")
-    model, X_train, y_train = train_ml_classifier(n_train, T, p_red_H, p_red_L, rng)
-
-    # Generate test data
-    print("Evaluating classifiers on test data...")
-    y_test = rng.binomial(1, 0.5, size=n_test)
-    X_test = np.zeros((n_test, T))
-    for i in range(n_test):
-        p_red = p_red_H if y_test[i] == 1 else p_red_L
-        signals = rng.binomial(1, p_red, size=T)
-        X_test[i, :] = np.cumsum(signals) / np.arange(1, T + 1)
-
-    # ML predictions
-    ml_probs = model.predict_proba(X_test)[:, 1]
-    ml_preds = (ml_probs >= 0.5).astype(int)
-
-    # Bayesian predictions
-    bayes_probs = bayes_classifier_probs(X_test, T, p_red_H, p_red_L)
-    bayes_preds = (bayes_probs >= 0.5).astype(int)
-
-    # Accuracy
-    ml_accuracy = accuracy_score(y_test, ml_preds)
-    bayes_accuracy = accuracy_score(y_test, bayes_preds)
-
-    # ROC curves
-    fpr_ml, tpr_ml, _ = roc_curve(y_test, ml_probs)
-    fpr_bayes, tpr_bayes, _ = roc_curve(y_test, bayes_probs)
-    auc_ml = auc(fpr_ml, tpr_ml)
-    auc_bayes = auc(fpr_bayes, tpr_bayes)
-
-    # Accuracy at different time horizons
-    horizons = [5, 10, 20, 30, 50]
-    ml_acc_by_t = []
-    bayes_acc_by_t = []
-    exact_acc_by_t = []
-    for t_eval in horizons:
-        # Retrain ML on first t_eval signals
-        model_t = LogisticRegression(max_iter=1000, random_state=42)
-        model_t.fit(X_train[:, :t_eval], y_train)
-        ml_pred_t = model_t.predict(X_test[:, :t_eval])
-        ml_acc_by_t.append(accuracy_score(y_test, ml_pred_t))
-        exact_acc_by_t.append(exact_bayes_accuracy(t_eval, prior_H, p_red_H, p_red_L))
-
-        # Bayes at horizon t_eval
-        k_t = np.round(X_test[:, t_eval - 1] * t_eval).astype(int)
-        k_t = np.clip(k_t, 0, t_eval)
-        posterior_t = posterior_from_counts(k_t, t_eval, prior_H, p_red_H, p_red_L)
-        bayes_pred_t = (posterior_t >= 0.5).astype(int)
-        bayes_acc_by_t.append(accuracy_score(y_test, bayes_pred_t))
-
-    print(f"  Bayes accuracy (T={T}): {bayes_accuracy:.4f}")
-    print(f"  ML accuracy    (T={T}): {ml_accuracy:.4f}")
-
-    # =========================================================================
     # Generate Report
     # =========================================================================
     setup_style()
 
     report = ModelReport(
         "Sequential Investment Under Bayesian Learning",
-        "Filtering noisy signals into a belief state for investment timing.",
+        "Use posterior beliefs to time investment when project quality is hidden.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "Suppose a firm can sink capital into a project, but the project type is hidden. "
-        "A favorable signal raises expected payoff; an unfavorable signal pulls the firm "
-        "toward rejection. The firm does not need the whole signal history on the table "
-        "at every date. It needs the current probability that the project is good.\n\n"
-        "A two-state signal model makes that probability a sufficient statistic. Nature "
-        "chooses state $H$ or $L$, signals arrive one at a time, and the agent updates "
-        "$p_t=\\Pr(H \\mid s_1,\\ldots,s_t)$. The posterior becomes the state variable in "
-        "a finite-horizon investment problem. Near zero or one, the action is clear. In "
-        "the middle, one more signal can change the action, so waiting has value.\n\n"
-        "The numerical work has two pieces. Bayesian filtering collapses any signal "
-        "history into $p_t$. Backward induction on a grid of beliefs then turns that "
-        "filter into invest, reject, and continue regions. A trained classifier appears "
-        "as a benchmark exercise: when the signal law is known, it should recover the "
-        "same likelihood-ratio rule from simulated histories."
+        "Suppose a firm can invest in a project, but project quality is hidden. "
+        "Each signal is red or blue. A red signal raises the chance that the project is good. "
+        "A blue signal lowers it.\n\n"
+        "The object is the posterior belief $p_t=\\Pr(H \\mid s_1,\\ldots,s_t)$. "
+        "It summarizes the signal history for both learning and investment timing. "
+        "Extreme beliefs lead to investment or rejection. Middle beliefs can justify waiting.\n\n"
+        "The computation updates $p_t$ with Bayes' rule and solves a finite-horizon Bellman problem. "
+        "Backward induction maps each belief into invest, reject, or continue regions."
     )
 
     report.add_equations(
@@ -435,31 +289,25 @@ $$V_t(p)=\max[A(p),\ C_t(p)].$$
     )
 
     report.add_model_setup(
-        "The experiment keeps the signal process symmetric around an uninformative prior. "
-        "A red signal is evidence for $H$; a blue signal is evidence for $L$. The classifier "
-        "comparison uses synthetic histories from the same signal structure, so the Bayesian "
-        "rule is the population benchmark and the trained logit is a finite-sample learner.\n\n"
+        "The signal process is symmetric around an uninformative prior. "
+        "A red signal is evidence for $H$. "
+        "A blue signal is evidence for $L$.\n\n"
         f"| Object | Value | Role |\n"
         f"|-----------|-------|-------------|\n"
         f"| $p_H$ | {p_red_H} | Probability of a red signal in state $H$ |\n"
         f"| $p_L$ | {p_red_L} | Probability of a red signal in state $L$ |\n"
         f"| Prior $p_0$ | {prior_H} | Initial belief $\\Pr(H)$ |\n"
-        f"| Signal horizon | {T} | Draws used for belief paths and classification |\n"
+        f"| Signal horizon | {T} | Draws used for belief paths |\n"
         f"| Simulated paths | {n_paths} per state | Monte Carlo paths shown against exact means |\n"
-        f"| Classifier training sample | {n_train} | Histories used to train logistic regression |\n"
-        f"| Classifier test sample | {n_test} | Histories used for finite-sample accuracy |\n"
         f"| Investment payoff in $H$ | {payoff_invest_H} | Payoff if the project is good |\n"
         f"| Investment payoff in $L$ | {payoff_invest_L} | Payoff if the project is bad |\n"
         f"| Reject payoff | {payoff_wait} | Outside option after stopping |"
     )
 
     report.add_solution_method(
-        "The code uses Bayesian filtering for inference and backward induction for the "
-        "investment timing problem. Filtering maps the signal history into one posterior "
-        "belief. Backward induction compares immediate action payoffs with the expected "
-        "value of one more signal at each belief. The logistic-regression exercise asks how "
-        "close a statistical classifier gets when it learns from histories generated by the "
-        "same signal process.\n\n"
+        "Bayesian filtering maps the signal history into one posterior belief. "
+        "Backward induction compares immediate action payoffs with the value of one more signal. "
+        "The comparison is made on a grid of beliefs.\n\n"
         "```text\n"
         "Algorithm: Bayesian filtering and finite-horizon stopping\n"
         "Input: prior p_0, likelihoods f_H and f_L, payoffs pi_H and pi_L, horizon T\n"
@@ -478,10 +326,7 @@ $$V_t(p)=\max[A(p),\ C_t(p)].$$
         "            interpolate V_{t+1} at those two posteriors\n"
         "            compare action value A(p_i) with continuation value C_t(p_i)\n"
         "        record the reject, continue, and invest regions\n"
-        "```\n\n"
-        "The sufficient statistic for classification is the red-signal count $k_T$. For "
-        "the figures and table below, the code uses the exact binomial distribution of "
-        "$k_T$ to benchmark the finite Monte Carlo paths and the trained classifier."
+        "```"
     )
 
     # --- Figure 1: Posterior belief evolution ---
@@ -523,62 +368,16 @@ $$V_t(p)=\max[A(p),\ C_t(p)].$$
         "Posterior belief P(H) over time, with exact conditional means overlaid.",
         fig1,
         description=(
-            "The figure separates pathwise uncertainty from the law of large numbers. "
-            "Light traces are individual histories, the solid curve is the mean across the "
-            f"{n_paths} simulated paths, and the dashed curve integrates the posterior exactly "
-            "over the binomial signal distribution. With a good project, evidence drifts "
-            "toward one; with a bad project, it drifts toward zero. The early dispersion is "
-            "not numerical error. It is the information problem."
+            "Light traces are individual histories. "
+            f"The solid curve is the mean across {n_paths} simulated paths. "
+            "The dashed curve integrates the posterior over the exact binomial signal law. "
+            "Good projects push beliefs toward one. "
+            "Bad projects push beliefs toward zero. "
+            "Early dispersion is the information problem."
         ),
     )
 
-    # --- Figure 2: Speed of learning vs signal informativeness ---
-    fig2, ax2 = plt.subplots()
-    ax2.plot(informativeness_levels, convergence_times, "b-o", markersize=4, linewidth=2)
-    ax2.set_xlabel("Signal informativeness $P(\\mathrm{red} \\mid H)$")
-    ax2.set_ylabel("Mean signals to reach 95% belief")
-    ax2.set_title("Signal precision and speed of learning")
-    ax2.axhline(y=T, color="gray", linestyle="--", alpha=0.5, label=f"Horizon T={T}")
-    ax2.legend()
-    report.add_figure(
-        "figures/learning-speed.png",
-        "Mean number of signals needed to reach a 95 percent posterior belief.",
-        fig2,
-        description=(
-            "Signal quality varies while the prior is held fixed. As $p_H$ "
-            "moves away from one half, each draw carries a larger likelihood-ratio increment. "
-            "Learning is nonlinear in signal precision: weak signals can leave "
-            "the firm undecided for most of the horizon, while precise signals settle the "
-            "investment case quickly."
-        ),
-    )
-
-    # --- Figure 3: ROC curve comparison ---
-    fig3, ax3 = plt.subplots()
-    ax3.plot(fpr_bayes, tpr_bayes, "b-", linewidth=2.5,
-             label=f"Bayes (AUC = {auc_bayes:.4f})")
-    ax3.plot(fpr_ml, tpr_ml, "r--", linewidth=2,
-             label=f"Logistic Regression (AUC = {auc_ml:.4f})")
-    ax3.plot([0, 1], [0, 1], "k:", linewidth=0.8, alpha=0.5, label="Random")
-    ax3.set_xlabel("False Positive Rate")
-    ax3.set_ylabel("True Positive Rate")
-    ax3.set_title("Bayes benchmark and trained classifier")
-    ax3.legend(loc="lower right")
-    ax3.set_xlim(-0.02, 1.02)
-    ax3.set_ylim(-0.02, 1.02)
-    report.add_figure(
-        "figures/roc-comparison.png",
-        "ROC curves for the Bayes rule and a trained logistic classifier.",
-        fig3,
-        description=(
-            "The likelihoods used by the Bayesian rule are the true likelihoods, so Bayes is "
-            "the population benchmark. Logistic regression sees simulated histories and learns "
-            "a similar monotone rule in the red-signal count. The near overlap is the point. "
-            "The trained classifier recovers the same sufficient statistic from data."
-        ),
-    )
-
-    # --- Figure 4: Optimal stopping boundary ---
+    # --- Figure 2: Optimal stopping boundary ---
     fig4, ax4 = plt.subplots()
     t_grid = np.arange(T_stop + 1)
 
@@ -604,53 +403,24 @@ $$V_t(p)=\max[A(p),\ C_t(p)].$$
         "Invest, reject, and continue regions in the finite-horizon stopping problem.",
         fig4,
         description=(
-            "The stopping boundary turns posterior beliefs into actions. High beliefs make "
-            "investment attractive, low beliefs make rejection attractive, and intermediate "
-            "beliefs preserve the option value of another signal. The continuation region "
-            "shrinks as the deadline approaches because there are fewer future opportunities "
-            "to use the information."
-        ),
-    )
-
-    # --- Table: Classification accuracy comparison ---
-    table_data = {
-        "Signals observed": [str(h) for h in horizons],
-        "Exact Bayes accuracy": [f"{a:.4f}" for a in exact_acc_by_t],
-        "Bayes on test sample": [f"{a:.4f}" for a in bayes_acc_by_t],
-        "Logistic accuracy": [f"{a:.4f}" for a in ml_acc_by_t],
-        "Logistic minus exact": [f"{m - e:+.4f}" for m, e in zip(ml_acc_by_t, exact_acc_by_t)],
-    }
-    df = pd.DataFrame(table_data)
-    report.add_table(
-        "tables/accuracy-comparison.csv",
-        "Classification Accuracy Against the Exact Bayes Benchmark",
-        df,
-        description=(
-            "The table separates the population benchmark from finite-sample evaluation. "
-            "The exact Bayes column integrates over the binomial distribution of signal counts. "
-            "The test-sample columns use the same simulated histories as the logistic classifier, "
-            "so small sign changes in the final column are Monte Carlo and training variation, "
-            "not evidence that the learned classifier has beaten the Bayes rule."
+            "The stopping boundary turns posterior beliefs into actions. "
+            "High beliefs make investment attractive. "
+            "Low beliefs make rejection attractive. "
+            "Middle beliefs preserve the value of another signal. "
+            "The continuation region shrinks as the deadline approaches."
         ),
     )
 
     report.add_takeaway(
-        "Bayesian learning reduces a long signal history to the posterior belief relevant "
-        "for choice. The same object classifies the state, sets the stopping boundary, and "
-        "prices the value of one more signal.\n\n"
-        "In this controlled experiment the likelihood is known, so Bayes is the population "
-        "benchmark. A trained classifier can learn the same likelihood-ratio rule from data, "
-        "but the economic state variable remains the posterior belief. Once that state is in "
-        "hand, the investment decision is a standard dynamic choice problem: act at extreme "
-        "beliefs, wait in the middle, and recognize that the waiting region collapses as the "
-        "deadline approaches."
+        "Bayesian learning reduces a long signal history to the posterior belief relevant for choice. "
+        "That belief sets the stopping boundary and prices the value of one more signal.\n\n"
+        "The investment rule is simple once the belief state is known. "
+        "Act at extreme beliefs, wait in the middle, and stop waiting as the deadline approaches."
     )
 
     report.add_references([
         "DeGroot, M. (1970). *Optimal Statistical Decisions*. McGraw-Hill.",
         "Chamley, C. (2004). *Rational Herds: Economic Models of Social Learning*. Cambridge University Press.",
-        "El-Gamal, M. and Grether, D. (1995). Are People Bayesian? Uncovering Behavioral Strategies. *Journal of the American Statistical Association*, 90(432), 1137-1145.",
-        "Berger, J. (1985). *Statistical Decision Theory and Bayesian Analysis*. Springer, 2nd edition.",
     ])
 
     report.write("README.md")
