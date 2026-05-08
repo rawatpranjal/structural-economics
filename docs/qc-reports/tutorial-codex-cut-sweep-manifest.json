@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T07:55:22Z",
+  "updated_at": "2026-05-08T08:02:07Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -381,6 +381,17 @@
         "industrial-organization/effective-hhi/run.py"
       ],
       "updated_at": "2026-05-08T07:55:22Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/collusion-detection/",
+      "status": "complete",
+      "commit": "c51dd2e852b29f757fe3194ee7cee9652d609806",
+      "changed_paths": [
+        "README.md",
+        "industrial-organization/collusion-detection/README.md",
+        "industrial-organization/collusion-detection/run.py"
+      ],
+      "updated_at": "2026-05-08T08:02:07Z"
     },
     {
       "tutorial_path": "industrial-organization/dynamic-discrete-choice/",
