@@ -17,8 +17,7 @@ Golden section search contracts a bracket $[a, b]$ around the maximum by reusing
 Let $u(c) = \log c$ and let $V$ be the closed-form cake-eating value
 function
 
-$$V(W) = \frac{\log\big((1 - \beta) W\big)}{1 - \beta}
-+ \frac{\beta\, \log \beta}{(1 - \beta)^2}.$$
+$$V(W) = \frac{\log((1-\beta) W)}{1-\beta} + \frac{\beta \log \beta}{(1-\beta)^2}.$$
 
 The inner Bellman objective is
 

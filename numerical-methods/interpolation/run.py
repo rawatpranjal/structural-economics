@@ -169,8 +169,7 @@ def main() -> None:
 The first target is the closed-form log-utility cake-eating value
 function
 
-$$V(W) = \frac{\log\big((1 - \beta) W\big)}{1 - \beta}
-+ \frac{\beta\, \log \beta}{(1 - \beta)^2}.$$
+$$V(W) = \frac{\log((1-\beta) W)}{1-\beta} + \frac{\beta \log \beta}{(1-\beta)^2}.$$
 
 The second target is a stylized consumption policy with a borrowing
 constraint at $a_{\text{kink}}$:
@@ -189,8 +188,7 @@ to $(1 + r)\,\mathrm{MPC}$ at $a_{\text{kink}}$.
 Piecewise linear interpolation between adjacent nodes
 $x_i \le x \le x_{i+1}$ is
 
-$$\hat{f}(x) = \frac{x_{i+1} - x}{x_{i+1} - x_i}\, f(x_i)
-+ \frac{x - x_i}{x_{i+1} - x_i}\, f(x_{i+1}).$$
+$$\hat{f}(x) = \frac{x_{i+1} - x}{x_{i+1} - x_i}\, f(x_i) + \frac{x - x_i}{x_{i+1} - x_i}\, f(x_{i+1}).$$
 
 Natural cubic spline fits a piecewise cubic with $\hat{f}, \hat{f}',
 \hat{f}''$ continuous everywhere and $\hat{f}''(x_0) = \hat{f}''(x_N) =
