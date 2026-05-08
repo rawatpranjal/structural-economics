@@ -1,0 +1,2 @@
+Auctions,Bidders,Observed bids,Kept bids,Trimmed share,RMSE,MAE,Correlation
+3000,4,12000,10800,0.1,0.001,0.001,1.0
