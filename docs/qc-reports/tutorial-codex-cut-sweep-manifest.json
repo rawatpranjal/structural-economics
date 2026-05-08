@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T09:54:56Z",
+  "updated_at": "2026-05-08T10:00:30Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -630,6 +630,19 @@
         "game-theory/static-games/tables/cournot-comparison.csv"
       ],
       "updated_at": "2026-05-08T09:54:56Z"
+    },
+    {
+      "tutorial_path": "game-theory/first-price-auctions/",
+      "status": "complete",
+      "commit": "9b6e04cfa1e2d2ac6fb41339b477a65b9fb019a3",
+      "changed_paths": [
+        "README.md",
+        "game-theory/first-price-auctions/README.md",
+        "game-theory/first-price-auctions/figures/revenue-by-bidders.png",
+        "game-theory/first-price-auctions/run.py",
+        "game-theory/first-price-auctions/tables/auction-summary.csv"
+      ],
+      "updated_at": "2026-05-08T10:00:30Z"
     }
   ]
 }
