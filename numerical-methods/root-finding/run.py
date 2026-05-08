@@ -2,11 +2,10 @@
 """Scalar root finding: bisection, secant, Brent, and Newton-Raphson on Z(r) = 0.
 
 A stylized one-bond market clears at the rate that sets aggregate excess
-demand to zero. With Cobb-Douglas firm-side capital demand and a target
-aggregate stock at the deterministic Aiyagari rate, the market-clearing
-condition is a scalar equation in $r$ whose root has a closed form. The
-four basic root finders can be compared on convergence speed, robustness,
-and sensitivity to the starting bracket or guess.
+demand to zero. With Cobb-Douglas firm-side demand and target supply set at
+the deterministic Aiyagari rate, the clearing condition is a scalar
+equation in $r$ whose root has a closed form. The four basic root finders
+can then be compared directly.
 
 Reference: Mukoyama, T. (2021), Basic Numerical Methods, ECON 606, Georgetown.
 """
@@ -15,6 +14,7 @@ from pathlib import Path
 
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 import pandas as pd
 from scipy.optimize import brentq
 
@@ -62,14 +62,7 @@ def secant(f, x0, x1, tol, max_iter):
 
 
 def brent_with_history(f, a, b, tol, max_iter):
-    """Brent's method with inverse quadratic interpolation; records iterates.
-
-    Follows the standard Brent-Dekker algorithm: try inverse quadratic
-    interpolation when three distinct ordinates are available, else secant,
-    else bisection. Falls back to bisection when the candidate would step
-    outside the active bracket or fails to make at least half-step progress
-    relative to the previous trial.
-    """
+    """Brent-Dekker with inverse quadratic interpolation; records iterates."""
     fa, fb = f(a), f(b)
     if fa * fb >= 0:
         raise ValueError("Bracket must change sign")
@@ -151,10 +144,9 @@ def main() -> None:
     alpha = 0.36
     beta = 0.96
     delta = 0.08
-    r_star = 1.0 / beta - 1.0           # closed-form clearing rate
+    r_star = 1.0 / beta - 1.0
     K_target = (alpha / (r_star + delta)) ** (1.0 / (1.0 - alpha))
 
-    # Excess capital demand: Cobb-Douglas firm side minus target supply.
     def Z(r):
         return (alpha / (r + delta)) ** (1.0 / (1.0 - alpha)) - K_target
 
@@ -167,16 +159,14 @@ def main() -> None:
     max_iter = 200
 
     a0, b0 = 0.0 + 1e-6, 0.10
-    # Bisection / Brent run on the same bracket; secant starts at the bracket
-    # endpoints; Newton starts at the lower endpoint.
     bis_root, bis_hist = bisection(Z, a0, b0, tol, max_iter)
     sec_root, sec_hist = secant(Z, a0, b0, tol, max_iter)
     bre_root, bre_hist = brent_with_history(Z, a0, b0, tol, max_iter)
     newton_x0 = 0.02
-    new_root, new_hist, new_status = newton(Z, Zprime, newton_x0, tol, max_iter,
-                                            lo=1e-9, hi=0.5)
+    new_root, new_hist, _ = newton(
+        Z, Zprime, newton_x0, tol, max_iter, lo=1e-9, hi=0.5
+    )
 
-    # Cross-check Brent against scipy
     scipy_root = brentq(Z, a0, b0, xtol=tol)
 
     methods = [
@@ -185,10 +175,10 @@ def main() -> None:
         ("Brent", bre_root, bre_hist, "superlinear", "sign-change bracket"),
         ("Newton-Raphson", new_root, new_hist, "quadratic", "x_0 and Z'"),
     ]
-
-    # Convert histories to numpy arrays of (iter, x, f, _)
-    histories = {name: np.array([(h[0], h[1], h[2]) for h in hist], dtype=float)
-                 for name, _, hist, _, _ in methods}
+    histories = {
+        name: np.array([(h[0], h[1], h[2]) for h in hist], dtype=float)
+        for name, _, hist, _, _ in methods
+    }
 
     # =========================================================================
     # Sensitivity to starting point / bracket
@@ -197,8 +187,6 @@ def main() -> None:
     bis_counts, sec_counts, bre_counts, new_counts = [], [], [], []
     new_status_list = []
     for x0_ in starts:
-        # Bisection / Brent: width-2*x0_ centred on x0_, clipped to (eps, 0.2);
-        # if no sign change, fall back to the global bracket.
         a_ = max(1e-6, float(x0_) - 0.02)
         b_ = float(x0_) + 0.02
         if Z(a_) * Z(b_) >= 0.0:
@@ -207,18 +195,15 @@ def main() -> None:
         bis_counts.append(int(h_b[-1][0]))
         _, h_br = brent_with_history(Z, a_, b_, tol, max_iter)
         bre_counts.append(int(h_br[-1][0]))
-        # Secant: two seeds bracketing x0_
         s0, s1 = max(1e-6, float(x0_) - 0.005), float(x0_) + 0.005
         try:
             _, h_s = secant(Z, s0, s1, tol, max_iter)
             sec_counts.append(int(h_s[-1][0]))
         except (ZeroDivisionError, OverflowError):
             sec_counts.append(max_iter)
-        # Newton from the same x0_
         _, h_n, st = newton(Z, Zprime, float(x0_), tol, max_iter, lo=1e-9, hi=0.5)
         new_counts.append(int(h_n[-1][0]))
         new_status_list.append(st)
-
     bis_counts = np.array(bis_counts)
     sec_counts = np.array(sec_counts)
     bre_counts = np.array(bre_counts)
@@ -238,20 +223,16 @@ def main() -> None:
     )
 
     report.add_overview(
-        "A representative-firm economy with Cobb-Douglas production and a "
-        "target aggregate capital stock has a closed-form clearing rate "
-        "$r^{\\ast} = 1/\\beta - 1$. The market-clearing condition is a "
-        "scalar equation in $r$, and the four basic root finders all solve "
-        "the same problem.\n\n"
-        "Bisection halves a sign-change bracket. Secant fits a line through "
-        "the last two iterates. Brent's method combines bisection's bracket "
-        "invariant with inverse quadratic interpolation when accepting the "
-        "fast step preserves the bracket. Newton-Raphson uses the analytic "
-        "derivative for quadratic local convergence.\n\n"
-        "These are the four solvers a first-year PhD student needs when "
-        "Aiyagari- or Huggett-style equilibrium code stops converging. "
-        "$\\mathrm{scipy.optimize.brentq}$ is the production default for "
-        "exactly this reason."
+        "A representative-firm economy with Cobb-Douglas production has a "
+        "closed-form clearing rate $r^{\\ast} = 1/\\beta - 1$.\n\n"
+        "The market-clearing condition is one scalar equation in $r$.\n\n"
+        "Bisection halves a sign-change bracket.\n\n"
+        "Secant fits a chord through the last two iterates.\n\n"
+        "Brent combines bisection's bracket with inverse quadratic "
+        "interpolation when the fast step stays inside.\n\n"
+        "Newton-Raphson uses the analytic derivative.\n\n"
+        "These are the four solvers behind $\\mathrm{scipy.optimize.brentq}$ "
+        "and the equilibrium clearings in Aiyagari and Huggett."
     )
 
     report.add_equations(
@@ -260,32 +241,32 @@ Aggregate capital demand from the firm-side first-order condition is
 
 $$K_d(r) = \left( \frac{\alpha}{r + \delta} \right)^{\frac{1}{1 - \alpha}}.$$
 
-Setting target aggregate supply at the deterministic clearing rate
-$r^{\ast} = 1/\beta - 1$ gives $K^{\ast} \equiv K_d(r^{\ast})$. Excess
-demand is
+Target supply is $K^{\ast} \equiv K_d(r^{\ast})$ at $r^{\ast} = 1/\beta - 1$.
+Excess demand is then
 
-$$Z(r) = K_d(r) - K^{\ast},
-\qquad Z(r^{\ast}) = 0,
-\qquad r^{\ast} = \tfrac{1}{\beta} - 1.$$
+$$Z(r) = K_d(r) - K^{\ast}, \qquad Z(r^{\ast}) = 0.$$
 
 The derivative used by Newton is
 
-$$Z'(r) = -\frac{1}{1 - \alpha}\, \frac{K_d(r)}{r + \delta} < 0.$$
+$$Z'(r) = -\frac{1}{1 - \alpha} \frac{K_d(r)}{r + \delta} < 0.$$
 
-The four iterations are
+Bisection halves a sign-change bracket:
 
-$$\text{Bisection: } m_n = \tfrac{a_n + b_n}{2}, \quad
-\text{keep the half with the sign change}.$$
+$$m_n = \frac{a_n + b_n}{2}, \qquad b_{n+1} - a_{n+1} = \frac{1}{2}(b_n - a_n).$$
 
-$$\text{Secant: } x_{n+1} = x_n - Z(x_n)\, \frac{x_n - x_{n-1}}{Z(x_n) - Z(x_{n-1})}.$$
+Secant fits a chord through the last two iterates:
 
-$$\text{Newton-Raphson: } x_{n+1} = x_n - \frac{Z(x_n)}{Z'(x_n)}.$$
+$$x_{n+1} = x_n - Z(x_n) \frac{x_n - x_{n-1}}{Z(x_n) - Z(x_{n-1})}.$$
 
-Brent's method is a hybrid: it tries inverse quadratic interpolation
-through the last three ordinates, falls back to secant when ordinates
-coincide, and falls back to bisection when the proposed step would leave
-the bracket or fails to halve the previous step length. The bracket
-invariant is maintained at every iteration.
+Newton-Raphson follows the tangent:
+
+$$x_{n+1} = x_n - \frac{Z(x_n)}{Z'(x_n)}.$$
+
+Brent's method tries inverse quadratic interpolation through the last
+three ordinates, falls back to secant when ordinates coincide, and
+falls back to bisection when the proposed step would leave the bracket
+or fails to halve the previous step. The bracket invariant is
+maintained at every iteration.
 """
     )
 
@@ -298,7 +279,7 @@ invariant is maintained at every iteration.
         f"| $r^{{\\ast}}$ | {r_star:.6f} | Closed-form clearing rate $1/\\beta - 1$ |\n"
         f"| $K^{{\\ast}}$ | {K_target:.4f} | Target aggregate capital at $r^{{\\ast}}$ |\n"
         f"| Bracket $[a_0, b_0]$ | $[{a0:.0e},\\, {b0}]$ | Sign-change bracket for bisection and Brent |\n"
-        f"| Secant seeds | $[{a0:.0e},\\, {b0}]$ | Two starting points for the secant iteration |\n"
+        f"| Secant seeds | $[{a0:.0e},\\, {b0}]$ | Two starting points for secant |\n"
         f"| Newton start $x_0$ | {newton_x0} | Starting iterate for Newton-Raphson |\n"
         f"| Tolerance $\\varepsilon$ | {tol:.0e} | Stopping rule on residual and bracket width |"
     )
@@ -307,141 +288,177 @@ invariant is maintained at every iteration.
         "All four methods solve the same scalar equation $Z(r) = 0$. They "
         "differ in what they need (bracket, two seeds, derivative) and how "
         "fast they converge.\n\n"
+        "**Bisection.** Halve a sign-change bracket until its width is below "
+        "tolerance.\n\n"
         "```text\n"
-        "Bisection           | Secant                      | Brent                              | Newton-Raphson\n"
-        "Inputs: a, b, eps   | Inputs: x_0, x_1, eps       | Inputs: a, b, eps                  | Inputs: x_0, eps, Z, Z'\n"
-        "fa <- Z(a)          | f0 <- Z(x_0); f1 <- Z(x_1)  | (use IQI when 3 distinct values,   | for n = 0, 1, ... :\n"
-        "fb <- Z(b)          | for n = 2, 3, ... :         |  else secant; fall back to bisect  |     x_{n+1} <- x_n - Z(x_n)/Z'(x_n)\n"
-        "for n = 1, 2, ... : |     dx <- (x_1 - x_0)       |  if step leaves bracket or fails   |     stop when |Z(x_n)| < eps\n"
-        "    m <- (a+b)/2    |     dn <- f1 - f0           |  half-step progress test)          |\n"
-        "    fm <- Z(m)      |     x_2 <- x_1 - f1 dx/dn   | maintain sign-change bracket each  |\n"
-        "    if fa fm < 0:   |     stop when |f(x_2)| < eps|  iteration                         |\n"
-        "        b, fb<-m,fm |     shift x_0 <- x_1        |                                    |\n"
-        "    else:           |             x_1 <- x_2      |                                    |\n"
-        "        a, fa<-m,fm |                             |                                    |\n"
-        "    stop on tol     |                             |                                    |\n"
+        "Algorithm: Bisection\n"
+        "Input : a, b with Z(a) Z(b) < 0; tolerance eps\n"
+        "Output: r_n\n"
+        "  fa <- Z(a)\n"
+        "  for n = 1, 2, ... :\n"
+        "      m  <- (a + b) / 2\n"
+        "      fm <- Z(m)\n"
+        "      if fa * fm < 0: b <- m\n"
+        "      else          : a <- m; fa <- fm\n"
+        "      stop when |fm| < eps or (b - a) / 2 < eps\n"
         "```\n\n"
-        f"Starting from the bracket $[{a0:.0e},\\, {b0}]$, bisection takes "
-        f"**{int(bis_hist[-1][0])} iterations**, secant takes "
-        f"**{int(sec_hist[-1][0])}**, and Brent takes "
-        f"**{int(bre_hist[-1][0])}**. Newton from $x_0 = {newton_x0}$ takes "
-        f"**{int(new_hist[-1][0])} iterations**. The hand-coded Brent root "
+        "**Secant.** Step along the chord through the last two iterates.\n\n"
+        "```text\n"
+        "Algorithm: Secant\n"
+        "Input : x_0, x_1; tolerance eps\n"
+        "Output: x_n\n"
+        "  f0 <- Z(x_0); f1 <- Z(x_1)\n"
+        "  for n = 2, 3, ... :\n"
+        "      x_n  <- x_1 - f1 (x_1 - x_0) / (f1 - f0)\n"
+        "      fn   <- Z(x_n)\n"
+        "      stop when |fn| < eps\n"
+        "      shift: x_0 <- x_1, f0 <- f1; x_1 <- x_n, f1 <- fn\n"
+        "```\n\n"
+        "**Brent.** Try inverse quadratic interpolation through the last "
+        "three iterates. Fall back to secant when ordinates coincide, and "
+        "to bisection when the proposed step would leave the bracket.\n\n"
+        "```text\n"
+        "Algorithm: Brent-Dekker\n"
+        "Input : a, b with Z(a) Z(b) < 0; tolerance eps\n"
+        "Output: r_n\n"
+        "  for n = 1, 2, ... :\n"
+        "      try inverse quadratic interpolation -> candidate s\n"
+        "      if s leaves [a, b] or fails half-step rule:\n"
+        "          s <- (a + b) / 2     # bisect\n"
+        "      fs <- Z(s)\n"
+        "      update bracket so it still contains the root\n"
+        "      stop when |fs| < eps or (b - a) < eps\n"
+        "```\n\n"
+        "**Newton-Raphson.** Step along the tangent at the current iterate.\n\n"
+        "```text\n"
+        "Algorithm: Newton-Raphson\n"
+        "Input : x_0; tolerance eps; Z, Z'\n"
+        "Output: x_n\n"
+        "  for n = 0, 1, ... :\n"
+        "      x_{n+1} <- x_n - Z(x_n) / Z'(x_n)\n"
+        "      stop when |Z(x_n)| < eps\n"
+        "```\n\n"
+        f"On the same calibration, bisection takes **{int(bis_hist[-1][0])} "
+        f"iterations**, secant takes **{int(sec_hist[-1][0])}**, Brent takes "
+        f"**{int(bre_hist[-1][0])}**, and Newton from $x_0 = {newton_x0}$ "
+        f"takes **{int(new_hist[-1][0])}**. The hand-coded Brent root "
         f"matches $\\mathrm{{scipy.optimize.brentq}}$ to "
         f"**{abs(bre_root - scipy_root):.2e}**."
     )
 
-    # ------------------------------------------------------------------
-    # Figure 1: Z(r) with method iterates overlaid
-    # ------------------------------------------------------------------
-    fig1, ax1 = plt.subplots()
-    r_plot = np.linspace(a0, b0, 400)
-    ax1.plot(r_plot, Z(r_plot), color="tab:blue", linewidth=2, label=r"$Z(r) = K_d(r) - K^{\ast}$")
-    ax1.axhline(0.0, color="black", linewidth=0.6)
-    ax1.axvline(r_star, color="tab:red", linestyle="--", linewidth=1.5,
-                label=fr"$r^{{\ast}} = {r_star:.4f}$")
-
-    method_colors = {"Bisection": "tab:orange", "Secant": "tab:green",
-                     "Brent": "tab:purple", "Newton-Raphson": "tab:brown"}
-    method_markers = {"Bisection": "o", "Secant": "s", "Brent": "^", "Newton-Raphson": "D"}
+    # =========================================================================
+    # Composite figure: 2x2 trajectories + convergence + sensitivity
+    # =========================================================================
+    method_colors = {
+        "Bisection": "tab:orange",
+        "Secant": "tab:green",
+        "Brent": "tab:purple",
+        "Newton-Raphson": "tab:brown",
+    }
+    method_markers = {
+        "Bisection": "o", "Secant": "s", "Brent": "^", "Newton-Raphson": "D",
+    }
     n_show = 4
-    for name in ["Bisection", "Secant", "Brent", "Newton-Raphson"]:
-        h = histories[name][:n_show + 1]
-        xs = h[:, 1]
-        ys = h[:, 2]
-        ax1.plot(xs, ys, method_markers[name], color=method_colors[name],
-                 markersize=6, alpha=0.85, label=name)
-    ax1.set_xlabel(r"Interest rate $r$")
-    ax1.set_ylabel(r"$Z(r)$")
-    ax1.set_title(r"Excess capital demand and first iterates of each method")
-    ax1.legend(loc="upper right", fontsize=9)
-    report.add_results(
-        "Excess demand $Z(r)$ is monotone decreasing and crosses zero at "
-        f"$r^{{\\ast}} = {r_star:.4f}$. The first {n_show} iterates of each "
-        "method, plotted at $(x_n, Z(x_n))$, sit on the curve and march "
-        "toward the root from different directions: bisection from the "
-        "midpoint, secant along the chord, Brent mostly via the chord but "
-        "occasionally bisecting, and Newton along the tangent."
-    )
-    report.add_figure(
-        "figures/excess-demand.png",
-        "Excess demand $Z(r)$ with the first iterates of bisection, secant, Brent, and Newton overlaid",
-        fig1,
-    )
 
-    # ------------------------------------------------------------------
-    # Figure 2: convergence on log axis for all four methods
-    # ------------------------------------------------------------------
-    fig2, ax2 = plt.subplots()
-    for name in ["Bisection", "Secant", "Brent", "Newton-Raphson"]:
+    fig = plt.figure(figsize=(12, 14))
+    gs = gridspec.GridSpec(4, 2, figure=fig, height_ratios=[1.0, 1.0, 1.0, 1.0],
+                           hspace=0.45, wspace=0.25)
+
+    # Top: 2x2 trajectory grid
+    r_plot = np.linspace(a0, b0, 400)
+    z_plot = Z(r_plot)
+    grid_positions = {
+        "Bisection": (0, 0),
+        "Secant": (0, 1),
+        "Brent": (1, 0),
+        "Newton-Raphson": (1, 1),
+    }
+    for name, (row, col) in grid_positions.items():
+        ax = fig.add_subplot(gs[row, col])
+        ax.plot(r_plot, z_plot, color="tab:blue", linewidth=1.5)
+        ax.axhline(0.0, color="black", linewidth=0.6)
+        ax.axvline(r_star, color="tab:red", linestyle="--", linewidth=1.0,
+                   label=fr"$r^{{\ast}} = {r_star:.4f}$")
+        h = histories[name][:n_show + 1]
+        ax.plot(h[:, 1], h[:, 2], method_markers[name],
+                color=method_colors[name], markersize=7, alpha=0.9, label=name)
+        ax.set_title(name)
+        ax.set_xlabel(r"$r$")
+        ax.set_ylabel(r"$Z(r)$")
+        ax.legend(loc="upper right", fontsize=9)
+
+    # Convergence (full-width row)
+    ax_conv = fig.add_subplot(gs[2, :])
+    for name in method_colors:
         h = histories[name]
         err = np.maximum(np.abs(h[:, 1] - r_star), 1e-16)
-        ax2.semilogy(h[:, 0], err, "-" + method_markers[name],
-                     color=method_colors[name], markersize=4, linewidth=1.5,
-                     label=name)
-    ax2.set_xlabel("Iteration $n$")
-    ax2.set_ylabel(r"$|x_n - r^{\ast}|$")
-    ax2.set_title("Convergence to the closed-form clearing rate")
-    ax2.legend()
-    report.add_results(
-        "On a log axis the convergence rates are easy to read off. "
-        "Bisection halves its error each step (a straight line with slope "
-        "$\\log_{10}(1/2)$). Secant accelerates once the iterates settle near "
-        "the root. Newton drops off a cliff after the first quadratic step. "
-        "Brent inherits the bracket safety of bisection and the late-stage "
-        "speed of secant or inverse quadratic interpolation, hitting the "
-        "tolerance in only a handful of iterations."
-    )
-    report.add_figure(
-        "figures/convergence.png",
-        "Distance from the closed-form clearing rate vs iteration, log axis, all four methods",
-        fig2,
-    )
+        ax_conv.semilogy(h[:, 0], err, "-" + method_markers[name],
+                         color=method_colors[name], markersize=4, linewidth=1.5,
+                         label=name)
+    ax_conv.set_xlabel("Iteration $n$")
+    ax_conv.set_ylabel(r"$|x_n - r^{\ast}|$")
+    ax_conv.set_title("Convergence to the closed-form clearing rate")
+    ax_conv.legend()
 
-    # ------------------------------------------------------------------
-    # Figure 3: sensitivity to starting point / bracket
-    # ------------------------------------------------------------------
-    fig3, ax3 = plt.subplots(figsize=(8, 5))
+    # Sensitivity (full-width row)
+    ax_sens = fig.add_subplot(gs[3, :])
     width = 0.20
     idx = np.arange(len(starts))
-    ax3.bar(idx - 1.5 * width, bis_counts, width, color="tab:orange", label="Bisection")
-    ax3.bar(idx - 0.5 * width, sec_counts, width, color="tab:green", label="Secant")
-    ax3.bar(idx + 0.5 * width, bre_counts, width, color="tab:purple", label="Brent")
+    ax_sens.bar(idx - 1.5 * width, bis_counts, width, color="tab:orange", label="Bisection")
+    ax_sens.bar(idx - 0.5 * width, sec_counts, width, color="tab:green", label="Secant")
+    ax_sens.bar(idx + 0.5 * width, bre_counts, width, color="tab:purple", label="Brent")
     new_colors = ["tab:brown" if s == "converged" else "lightgray" for s in new_status_list]
     new_hatches = ["" if s == "converged" else "//" for s in new_status_list]
-    bars_n = ax3.bar(idx + 1.5 * width, new_counts, width, color=new_colors,
-                     edgecolor="tab:brown", label="Newton")
+    bars_n = ax_sens.bar(idx + 1.5 * width, new_counts, width, color=new_colors,
+                         edgecolor="tab:brown", label="Newton")
     for bar, hatch in zip(bars_n, new_hatches):
         bar.set_hatch(hatch)
     for i, st in enumerate(new_status_list):
         if st == "diverged":
-            ax3.text(idx[i] + 1.5 * width, new_counts[i] + 1, "DNC",
-                     ha="center", va="bottom", color="tab:brown", fontsize=8)
-    ax3.set_xticks(idx)
-    ax3.set_xticklabels([f"{x:.3f}" for x in starts], rotation=45)
-    ax3.set_xlabel(r"Starting point or bracket centre $x_0$")
-    ax3.set_ylabel("Iterations to convergence")
-    ax3.set_title(r"Iteration count vs starting point (tolerance $10^{-10}$)")
-    ax3.legend(fontsize=9)
-    fig3.tight_layout()
+            ax_sens.text(idx[i] + 1.5 * width, new_counts[i] + 1, "DNC",
+                         ha="center", va="bottom", color="tab:brown", fontsize=8)
+    ax_sens.set_xticks(idx)
+    ax_sens.set_xticklabels([f"{x:.3f}" for x in starts], rotation=45)
+    ax_sens.set_xlabel(r"Starting point or bracket centre $x_0$")
+    ax_sens.set_ylabel("Iterations to convergence")
+    ax_sens.set_title(r"Iteration count vs starting point (tolerance $10^{-10}$)")
+    ax_sens.legend(fontsize=9)
+
     report.add_results(
-        "Bracketed methods (bisection, Brent) are insensitive to where the "
-        "bracket is centred: the bisection counts are flat and Brent's "
-        "stays in single digits. Secant and Newton iteration counts depend "
-        f"on the start; **{n_diverged} of {len(starts)}** Newton starts "
-        "step outside the feasible range and diverge (hatched bars marked "
-        "DNC). Brent is the right production default precisely because it "
-        "matches secant's late-stage speed without losing bisection's "
-        "bracket invariant."
+        "Each trajectory subplot plots $Z(r)$ with the first four iterates "
+        "of one method on top.\n\n"
+        "Bisection moves to the midpoint, then halves the bracket each step.\n\n"
+        "Secant draws chords through the last two iterates and accelerates "
+        "near the root.\n\n"
+        "Brent looks like secant but cuts to a bisection step whenever the "
+        "fast extrapolation would leave the bracket.\n\n"
+        "Newton uses the tangent slope, so its iterates can leap further "
+        "than the bracketed methods can."
+    )
+    report.add_results(
+        "On a log axis the convergence rates are easy to read. Bisection "
+        "halves its error each step. Secant accelerates once the iterates "
+        f"settle near the root. Newton drops off a cliff after the first "
+        "quadratic step. Brent matches the late-stage speed of secant or "
+        "inverse quadratic interpolation."
+    )
+    report.add_results(
+        "The sensitivity panel changes the starting point or bracket "
+        "centre. Bisection and Brent stay flat: bracket halving is "
+        "independent of where the bracket sits. Secant and Newton counts "
+        f"depend on the start. **{n_diverged} of {len(starts)}** Newton "
+        "starts step outside the feasible range and diverge (hatched bars "
+        "marked DNC)."
     )
     report.add_figure(
-        "figures/sensitivity.png",
-        "Iterations to converge as a function of starting point or bracket centre, all four methods",
-        fig3,
+        "figures/methods-overview.png",
+        "Method trajectories on $Z(r)$, log-axis convergence, and sensitivity to starting point",
+        fig,
     )
 
-    # ------------------------------------------------------------------
+    # =========================================================================
     # Comparison table
-    # ------------------------------------------------------------------
+    # =========================================================================
     table_data = {
         "Method": [m[0] for m in methods],
         "Inputs": [m[4] for m in methods],
@@ -452,10 +469,9 @@ invariant is maintained at every iteration.
     }
     df = pd.DataFrame(table_data)
     report.add_results(
-        "The table summarises the four solves on the same calibration. All "
-        "four reach the closed-form root within tolerance; Brent and Newton "
-        "do so in roughly an order of magnitude fewer iterations than "
-        "bisection."
+        "All four methods reach the closed-form root within tolerance. "
+        "Brent and Newton finish in roughly an order of magnitude fewer "
+        "iterations than bisection."
     )
     report.add_table(
         "tables/comparison.csv",
@@ -465,15 +481,16 @@ invariant is maintained at every iteration.
 
     report.add_takeaway(
         "Brent's method is the right default for production equilibrium "
-        "solves: it inherits bisection's bracket invariant and adds "
+        "solves. It inherits bisection's bracket invariant and adds "
         "superlinear speed via inverse quadratic interpolation when the "
-        "bracket is preserved. Bisection is the safe fallback when the "
-        "derivative is unavailable. Secant is a no-derivative alternative "
-        "to Newton with similar fragility from far-off seeds. Newton is "
-        "fastest near a simple root but needs a derivative and a starting "
-        "point inside the basin of attraction. This is the trade-off behind "
-        "$\\mathrm{scipy.optimize.brentq}$ in Aiyagari- and Huggett-style "
-        "equilibrium clearings later in the catalog."
+        "bracket is preserved.\n\n"
+        "Bisection is the safe fallback when no derivative is available.\n\n"
+        "Secant is a no-derivative alternative to Newton with similar "
+        "fragility from far-off seeds.\n\n"
+        "Newton is fastest near a simple root but needs a derivative and a "
+        "starting point inside the basin of attraction.\n\n"
+        "$\\mathrm{scipy.optimize.brentq}$ is the production default for "
+        "exactly these reasons."
     )
 
     report.add_references([

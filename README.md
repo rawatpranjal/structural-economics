@@ -31,7 +31,7 @@ These tutorials cover the scalar building blocks the rest of the catalog uses: s
 
 | Preview | Tutorial | Description |
 |---|---|---|
-| [<img src="numerical-methods/root-finding/figures/thumb.png" width="160">](numerical-methods/root-finding/figures/excess-demand.png) | **[Scalar Root Finding for Equilibrium Rates](numerical-methods/root-finding/)** | Find the interest rate that clears a stylized bond market. These are all methods to solve $f(x) = 0$ problems. |
+| [<img src="numerical-methods/root-finding/figures/thumb.png" width="160">](numerical-methods/root-finding/figures/methods-overview.png) | **[Scalar Root Finding for Equilibrium Rates](numerical-methods/root-finding/)** | Find the interest rate that clears a stylized bond market. These are all methods to solve $f(x) = 0$ problems. |
 | [<img src="numerical-methods/interpolation/figures/thumb.png" width="160">](numerical-methods/interpolation/figures/target-vs-fit.png) | **[Off-Grid Function Approximation by Interpolation](numerical-methods/interpolation/)** | How to estimate a function from values at a finite set of points. Linear, cubic spline, and PCHIP each fit smooth and kinked targets differently. |
 
 ## Dynamic Programming
