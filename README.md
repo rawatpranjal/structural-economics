@@ -12,8 +12,7 @@ This repository gives graduate students and researchers short, executable exampl
 - [Structural Econometrics](#structural-econometrics)
 - [Choice and Demand](#choice-and-demand)
 - [Computational Game Theory](#computational-game-theory)
-- [Time Series and Data](#time-series-and-data)
-- [Computational Methods](#computational-methods)
+- [Time Series and Filtering Methods](#time-series-and-filtering-methods)
 - [Selected External Resources](#selected-external-resources)
 
 ## Quick Start
@@ -44,6 +43,7 @@ These tutorials start from one-state decision problems and build toward risk, se
 | [<img src="dynamic-programming/cake-eating/figures/thumb.png" width="160">](dynamic-programming/cake-eating/figures/value-function.png) | **[Finite-Resource Cake Eating](dynamic-programming/cake-eating/)** | Allocate a fixed resource over time. Value function iteration recovers the log-utility Euler rule and closed-form policy. |
 | [<img src="numerical-methods/scalar-optimization/figures/thumb.png" width="160">](numerical-methods/scalar-optimization/figures/golden-section-trace.png) | **[One-Dimensional Optimization for Bellman Inner Steps](numerical-methods/scalar-optimization/)** | Solve the per-state max in cake-eating without a brute-force grid search. Golden section search and Newton's method on the FOC both speed up the inner step inside value function iteration. |
 | [<img src="dynamic-programming/optimal-growth/figures/thumb.png" width="160">](dynamic-programming/optimal-growth/figures/value-function.png) | **[Optimal Growth by Value Function Iteration](dynamic-programming/optimal-growth/)** | Allocate output between consumption and productive capital. Value function iteration recovers the log-utility policy and checks it against the closed form. |
+| [<img src="computational-methods/projection-methods/figures/thumb.png" width="160">](computational-methods/projection-methods/figures/chebyshev-basis.png) | **[Growth-Model Capital Policy by Chebyshev Projection](computational-methods/projection-methods/)** | Study the planner's capital-saving rule in a deterministic growth model. Chebyshev collocation stores the smooth policy in a few coefficients, and Euler residuals check the fit between nodes. |
 | [<img src="dynamic-programming/q-learning-growth/figures/thumb.png" width="160">](dynamic-programming/q-learning-growth/figures/policy-comparison.png) | **[Stochastic Optimal Growth by Q-Learning](dynamic-programming/q-learning-growth/)** | Solve a Brock-Mirman growth MDP without a transition matrix. Tabular Q-learning learns the saving rule from sampled transitions, and the closed-form log-policy audits both Q-learning and value iteration. |
 | [<img src="dynamic-programming/solow-growth/figures/thumb.png" width="160">](dynamic-programming/solow-growth/figures/solow-diagram.png) | **[Solow Growth and Conditional Convergence](dynamic-programming/solow-growth/)** | Capital per effective worker converges to a Solow steady state. Iterating the transition shows how saving shifts levels. |
 | [<img src="dynamic-programming/consumption-savings/figures/thumb.png" width="160">](dynamic-programming/consumption-savings/figures/value-functions.png) | **[Income Risk and Buffer-Stock Saving](dynamic-programming/consumption-savings/)** | Households save under persistent income risk and a borrowing limit. Value function iteration shows high consumption responses near zero assets and a buffer-stock target. |
@@ -77,6 +77,7 @@ These tutorials log-linearize DSGE models around steady state and solve the rati
 | [<img src="dsge/nkdsge/figures/thumb.png" width="160">](dsge/nkdsge/figures/irf-monetary-shock.png) | **[Sticky-Price Monetary Transmission in a New Keynesian DSGE](dsge/nkdsge/)** | Trace how policy-rate wedges and natural-rate demand shocks move output and inflation when prices are sticky. Coefficient matching solves the log-linear equilibrium, with Klein QZ checking determinacy. |
 | [<img src="dsge/assetNews/figures/thumb.png" width="160">](dsge/assetNews/figures/irf-surprise-vs-news.png) | **[Lucas-Tree Dividend News and Asset Prices](dsge/assetNews/)** | Price a tree claim when investors learn about future dividends before cash flows arrive. A first-order pricing rule separates expected payoffs from stochastic discounting. |
 | [<img src="dsge/rbc-with-labor/figures/thumb.png" width="160">](dsge/rbc-with-labor/figures/irf-tfp-shock.png) | **[RBC Labor Supply and TFP Shocks](dsge/rbc-with-labor/)** | A productivity shock moves hours on impact and capital over time in an RBC model. Klein QZ solves the log-linear system for the impulse responses. |
+| [<img src="computational-methods/perturbation-linearization/figures/thumb.png" width="160">](computational-methods/perturbation-linearization/figures/local-approximations.png) | **[Aggregate Adjustment Around a Steady State](computational-methods/perturbation-linearization/)** | A macro state returns after equal positive and negative shocks. Taylor perturbations approximate the nonlinear law near steady state and show when curvature matters. |
 
 ### Global Nonlinear DSGE
 
@@ -138,6 +139,7 @@ Structural econometrics focuses on estimating economic primitives from observed 
 | [<img src="computational-methods/simulation-based-estimation/figures/thumb.png" width="160">](computational-methods/simulation-based-estimation/figures/criterion-surfaces.png) | **[Estimating a Search Acceptance Rule by Simulation](computational-methods/simulation-based-estimation/)** | Estimate a reservation-wage rule from wage offers and worker acceptances. MSM matches economic moments, while indirect inference matches an auxiliary acceptance model. |
 | [<img src="choice/mixed-logit-simulation/figures/thumb.png" width="160">](choice/mixed-logit-simulation/figures/choice-fit.png) | **[Mixed Logit Demand with Simulated Likelihood](choice/mixed-logit-simulation/)** | Consumers differ in price sensitivity and quality tastes. Fixed simulation draws approximate mixed-logit probabilities and show why aggregate substitution need not follow IIA. |
 | [<img src="choice/sequential-search-ursu/figures/thumb.png" width="160">](choice/sequential-search-ursu/figures/search-and-choice-fit.png) | **[Consumer Search with Sequential Inspection Costs](choice/sequential-search-ursu/)** | Consumers inspect products one at a time before buying. A Weitzman-style search rule and simulated moments recover search costs from search paths and purchases. |
+| [<img src="computational-methods/metropolis-hastings/figures/thumb.png" width="160">](computational-methods/metropolis-hastings/figures/mh-walk.png) | **[Sampling a Two-Regime Structural Posterior](computational-methods/metropolis-hastings/)** | Sample a structural posterior with two plausible regimes. Random-walk Metropolis-Hastings shows how proposal scale changes mode crossing and posterior averages. |
 
 ## Choice and Demand
 
@@ -166,9 +168,9 @@ These tutorials introduce computational methods to solve game theoretic equilibr
 | [<img src="game-theory/first-price-auctions/figures/thumb.png" width="160">](game-theory/first-price-auctions/figures/bid-functions.png) | **[First-Price Auctions, Bid Shading, and Deviation Checks](game-theory/first-price-auctions/)** | Private-value bidders shade bids when the winner pays its own bid. A closed-form Bayesian Nash rule is checked by a type-by-type bid-grid deviation test. |
 | [<img src="game-theory/quantal-response-equilibrium/figures/thumb.png" width="160">](game-theory/quantal-response-equilibrium/figures/qre-path.png) | **[Market Entry with Quantal Response Equilibrium](game-theory/quantal-response-equilibrium/)** | Two firms decide whether to enter a small market. Logit QRE solves the noisy entry probability as a fixed point. |
 
-## Time Series and Data
+## Time Series and Filtering Methods
 
-These tutorials cover stochastic processes, macroeconomic data, and forecasting.
+These tutorials cover stochastic processes, macroeconomic data, forecasting, and state-space filtering.
 
 | Preview | Tutorial | Description |
 |---|---|---|
@@ -176,16 +178,6 @@ These tutorials cover stochastic processes, macroeconomic data, and forecasting.
 | [<img src="time-series/ar-processes/figures/thumb.png" width="160">](time-series/ar-processes/figures/ar1-irfs.png) | **[Fiscal-Shock Persistence and Income Dynamics](time-series/ar-processes/)** | Track a spending innovation through income dynamics. AR(1) impulse responses and multiplier-accelerator recursions show how persistence becomes an income path. |
 | [<img src="time-series/stock-watson/figures/thumb.png" width="160">](time-series/stock-watson/figures/factor-comparison.png) | **[Macro Forecasting with Stock-Watson Diffusion Indexes](time-series/stock-watson/)** | Forecast industrial production from many macro indicators. PCA estimates a common business-cycle factor for an expanding-window AR comparison. |
 | [<img src="time-series/ridge-lasso-sparsity/figures/thumb.png" width="160">](time-series/ridge-lasso-sparsity/figures/forecast-comparison.png) | **[Policy Forecasting with Ridge, Lasso, and Sparsity](time-series/ridge-lasso-sparsity/)** | Measure monetary policy shocks after forecasting rate changes from many noisy policy-concept indicators. Ridge and lasso show different meanings of shrinkage and selection. |
-
-## Computational Methods
-
-These tutorials are standalone references for optimization, approximation, simulation, filtering, and sampling.
-
-| Preview | Tutorial | Description |
-|---|---|---|
-| [<img src="computational-methods/projection-methods/figures/thumb.png" width="160">](computational-methods/projection-methods/figures/chebyshev-basis.png) | **[Growth-Model Capital Policy by Chebyshev Projection](computational-methods/projection-methods/)** | Study the planner's capital-saving rule in a deterministic growth model. Chebyshev collocation stores the smooth policy in a few coefficients, and Euler residuals check the fit between nodes. |
-| [<img src="computational-methods/perturbation-linearization/figures/thumb.png" width="160">](computational-methods/perturbation-linearization/figures/local-approximations.png) | **[Aggregate Adjustment Around a Steady State](computational-methods/perturbation-linearization/)** | A macro state returns after equal positive and negative shocks. Taylor perturbations approximate the nonlinear law near steady state and show when curvature matters. |
-| [<img src="computational-methods/metropolis-hastings/figures/thumb.png" width="160">](computational-methods/metropolis-hastings/figures/mh-walk.png) | **[Sampling a Two-Regime Structural Posterior](computational-methods/metropolis-hastings/)** | Sample a structural posterior with two plausible regimes. Random-walk Metropolis-Hastings shows how proposal scale changes mode crossing and posterior averages. |
 | [<img src="computational-methods/kalman-filter/figures/thumb.png" width="160">](computational-methods/kalman-filter/figures/simulated-signal.png) | **[Nowcasting a Latent Business-Cycle State](computational-methods/kalman-filter/)** | Nowcast hidden activity from a noisy indicator. The Kalman filter weighs each signal with model-implied uncertainty and records the likelihood. |
 | [<img src="computational-methods/particle-filter/figures/thumb.png" width="160">](computational-methods/particle-filter/figures/filter-comparison.png) | **[Nowcasting Hidden Economic States with Particle Filters](computational-methods/particle-filter/)** | Nowcast a hidden economic state from a noisy signal. Particle filters approximate the filtered distribution with weighted simulations, and ESS reveals proposal failure. |
 
