@@ -174,19 +174,16 @@ def main() -> None:
     )
 
     report.add_overview(
-        "Every infinite-horizon Bellman update has the same inner step: at each "
-        "state, choose a control that maximizes flow utility plus a discounted "
-        "continuation value. In the cake-eating problem with wealth $W$, the "
-        "inner step is\n\n"
+        "The inner step in cake-eating value function iteration is a "
+        "one-dimensional maximization on a bounded interval.\n\n"
         "$$\\max_{c \\in [0, W]} u(c) + \\beta\\, V(W - c).$$\n\n"
         "Under log utility the closed-form inner optimum is "
-        "$c^{\\ast} = (1 - \\beta) W$, which lets two basic 1D optimizers be "
-        "compared directly.\n\n"
-        "Golden section search contracts a bracket $[a, b]$ around the maximum "
-        "by reusing one interior point each step. Newton on the first-order "
-        "condition extrapolates a quadratic surrogate at the current iterate. "
-        "The first needs only unimodality and is globally safe; the second is "
-        "locally fast and depends on the starting point."
+        "$c^{\\ast} = (1 - \\beta) W$.\n\n"
+        "Golden section search contracts a bracket $[a, b]$ around the maximum.\n\n"
+        "Newton on the first-order condition extrapolates a quadratic "
+        "surrogate at the current iterate.\n\n"
+        "Golden section needs only unimodality and is globally safe.\n\n"
+        "Newton is locally fast and depends on the starting point."
     )
 
     report.add_equations(
@@ -241,28 +238,40 @@ $q_n(c) = g(x_n) + g'(x_n)(c - x_n) + \tfrac{1}{2} g''(x_n)(c - x_n)^2$.
     )
 
     report.add_solution_method(
-        "Golden section search keeps the larger of two interior points and "
-        "the side of the bracket containing it; one $g$ evaluation is "
-        "reused each iteration. Newton-on-FOC steps along the parabolic "
-        "surrogate of $g$ and only needs $g'$ and $g''$.\n\n"
+        "Both methods solve the same maximization. Golden section needs "
+        "only that $g$ is unimodal on the bracket. Newton on the FOC needs "
+        "$g'$ and $g''$.\n\n"
+        "**Golden section search.** Contract a bracket using the golden "
+        "ratio so one interior point is reused each step.\n\n"
         "```text\n"
-        "Golden section search           | Newton on FOC\n"
-        "Input: a, b with g unimodal     | Input: x_0, tolerance eps\n"
-        "       tolerance eps            |        g', g''\n"
-        "phi <- (sqrt(5) - 1) / 2        | for n = 0, 1, ... :\n"
-        "c <- b - phi (b - a)            |     x_{n+1} <- x_n - g'(x_n) / g''(x_n)\n"
-        "d <- a + phi (b - a)            |     stop when |g'(x_n)| < eps\n"
-        "for n = 1, 2, ... :             |\n"
-        "    if g(c) > g(d): b <- d      |\n"
-        "    else          : a <- c      |\n"
-        "    recompute c, d              |\n"
-        "    stop when (b - a) < eps     |\n"
+        "Algorithm: Golden section search\n"
+        "Input : a, b with g unimodal on [a, b]; tolerance eps\n"
+        "Output: c_n\n"
+        "  phi <- (sqrt(5) - 1) / 2\n"
+        "  c   <- b - phi (b - a)\n"
+        "  d   <- a + phi (b - a)\n"
+        "  for n = 1, 2, ... :\n"
+        "      if g(c) > g(d): b <- d\n"
+        "      else          : a <- c\n"
+        "      recompute c, d\n"
+        "      stop when (b - a) < eps\n"
         "```\n\n"
-        f"Starting from the bracket $[{a0:.0e},\\, {b0:.4f}]$, golden section "
-        f"converges in **{golden_iter} iterations** with FOC residual "
-        f"$|g'(c)| =$ **{golden_residual:.2e}**. Starting from $x_0 = {x0}$, "
-        f"Newton converges in **{newton_iter} iterations** with FOC residual "
-        f"$|g'(c)| =$ **{newton_residual:.2e}**."
+        "**Newton on the FOC.** Step along the tangent of $g'$ at the "
+        "current iterate. Equivalently, jump to the argmax of a parabolic "
+        "surrogate of $g$.\n\n"
+        "```text\n"
+        "Algorithm: Newton on FOC\n"
+        "Input : x_0; tolerance eps; g', g''\n"
+        "Output: x_n\n"
+        "  for n = 0, 1, ... :\n"
+        "      x_{n+1} <- x_n - g'(x_n) / g''(x_n)\n"
+        "      stop when |g'(x_n)| < eps\n"
+        "```\n\n"
+        f"Starting from the bracket $[{a0:.0e},\\, {b0:.4f}]$, golden "
+        f"section converges in **{golden_iter} iterations** with residual "
+        f"$|g'(c)| =$ **{golden_residual:.2e}**. From $x_0 = {x0}$ Newton "
+        f"converges in **{newton_iter} iterations** with residual "
+        f"**{newton_residual:.2e}**."
     )
 
     # ------------------------------------------------------------------
@@ -288,10 +297,10 @@ $q_n(c) = g(x_n) + g'(x_n)(c - x_n) + \tfrac{1}{2} g''(x_n)(c - x_n)^2$.
     ax1.set_title("Inner Bellman objective and golden-section brackets")
     ax1.legend(loc="lower right")
     report.add_results(
-        "The inner objective $g(c)$ is strictly concave on $(0, W)$ and peaks "
-        f"at $c^{{\\ast}} = {c_star:.3f}$. The first six golden-section "
-        f"brackets, drawn below the curve, contract by a factor $\\phi \\approx "
-        "0.618$ each step while keeping the maximum inside."
+        f"The inner objective $g(c)$ peaks at $c^{{\\ast}} = {c_star:.3f}$.\n\n"
+        "The first six golden-section brackets sit below the curve. Each "
+        "step contracts the bracket by a factor $\\phi \\approx 0.618$ "
+        "while keeping the maximum inside."
     )
     report.add_figure(
         "figures/golden-section-trace.png",
@@ -322,11 +331,10 @@ $q_n(c) = g(x_n) + g'(x_n)(c - x_n) + \tfrac{1}{2} g''(x_n)(c - x_n)^2$.
     ymax = float(g(c_star)) + 0.05 * (float(g(c_star)) - ymin)
     ax2.set_ylim(ymin, ymax)
     report.add_results(
-        "Each Newton iterate $x_n$ defines a parabolic surrogate $q_n(c)$ that "
-        "matches $g$ in value, slope, and curvature. Newton replaces $g$ with "
-        f"$q_n$ and jumps to its argmax. Starting from $x_0 = {x0}$, the "
-        "successive parabolas track the curve and the iterates converge to "
-        "$c^{\\ast}$."
+        "Each Newton iterate defines a parabolic surrogate $q_n$ that "
+        "matches $g$ in value, slope, and curvature.\n\n"
+        f"Newton jumps to the argmax of $q_n$. From $x_0 = {x0}$ the "
+        "iterates close in on $c^{\\ast}$ within a handful of steps."
     )
     report.add_figure(
         "figures/newton-step.png",
@@ -369,13 +377,14 @@ $q_n(c) = g(x_n) + g'(x_n)(c - x_n) + \tfrac{1}{2} g''(x_n)(c - x_n)^2$.
     ax3b.legend()
     fig3.tight_layout()
     report.add_results(
-        f"Both methods reach $c^{{\\ast}}$, but golden section needs "
-        f"**{golden_iter} bracket halvings** while Newton needs only "
-        f"**{newton_iter} steps** from the same calibration. The right panel "
-        "shows the trade-off: golden-section iteration counts are flat across "
-        "starting points (the bracket is the same), but Newton iteration counts "
-        f"depend on $x_0$, and **{n_diverged} of {len(starting_points)}** "
-        "starts overshoot outside $(0, W)$ and diverge (hatched bars marked DNC)."
+        f"Golden section needs **{golden_iter} bracket halvings** and "
+        f"Newton needs only **{newton_iter} steps** from the same "
+        "calibration.\n\n"
+        "The right panel shows the trade-off. Golden-section counts are "
+        "flat across starting points: the bracket is the same. Newton "
+        f"counts depend on $x_0$, and **{n_diverged} of "
+        f"{len(starting_points)}** starts overshoot outside $(0, W)$ and "
+        "diverge (hatched bars marked DNC)."
     )
     report.add_figure(
         "figures/convergence.png",
@@ -406,15 +415,16 @@ $q_n(c) = g(x_n) + g'(x_n)(c - x_n) + \tfrac{1}{2} g''(x_n)(c - x_n)^2$.
     )
 
     report.add_takeaway(
-        "Golden section is the safe default for a one-state Bellman inner step "
-        "because it only needs unimodality and a bracket: it contracts at a "
-        "fixed factor regardless of where the optimum sits. Newton on the FOC "
-        "is much faster when $g'$ and $g''$ are available and $x_0$ is inside "
-        "the basin of attraction, but a far-off start makes the parabolic "
-        "extrapolation overshoot outside the feasible interval. Cake-eating "
-        "and consumption-savings VFI later in the catalog use the golden-"
-        "section flavour for this reason; smooth optimum problems with cheap "
-        "derivatives can graduate to Newton."
+        "Golden section is the safe default for a one-state Bellman inner "
+        "step: it only needs unimodality and a bracket, and contracts at "
+        "a fixed factor regardless of where the optimum sits.\n\n"
+        "Newton on the FOC is much faster when $g'$ and $g''$ are "
+        "available and $x_0$ is inside the basin of attraction.\n\n"
+        "A far-off start makes the parabolic extrapolation overshoot "
+        "outside the feasible interval.\n\n"
+        "Cake-eating and consumption-savings VFI use golden section for "
+        "this reason. Smooth problems with cheap derivatives can graduate "
+        "to Newton."
     )
 
     report.add_references([
