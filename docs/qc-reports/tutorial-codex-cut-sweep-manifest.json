@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T10:46:37Z",
+  "updated_at": "2026-05-08T10:51:37Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -734,6 +734,17 @@
         "computational-methods/perturbation-linearization/run.py"
       ],
       "updated_at": "2026-05-08T10:46:37Z"
+    },
+    {
+      "tutorial_path": "computational-methods/metropolis-hastings/",
+      "status": "complete",
+      "commit": "f8c0a4a5c0fa8cc141e934ceae9992991b63abbf",
+      "changed_paths": [
+        "README.md",
+        "computational-methods/metropolis-hastings/README.md",
+        "computational-methods/metropolis-hastings/run.py"
+      ],
+      "updated_at": "2026-05-08T10:51:37Z"
     }
   ]
 }
