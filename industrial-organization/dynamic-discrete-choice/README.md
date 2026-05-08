@@ -4,11 +4,11 @@
 
 ## Overview
 
-A transit agency sees each bus many times before an engine is replaced. Keeping the old engine saves the replacement cost today, but it also lets mileage drift upward and makes future maintenance less attractive. Replacing the engine resets the bus toward a low-mileage state. The observed replacement hazard therefore mixes two objects an economist wants to separate: current operating payoffs and the continuation value of a fresher engine.
+A transit agency observes each bus before deciding whether to replace its engine. Keeping the old engine saves money today. It also lets mileage rise and makes future operation worse.
 
-That separation requires computation because a candidate payoff vector is not enough to evaluate the likelihood. Each trial value of the structural parameters implies a dynamic program, a replacement policy, and then a choice probability for each observed bus-period. The tutorial solves the model, simulates a panel with known truth, and compares nested fixed-point maximum likelihood, a Hotz-Miller conditional-choice-probability (CCP) estimator, and a mathematical program with equilibrium constraints (MPEC). The MPEC version makes continuation values optimization variables and imposes the Bellman equations as feasibility conditions.
+The object is the mileage-specific replacement hazard. It depends on current keep payoffs and the continuation value from resetting the engine.
 
-The example also complements the dynamic IO models in [dynamic entry and exit](../dynamic-entry-exit/) and [Markov-perfect investment](../dynamic-games/). Here there is one decision maker rather than strategic firms, so the estimation problem is easier to see: recover payoff parameters from observed replacement choices.
+Computation is needed because each trial parameter vector implies a dynamic program. The likelihood uses the replacement policy produced by that fixed point. The tutorial compares NFXP, CCP, and MPEC estimates for the same hazard.
 
 ## Equations
 
@@ -23,9 +23,11 @@ and the keep payoff is
 $$u(x,0) = \theta_0 + \theta_1 x, \qquad \theta_1 < 0.$$
 
 The transition matrix $F_a(x' \mid x)$ gives next period's mileage. Replacement
-uses $F_1$ and is close to the transition from a new engine; keeping uses $F_0$
-and lets mileage drift upward. With additive Type-I extreme value shocks, the
-conditional value functions satisfy
+uses $F_1$ and is close to the transition from a new engine. Keeping uses $F_0$
+and lets mileage drift upward.
+
+With additive Type-I extreme value shocks, the conditional value functions
+satisfy
 
 $$v_a(x) = u(x,a) + \beta \sum_{x'} F_a(x' \mid x)
 \left[\log\left(\exp(v_1(x')) + \exp(v_0(x'))\right) + \gamma\right],$$
@@ -54,7 +56,9 @@ $$W_\theta =
 \bar u_\theta(\hat p)+\beta \hat F W_\theta,$$
 
 where $\bar u_\theta(\hat p)$ includes the keep payoff and the logit entropy
-terms implied by $\hat p$. The model-implied replacement probability is then
+terms implied by $\hat p$.
+
+The model-implied replacement probability is then
 
 $$P_\theta^{HM}(1 \mid x)
 =\Lambda\left(\beta F_1 W_\theta
@@ -72,8 +76,10 @@ v_a(x) = u(x,a;\theta) + \beta \sum_{x'} F_a(x' \mid x)
 $$
 
 for every action and mileage state. The likelihood still uses the logit choice
-formula, but the fixed point appears as equality constraints rather than an
-inner loop inside the objective.
+formula.
+
+The fixed point appears as equality constraints rather than an inner loop inside
+the objective.
 
 ## Model Setup
 
@@ -109,7 +115,7 @@ for each candidate theta proposed by the outer optimizer:
 choose theta that maximizes the likelihood
 ```
 
-The Hotz-Miller estimator moves the dynamic-programming burden into a first-stage policy estimate. In this run the first stage is a flexible logit in mileage and mileage squared; the known data-generating policy is held out for comparison, not used in estimation.
+The Hotz-Miller estimator moves the dynamic program into a first-stage policy estimate. The first stage is a logit in mileage and mileage squared.
 
 ```text
 Algorithm: Hotz-Miller CCP estimator
@@ -137,29 +143,21 @@ Use a constrained nonlinear optimizer to move theta and v jointly
 Report theta, likelihood, optimizer status, and the max Bellman residual
 ```
 
-The first estimator is direct but repeatedly solves a Bellman fixed point. The second estimator avoids that nested value-function iteration after the first stage, at the cost of relying on the smoothed CCPs. The third estimator keeps the fixed point out of the objective and instead asks whether a candidate value array is feasible.
-
 ## Results
 
-The first object to inspect is the replacement hazard, not the parameter vector. The keep value starts high because a low-mileage engine is still useful. As mileage rises, the keep payoff falls and replacement becomes a way to buy a better future state. The first-stage logit follows the true hazard where the simulated panel has mass, but it is only an approximation to the dynamic policy.
-
-The data-generating replacement probability is the benchmark curve. The estimated first-stage CCP is deliberately shown beside it because the CCP estimator lives or dies by this smoothing step.
+The keep value starts high because a low-mileage engine is still useful. As mileage rises, replacement buys a better future state. The first-stage logit tracks the true hazard where the panel has observations.
 
 <img src="figures/value-and-ccp.png" alt="Value functions and replacement probabilities" width="80%">
 
-The panel makes the identification problem concrete. Low and medium mileage states are observed often because buses return there after replacement. Very high mileage states are scarce: in this simulation only **0.29%** of bus-periods have mileage at least 10. That is where estimated hazards are expected to separate from the known policy.
-
-Mileage drifts upward under the keep action and falls after replacement. The points are replacement decisions, not exogenous maintenance shocks.
+The panel shows where the likelihood has data. Low and medium mileage states are common after replacement. Very high mileage states are scarce: only **0.29%** of bus-periods have mileage at least 10.
 
 <img src="figures/simulated-histories.png" alt="Mileage histories for six simulated buses" width="80%">
 
-Because the data are simulated, the true policy can stay on the graph as a ground-truth reference. All three estimators recover the economically important shape: replacement is rare for fresh engines and rises sharply once mileage makes keeping the engine costly. The remaining disagreement is largest in sparsely visited states; it should be read as finite-sample and first-stage approximation error, not as a different economic mechanism.
-
-The full-solution, CCP, and MPEC policies are almost on top of the truth over the states that carry most of the simulated likelihood.
+The true policy stays on the graph because the data are simulated. All three estimators recover the same shape. Replacement is rare for fresh engines and rises when keeping becomes costly. Remaining gaps are largest in sparsely visited states.
 
 <img src="figures/estimated-policies.png" alt="Policy rules implied by the true and estimated parameters" width="80%">
 
-The estimates are close to the data-generating parameters. The full-solution estimator pays for a fresh fixed point at each trial value; the CCP estimator uses the first-stage policy to turn continuation values into a linear solve; the MPEC estimator imposes Bellman equations as nonlinear constraints.
+All three estimates are close to the data-generating parameters. They differ in how they represent the Bellman fixed point.
 
 **Structural parameter estimates**
 
@@ -168,7 +166,7 @@ The estimates are close to the data-generating parameters. The full-solution est
 | theta_0     |   2    |            2.01812 |         0.01812 |  2.01767 |     0.01767 |  2.01812 |      0.01812 |
 | theta_1     |  -0.15 |           -0.15346 |        -0.00346 | -0.15334 |    -0.00334 | -0.15346 |     -0.00346 |
 
-The moments summarize the simulated panel and the numerical solve. The high-mileage share indicates how much likelihood information is available in the region where the replacement probability is already near one. The MPEC residual checks whether the reported conditional values satisfy the Bellman constraints.
+The diagnostics check sample support and numerical feasibility. The MPEC residual confirms the constrained solve.
 
 **Simulation and solver diagnostics**
 
@@ -186,10 +184,9 @@ The moments summarize the simulated panel and the numerical solve. The high-mile
 
 ## Takeaway
 
-Dynamic discrete choice turns observed hazards into statements about current payoffs and continuation values. In the replacement problem, a high mileage bus is replaced because keeping it is costly today and because replacement changes the distribution of tomorrow's state. Nested fixed-point likelihood estimates that object directly. CCP estimation is faster because it learns part of the policy first, with the structural step depending on how well those first-stage CCPs approximate the true replacement hazard. MPEC changes the architecture again by turning the Bellman equations into feasibility constraints.
+Dynamic discrete choice turns observed hazards into statements about current payoffs and continuation values. In this replacement problem, mileage matters today and tomorrow. NFXP solves the Bellman fixed point inside the likelihood. CCP estimation uses a first-stage hazard before the structural step. MPEC estimates parameters and values while enforcing Bellman equations.
 
 ## References
 
 - [Rust, J. (1987). Optimal Replacement of GMC Bus Engines: An Empirical Model of Harold Zurcher. *Econometrica*, 55(5), 999-1033.](https://doi.org/10.2307/1911259)
 - [Hotz, V. J. and Miller, R. A. (1993). Conditional Choice Probabilities and the Estimation of Dynamic Models. *Review of Economic Studies*, 60(3), 497-529.](https://doi.org/10.2307/2298122)
-- [Aguirregabiria, V. and Mira, P. (2010). Dynamic Discrete Choice Structural Models: A Survey. *Journal of Econometrics*, 156(1), 38-67.](https://doi.org/10.1016/j.jeconom.2009.09.007)
