@@ -63,7 +63,7 @@ This closed form is the target for the numerical check.
 
 Define the Bellman operator
 
-$$(TV)(W) \;=\; \max_{0 \le c \le W} \{\, u(c) + \beta\, V(W-c) \,\}.$$
+$$(TV)(W) = \max_{0 \le c \le W} \{\, u(c) + \beta\, V(W-c) \,\}.$$
 
 The computation applies this operator repeatedly. At each grid point, it searches over feasible consumption. The next stock $W-c$ is usually off grid. The continuation value is therefore interpolated.
 

@@ -26,8 +26,8 @@ $$z_{t+1} = \rho\, z_t + \sigma_\epsilon\, \varepsilon_{t+1},
 
 The AR(1) has unconditional law $z_t \sim \mathcal{N}(0,\sigma_z^2)$ with
 
-$$\sigma_z^2 \;=\; \frac{\sigma_\epsilon^2}{1-\rho^2},
-\qquad \rho_k \;\equiv\; \mathrm{Corr}(z_t, z_{t+k}) \;=\; \rho^k.$$
+$$\sigma_z^2 = \frac{\sigma_\epsilon^2}{1-\rho^2},
+\qquad \rho_k \equiv \mathrm{Corr}(z_t, z_{t+k}) = \rho^k.$$
 
 For $\rho=0.95$ and $\sigma_\epsilon=0.02$, the standard deviation is
 $\sigma_z = 0.0641$. The shock half-life is

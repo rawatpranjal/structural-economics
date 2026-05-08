@@ -46,7 +46,7 @@ $$\delta_{jt} = X_{jt}\theta_1 + \xi_{jt}, \qquad X_{jt}=(1,x_{jt},p_{jt})$$
 
 The identifying moments are $E[Z_{jt}\xi_{jt}]=0$. The instruments include
 a cost shifter and sums of rival characteristics, so price can be endogenous
-through $\operatorname{Cov}(p_{jt},\xi_{jt}) \ne 0$.
+through $\mathrm{Cov}(p_{jt},\xi_{jt}) \ne 0$.
 
 ## Model Setup
 

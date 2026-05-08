@@ -33,7 +33,7 @@ $$\bar w(C)=\frac{1}{m}\sum_{\ell=1}^{m} w_{i_\ell,i_{\ell+1}}.$$
 The Money Pump Index is the largest average slack over all directed cycles in
 the revealed-preference graph:
 
-$$\operatorname{MPI} = \max_C \bar w(C).$$
+$$\mathrm{MPI} = \max_C \bar w(C).$$
 
 ## Model Setup
 

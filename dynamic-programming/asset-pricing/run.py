@@ -256,12 +256,12 @@ The log case is $u(c)=\log c$ as $\gamma\to 1$.
 A claim pays $y_{t+1}$ plus resale value $p(y_{t+1})$.
 Its price satisfies
 
-$$p(y_t)=\mathbb{E}_t\!\left[M_{t+1}(y_{t+1}+p(y_{t+1}))\right],
+$$p(y_t)=\mathbb{E}_t\left[M_{t+1}(y_{t+1}+p(y_{t+1}))\right],
 \qquad M_{t+1}=\beta\left(\frac{y_{t+1}}{y_t}\right)^{-\gamma}.$$
 
 Equivalently,
 
-$$p(y_t)=\beta\,\mathbb{E}_t\!\left[
+$$p(y_t)=\beta\,\mathbb{E}_t\left[
 \frac{u'(y_{t+1})}{u'(y_t)}(p(y_{t+1})+y_{t+1})\right].$$
 
 **Scaled price.** Define the marginal-utility-scaled price
@@ -270,7 +270,7 @@ $$f(y)\equiv u'(y)\,p(y).$$
 
 Multiplying the Euler equation by $u'(y_t)$ gives
 
-$$f(y)=\beta\,\mathbb{E}\!\left[f(y')+u'(y')\,y'\,\big|\,y\right].$$
+$$f(y)=\beta\,\mathbb{E}\left[f(y')+u'(y')\,y'\,\big|\,y\right].$$
 
 This is a linear fixed point in $f$.
 The price and price-dividend ratio recover from
@@ -307,7 +307,7 @@ The flat ratio gives a direct check on the numerical solution.
         "the denominator. The update maps a guessed scaled price into a new "
         "scaled price.\n\n"
         "The update operator is\n\n"
-        "$$(Tf)(y)=\\beta\\,\\mathbb{E}\\!\\left[f(y')+u'(y')y'\\,\\big|\\,y\\right]$$\n\n"
+        "$$(Tf)(y)=\\beta\\,\\mathbb{E}\\\left[f(y')+u'(y')y'\\,\\big|\\,y\\right]$$\n\n"
         "This operator is a $\\beta$-contraction. The run stops when sup-norm "
         f"changes fall below ${tol_label}$.\n\n"
         "**Conditional expectation.** The state $x=\\log y$ uses a uniform grid. "

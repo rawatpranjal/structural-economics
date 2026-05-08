@@ -360,7 +360,7 @@ An incumbent's exit value is normalized to zero. If it stays, its deterministic
 surplus is
 
 $$
-\Delta(N)=\pi(N)-f+\beta \mathbb{E}\!\left[V(N_{t+1})\mid N_t=N,\text{ stay}\right].
+\Delta(N)=\pi(N)-f+\beta \mathbb{E}\left[V(N_{t+1})\mid N_t=N,\text{ stay}\right].
 $$
 
 The idiosyncratic stay shock has logistic scale $\sigma_\varepsilon$. The
@@ -394,7 +394,7 @@ with $e(N_t)=0$ when the first entrant does not cover $K$.
 Survival and entry define the transition law.
 
 $$
-S_t\sim \mathrm{Binomial}\!\left(N_t,1-p_{\mathrm{exit}}(N_t)\right),
+S_t\sim \mathrm{Binomial}\left(N_t,1-p_{\mathrm{exit}}(N_t)\right),
 \qquad
 N_{t+1}=\max\{1,\min(S_t+e(N_t),N_{\max})\}.
 $$

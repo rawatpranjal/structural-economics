@@ -19,6 +19,9 @@ FRAGILE_MATH_DELIMITERS = (
 FRAGILE_MATH_SIZE_COMMANDS = tuple(
     "\\" + command for command in ("bigl", "bigr", "Bigl", "Bigr")
 )
+FRAGILE_MATH_SPACING_COMMANDS = ("\\;", "\\!")
+UNSUPPORTED_MATH_COMMANDS = ("\\operatorname",)
+UNBRACED_MATHBB = re.compile(r"\\mathbb\s+[A-Za-z]")
 UNBRACED_STAR_SCRIPT = re.compile(r"(?<!\\)(\^|_)\*")
 BRACED_LITERAL_STAR_SCRIPT = re.compile(r"(?<!\\)(\^|_)\{\*\}")
 EMPTY_SCRIPT_TARGET = re.compile(r"(?<!\\)(\^|_)(?:\s|$|[,$.;:)\]}]|[\^_])")
@@ -170,6 +173,31 @@ def fragile_math_delimiter_errors() -> list[str]:
     return errors
 
 
+def fragile_math_command_errors() -> list[str]:
+    """Reject math commands that have failed in the target Markdown renderer."""
+    errors = []
+    for path in active_text_files():
+        if path.suffix == ".py" and path.name != "run.py":
+            continue
+        rel = path.relative_to(ROOT)
+        for lineno, line in enumerate(path.read_text(errors="replace").splitlines(), start=1):
+            for command in FRAGILE_MATH_SPACING_COMMANDS:
+                if command in line:
+                    errors.append(
+                        f"{rel}:{lineno} uses renderer-fragile math spacing command {command}; remove it"
+                    )
+            for command in UNSUPPORTED_MATH_COMMANDS:
+                if command in line:
+                    errors.append(
+                        f"{rel}:{lineno} uses unsupported math command {command}; use \\mathrm{{...}}"
+                    )
+            if UNBRACED_MATHBB.search(line):
+                errors.append(
+                    f"{rel}:{lineno} uses unbraced \\mathbb; write \\mathbb{{E}} or \\mathbb{{R}}"
+                )
+    return errors
+
+
 def math_script_errors() -> list[str]:
     """Reject math scripts that are fragile after Markdown preprocessing."""
     errors = []
@@ -227,6 +255,7 @@ def validate() -> int:
     errors.extend(display_math_errors())
     errors.extend(markdown_table_errors())
     errors.extend(fragile_math_delimiter_errors())
+    errors.extend(fragile_math_command_errors())
     errors.extend(math_script_errors())
 
     if errors:

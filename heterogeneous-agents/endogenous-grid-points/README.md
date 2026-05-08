@@ -36,7 +36,7 @@ with the discounted marginal benefit of saving,
 $$
 \underbrace{u'(c(a,y_j))}_{\text{cost of saving today}}
 = \beta R\,
-\underbrace{\sum_{\ell=1}^{n_y}\pi_\ell\,u'\!(c(g(a,y_j),y_\ell))}_{\text{expected marginal utility tomorrow}}.
+\underbrace{\sum_{\ell=1}^{n_y}\pi_\ell\,u'(c(g(a,y_j),y_\ell))}_{\text{expected marginal utility tomorrow}}.
 $$
 
 When the borrowing limit binds, $g(a,y_j)=\underline a$. The Euler condition
@@ -75,7 +75,7 @@ that expectation into current consumption $c_i$. The budget identity then gives
 the current asset that would choose $a_i'$:
 
 $$
-c_i = (u')^{-1}\!(\beta R \sum_{\ell} \pi_\ell\, u'(c_n(a_i', y_\ell))),
+c_i = (u')^{-1}(\beta R \sum_{\ell} \pi_\ell\, u'(c_n(a_i', y_\ell))),
 \qquad
 a^{\text{endo}}_{ij} = \frac{c_i + a_i' - y_j}{R}.
 $$

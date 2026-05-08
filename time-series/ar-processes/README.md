@@ -73,7 +73,7 @@ A shock path determines every variable because the model is backward-looking. No
 
 The AR(1) population objects are closed form.
 
-$$E[x_t]=0, \qquad \operatorname{Var}(x_t)=\frac{\sigma^2}{1-\rho^2}=0.000526, \qquad \operatorname{Corr}(x_t,x_{t-k})=\rho^k.$$
+$$E[x_t]=0, \qquad \mathrm{Var}(x_t)=\frac{\sigma^2}{1-\rho^2}=0.000526, \qquad \mathrm{Corr}(x_t,x_{t-k})=\rho^k.$$
 
 The AR(1) half-life is $\log(0.5)/\log(\rho)=6.6$ periods. The income roots are 0.346, 0.694. The largest modulus is 0.694, so internal propagation is stable.
 

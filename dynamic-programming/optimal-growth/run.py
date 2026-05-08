@@ -185,8 +185,8 @@ Capital $k_t$ produces output $y_t = A k_t^{\alpha}$ with $A>0$ and
 $\alpha\in(0,1)$. Capital fully depreciates each period, so the resource
 constraint is
 
-$$c_t + k_{t+1} \;=\; A k_t^{\alpha},
-\qquad c_t > 0,\; k_{t+1} \ge 0.$$
+$$c_t + k_{t+1} = A k_t^{\alpha},
+\qquad c_t > 0, k_{t+1} \ge 0.$$
 
 The planner maximizes discounted log utility,
 
@@ -195,39 +195,39 @@ $$\sum_{t=0}^{\infty} \beta^{t} \log c_t,
 
 with state $k$ summarizing the entire future. The Bellman equation is
 
-$$V(k) \;=\; \max_{0 < k' < A k^{\alpha}}
+$$V(k) = \max_{0 < k' < A k^{\alpha}}
 \{\, \log(A k^{\alpha}-k') + \beta\, V(k') \,\}.$$
 
 Let $g(k)$ denote the optimal $k'$ and $c^{*}(k) = A k^{\alpha} - g(k)$ the
 implied consumption. The first-order and envelope conditions deliver the
 Euler equation
 
-$$u'(c_t) \;=\; \beta\, f'(k_{t+1})\, u'(c_{t+1}),
+$$u'(c_t) = \beta\, f'(k_{t+1})\, u'(c_{t+1}),
 \qquad f'(k) = \alpha A k^{\alpha-1}.$$
 
 For log utility and Cobb-Douglas production, conjecture $g(k) = s A k^{\alpha}$
 with constant saving rate $s$. Substituting into the Euler equation gives
 $s = \alpha\beta$, so
 
-$$g(k) \;=\; \alpha\beta\, A\, k^{\alpha},
+$$g(k) = \alpha\beta\, A\, k^{\alpha},
 \qquad
-c^{*}(k) \;=\; (1-\alpha\beta)\, A\, k^{\alpha}.$$
+c^{*}(k) = (1-\alpha\beta)\, A\, k^{\alpha}.$$
 
 The value function is affine in $\log k$,
 
-$$V(k) \;=\; E + B\, \log k,
+$$V(k) = E + B\, \log k,
 \qquad
-B \;=\; \frac{\alpha}{1-\alpha\beta},$$
+B = \frac{\alpha}{1-\alpha\beta},$$
 
 with intercept
 
-$$E \;=\; \frac{1}{1-\beta}\!\left[\,\log(A(1-\alpha\beta))
+$$E = \frac{1}{1-\beta}\left[\,\log(A(1-\alpha\beta))
 + \frac{\beta\alpha}{1-\alpha\beta}\,\log(A\,\alpha\beta)\,\right].$$
 
 The steady state solves $k = g(k)$, equivalently $\beta f'(k_{ss}) = 1$:
 
-$$k_{ss} \;=\; (\alpha\beta A)^{1/(1-\alpha)},
-\qquad c_{ss} \;=\; A k_{ss}^{\alpha} - k_{ss}.$$
+$$k_{ss} = (\alpha\beta A)^{1/(1-\alpha)},
+\qquad c_{ss} = A k_{ss}^{\alpha} - k_{ss}.$$
 """
     )
 
@@ -249,7 +249,7 @@ $$k_{ss} \;=\; (\alpha\beta A)^{1/(1-\alpha)},
 
     report.add_solution_method(
         "Define the Bellman operator on bounded continuous functions of capital,\n\n"
-        r"$$(TV)(k) \;=\; \max_{0 < k' < A k^{\alpha}}"
+        r"$$(TV)(k) = \max_{0 < k' < A k^{\alpha}}"
         r"\{\, \log(A k^{\alpha} - k') + \beta\, V(k') \,\}."
         "$$\n\n"
         "VFI starts from an initial value on the capital grid. "

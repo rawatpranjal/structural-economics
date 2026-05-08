@@ -190,7 +190,7 @@ This closed form is the target for the numerical check.
 
     report.add_solution_method(
         "Define the Bellman operator\n\n"
-        r"$$(TV)(W) \;=\; \max_{0 \le c \le W} \{\, u(c) + \beta\, V(W-c) \,\}."
+        r"$$(TV)(W) = \max_{0 \le c \le W} \{\, u(c) + \beta\, V(W-c) \,\}."
         "$$\n\n"
         "The computation applies this operator repeatedly. "
         "At each grid point, it searches over feasible consumption. "

@@ -17,10 +17,10 @@ Income has probabilities $\pi_j$ over $\{y_1,\dots,y_{n_y}\}$.
 With gross return $R = 1+r$, the Bellman equation is
 
 $$
-V(a,y_j) \;=\; \max_{a' \geq \underline a}\,
-\{\,u\!(R a + y_j - a') \;+\; \beta\,W(a')\,\},
+V(a,y_j) = \max_{a' \geq \underline a}\,
+\{\,u(R a + y_j - a') + \beta\,W(a')\,\},
 \qquad
-W(a') \;=\; \sum_{\ell=1}^{n_y}\pi_\ell\,V(a',y_\ell),
+W(a') = \sum_{\ell=1}^{n_y}\pi_\ell\,V(a',y_\ell),
 $$
 
 The policy is $g(a,y_j)$.
@@ -39,14 +39,14 @@ $$
 At an interior optimum, the Euler equation uses only $W_a(a')$:
 
 $$
-u'\!(c(a,y_j)) \;=\; \beta\,W_a\!(g(a,y_j)).
+u'(c(a,y_j)) = \beta\,W_a(g(a,y_j)).
 $$
 
 The envelope condition updates that object from the policy:
 
 $$
-W_a(a) \;=\; \sum_{\ell=1}^{n_y}\pi_\ell\,V_a(a,y_\ell)
-\;=\; R\,\sum_{\ell=1}^{n_y}\pi_\ell\,u'\!(c(a,y_\ell)).
+W_a(a) = \sum_{\ell=1}^{n_y}\pi_\ell\,V_a(a,y_\ell)
+= R\,\sum_{\ell=1}^{n_y}\pi_\ell\,u'(c(a,y_\ell)).
 $$
 
 These two equations close the system without using the value level.
@@ -55,7 +55,7 @@ The borrowing limit binds when the household wants $a' < \underline a$.
 Then $g(a,y_j) = \underline a$ and the Euler inequality is
 
 $$
-u'\!(R a + y_j - \underline a) \;\geq\; \beta\,W_a(\underline a),
+u'(R a + y_j - \underline a) \geq \beta\,W_a(\underline a),
 $$
 
 This case produces high MPCs near zero assets.
@@ -88,7 +88,7 @@ The Euler step solves a scalar root at each state.
 It finds $c \in (0,\,Ra + y_j - \underline a)$ such that
 
 $$
-u'(c) \;=\; \beta\,W_a(R a + y_j - c).
+u'(c) = \beta\,W_a(R a + y_j - c).
 $$
 
 The borrowing check comes first.

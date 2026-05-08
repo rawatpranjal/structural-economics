@@ -267,9 +267,9 @@ $$
 The cycle is $c_{j,t}=y_{j,t}-\tau_{j,t}$. The reported moments are
 
 $$
-\sigma_j=\operatorname{sd}(c_{j,t}),\qquad
-r_{j,g}=\operatorname{corr}(c_{j,t},c_{g,t}),\qquad
-a_j=\operatorname{corr}(c_{j,t},c_{j,t-1}).
+\sigma_j=\mathrm{sd}(c_{j,t}),\qquad
+r_{j,g}=\mathrm{corr}(c_{j,t},c_{g,t}),\qquad
+a_j=\mathrm{corr}(c_{j,t},c_{j,t-1}).
 $$
 
 The Okun diagnostic is the finite-sample regression

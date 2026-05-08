@@ -360,9 +360,9 @@ The direct relation is strict when the inequality is strict. Let $R$ be the tran
 
 $$x_t R x_s \quad \text{and} \quad p_s \cdot x_s > p_s \cdot x_t.$$
 
-Let $\operatorname{GARP}(S)=1$ when these restrictions hold after keeping only observations in $S$. The Houtman-Maks index is
+Let $\mathrm{GARP}(S)=1$ when these restrictions hold after keeping only observations in $S$. The Houtman-Maks index is
 
-$$HM = \max_{S \subseteq \{1,\ldots,T\}} |S| \quad \text{s.t.} \quad \operatorname{GARP}(S)=1.$$
+$$HM = \max_{S \subseteq \{1,\ldots,T\}} |S| \quad \text{s.t.} \quad \mathrm{GARP}(S)=1.$$
 
 The minimum number of observations needed to restore GARP is
 

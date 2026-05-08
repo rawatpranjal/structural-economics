@@ -254,8 +254,8 @@ def main() -> None:
     report.add_equations(
         r"""
 The data are $\mathcal D=\{(p^t,x^t)\}_{t=1}^{T}$, where
-$p^t\in\mathbb R_{++}^{L}$ is the observed price vector and
-$x^t\in\mathbb R_{+}^{L}$ is the chosen bundle. Own expenditure is
+$p^t\in\mathbb{R}_{++}^{L}$ is the observed price vector and
+$x^t\in\mathbb{R}_{+}^{L}$ is the chosen bundle. Own expenditure is
 $m_t=p^t\cdot x^t$.
 
 For price-regime comparisons, define the cross-cost matrix

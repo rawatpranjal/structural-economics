@@ -46,11 +46,11 @@ $$
 The asset policy is $g_a(a,z)=a'$. The consumption policy is
 $c^{\ast}(a,z)=Ra+z-g_a(a,z)$. At an interior choice, the Euler equation is:
 
-$$u'(c_t)=\beta R\,\mathbb E_t[u'(c_{t+1})],$$
+$$u'(c_t)=\beta R\,\mathbb{E}_t[u'(c_{t+1})],$$
 
 When the constraint binds, $a_{t+1}=0$ and the Euler inequality holds:
 
-$$u'(c_t)\geq \beta R\,\mathbb E_t[u'(c_{t+1})].$$
+$$u'(c_t)\geq \beta R\,\mathbb{E}_t[u'(c_{t+1})].$$
 
 ## Model Setup
 

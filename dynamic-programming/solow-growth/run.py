@@ -184,11 +184,11 @@ y_t = \frac{Y_t}{A_t L_t} = k_t^\alpha,$$
 
 In these units, the law of motion is one scalar equation:
 
-$$k_{t+1} = \phi(k_t) \;:=\; \frac{(1-\delta)\,k_t + s\,k_t^\alpha}{(1+g)(1+n)}.$$
+$$k_{t+1} = \phi(k_t) := \frac{(1-\delta)\,k_t + s\,k_t^\alpha}{(1+g)(1+n)}.$$
 
 Define break-even investment as
 
-$$\Delta \;:=\; (1+g)(1+n) - 1 + \delta$$
+$$\Delta := (1+g)(1+n) - 1 + \delta$$
 
 The steady state $k^{\ast}$ solves $\phi(k^{\ast})=k^{\ast}$. This is
 equivalent to $s(k^{\ast})^\alpha = \Delta k^{\ast}$.
@@ -220,9 +220,9 @@ y^{\ast}=(k^{\ast})^\alpha, \qquad c^{\ast}=(1-s)\,y^{\ast}.$$
         "scalar map $\\phi$. The simulation applies $\\phi$ from $k_0$ until the "
         "path is close to $k^{\\ast}$.\n\n"
         "A local linearization gives the convergence rate near the steady state:\n\n"
-        "$$k_{t+1} - k^{\\ast} \\;\\approx\\; \\lambda\\,(k_t - k^{\\ast}), "
-        "\\qquad \\lambda \\;\\equiv\\; \\phi'(k^{\\ast}) "
-        "\\;=\\; \\frac{(1-\\delta) + s\\alpha\\,(k^{\\ast})^{\\alpha-1}}"
+        "$$k_{t+1} - k^{\\ast} \\\approx\ \\lambda\\,(k_t - k^{\\ast}), "
+        "\\qquad \\lambda \\\equiv\ \\phi'(k^{\\ast}) "
+        "\=\ \\frac{(1-\\delta) + s\\alpha\\,(k^{\\ast})^{\\alpha-1}}"
         "{(1+g)(1+n)}.$$\n\n"
         "When $\\lambda \\in (0,1)$, deviations shrink at a geometric rate. The "
         "half-life is $\\ln(0.5)/\\ln(\\lambda)$.\n\n"

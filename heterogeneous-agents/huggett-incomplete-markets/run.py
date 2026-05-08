@@ -376,39 +376,39 @@ Bisection updates $r$ until aggregate bond demand clears.
 A household in income state $i \in \{L, H\}$ receives endowment $z_i$. Income jumps to
 the other state $j$ with Poisson intensity $\lambda_i$. Assets move between jumps by
 
-$$\dot a \;=\; s_i(a) \;=\; z_i + r\,a - c_i(a), \qquad a \geq \underline a.$$
+$$\dot a = s_i(a) = z_i + r\,a - c_i(a), \qquad a \geq \underline a.$$
 
 The value function solves the HJB equation. With CRRA utility and discount rate $\rho$,
 the equation is
 
-$$\rho\,V_i(a) \;=\; \max_{c > 0}\,
-[\,u(c) \;+\; V_i'(a)\,(z_i + r\,a - c) \;+\; \lambda_i\,(V_j(a) - V_i(a))\,].$$
+$$\rho\,V_i(a) = \max_{c > 0}\,
+[\,u(c) + V_i'(a)\,(z_i + r\,a - c) + \lambda_i\,(V_j(a) - V_i(a))\,].$$
 
 The first-order condition links marginal value to consumption. It also defines the
 savings drift used by the density equation:
 
-$$c_i(a) \;=\; [V_i'(a)]^{-1/\sigma}, \qquad
-s_i(a) \;=\; z_i + r\,a - c_i(a).$$
+$$c_i(a) = [V_i'(a)]^{-1/\sigma}, \qquad
+s_i(a) = z_i + r\,a - c_i(a).$$
 
 The borrowing limit is a state constraint. At $a = \underline a$, the drift cannot point
 outside the grid:
 
-$$s_i(\underline a) \;\geq\; 0
+$$s_i(\underline a) \geq 0
 \quad\Longleftrightarrow\quad
-V_i'(\underline a) \;\geq\; u'(z_i + r\,\underline a),$$
+V_i'(\underline a) \geq u'(z_i + r\,\underline a),$$
 
 with equality only when the constraint is slack.
 
 The stationary density $g_i(a)$ satisfies the KFE. It moves mass along the asset drift
 and across income states:
 
-$$0 \;=\; -\frac{\partial}{\partial a}[s_i(a)\,g_i(a)]
-\;-\; \lambda_i\,g_i(a) \;+\; \lambda_j\,g_j(a),
-\qquad \int g_L + g_H \;=\; 1,$$
+$$0 = -\frac{\partial}{\partial a}[s_i(a)\,g_i(a)]
+- \lambda_i\,g_i(a) + \lambda_j\,g_j(a),
+\qquad \int g_L + g_H = 1,$$
 
 The bond market clears when aggregate assets are zero:
 
-$$S(r) \;\equiv\; \int_{\underline a}^{\bar a} a\,[g_L(a) + g_H(a)]\,da \;=\; 0.$$
+$$S(r) \equiv \int_{\underline a}^{\bar a} a\,[g_L(a) + g_H(a)]\,da = 0.$$
 
 The equilibrium return is the root of this function. In this run,
 """ + f"$r^{{\\ast}} = {r_eq:.5f}$ " + r"""and the residual is """
@@ -452,7 +452,7 @@ the derivative whose drift points into the grid.
 
 **Implicit step.** The HJB update stacks both income states into one vector:
 
-$$[(\Delta^{-1} + \rho)\,\mathbf I - A^{n}]\,V^{n+1} \;=\; u(c^{n}) + \Delta^{-1} V^{n},$$
+$$[(\Delta^{-1} + \rho)\,\mathbf I - A^{n}]\,V^{n+1} = u(c^{n}) + \Delta^{-1} V^{n},$$
 
 where $A^n$ is the upwind generator. It combines asset drift and income switching.
 

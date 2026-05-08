@@ -310,8 +310,8 @@ X_{it}=\lambda_i'F_t+e_{it},
 \qquad i=1,\ldots,N,\quad t=1,\ldots,T.
 $$
 
-Here $F_t\in\mathbb R^r$ is the common macro factor. The loading
-$\lambda_i\in\mathbb R^r$ measures exposure. The error $e_{it}$ is
+Here $F_t\in\mathbb{R}^r$ is the common macro factor. The loading
+$\lambda_i\in\mathbb{R}^r$ measures exposure. The error $e_{it}$ is
 series-specific noise. In this simulated panel, $r=1$ and
 
 $$
