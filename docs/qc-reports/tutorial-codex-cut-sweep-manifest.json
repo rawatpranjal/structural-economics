@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T04:55:20Z",
+  "updated_at": "2026-05-08T05:03:54Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -82,6 +82,17 @@
         "dynamic-programming/asset-pricing/run.py"
       ],
       "updated_at": "2026-05-08T04:55:20Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/rbc/",
+      "status": "complete",
+      "commit": "ceedb08106f50f5be6a707f2c53692f8e143c22e",
+      "changed_paths": [
+        "README.md",
+        "dynamic-programming/rbc/README.md",
+        "dynamic-programming/rbc/run.py"
+      ],
+      "updated_at": "2026-05-08T05:03:54Z"
     },
     {
       "tutorial_path": "heterogeneous-agents/endogenous-grid-points/",
