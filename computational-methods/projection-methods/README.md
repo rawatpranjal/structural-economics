@@ -1,16 +1,17 @@
-# Chebyshev Projection for a Growth Policy
+# Growth-Model Capital Policy by Chebyshev Projection
 
-> Approximating a deterministic growth policy with collocation and Euler residuals.
+> Solving a deterministic saving rule with collocation and Euler residuals.
 
 ## Overview
 
-In many dynamic economic models the object of interest is a policy function, not a table of values on a grid. Projection methods approximate that function directly. A small vector of coefficients stands in for the whole decision rule, and the model's equilibrium conditions determine those coefficients.
+A planner in a growth model sees today's capital and decides how much output to consume and how much to carry into tomorrow. The object economists want is the policy $g(k)$ mapping current capital into next-period capital. Once a model adds more states or shocks, that policy is usually a continuous function we have to approximate.
 
-The economic environment here is the deterministic growth problem with log utility and full depreciation. That special case has a closed-form capital policy, which makes it a clean benchmark for projection. The focus is on what the Chebyshev approximation is doing: matching Euler equations at collocation nodes, then checking whether the implied policy is accurate away from those nodes.
+This tutorial uses the deterministic log-utility growth problem as a small laboratory. The model has a closed-form capital policy, so we can see exactly what the numerical method gets right and where it misses. Chebyshev projection represents the whole policy with a short coefficient vector, chooses those coefficients to satisfy Euler equations at selected capital levels, and then checks accuracy between the fitted points.
 
 ## Equations
 
-The planner chooses next-period capital:
+Capital evolves through a full-depreciation Cobb-Douglas technology. The planner
+chooses next-period capital, so consumption is the part of output not saved:
 
 $$
 V(k) = \max_{k'} [\log(c) + \beta V(k')],
@@ -18,14 +19,15 @@ V(k) = \max_{k'} [\log(c) + \beta V(k')],
 c = A k^\alpha - k'.
 $$
 
-The Euler equation is:
+The Euler equation says that the marginal value of consuming today equals the
+discounted marginal product of saving one more unit for tomorrow:
 
 $$
 \frac{1}{c_t}
 = \beta \frac{\alpha A k_{t+1}^{\alpha-1}}{c_{t+1}}.
 $$
 
-Projection approximates the policy with Chebyshev basis functions:
+Projection approximates the saving rule with Chebyshev basis functions:
 
 $$
 \log g(k;\theta)
@@ -60,7 +62,7 @@ For this calibration, the exact policy is $g^{\ast}(k)=\alpha\beta A k^\alpha$.
 
 ## Solution Method
 
-The code maps capital into the Chebyshev domain $[-1,1]$, represents log next-period capital as a Chebyshev polynomial, and chooses coefficients by nonlinear least squares on the collocation residuals. Approximating $\log g(k;\theta)$ keeps the proposed next-period capital positive.
+The computation replaces the unknown saving rule with a Chebyshev polynomial in scaled capital. The exponential transformation keeps $g(k;\theta)$ positive, and the collocation step chooses $\theta$ so that the Euler equation is nearly satisfied at the Chebyshev nodes. Those nodes cluster near the interval boundaries, where polynomial approximations often need more control.
 
 ```text
 Algorithm: Chebyshev collocation for the growth policy
@@ -75,27 +77,27 @@ Output: projected policy g(k; theta) and Euler-error diagnostics
 7. Evaluate policy errors and Euler errors on a dense grid
 ```
 
-The closed-form policy is used only as a benchmark here. In a model without a closed form, the same workflow would lean on residuals, simulated paths, and sensitivity to basis order.
+The exact policy enters only as a benchmark for this teaching example. In a model without a closed form, the same checks would rely on Euler residuals, simulated capital paths, and sensitivity to the basis order.
 
 ## Results
 
-Chebyshev polynomials oscillate in a controlled way over the approximation interval. They approximate smooth functions accurately with few terms.
+The first Chebyshev terms give flexible but disciplined shapes over the capital interval. Smooth saving rules can often be represented with only a few of them.
 
 <img src="figures/chebyshev-basis.png" alt="Chebyshev basis functions on [-1,1]" width="80%">
 
-More basis terms allow the projected policy to follow the curvature of the true decision rule over the full interval.
+Higher basis orders let the projected saving rule track the curvature of the closed-form capital policy across low and high capital states.
 
 <img src="figures/policy-functions.png" alt="Projected policy functions against the closed-form policy" width="80%">
 
-Euler errors are the main diagnostic. They check whether the approximated policy satisfies the model's optimality condition away from the collocation nodes.
+Euler errors ask whether the approximate policy preserves the planner's marginal tradeoff away from the capital nodes used in the fit.
 
 <img src="figures/euler-errors.png" alt="Euler equation errors by approximation order" width="80%">
 
-A good approximation should not only satisfy equations at nodes. It should also produce sensible dynamics when iterated forward.
+The projected policy should generate the same convergence toward steady state from low and high initial capital.
 
 <img src="figures/simulated-paths.png" alt="Capital paths generated by the projected policy" width="80%">
 
-Errors are computed on a dense grid, not only at collocation nodes.
+Errors are computed on a dense grid, so the table checks the policy between the fitted capital nodes.
 
 **Projection accuracy by basis size**
 
@@ -106,11 +108,11 @@ Errors are computed on a dense grid, not only at collocation nodes.
 |             5 |           0.000775 |              0.00028  |          0.00922  |             0.00204  |
 |             8 |           4.24e-05 |              1.41e-05 |          0.000557 |             0.000111 |
 
-With 8 Chebyshev terms, the maximum Euler error on the dense grid is 5.57e-04. The policy is stored with only eight coefficients, but it tracks the closed-form decision rule closely over the approximation interval and can be evaluated smoothly at off-grid capital values.
+With 8 Chebyshev terms, the maximum Euler error on the dense grid is 5.57e-04. The approximation stores the saving rule with only eight coefficients, yet it tracks the closed-form policy over the approximation interval and evaluates smoothly at off-grid capital values.
 
 ## Takeaway
 
-Projection works well when the policy function is smooth and the state space is too large for a crude lookup table. The cost is diagnostic discipline. Matching Euler equations at collocation nodes is not by itself a proof of accuracy; the approximation must also behave well on a dense grid and along economically relevant simulated paths.
+Projection is useful when an economic policy is smooth and a grid lookup would be too coarse or too expensive. The fitted coefficients matter only because they recover the planner's saving rule. Collocation residuals, off-node Euler errors, and simulated capital paths tell us whether that recovery is accurate enough for the economic exercise.
 
 ## References
 
