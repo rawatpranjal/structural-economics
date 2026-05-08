@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-08T00:32:44Z",
+  "updated_at": "2026-05-08T00:36:48Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -770,6 +770,21 @@
         "computational-methods/metropolis-hastings/run.py"
       ],
       "updated_at": "2026-05-08T00:32:44Z"
+    },
+    {
+      "tutorial_path": "computational-methods/kalman-filter/",
+      "status": "complete",
+      "commit": "8673f69e5a6f29cd380594b26070ae01e814dbe6",
+      "changed_paths": [
+        "README.md",
+        "computational-methods/kalman-filter/README.md",
+        "computational-methods/kalman-filter/figures/filter-bands.png",
+        "computational-methods/kalman-filter/figures/innovations-gain.png",
+        "computational-methods/kalman-filter/figures/simulated-signal.png",
+        "computational-methods/kalman-filter/figures/thumb.png",
+        "computational-methods/kalman-filter/run.py"
+      ],
+      "updated_at": "2026-05-08T00:36:48Z"
     }
   ]
 }
