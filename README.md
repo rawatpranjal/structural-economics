@@ -5,6 +5,7 @@ This repository gives graduate students and researchers short, executable exampl
 ## Contents
 
 - [Quick Start](#quick-start)
+- [Numerical Methods](#numerical-methods)
 - [Dynamic Programming](#dynamic-programming)
 - [Macroeconomics](#macroeconomics)
 - [Industrial Organization](#industrial-organization)
@@ -22,6 +23,14 @@ cd dynamic-programming/cake-eating
 python run.py
 # -> generates README.md + figures/ + tables/
 ```
+
+## Numerical Methods
+
+These tutorials cover the scalar building blocks the rest of the catalog uses: solving `f(x) = 0`, finding extrema of `f(x)`, and approximating a function from finite information. Read them before working through dynamic programming if you have not seen these methods together before.
+
+| Preview | Tutorial | Description |
+|---|---|---|
+| [<img src="numerical-methods/root-finding/figures/thumb.png" width="160">](numerical-methods/root-finding/figures/residual-and-bracket.png) | **[Scalar Root Finding for Market Clearing](numerical-methods/root-finding/)** | Bracketed bisection and quadratic-rate Newton-Raphson solve $F(k) = 0$ for the steady-state capital stock. The two methods trade global safety for local speed; far-above starts make Newton overshoot into negative capital. |
 
 ## Dynamic Programming
 
