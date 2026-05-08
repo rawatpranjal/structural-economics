@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-08T00:28:14Z",
+  "updated_at": "2026-05-08T00:32:44Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -759,6 +759,17 @@
         "computational-methods/perturbation-linearization/run.py"
       ],
       "updated_at": "2026-05-08T00:28:14Z"
+    },
+    {
+      "tutorial_path": "computational-methods/metropolis-hastings/",
+      "status": "complete",
+      "commit": "c2f7be277e1aaa2acb451a5f1438ddc8a6408375",
+      "changed_paths": [
+        "README.md",
+        "computational-methods/metropolis-hastings/README.md",
+        "computational-methods/metropolis-hastings/run.py"
+      ],
+      "updated_at": "2026-05-08T00:32:44Z"
     }
   ]
 }
