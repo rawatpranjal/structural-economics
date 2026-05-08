@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-07T23:57:55Z",
+  "updated_at": "2026-05-08T00:02:14Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -679,6 +679,17 @@
         "game-theory/quantal-response-equilibrium/run.py"
       ],
       "updated_at": "2026-05-07T23:57:55Z"
+    },
+    {
+      "tutorial_path": "time-series/fred-macro-data/",
+      "status": "complete",
+      "commit": "0a6bddf9c804cbb44fedeea5488eb5048c9295e2",
+      "changed_paths": [
+        "README.md",
+        "time-series/fred-macro-data/README.md",
+        "time-series/fred-macro-data/run.py"
+      ],
+      "updated_at": "2026-05-08T00:02:14Z"
     }
   ]
 }
