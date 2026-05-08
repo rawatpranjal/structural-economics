@@ -105,35 +105,24 @@ def main() -> None:
 
     report = ModelReport(
         "Production Elasticities and Firm Markups",
-        "Recover firm markups from production elasticities and variable-input cost shares.",
+        "Recover firm-year markups from a corrected materials elasticity and materials shares.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "Suppose an IO researcher wants to know which plants earn high markups. The panel "
-        "contains output, labor, capital, materials, and input expenditures, but marginal "
-        "cost is not observed. A standard route is to estimate the production elasticity "
-        "of a flexible input, then combine that elasticity with the input's revenue share.\n\n"
-        "That route only works if the production elasticity is credible. Productive firms "
-        "choose more inputs after observing productivity, so a naive regression can mistake "
-        "hidden productivity for labor or materials productivity. The computation in this "
-        "tutorial uses a monotone investment proxy to control for the unobserved productivity "
-        "state, then sends the corrected materials elasticity through the "
-        "De Loecker-Warzynski markup formula.\n\n"
-        "The data are synthetic so the truth is visible. A Cobb-Douglas panel generates "
-        "output, flexible input choices, investment, productivity, and firm-year markups. "
-        "The exercise compares naive OLS with the proxy-control estimate and shows how "
-        "the coefficient bias becomes markup bias. It complements "
-        "[Logit Demand and Markup Recovery](../logit-supply-side/): that tutorial recovers "
-        "markups from demand and pricing FOCs, while this one recovers them from production "
-        "elasticities and input shares."
+        "Plant panels often record output, labor, capital, materials, and input spending. "
+        "They usually do not record marginal cost.\n\n"
+        "The object is the firm-year markup. This tutorial recovers it from a materials "
+        "output elasticity and a materials revenue share.\n\n"
+        "Inputs respond to productivity before output is observed. The computation uses "
+        "an investment proxy to correct the materials elasticity before forming markups."
     )
 
     report.add_equations(r"""
-Let $i$ index firms and $t$ years. Output, labor, capital, and materials are in
-logs and are denoted by $y_{it}$, $l_{it}$, $k_{it}$, and $m_{it}$. The plant
-technology is Cobb-Douglas in logs:
+Let $i$ index firms and $t$ index years. Output, labor, capital, and materials
+are logs. They are denoted by $y_{it}$, $l_{it}$, $k_{it}$, and $m_{it}$. The
+plant technology is Cobb-Douglas:
 
 $$
 y_{it}
@@ -142,9 +131,8 @@ y_{it}
 $$
 
 The firm observes productivity $\omega_{it}$ before choosing flexible inputs.
-This timing makes $l_{it}$ and $m_{it}$ correlated with $\omega_{it}$. In a
-naive OLS regression, the population error is therefore not orthogonal to the
-inputs.
+This timing makes $l_{it}$ and $m_{it}$ correlated with $\omega_{it}$. Naive
+OLS therefore has a nonzero input-error covariance.
 
 The proxy variable is investment $I_{it}$. In the synthetic data, investment
 follows a monotone policy:
@@ -154,8 +142,8 @@ I_{it}=h(k_{it},\omega_{it})+\nu_{it},
 \qquad \frac{\partial h(k,\omega)}{\partial \omega}>0.
 $$
 
-The control-function estimator uses the monotonicity of $h$ to form a
-productivity control $\tilde \omega_{it}=h^{-1}(k_{it},I_{it})$ and estimate
+The control-function estimator uses this monotonicity to form a productivity
+control $\tilde \omega_{it}=h^{-1}(k_{it},I_{it})$. It estimates
 
 $$
 y_{it}
@@ -163,8 +151,8 @@ y_{it}
 +\rho \tilde\omega_{it}+u_{it}.
 $$
 
-Markup recovery uses a variable input. For materials, the Cobb-Douglas output
-elasticity is $\theta^m=\beta_m$. Let
+Markup recovery uses materials as the variable input. For Cobb-Douglas
+production, the materials elasticity is $\theta^m=\beta_m$. Let
 
 $$
 \alpha^m_{it}
@@ -176,10 +164,6 @@ be the materials revenue share. Cost minimization implies the gross markup
 $$
 \mu_{it}=\frac{\theta^m}{\alpha^m_{it}}.
 $$
-
-In field data, the researcher has to defend the proxy and the variable-input
-first-order condition. In this synthetic run, those pieces are transparent so
-the mapping from production-elasticity bias to markup bias is observable.
 """)
 
     report.add_model_setup(
@@ -194,12 +178,10 @@ the mapping from production-elasticity bias to markup bias is observable.
     )
 
     report.add_solution_method(
-        "The calculation separates the econometric correction from the markup formula. "
-        "First estimate the production elasticity of the variable input while controlling "
-        "for productivity. Then divide that elasticity by each firm-year materials share. "
-        "Here the proxy-control regression uses the known synthetic investment schedule "
-        "to form a noisy productivity control. A full Olley-Pakes or Levinsohn-Petrin "
-        "application would estimate the investment policy and productivity law from data.\n\n"
+        "The calculation first estimates the materials elasticity while controlling for "
+        "productivity. It then divides that elasticity by each firm-year materials share. "
+        "The proxy-control regression uses the synthetic investment schedule to form the "
+        "productivity control.\n\n"
         "```text\n"
         "Algorithm: proxy-control markup measurement\n"
         "Input: panel {y_it, l_it, k_it, m_it, I_it, alpha^m_it}, proxy policy h, true benchmark mu_it\n"
@@ -217,9 +199,8 @@ the mapping from production-elasticity bias to markup bias is observable.
         "5. Compare theta_hat^m and mu_hat_it with the simulated truth, and aggregate\n"
         "   markups by productivity quintile to inspect heterogeneity.\n"
         "```\n\n"
-        "The last step is arithmetic, but the arithmetic is only useful after the "
-        "elasticity has been cleaned of productivity bias. The numerical object that "
-        "does the work is the inverted proxy control, not the final division itself."
+        "The inverted proxy control is the numerical step. The final markup calculation "
+        "is a firm-year division."
     )
 
     fig1, ax1 = plt.subplots(figsize=(8, 5))
@@ -239,8 +220,8 @@ the mapping from production-elasticity bias to markup bias is observable.
         fig1,
         description="The production-function step drives the markup calculation. OLS overstates "
         "the flexible-input elasticities because high-productivity firms choose more inputs. "
-        "The proxy-control estimate corrects for the omitted productivity state, and in this "
-        "simulation it moves the materials elasticity close to its true value.",
+        "The proxy-control estimate corrects for the omitted productivity state. It moves "
+        "the materials elasticity close to its true value.",
     )
 
     fig2, ax2 = plt.subplots(figsize=(8, 5))
@@ -257,8 +238,7 @@ the mapping from production-elasticity bias to markup bias is observable.
         fig2,
         description="The coefficient bias passes through the markup formula. The OLS-implied "
         "distribution sits too far to the right because the materials elasticity is inflated. "
-        "The proxy-control markups stay much closer to the truth, though they still inherit "
-        "noise from the expenditure share and the proxy.",
+        "The proxy-control markups stay much closer to the truth.",
     )
 
     fig3, ax3 = plt.subplots(figsize=(8, 5))
@@ -275,11 +255,9 @@ the mapping from production-elasticity bias to markup bias is observable.
         "figures/productivity-markups.png",
         "Estimated markups rise with productivity in the simulated panel",
         fig3,
-        description="The simulated truth lets us check the markup gradient as well as the level. "
-        "More productive firms have lower materials shares in this design, so true markups "
-        "rise with productivity. The recovered quintile means trace that gradient fairly "
-        "closely; the scatter is a reminder that firm-level markups are noisy even when the "
-        "production elasticity is well estimated.",
+        description="The simulated truth lets us check the markup gradient. More productive "
+        "firms have lower materials shares in this design. True markups rise with productivity. "
+        "The recovered quintile means trace that gradient.",
     )
 
     table = estimates.copy()
@@ -292,8 +270,7 @@ the mapping from production-elasticity bias to markup bias is observable.
         "Production function estimates",
         table,
         description="The coefficient table is read through the markup formula. Materials is the "
-        "main row because $\\theta^m$ is divided by the materials revenue share; an "
-        "elasticity bias of this size would become a markup bias almost one-for-one.",
+        "main row because $\\theta^m$ is divided by the materials revenue share.",
     )
 
     markup_table = markups.groupby("productivity_bin", observed=False).agg(
@@ -319,10 +296,8 @@ the mapping from production-elasticity bias to markup bias is observable.
 
     report.add_takeaway(
         "The markup estimate is only as credible as the production elasticity and the "
-        "variable-input share behind it. In this controlled panel, correcting for productivity "
-        "reduces the markup error by a large amount. In real IO work, the same scrutiny falls "
-        "on proxy monotonicity, the timing of input choices, and whether revenue data are "
-        "standing in for physical output."
+        "materials share behind it. In this controlled panel, correcting for productivity "
+        "greatly reduces markup error."
     )
 
     report.add_references([
