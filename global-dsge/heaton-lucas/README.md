@@ -4,9 +4,11 @@
 
 ## Overview
 
-Households do not all price risk in the same way when trade is limited. In Heaton and Lucas (1996), two CRRA agents receive different endowment shares, trade a claim to aggregate dividends, and trade a one-period bond. Short-sale and borrowing limits prevent full insurance, so the household that holds wealth after a shock can matter for the stochastic discount factor.
+Households face different endowment shocks and cannot fully insure each other. In Heaton and Lucas (1996), two CRRA agents trade equity and a one-period bond. Short-sale and borrowing limits make marginal utilities depend on who holds wealth after each shock.
 
-The state variable is agent 1's wealth share, $\omega_1$. In a complete-markets Lucas tree, a fixed Pareto weight would summarize risk sharing. With portfolio constraints, wealth shares move after shocks and the price of aggregate risk moves with them. That is why the tutorial needs a global computation: prices, portfolios, and the next wealth share have to be solved together at each point in the state space. The example connects the [Lucas-tree pricing](../../dynamic-programming/asset-pricing/) environment with the incomplete-markets logic in the [Huggett bond-market](../../heterogeneous-agents/huggett-incomplete-markets/) tutorial.
+The state is agent 1's wealth share, $\omega_1$. When constraints bind, this share changes how aggregate dividends are priced. Equity premia therefore vary across the wealth distribution.
+
+The transition for $\omega_1$ is implicit. Tomorrow's share depends on tomorrow's equity price, which also depends on tomorrow's share. STPFI solves prices, portfolios, multipliers, and shock-contingent next wealth shares in one global system.
 
 ## Equations
 
@@ -64,7 +66,7 @@ $$\omega_1'(z')=
 
 ## Solution Method
 
-The transition for $\omega_1$ is implicit. Tomorrow's wealth share depends on tomorrow's equity price, and tomorrow's equity price is itself a function of that wealth share. Simultaneous Transition and Policy Function Iteration (STPFI) treats the policy rules and the transition rule as one fixed point. At each current shock and wealth share, the nonlinear system solves consumption, portfolios, prices, Kuhn-Tucker multipliers, and all eight possible next wealth shares at the same time.
+STPFI treats the policy rules and transition rule as one fixed point. At each current shock and wealth share, the system solves consumption, portfolios, prices, multipliers, and eight possible next wealth shares. It updates both objects together, then damps the change.
 
 ```text
 Algorithm: STPFI for the Heaton-Lucas wealth-share economy
@@ -81,37 +83,35 @@ until the sup-norm policy change is below epsilon or the iteration cap is reache
 simulate the Markov chain and the implied omega transition to read the ergodic distribution
 ```
 
-This run stopped at the iteration cap after **80** STPFI iterations with final policy change 2.06e-02 and maximum pointwise equation residual 1.27e-03. The nonlinear systems use `scipy.optimize.root`; JAX supplies the 19-by-19 Jacobian at each collocation point.
+This run stopped at the iteration cap after **80** STPFI iterations. The final policy change was 2.06e-02, and the maximum pointwise residual was 1.27e-03. The nonlinear systems use `scipy.optimize.root`. JAX supplies the 19-by-19 Jacobian.
 
 ## Results
 
-The computed equity premium changes across wealth shares, ranging from 0.43% to 1.42% on the displayed interior grid. Those movements do more than relabel shocks. They reflect which agent is close to a portfolio constraint and whose marginal utility receives more weight in pricing aggregate dividends.
+The computed equity premium ranges from 0.43% to 1.42% on the interior grid. It moves because constraints change whose marginal utility prices dividends. The variation is the asset-pricing effect of incomplete risk sharing.
 
-The first panel reads equity premia against the distributional state. The second panel shows where the simulated economy spends its time: the mean wealth share is 0.487, with the 10th and 90th percentiles at -0.050 and 1.050. The solution still prices assets over the whole state space, including states that the simulation visits less often.
+Panel one plots equity premia against the wealth-share state. Panel two shows the simulated ergodic distribution. The mean wealth share is 0.487, with 10th and 90th percentiles at -0.050 and 1.050.
 
 <img src="figures/equity-premium-and-distribution.png" alt="Equity premium and ergodic distribution of wealth share." width="80%">
 
-The multiplier panels show where constraints bind for agent 1. The no-short-sale multiplier is positive at 0.3% of interior collocation points, and the borrowing multiplier is positive at 2.7%. The equity-premium panel puts the pricing object on the same states, so the constraint regions can be read against risk compensation.
+Agent 1's no-short-sale multiplier is positive at 0.3% of interior collocation points. The borrowing multiplier is positive at 2.7%. The right panel keeps the equity premium on the same state grid.
 
 <img src="figures/policy-functions.png" alt="Multipliers and equity premium where constraints bind." width="80%">
 
-The table reports numerical accuracy, not a new economic moment. This Python/JAX version keeps the model close to the original GDSGE file; the original C++ benchmark gives the tighter reference scale for the equity Euler equation.
+The table reports simulated Euler-equation residuals. They show that this pedagogical run is numerically coarse.
 
-**Euler Residuals and Benchmark Scale**
+**Euler Residuals**
 
-| Metric                    |   Equity EE | Bond EE      | Interpretation                                    |
-|:--------------------------|------------:|:-------------|:--------------------------------------------------|
-| Mean simulated residual   |    0.00303  | 9.16e-04     | Average Euler-equation miss on simulated states   |
-| Median simulated residual |    0.00269  | 5.80e-04     | Typical miss away from the worst simulated states |
-| Max simulated residual    |    0.24     | 1.49e-01     | Worst simulated miss in this coarse Python run    |
-| GDSGE benchmark mean      |    2.08e-05 | not reported | Original GDSGE C++ scale reported for the model   |
-| GDSGE benchmark max       |    0.0034   | not reported | Original GDSGE C++ scale reported for the model   |
+| Metric                    |   Equity EE |   Bond EE | Interpretation                                    |
+|:--------------------------|------------:|----------:|:--------------------------------------------------|
+| Mean simulated residual   |     0.00303 |  0.000916 | Average Euler-equation miss on simulated states   |
+| Median simulated residual |     0.00269 |  0.00058  | Typical miss away from the worst simulated states |
+| Max simulated residual    |     0.24    |  0.149    | Worst simulated miss in this coarse Python run    |
 
-The diagnostic table limits how far to push the quantitative numbers. The plotted policies recover state-dependent pricing and constraint patterns, but this coarse pedagogical run is looser than the optimized GDSGE benchmark. A production exercise would raise the iteration cap, tune damping, or run a denser grid in the original compiled implementation before treating the Euler errors as benchmark accuracy.
+The Euler residuals are larger than a production asset-pricing run would allow. The figures still show the state dependence created by constraints. Treat the numbers as a teaching calculation, not final quantitative evidence.
 
 ## Takeaway
 
-Limited asset trade turns the wealth distribution into an asset-pricing state. With moderate risk aversion, risk premia move because constrained households cannot freely trade away bad marginal-utility states. STPFI fits this problem because it solves the implicit wealth-share transition and the occasionally binding portfolio constraints inside one global fixed point.
+Limited asset trade turns the wealth distribution into an asset-pricing state. Risk premia move because constrained households cannot freely trade away high marginal-utility states. STPFI fits the model because it solves the transition and portfolio constraints inside one fixed point.
 
 ## References
 

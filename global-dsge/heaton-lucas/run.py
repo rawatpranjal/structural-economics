@@ -344,23 +344,17 @@ def main():
     )
 
     report.add_overview(
-        "Households do not all price risk in the same way when trade is limited. "
-        "In Heaton and Lucas (1996), two CRRA agents receive different endowment "
-        "shares, trade a claim to aggregate dividends, and trade a one-period "
-        "bond. Short-sale and borrowing limits prevent full insurance, so the "
-        "household that holds wealth after a shock can matter for the stochastic "
-        "discount factor.\n\n"
-        "The state variable is agent 1's wealth share, $\\omega_1$. In a "
-        "complete-markets Lucas tree, a fixed Pareto weight would summarize "
-        "risk sharing. With portfolio constraints, wealth shares move after "
-        "shocks and the price of aggregate risk moves with them. That is why "
-        "the tutorial needs a global computation: prices, portfolios, and the "
-        "next wealth share have to be solved together at each point in the "
-        "state space. The example connects the "
-        "[Lucas-tree pricing](../../dynamic-programming/asset-pricing/) "
-        "environment with the incomplete-markets logic in the "
-        "[Huggett bond-market](../../heterogeneous-agents/huggett-incomplete-markets/) "
-        "tutorial."
+        "Households face different endowment shocks and cannot fully insure "
+        "each other. In Heaton and Lucas (1996), two CRRA agents trade equity "
+        "and a one-period bond. Short-sale and borrowing limits make marginal "
+        "utilities depend on who holds wealth after each shock.\n\n"
+        "The state is agent 1's wealth share, $\\omega_1$. When constraints "
+        "bind, this share changes how aggregate dividends are priced. Equity "
+        "premia therefore vary across the wealth distribution.\n\n"
+        "The transition for $\\omega_1$ is implicit. Tomorrow's share depends "
+        "on tomorrow's equity price, which also depends on tomorrow's share. "
+        "STPFI solves prices, portfolios, multipliers, and shock-contingent "
+        "next wealth shares in one global system."
     )
 
     report.add_equations(r"""
@@ -420,14 +414,10 @@ $$\omega_1'(z')=
     )
 
     report.add_solution_method(
-        "The transition for $\\omega_1$ is implicit. Tomorrow's wealth share "
-        "depends on tomorrow's equity price, and tomorrow's equity price is "
-        "itself a function of that wealth share. Simultaneous Transition and "
-        "Policy Function Iteration (STPFI) treats the policy rules and the "
-        "transition rule as one fixed point. At each current shock and wealth "
-        "share, the nonlinear system solves consumption, portfolios, prices, "
-        "Kuhn-Tucker multipliers, and all eight possible next wealth shares at "
-        "the same time.\n\n"
+        "STPFI treats the policy rules and transition rule as one fixed point. "
+        "At each current shock and wealth share, the system solves consumption, "
+        "portfolios, prices, multipliers, and eight possible next wealth "
+        "shares. It updates both objects together, then damps the change.\n\n"
         "```text\n"
         "Algorithm: STPFI for the Heaton-Lucas wealth-share economy\n"
         "Input: grid Omega, shock transition P, primitives beta, gamma, Kb\n"
@@ -442,19 +432,18 @@ $$\omega_1'(z')=
         "until the sup-norm policy change is below epsilon or the iteration cap is reached\n"
         "simulate the Markov chain and the implied omega transition to read the ergodic distribution\n"
         "```\n\n"
-        f"This run {status_phrase} after **{info['iterations']}** STPFI iterations "
-        f"with final policy change {info['error']:.2e} and maximum pointwise "
-        f"equation residual {info['residual']:.2e}. The nonlinear systems use "
-        "`scipy.optimize.root`; JAX supplies the 19-by-19 Jacobian at each "
-        "collocation point."
+        f"This run {status_phrase} after **{info['iterations']}** STPFI "
+        f"iterations. The final policy change was {info['error']:.2e}, and "
+        f"the maximum pointwise residual was {info['residual']:.2e}. The "
+        "nonlinear systems use `scipy.optimize.root`. JAX supplies the "
+        "19-by-19 Jacobian."
     )
 
     report.add_results(
-        f"The computed equity premium changes across wealth shares, ranging "
-        f"from {eq_min:.2f}% to {eq_max:.2f}% on the displayed interior grid. "
-        "Those movements do more than relabel shocks. They reflect "
-        "which agent is close to a portfolio constraint and whose marginal "
-        "utility receives more weight in pricing aggregate dividends."
+        f"The computed equity premium ranges from {eq_min:.2f}% to "
+        f"{eq_max:.2f}% on the interior grid. It moves because constraints "
+        "change whose marginal utility prices dividends. The variation is the "
+        "asset-pricing effect of incomplete risk sharing."
     )
 
     # Figures
@@ -476,12 +465,10 @@ $$\omega_1'(z')=
         "Equity premium and ergodic distribution of wealth share.",
         fig1,
         description=(
-            "The first panel reads equity premia against the distributional state. "
-            "The second panel shows where the simulated economy spends its time: "
-            f"the mean wealth share is {omega_mean:.3f}, with the 10th and 90th "
-            f"percentiles at {omega_p10:.3f} and {omega_p90:.3f}. The solution "
-            "still prices assets over the whole state space, including states "
-            "that the simulation visits less often."
+            "Panel one plots equity premia against the wealth-share state. "
+            "Panel two shows the simulated ergodic distribution. The mean "
+            f"wealth share is {omega_mean:.3f}, with 10th and 90th percentiles "
+            f"at {omega_p10:.3f} and {omega_p90:.3f}."
         ),
     )
 
@@ -499,12 +486,10 @@ $$\omega_1'(z')=
         "Multipliers and equity premium where constraints bind.",
         fig2,
         description=(
-            "The multiplier panels show where constraints bind for agent 1. "
-            f"The no-short-sale multiplier is positive at {no_short_share:.1f}% "
-            f"of interior collocation points, and the borrowing multiplier is "
-            f"positive at {borrow_share:.1f}%. The equity-premium panel puts "
-            "the pricing object on the same states, so the constraint regions "
-            "can be read against risk compensation."
+            "Agent 1's no-short-sale multiplier is positive at "
+            f"{no_short_share:.1f}% of interior collocation points. The "
+            f"borrowing multiplier is positive at {borrow_share:.1f}%. The "
+            "right panel keeps the equity premium on the same state grid."
         ),
     )
 
@@ -513,59 +498,46 @@ $$\omega_1'(z')=
             "Mean simulated residual",
             "Median simulated residual",
             "Max simulated residual",
-            "GDSGE benchmark mean",
-            "GDSGE benchmark max",
         ],
         "Equity EE": [
             f"{ee_s.mean():.2e}",
             f"{np.median(ee_s):.2e}",
             f"{ee_s.max():.2e}",
-            "2.08e-05",
-            "3.40e-03",
         ],
         "Bond EE": [
             f"{ee_b.mean():.2e}",
             f"{np.median(ee_b):.2e}",
             f"{ee_b.max():.2e}",
-            "not reported",
-            "not reported",
         ],
         "Interpretation": [
             "Average Euler-equation miss on simulated states",
             "Typical miss away from the worst simulated states",
             "Worst simulated miss in this coarse Python run",
-            "Original GDSGE C++ scale reported for the model",
-            "Original GDSGE C++ scale reported for the model",
         ],
     })
     report.add_table(
         "tables/euler-errors.csv",
-        "Euler Residuals and Benchmark Scale",
+        "Euler Residuals",
         df,
         description=(
-            "The table reports numerical accuracy, not a new economic moment. "
-            "This Python/JAX version keeps the model close to the original "
-            "GDSGE file; the original C++ benchmark gives the tighter reference "
-            "scale for the equity Euler equation."
+            "The table reports simulated Euler-equation residuals. They show "
+            "that this pedagogical run is numerically coarse."
         ),
     )
 
     report.add_results(
-        "The diagnostic table limits how far to push the quantitative numbers. "
-        "The plotted policies recover state-dependent pricing and constraint "
-        "patterns, but this coarse pedagogical run is looser than the optimized "
-        "GDSGE benchmark. A production exercise would raise the iteration cap, "
-        "tune damping, or run a denser grid in the original compiled "
-        "implementation before treating the Euler errors as benchmark accuracy."
+        "The Euler residuals are larger than a production asset-pricing run "
+        "would allow. The figures still show the state dependence created by "
+        "constraints. Treat the numbers as a teaching calculation, not final "
+        "quantitative evidence."
     )
 
     report.add_takeaway(
         "Limited asset trade turns the wealth distribution into an asset-pricing "
-        "state. With moderate risk aversion, risk premia move because constrained "
-        "households cannot freely trade away bad marginal-utility states. STPFI "
-        "fits this problem because it solves the implicit wealth-share transition "
-        "and the occasionally binding portfolio constraints inside one global "
-        "fixed point."
+        "state. Risk premia move because constrained households cannot freely "
+        "trade away high marginal-utility states. STPFI fits the model because "
+        "it solves the transition and portfolio constraints inside one fixed "
+        "point."
     )
 
     report.add_references([
