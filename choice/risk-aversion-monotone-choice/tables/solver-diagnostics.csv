@@ -1,7 +1,0 @@
-Diagnostic,Value
-Fixed-scale optimizer success,1.0
-Monotone optimizer success,1.0
-Monotone iterations,8.0
-Minimum adjacent logit spacing,-4.440892098500626e-16
-Observed monotonicity violations,1.0
-Monotone fit violations,0.0
