@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-08T00:22:41Z",
+  "updated_at": "2026-05-08T00:28:14Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -745,6 +745,20 @@
         "computational-methods/projection-methods/run.py"
       ],
       "updated_at": "2026-05-08T00:22:41Z"
+    },
+    {
+      "tutorial_path": "computational-methods/perturbation-linearization/",
+      "status": "complete",
+      "commit": "532f4d5ca4173d18999b113e0941b69c64159f6b",
+      "changed_paths": [
+        "README.md",
+        "computational-methods/perturbation-linearization/README.md",
+        "computational-methods/perturbation-linearization/figures/local-approximations.png",
+        "computational-methods/perturbation-linearization/figures/local-errors.png",
+        "computational-methods/perturbation-linearization/figures/thumb.png",
+        "computational-methods/perturbation-linearization/run.py"
+      ],
+      "updated_at": "2026-05-08T00:28:14Z"
     }
   ]
 }
