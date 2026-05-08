@@ -1,30 +1,29 @@
-# Persistent Shocks and Multiplier-Accelerator Dynamics
+# Fiscal-Shock Persistence and Income Dynamics
 
-> How AR(1) persistence turns innovations into macroeconomic propagation.
+> How AR(1) propagation and a multiplier-accelerator block turn a spending innovation into an income path.
 
 ## Overview
 
-Much of macroeconomic dynamics turns on a simple question: after a shock hits, how much of it is still economically relevant next period, next year, or a decade later? The AR(1) law of motion is the standard way to put that persistence into a model. In the [RBC TFP-shock tutorial](../../dsge/rbc/), it drives technology. In the [New Keynesian tutorial](../../dsge/nkdsge/), the same idea is used for policy and demand disturbances.
+Suppose a fiscal authority raises government spending during a downturn. The relevant policy question goes beyond the impact effect: how long does the spending impulse remain in the economy, and how does income react while households and firms adjust with lags? A one-quarter disturbance can fade quickly or behave like a slow-moving state. Those two cases lead to different business-cycle stories even before a full DSGE model is added.
 
-Here the propagation mechanism is isolated before embedding it in a larger equilibrium system. The first model is a scalar AR(1). The second is Samuelson's multiplier-accelerator model, where persistent government spending moves income, income moves consumption with a lag, and investment responds to changes in consumption.
+This tutorial keeps the environment small so the timing is visible. We first compute the exact propagation of an AR(1) state, the workhorse law for technology, demand, and policy shocks. We then feed a persistent spending shock into Samuelson's multiplier-accelerator economy. Consumption follows lagged income, investment reacts to consumption growth, and output clears the accounting identity. The computation turns the primitive persistence parameter into impulse responses, autocorrelations, spectra, and simulated income paths.
 
 ## Equations
 
-The scalar shock process is
+Let $x_t$ denote a generic shock state, such as technology, demand pressure, or
+the discretionary component of fiscal policy. The scalar law of motion is
 
 $$
 x_t = \rho x_{t-1} + \varepsilon_t, \qquad
 \varepsilon_t \sim N(0,\sigma^2), \qquad |\rho|<1.
 $$
 
-The same equation in Dynare lag notation is:
+The coefficient $\rho$ tells us how much of today's state becomes tomorrow's
+state. A high value makes the shock part of the short-run macro environment
+rather than a one-period disturbance.
 
-```text
-x = rho*x(-1) + e
-```
-
-For the multiplier-accelerator model, let $Y_t$ be income, $C_t$ consumption,
-$I_t$ investment, and $G_t$ government spending:
+In the multiplier-accelerator economy, income $Y_t$ equals consumption $C_t$,
+investment $I_t$, and government spending $G_t$:
 
 $$
 C_t = \beta Y_{t-1},
@@ -39,8 +38,8 @@ Y_t = C_t + I_t + G_t.
 $$
 
 The steady state is $\bar Y=\bar G/(1-\beta)$, $\bar C=\beta \bar Y$, and
-$\bar I=0$. The reported impulse responses use deviations from this steady
-state:
+$\bar I=0$. Writing lowercase variables as deviations from that steady state
+gives the income recursion used for the impulse responses:
 
 $$
 y_t = \beta(1+\alpha)y_{t-1}-\alpha\beta y_{t-2}+g_t,
@@ -54,8 +53,8 @@ $$
 
 | Parameter | Value | Role |
 |---|---:|---|
-| $\rho$ | 0.90 | Persistence of the state |
-| $\sigma$ | 0.01 | Innovation standard deviation |
+| $\rho$ | 0.90 | Share of the shock state carried into the next period |
+| $\sigma$ | 0.01 | Standard deviation of new innovations |
 | $T_{sim}$ | 220 | Simulated periods after burn-in |
 
 **Multiplier-accelerator economy**
@@ -64,14 +63,14 @@ $$
 |---|---:|---|
 | $\alpha$ | 0.30 | Accelerator response of investment to consumption growth |
 | $\beta$ | 0.80 | Marginal propensity to consume out of lagged income |
-| $\rho_g$ | 0.90 | Persistence of government spending deviations |
+| $\rho_g$ | 0.90 | Carryover of government-spending deviations |
 | $\bar G$ | 1.00 | Steady-state government spending |
 | $\bar Y$ | 5.00 | Implied steady-state income |
 | $\bar C$ | 4.00 | Implied steady-state consumption |
 
 ## Solution Method
 
-Both systems are backward-looking, so solving them means forward iteration rather than a rational-expectations fixed point. The economic content is still useful: the AR(1) coefficient sets the horizon of a disturbance, while the multiplier-accelerator equations determine how that disturbance moves income components.
+A realized shock path pins down every variable because both blocks are backward-looking. There is no expectations fixed point in this example. That simplicity is useful: it lets us separate the persistence built into the exogenous state from the propagation created by lagged consumption and accelerator investment.
 
 For the AR(1), the main population objects are available in closed form:
 
@@ -80,7 +79,7 @@ $$E[x_t]=0, \qquad \operatorname{Var}(x_t)=\frac{\sigma^2}{1-\rho^2}=0.000526, \
 The half-life is $\log(0.5)/\log(\rho)=6.6$ periods. For the multiplier-accelerator block, the endogenous income roots are 0.346, 0.694; their largest modulus is 0.694, so the calibrated internal propagation is stable.
 
 ```text
-Algorithm: forward propagation of persistent shocks
+Procedure: propagate a fiscal innovation through an AR(1) state
 Inputs: rho, sigma, alpha, beta, rho_g, horizon T, shock sequence eps_t
 Outputs: AR path x_t and multiplier-accelerator paths y_t, c_t, i_t, g_t
 
@@ -91,32 +90,33 @@ Outputs: AR path x_t and multiplier-accelerator paths y_t, c_t, i_t, g_t
 4. Consumption: set c_t = beta y_{t-1}.
 5. Investment: set i_t = alpha(c_t - c_{t-1}).
 6. Income: impose the identity y_t = c_t + i_t + g_t.
-7. Compare simulated AR(1) autocorrelations with the population benchmark rho^k.
+7. Summarize x_t with half-lives, autocorrelations, and spectra.
+8. Read the y_t path as income propagation from the same fiscal shock.
 ```
 
 ## Results
 
-The plot shows the exact response $\rho^h$ to a unit innovation. Moving $\rho$ from 0.5 to 0.9 is not cosmetic: it turns a one-period half-life into roughly seven periods. At $\rho=0.99$, the shock acts as a slow-moving state for any short macro sample.
+A unit shock follows the exact path $\rho^h$. Raising $\rho$ from 0.5 to 0.9 changes the half-life from one period to roughly seven periods. At $\rho=0.99$, the shock behaves like a slow-moving state over the length of many macro samples.
 
 <img src="figures/ar1-irfs.png" alt="Exact AR(1) impulse responses by persistence" width="80%">
 
-The government spending process is monotone, but income need not simply copy it. Lagged consumption keeps demand elevated after the shock, while investment reacts to the change in consumption. The accelerator channel therefore matters most around turning points, when consumption growth fades.
+Government spending decays smoothly after the innovation. Income inherits that persistence, then adds its own timing through lagged consumption and accelerator investment. The accelerator channel is largest near turning points, when consumption growth changes most.
 
 <img src="figures/multiplier-accelerator-irfs.png" alt="Multiplier-accelerator impulse responses to a government spending shock" width="80%">
 
-The simulated AR(1) path is plotted against its analytic two-standard-deviation band, so the finite sample can be read against the population benchmark. In the multiplier-accelerator panel, income and consumption move together but not simultaneously: lagged consumption supplies the memory that carries government spending shocks forward.
+The simulated AR(1) path sits inside its analytic two-standard-deviation band for most dates, which gives the finite sample a population benchmark. In the multiplier-accelerator panel, income and consumption move together but not at the same date. Lagged consumption supplies the memory that carries government spending shocks forward.
 
 <img src="figures/simulated-paths.png" alt="Simulated AR(1) and multiplier-accelerator paths" width="80%">
 
-The left panel is a built-in accuracy check: the simulated AR(1) autocorrelations should track $\rho^k$, with remaining gaps from finite-sample noise. The right panel shows that the multiplier-accelerator economy creates additional serial correlation in income because government spending is filtered through lagged consumption.
+The left panel checks the simulation against the AR(1) population benchmark $\rho^k$, with remaining gaps from finite-sample noise. The right panel shows that the multiplier-accelerator economy creates serial correlation in income because government spending is filtered through lagged consumption.
 
 <img src="figures/autocorrelation.png" alt="Autocorrelation functions for the AR(1) and multiplier-accelerator output" width="80%">
 
-The frequency-domain view restates the same point in a different language. High persistence shifts variance toward low frequencies, so the state looks like a slow cycle or trend over short samples. This is why the choice of $\rho$ in a DSGE shock process affects business-cycle timing, not only unconditional volatility.
+High persistence loads variance at low frequencies. In a short sample, the state can look like a slow cycle or trend rather than a sequence of isolated surprises. This is why the choice of $\rho$ in a DSGE shock process changes business-cycle timing as well as unconditional volatility.
 
 <img src="figures/spectral-density.png" alt="Exact AR(1) spectral density by persistence" width="80%">
 
-The analytic benchmarks make the calibration stakes explicit. Holding $\sigma$ fixed, raising $\rho$ raises both the variance of the state and the amount of time a shock remains economically relevant.
+The analytic benchmarks show the calibration stakes. Holding $\sigma$ fixed, a higher $\rho$ raises the variance of the state and lengthens the time a shock remains economically relevant.
 
 **AR(1) Analytical Benchmarks**
 
@@ -130,9 +130,9 @@ The analytic benchmarks make the calibration stakes explicit. Holding $\sigma$ f
 
 ## Takeaway
 
-An AR(1) coefficient is an economic timing assumption. With $\rho=0.9$, a shock still has about half of its initial effect after 6.6 periods; with $\rho=0.99$, the same calculation gives 69.0 periods. Once that process enters a macro model, other equilibrium or accounting equations determine how the persistent state appears in observables.
+An AR(1) coefficient is an economic timing assumption. With $\rho=0.9$, a shock still has about half of its initial effect after 6.6 periods; with $\rho=0.99$, the same calculation gives 69.0 periods. A macro model then maps that persistent state into observables through its own accounting or equilibrium equations.
 
-The multiplier-accelerator example is deliberately simpler than the RBC and New Keynesian tutorials, but it is useful for the same reason: it separates the shock law from the propagation mechanism. Government spending supplies the persistent disturbance; lagged consumption and accelerator investment turn it into a richer income path.
+The multiplier-accelerator economy makes that mapping visible. Government spending supplies the persistent disturbance. Lagged consumption and accelerator investment decide how the disturbance becomes an income path.
 
 ## References
 

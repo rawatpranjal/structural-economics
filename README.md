@@ -145,7 +145,7 @@ These tutorials cover stochastic processes, macroeconomic data, and forecasting.
 | Preview | Tutorial | Description |
 |---|---|---|
 | [<img src="time-series/fred-macro-data/figures/thumb.png" width="160">](time-series/fred-macro-data/figures/time-series.png) | **[Business-Cycle Moments from a FRED-Style Macro Panel](time-series/fred-macro-data/)** | Build macro business-cycle targets from GDP, inflation, unemployment, and policy-rate series. HP filtering turns the panel into cycles, comovement, persistence, and an Okun slope. |
-| [<img src="time-series/ar-processes/figures/thumb.png" width="160">](time-series/ar-processes/figures/ar1-irfs.png) | **[Persistent Shocks and Multiplier-Accelerator Dynamics](time-series/ar-processes/)** | Study how persistence changes shock half-lives, spectra, and income dynamics. The coefficient is an economic timing assumption as well as a statistical parameter. |
+| [<img src="time-series/ar-processes/figures/thumb.png" width="160">](time-series/ar-processes/figures/ar1-irfs.png) | **[Fiscal-Shock Persistence and Income Dynamics](time-series/ar-processes/)** | Trace how a spending innovation becomes a persistent income path. AR(1) impulse responses, autocorrelations, and spectra separate the shock law from multiplier-accelerator propagation. |
 | [<img src="time-series/stock-watson/figures/thumb.png" width="160">](time-series/stock-watson/figures/factor-comparison.png) | **[Stock-Watson Diffusion Index Forecasts](time-series/stock-watson/)** | Extract a common factor from a large macro panel and use it for forecasting. The example compares factor forecasts with simpler benchmarks. |
 
 ## Computational Methods
