@@ -276,31 +276,37 @@ def main() -> None:
 
     report = ModelReport(
         "Deep Learning for Optimal Growth",
-        "A tiny JAX neural net learns the Brock-Mirman saving rule from Euler residuals, then faces a closed-form audit.",
+        "A JAX neural net learns the Brock-Mirman saving rule from Euler residuals.",
         include_reproduce=False,
         show_figure_captions=False,
     )
 
     report.add_overview(
-        "A planner allocates output between consumption today and capital tomorrow. "
-        "The log Cobb-Douglas version is useful because the exact saving rule is known. "
-        "That makes it a clean place to study a neural policy solver without hiding the economics.\n\n"
-        "Recent deep-learning macro methods turn dynamic models into empirical-risk "
-        "minimization problems over simulated states. The loss can use lifetime rewards, "
-        "Euler residuals, or Bellman residuals. This first example uses Euler residuals. "
-        "The neural net proposes a feasible saving share, gradients update its weights, "
-        "and the closed-form Brock-Mirman policy audits the result point by point."
+        "A planner chooses how much output to consume today.\n\n"
+        "Remaining output becomes capital tomorrow.\n\n"
+        "The log Cobb-Douglas case has an exact saving rule.\n\n"
+        "That exact rule makes the neural solver easy to audit.\n\n"
+        "Deep-learning macro methods often rewrite dynamic models as empirical-risk problems.\n\n"
+        "Some solvers optimize lifetime rewards.\n\n"
+        "Some solvers minimize Euler residuals.\n\n"
+        "Some solvers minimize Bellman residuals.\n\n"
+        "This tutorial uses an Euler-residual loss.\n\n"
+        "The neural net proposes a feasible saving share.\n\n"
+        "Gradient steps fit the policy on simulated capital states.\n\n"
+        "The Brock-Mirman formula audits the trained rule point by point."
     )
 
     report.add_equations(
         r"""
-Capital fully depreciates each period. With state $k_t$, output is
+Capital fully depreciates each period.
+
+With state $k_t$, output is
 
 $$
 y_t = A k_t^{\alpha}, \qquad 0<\alpha<1,
 $$
 
-and feasibility is
+Feasibility requires
 
 $$
 c_t + k_{t+1} = A k_t^{\alpha},
@@ -321,7 +327,7 @@ $$
 = \beta \frac{\alpha A k_{t+1}^{\alpha-1}}{c_{t+1}}.
 $$
 
-The code evaluates it as the log residual
+The code evaluates the Euler equation as this log residual:
 
 $$
 r(k;\theta)
@@ -331,17 +337,19 @@ r(k;\theta)
 \right].
 $$
 
-Zero means the Euler equation holds.
+The residual is zero when the Euler equation holds.
 
-Training chooses parameters that make this residual small. In population, the
-risk is
+Training chooses parameters that make this residual small.
+
+The population risk is
 
 $$
 \Xi(\theta) = E\left[r(k;\theta)^2\right].
 $$
 
-The program replaces that expectation with simulated capital draws
-$k_1,\ldots,k_n$ and solves the empirical problem
+The program replaces that expectation with simulated capital draws.
+
+With draws $k_1,\ldots,k_n$, it solves the empirical problem
 
 $$
 \Xi_n(\theta) = \frac{1}{n}\sum_{i=1}^{n} r(k_i;\theta)^2,
@@ -349,7 +357,7 @@ $$
 \hat{\theta} = \arg\min_{\theta} \Xi_n(\theta).
 $$
 
-The neural policy first chooses a saving share,
+The neural policy first chooses a saving share:
 
 $$
 s(k;\theta)
@@ -357,7 +365,7 @@ s(k;\theta)
 \sigma\left(N_{\theta}(\log(k/k_{ss}))\right),
 $$
 
-then imposes feasibility by construction:
+It then imposes feasibility by construction:
 
 $$
 k'(k;\theta)=s(k;\theta)A k^{\alpha},
@@ -365,7 +373,7 @@ k'(k;\theta)=s(k;\theta)A k^{\alpha},
 c(k;\theta)=(1-s(k;\theta))A k^{\alpha}.
 $$
 
-For this special case, the exact policy is
+This special case has an exact policy:
 
 $$
 k'(k)=\alpha\beta A k^{\alpha},
@@ -373,7 +381,7 @@ k'(k)=\alpha\beta A k^{\alpha},
 c(k)=(1-\alpha\beta)A k^{\alpha},
 $$
 
-and the steady state is
+The steady state is
 
 $$
 k_{ss}=(\alpha\beta A)^{1/(1-\alpha)}.
@@ -397,37 +405,48 @@ $$
     )
 
     report.add_solution_method(
-        "The broader deep-learning recipe is to choose a parameterized policy, "
-        "simulate or draw states, build an economic residual at those states, "
-        "and minimize the average squared residual. In richer DSGE models the "
-        "same template can use lifetime rewards or Bellman residuals. Here the "
-        "Euler equation is enough because the deterministic growth model has one "
-        "state and one policy. JAX autodiff supplies the gradient of the empirical "
-        "risk, and Adam takes the parameter updates.\n\n"
+        "The method starts with a parameterized policy.\n\n"
+        "It draws states from a training interval.\n\n"
+        "It evaluates an economic residual at those states.\n\n"
+        "It minimizes the average squared residual.\n\n"
+        "Richer DSGE examples can optimize lifetime rewards.\n\n"
+        "Other DSGE examples can minimize Bellman residuals.\n\n"
+        "This model only needs Euler residuals.\n\n"
+        "JAX autodiff provides the gradient.\n\n"
+        "Adam updates the weights.\n\n"
         "```text\n"
         "Algorithm: simulated-state Euler-residual training\n"
-        "Inputs: primitives alpha, beta, A; training interval K; batch size n; steps T\n"
-        "Output: feasible neural policy k'(k; theta)\n"
-        "Initialize theta and Adam moments\n"
+        "Inputs:\n"
+        "    alpha, beta, A\n"
+        "    training interval K\n"
+        "    batch size n\n"
+        "    steps T\n"
+        "Output:\n"
+        "    feasible neural policy k'(k; theta)\n"
+        "Initialize theta\n"
+        "Initialize Adam moments\n"
         "Compute the exact steady state k_ss\n"
         "For t = 1,...,T:\n"
         "    Draw minibatch states k_1,...,k_n from K\n"
-        "    Evaluate s(k_i; theta), c(k_i; theta), and k'(k_i; theta)\n"
+        "    Evaluate saving shares s(k_i; theta)\n"
+        "    Evaluate consumption c(k_i; theta)\n"
+        "    Evaluate next capital k'(k_i; theta)\n"
         "    Evaluate c(k'(k_i; theta); theta)\n"
         "    Compute residuals r(k_i; theta)\n"
         "    Set Xi_n(theta) = (1/n) sum_i r(k_i; theta)^2\n"
         "    Update theta with one Adam step using the gradient of Xi_n(theta)\n"
         "Audit k'(k; theta) on a holdout grid against the exact rule\n"
         "```\n\n"
-        "The audit is not part of the training loss. It exists because this "
-        "Brock-Mirman case has the closed-form rule $k'=\\alpha\\beta A k^\\alpha$. "
+        "The audit is not part of the training loss.\n\n"
+        "It exists because this Brock-Mirman case has the closed-form rule "
+        "$k'=\\alpha\\beta A k^\\alpha$.\n\n"
         "The comparison shows what the residual-trained neural policy learned."
     )
 
     report.add_results(
-        "The trained policy is almost the exact constant-saving rule. The x-axis "
-        "uses capital relative to the steady state, so the main economic object is "
-        "the slope of the saving rule away from $k_{ss}$."
+        "The trained policy is almost the exact constant-saving rule.\n\n"
+        "The x-axis uses capital relative to the steady state.\n\n"
+        "The main object is the saving rule away from $k_{ss}$."
     )
     fig, ax = plt.subplots(figsize=(7, 4.5))
     ax.plot(k_grid_np / k_ss, exact_kp / k_ss, label="Closed form", color="#1b5e20")
@@ -445,11 +464,41 @@ $$
     )
 
     report.add_results(
-        "The residual plot is the numerical check. A small log Euler residual means "
-        "the neural policy makes marginal utility today match discounted marginal "
-        "utility tomorrow. The policy-error panel measures the same approximation "
-        "directly against the closed-form rule, which is available only in this "
-        "teaching example."
+        "The training curves show the fitting process.\n\n"
+        "The Euler-residual loss falls sharply.\n\n"
+        "The mean policy error falls with it."
+    )
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4.2))
+    train_steps = np.asarray(train_log["steps"])
+    train_losses = np.asarray(train_log["loss"])
+    train_policy_errors = np.asarray(train_log["mean_policy_error"])
+    axes[0].plot(train_steps, train_losses, color="#4e79a7", linewidth=2.0)
+    axes[0].set_yscale("log")
+    axes[0].set_xlabel("Gradient step")
+    axes[0].set_ylabel("Euler-residual loss")
+    axes[0].set_title("Training Loss")
+    axes[1].plot(train_steps, train_policy_errors, color="#f28e2b", linewidth=2.0)
+    axes[1].set_yscale("log")
+    axes[1].set_xlabel("Gradient step")
+    axes[1].set_ylabel("Mean policy error")
+    axes[1].set_title("Policy Error")
+    fig.tight_layout()
+    report.add_figure(
+        "figures/training-curves.png",
+        "Training loss and mean policy error",
+        fig,
+        description=(
+            "Both series drop by several orders of magnitude.\n\n"
+            "The loss curve uses fresh minibatches.\n\n"
+            "The error curve uses a fixed audit grid."
+        ),
+    )
+
+    report.add_results(
+        "The residual plot is the numerical check.\n\n"
+        "A small log Euler residual means the Euler equation is nearly satisfied.\n\n"
+        "The policy-error panel compares the neural rule with the closed-form rule.\n\n"
+        "That direct comparison is available only in this teaching example."
     )
     fig, axes = plt.subplots(1, 2, figsize=(10, 4.2))
     axes[0].plot(k_grid_np / k_ss, np.abs(euler_residual), color="#7b1fa2")
@@ -466,13 +515,16 @@ $$
         "figures/euler-residuals.png",
         "Euler residuals and policy errors over the audit grid",
         fig,
-        description="Residuals stay small across the grid, and the remaining policy error is centered near zero.",
+        description=(
+            "Residuals stay small across the grid.\n\n"
+            "The remaining policy error is centered near zero."
+        ),
     )
 
     report.add_results(
-        "Starting below the steady state gives a transition path. The exact and "
-        "neural paths converge to the same steady state because the learned saving "
-        "share reproduces the Brock-Mirman policy."
+        "Starting below the steady state gives a transition path.\n\n"
+        "The exact path converges to the steady state.\n\n"
+        "The neural path follows the same transition."
     )
     fig, ax = plt.subplots(figsize=(7, 4.5))
     t_grid = np.arange(periods)
@@ -491,10 +543,10 @@ $$
     )
 
     report.add_results(
-        "The table reports the out-of-sample audit on the plotted grid. Policy "
-        "errors are in capital units. The Euler residual is the maximum absolute "
-        "log residual, so values near zero mean the intertemporal first-order "
-        "condition is nearly satisfied."
+        "The table reports the holdout audit on the plotted grid.\n\n"
+        "Policy errors are in capital units.\n\n"
+        "The Euler residual column is the maximum absolute log residual.\n\n"
+        "Values near zero mean the Euler equation is nearly satisfied."
     )
     report.add_table(
         "tables/training-summary.csv",
@@ -503,21 +555,21 @@ $$
     )
 
     report.add_results(
-        "The estimated policy and the exact Brock-Mirman policy are nearly "
-        "identical on the audit grid. The learned saving share is nearly flat, "
-        f"as theory predicts: its mean is {mean_saving_share:.4f}, while the "
-        f"exact saving share is $\\alpha\\beta={exact_saving_share:.4f}$. The "
-        "policy figure is the main evidence; the table records the numerical "
-        "audit behind the plot."
+        "The estimated policy is nearly identical to the exact Brock-Mirman policy.\n\n"
+        "The learned saving share is nearly flat.\n\n"
+        f"Its mean is {mean_saving_share:.4f}.\n\n"
+        f"The exact saving share is $\\alpha\\beta={exact_saving_share:.4f}$.\n\n"
+        "The policy figure is the main evidence.\n\n"
+        "The table records the diagnostics behind the plot."
     )
 
     report.add_takeaway(
-        "Deep learning is not needed to solve this Brock-Mirman model. Its value "
-        "here is pedagogical: the same residual-minimization machinery used in "
-        "larger nonlinear macro models can be inspected in a case where the answer "
-        "is known. Feasibility comes from the policy parameterization, training "
-        "comes from Euler residuals on simulated states, and credibility comes "
-        "from an out-of-sample closed-form audit."
+        "Deep learning is not needed to solve this Brock-Mirman model.\n\n"
+        "The example is useful because the answer is known.\n\n"
+        "The same residual-minimization machinery appears in larger nonlinear macro models.\n\n"
+        "Feasibility comes from the policy parameterization.\n\n"
+        "Training comes from Euler residuals on simulated states.\n\n"
+        "Credibility comes from the out-of-sample closed-form audit."
     )
 
     report.add_references([
