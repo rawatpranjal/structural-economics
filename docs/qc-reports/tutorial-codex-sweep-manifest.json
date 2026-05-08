@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-full-tutorial-sweep-v1",
-  "updated_at": "2026-05-08T00:10:53Z",
+  "updated_at": "2026-05-08T00:15:29Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -712,6 +712,17 @@
         "time-series/stock-watson/run.py"
       ],
       "updated_at": "2026-05-08T00:10:53Z"
+    },
+    {
+      "tutorial_path": "computational-methods/numerical-optimization/",
+      "status": "complete",
+      "commit": "7814f3201dbb770b7635781ffe722d65f06e5bd0",
+      "changed_paths": [
+        "README.md",
+        "computational-methods/numerical-optimization/README.md",
+        "computational-methods/numerical-optimization/run.py"
+      ],
+      "updated_at": "2026-05-08T00:15:29Z"
     }
   ]
 }
