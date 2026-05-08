@@ -138,6 +138,7 @@ Structural econometrics focuses on estimating economic primitives from observed 
 | [<img src="computational-methods/numerical-optimization/figures/thumb.png" width="160">](computational-methods/numerical-optimization/figures/optimizer-paths.png) | **[Latent-Regime Likelihoods and Optimizer Basins](computational-methods/numerical-optimization/)** | Estimate parameters in a latent-regime likelihood where two regions fit the data. Multi-start local optimization and global search show when a reported estimate depends on the likelihood basin. |
 | [<img src="computational-methods/simulation-based-estimation/figures/thumb.png" width="160">](computational-methods/simulation-based-estimation/figures/criterion-surfaces.png) | **[Estimating a Search Acceptance Rule by Simulation](computational-methods/simulation-based-estimation/)** | Estimate a reservation-wage rule from wage offers and worker acceptances. MSM matches economic moments, while indirect inference matches an auxiliary acceptance model. |
 | [<img src="choice/mixed-logit-simulation/figures/thumb.png" width="160">](choice/mixed-logit-simulation/figures/choice-fit.png) | **[Mixed Logit Demand with Simulated Likelihood](choice/mixed-logit-simulation/)** | Consumers differ in price sensitivity and quality tastes. Fixed simulation draws approximate mixed-logit probabilities and show why aggregate substitution need not follow IIA. |
+| [<img src="structural-econometrics/rum-choice-networks/figures/thumb.png" width="160">](structural-econometrics/rum-choice-networks/figures/choice-fit.png) | **[Choice Prediction with RUMnets](structural-econometrics/rum-choice-networks/)** | Estimate product choices with a random-utility neural utility. Fixed latent draws turn RUMnet probabilities into a sample average while keeping substitution tied to utility maximization. |
 | [<img src="choice/sequential-search-ursu/figures/thumb.png" width="160">](choice/sequential-search-ursu/figures/search-and-choice-fit.png) | **[Consumer Search with Sequential Inspection Costs](choice/sequential-search-ursu/)** | Consumers inspect products one at a time before buying. A Weitzman-style search rule and simulated moments recover search costs from search paths and purchases. |
 | [<img src="computational-methods/metropolis-hastings/figures/thumb.png" width="160">](computational-methods/metropolis-hastings/figures/mh-walk.png) | **[Sampling a Two-Regime Structural Posterior](computational-methods/metropolis-hastings/)** | Sample a structural posterior with two plausible regimes. Random-walk Metropolis-Hastings shows how proposal scale changes mode crossing and posterior averages. |
 
@@ -166,6 +167,7 @@ These tutorials introduce computational methods to solve game theoretic equilibr
 | [<img src="game-theory/normal-form-games/figures/thumb.png" width="160">](game-theory/normal-form-games/figures/pure-deviation-gains.png) | **[Finite Strategic Games and Nash Equilibrium Checks](game-theory/normal-form-games/)** | Small payoff tables encode strategic coordination and matching games. Deviation-gain enumeration finds pure Nash cells; 2x2 indifference equations find mixed probabilities. |
 | [<img src="game-theory/static-games/figures/thumb.png" width="160">](game-theory/static-games/figures/cournot-best-response.png) | **[Cournot Quantity Competition and Best-Response Iteration](game-theory/static-games/)** | Two firms choose quantities in a linear Cournot market. First-order conditions give the Nash quantity, and damped best-response iteration checks the fixed point. |
 | [<img src="game-theory/first-price-auctions/figures/thumb.png" width="160">](game-theory/first-price-auctions/figures/bid-functions.png) | **[First-Price Auctions, Bid Shading, and Deviation Checks](game-theory/first-price-auctions/)** | Private-value bidders shade bids when the winner pays its own bid. A closed-form Bayesian Nash rule is checked by a type-by-type bid-grid deviation test. |
+| [<img src="game-theory/deep-optimal-auctions/figures/thumb.png" width="160">](game-theory/deep-optimal-auctions/figures/learned-mechanism.png) | **[Deep Learning for Optimal Auction Design](game-theory/deep-optimal-auctions/)** | Learn a two-bidder auction as a neural mechanism. Revenue is trained with a regret penalty and audited against Myerson's reserve-price benchmark. |
 | [<img src="game-theory/quantal-response-equilibrium/figures/thumb.png" width="160">](game-theory/quantal-response-equilibrium/figures/qre-path.png) | **[Market Entry with Quantal Response Equilibrium](game-theory/quantal-response-equilibrium/)** | Two firms decide whether to enter a small market. Logit QRE solves the noisy entry probability as a fixed point. |
 
 ## Time Series and Filtering Methods
@@ -189,6 +191,9 @@ These tutorials cover stochastic processes, macroeconomic data, forecasting, and
 - [John Stachurski GitHub](https://github.com/jstac) - Computational economics, stochastic dynamics, and numerical-methods code.
 - [OpenSourceEcon CompMethods](https://github.com/OpenSourceEcon/CompMethods) - Executable course materials on computational methods for economists.
 - [OpenSourceEconomics](https://github.com/OpenSourceEconomics) - Open-source tools for structural modeling, simulation, and policy analysis.
+- [CompEcon (Iskhakov)](https://github.com/fediskhakov/CompEcon) - Foundations of Computational Economics course materials.
+- [Sciences Po CompEcon CoursePack](https://github.com/ScPo-CompEcon/CoursePack) - Computational economics course pack used at Sciences Po.
+- [EconRL](https://github.com/SimonHashtag/EconRL) - Bibliography of economics and finance papers using reinforcement learning.
 
 ### Heterogeneous-Agent & HANK Models
 
@@ -196,6 +201,8 @@ These tutorials cover stochastic processes, macroeconomic data, forecasting, and
 - [Rognlie ECON 411-3](https://github.com/mrognlie/econ411-3) - Graduate macro materials on heterogeneous-agent models and sequence-space methods.
 - [HARK](https://github.com/econ-ark/HARK) - Econ-ARK toolkit for heterogeneous-agent consumption, saving, and portfolio models.
 - [Benjamin Moll Codes](https://benjaminmoll.com/codes/) - Finite-difference codes for continuous-time heterogeneous-agent models.
+- [Quantitative Macro Models](https://github.com/hessjacob/Quantitative-Macro-Models) - Python implementations of heterogeneous-agent and firm-dynamics models.
+- [BASEforHANK](https://github.com/BASEforHANK) - Julia toolboxes for Bayesian HANK solution and estimation.
 
 ### Empirical IO & Structural Estimation
 
@@ -203,9 +210,16 @@ These tutorials cover stochastic processes, macroeconomic data, forecasting, and
 - [Chris Conlon Grad IO](https://github.com/chrisconlon/Grad-IO) - PhD empirical IO course materials with practical estimation code.
 - [Courthoud PhD Industrial Organization](https://github.com/matteocourthoud/Phd-Industrial-Organization) - Applied IO notes and code for demand, auctions, and structural estimation.
 - [respy](https://github.com/OpenSourceEconomics/respy) - Python package for estimating and simulating dynamic discrete-choice models.
+- [Dynamic Structural Econometrics (DSE 2023)](https://github.com/dseconf/DSE2023) - Summer-school materials on solving and estimating dynamic models.
+- [Kenneth Train Software](https://eml.berkeley.edu/~train/software.html) - Mixed logit and discrete-choice estimation code.
+- [Victor Aguirregabiria Computer Code](https://sites.google.com/view/victoraguirregabiriaswebsite/computer-code?authuser=0) - Dynamic discrete-choice and dynamic-game estimation code.
+- [EmpiricalIO](https://github.com/kohei-kawaguchi/EmpiricalIO) - Empirical IO lecture notes, assignments, and R code.
+- [Archive of Empirical Dynamic Programming Research](https://github.com/CForg/Archive-of-Empirical-Dynamic-Programming-Research) - Replication materials for empirical dynamic programming.
 
 ### DSGE, Dynamics, and Filtering
 
 - [New York Fed DSGE.jl](https://github.com/FRBNY-DSGE/DSGE.jl) - Julia tools for solving and estimating DSGE models.
 - [GDSGE](https://github.com/gdsge/gdsge) - Toolbox for global nonlinear DSGE solution.
+- [DSGE_mod](https://github.com/JohannesPfeifer/DSGE_mod) - Dynare `.mod` files for canonical DSGE models.
+- [DynamicalSystems.jl](https://github.com/JuliaDynamics/DynamicalSystems.jl) - Julia library for nonlinear dynamics and time-series analysis.
 - [Kalman and Bayesian Filters in Python](https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python) - Interactive book on Kalman filtering, particle filtering, and Bayesian state estimation.
