@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T08:02:07Z",
+  "updated_at": "2026-05-08T08:07:06Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -392,6 +392,16 @@
         "industrial-organization/collusion-detection/run.py"
       ],
       "updated_at": "2026-05-08T08:02:07Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/dynamic-games/",
+      "status": "complete",
+      "commit": "44765735c06af1382ac0cb83418fe29943eee305",
+      "changed_paths": [
+        "industrial-organization/dynamic-games/README.md",
+        "industrial-organization/dynamic-games/run.py"
+      ],
+      "updated_at": "2026-05-08T08:07:06Z"
     },
     {
       "tutorial_path": "industrial-organization/dynamic-discrete-choice/",
