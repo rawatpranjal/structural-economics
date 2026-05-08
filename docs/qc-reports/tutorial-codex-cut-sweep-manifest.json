@@ -1,6 +1,6 @@
 {
   "pass_name": "codex-cut-not-compress-v1",
-  "updated_at": "2026-05-08T10:19:44Z",
+  "updated_at": "2026-05-08T10:26:12Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -678,6 +678,17 @@
         "time-series/ar-processes/run.py"
       ],
       "updated_at": "2026-05-08T10:19:44Z"
+    },
+    {
+      "tutorial_path": "time-series/stock-watson/",
+      "status": "complete",
+      "commit": "4486d280b87678f931449771805033426855a82f",
+      "changed_paths": [
+        "README.md",
+        "time-series/stock-watson/README.md",
+        "time-series/stock-watson/run.py"
+      ],
+      "updated_at": "2026-05-08T10:26:12Z"
     }
   ]
 }
