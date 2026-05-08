@@ -389,11 +389,38 @@ The keep reward is linear in action-dependent features:
 
 $$r_\theta(x,\text{keep})=\theta_0+\theta_1 x,\qquad \theta_1<0.$$
 
-For each action, the soft Bellman equation is
+Write a demonstrated history as
+
+$$\tau_i=(x_{i0},a_{i0},x_{i1},a_{i1},\ldots).$$
+
+The reward features are action dependent. Replacement has feature vector
+$f(x,\text{replace})=(0,0)$, while keeping has $f(x,\text{keep})=(1,x)$, so
+$r_\theta(x,a)=\theta^\top f(x,a)$.
+
+Maximum causal entropy IRL asks for a policy that earns reward while remaining
+as random as possible, conditional on the observed state history:
+
+$$\max_\pi\ E_\pi\left[\sum_{t\geq 0}\beta^t r_\theta(x_t,a_t)\right]+H_c(\pi),$$
+
+where the causal entropy term is
+
+$$H_c(\pi)=E_\pi\left[-\sum_{t\geq 0}\beta^t\log\pi(a_t\mid x_t)\right].$$
+
+The inverse problem chooses reward weights so demonstrated and policy-implied
+discounted features match:
+
+$$\widehat\mu_D=\frac{1}{N}\sum_{i=1}^N\sum_{t\geq 0}\beta^t f(x_{it},a_{it})
+=E_{\pi_\theta}\left[\sum_{t\geq 0}\beta^t f(x_t,a_t)\right].$$
+
+A compact Lagrangian view puts the feature-matching multipliers in the reward:
+
+$$\mathcal L(\pi,\theta)=H_c(\pi)+\theta^\top\left(E_\pi\left[\sum_{t\geq 0}\beta^t f(x_t,a_t)\right]-\widehat\mu_D\right).$$
+
+For a fixed $\theta$, the policy problem has the causal logit solution. Define
 
 $$Q_\theta(x,a)=r_\theta(x,a)+\beta\sum_{x'}F_a(x'\mid x)\left[\log\sum_{b\in\{0,1\}}\exp Q_\theta(x',b)+\gamma\right].$$
 
-The induced replacement rule is the logit policy
+Then
 
 $$\pi_\theta(a\mid x)=\frac{\exp Q_\theta(x,a)}{\sum_{b\in\{0,1\}}\exp Q_\theta(x,b)}.$$
 
@@ -401,15 +428,11 @@ Rust-style NFXP solves the Bellman equation inside the likelihood and maximizes
 
 $$\ell(\theta)=\sum_{i,t}\log\pi_\theta(a_{it}\mid x_{it}).$$
 
-Maximum causal entropy IRL uses the same causal logit policy over demonstrations.
-With the replacement reward normalization fixed, its conditional likelihood is
-the same expression:
-
-$$\max_\theta\sum_{i,t}\log\pi_\theta(a_{it}\mid x_{it}).$$
-
-The reward features are action dependent. The replacement action has feature
-vector $(0,0)$, while keeping has feature vector $(1,x)$. That is what lets the
-IRL objective distinguish keeping a worn engine from replacing it.
+The implementation estimates $\theta$ by this conditional demonstration
+likelihood. The MCE view interprets the same first-order condition as
+reward-feature matching. With the reward normalization, transitions, discount
+factor, and logit scale fixed, the MCE-IRL policy and Rust logit DDC likelihood
+are the same object in this example.
 """
     )
 
