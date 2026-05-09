@@ -1,6 +1,6 @@
 {
   "pass_name": "tutorial-proofread-sweep-v1",
-  "updated_at": "2026-05-09T06:03:27Z",
+  "updated_at": "2026-05-09T06:17:26Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -217,6 +217,14 @@
       "output_bytes": 6365,
       "model": "claude-sonnet-4-6",
       "updated_at": "2026-05-09T06:03:27Z"
+    },
+    {
+      "tutorial_path": "global-dsge/deep-learning-optimal-growth/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/global-dsge-deep-learning-optimal-growth.md",
+      "output_bytes": 8224,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T06:17:26Z"
     }
   ]
 }

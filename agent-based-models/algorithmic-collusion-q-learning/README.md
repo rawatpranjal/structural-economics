@@ -6,34 +6,57 @@ Algorithmic pricing turns a repeated oligopoly problem into a learning problem. 
 
 The economic question is whether this feedback can move prices above the static Bertrand-Nash benchmark. In a one-shot differentiated-products Bertrand game, each firm sets a price that is a best response to the rival's price. Joint monopoly gives the upper benchmark because one owner would internalize substitution between the two products.
 
-This tutorial is deliberately smaller than the Calvano, Calzolari, Denicolo, and Pastorello experiment and the Courthoud replication code. It keeps the same model class: logit demand, a finite price grid, and independent tabular Q-learning. With a short run and five seeds, the clearest result is supra-Bertrand pricing. The deviation experiment is more mixed, so the text treats price-war discipline as weak and seed-dependent rather than as a guaranteed finding.
+This tutorial is deliberately smaller than the Calvano, Calzolari, Denicolo, and Pastorello experiment and the Courthoud replication code. It keeps the same model class and moves the main hyperparameters toward the Courthoud replication defaults: logit demand, a finite price grid, Courthoud's exponential exploration rule, and independent tabular Q-learning. The page follows one compact calibrated run with seed 202. It is not a robustness exercise.
 
 ## Equations
 
 There are two firms, indexed by $i = 1,2$. Firm $i$ chooses price $p_i$ and has
 constant marginal cost $c$. Product quality is $a$, the outside-option value is
-$a_0$, and $\mu$ controls product differentiation. Logit demand is
+$a_0$, and $\mu$ controls product differentiation. The inside utility index is
 
-$$s_i(p) = \frac{\exp((a - p_i) / \mu)}{\exp(a_0 / \mu) + \sum_{j=1}^2 \exp((a - p_j) / \mu)}.$$
+$$u_i = \frac{\{a - p_i\}}{\{\mu\}}, \qquad u_0 = \frac{\{a_0\}}{\{\mu\}}.$$
+
+The braces mark the numerator and denominator of each utility index. A lower
+price raises $u_i$; a larger $\mu$ makes a given price difference matter less.
+Logit demand is
+
+$$s_i(p) = \frac{\exp(u_i)}{\exp(u_0) + \sum_{j=1}^2 \exp(u_j)}.$$
+
+The numerator is product $i$'s exponentiated utility. The denominator is the
+outside-good term plus the exponentiated utilities of the two inside goods.
 
 Current profit is
 
 $$\pi_i(p) = (p_i - c)s_i(p).$$
 
-The static Bertrand-Nash price solves each firm's first-order condition,
+The own-price derivative of the logit share is
+
+$$\frac{\partial s_i}{\partial p_i} = -\frac{s_i(p)(1-s_i(p))}{\mu}.$$
+
+The static Bertrand-Nash price sets $\partial \pi_i / \partial p_i = 0$:
+
+$$\frac{\partial \pi_i}{\partial p_i} = s_i(p) + (p_i-c)\frac{\partial s_i}{\partial p_i} = s_i(p)[1 - \frac{(p_i-c)(1-s_i(p))}{\mu}] = 0.$$
+
+Since $s_i(p)>0$, the Bertrand first-order condition is
 
 $$1 - \frac{(p_i - c)(1 - s_i(p))}{\mu} = 0.$$
 
-The joint-monopoly price solves the two-product owner's first-order condition,
+The joint monopolist maximizes $\Pi(p)=\pi_1(p)+\pi_2(p)$. Its condition for
+product $i$ keeps the Bertrand own-profit term and adds the cross-product term:
 
 $$1 - \frac{(p_i - c)(1 - s_i(p))}{\mu} + \frac{(p_j - c)s_j(p)}{\mu} = 0,\quad j \ne i.$$
+
+The price grid uses the static benchmarks. Let $p_B$ be the Bertrand price,
+$p_M$ be the monopoly price, and $\Delta$ be the grid step. The action set is
+
+$$\mathcal{P} = \{p_B-\Delta\} \cup \{p_B, p_B+\Delta,\dots,p_M\} \cup \{p_M+\Delta\}.$$
 
 The Q-learning state is the previous-period price-index pair
 $s_t = (a_{1,t-1}, a_{2,t-1})$. Firm $i$'s action is its current price-grid
 index $a_{i,t}$. After observing current profit and next state $s_{t+1}$,
 the tabular update is
 
-$$Q_i(s_t, a_{i,t}) \leftarrow (1-\eta) Q_i(s_t, a_{i,t}) + \eta \left[\pi_i(p_t) + \delta \max_a Q_i(s_{t+1}, a)\right].$$
+$$Q_i(s_t, a_{i,t}) \leftarrow (1-\alpha) Q_i(s_t, a_{i,t}) + \alpha [\pi_i(p_t) + \delta \max_a Q_i(s_{t+1}, a)].$$
 
 The reported collusion index is
 
@@ -41,23 +64,25 @@ $$\mathrm{CI} = \frac{\bar p_{\mathrm{learned}} - p_{\mathrm{Bertrand}}}{p_{\mat
 
 ## Model Setup
 
-The grid is centered on the static economic benchmarks. First solve the Bertrand-Nash and joint-monopoly first-order conditions. Then form 9 evenly spaced prices between those two prices and add one padding point below and above. The padding point below Bertrand is used for the forced undercut in the deviation diagnostic.
+The grid is centered on the static economic benchmarks. First solve the Bertrand-Nash and joint-monopoly first-order conditions. Then form 13 evenly spaced prices between those two prices and add one padding point below and above. The padding point below Bertrand is the one-period undercut in the impulse-response diagnostic.
 
 | Object | Value | Role |
 |---|---:|---|
+| Firms $n$ | 2 | Symmetric sellers |
 | Product value $a$ | 2.00 | Inside-good quality |
 | Outside value $a_0$ | 0.00 | Outside option utility |
 | Differentiation $\mu$ | 0.25 | Smaller values make products closer substitutes |
 | Marginal cost $c$ | 1.00 | Constant production cost |
 | Bertrand price | 1.473 | Static competitive benchmark |
 | Monopoly price | 1.925 | Joint-profit benchmark |
-| Price grid size | 11 | Discrete action count per firm |
-| Training steps per seed | 80,000 | Q-learning updates |
+| Price grid size | 15 | Discrete action count per firm |
+| Training seed | 202 | Fixed calibrated run |
+| Training steps | 250,000 | Q-learning updates |
 | Discount factor $\delta$ | 0.95 | Value of future profit |
-| Learning rate $\eta$ | 0.12 | Q-table update weight |
-| Exploration floor | 0.02 | Late random-action probability |
+| Learning rate $\alpha$ | 0.15 | Q-table update weight |
+| Exploration decay $\beta$ | 4e-06 | $\Pr(\text{explore at }t)=\exp(-\beta t)$ |
 
-The five seeds are fixed so the generated page is reproducible. The small sample is a teaching experiment, not a full replication exercise.
+These are replication-style hyperparameters, but the computational budget is intentionally compact. The page reports one fixed run rather than a multi-seed robustness table.
 
 ## Solution Method
 
@@ -65,40 +90,47 @@ The algorithm is independent Q-learning. Each firm treats the rival and the mark
 
 ```text
 Algorithm: independent Q-learning in a repeated pricing game
-Input: price grid A, profit table pi_i(a_1, a_2), discount delta
+Input: price grid A={0,...,k-1}, profit table pi_i(a_1,a_2),
+       alpha, beta, delta, training length T
 Output: greedy pricing rules for both firms
 
 1. Set the initial state to the Bertrand grid point for both firms.
 2. Initialize Q_i(previous prices, own price) with optimistic
    discounted average one-period profits.
-3. For t = 1 to T:
-   3a. Each firm observes the previous price-index pair s_t.
-   3b. With probability epsilon_t, choose a random price index.
-       Otherwise choose an own price with the highest Q_i(s_t, a_i).
-   3c. The two actions form current prices and current profits.
-   3d. The next state is the current action pair.
-   3e. Update each firm's Q table using realized profit plus the
-       discounted best continuation value at the next state.
-4. Freeze exploration and roll out greedy play to measure learned prices.
-5. Force firm 1 to choose the low padding price once, then return both
-   firms to greedy play and record the post-deviation path.
+3. For t = 0 to T-1:
+   3a. Set epsilon_t = exp(-beta t).
+   3b. Each firm observes the previous price-index pair s_t.
+   3c. For each firm i:
+       with probability epsilon_t, draw a_{i,t} = Uniform({0,...,k-1});
+       otherwise set a_{i,t} in argmax_a Q_i(s_t,a).
+   3d. Current prices are the grid values indexed by (a_{1,t}, a_{2,t}).
+   3e. Current profits are pi_i(a_{1,t},a_{2,t}).
+   3f. Set s_{t+1} = (a_{1,t}, a_{2,t}).
+   3g. For each firm i, update
+       Q_i(s_t,a_{i,t}) <- (1-alpha) Q_i(s_t,a_{i,t})
+       + alpha [ pi_i(a_{1,t},a_{2,t})
+       + delta max_a Q_i(s_{t+1},a) ].
+4. Freeze Q and roll out greedy play to measure learned prices.
+5. For the impulse response, start from the learned greedy state,
+   set a_{1,0} to the low-grid action once, let firm 2 choose greedily,
+   then roll out greedy actions from s_1 = (a_{1,0}, a_{2,0}).
 ```
 
-The deviation diagnostic is intentionally mechanical. It asks whether the learned policy reacts to an undercut by lowering prices and later recovering. A sharp fall and recovery would look like punishment. A small or brief response is weaker evidence.
+The impulse response is intentionally mechanical. It asks what the frozen policy does after a single undercut. The figure is a diagnostic for this one learned policy, not proof of robust punishment.
 
 ## Results
 
-Greedy play after training is above the Bertrand price in every seed. The paths do not reach the monopoly benchmark. They sit in the middle of the benchmark interval, which is enough to show how independent profit feedback can support supra-Bertrand prices in a repeated pricing environment.
+Greedy play after training is above the Bertrand price in the fixed seed 202 run. The learned path does not reach the monopoly benchmark. It sits in the middle of the benchmark interval, which is enough for the teaching point: independent profit feedback can support supra-Bertrand prices in a repeated pricing environment.
 
 <img src="figures/price-paths.png" alt="Learned greedy price paths after Q-learning" width="80%">
 
-Across the five fixed seeds, the mean collusion index is 0.58; the range is 0.50 to 0.63. The lowest post-deviation average price is 1.529. Recovery horizons after the forced undercut are 1, 2, 2, 1, 1 periods. The forced undercut does trigger lower prices in several seeds, but the response is brief and not uniform. In this reduced tutorial, supra-Bertrand learning is more robust than price-war-style discipline.
+In the fixed seed 202 run, the learned average price is 1.605. The collusion index is 0.29, so the greedy policy sits about halfway between the Bertrand and monopoly benchmarks. After the one-period price-deviation shock, the lowest post-shock average price is 1.473; the path returns to 95 percent of its pre-shock level after 2 periods. Read this as an impulse response to a price-deviation shock. The single run shows how the frozen policy reacts after one forced undercut, but it does not establish robust price-war discipline.
 
-<img src="figures/deviation-response.png" alt="Forced one-firm low-price deviation followed by greedy play" width="80%">
+<img src="figures/impulse-response.png" alt="Impulse response to a one-period price-deviation shock" width="80%">
 
-The seed diagnostics put the price and profit results on the same scale. Zero is the Bertrand benchmark and one is the joint-monopoly benchmark. The price index is consistently positive, while the profit ratio is a little higher because even moderate price increases raise margins in this small logit market.
+The diagnostics put the price and profit results on the same scale. Zero is the Bertrand benchmark and one is the joint-monopoly benchmark. The price index is positive in this run, while the profit ratio is a little higher because moderate price increases raise margins in this small logit market.
 
-<img src="figures/learning-diagnostics.png" alt="Seed-level learned price and profit ratios" width="80%">
+<img src="figures/learning-diagnostics.png" alt="Single-run learned price and profit ratios" width="80%">
 
 The Bertrand and monopoly prices are solved from the continuous-price first-order conditions before the finite action grid is built.
 
@@ -106,23 +138,19 @@ The Bertrand and monopoly prices are solved from the continuous-price first-orde
 
 |   Bertrand price |   Monopoly price |   Competitive profit |   Monopoly profit |   Grid size |   Training steps |
 |-----------------:|-----------------:|---------------------:|------------------:|------------:|-----------------:|
-|          1.47293 |          1.92498 |             0.222927 |           0.33749 |          11 |            80000 |
+|          1.47293 |          1.92498 |             0.222927 |           0.33749 |          15 |           250000 |
 
-A recovery horizon of -1 means the average price did not return to 95 percent of the pre-deviation price within the plotted diagnostic window.
+A recovery horizon of -1 means the average price did not return to 95 percent of the pre-shock price within the plotted impulse-response window.
 
-**Seed-level Q-learning outcomes**
+**Single-run Q-learning outcomes**
 
-|   Seed |   Learned average price |   Learned profit |   Collusion index |   Minimum post-deviation price |   Recovery horizon |
-|-------:|------------------------:|-----------------:|------------------:|-------------------------------:|-------------------:|
-|    101 |                 1.71308 |         0.304575 |           0.53125 |                        1.61419 |                  1 |
-|    202 |                 1.69895 |         0.303901 |           0.5     |                        1.55769 |                  2 |
-|    303 |                 1.74133 |         0.31333  |           0.59375 |                        1.52943 |                  2 |
-|    404 |                 1.75546 |         0.317954 |           0.625   |                        1.52943 |                  1 |
-|    505 |                 1.75546 |         0.317954 |           0.625   |                        1.69895 |                  1 |
+|   Seed |   Learned average price |   Learned profit |   Collusion index |   Pre-shock average price |   Minimum post-shock average price |   Recovery horizon |
+|-------:|------------------------:|-----------------:|------------------:|--------------------------:|-----------------------------------:|-------------------:|
+|    202 |                 1.60478 |          0.26737 |          0.291667 |                   1.60478 |                            1.47293 |                  2 |
 
 ## Takeaway
 
-The small experiment delivers the main teaching result: Q-learning pricing agents can learn prices above the static Bertrand benchmark without solving the repeated game. The price-war diagnostic is more qualified. Some seeds show a short price decline after an undercut, but the response is not a stable punishment regime in this reduced setup. That distinction matters: supra-Bertrand learning appears clearly here; robust collusive discipline would require a larger and more careful replication.
+The small experiment delivers the main teaching result: Q-learning pricing agents can learn prices above the static Bertrand benchmark without solving the repeated game. The impulse response is more qualified. It shows the reaction of one frozen learned policy to one forced undercut. That distinction matters: supra-Bertrand learning appears clearly here; robust collusive discipline would require a larger and more careful replication.
 
 ## References
 

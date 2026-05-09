@@ -26,19 +26,19 @@ from lib.plotting import setup_style
 class Params:
     """Primitive and learning parameters for the duopoly pricing game."""
 
+    alpha: float = 0.15
+    beta: float = 4e-6
+    delta: float = 0.95
+    mu: float = 0.25
     a: float = 2.0
     a0: float = 0.0
-    mu: float = 0.25
     c: float = 1.0
-    k: int = 11
-    steps: int = 80_000
-    delta: float = 0.95
-    eta: float = 0.12
-    eps_min: float = 0.02
-    eps_tau: float = 12_000.0
+    k: int = 15
+    n: int = 2
+    steps: int = 250_000
     eval_periods: int = 120
     eval_burn: int = 60
-    deviation_horizon: int = 25
+    impulse_horizon: int = 30
 
 
 @dataclass(frozen=True)
@@ -62,8 +62,8 @@ class Benchmarks:
 
 
 @dataclass
-class SeedRun:
-    """Learned policy diagnostics for one random seed."""
+class LearningRun:
+    """Learned policy diagnostics for one fixed training run."""
 
     seed: int
     q: np.ndarray
@@ -73,9 +73,9 @@ class SeedRun:
     learned_price: float
     learned_profit: float
     collusion_index: float
-    deviation_prices: np.ndarray
-    pre_deviation_price: float
-    min_post_deviation_price: float
+    impulse_prices: np.ndarray
+    pre_shock_price: float
+    min_post_shock_price: float
     recovery_horizon: int | None
 
 
@@ -116,6 +116,9 @@ def monopoly_foc(prices: np.ndarray, params: Params) -> np.ndarray:
 
 def solve_benchmarks(params: Params) -> Benchmarks:
     """Solve static benchmarks and build the padded action grid."""
+    if params.n != 2:
+        raise ValueError("This teaching implementation is calibrated for two firms.")
+
     p0 = np.full(2, params.c + 1.0)
     bertrand = root(lambda p: bertrand_foc(p, params), p0)
     monopoly = root(lambda p: monopoly_foc(p, params), p0)
@@ -172,7 +175,7 @@ def train_q_learning(seed: int, bench: Benchmarks, params: Params) -> np.ndarray
     state = np.array([bench.bertrand_index, bench.bertrand_index], dtype=int)
 
     for t in range(params.steps):
-        epsilon = params.eps_min + (1.0 - params.eps_min) * np.exp(-t / params.eps_tau)
+        epsilon = np.exp(-params.beta * t)
         action = np.empty(2, dtype=int)
         for firm in range(2):
             if rng.random() < epsilon:
@@ -189,7 +192,7 @@ def train_q_learning(seed: int, bench: Benchmarks, params: Params) -> np.ndarray
             continuation = q[firm, next_state[0], next_state[1]].max()
             target = reward[firm] + params.delta * continuation
             q[firm, state[0], state[1], action[firm]] = (
-                (1.0 - params.eta) * old_value + params.eta * target
+                (1.0 - params.alpha) * old_value + params.alpha * target
             )
         state = next_state
 
@@ -210,8 +213,8 @@ def greedy_rollout(q: np.ndarray, bench: Benchmarks, periods: int, start: np.nda
     return actions
 
 
-def deviation_rollout(q: np.ndarray, bench: Benchmarks, params: Params) -> tuple[np.ndarray, float, float, int | None]:
-    """Force firm 1 to undercut once, then return to greedy play."""
+def impulse_response(q: np.ndarray, bench: Benchmarks, params: Params) -> tuple[np.ndarray, float, float, int | None]:
+    """Force firm 1 to undercut once, then roll out the frozen greedy policy."""
     pre_actions = greedy_rollout(q, bench, 40)
     pre_state = pre_actions[-1]
     pre_price = float(bench.grid[pre_actions[-20:]].mean())
@@ -222,21 +225,21 @@ def deviation_rollout(q: np.ndarray, bench: Benchmarks, params: Params) -> tuple
     ])
     actions = [first_action]
     state = first_action.copy()
-    for _ in range(params.deviation_horizon):
+    for _ in range(params.impulse_horizon):
         action = greedy_action(q, state)
         actions.append(action)
         state = action
 
-    deviation_prices = bench.grid[np.asarray(actions)]
-    average_prices = deviation_prices.mean(axis=1)
+    impulse_prices = bench.grid[np.asarray(actions)]
+    average_prices = impulse_prices.mean(axis=1)
     min_post = float(average_prices[1:].min())
     recovered = np.flatnonzero(average_prices[1:] >= 0.95 * pre_price)
     recovery_horizon = int(recovered[0] + 1) if recovered.size else None
-    return deviation_prices, pre_price, min_post, recovery_horizon
+    return impulse_prices, pre_price, min_post, recovery_horizon
 
 
-def summarize_seed(seed: int, bench: Benchmarks, params: Params) -> SeedRun:
-    """Train and evaluate one seed."""
+def summarize_run(seed: int, bench: Benchmarks, params: Params) -> LearningRun:
+    """Train and evaluate one fixed Q-learning run."""
     q = train_q_learning(seed, bench, params)
     actions = greedy_rollout(q, bench, params.eval_periods)
     prices = bench.grid[actions]
@@ -249,8 +252,8 @@ def summarize_seed(seed: int, bench: Benchmarks, params: Params) -> SeedRun:
     collusion_index = (learned_price - bench.bertrand_price) / (
         bench.monopoly_price - bench.bertrand_price
     )
-    deviation_prices, pre_price, min_post, horizon = deviation_rollout(q, bench, params)
-    return SeedRun(
+    impulse_prices, pre_price, min_post, horizon = impulse_response(q, bench, params)
+    return LearningRun(
         seed=seed,
         q=q,
         greedy_actions=actions,
@@ -259,90 +262,78 @@ def summarize_seed(seed: int, bench: Benchmarks, params: Params) -> SeedRun:
         learned_price=learned_price,
         learned_profit=learned_profit,
         collusion_index=float(collusion_index),
-        deviation_prices=deviation_prices,
-        pre_deviation_price=pre_price,
-        min_post_deviation_price=min_post,
+        impulse_prices=impulse_prices,
+        pre_shock_price=pre_price,
+        min_post_shock_price=min_post,
         recovery_horizon=horizon,
     )
 
 
-def plot_price_paths(runs: list[SeedRun], bench: Benchmarks, params: Params) -> plt.Figure:
-    """Greedy learned price paths for representative seeds."""
+def plot_price_paths(run: LearningRun, bench: Benchmarks, params: Params) -> plt.Figure:
+    """Greedy learned price paths for the fixed run."""
     fig, ax = plt.subplots(figsize=(10, 5.2))
     time = np.arange(params.eval_periods)
-    for run, color in zip(runs, ["C0", "C1", "C2", "C3", "C4"]):
-        avg_price = run.greedy_prices.mean(axis=1)
-        ax.plot(time, avg_price, color=color, linewidth=1.8, label=f"seed {run.seed}")
+    avg_price = run.greedy_prices.mean(axis=1)
+    ax.plot(time, run.greedy_prices[:, 0], color="C3", linewidth=1.4, alpha=0.75, label="firm 1")
+    ax.plot(time, run.greedy_prices[:, 1], color="C0", linewidth=1.4, alpha=0.75, label="firm 2")
+    ax.plot(time, avg_price, color="black", linewidth=2.4, label="average")
     ax.axhline(bench.bertrand_price, color="black", linestyle=":", linewidth=1.2, label="Bertrand-Nash")
     ax.axhline(bench.monopoly_price, color="black", linestyle="--", linewidth=1.2, label="Joint monopoly")
     ax.set_xlabel("Greedy play period after training")
-    ax.set_ylabel("Average price")
-    ax.set_title("Learned greedy prices are above the static Bertrand benchmark")
+    ax.set_ylabel("Price")
+    ax.set_title(f"Fixed seed {run.seed}: learned prices above Bertrand")
     ax.legend(loc="lower right", ncol=2)
     fig.tight_layout()
     return fig
 
 
-def plot_deviation_response(runs: list[SeedRun], bench: Benchmarks) -> plt.Figure:
-    """Forced one-firm deviation and subsequent greedy response."""
-    fig, axes = plt.subplots(1, 2, figsize=(13, 5.2), sharey=True)
-    horizon = runs[0].deviation_prices.shape[0]
+def plot_impulse_response(run: LearningRun, bench: Benchmarks) -> plt.Figure:
+    """Impulse response to a forced one-period undercut."""
+    fig, ax = plt.subplots(figsize=(10, 5.2))
+    horizon = run.impulse_prices.shape[0]
     time = np.arange(horizon)
+    avg_price = run.impulse_prices.mean(axis=1)
 
-    for run in runs:
-        axes[0].plot(time, run.deviation_prices[:, 0], color="C3", alpha=0.22, linewidth=1.2)
-        axes[1].plot(time, run.deviation_prices[:, 1], color="C0", alpha=0.22, linewidth=1.2)
-
-    firm_1 = np.array([run.deviation_prices[:, 0] for run in runs])
-    firm_2 = np.array([run.deviation_prices[:, 1] for run in runs])
-    axes[0].plot(time, firm_1.mean(axis=0), color="C3", linewidth=2.5, label="mean across seeds")
-    axes[1].plot(time, firm_2.mean(axis=0), color="C0", linewidth=2.5, label="mean across seeds")
-
-    for ax, title in zip(axes, ["Deviating firm", "Rival firm"]):
-        ax.axhline(bench.bertrand_price, color="black", linestyle=":", linewidth=1.1, label="Bertrand-Nash")
-        ax.axhline(bench.monopoly_price, color="black", linestyle="--", linewidth=1.1, label="Joint monopoly")
-        ax.set_xlabel("Periods after forced deviation")
-        ax.set_title(title)
-        ax.legend(loc="lower right")
-    axes[0].set_ylabel("Price")
-    fig.suptitle("Forced low-price deviation: responses are visible but short and seed-dependent")
+    ax.plot(time, run.impulse_prices[:, 0], color="C3", linewidth=2.0, label="firm 1 price")
+    ax.plot(time, run.impulse_prices[:, 1], color="C0", linewidth=2.0, label="firm 2 price")
+    ax.plot(time, avg_price, color="black", linewidth=2.5, label="average price")
+    ax.axhline(bench.bertrand_price, color="black", linestyle=":", linewidth=1.2, label="Bertrand-Nash")
+    ax.axhline(bench.monopoly_price, color="black", linestyle="--", linewidth=1.2, label="Joint monopoly")
+    ax.axvline(0, color="0.4", linestyle="-.", linewidth=1.0, label="one-period undercut")
+    ax.set_xlabel("Periods after price-deviation shock")
+    ax.set_ylabel("Price")
+    ax.set_title("Impulse response to one forced low-price action")
+    ax.legend(loc="lower right", ncol=2)
     fig.tight_layout()
     return fig
 
 
-def plot_learning_diagnostics(runs: list[SeedRun], bench: Benchmarks) -> plt.Figure:
-    """Seed-level learned price and profit diagnostics."""
-    seeds = [str(run.seed) for run in runs]
-    learned_prices = np.array([run.learned_price for run in runs])
-    collusion = np.array([run.collusion_index for run in runs])
-    profit_ratio = np.array([run.learned_profit for run in runs])
+def plot_learning_diagnostics(run: LearningRun, bench: Benchmarks) -> plt.Figure:
+    """Single-run learned price and payoff diagnostics."""
     competitive_profit = bench.profit_table[bench.bertrand_index, bench.bertrand_index].mean()
     monopoly_index = int(np.argmin(np.abs(bench.grid - bench.monopoly_price)))
     monopoly_profit = bench.profit_table[monopoly_index, monopoly_index].mean()
-    profit_ratio = (profit_ratio - competitive_profit) / (monopoly_profit - competitive_profit)
+    profit_ratio = (run.learned_profit - competitive_profit) / (monopoly_profit - competitive_profit)
 
     fig, axes = plt.subplots(1, 2, figsize=(13, 5))
-    x = np.arange(len(runs))
-    axes[0].bar(x, learned_prices, color="C0", alpha=0.85)
-    axes[0].axhline(bench.bertrand_price, color="black", linestyle=":", linewidth=1.1, label="Bertrand-Nash")
-    axes[0].axhline(bench.monopoly_price, color="black", linestyle="--", linewidth=1.1, label="Joint monopoly")
-    axes[0].set_xticks(x)
-    axes[0].set_xticklabels(seeds)
-    axes[0].set_xlabel("Training seed")
-    axes[0].set_ylabel("Average learned price")
-    axes[0].set_title("Learned prices by seed")
-    axes[0].legend(loc="upper left")
+    price_labels = ["Bertrand", f"learned\nseed {run.seed}", "monopoly"]
+    price_values = [bench.bertrand_price, run.learned_price, bench.monopoly_price]
+    axes[0].bar(np.arange(3), price_values, color=["0.35", "C0", "0.65"], alpha=0.9)
+    axes[0].set_xticks(np.arange(3))
+    axes[0].set_xticklabels(price_labels)
+    axes[0].set_ylabel("Average price")
+    axes[0].set_title("Learned price between static benchmarks")
 
     width = 0.36
-    axes[1].bar(x - width / 2, collusion, width, color="C2", label="Price collusion index")
-    axes[1].bar(x + width / 2, profit_ratio, width, color="C4", label="Profit ratio")
+    x = np.array([0])
+    axes[1].bar(x - width / 2, [run.collusion_index], width, color="C2", label="Price collusion index")
+    axes[1].bar(x + width / 2, [profit_ratio], width, color="C4", label="Profit ratio")
     axes[1].axhline(0.0, color="black", linestyle=":", linewidth=1.0)
     axes[1].axhline(1.0, color="black", linestyle="--", linewidth=1.0)
     axes[1].set_xticks(x)
-    axes[1].set_xticklabels(seeds)
-    axes[1].set_xlabel("Training seed")
+    axes[1].set_xticklabels([f"seed {run.seed}"])
     axes[1].set_ylabel("Ratio between Bertrand and monopoly")
-    axes[1].set_title("Supra-Bertrand learning is clear, but not full monopoly")
+    axes[1].set_title("Single-run normalized diagnostics")
     axes[1].legend(loc="upper left")
 
     fig.tight_layout()
@@ -363,53 +354,47 @@ def benchmark_table(bench: Benchmarks, params: Params) -> pd.DataFrame:
     }])
 
 
-def seed_table(runs: list[SeedRun]) -> pd.DataFrame:
-    """Seed-level learned price and deviation diagnostics."""
-    rows = []
-    for run in runs:
-        rows.append({
-            "Seed": run.seed,
-            "Learned average price": run.learned_price,
-            "Learned profit": run.learned_profit,
-            "Collusion index": run.collusion_index,
-            "Minimum post-deviation price": run.min_post_deviation_price,
-            "Recovery horizon": -1 if run.recovery_horizon is None else run.recovery_horizon,
-        })
-    return pd.DataFrame(rows)
+def run_table(run: LearningRun) -> pd.DataFrame:
+    """Single-run learned price and impulse-response diagnostics."""
+    return pd.DataFrame([{
+        "Seed": run.seed,
+        "Learned average price": run.learned_price,
+        "Learned profit": run.learned_profit,
+        "Collusion index": run.collusion_index,
+        "Pre-shock average price": run.pre_shock_price,
+        "Minimum post-shock average price": run.min_post_shock_price,
+        "Recovery horizon": -1 if run.recovery_horizon is None else run.recovery_horizon,
+    }])
 
 
-def format_seed_result(runs: list[SeedRun]) -> str:
+def format_run_result(run: LearningRun) -> str:
     """Short prose summary for the generated README."""
-    avg_index = float(np.mean([run.collusion_index for run in runs]))
-    min_index = float(np.min([run.collusion_index for run in runs]))
-    max_index = float(np.max([run.collusion_index for run in runs]))
-    horizons = [
-        "not recovered" if run.recovery_horizon is None else str(run.recovery_horizon)
-        for run in runs
-    ]
-    min_post = float(np.min([run.min_post_deviation_price for run in runs]))
+    horizon = "not recovered" if run.recovery_horizon is None else f"{run.recovery_horizon} periods"
     return (
-        f"Across the five fixed seeds, the mean collusion index is {avg_index:.2f}; "
-        f"the range is {min_index:.2f} to {max_index:.2f}. The lowest post-deviation "
-        f"average price is {min_post:.3f}. Recovery horizons after the forced "
-        f"undercut are {', '.join(horizons)} periods."
+        f"In the fixed seed {run.seed} run, the learned average price is "
+        f"{run.learned_price:.3f}. The collusion index is {run.collusion_index:.2f}, "
+        f"so the greedy policy sits about halfway between the Bertrand and monopoly "
+        f"benchmarks. After the one-period price-deviation shock, the lowest "
+        f"post-shock average price is {run.min_post_shock_price:.3f}; the path "
+        f"returns to 95 percent of its pre-shock level after {horizon}."
     )
 
 
 def main() -> None:
     setup_style()
     params = Params()
-    seeds = [101, 202, 303, 404, 505]
+    seed = 202
     bench = solve_benchmarks(params)
-    runs = [summarize_seed(seed, bench, params) for seed in seeds]
+    run = summarize_run(seed, bench, params)
     benchmarks = benchmark_table(bench, params)
-    seed_summary = seed_table(runs)
+    run_summary = run_table(run)
 
     print("Algorithmic collusion by Q-learning")
     print(f"  Bertrand price = {bench.bertrand_price:.3f}")
     print(f"  Monopoly price = {bench.monopoly_price:.3f}")
-    print(f"  Mean learned price = {seed_summary['Learned average price'].mean():.3f}")
-    print(f"  Mean collusion index = {seed_summary['Collusion index'].mean():.3f}")
+    print(f"  Seed = {seed}")
+    print(f"  Learned price = {run.learned_price:.3f}")
+    print(f"  Collusion index = {run.collusion_index:.3f}")
 
     report = ModelReport(
         "Algorithmic Collusion by Q-Learning",
@@ -429,39 +414,62 @@ def main() -> None:
         "would internalize substitution between the two products.\n\n"
         "This tutorial is deliberately smaller than the Calvano, Calzolari, "
         "Denicolo, and Pastorello experiment and the Courthoud replication code. "
-        "It keeps the same model class: logit demand, a finite price grid, and "
-        "independent tabular Q-learning. With a short run and five seeds, the "
-        "clearest result is supra-Bertrand pricing. The deviation experiment is "
-        "more mixed, so the text treats price-war discipline as weak and "
-        "seed-dependent rather than as a guaranteed finding."
+        "It keeps the same model class and moves the main hyperparameters toward "
+        "the Courthoud replication defaults: logit demand, a finite price grid, "
+        "Courthoud's exponential exploration rule, and independent tabular "
+        "Q-learning. The page follows one compact calibrated run with seed "
+        f"{seed}. It is not a robustness exercise."
     )
 
     report.add_equations(
         r"""
 There are two firms, indexed by $i = 1,2$. Firm $i$ chooses price $p_i$ and has
 constant marginal cost $c$. Product quality is $a$, the outside-option value is
-$a_0$, and $\mu$ controls product differentiation. Logit demand is
+$a_0$, and $\mu$ controls product differentiation. The inside utility index is
 
-$$s_i(p) = \frac{\exp((a - p_i) / \mu)}{\exp(a_0 / \mu) + \sum_{j=1}^2 \exp((a - p_j) / \mu)}.$$
+$$u_i = \frac{\{a - p_i\}}{\{\mu\}}, \qquad u_0 = \frac{\{a_0\}}{\{\mu\}}.$$
+
+The braces mark the numerator and denominator of each utility index. A lower
+price raises $u_i$; a larger $\mu$ makes a given price difference matter less.
+Logit demand is
+
+$$s_i(p) = \frac{\exp(u_i)}{\exp(u_0) + \sum_{j=1}^2 \exp(u_j)}.$$
+
+The numerator is product $i$'s exponentiated utility. The denominator is the
+outside-good term plus the exponentiated utilities of the two inside goods.
 
 Current profit is
 
 $$\pi_i(p) = (p_i - c)s_i(p).$$
 
-The static Bertrand-Nash price solves each firm's first-order condition,
+The own-price derivative of the logit share is
+
+$$\frac{\partial s_i}{\partial p_i} = -\frac{s_i(p)(1-s_i(p))}{\mu}.$$
+
+The static Bertrand-Nash price sets $\partial \pi_i / \partial p_i = 0$:
+
+$$\frac{\partial \pi_i}{\partial p_i} = s_i(p) + (p_i-c)\frac{\partial s_i}{\partial p_i} = s_i(p)[1 - \frac{(p_i-c)(1-s_i(p))}{\mu}] = 0.$$
+
+Since $s_i(p)>0$, the Bertrand first-order condition is
 
 $$1 - \frac{(p_i - c)(1 - s_i(p))}{\mu} = 0.$$
 
-The joint-monopoly price solves the two-product owner's first-order condition,
+The joint monopolist maximizes $\Pi(p)=\pi_1(p)+\pi_2(p)$. Its condition for
+product $i$ keeps the Bertrand own-profit term and adds the cross-product term:
 
 $$1 - \frac{(p_i - c)(1 - s_i(p))}{\mu} + \frac{(p_j - c)s_j(p)}{\mu} = 0,\quad j \ne i.$$
+
+The price grid uses the static benchmarks. Let $p_B$ be the Bertrand price,
+$p_M$ be the monopoly price, and $\Delta$ be the grid step. The action set is
+
+$$\mathcal{P} = \{p_B-\Delta\} \cup \{p_B, p_B+\Delta,\dots,p_M\} \cup \{p_M+\Delta\}.$$
 
 The Q-learning state is the previous-period price-index pair
 $s_t = (a_{1,t-1}, a_{2,t-1})$. Firm $i$'s action is its current price-grid
 index $a_{i,t}$. After observing current profit and next state $s_{t+1}$,
 the tabular update is
 
-$$Q_i(s_t, a_{i,t}) \leftarrow (1-\eta) Q_i(s_t, a_{i,t}) + \eta \left[\pi_i(p_t) + \delta \max_a Q_i(s_{t+1}, a)\right].$$
+$$Q_i(s_t, a_{i,t}) \leftarrow (1-\alpha) Q_i(s_t, a_{i,t}) + \alpha [\pi_i(p_t) + \delta \max_a Q_i(s_{t+1}, a)].$$
 
 The reported collusion index is
 
@@ -473,10 +481,11 @@ $$\mathrm{CI} = \frac{\bar p_{\mathrm{learned}} - p_{\mathrm{Bertrand}}}{p_{\mat
         "The grid is centered on the static economic benchmarks. First solve the "
         "Bertrand-Nash and joint-monopoly first-order conditions. Then form "
         f"{params.k - 2} evenly spaced prices between those two prices and add one "
-        "padding point below and above. The padding point below Bertrand is used "
-        "for the forced undercut in the deviation diagnostic.\n\n"
+        "padding point below and above. The padding point below Bertrand is the "
+        "one-period undercut in the impulse-response diagnostic.\n\n"
         f"| Object | Value | Role |\n"
         f"|---|---:|---|\n"
+        f"| Firms $n$ | {params.n} | Symmetric sellers |\n"
         f"| Product value $a$ | {params.a:.2f} | Inside-good quality |\n"
         f"| Outside value $a_0$ | {params.a0:.2f} | Outside option utility |\n"
         f"| Differentiation $\\mu$ | {params.mu:.2f} | Smaller values make products closer substitutes |\n"
@@ -484,12 +493,14 @@ $$\mathrm{CI} = \frac{\bar p_{\mathrm{learned}} - p_{\mathrm{Bertrand}}}{p_{\mat
         f"| Bertrand price | {bench.bertrand_price:.3f} | Static competitive benchmark |\n"
         f"| Monopoly price | {bench.monopoly_price:.3f} | Joint-profit benchmark |\n"
         f"| Price grid size | {params.k} | Discrete action count per firm |\n"
-        f"| Training steps per seed | {params.steps:,} | Q-learning updates |\n"
+        f"| Training seed | {seed} | Fixed calibrated run |\n"
+        f"| Training steps | {params.steps:,} | Q-learning updates |\n"
         f"| Discount factor $\\delta$ | {params.delta:.2f} | Value of future profit |\n"
-        f"| Learning rate $\\eta$ | {params.eta:.2f} | Q-table update weight |\n"
-        f"| Exploration floor | {params.eps_min:.2f} | Late random-action probability |\n\n"
-        "The five seeds are fixed so the generated page is reproducible. The "
-        "small sample is a teaching experiment, not a full replication exercise."
+        f"| Learning rate $\\alpha$ | {params.alpha:.2f} | Q-table update weight |\n"
+        f"| Exploration decay $\\beta$ | {params.beta:.0e} | $\\Pr(\\text{{explore at }}t)=\\exp(-\\beta t)$ |\n\n"
+        "These are replication-style hyperparameters, but the computational "
+        "budget is intentionally compact. The page reports one fixed run rather "
+        "than a multi-seed robustness table."
     )
 
     report.add_solution_method(
@@ -498,65 +509,71 @@ $$\mathrm{CI} = \frac{\bar p_{\mathrm{learned}} - p_{\mathrm{Bertrand}}}{p_{\mat
         "collusion constraint and no direct communication.\n\n"
         "```text\n"
         "Algorithm: independent Q-learning in a repeated pricing game\n"
-        "Input: price grid A, profit table pi_i(a_1, a_2), discount delta\n"
+        "Input: price grid A={0,...,k-1}, profit table pi_i(a_1,a_2),\n"
+        "       alpha, beta, delta, training length T\n"
         "Output: greedy pricing rules for both firms\n\n"
         "1. Set the initial state to the Bertrand grid point for both firms.\n"
         "2. Initialize Q_i(previous prices, own price) with optimistic\n"
         "   discounted average one-period profits.\n"
-        "3. For t = 1 to T:\n"
-        "   3a. Each firm observes the previous price-index pair s_t.\n"
-        "   3b. With probability epsilon_t, choose a random price index.\n"
-        "       Otherwise choose an own price with the highest Q_i(s_t, a_i).\n"
-        "   3c. The two actions form current prices and current profits.\n"
-        "   3d. The next state is the current action pair.\n"
-        "   3e. Update each firm's Q table using realized profit plus the\n"
-        "       discounted best continuation value at the next state.\n"
-        "4. Freeze exploration and roll out greedy play to measure learned prices.\n"
-        "5. Force firm 1 to choose the low padding price once, then return both\n"
-        "   firms to greedy play and record the post-deviation path.\n"
+        "3. For t = 0 to T-1:\n"
+        "   3a. Set epsilon_t = exp(-beta t).\n"
+        "   3b. Each firm observes the previous price-index pair s_t.\n"
+        "   3c. For each firm i:\n"
+        "       with probability epsilon_t, draw a_{i,t} = Uniform({0,...,k-1});\n"
+        "       otherwise set a_{i,t} in argmax_a Q_i(s_t,a).\n"
+        "   3d. Current prices are the grid values indexed by (a_{1,t}, a_{2,t}).\n"
+        "   3e. Current profits are pi_i(a_{1,t},a_{2,t}).\n"
+        "   3f. Set s_{t+1} = (a_{1,t}, a_{2,t}).\n"
+        "   3g. For each firm i, update\n"
+        "       Q_i(s_t,a_{i,t}) <- (1-alpha) Q_i(s_t,a_{i,t})\n"
+        "       + alpha [ pi_i(a_{1,t},a_{2,t})\n"
+        "       + delta max_a Q_i(s_{t+1},a) ].\n"
+        "4. Freeze Q and roll out greedy play to measure learned prices.\n"
+        "5. For the impulse response, start from the learned greedy state,\n"
+        "   set a_{1,0} to the low-grid action once, let firm 2 choose greedily,\n"
+        "   then roll out greedy actions from s_1 = (a_{1,0}, a_{2,0}).\n"
         "```\n\n"
-        "The deviation diagnostic is intentionally mechanical. It asks whether the "
-        "learned policy reacts to an undercut by lowering prices and later "
-        "recovering. A sharp fall and recovery would look like punishment. A small "
-        "or brief response is weaker evidence."
+        "The impulse response is intentionally mechanical. It asks what the frozen "
+        "policy does after a single undercut. The figure is a diagnostic for this "
+        "one learned policy, not proof of robust punishment."
     )
 
     report.add_results(
-        "Greedy play after training is above the Bertrand price in every seed. "
-        "The paths do not reach the monopoly benchmark. They sit in the middle of "
-        "the benchmark interval, which is enough to show how independent profit "
-        "feedback can support supra-Bertrand prices in a repeated pricing "
-        "environment."
+        f"Greedy play after training is above the Bertrand price in the fixed "
+        f"seed {seed} run. The learned path does not reach the monopoly benchmark. "
+        "It sits in the middle of the benchmark interval, which is enough for the "
+        "teaching point: independent profit feedback can support supra-Bertrand "
+        "prices in a repeated pricing environment."
     )
     report.add_figure(
         "figures/price-paths.png",
         "Learned greedy price paths after Q-learning",
-        plot_price_paths(runs, bench, params),
+        plot_price_paths(run, bench, params),
     )
 
     report.add_results(
-        format_seed_result(runs)
-        + " The forced undercut does trigger lower prices in several seeds, but "
-        "the response is brief and not uniform. In this reduced tutorial, "
-        "supra-Bertrand learning is more robust than price-war-style discipline."
+        format_run_result(run)
+        + " Read this as an impulse response to a price-deviation shock. The "
+        "single run shows how the frozen policy reacts after one forced undercut, "
+        "but it does not establish robust price-war discipline."
     )
     report.add_figure(
-        "figures/deviation-response.png",
-        "Forced one-firm low-price deviation followed by greedy play",
-        plot_deviation_response(runs, bench),
+        "figures/impulse-response.png",
+        "Impulse response to a one-period price-deviation shock",
+        plot_impulse_response(run, bench),
     )
 
     report.add_results(
-        "The seed diagnostics put the price and profit results on the same scale. "
+        "The diagnostics put the price and profit results on the same scale. "
         "Zero is the Bertrand benchmark and one is the joint-monopoly benchmark. "
-        "The price index is consistently positive, while the profit ratio is a "
-        "little higher because even moderate price increases raise margins in "
-        "this small logit market."
+        "The price index is positive in this run, while the profit ratio is a "
+        "little higher because moderate price increases raise margins in this "
+        "small logit market."
     )
     report.add_figure(
         "figures/learning-diagnostics.png",
-        "Seed-level learned price and profit ratios",
-        plot_learning_diagnostics(runs, bench),
+        "Single-run learned price and profit ratios",
+        plot_learning_diagnostics(run, bench),
     )
 
     report.add_table(
@@ -568,22 +585,21 @@ $$\mathrm{CI} = \frac{\bar p_{\mathrm{learned}} - p_{\mathrm{Bertrand}}}{p_{\mat
     )
 
     report.add_table(
-        "tables/seed-summary.csv",
-        "Seed-level Q-learning outcomes",
-        seed_summary,
+        "tables/run-summary.csv",
+        "Single-run Q-learning outcomes",
+        run_summary,
         "A recovery horizon of -1 means the average price did not return to 95 "
-        "percent of the pre-deviation price within the plotted diagnostic window.",
+        "percent of the pre-shock price within the plotted impulse-response window.",
     )
 
     report.add_takeaway(
         "The small experiment delivers the main teaching result: Q-learning "
         "pricing agents can learn prices above the static Bertrand benchmark "
-        "without solving the repeated game. The price-war diagnostic is more "
-        "qualified. Some seeds show a short price decline after an undercut, but "
-        "the response is not a stable punishment regime in this reduced setup. "
-        "That distinction matters: supra-Bertrand learning appears clearly here; "
-        "robust collusive discipline would require a larger and more careful "
-        "replication."
+        "without solving the repeated game. The impulse response is more "
+        "qualified. It shows the reaction of one frozen learned policy to one "
+        "forced undercut. That distinction matters: supra-Bertrand learning "
+        "appears clearly here; robust collusive discipline would require a larger "
+        "and more careful replication."
     )
 
     report.add_references([
