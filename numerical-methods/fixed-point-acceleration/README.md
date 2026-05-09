@@ -2,65 +2,68 @@
 
 ## Overview
 
-An economist observes the market shares of four products plus an outside option. She wants to recover the mean utility each product delivers to consumers. The relationship between mean utilities and shares is non-linear but admits a fixed-point map.
+A fixed-point problem asks for a vector $x$ satisfying $x = T(x)$ for a given map $T$. This is a functional equation, and the question is how to solve it numerically when $T$ is a contraction. The tutorial compares three iterative methods designed for exactly this problem.
 
-This tutorial inverts plain-logit shares to recover mean utilities. The same fixed-point machinery solves Bellman equations, BLP demand systems, market clearing, and best-response dynamics in static games. Three fixed-point methods are compared: vanilla iteration, a damped variant, and Anderson acceleration with five-step memory.
+One concrete instance serves as the test bed. Observed market shares are inverted to recover the mean utilities that generated them under a plain-logit choice model, an instance that admits a closed-form benchmark and so makes every method's accuracy verifiable. Three fixed-point methods are compared on this instance: vanilla Picard iteration, a damped variant, and Anderson acceleration with five-step memory.
 
-The lesson is about iteration speed and reliability. Vanilla iteration always converges under contraction but can be slow. Anderson is often dramatically faster but can extrapolate unstably without a residual safeguard. A small Cournot best-response example at the end shows the same methods applied to a static game, where the fixed point is a Nash equilibrium.
+The lesson is about iteration speed and reliability. Vanilla iteration always converges under contraction but can be slow. Anderson is often dramatically faster but can extrapolate unstably without a residual safeguard. A small Cournot best-response example at the end applies the same methods to a static game, where the fixed point is a Nash equilibrium.
 
 ## Equations
 
-A representative consumer chooses among $J$ inside products and one outside option indexed by $0$.
-Each inside product $j$ delivers a mean utility $\delta_j$ and an idiosyncratic taste shock drawn from a Type-1 extreme-value distribution.
-The outside option is normalised to deliver mean utility zero.
+The general problem is to find $x \in \mathbb{R}^d$ satisfying $x = T(x)$ for a given map $T : \mathbb{R}^d \to \mathbb{R}^d$.
+A fixed point exists and is unique whenever $T$ is a contraction in some norm.
+The methods below iteratively construct a sequence $\{x^t\}$ that converges to the fixed point $x^{\ast}$.
 
-Plain-logit choice probabilities give the predicted market shares as functions of the mean-utility vector $\delta = (\delta_1, \ldots, \delta_J)$.
+### The test instance
+
+The test instance for benchmarking is plain-logit share inversion.
+A representative consumer chooses among $J$ inside products and one outside option indexed by $0$.
+Each inside product $j$ delivers a mean utility $\delta_j$ and an idiosyncratic Type-1 extreme-value taste shock; the outside option is normalised to mean utility zero.
+Choice probabilities give the predicted market shares as functions of the mean-utility vector $\delta = (\delta_1, \ldots, \delta_J)$.
 
 $$s_j(\delta) = \frac{\exp(\delta_j)}{1 + \sum_{k=1}^{J} \exp(\delta_k)},
 \qquad
 s_0(\delta) = \frac{1}{1 + \sum_{k=1}^{J} \exp(\delta_k)}.$$
 
-The shares sum to one by construction.
-The outside share $s_0$ is positive whenever any inside utility is finite.
-
-The estimation problem reverses the share map.
 Observed shares $s_j^{\mathrm{obs}}$ are given.
-The unknown is the mean-utility vector $\delta^{\ast}$ that generates those shares under the logit model.
-
-For plain logit (no random coefficients) the inversion has a closed form.
+The unknown is the mean-utility vector $\delta^{\ast}$ that generates them.
+For plain logit the inversion has a closed form, which serves as the benchmark for every iterative method below.
 
 $$\delta_j^{\ast} = \log s_j^{\mathrm{obs}} - \log s_0^{\mathrm{obs}}.$$
 
-The closed form pins down what every iterative method should return.
-
-Berry's contraction defines a fixed-point map $T$ on the mean-utility vector.
+The fixed-point map for this instance adds the log-share residual to the current guess.
 
 $$T_j(\delta) = \delta_j + \log s_j^{\mathrm{obs}} - \log s_j(\delta),
 \qquad
 \delta^{\ast} \text{ solves } T(\delta^{\ast}) = \delta^{\ast}.$$
 
-The map adds the log-share residual to the current guess.
-A guess that under-predicts the share of product $j$ pushes $\delta_j$ up.
-A guess that over-predicts pushes it down.
+A guess that under-predicts the share of product $j$ pushes $\delta_j$ up; a guess that over-predicts pushes it down.
 
-Picard iteration is the unaccelerated form of $T$.
+The next three subsections describe one method at a time.
+
+### Method 1: Picard iteration
+
+Picard iteration applies the fixed-point map directly at every step.
 
 $$\delta^{t+1} = T(\delta^t).$$
 
-Convergence is linear under the BLP contraction with modulus less than one for plain logit.
-The contraction modulus governs the rate.
+Convergence is linear with rate equal to the contraction modulus of $T$.
+For the test instance this rate is bounded below one and convergence is monotone.
 
-Damped Picard mixes the current iterate with the contraction step using $\alpha \in (0, 1]$.
+### Method 2: Damped Picard
+
+Damped Picard mixes the current iterate with the Picard image using a damping factor $\alpha \in (0, 1]$.
 
 $$\delta^{t+1} = (1 - \alpha)\, \delta^t + \alpha\, T(\delta^t)
 = \delta^t + \alpha \left[\log s^{\mathrm{obs}} - \log s(\delta^t)\right].$$
 
-A smaller $\alpha$ stabilises iterations when the contraction modulus is close to one.
-The cost is a slower asymptotic rate.
+A smaller $\alpha$ stabilises iteration when the underlying map oscillates near the boundary of contractiveness, at the cost of slower asymptotic convergence.
 
-Anderson acceleration with memory $m$ uses the last $m + 1$ iterates and residuals.
+### Method 3: Anderson acceleration
+
+Anderson acceleration with memory $m$ uses the last $m + 1$ iterates and residuals to extrapolate a better step than Picard.
 Define the residual $f_t = g_t - \delta^t$ with $g_t = T(\delta^t)$, the residual differences $\Delta f_t^{(i)} = f_t - f_{t-i}$, and the analogous $\Delta g_t^{(i)}$.
-Stack the differences as columns of $F_t \in \mathbb{R}^{J \times m_t}$ and $G_t \in \mathbb{R}^{J \times m_t}$ where $m_t = \min(m, t)$.
+Stack the differences as columns of $F_t \in \mathbb{R}^{J \times m_t}$ and $G_t \in \mathbb{R}^{J \times m_t}$, where $m_t = \min(m, t)$ is the effective memory at step $t$.
 
 The least-squares step solves for combination weights.
 
@@ -72,9 +75,9 @@ $$\delta^{t+1} = g_t - G_t\, \gamma_t.$$
 
 Anderson reduces to Picard when $m = 0$.
 For $m \geq 1$ it can be quadratically faster on contractions, at the cost of solving a small least-squares problem each step.
+A safeguard monitors the residual after each Anderson step; if it grows by more than a factor of two over the previous step, the algorithm reverts to one damped-Picard step before resuming Anderson.
 
-A safeguard monitors the residual after each Anderson step.
-If the residual grows by more than a factor of two over the previous step, the algorithm reverts to one damped-Picard step before resuming Anderson.
+### A second test instance: Cournot best response
 
 The Cournot mini extension uses the same machinery on a duopoly best-response system.
 Two firms set quantities $q_1, q_2$ to maximise profit on linear inverse demand $P(Q) = a - Q$ with $Q = q_1 + q_2$ and constant marginal cost $c$.
@@ -84,8 +87,7 @@ $$\mathrm{BR}_i(q_{-i}) = \frac{a - c - q_{-i}}{2},
 q^{\ast} = \frac{a - c}{3}\, \text{ for both firms.}$$
 
 The fixed-point map is $T(q_1, q_2) = (\mathrm{BR}_1(q_2), \mathrm{BR}_2(q_1))$.
-Vanilla Picard on this map oscillates around $q^{\ast}$ with damping factor $1/2$.
-Damped Picard with $\alpha = 1/2$ removes the oscillation.
+Vanilla Picard on this map oscillates around $q^{\ast}$ with damping factor $1/2$, and damped Picard with $\alpha = 1/2$ removes the oscillation.
 
 ## Model Setup
 
@@ -190,7 +192,7 @@ The table compares the three methods on the same calibration and the same starti
 | Damped Picard    | damping alpha = 0.5              |          200 |         2.51e-09 |                  2.97e-08 | converged |
 | Anderson (m = 5) | memory 5 with residual safeguard |           14 |         7.95e-14 |                  5.08e-13 | converged |
 
-The stress test makes the contraction harder by shrinking the outside share. Picard slows down sharply once the outside share falls below five percent. Anderson stays competitive across the range and demonstrates why acceleration matters in BLP-style estimation, where the inner contraction is solved many times during the outer search.
+The stress test makes the contraction harder by shrinking the outside share, which pushes mean utilities out to large values where the contraction modulus approaches one. Picard slows down sharply once the outside share falls below five percent. Anderson stays competitive across the range, which is the regime where acceleration matters most: a fixed-point map repeatedly solved inside an outer optimisation pays the iteration count many times over.
 
 **Iteration count and final residual as the outside share shrinks**
 
@@ -212,13 +214,13 @@ On the Cournot game vanilla Picard converges in 44 steps despite the oscillation
 
 ## Takeaway
 
-Picard iteration is the simplest reliable fixed-point method. On the BLP contraction it converges monotonically and predictably. Its weakness is speed when the contraction modulus approaches one.
+Picard iteration is the simplest reliable fixed-point method. On a contraction it converges monotonically and predictably. Its weakness is speed when the contraction modulus approaches one.
 
-Damped Picard trades asymptotic speed for stability. It is the right default when the contraction is unreliable or the iterates oscillate. On smooth contractions like plain logit, damping is unnecessary and slows things down.
+Damped Picard trades asymptotic speed for stability. It is the right default when the iterates oscillate or the modulus is uncertain. On a smooth contraction like the test instance here, damping is unnecessary and slows things down.
 
 Anderson acceleration is dramatically faster than Picard on contractions but needs a safeguard. The least-squares step can extrapolate unstably when the residual history is nearly collinear. A simple residual-monotonicity check that reverts to damped Picard when an Anderson step doubles the residual recovers stability with very little overhead.
 
-Fixed-point iteration is a unifying view across the catalog. Bellman equations, BLP demand inversions, market-clearing maps, and best-response dynamics in static games all reduce to $x = T(x)$ with different $T$. Acceleration techniques transfer between settings as long as the underlying map is a contraction or close to one.
+The methods are not specific to demand inversion. Any problem of the form $x = T(x)$ with a contractive $T$ admits the same three-method ladder: Picard, damped Picard, Anderson. What changes between problems is the map, not the iteration.
 
 ## References
 
