@@ -5,7 +5,6 @@ This repository gives graduate students and researchers short, executable exampl
 ## Contents
 
 - [Quick Start](#quick-start)
-- [Method Ladders](#method-ladders)
 - [Numerical Methods](#numerical-methods)
 - [Dynamic Programming](#dynamic-programming)
 - [Macroeconomics](#macroeconomics)
@@ -26,23 +25,6 @@ python run.py
 # -> generates README.md + figures/ + tables/
 ```
 
-## Method Ladders
-
-Several economic models recur across the catalog because each tutorial changes the computational method, not the question. The table below groups those recurrences so the pedagogy is visible at a glance.
-
-| Family | Sequence |
-|---|---|
-| RBC | Global VFI on the production economy → linearized perturbation and Klein QZ (with and without endogenous labor) → global VFI with a capital-tax wedge → global VFI with irreversible investment |
-| Buffer-stock saving | VFI with persistent income → EGP with IID income → envelope-equation iteration with persistent income → Huggett bond-market equilibrium → Aiyagari capital-market equilibrium |
-| Demand estimation | Plain logit and IIA → nested logit and diversion → mixed logit by simulated likelihood → BLP and random coefficients → Berry inversion, IV, and markups |
-| Rust bus | NFXP, CCP, and MPEC (with the MCE-IRL equivalence) → soft Q-learning and DQN |
-| Ramsey growth | Phase-diagram backward integration from the stable arm → forward shooting on initial consumption |
-| Lucas tree | SDF baseline by scaled-price iteration → dividend-news linearized pricing |
-| Nowcasting | Kalman filtering → particle filtering |
-| Quality-ladder dynamic game | Solving the Markov-perfect equilibrium → estimating with conditional choice probabilities |
-
-The recurrences are intentional. The economic object stays fixed so the contrast between methods is the lesson.
-
 ## Numerical Methods
 
 These tutorials cover the scalar building blocks the rest of the catalog uses: solving `f(x) = 0`, finding extrema of `f(x)`, and approximating a function from finite information.
@@ -51,10 +33,10 @@ These tutorials cover the scalar building blocks the rest of the catalog uses: s
 |---|---|---|
 | [<img src="numerical-methods/root-finding/figures/thumb.png" width="160">](numerical-methods/root-finding/figures/trajectories.png) | **[Scalar Root Finding for Equilibrium Rates](numerical-methods/root-finding/)** | Find the interest rate that clears a stylized bond market. These are all methods to solve $f(x) = 0$ problems. |
 | [<img src="numerical-methods/interpolation/figures/thumb.png" width="160">](numerical-methods/interpolation/figures/target-vs-fit.png) | **[Off-Grid Function Approximation by Interpolation](numerical-methods/interpolation/)** | How to estimate a function from values at a finite set of points. Linear, cubic spline, and PCHIP each fit smooth and kinked targets differently. |
-| [<img src="numerical-methods/scalar-optimization-monopoly-pricing/figures/thumb.png" width="160">](numerical-methods/scalar-optimization-monopoly-pricing/figures/profit-curve.png) | **[Scalar Optimization for Monopoly Pricing](numerical-methods/scalar-optimization-monopoly-pricing/)** | Maximize a monopolist's profit under constant-elasticity demand. Grid search, golden section, and Newton on the FOC are checked against the closed-form Lerner markup, with a Newton failure mode in the convex region. |
-| [<img src="numerical-methods/constrained-optimization-kkt/figures/thumb.png" width="160">](numerical-methods/constrained-optimization-kkt/figures/simplex-paths.png) | **[Constrained Optimization and KKT Conditions](numerical-methods/constrained-optimization-kkt/)** | Allocate a fixed budget across three projects with diminishing returns and non-negativity bounds. Projected gradient, log barrier, and SLSQP are diagnosed by KKT residuals and shadow prices, not by the value of the objective. |
-| [<img src="numerical-methods/fixed-point-acceleration/figures/thumb.png" width="160">](numerical-methods/fixed-point-acceleration/figures/share-fit.png) | **[Fixed-Point Iteration and Acceleration](numerical-methods/fixed-point-acceleration/)** | Recover product mean utilities from observed plain-logit shares. Picard, damped Picard, and Anderson acceleration are compared against the closed-form inversion, with a Cournot best-response coda. |
-| [<img src="numerical-methods/global-search-multistart/figures/thumb.png" width="160">](numerical-methods/global-search-multistart/figures/profit-surface.png) | **[Global Search and Multi-Start Diagnostics](numerical-methods/global-search-multistart/)** | Optimize a two-segment monopoly profit with two local peaks. Single-start L-BFGS-B and Nelder-Mead miss the global; multi-start, random search, and simulated annealing recover it and report basin diagnostics. |
+| [<img src="numerical-methods/scalar-optimization-monopoly-pricing/figures/thumb.png" width="160">](numerical-methods/scalar-optimization-monopoly-pricing/figures/profit-curve.png) | **[Scalar Optimization for Monopoly Pricing](numerical-methods/scalar-optimization-monopoly-pricing/)** | Maximize a monopolist's profit under constant-elasticity demand. Grid search, golden section, and Newton on the FOC are benchmarked against the Lerner markup. |
+| [<img src="numerical-methods/constrained-optimization-kkt/figures/thumb.png" width="160">](numerical-methods/constrained-optimization-kkt/figures/simplex-paths.png) | **[Constrained Optimization and KKT Conditions](numerical-methods/constrained-optimization-kkt/)** | Allocate a fixed budget across three projects with diminishing returns. Projected gradient, log barrier, and SLSQP are diagnosed by KKT residuals and shadow prices. |
+| [<img src="numerical-methods/fixed-point-acceleration/figures/thumb.png" width="160">](numerical-methods/fixed-point-acceleration/figures/share-fit.png) | **[Fixed-Point Iteration and Acceleration](numerical-methods/fixed-point-acceleration/)** | Recover product mean utilities from observed plain-logit shares. Picard, damped Picard, and Anderson acceleration are compared against the closed-form inversion. |
+| [<img src="numerical-methods/global-search-multistart/figures/thumb.png" width="160">](numerical-methods/global-search-multistart/figures/profit-surface.png) | **[Global Search and Multi-Start Diagnostics](numerical-methods/global-search-multistart/)** | Optimize a two-segment monopoly profit with two local peaks. Multi-start, random search, and simulated annealing recover the global where single-start methods miss it. |
 
 ## Dynamic Programming
 
