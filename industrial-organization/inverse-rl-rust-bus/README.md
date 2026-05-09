@@ -62,7 +62,9 @@ The implementation estimates $\theta$ by this conditional demonstration
 likelihood. The MCE view interprets the same first-order condition as
 reward-feature matching. With the reward normalization, transitions, discount
 factor, and logit scale fixed, the MCE-IRL policy and Rust logit DDC likelihood
-are the same object in this example.
+are the same object in this example. Sanghvi et al. (2021) formalize this
+connection by showing that MCE-IRL and NFXP share the same objective form,
+causal-logit policy, and feature-count gradient in this class of models.
 
 ## Model Setup
 
@@ -163,4 +165,5 @@ In this controlled Rust-style replacement model, NFXP and MCE-IRL are not two di
 
 - [Rust, J. (1987). Optimal Replacement of GMC Bus Engines: An Empirical Model of Harold Zurcher. *Econometrica*, 55(5), 999-1033.](https://doi.org/10.2307/1911259)
 - [Ziebart, B. D., Maas, A., Bagnell, J. A., and Dey, A. K. (2008). Maximum Entropy Inverse Reinforcement Learning. *AAAI*.](https://cdn.aaai.org/AAAI/2008/AAAI08-227.pdf)
+- [Sanghvi, N., Usami, S., Sharma, M., Groeger, J., and Kitani, K. (2021). Inverse Reinforcement Learning with Explicit Policy Estimates. *AAAI*.](https://arxiv.org/abs/2103.02863)
 - [EconIRL documentation: inverse reinforcement learning estimators for economics.](https://econirl.readthedocs.io/en/latest/)
