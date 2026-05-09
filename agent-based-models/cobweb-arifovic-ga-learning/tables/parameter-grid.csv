@@ -1,0 +1,3 @@
+regime,demand_slope_b,supply_slope_y,n_firms,naive_slope_beta,ree_price,ree_quantity_per_firm,naive_diverges,ga_mean_price_last100,ga_abs_dev_from_ree
+stable,30.0,2.0,30,0.5,1.6666666666666667,0.33333333333333337,False,1.666554248366013,0.00011241830065378267
+unstable,10.0,2.0,30,1.5,3.0,1.0,True,3.0117647058823525,0.011764705882352455

@@ -194,6 +194,7 @@ These tutorials simulate local behavior and market institutions, then compare th
 |---|---|---|
 | [<img src="agent-based-models/schelling-segregation/figures/thumb.png" width="160">](agent-based-models/schelling-segregation/figures/phase-transition.png) | **[Schelling Segregation on a Checkerboard](agent-based-models/schelling-segregation/)** | Local tolerance rules can sort a city without a planner or global objective. A 50 x 50 checkerboard simulation tracks the segregation index as neighborhood demands rise. |
 | [<img src="agent-based-models/zero-intelligence-traders/figures/thumb.png" width="160">](agent-based-models/zero-intelligence-traders/figures/order-book.gif) | **[Zero-Intelligence Traders in a Double Auction](agent-based-models/zero-intelligence-traders/)** | Random constrained bids and asks can reach about 99% allocative efficiency. Price-quantity regressions recover slopes in thicker markets but fail in thin markets. |
+| [<img src="agent-based-models/cobweb-arifovic-ga-learning/figures/thumb.png" width="160">](agent-based-models/cobweb-arifovic-ga-learning/figures/price-paths.png) | **[Cobweb Markets and Arifovic Genetic-Algorithm Learning](agent-based-models/cobweb-arifovic-ga-learning/)** | Strawberry-style firms encode production as binary chromosomes. Selection, crossover, mutation, and Arifovic's election operator drive the population to rational expectations even in the parameter regime where naive expectations explode; lagged-price IV recovers demand structure from the resulting price series. |
 
 ## Selected External Resources
 
