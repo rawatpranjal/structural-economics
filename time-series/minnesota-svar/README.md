@@ -57,8 +57,8 @@ The prior variance is larger for own lags and smaller for cross lags and distant
 lags:
 
 $$
-v_{i,j,\ell}
-= \left(\frac{\lambda}{\ell^d}\right)^2
+v_{i,j,\ell} =
+\left(\frac{\lambda}{\ell^d}\right)^2
 \left(\frac{\sigma_i}{\sigma_j}\right)^2
 \theta_{ij}^2,
 \qquad
@@ -70,14 +70,12 @@ This tutorial plugs in $\hat\sigma_i^2$ from OLS residuals. Conditional on that
 plug-in scale, conjugacy gives a Gaussian posterior:
 
 $$
-V_i^{-1}
-=
+V_i^{-1} =
 \frac{X'X}{\hat\sigma_i^2} + (V_i^0)^{-1}.
 $$
 
 $$
-b_i
-=
+b_i =
 V_i\left(
 \frac{X'y_i}{\hat\sigma_i^2} + (V_i^0)^{-1}b_i^0
 \right).
@@ -86,8 +84,7 @@ $$
 Coefficient uncertainty comes from the posterior covariance:
 
 $$
-\mathrm{sd}(\beta_{im}\mid y_i)
-=
+\mathrm{sd}(\beta_{im}\mid y_i) =
 \sqrt{(V_i)_{mm}},
 \qquad
 \beta_{im}\approx b_{im}\pm 1.96\sqrt{(V_i)_{mm}}.
@@ -111,8 +108,7 @@ $$
 u_{y,t}\\
 u_{\pi,t}\\
 u_{i,t}
-\end{bmatrix}
-=
+\end{bmatrix} =
 \begin{bmatrix}
 p_{11} & 0 & 0\\
 p_{21} & p_{22} & 0\\
@@ -134,8 +130,7 @@ through $p_{31}$ and $p_{32}$.
 The plotted shock is scaled to move the policy rate by $\tau=0.25$ on impact:
 
 $$
-q
-=
+q =
 \tau \frac{P e_3}{e_3'P e_3}.
 $$
 
