@@ -16,6 +16,8 @@ The conditional value functions solve
 
 $$v(x, a) = u(x, a) + \beta\, \mathbb{E}[\, \gamma + \log \textstyle\sum_{a'} \exp v(x', a') \mid x, a \,],$$
 
+Here $\gamma \approx 0.5772$ is the Euler-Mascheroni constant, equal to the expected value of a Type-I extreme value draw.
+
 and the structural CCP is the softmax of conditional values:
 
 $$P(\mathrm{replace} \mid x) = \frac{\exp v(x, \mathrm{replace})}{\exp v(x, \mathrm{replace}) + \exp v(x, \mathrm{keep})}.$$
@@ -23,6 +25,8 @@ $$P(\mathrm{replace} \mid x) = \frac{\exp v(x, \mathrm{replace})}{\exp v(x, \mat
 Soft Q-learning treats $v$ as an action-value $Q(x, a)$ and updates it from observed $(x_t, a_t, x_{t+1})$ triples:
 
 $$Q(x_t, a_t) \leftarrow Q(x_t, a_t) + \alpha_t [\, u(x_t, a_t) + \beta(\gamma + \log \textstyle\sum_{a'} \exp Q(x_{t+1}, a')) - Q(x_t, a_t) \,].$$
+
+Here $\alpha_t$ is a step-size sequence that shrinks with the per-state visit count (Robbins-Monro schedule).
 
 ## Model Setup
 
@@ -97,9 +101,9 @@ The table compares the three methods on the same calibration. Q-learning and DQN
 
 | method                         | transition matrix   |   hazard MAE |   P=0.5 mileage |   samples |   runtime sec |
 |:-------------------------------|:--------------------|-------------:|----------------:|----------:|--------------:|
-| NFXP (model-based)             | yes                 |       0      |               6 |       228 |        0.0111 |
-| soft Q-learning (4 seeds avg.) | no                  |       0.0105 |               6 |   6120000 |      230.555  |
-| soft DQN                       | no                  |       0.0046 |               6 |   4080000 |       13.609  |
+| NFXP (model-based)             | yes                 |       0      |               6 |       228 |        0.0104 |
+| soft Q-learning (4 seeds avg.) | no                  |       0.0105 |               6 |   6120000 |      199.179  |
+| soft DQN                       | no                  |       0.0046 |               6 |   4080000 |       10.611  |
 
 NFXP converges in 228 Bellman iterations. Soft Q-learning hits a hazard MAE of 0.0105 after 30 passes through 51,000 observed transitions. Soft DQN reaches 0.0046 on the same panel.
 

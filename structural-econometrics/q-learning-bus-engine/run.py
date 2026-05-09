@@ -562,6 +562,7 @@ def main() -> None:
         "$$"
         r"v(x, a) = u(x, a) + \beta\, \mathbb{E}[\, \gamma + \log \textstyle\sum_{a'} \exp v(x', a') \mid x, a \,],"
         "$$" + "\n\n"
+        r"Here $\gamma \approx 0.5772$ is the Euler-Mascheroni constant, equal to the expected value of a Type-I extreme value draw." + "\n\n"
         r"and the structural CCP is the softmax of conditional values:" + "\n\n"
         "$$"
         r"P(\mathrm{replace} \mid x) = \frac{\exp v(x, \mathrm{replace})}{\exp v(x, \mathrm{replace}) + \exp v(x, \mathrm{keep})}."
@@ -570,7 +571,8 @@ def main() -> None:
         r"it from observed $(x_t, a_t, x_{t+1})$ triples:" + "\n\n"
         "$$"
         r"Q(x_t, a_t) \leftarrow Q(x_t, a_t) + \alpha_t [\, u(x_t, a_t) + \beta(\gamma + \log \textstyle\sum_{a'} \exp Q(x_{t+1}, a')) - Q(x_t, a_t) \,]."
-        "$$"
+        "$$" + "\n\n"
+        r"Here $\alpha_t$ is a step-size sequence that shrinks with the per-state visit count (Robbins-Monro schedule)."
     )
 
     n_samples = len(transitions["s"])

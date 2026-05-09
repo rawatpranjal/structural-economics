@@ -36,6 +36,8 @@ $$
 \theta_{n+1} = \theta_n - H_f(\theta_n)^{-1}\nabla f(\theta_n).
 $$
 
+Here $H_f(\theta)$ denotes the Hessian matrix of $f$ at $\theta$.
+
 ## Model Setup
 
 | Object | Value |

@@ -406,7 +406,7 @@ where the causal entropy term is
 $$H_c(\pi)=E_\pi\left[-\sum_{t\geq 0}\beta^t\log\pi(a_t\mid x_t)\right].$$
 
 The inverse problem chooses reward weights so demonstrated and policy-implied
-discounted features match:
+discounted features match, where $N$ is the number of observed bus trajectories:
 
 $$\widehat\mu_D=\frac{1}{N}\sum_{i=1}^N\sum_{t\geq 0}\beta^t f(x_{it},a_{it})
 =E_{\pi_\theta}\left[\sum_{t\geq 0}\beta^t f(x_t,a_t)\right].$$
@@ -418,6 +418,10 @@ $$\mathcal L(\pi,\theta)=H_c(\pi)+\theta^\top\left(E_\pi\left[\sum_{t\geq 0}\bet
 For a fixed $\theta$, the policy problem has the causal logit solution. Define
 
 $$Q_\theta(x,a)=r_\theta(x,a)+\beta\sum_{x'}F_a(x'\mid x)\left[\log\sum_{b\in\{0,1\}}\exp Q_\theta(x',b)+\gamma\right].$$
+
+Here $F_a(x'\mid x)$ is the transition probability from mileage state $x$ to $x'$ under
+action $a$, and $\gamma\approx 0.5772$ is the Euler-Mascheroni constant linking the
+log-sum-exp expression to the expected maximum of i.i.d. Type I extreme-value shocks.
 
 Then
 
@@ -636,7 +640,7 @@ causal-logit policy, and feature-count gradient in this class of models.
 
     report.add_references([
         "[Rust, J. (1987). Optimal Replacement of GMC Bus Engines: An Empirical Model of Harold Zurcher. *Econometrica*, 55(5), 999-1033.](https://doi.org/10.2307/1911259)",
-        "[Ziebart, B. D., Maas, A., Bagnell, J. A., and Dey, A. K. (2008). Maximum Entropy Inverse Reinforcement Learning. *AAAI*.](https://cdn.aaai.org/AAAI/2008/AAAI08-227.pdf)",
+        "[Ziebart, B. D., Bagnell, J. A., and Dey, A. K. (2010). Modeling Interaction via the Principle of Maximum Causal Entropy. *ICML*.](https://arxiv.org/abs/1004.1628)",
         "[Sanghvi, N., Usami, S., Sharma, M., Groeger, J., and Kitani, K. (2021). Inverse Reinforcement Learning with Explicit Policy Estimates. *AAAI*.](https://arxiv.org/abs/2103.02863)",
         "[EconIRL documentation: inverse reinforcement learning estimators for economics.](https://econirl.readthedocs.io/en/latest/)",
     ])

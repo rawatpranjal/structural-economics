@@ -4,13 +4,15 @@
 
 Spatial equilibrium models ask where workers live and what workers earn. They also ask how geography changes those outcomes. Allen and Arkolakis start from gravity trade, then add labor mobility.
 
-This tutorial puts 15 locations on a line. The center has a small productivity advantage. Distance raises shipping costs. Workers move until real utility is equalized. The tutorial compares a dispersed regime with an agglomerated regime. The comparison shows how spillovers change the spatial allocation.
+This tutorial puts 15 locations on a line. The center has a small productivity advantage. Distance raises shipping costs. Workers move until real utility is equalized. Real utility here means the wage multiplied by local amenities and divided by the local price index. Mobility does not equalize nominal wages across locations, only this real utility level.
+
+The tutorial compares a dispersed regime with an agglomerated regime. The comparison shows how spillovers change the spatial allocation.
 
 ## Equations
 
 The model has a finite set of locations. I write this set as $i \in \lbrace 1,\ldots,N\rbrace$. I use $j$ when the same set is viewed as destinations.
 
-At location $i$, $L_i$ is labor, $w_i$ is the wage, $A_i$ is productivity, and $u_i$ is the amenity. Trade costs are iceberg costs. Delivering one unit from $i$ to $j$ requires shipping $T_{ij}$ units from origin $i$.
+At location $i$, $L_i$ is labor, $w_i$ is the wage, $A_i$ is productivity, and $u_i$ is the amenity. Trade costs are iceberg costs. Delivering one unit from $i$ to $j$ requires shipping $T_{ij}$ units from origin $i$. By convention $T_{ii} = 1$ within a location and $T_{ij} \geq 1$ otherwise. The same $T_{ij}$ both raises the destination price index and shrinks the revenue origin $i$ collects from $j$.
 
 The paper uses a continuum of locations. This tutorial uses a finite grid. That change turns integrals into sums over $i \in \lbrace 1,\ldots,N\rbrace$.
 
@@ -28,7 +30,9 @@ $\alpha$ is the productivity spillover. It is positive here. A larger $L_i$ rais
 
 $\beta$ is the congestion parameter. It is negative here. A larger $L_i$ lowers $u_i$.
 
-Consumers buy varieties from all origins. For destination $j$, the CES price index is
+The two spillovers pull in opposite directions. Their relative strength decides whether the model concentrates labor or spreads it out.
+
+Consumers have Dixit-Stiglitz CES preferences over varieties from every origin. The elasticity of substitution across varieties is $\sigma > 1$. The CES price index at destination $j$ is
 
 $$
 P_j^{1-\sigma}
@@ -43,7 +47,9 @@ $$
 {\sum_k T_{kj}^{1-\sigma} A_k^{\sigma-1} w_k^{1-\sigma}}.
 $$
 
-Balanced trade says income at origin $i$ equals its sales across destinations:
+This is the standard Krugman gravity share. CES demand against producers priced at $w_i / A_i$ and shipped at $T_{ij}$ implies destinations spend a larger share on origins that are cheaper or closer.
+
+Each destination $j$ spends its labor income $w_j L_j$ across origins in shares $\pi_{ij}$. Origin $i$'s total revenue is the sum $\sum_j \pi_{ij} w_j L_j$. With labor as the only factor and zero profits under free entry, that revenue equals the local wage bill at $i$:
 
 $$
 w_i L_i =
@@ -56,7 +62,7 @@ $$
 \frac{w_i u_i}{P_i} = V.
 $$
 
-Here $V$ is the common real utility level.
+Workers compare $w_i u_i / P_i$ across locations and move toward higher values. The common level $V$ is pinned down residually by the labor adding-up constraint below.
 
 $$
 \sum_i L_i = 1
@@ -66,9 +72,9 @@ $$
 N^{-1}\sum_i \log w_i = 0.
 $$
 
-The first normalization sets total labor to one. The second normalization sets the average log wage to zero.
+The first normalization sets total labor to one. The second normalization sets the geometric mean wage to one, fixing units.
 
-The tutorial solves balanced trade and mobility directly. This matches the finite-location version of equations (11) and (12) in Allen and Arkolakis. It does not use the later Hammerstein reduction, which uses symmetry to eliminate wages.
+The tutorial solves balanced trade and mobility directly. This matches the finite-location version of equations (11) and (12) in Allen and Arkolakis. On a continuum where iceberg costs depend only on distance, symmetry lets the paper eliminate wages and reduce the two equations to a single nonlinear integral equation in labor density. Allen and Arkolakis call this the Hammerstein reduction. The grid version here keeps the same equilibrium content without the continuum machinery.
 
 ## Model Setup
 
@@ -121,6 +127,8 @@ The dispersion-dominant center share is 15.1%. The strong-agglomeration largest 
 The heatmap fixes geography. Purchasing power moves across locations. Central concentration raises demand access for nearby origins. Those origins serve more workers at lower shipping costs.
 
 <img src="figures/access-surface.png" alt="Trade costs plus market access" width="80%">
+
+Allen and Arkolakis define two composite parameters that decide which regime the model lives in. $\gamma_1 = 1 - (\sigma-1)\alpha - \sigma\beta$ collects the dispersion forces. $\gamma_2 = 1 + \sigma\alpha + (\sigma-1)\beta$ collects the agglomeration forces. Equilibrium is unique when $\gamma_2/\gamma_1 < 1$ and can have multiple equilibria when $\gamma_2/\gamma_1 > 1$. The diagnostic table further down prints this ratio for both scenarios. The figure just below shows the multiple-equilibrium case directly.
 
 The relocation iteration is diagnostic only. It solves wages for a provisional population and computes real utility gaps. It then shifts workers toward high-utility locations.
 

@@ -14,7 +14,7 @@ The simulated decision is a participation rule:
 
 $$y_i = 1\{x^B_i+\beta x^C_i+\varepsilon_i \geq 0\}.$$
 
-Here $x^B_i$ is the benefit shifter, and $x^C_i$ is the cost shifter.
+Here $x^B_i$ is the benefit shifter, $x^C_i$ is the cost shifter, and $\varepsilon_i$ is an idiosyncratic error term.
 A negative $\beta$ means higher costs lower participation.
 Only the index direction is identified.
 The coefficient on $x^B_i$ is normalized to one.
