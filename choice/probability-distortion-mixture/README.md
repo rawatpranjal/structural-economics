@@ -4,7 +4,7 @@
 
 Subjects evaluate binary lotteries and report certainty equivalents. Cumulative prospect theory describes each subject by four preference primitives: a value-function curvature, a loss-aversion factor, a probability-weighting slope, and a probability-weighting elevation. The population is heterogeneous in all four. A minority of subjects behave as expected utility maximisers with no loss aversion; the majority exhibit probability distortion and treat losses more heavily than gains.
 
-The lottery design covers three domains: gain-only, loss-only, and mixed. Mixed lotteries put a positive payoff against a negative one and are what identifies the loss-aversion factor; without them the factor cancels out of the certainty equivalent and is unidentified. Bruhin, Fehr-Duda, and Epper (2010) drop loss aversion from their main specification for exactly this reason; the tutorial keeps it and adds the mixed-lottery cells.
+The lottery design covers three domains: gain-only, loss-only, and mixed. Mixed lotteries put a positive payoff against a negative one. These are the cells that identify the loss-aversion factor, since in a single-domain lottery the factor cancels out of the certainty equivalent. Bruhin, Fehr-Duda, and Epper (2010) drop loss aversion from their main specification because their data has no mixed lotteries; the tutorial keeps loss aversion in the model and adds the missing cells.
 
 Heterogeneity is recovered by a finite-mixture model fitted by EM. Three estimators are compared: a single-type CPT MLE (the pre-BFDE default), a two-component EM mixture, and a three-component EM mixture. Bayesian information criterion picks the right number of types and the recovered loss-aversion factors are sharply different across types.
 
@@ -30,9 +30,9 @@ The value function is sign-dependent power utility (Tversky-Kahneman 1992).
 
 $$v(x) = \begin{cases} x^{\alpha}, & x \geq 0, \\ -\lambda\, (-x)^{\alpha}, & x < 0. \end{cases}$$
 
-The curvature parameter $\alpha > 0$ governs concavity over gains and convexity over losses; $\alpha = 1$ is risk-neutral. The loss-aversion factor $\lambda \geq 1$ scales the disutility of losses relative to the utility of equivalent-magnitude gains; $\lambda = 1$ means no loss aversion. The original Tversky-Kahneman estimate is $\lambda \approx 2.25$.
+The curvature parameter $\alpha > 0$ governs concavity over gains and convexity over losses, with $\alpha = 1$ giving linear utility and risk-neutral behaviour. The loss-aversion factor $\lambda \geq 1$ scales the disutility of losses relative to the utility of equivalent-magnitude gains, so $\lambda = 1$ means no loss aversion and $\lambda = 2$ means a $-\$10$ loss feels twice as bad as a $\$10$ gain feels good. The original Tversky-Kahneman estimate is $\lambda \approx 2.25$.
 
-In a single-domain lottery $\lambda$ cancels out of $\widehat{ce}$ because every outcome carries the same multiplicative factor. Mixed lotteries with $x_1 > 0 > x_2$ are what break this cancellation and identify $\lambda$.
+In a single-domain lottery $\lambda$ cancels out of $\widehat{ce}$ because every outcome carries the same multiplicative factor. Mixed lotteries with $x_1 > 0 > x_2$ break the cancellation and identify $\lambda$.
 
 ### Probability weighting
 
@@ -40,7 +40,7 @@ The weighting function is the Goldstein-Einhorn two-parameter form.
 
 $$w(p) = \frac{\delta\, p^{\gamma}}{\delta\, p^{\gamma} + (1 - p)^{\gamma}}, \qquad \delta, \gamma \geq 0.$$
 
-The slope $\gamma$ controls curvature; $\gamma < 1$ produces the inverted-S shape that overweights small probabilities and underweights large ones. The elevation $\delta$ shifts the curve vertically; $\delta > 1$ is uniform optimism. Linear weighting (expected-utility behaviour) is $\gamma = \delta = 1$.
+The slope parameter $\gamma$ controls curvature, and $\gamma < 1$ produces the inverted-S shape that overweights small probabilities and underweights large ones. The elevation parameter $\delta$ shifts the curve vertically, with $\delta > 1$ raising every decision weight uniformly above the linear benchmark. Linear weighting, the expected-utility case, corresponds to $\gamma = \delta = 1$.
 
 ### Heteroskedastic observation noise
 
@@ -87,7 +87,7 @@ The lottery design extends the Bruhin-Fehr-Duda-Epper Zurich 2003 cells to three
 
 ## Solution Method
 
-Three estimators recover (or attempt to recover) the same underlying preference parameters from the same simulated data. They differ only in how heterogeneity is modelled.
+Three estimators are applied to the same simulated data. They differ only in how heterogeneity is modelled, and only the mixture estimators can recover the underlying type structure.
 
 ### Method 1: Single-type CPT MLE
 
@@ -109,7 +109,7 @@ Method 1's failure mode is mis-specification: it cannot recover that the populat
 
 ### Method 2: Finite-mixture EM with C = 2
 
-Method 2 introduces two latent types and uses the EM algorithm of Dempster, Laird, and Rubin (1977). The E-step computes posterior membership probabilities given current parameters. The M-step updates mixing proportions to the posterior means and re-fits each type's parameters by weighted maximum likelihood. Each subject's noise scale is profiled by maximum-posterior-type as in BFDE's implementation. EM is monotone in log-likelihood by construction.
+Method 2 introduces two latent types and uses the EM algorithm of Dempster, Laird, and Rubin (1977). The E-step computes posterior membership probabilities given current parameters. The M-step updates mixing proportions to the posterior means and re-fits each type's parameters by weighted maximum likelihood. Each subject's noise scale $\xi_i$ is profiled under the subject's maximum-posterior type, following the implementation in BFDE. EM is monotone in log-likelihood by construction.
 
 ```text
 Algorithm: Finite-mixture EM
@@ -141,25 +141,25 @@ Method 3 can fail through label switching (component permutations give the same 
 
 ## Results
 
-The left panel shows the recovered weighting curves. The EUT type's curve sits on the diagonal $w(p) = p$ within sampling noise. The two CPT types both have the inverted-S signature, with the strong type far below the diagonal at the middle of the probability range. Dotted lines are the true weighting curves; solid lines are the EM estimates.
+The left panel shows the recovered weighting curves. The EUT type's curve sits on the diagonal $w(p) = p$ within sampling noise. The two CPT types both show the inverted-S signature: above the diagonal at low probabilities and below it at high probabilities, with the strong-CPT crossing near $p = 0.4$. Dotted lines mark the true curves; solid lines mark the EM estimates.
 
-The right panel shows the value function. Below zero the curve drops sharply for the strong-CPT type because $\lambda$ scales the disutility of losses; the EUT type's curve is symmetric around zero with $\lambda = 1$. The kink at $x = 0$ is what mixed lotteries identify.
+The right panel shows the value function. The strong-CPT type's curve drops steeply below zero because $\lambda = 2.5$ amplifies the disutility of losses, while the EUT type's curve is symmetric around zero with $\lambda = 1$. The slope discontinuity at $x = 0$ is what mixed lotteries identify.
 
 <img src="figures/weighting-and-value-functions.png" alt="Recovered probability weighting and value function by type" width="80%">
 
-The classification posterior is sharp at the BFDE headline. On 100% of subjects the maximum posterior exceeds 0.95, meaning the EM algorithm assigns them unambiguously to one type. The recovered type label matches the true type label on 100% of subjects. Where it does not match, the subject's true parameters are very close to the boundary between two types.
+The classification posterior is sharp. The maximum posterior exceeds 0.95 on 100% of subjects, meaning the EM algorithm assigns each of them to a single type with little uncertainty. The estimated type label matches the true type label on 100% of subjects.
 
 <img src="figures/classification-posterior.png" alt="Histogram of maximum posterior membership probability across subjects" width="80%">
 
-Bayesian information criterion across $C \in \{1, 2, 3, 4\}$ selects $C = 3$ on this simulated sample, replicating the BFDE Table III pattern. Going from $C = 1$ to $C = 2$ delivers a large BIC drop because the data clearly demand at least two types. Going from $C = 2$ to $C = 3$ delivers a smaller but still decisive drop because the strong-CPT type is genuinely distinct from the mild-CPT type. Going from $C = 3$ to $C = 4$ delivers an increase, signalling over-fitting: the fourth component captures only noise.
+Bayesian information criterion across $C \in \{1, 2, 3, 4\}$ selects $C = 3$ on this simulated sample, replicating the BFDE Table III pattern. The first step from $C = 1$ to $C = 2$ delivers a large BIC drop because the data clearly demand at least two types. The second step from $C = 2$ to $C = 3$ delivers a smaller but decisive drop because the strong-CPT type is genuinely distinct from the mild-CPT type. The fourth component, by contrast, raises BIC: it captures only noise and the parsimony penalty correctly rejects it.
 
 <img src="figures/model-selection-bic.png" alt="BIC across mixture sizes" width="80%">
 
-The median relative risk premium is positive at high probabilities and negative at low probabilities, the signature of inverted-S probability weighting in the gain domain. Subjects are risk averse for high-probability gains because they underweight the larger payoff. Subjects are risk seeking for low-probability gains because they overweight the larger payoff. This reproduces BFDE Figure 2 in the simulated sample. The pattern survives mixing the three types together because the CPT majority (80 percent of the population) drives the median.
+The median relative risk premium is positive at high probabilities and negative at low probabilities, the signature of inverted-S probability weighting in the gain domain. At a 0.95-probability gain the agent decision-weights the larger payoff below 0.95, which lowers the lottery's perceived value and produces apparent risk aversion. At a 0.05-probability gain the agent decision-weights the larger payoff above 0.05, which raises perceived value and produces risk-seeking behaviour. The pattern survives aggregating across the three types because the CPT majority, which is 80 percent of the population, drives the median.
 
 <img src="figures/relative-risk-premia.png" alt="Median relative risk premia by lottery probability" width="80%">
 
-The type-parameters table compares the true generating values to the Method 3 estimates after EM convergence and label-switch reordering. The recovered curvature, loss aversion, slope, elevation, and mixing proportions all lie within sampling noise of the truth at $N = 200$ subjects and 85 lotteries each. Loss aversion is sharply different across types: the EUT type recovers $\hat\lambda$ close to 1 (no loss aversion), the mild-CPT type recovers $\hat\lambda$ close to 1.5, and the strong-CPT type recovers $\hat\lambda$ close to the Tversky-Kahneman 1992 estimate of 2.25. Without the mixed lotteries this last separation would not be possible.
+The type-parameters table compares the true generating values to the Method 3 estimates after EM convergence and label-switch reordering. The recovered curvature, loss aversion, slope, elevation, and mixing proportions all lie within sampling noise of the truth at $N = 200$ subjects and 85 lotteries each. Loss aversion is sharply different across types: $\hat\lambda$ is essentially 1 for the EUT type, near 1.5 for the mild-CPT type, and 2.53 for the strong-CPT type. The strong-CPT estimate is in the same neighbourhood as the Tversky-Kahneman 1992 benchmark of $\lambda \approx 2.25$. Without the mixed lotteries this separation would not be possible.
 
 **Recovered type parameters and mixing proportions under Method 3**
 
@@ -184,9 +184,9 @@ The model-selection table puts BIC and normalised entropy criterion next to the 
 
 Risk-taking heterogeneity is a structural object, not statistical noise. Finite-mixture EM recovers it cleanly: subjects fall into a small number of latent types, each characterised by a distinct curvature, loss-aversion factor, and probability-weighting pair, with mixing proportions that are themselves estimable.
 
-Single-type CPT estimation is structurally mis-specified when the population contains distinct types. The fitted parameters describe a non-existent average subject; the pull-toward-the-middle bias is largest for $\lambda$ and $\gamma$, the two parameters most sensitive to mixing.
+Single-type CPT estimation is structurally mis-specified when the population contains distinct types. The fitted parameters describe a non-existent average subject. The bias toward the population mean is largest for $\lambda$ and $\gamma$, the two parameters most sensitive to mixing.
 
-Loss aversion is identifiable only with mixed lotteries. BFDE's data has none, which is why the published paper drops $\lambda$. Adding even a handful of mixed cells to the design recovers $\lambda$ sharply by type, and the recovered values for the strong-CPT minority land near the Tversky-Kahneman 1992 benchmark of $\lambda \approx 2.25$.
+Loss aversion is identifiable only with mixed lotteries. BFDE drop $\lambda$ from their published specification because their data has none. Adding even a handful of mixed cells recovers $\lambda$ sharply by type, and the recovered value for the strong-CPT minority lands in the same range as the Tversky-Kahneman 1992 benchmark of $\lambda \approx 2.25$.
 
 ## References
 
