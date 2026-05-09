@@ -65,3 +65,9 @@ dynare/**/*_results.mat
 GLOSSARY.md
 STYLE_GUIDE.md
 docs/superpowers/
+CLAUDE.md
+docs/qc-reports/proofread/
+docs/qc-reports/proofread-manifest.json
+docs/qc-reports/fix-manifest.json
+docs/qc-reports/tutorial-claude-sweep-manifest.json
+scripts/run_tutorial_claude_sweep.py
