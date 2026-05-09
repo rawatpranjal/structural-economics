@@ -50,8 +50,8 @@ Regret turns that many-inequality condition into one diagnostic number. At a
 value profile $v$, bidder $i$'s ex post regret is the best gain from lying:
 
 $$
-R_i(v;\theta)
-= \max_{b_i' \in [0,1]}
+R_i(v;\theta) =
+\max_{b_i' \in [0,1]}
 \{u_i(v_i,(b_i',v_{-i});\theta)
 {}- u_i(v_i,v;\theta)\}.
 $$
@@ -61,15 +61,15 @@ al. train on a sample of value profiles $v^1,\ldots,v^L$, so the constraint is
 the empirical average regret:
 
 $$
-\mathrm{rgt}_i(\theta)
-= \frac{1}{L}\sum_{\ell=1}^{L} R_i(v^{\ell};\theta).
+\mathrm{rgt}_i(\theta) =
+\frac{1}{L}\sum_{\ell=1}^{L} R_i(v^{\ell};\theta).
 $$
 
 Revenue on the same sample is
 
 $$
-\widehat{\mathrm{Rev}}(\theta)
-= \frac{1}{L}\sum_{\ell=1}^{L}\sum_{i=1}^{2}
+\widehat{\mathrm{Rev}}(\theta) =
+\frac{1}{L}\sum_{\ell=1}^{L}\sum_{i=1}^{2}
 p_i(v^{\ell};\theta).
 $$
 
@@ -90,8 +90,8 @@ manipulate.
 The code uses an augmented Lagrangian:
 
 $$
-\mathcal{L}(\theta,\lambda,\rho)
-= {}-\widehat{\mathrm{Rev}}(\theta)
+\mathcal{L}(\theta,\lambda,\rho) =
+{}-\widehat{\mathrm{Rev}}(\theta)
 {}+ \sum_{i=1}^{2} \lambda_i \mathrm{rgt}_i(\theta)
 {}+ \frac{\rho}{2}\sum_{i=1}^{2}\mathrm{rgt}_i(\theta)^2.
 $$

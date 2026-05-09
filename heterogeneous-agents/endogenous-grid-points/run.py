@@ -387,8 +387,8 @@ At an interior optimum the Euler equation equates today's marginal utility
 with the discounted marginal benefit of saving,
 
 $$
-\underbrace{u'(c(a,y_j))}_{\text{cost of saving today}}
-= \beta R\,
+\underbrace{u'(c(a,y_j))}_{\text{cost of saving today}} =
+\beta R\,
 \underbrace{\sum_{\ell=1}^{n_y}\pi_\ell\,u'(c(g(a,y_j),y_\ell))}_{\text{expected marginal utility tomorrow}}.
 $$
 

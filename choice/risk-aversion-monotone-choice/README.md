@@ -34,8 +34,8 @@ $$
 The fixed scale choice model is
 
 $$
-\Pr(d=1\mid p;\rho)
-= \lambda + (1-2\lambda)\frac{1}{1+\exp[-s\,\Delta EU(p;\rho)]}.
+\Pr(d=1\mid p;\rho) =
+\lambda + (1-2\lambda)\frac{1}{1+\exp[-s\,\Delta EU(p;\rho)]}.
 $$
 
 The monotone row logit estimates one logit $\alpha_j$ per row from binomial

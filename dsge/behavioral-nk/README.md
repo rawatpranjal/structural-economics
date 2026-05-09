@@ -75,8 +75,7 @@ $$
 1-M\rho_v+\sigma\phi_x & \sigma(\phi_\pi-\rho_v) \\
 -\kappa & 1-\beta M_f\rho_v
 \end{bmatrix}
-\begin{bmatrix}\psi_x \\ \psi_\pi\end{bmatrix}
-=
+\begin{bmatrix}\psi_x \\ \psi_\pi\end{bmatrix} =
 \begin{bmatrix}-\sigma \\ 0\end{bmatrix}.
 $$
 

@@ -15,16 +15,16 @@ and observes $k$ red balls. Let $p_H$ and $p_L$ denote the red-ball probability
 under urns $H$ and $L$. The likelihood-ratio statistic is
 
 $$
-\Lambda(k,n)
-= \log \frac{\Pr(k\mid H,n)}{\Pr(k\mid L,n)}
-= k\log\frac{p_H}{p_L} + (n-k)\log\frac{1-p_H}{1-p_L}.
+\Lambda(k,n) =
+\log \frac{\Pr(k\mid H,n)}{\Pr(k\mid L,n)} =
+k\log\frac{p_H}{p_L} + (n-k)\log\frac{1-p_H}{1-p_L}.
 $$
 
 With prior $\pi_0=\Pr(H)$, Bayes' rule is
 
 $$
-\Pr(H\mid k,n)
-= \frac{1}{1+\exp[-\{\log(\pi_0/(1-\pi_0))+\Lambda(k,n)\}]}.
+\Pr(H\mid k,n) =
+\frac{1}{1+\exp[-\{\log(\pi_0/(1-\pi_0))+\Lambda(k,n)\}]}.
 $$
 
 Rule $m$ maps the sufficient statistic and counts into a choice probability
@@ -32,8 +32,8 @@ $q_m(k,n)$. With subject $i$'s choices $d_{it}\in\{0,1\}$ (where $t$ indexes tas
 under rule $m$ is
 
 $$
-L_{im}
-= \prod_t q_m(k_t,n_t)^{d_{it}}
+L_{im} =
+\prod_t q_m(k_t,n_t)^{d_{it}}
 [1-q_m(k_t,n_t)]^{1-d_{it}}.
 $$
 
@@ -47,8 +47,8 @@ $$
 The posterior probability that subject $i$ follows rule $m$ is
 
 $$
-\tau_{im}
-= \frac{w_m L_{im}}{\sum_h w_h L_{ih}}.
+\tau_{im} =
+\frac{w_m L_{im}}{\sum_h w_h L_{ih}}.
 $$
 
 Here $h$ is a summation index ranging over the same rule set as $m$.

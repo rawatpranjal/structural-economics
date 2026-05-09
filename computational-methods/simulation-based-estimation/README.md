@@ -19,8 +19,8 @@ $$
 and accepts with probability
 
 $$
-\Pr(d_i=1\mid w_i;\theta)
-= \frac{1}{1+\exp[-(\log w_i-r)/s]}.
+\Pr(d_i=1\mid w_i;\theta) =
+\frac{1}{1+\exp[-(\log w_i-r)/s]}.
 $$
 
 The parameter vector is $\theta=(\mu,\sigma,r)$. Parameters $\mu$ and $\sigma$
@@ -30,8 +30,8 @@ fixes how sharply acceptance changes near $r$.
 MSM chooses $\theta$ to match a vector of economic moments:
 
 $$
-\hat\theta_{MSM}
-= \arg\min_\theta
+\hat\theta_{MSM} =
+\arg\min_\theta
 \left[m_{sim}(\theta)-m_{obs}\right]'
 W_m
 \left[m_{sim}(\theta)-m_{obs}\right].
@@ -43,8 +43,8 @@ Indirect inference fits an auxiliary model $a(d_i,\log w_i)$ and matches its
 estimated statistics:
 
 $$
-\hat\theta_{II}
-= \arg\min_\theta
+\hat\theta_{II} =
+\arg\min_\theta
 \left[b_{sim}(\theta)-b_{obs}\right]'
 W_b
 \left[b_{sim}(\theta)-b_{obs}\right].

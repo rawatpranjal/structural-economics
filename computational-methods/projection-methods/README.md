@@ -23,15 +23,15 @@ The Euler equation equates marginal utility today with discounted marginal
 product tomorrow:
 
 $$
-\frac{1}{c_t}
-= \beta \frac{\alpha A k_{t+1}^{\alpha-1}}{c_{t+1}}.
+\frac{1}{c_t} =
+\beta \frac{\alpha A k_{t+1}^{\alpha-1}}{c_{t+1}}.
 $$
 
 Projection approximates the saving rule with Chebyshev basis functions:
 
 $$
-\log g(k;\theta)
-= \sum_{j=0}^{n-1} \theta_j T_j(x(k)),
+\log g(k;\theta) =
+\sum_{j=0}^{n-1} \theta_j T_j(x(k)),
 \qquad
 x(k) \in [-1,1].
 $$
@@ -40,8 +40,8 @@ The collocation equations set the log Euler residual to zero at selected
 capital nodes $k_i$:
 
 $$
-R_i(\theta)
-= \log\left[
+R_i(\theta) =
+\log\left[
 \beta \alpha A g(k_i;\theta)^{\alpha-1}
 \frac{c(k_i;\theta)}{c(g(k_i;\theta);\theta)}
 \right] = 0.

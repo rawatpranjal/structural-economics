@@ -553,6 +553,8 @@ v_{i,j,\ell} =
 \theta_{ij}=\theta \ \mathrm{for}\ i\ne j.
 $$
 
+Here $\lambda$ is the overall tightness, $d$ is the lag-decay exponent, and $\theta$ is the base cross-variable tightness.
+
 This tutorial plugs in $\hat\sigma_i^2$ from OLS residuals. Conditional on that
 plug-in scale, conjugacy gives a Gaussian posterior:
 

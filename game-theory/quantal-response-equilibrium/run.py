@@ -115,10 +115,10 @@ Each player chooses $E$ (Enter) or $O$ (Stay Out). Let $p_i$ be player $i$'s
 entry probability. If the rival enters with probability $q$, the payoff gap is:
 
 $$
-\Delta(q)
-= \mathbb{E}[u_i(E,a_{-i})]-\mathbb{E}[u_i(O,a_{-i})]
-= 2(1-q)-q
-= 2-3q.
+\Delta(q) =
+\mathbb{E}[u_i(E,a_{-i})]-\mathbb{E}[u_i(O,a_{-i})] =
+2(1-q)-q =
+2-3q.
 $$
 
 The exact symmetric mixed Nash equilibrium sets $\Delta(q)=0$:

@@ -556,8 +556,8 @@ The two spillovers pull in opposite directions. Their relative strength decides 
 Consumers have Dixit-Stiglitz CES preferences over varieties from every origin. The elasticity of substitution across varieties is $\sigma > 1$. The CES price index at destination $j$ is
 
 $$
-P_j^{1-\sigma}
-= \sum_i T_{ij}^{1-\sigma} A_i^{\sigma-1} w_i^{1-\sigma}.
+P_j^{1-\sigma} =
+\sum_i T_{ij}^{1-\sigma} A_i^{\sigma-1} w_i^{1-\sigma}.
 $$
 
 The spending share $\pi_{ij}$ is destination $j$'s spending on goods from origin $i$:

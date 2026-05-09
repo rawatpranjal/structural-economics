@@ -13,8 +13,8 @@ The key economic issue is substitution. A plain logit can match average shares a
 Consumer $i$ chooses product $j$ with utility
 
 $$
-u_{ij}
-= \alpha_i p_{ij} + \beta_i q_{ij} + \varepsilon_{ij},
+u_{ij} =
+\alpha_i p_{ij} + \beta_i q_{ij} + \varepsilon_{ij},
 \qquad
 \varepsilon_{ij}\sim\text{Type I EV}.
 $$

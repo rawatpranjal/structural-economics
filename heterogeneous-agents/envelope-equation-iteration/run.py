@@ -481,8 +481,8 @@ $$
 The envelope condition updates that object from the policy:
 
 $$
-W_a(a) = \sum_{\ell=1}^{n_y}\pi_\ell\,V_a(a,y_\ell)
-= R\,\sum_{\ell=1}^{n_y}\pi_\ell\,u'(c(a,y_\ell)).
+W_a(a) = \sum_{\ell=1}^{n_y}\pi_\ell\,V_a(a,y_\ell) =
+R\,\sum_{\ell=1}^{n_y}\pi_\ell\,u'(c(a,y_\ell)).
 $$
 
 These two equations close the system without using the value level.

@@ -219,8 +219,8 @@ $$
 Differentiate with respect to $x$:
 
 $$
-\frac{\partial \pi(v,x)}{\partial x}
-= (v-s(x))(n-1)F_v(x)^{n-2}f_v(x) - s'(x)F_v(x)^{n-1}.
+\frac{\partial \pi(v,x)}{\partial x} =
+(v-s(x))(n-1)F_v(x)^{n-2}f_v(x) - s'(x)F_v(x)^{n-1}.
 $$
 
 In equilibrium, the best deviation for type $v$ is $x=v$. The first-order

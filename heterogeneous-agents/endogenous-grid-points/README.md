@@ -32,8 +32,8 @@ At an interior optimum the Euler equation equates today's marginal utility
 with the discounted marginal benefit of saving,
 
 $$
-\underbrace{u'(c(a,y_j))}_{\text{cost of saving today}}
-= \beta R\,
+\underbrace{u'(c(a,y_j))}_{\text{cost of saving today}} =
+\beta R\,
 \underbrace{\sum_{\ell=1}^{n_y}\pi_\ell\,u'(c(g(a,y_j),y_\ell))}_{\text{expected marginal utility tomorrow}}.
 $$
 
@@ -63,7 +63,7 @@ the constraint before it mainly raises saving.
 | EGP asset grid | 120 pts | Exponential, denser at $\underline a$ |
 | Audit grid | 900 pts | Fine-grid reference for the discretization check |
 | Convergence tolerance | 1e-06 | Sup-norm on consumption iterates |
-| Simulation | 50,000 households, 550 periods | Forward-iterated cross section under $g_a$ |
+| Simulation | 50,000 households, 550 periods | Forward-iterated cross section under $g(a,y_j)$ |
 
 ## Solution Method
 
@@ -133,11 +133,11 @@ The endogenous grid shows the asset level that makes each candidate $a_i'$ optim
 
 <img src="figures/endogenous-grid.png" alt="Endogenous current asset grid for the low income state" width="80%">
 
-Forward simulation gives a right-skewed wealth distribution. Mean assets are $\bar a=0.39$, and 5.1\% of households are at the borrowing limit. The scale is modest because income is IID and $\beta R<1$.
+Forward simulation gives a right-skewed wealth distribution. Mean assets are 0.39, and 5.1\% of households are at the borrowing limit. The scale is modest because income is IID and $\beta R<1$.
 
 <img src="figures/wealth-distribution.png" alt="Simulated terminal wealth distribution" width="80%">
 
-The MPC distribution is high near the constraint and low for wealthy households. The average MPC out of a 0.10 transfer is 0.228. The dotted line marks the perfect-foresight limit, $\kappa^{\ast}\approx0.041$.
+The MPC distribution is high near the constraint and low for wealthy households. The average MPC out of a 0.10 transfer is 0.228. The dotted line marks the perfect-foresight limit, $\kappa^{\ast}\approx0.041$. Here $\kappa^{\ast}=R(\beta R)^{-1/\gamma}-1$ is the perfect-foresight MPC limit for CRRA utility.
 
 <img src="figures/mpc-distribution.png" alt="Distribution of marginal propensities to consume" width="80%">
 

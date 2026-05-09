@@ -207,8 +207,8 @@ $$
 Because the proposal is symmetric, the Metropolis-Hastings acceptance probability is:
 
 $$
-\alpha(\theta_t,\theta^\star)
-= \min[1, \pi(\theta^\star \mid D) / \pi(\theta_t \mid D)].
+\alpha(\theta_t,\theta^\star) =
+\min[1, \pi(\theta^\star \mid D) / \pi(\theta_t \mid D)].
 $$
 
 Retained draws approximate posterior averages for any counterfactual object

@@ -33,15 +33,15 @@ $$
 The Euler equation is
 
 $$
-\frac{1}{c_t}
-= \beta \frac{\alpha A k_{t+1}^{\alpha-1}}{c_{t+1}}.
+\frac{1}{c_t} =
+\beta \frac{\alpha A k_{t+1}^{\alpha-1}}{c_{t+1}}.
 $$
 
 The code evaluates the Euler equation as this log residual:
 
 $$
-r(k;\theta)
-= \log\left[
+r(k;\theta) =
+\log\left[
 \beta \alpha A k'(k;\theta)^{\alpha-1}
 \frac{c(k;\theta)}{c(k'(k;\theta);\theta)}
 \right].
@@ -66,8 +66,8 @@ $$
 The neural policy first chooses a saving share:
 
 $$
-s(k;\theta)
-= s_{\min} + (s_{\max}-s_{\min})
+s(k;\theta) =
+s_{\min} + (s_{\max}-s_{\min})
 \sigma\left(N_{\theta}(\log(k/k_{ss}))\right),
 $$
 
