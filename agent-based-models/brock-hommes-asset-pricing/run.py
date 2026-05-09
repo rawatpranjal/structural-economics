@@ -330,17 +330,25 @@ across forecasting rules.
         "Algorithm: Brock-Hommes simulation and SMM\n"
         "Input: R, d, g, xbar, lambda, beta, shocks epsilon_t\n"
         "Output: price deviations x_t, strategy shares n_ht, return moments\n\n"
-        "1. Set p* = d / (R - 1) and initialize x_0, x_1, U_F = U_T = 0.\n"
+        "1. Set p* = d / (R - 1), x_t = p_t - p*, and initialize x_0, x_1.\n"
+        "   Set initial scores U_F = U_T = 0 and shares n_F = n_T = 1/2.\n"
         "2. For t = 2 to T:\n"
-        "   2a. Build forecasts f_F,t = 0 and bounded trend forecast f_T,t.\n"
-        "   2b. Clear the asset market for x_t using last period's shares.\n"
-        "   2c. Compute realized excess return e_t = x_t - R x_{t-1}.\n"
-        "   2d. Score each rule by realized profit from its forecasted position.\n"
-        "   2e. Smooth scores and update shares with logit intensity beta.\n"
-        "3. For SMM, compute volatility, autocorrelation of absolute returns,\n"
-        "   and excess kurtosis after burn-in.\n"
-        "4. Choose beta to minimize the weighted distance between simulated and\n"
-        "   target moments.\n"
+        "   2a. Forecast deviations:\n"
+        "       f_F,t = 0\n"
+        "       f_T,t = xbar * tanh((x_{t-1} + g * (x_{t-1} - x_{t-2})) / xbar)\n"
+        "   2b. Clear the asset market:\n"
+        "       x_t = (n_F,t-1 * f_F,t + n_T,t-1 * f_T,t) / R + epsilon_t\n"
+        "   2c. Compute excess return:\n"
+        "       e_t = x_t - R * x_{t-1}\n"
+        "   2d. Score each rule h by realized forecast profit:\n"
+        "       pi_h,t = e_t * (f_h,t - R * x_{t-1}) / (a * sigma^2) - c_h\n"
+        "   2e. Smooth scores:\n"
+        "       U_h,t = lambda * U_h,t-1 + (1 - lambda) * pi_h,t\n"
+        "   2f. Update rule shares with logit choice:\n"
+        "       n_h,t = exp(beta * U_h,t) / sum_j exp(beta * U_j,t)\n"
+        "3. For SMM, compute m(beta): volatility, autocorrelation of absolute\n"
+        "   returns, and excess kurtosis after burn-in.\n"
+        "4. Choose beta_hat = argmin_beta ||W * (m(beta) - m_data)||^2.\n"
         "```\n\n"
         "The pseudo-data moments come from one deterministic shock bank. The "
         "candidate simulations use a separate deterministic shock bank. Within "
@@ -372,6 +380,19 @@ across forecasting rules.
         "figures/strategy-shares.png",
         "Trend-follower share under logit strategy switching",
         plot_strategy_shares(runs, params),
+    )
+
+    report.add_results(
+        "The original paper pushes this logic further with local bifurcation "
+        "theory and numerical diagnostics. It emphasizes three lessons. First, "
+        "the homogeneous rational-expectations benchmark with IID dividends is "
+        "a constant fundamental price. Second, realized-profit switching can "
+        "endogenously move the market between near-fundamental, optimistic, and "
+        "pessimistic phases. Third, the route to instability depends on the "
+        "belief types. Trend chasers generate pitchfork bifurcations, "
+        "contrarians generate period-doubling, and opposite biased predictors "
+        "generate Hopf-style quasi-periodic fluctuations as the intensity of "
+        "choice rises."
     )
 
     report.add_results(
