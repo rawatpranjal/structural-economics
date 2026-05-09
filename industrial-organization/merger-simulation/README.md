@@ -24,15 +24,23 @@ With $\Delta_{kj}(p)=\partial q_k(p)/\partial p_j$, the vector equation is
 
 $$q(p)+(\Omega\circ \Delta(p)') (p-c)=0.$$
 
+Here $\circ$ denotes the Hadamard (element-wise) product.
+
 The three demand systems are calibrated to the same observed market:
 
 $$s_j^{L}(p)= \frac{\exp(\xi_j+\alpha p_j)} {1+\sum_{\ell=1}^J \exp(\xi_\ell+\alpha p_\ell)}, \qquad \alpha<0,$$
 
+Here $\xi_j$ is the mean indirect utility of product $j$ from non-price characteristics.
+
 $$q_j^{A}(p)=a_j-\sum_{k=1}^J B_{jk}p_k,$$
+
+Here $a_j$ is the demand intercept and $B_{jk}$ is the price-response matrix for product $j$.
 
 and
 
 $$\log q_j^{E}(p)=a_j^E+\sum_{k=1}^J E_{jk}\log p_k .$$
+
+Here $a_j^E$ is the log-linear demand intercept and $E_{jk}$ is the price-elasticity matrix.
 
 The local diversion ratio from product $j$ to product $k$ is
 

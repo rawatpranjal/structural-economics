@@ -396,7 +396,7 @@ with $\Lambda(z)=1/(1+\exp(-z))$.
 The MPEC estimator chooses $\theta$ and the conditional values $v$ jointly:
 
 $$
-\max_{\theta,v}\ \ell(v)
+\max_{\theta,v}\ \ell(\theta,v)
 \quad\text{subject to}\quad
 v_a(x) = u(x,a;\theta) + \beta \sum_{x'} F_a(x' \mid x)
 \left[\log\sum_{j\in\{0,1\}}\exp(v_j(x'))+\gamma\right]

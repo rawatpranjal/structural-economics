@@ -6,5 +6,5 @@ VFI iterations,228.0
 Full ML success,1.0
 CCP success,1.0
 MPEC success,1.0
-MPEC iterations,5.0
-MPEC max Bellman residual,1.1639755825854081e-10
+MPEC iterations,4.0
+MPEC max Bellman residual,1.8964385617437074e-11

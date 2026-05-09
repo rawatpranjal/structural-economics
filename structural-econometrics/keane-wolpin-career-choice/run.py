@@ -467,6 +467,8 @@ g(s,\mathrm{home}) &= (E, X^b, X^w).
 \end{aligned}
 $$
 
+Here $\bar E$ is the maximum completed schooling.
+
 School raises completed education, work raises occupation-specific experience,
 and home leaves measured human capital unchanged.
 
@@ -600,14 +602,14 @@ $$
 The exact benchmark is the finite-horizon recursion
 
 $$
-Q_t(d,s)=u_d(s,t)+\beta \mathbb{E}_{t+1}(g(s,d)),
+v_t(d,s)=u_d(s,t)+\beta \mathbb{E}_{t+1}(g(s,d)),
 \qquad
 \mathbb{E}_t(s)=\sigma_\epsilon \log \sum_{d\in D(s,t)}
-\exp(Q_t(d,s)/\sigma_\epsilon)+\sigma_\epsilon\gamma_E.
+\exp(v_t(d,s)/\sigma_\epsilon)+\sigma_\epsilon\gamma_E.
 $$
 
 The exact recursion stores both the Emax value and the deterministic
-choice-specific values $Q_t(d,s)$ at every reachable state.
+choice-specific values $v_t(d,s)$ at every reachable state.
 
 The approximate solver keeps the same recursion but estimates
 $\mathbb{E}_t(s)$ from sampled states. At each age, stack the sampled targets

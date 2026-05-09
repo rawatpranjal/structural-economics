@@ -67,7 +67,7 @@ with $\Lambda(z)=1/(1+\exp(-z))$.
 The MPEC estimator chooses $\theta$ and the conditional values $v$ jointly:
 
 $$
-\max_{\theta,v}\ \ell(v)
+\max_{\theta,v}\ \ell(\theta,v)
 \quad\text{subject to}\quad
 v_a(x) = u(x,a;\theta) + \beta \sum_{x'} F_a(x' \mid x)
 \left[\log\sum_{j\in\{0,1\}}\exp(v_j(x'))+\gamma\right]
@@ -161,7 +161,7 @@ All three estimates are close to the data-generating parameters. They differ in 
 
 | Parameter   |   True |   Full-solution ML |   Full ML error |      CCP |   CCP error |     MPEC |   MPEC error |
 |:------------|-------:|-------------------:|----------------:|---------:|------------:|---------:|-------------:|
-| theta_0     |   2    |            2.01812 |         0.01812 |  2.01767 |     0.01767 |  2.01812 |      0.01812 |
+| theta_0     |   2    |            2.01812 |         0.01812 |  2.01767 |     0.01767 |  2.01808 |      0.01808 |
 | theta_1     |  -0.15 |           -0.15346 |        -0.00346 | -0.15334 |    -0.00334 | -0.15346 |     -0.00346 |
 
 The diagnostics check sample support and numerical feasibility. The MPEC residual confirms the constrained solve.
@@ -177,8 +177,8 @@ The diagnostics check sample support and numerical feasibility. The MPEC residua
 | Full ML success           |   1           |
 | CCP success               |   1           |
 | MPEC success              |   1           |
-| MPEC iterations           |   5           |
-| MPEC max Bellman residual |   1.16398e-10 |
+| MPEC iterations           |   4           |
+| MPEC max Bellman residual |   1.89644e-11 |
 
 ## Takeaway
 
