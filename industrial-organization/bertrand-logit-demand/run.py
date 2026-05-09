@@ -195,6 +195,7 @@ $\alpha<0$, mean utility is
 $$\delta_j(p)=\xi_j+\alpha p_j.$$
 
 Logit demand gives inside share
+
 $$
 s_j(p)=
 \frac{\exp(\delta_j(p))}
@@ -206,6 +207,7 @@ s_0(p)=
 $$
 
 The demand derivative used by the pricing equation is
+
 $$
 \frac{\partial s_k}{\partial p_j}
 =\alpha s_k(\mathbf 1\{j=k\}-s_j).
@@ -213,19 +215,24 @@ $$
 
 Let $\Omega_{jk}=1$ when products $j$ and $k$ are controlled by the same firm.
 It is zero otherwise. Bertrand-Nash pricing satisfies one condition per product.
+
 $$
 0=s_j(p)+\sum_{k=1}^J
 \Omega_{jk}(p_k-c_k)\frac{\partial s_k(p)}{\partial p_j}.
 $$
+
 Let $\Delta_{jk}=\partial s_j/\partial p_k$. The markup equation is
+
 $$
 p-c=-(\Omega\circ \Delta')^{-1}s.
 $$
 
 The diversion ratio records where a lost sale goes. For $j\neq k$,
+
 $$
 D_{j\to k}=\frac{s_k}{1-s_j},\qquad j\neq k.
 $$
+
 Under simple logit this depends only on product $k$'s share and the outside
 option.
 """)

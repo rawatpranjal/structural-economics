@@ -42,6 +42,8 @@ $\phi = (\sqrt{5} - 1)/2 \approx 0.618$:
 $$c_n = b_n - \phi (b_n - a_n),
 \qquad d_n = a_n + \phi (b_n - a_n).$$
 
+Here $c_n$ and $d_n$ are the left and right probe points at iteration $n$, distinct from the control variable $c$.
+
 The next bracket keeps whichever endpoint is closer to the larger of
 $g(c_n)$ and $g(d_n)$, contracting the width by a factor $\phi$ each step.
 

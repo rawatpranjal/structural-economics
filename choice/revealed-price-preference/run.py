@@ -259,30 +259,38 @@ $x^t\in\mathbb{R}_{+}^{L}$ is the chosen bundle. Own expenditure is
 $m_t=p^t\cdot x^t$.
 
 For price-regime comparisons, define the cross-cost matrix
+
 $$
 C_{st}=p^s\cdot x^t .
 $$
+
 Use this matrix to define direct weak preference between price vectors:
+
 $$
 sR_p^D t
 \quad\Longleftrightarrow\quad
 C_{st}\le C_{tt}=m_t .
 $$
+
 This means schedule $s$ makes bundle $t$ no more expensive than schedule $t$ did.
 
 The strict relation is
+
 $$
 sP_p^D t
 \quad\Longleftrightarrow\quad
 C_{st}<C_{tt}.
 $$
+
 Let $R_p$ be the transitive closure of $R_p^D$. GAPP holds when there is no
 pair $(s,t)$ such that
+
 $$
 sR_p t
 \quad\text{and}\quad
 tP_p^D s .
 $$
+
 The first relation says the data rank schedule $s$ at least as good as schedule
 $t$ after allowing indirect comparisons. The second relation says the direct
 reverse comparison strictly favors $t$ over $s$. Together they form the

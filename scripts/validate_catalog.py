@@ -27,6 +27,12 @@ BRACED_LITERAL_STAR_SCRIPT = re.compile(r"(?<!\\)(\^|_)\{\*\}")
 EMPTY_SCRIPT_TARGET = re.compile(r"(?<!\\)(\^|_)(?:\s|$|[,$.;:)\]}]|[\^_])")
 
 
+def is_python_string_close(line: str) -> bool:
+    """Return whether a Python line only closes a multiline string/call."""
+    stripped = line.strip()
+    return stripped in {'"""', "'''", '""")', "''')"}
+
+
 def catalog_links() -> set[Path]:
     """Return local tutorial directories linked from the root README."""
     text = (ROOT / "README.md").read_text()
@@ -94,12 +100,29 @@ def display_math_errors() -> list[str]:
     errors = []
     for path in active_text_files():
         rel = path.relative_to(ROOT)
+        lines = path.read_text(errors="replace").splitlines()
         in_math = False
         start_line: int | None = None
-        for lineno, line in enumerate(path.read_text(errors="replace").splitlines(), start=1):
+        for lineno, line in enumerate(lines, start=1):
             if line.strip() == "$$":
-                in_math = not in_math
-                start_line = lineno if in_math else None
+                if in_math:
+                    next_line = lines[lineno] if lineno < len(lines) else ""
+                    if (
+                        next_line.strip()
+                        and not (path.suffix == ".py" and is_python_string_close(next_line))
+                    ):
+                        errors.append(
+                            f"{rel}:{lineno} display math block must be followed by a blank line"
+                        )
+                    in_math = False
+                    start_line = None
+                else:
+                    if lineno > 1 and lines[lineno - 2].strip():
+                        errors.append(
+                            f"{rel}:{lineno} display math block must be preceded by a blank line"
+                        )
+                    in_math = True
+                    start_line = lineno
                 continue
             if in_math and DISPLAY_MATH_BAD_PREFIX.match(line):
                 errors.append(

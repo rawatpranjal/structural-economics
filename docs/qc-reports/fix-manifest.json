@@ -1,6 +1,6 @@
 {
   "pass_name": "tutorial-fix-sweep-v1",
-  "updated_at": "2026-05-08T17:56:09Z",
+  "updated_at": "2026-05-09T02:33:53Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -64,6 +64,39 @@
       "error": "reverted 1 out-of-scope path(s): ['numerical-methods/interpolation']",
       "exit_code": 0,
       "updated_at": "2026-05-08T17:56:09Z"
+    },
+    {
+      "tutorial_path": "optimal-control/continuous-cake-eating/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 1.15,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-08T21:54:20Z"
+    },
+    {
+      "tutorial_path": "numerical-methods/interpolation/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "validate_ok": true,
+      "summary": "0 ref fix(es), 2 notation fix(es); validate retroactively passed after upstream qc-report hot-fix",
+      "updated_at": "2026-05-09T02:33:53Z"
+    },
+    {
+      "tutorial_path": "numerical-methods/scalar-optimization/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "validate_ok": true,
+      "summary": "0 ref fix(es), 1 notation fix(es); validate retroactively passed after upstream qc-report hot-fix",
+      "updated_at": "2026-05-09T02:33:53Z"
+    },
+    {
+      "tutorial_path": "computational-methods/projection-methods/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "validate_ok": true,
+      "summary": "0 ref fix(es), 1 notation fix(es); validate retroactively passed after upstream qc-report hot-fix",
+      "updated_at": "2026-05-09T02:33:53Z"
     }
   ]
 }

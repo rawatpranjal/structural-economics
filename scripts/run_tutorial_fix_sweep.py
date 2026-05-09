@@ -251,8 +251,8 @@ def build_prompt(tutorial: Path, model: str) -> str:
           - Change spacing commands. Leave `\;`, `\,`, `\!`, `\quad`,
             `\qquad` exactly as they are. Do NOT convert `\;=\;` to `=`,
             do NOT add or remove `\,` between symbols.
-          - Change operator-style commands. Leave `\operatorname{...}`,
-            `\mathrm{...}`, `\mathbf{...}`, `\mathbb{...}`, `\mathcal{...}`
+          - Change operator-style commands. Leave `\operatorname{{...}}`,
+            `\mathrm{{...}}`, `\mathbf{{...}}`, `\mathbb{{...}}`, `\mathcal{{...}}`
             exactly as written. Do NOT swap `\operatorname` for `\mathrm` or
             vice versa.
           - Change delimiter style. Leave existing left/right, angle-bracket,
@@ -260,10 +260,10 @@ def build_prompt(tutorial: Path, model: str) -> str:
           - Change alignment, line breaks, or `&` placement inside `align`,
             `aligned`, `cases`, or any multi-line math environment.
           - Reflow display equations across lines, add or remove `\\`,
-            re-bracket fractions, or change `^{...}` / `_{...}` braces.
+            re-bracket fractions, or change `^{{...}}` / `_{{...}}` braces.
           - Change `\frac` to `\dfrac` or vice versa.
           - "Improve" symbol choice when the report did not flag it
-            (e.g. don't change `R` to `\mathcal{R}` because it looks nicer).
+            (e.g. don't change `R` to `\mathcal{{R}}` because it looks nicer).
 
         Allowed math edits are limited to: (a) adding a one-line text
         definition near a symbol's first use, in the surrounding prose, NOT

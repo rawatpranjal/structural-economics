@@ -206,6 +206,8 @@ the $C^2$ smoothness of the cubic spline.
         f"| Smooth domain $[W_{{\\min}}, W_{{\\max}}]$ | $[{smooth_domain[0]},\\, {smooth_domain[1]}]$ | Wealth range for the smooth target |\n"
         f"| Kinked domain $[a_{{\\min}}, a_{{\\max}}]$ | $[{kinked_domain[0]},\\, {kinked_domain[1]}]$ | Asset range for the kinked target |\n"
         f"| $a_{{\\text{{kink}}}}$ | {a_kink} | Borrowing-constraint kink in the policy |\n"
+        f"| $r$ | 0.04 | Interest rate in the consumption policy |\n"
+        f"| $y$ | 0.5 | Endowment (income) in the consumption policy |\n"
         f"| Display node count $N$ | {n_show} | Nodes per fit in the target-vs-fit figure |\n"
         f"| Convergence sweep | {list(node_counts)} | Node counts for the smooth-target sup-norm sweep |"
     )

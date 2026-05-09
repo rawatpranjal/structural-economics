@@ -54,6 +54,8 @@ the $C^2$ smoothness of the cubic spline.
 | Smooth domain $[W_{\min}, W_{\max}]$ | $[0.05,\, 1.0]$ | Wealth range for the smooth target |
 | Kinked domain $[a_{\min}, a_{\max}]$ | $[0.05,\, 5.0]$ | Asset range for the kinked target |
 | $a_{\text{kink}}$ | 0.5 | Borrowing-constraint kink in the policy |
+| $r$ | 0.04 | Interest rate in the consumption policy |
+| $y$ | 0.5 | Endowment (income) in the consumption policy |
 | Display node count $N$ | 10 | Nodes per fit in the target-vs-fit figure |
 | Convergence sweep | [np.int64(5), np.int64(10), np.int64(20), np.int64(40), np.int64(80)] | Node counts for the smooth-target sup-norm sweep |
 

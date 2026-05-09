@@ -1,0 +1,7 @@
+Object,Value,Role
+Buyers,10,Random private values
+Sellers,10,Random private costs
+Realized trades,10,Trades cleared by the double-auction institution
+Competitive quantity,9,Sorted value-cost pairs with positive surplus
+Allocative efficiency,99.38%,Realized surplus divided by maximum surplus
+Mean transaction price,61.14,Average midpoint price across realized trades

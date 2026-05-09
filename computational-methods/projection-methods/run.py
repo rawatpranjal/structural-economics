@@ -255,6 +255,8 @@ R_i(\theta)
 \right] = 0.
 $$
 
+Here $c(k;\theta) \equiv Ak^\alpha - g(k;\theta)$ is the consumption implied by the projected saving rule.
+
 For this calibration, the exact policy is $g^{*}(k)=\alpha\beta A k^\alpha$.
 """
     )

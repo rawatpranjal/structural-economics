@@ -15,22 +15,27 @@ Exact enumeration checks every feasible seven-product subset. One extra Mars ite
 Let $\mathcal J$ be the product catalog and let $K$ be the number of vending
 slots. Product $j$ has demand intercept $a_j$, marginal cost $c_j$, and
 manufacturer label $m(j)$. Retail demand is separable:
+
 $$
 q_j(p_j)=\max\{a_j-bp_j,0\}.
 $$
 
 Given wholesale price $w_j$, the retailer sets the product price by
+
 $$
 p_j^{\ast}(w_j)
 =\arg\max_{p_j\geq w_j} (p_j-w_j)q_j(p_j).
 $$
+
 For an interior product, this gives
+
 $$
 p_j^{\ast}(w_j)=\frac{a_j+bw_j}{2b}.
 $$
 
 Contract $C$ maps assortment $A$ into wholesale prices and fixed transfers.
 The upstream side pays $F_j^C(A)$ to the retailer. The retailer chooses
+
 $$
 A_C^{\ast}
 =\arg\max_{A\subset\mathcal J:\ |A|=K}
@@ -38,6 +43,7 @@ A_C^{\ast}
 $$
 
 The upstream payoff reported in the results is
+
 $$
 \Pi_C^U(A)=
 \sum_{j\in A}\left[(w_j^C(A)-c_j)q_j(p_j^{\ast})-F_j^C(A)\right].
@@ -46,11 +52,13 @@ $$
 In the all-unit discount case, Mars products can receive a lower wholesale
 price. The discount applies only if the assortment contains at least $\tau$
 Mars products:
+
 $$
 w_j^C(A)=c_j+\mu-d\,\mathbf 1\{m(j)=\text{Mars}\}\mathbf 1\{M(A)\geq\tau\},
 \quad
 M(A)=\sum_{j\in A}\mathbf 1\{m(j)=\text{Mars}\}.
 $$
+
 Slotting fees instead leave wholesale margins unchanged and work through
 $F_j^C(A)$.
 

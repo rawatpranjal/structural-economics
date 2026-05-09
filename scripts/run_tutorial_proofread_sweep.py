@@ -368,6 +368,19 @@ def build_prompt(tutorial: Path, model: str) -> str:
             paragraph.
           - The Summary paragraph is one paragraph. Not multiple.
 
+        Markdown rendering hygiene (the report must pass
+        scripts/validate_catalog.py, which lints every .md in the repo):
+          - When transcribing math from the tutorial, write star scripts
+            in braced form: `$a^{{\\ast}}(s)$`, `$g^{{\\ast}}(k)$`, `$x_{{\\ast}}$`.
+            NEVER write unbraced `^*` or `_*` in any inline-math span;
+            the validator rejects them.
+          - When quoting a tutorial parameter-table row inside a Notation
+            table cell (e.g. `"Discount factor $\\beta$ | 0.95"`), escape
+            the inline pipe as `\\|` so the markdown table parser does not
+            split the cell. Example: `"Discount factor $\\beta$ \\| 0.95"`.
+          - Do not introduce literal `*` or `_` characters as math
+            scripts in any other form. If unsure, use `\\ast`.
+
         After you finish writing the file, stop. Do not summarize in chat
         output. Do not edit the tutorial. Do not run python. Do not commit.
         """

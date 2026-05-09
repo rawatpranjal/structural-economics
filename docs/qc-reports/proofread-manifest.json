@@ -1,6 +1,6 @@
 {
   "pass_name": "tutorial-proofread-sweep-v1",
-  "updated_at": "2026-05-08T18:55:47Z",
+  "updated_at": "2026-05-09T03:21:22Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -97,6 +97,46 @@
       "output_bytes": 8884,
       "model": "claude-sonnet-4-6",
       "updated_at": "2026-05-08T18:55:47Z"
+    },
+    {
+      "tutorial_path": "optimal-control/continuous-cake-eating/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/optimal-control-continuous-cake-eating.md",
+      "output_bytes": 5228,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-08T21:52:04Z"
+    },
+    {
+      "tutorial_path": "computational-methods/projection-methods/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/computational-methods-projection-methods.md",
+      "output_bytes": 6449,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-08T22:49:47Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/q-learning-growth/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/dynamic-programming-q-learning-growth.md",
+      "output_bytes": 7703,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-08T22:52:52Z"
+    },
+    {
+      "tutorial_path": "heterogeneous-agents/endogenous-grid-points/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/heterogeneous-agents-endogenous-grid-points.md",
+      "output_bytes": 8196,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T03:16:30Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/aiyagari/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/dynamic-programming-aiyagari.md",
+      "output_bytes": 6944,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T03:21:22Z"
     }
   ]
 }

@@ -13,6 +13,7 @@ This repository gives graduate students and researchers short, executable exampl
 - [Choice and Demand](#choice-and-demand)
 - [Computational Game Theory](#computational-game-theory)
 - [Time Series and Filtering Methods](#time-series-and-filtering-methods)
+- [Agent-Based Models](#agent-based-models)
 - [Selected External Resources](#selected-external-resources)
 
 ## Quick Start
@@ -130,6 +131,8 @@ Structural econometrics focuses on estimating economic primitives from observed 
 | Preview | Tutorial | Description |
 |---|---|---|
 | [<img src="industrial-organization/dynamic-discrete-choice/figures/thumb.png" width="160">](industrial-organization/dynamic-discrete-choice/figures/value-and-ccp.png) | **[Bus Engine Replacement in a Dynamic Choice Model](industrial-organization/dynamic-discrete-choice/)** | Study bus engine replacement when mileage changes future operating costs. NFXP, CCP, and MPEC recover the same replacement hazard through different Bellman objects. |
+| [<img src="structural-econometrics/keane-wolpin-career-choice/figures/thumb.png" width="160">](structural-econometrics/keane-wolpin-career-choice/figures/choice-shares.png) | **[Keane-Wolpin Career Choice by Emax Approximation](structural-econometrics/keane-wolpin-career-choice/)** | Study schooling and occupation choice over a finite horizon. Backward induction and sampled Emax regression show how interpolation cuts the state-space cost. |
+| [<img src="structural-econometrics/dcegm-retirement-saving/figures/thumb.png" width="160">](structural-econometrics/dcegm-retirement-saving/figures/branch-consumption.png) | **[Retirement and Saving by Discrete-Continuous EGM](structural-econometrics/dcegm-retirement-saving/)** | Solve a life-cycle retirement model with continuous saving. DC-EGM builds work and retirement branches separately, then takes an upper envelope at the retirement kink. |
 | [<img src="structural-econometrics/auction-valuation-recovery/figures/thumb.png" width="160">](structural-econometrics/auction-valuation-recovery/figures/recovered-cdf.png) | **[Recovering Auction Values from First-Price Bids](structural-econometrics/auction-valuation-recovery/)** | Use first-price auction equilibrium conditions to turn observed bids into pseudo-values. A simulated IPV benchmark shows where bid-density inversion recovers the latent value distribution and where trimming matters. |
 | [<img src="industrial-organization/inverse-rl-rust-bus/figures/thumb.png" width="160">](industrial-organization/inverse-rl-rust-bus/figures/value-policy-equivalence.png) | **[Inverse Reinforcement Learning for the Rust Bus Problem](industrial-organization/inverse-rl-rust-bus/)** | Show that maximum causal entropy IRL and Rust-style NFXP recover the same replacement rule. The soft Bellman likelihood links DDC estimation to reward recovery. |
 | [<img src="structural-econometrics/q-learning-bus-engine/figures/thumb.png" width="160">](structural-econometrics/q-learning-bus-engine/figures/replacement-hazard.png) | **[Bus Engine Replacement by Q-Learning](structural-econometrics/q-learning-bus-engine/)** | Recover Rust's replacement hazard without a transition matrix. Soft Q-learning on simulated mileage trajectories matches the NFXP value function, and a DQN appendix shows the same with function approximation. |
@@ -182,6 +185,15 @@ These tutorials cover stochastic processes, macroeconomic data, forecasting, and
 | [<img src="time-series/ridge-lasso-sparsity/figures/thumb.png" width="160">](time-series/ridge-lasso-sparsity/figures/forecast-comparison.png) | **[Policy Forecasting with Ridge, Lasso, and Sparsity](time-series/ridge-lasso-sparsity/)** | Measure monetary policy shocks after forecasting rate changes from many noisy policy-concept indicators. Ridge and lasso show different meanings of shrinkage and selection. |
 | [<img src="computational-methods/kalman-filter/figures/thumb.png" width="160">](computational-methods/kalman-filter/figures/simulated-signal.png) | **[Nowcasting a Latent Business-Cycle State](computational-methods/kalman-filter/)** | Nowcast hidden activity from a noisy indicator. The Kalman filter weighs each signal with model-implied uncertainty and records the likelihood. |
 | [<img src="computational-methods/particle-filter/figures/thumb.png" width="160">](computational-methods/particle-filter/figures/filter-comparison.png) | **[Nowcasting Hidden Economic States with Particle Filters](computational-methods/particle-filter/)** | Nowcast a hidden economic state from a noisy signal. Particle filters approximate the filtered distribution with weighted simulations, and ESS reveals proposal failure. |
+
+## Agent-Based Models
+
+These tutorials simulate local behavior and market institutions, then compare the aggregate outcome with an economic benchmark.
+
+| Preview | Tutorial | Description |
+|---|---|---|
+| [<img src="agent-based-models/schelling-segregation/figures/thumb.png" width="160">](agent-based-models/schelling-segregation/figures/phase-transition.png) | **[Schelling Segregation on a Checkerboard](agent-based-models/schelling-segregation/)** | Local tolerance rules can sort a city without a planner or global objective. A 50 x 50 checkerboard simulation tracks the segregation index as neighborhood demands rise. |
+| [<img src="agent-based-models/zero-intelligence-traders/figures/thumb.png" width="160">](agent-based-models/zero-intelligence-traders/figures/order-book.gif) | **[Zero-Intelligence Traders in a Double Auction](agent-based-models/zero-intelligence-traders/)** | Random constrained bids and asks can reach about 99% allocative efficiency. Price-quantity regressions recover slopes in thicker markets but fail in thin markets. |
 
 ## Selected External Resources
 

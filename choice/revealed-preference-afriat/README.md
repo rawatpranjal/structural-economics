@@ -14,18 +14,22 @@ The computation builds that relation, closes it transitively, and checks the GAR
 
 Let $\mathcal{D}=\{(p_t,x_t)\}_{t=1}^T$ denote the observed data. Price vectors are positive, and bundles are nonnegative. Expenditure at observation $t$ is $m_t=p_t\cdot x_t$.
 
-Direct revealed preference is written as $iRj$:
+Direct revealed preference is written as $iRj$.
+
 $$
 p_i\cdot x_i \geq p_i\cdot x_j .
 $$
+
 The bundle $x_j$ was affordable when $x_i$ was chosen.
 
-Let $R^{\ast}$ denote the transitive closure of $R$. GARP rules out this pair of statements:
+Let $R^{\ast}$ denote the transitive closure of $R$. GARP rules out this pair of statements.
+
 $$
 iR^{\ast}j
 \quad\text{and}\quad
 p_j\cdot x_j > p_j\cdot x_i .
 $$
+
 The first statement says $x_i$ is revealed at least as good as $x_j$ through a chain of budgets. The second says that, at budget $j$, $x_i$ was strictly cheaper than the bundle actually chosen.
 
 Afriat's theorem makes this finite test enough. If GARP holds, the data are rationalizable by a monotone concave utility function.

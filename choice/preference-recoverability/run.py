@@ -267,24 +267,31 @@ $x_t=(x_{1t},x_{2t})\in\mathbb{R}_{+}^{2}$. Expenditure is $m_t=p_t\cdot x_t$.
 
 Afriat recovery asks for ordinal utility scores $u_t$ and positive supporting
 slopes $\lambda_t$ such that
+
 $$
 u_i-u_j \leq \lambda_j p_j\cdot(x_i-x_j)
 \qquad \text{for all } i,j=1,\ldots,T .
 $$
+
 When these inequalities are feasible, one rationalizing utility index is
+
 $$
 \widehat U(y)=\min_{j=1,\ldots,T}
 \left[u_j+\lambda_j p_j\cdot(y-x_j)\right].
 $$
+
 This utility is the lower envelope of affine supporting functions. It is
 concave, monotone when prices and $\lambda_j$ are positive, and satisfies
 $\widehat U(x_t)=u_t$ at the observed choices.
 
 For a target observation $k$, the recovered upper-contour set is
+
 $$
 \widehat U(y)\geq u_k .
 $$
+
 Writing $y=(y_1,y_2)$, its lower boundary can be computed pointwise:
+
 $$
 y_2(y_1)=
 \max_{j=1,\ldots,T}
@@ -298,7 +305,9 @@ u_k-u_j-\lambda_j p_{1j}(y_1-x_{1j})
 }
 \right].
 $$
+
 The data-generating benchmark, used only for comparison, is
+
 $$
 U^0(x)=x_1^{\alpha}x_2^{1-\alpha},\qquad \alpha=0.60 .
 $$
