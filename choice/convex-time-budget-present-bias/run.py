@@ -150,7 +150,7 @@ def fit_tobit(df: pd.DataFrame, theta0: np.ndarray) -> tuple:
 # ---------------------------------------------------------------------------
 # Simulation
 # ---------------------------------------------------------------------------
-def build_choice_sets(rng: np.random.Generator) -> pd.DataFrame:
+def build_choice_sets() -> pd.DataFrame:
     """Replicate the AS 3x3 (t, k) design with five (a_t, a_{t+k}) cells each.
 
     Token budget is 100 in every choice. Sooner token rate a_t varies; later
@@ -193,7 +193,6 @@ def simulate_subjects(choice_sets: pd.DataFrame, n_subjects: int,
     one_plus_r = expanded["one_plus_r"].to_numpy()
     m = expanded["m"].to_numpy()
     c_t = m * ratio_obs / (1.0 + one_plus_r * ratio_obs)
-    c_late = (m - one_plus_r * c_t)
     n_t = c_t / expanded["a_early"].to_numpy()
     n_t_clipped = np.clip(n_t, 0.0, 100.0)
     censored_lower = n_t < 0.5
@@ -251,7 +250,7 @@ def main() -> None:
     annual_rate_true = (1.0 / delta_true) ** 365 - 1.0
 
     # Design grid
-    choice_sets = build_choice_sets(rng)
+    choice_sets = build_choice_sets()
     full_design = simulate_subjects(choice_sets, n_subjects,
                                     beta_true, delta_true, alpha_true,
                                     sigma_eps, rng)
@@ -277,7 +276,7 @@ def main() -> None:
     sigma0 = float(np.std(y - X @ ols_coef))
     theta0_tobit = np.array([ols_coef[0], ols_coef[1], ols_coef[2], sigma0])
     tobit_full, _ = fit_tobit(full_design, theta0_tobit)
-    beta_tobit, delta_tobit, alpha_tobit, sigma_tobit = tobit_full
+    beta_tobit, delta_tobit, alpha_tobit, _ = tobit_full
 
     # Identification figure: profile log-likelihood for beta
     beta_grid = np.linspace(0.65, 1.20, 41)
