@@ -245,9 +245,12 @@ def main() -> None:
         "A monopolist with constant marginal cost faces a constant-elasticity demand. "
         "Pricing is one-dimensional. "
         "The profit-maximizing price has a closed form. "
-        "The closed-form price and the Lerner markup pin down what every numerical method should agree on.\n\n"
-        "This tutorial compares four paradigms for one-dimensional optimization on the same profit curve. "
-        "The four paradigms are deterministic sampling on a uniform mesh, stochastic sampling by uniform draws, derivative-free contraction of a unimodal bracket, and derivative-based local extrapolation. "
+        "That closed form, together with the Lerner markup, pins down what every numerical method should agree on.\n\n"
+        "Four paradigms are compared on the same profit curve:\n"
+        "- deterministic sampling on a uniform mesh,\n"
+        "- stochastic sampling by uniform draws,\n"
+        "- derivative-free contraction of a unimodal bracket,\n"
+        "- derivative-based local extrapolation.\n\n"
         "Each paradigm is the canonical entry point to a wider family used elsewhere in the catalog.\n\n"
         "The lesson is that solving the first-order condition is not automatically safer than maximizing the objective. "
         "A starting price in the convex region of profit produces a Newton step that points away from the maximum. "
@@ -261,7 +264,10 @@ The methods below differ in what they evaluate (the function, its derivative, bo
 ### The test instance
 
 The test instance is monopoly pricing under constant-elasticity demand.
-Three constants pin down the demand curve: $A$ is a scale parameter that absorbs market size, $\epsilon$ is the demand elasticity (with $\epsilon > 1$ required for the optimum to exist), and $c$ is the constant marginal cost.
+Three constants pin down the demand curve.
+$A$ is a scale parameter that absorbs market size.
+$\epsilon$ is the demand elasticity, and $\epsilon > 1$ is required for the optimum to exist.
+$c$ is the constant marginal cost.
 
 $$D(p) = A\, p^{-\epsilon}.$$
 
@@ -287,7 +293,8 @@ $$\pi''(p) = -A\, \epsilon\, p^{-(\epsilon + 2)} \left[(1 - \epsilon)\, p + (\ep
 \qquad
 p_{\mathrm{inflect}} = \frac{\epsilon + 1}{\epsilon - 1}\, c.$$
 
-Profit is concave on $(0, p_{\mathrm{inflect}})$ and convex on $(p_{\mathrm{inflect}}, \infty)$, with the optimum strictly inside the concave region ($p^{\ast} < p_{\mathrm{inflect}}$).
+Profit is concave on $(0, p_{\mathrm{inflect}})$ and convex on $(p_{\mathrm{inflect}}, \infty)$.
+The optimum sits strictly inside the concave region, with $p^{\ast} < p_{\mathrm{inflect}}$.
 
 The next four subsections describe one method at a time.
 

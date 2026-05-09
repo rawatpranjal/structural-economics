@@ -152,12 +152,12 @@ def main() -> None:
         "interpolating polynomial).\n\n"
         "This tutorial fits each one to two targets. "
         "The first target is the closed-form cake-eating value function "
-        "$V(W)$ - smooth and monotone. "
-        "The second is a stylized consumption policy with a borrowing-"
-        "constraint kink: the level is continuous but the slope drops "
-        "sharply at $a_{\\text{kink}}$.\n\n"
-        "Cubic splines shine on the smooth target. They ring on the "
-        "kinked one. Linear interpolation and PCHIP do not."
+        "$V(W)$, which is smooth and monotone. "
+        "The second is a stylized consumption policy with a borrowing-constraint kink. "
+        "The level is continuous but the slope drops sharply at $a_{\\text{kink}}$.\n\n"
+        "Cubic splines shine on the smooth target. "
+        "They ring on the kinked one. "
+        "Linear interpolation and PCHIP do not."
     )
 
     report.add_equations(
@@ -179,8 +179,10 @@ $$c(a) =
 c(a_{\text{kink}}) + (1 + r)\, \mathrm{MPC}\, (a - a_{\text{kink}}), & a > a_{\text{kink}}.
 \end{cases}$$
 
-Below the kink the agent is constrained and consumes everything; above the kink they save with marginal propensity to consume $\mathrm{MPC} < 1$.
-The function is continuous in level but the slope drops from $(1 + r)$ to $(1 + r)\,\mathrm{MPC}$ at $a_{\text{kink}}$.
+Below the kink the agent is constrained and consumes everything.
+Above the kink they save with marginal propensity to consume $\mathrm{MPC} < 1$.
+The function is continuous in level.
+The slope drops from $(1 + r)$ to $(1 + r)\,\mathrm{MPC}$ at $a_{\text{kink}}$.
 
 The next three subsections describe one method at a time.
 
@@ -202,8 +204,10 @@ The result is $C^2$ and is the smoothest interpolant in the integrated-squared-s
 ### Method 3: PCHIP
 
 PCHIP fits a piecewise cubic Hermite polynomial whose endpoint slopes are chosen by a monotonicity-preserving rule (Fritsch-Carlson 1980).
-The result is $C^1$ and never overshoots a monotone target; it loses the $C^2$ smoothness of the cubic spline.
-The trade is between curvature and shape preservation: cubic splines bend smoothly but can introduce ringing near a kink, while PCHIP holds the shape but drops one order of smoothness.
+The result is $C^1$ and never overshoots a monotone target.
+The trade against the cubic spline is between curvature and shape preservation.
+Cubic splines bend smoothly but can ring near a kink.
+PCHIP holds the shape but drops one order of smoothness.
 """
     )
 

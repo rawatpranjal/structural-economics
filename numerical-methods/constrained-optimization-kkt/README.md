@@ -154,7 +154,7 @@ Three methods solve the constrained allocation problem. Before them comes a base
 
 ### Baseline failure: Lagrangian on the budget alone
 
-An analyst could write the Lagrangian for the budget only and solve it. This is fast and gives a closed form. It is also wrong whenever a non-negativity bound binds at the true optimum. Dropping a constraint that binds means dropping a piece of complementary slackness, so a wrong-sign answer becomes possible. The baseline is included here only to make the failure mode concrete.
+An analyst could write the Lagrangian for the budget only and solve it. This is fast and gives a closed form. It is also wrong whenever a non-negativity bound binds at the true optimum. Dropping a binding constraint drops a piece of complementary slackness. A wrong-sign allocation then becomes possible. The baseline is included here only to make the failure mode concrete.
 
 ```text
 Algorithm: Lagrangian on the budget alone (baseline failure)
@@ -217,7 +217,7 @@ The barrier needs a strictly interior starting point. A start with any $x_j = 0$
 
 ### Method 3: SLSQP via scipy.optimize.minimize
 
-SLSQP stands for Sequential Least-SQuares Programming. It is a quasi-Newton method designed for constrained problems with smooth equalities and inequalities. At each iterate it linearises the constraints and forms a small quadratic-programming subproblem with a BFGS Hessian approximation of the Lagrangian. Solving that subproblem gives a search direction. A line search along the direction picks the next iterate.
+SLSQP stands for Sequential Least-SQuares Programming. It is a quasi-Newton method designed for constrained problems with smooth equalities and inequalities. At each iterate it linearises the constraints and forms a small quadratic-programming subproblem. The QP uses a BFGS approximation of the Hessian of the Lagrangian. Solving the QP gives a search direction. A line search along the direction picks the next iterate.
 
 The QP at iterate $x_k$ has the form: minimise a quadratic in the step $d$ subject to linear constraints in $d$. The quadratic coefficients come from the BFGS approximation of the Lagrangian Hessian, which is updated from gradient differences across iterations. The constraints are linearisations of the original equality and inequality constraints. An active-set routine inside the QP solver decides which inequalities bind. Convergence near a non-degenerate optimum is locally quadratic.
 

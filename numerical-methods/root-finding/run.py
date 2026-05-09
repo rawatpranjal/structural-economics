@@ -285,8 +285,11 @@ Local convergence is quadratic when $Z'(r^{\ast}) \neq 0$.
 
 ### Method 4: Brent
 
-Brent's method tries inverse quadratic interpolation through the last three ordinates, falls back to secant when ordinates coincide, and falls back to bisection when the proposed step would leave the bracket or fails to halve the previous step.
-The bracket invariant is maintained at every iteration, which gives Brent the global guarantee of bisection together with the asymptotic speed of secant or interpolation when the local problem is well behaved.
+Brent's method tries inverse quadratic interpolation through the last three ordinates.
+It falls back to secant when ordinates coincide.
+It falls back to bisection when the proposed step would leave the bracket or fails to halve the previous step.
+The bracket invariant is maintained at every iteration.
+Brent therefore inherits the global guarantee of bisection together with the asymptotic speed of secant or interpolation when the local problem is well behaved.
 """
     )
 

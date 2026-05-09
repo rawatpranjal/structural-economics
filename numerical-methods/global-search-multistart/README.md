@@ -142,7 +142,7 @@ Multi-start can still miss the global if every start happens to land in the same
 
 ### Method 3: Random search
 
-Random search drops the local optimizer entirely. It evaluates the objective at $N$ uniform draws and returns the argmax of the sample. The expected error scales as $1/\sqrt{N}$ on a unimodal problem and degrades on nonconcave ones in proportion to the volume share of the global basin. Random search is the cheapest exploratory tool. It is also the most bluntly empirical: nothing in its output certifies optimality.
+Random search drops the local optimizer entirely. It evaluates the objective at $N$ uniform draws and returns the argmax of the sample. The expected error scales as $1/\sqrt{N}$ on a unimodal problem. On a nonconcave problem the rate degrades in proportion to the volume share of the global basin. Random search is the cheapest exploratory tool. It is also the most bluntly empirical: nothing in its output certifies optimality.
 
 ```text
 Algorithm: Random search
@@ -173,7 +173,7 @@ Nelder-Mead has the same basin-dependence as L-BFGS-B. On the present calibratio
 
 ### Method 5: Simulated annealing via `dual_annealing`
 
-Simulated annealing is the canonical stochastic global search. It samples a Markov chain that proposes random moves and accepts them with a probability that depends on the change in objective and a slowly decreasing temperature. SciPy's `dual_annealing` combines a generalised-simulated-annealing global search with local refinement at each accepted move. The method has provable convergence to the global optimum under a logarithmic cooling schedule, but the constant is impractical and the practical schedule is heuristic.
+Simulated annealing is the canonical stochastic global search. It samples a Markov chain that proposes random moves. Each move is accepted with a probability that depends on the change in objective and a slowly decreasing temperature. SciPy's `dual_annealing` combines a generalised-simulated-annealing global search with local refinement at each accepted move. The method has provable convergence to the global optimum under a logarithmic cooling schedule. The implied constant is impractical and the practical schedule is heuristic.
 
 ```text
 Algorithm: Dual annealing via scipy.optimize.dual_annealing
