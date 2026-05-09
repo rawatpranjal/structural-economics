@@ -1,6 +1,6 @@
 # Computational Economics
 
-This repository gives graduate students and researchers short, executable examples in computational economics. Tutorials are organized by economic question and can be run from their folders with `python run.py`.
+This repository gives graduate students and researchers short, executable models from computational and structural economics. Each example is motivated by a by distinct economic question or computational method. Each can be run from its folders with `python run.py`.
 
 ## Contents
 
@@ -27,16 +27,16 @@ python run.py
 
 ## Numerical Methods
 
-These tutorials cover the scalar building blocks the rest of the catalog uses: solving `f(x) = 0`, finding extrema of `f(x)`, and approximating a function from finite information.
+Here we cover common tools the rest of the repo uses. This covers solving `f(x) = 0`, finding extrema of `f(x)`, and approximating a function.
 
 | Preview | Tutorial | Description |
 |---|---|---|
-| [<img src="numerical-methods/root-finding/figures/thumb.png" width="160">](numerical-methods/root-finding/figures/trajectories.png) | **[Scalar Root Finding for Equilibrium Rates](numerical-methods/root-finding/)** | Find the interest rate that clears a stylized bond market. These are all methods to solve $f(x) = 0$ problems. |
-| [<img src="numerical-methods/interpolation/figures/thumb.png" width="160">](numerical-methods/interpolation/figures/target-vs-fit.png) | **[Off-Grid Function Approximation by Interpolation](numerical-methods/interpolation/)** | How to estimate a function from values at a finite set of points. Linear, cubic spline, and PCHIP each fit smooth and kinked targets differently. |
-| [<img src="numerical-methods/scalar-optimization-monopoly-pricing/figures/thumb.png" width="160">](numerical-methods/scalar-optimization-monopoly-pricing/figures/profit-curve.png) | **[Scalar Optimization for Monopoly Pricing](numerical-methods/scalar-optimization-monopoly-pricing/)** | Maximize a monopolist's profit under constant-elasticity demand. Grid search, golden section, and Newton on the FOC are benchmarked against the Lerner markup. |
-| [<img src="numerical-methods/constrained-optimization-kkt/figures/thumb.png" width="160">](numerical-methods/constrained-optimization-kkt/figures/simplex-paths.png) | **[Constrained Optimization and KKT Conditions](numerical-methods/constrained-optimization-kkt/)** | Allocate a fixed budget across three projects with diminishing returns. Projected gradient, log barrier, and SLSQP are diagnosed by KKT residuals and shadow prices. |
-| [<img src="numerical-methods/fixed-point-acceleration/figures/thumb.png" width="160">](numerical-methods/fixed-point-acceleration/figures/share-fit.png) | **[Fixed-Point Iteration and Acceleration](numerical-methods/fixed-point-acceleration/)** | Recover product mean utilities from observed plain-logit shares. Picard, damped Picard, and Anderson acceleration are compared against the closed-form inversion. |
-| [<img src="numerical-methods/global-search-multistart/figures/thumb.png" width="160">](numerical-methods/global-search-multistart/figures/profit-surface.png) | **[Global Search and Multi-Start Diagnostics](numerical-methods/global-search-multistart/)** | Optimize a two-segment monopoly profit with two local peaks. Multi-start, random search, and simulated annealing recover the global where single-start methods miss it. |
+| [<img src="numerical-methods/root-finding/figures/thumb.png" width="160">](numerical-methods/root-finding/figures/trajectories.png) | **[Scalar Root Finding for Equilibrium Rates](numerical-methods/root-finding/)** | Find the interest rate that clears a stylized bond market by using root finding methods that solve for $f(x) = 0$. |
+| [<img src="numerical-methods/interpolation/figures/thumb.png" width="160">](numerical-methods/interpolation/figures/target-vs-fit.png) | **[Off-Grid Function Approximation by Interpolation](numerical-methods/interpolation/)** | How to estimate a function from known values at a finite set of points. Linear, cubic spline, and PCHIP each fit smooth and kinked curves differently. |
+| [<img src="numerical-methods/scalar-optimization-monopoly-pricing/figures/thumb.png" width="160">](numerical-methods/scalar-optimization-monopoly-pricing/figures/profit-curve.png) | **[Scalar Optimization for Monopoly Pricing](numerical-methods/scalar-optimization-monopoly-pricing/)** | Maximize a monopolist's profit under constant-elasticity demand. Grid search, golden section, and Newton's method are benchmarked against the analytical solution. |
+| [<img src="numerical-methods/constrained-optimization-kkt/figures/thumb.png" width="160">](numerical-methods/constrained-optimization-kkt/figures/simplex-paths.png) | **[Constrained Optimization and KKT Conditions](numerical-methods/constrained-optimization-kkt/)** | Allocate a fixed budget across three projects with diminishing returns. We compare projected gradient, log barrier, and SLSQP. |
+| [<img src="numerical-methods/fixed-point-acceleration/figures/thumb.png" width="160">](numerical-methods/fixed-point-acceleration/figures/share-fit.png) | **[Fixed-Point Iteration and Acceleration](numerical-methods/fixed-point-acceleration/)** | Recover product mean utilities from observed plain-logit shares using fixed point solvers. Picard, damped Picard, and Anderson acceleration are compared against the closed-form solution. |
+| [<img src="numerical-methods/global-search-multistart/figures/thumb.png" width="160">](numerical-methods/global-search-multistart/figures/profit-surface.png) | **[Global Search and Multi-Start Diagnostics](numerical-methods/global-search-multistart/)** | Optimize a two-segment monopoly profit with one local and one global optima. Multi-start, random search, and simulated annealing are able to recover the global optima. |
 
 ## Dynamic Programming
 
@@ -44,11 +44,11 @@ These tutorials start from one-state decision problems and build toward risk, se
 
 | Preview | Tutorial | Description |
 |---|---|---|
-| [<img src="dynamic-programming/shock-discretization/figures/thumb.png" width="160">](dynamic-programming/shock-discretization/figures/stationary-mass.png) | **[Discretizing Persistent Shocks](dynamic-programming/shock-discretization/)** | Persistent income or productivity shocks enter Bellman equations as finite Markov chains. Tauchen and Rouwenhorst differ in variance and persistence errors. |
-| [<img src="dynamic-programming/cake-eating/figures/thumb.png" width="160">](dynamic-programming/cake-eating/figures/value-function.png) | **[Finite-Resource Cake Eating](dynamic-programming/cake-eating/)** | Allocate a fixed resource over time. Value function iteration recovers the log-utility Euler rule and closed-form policy. |
+| [<img src="dynamic-programming/shock-discretization/figures/thumb.png" width="160">](dynamic-programming/shock-discretization/figures/stationary-mass.png) | **[Discretizing Persistent Shocks](dynamic-programming/shock-discretization/)** | Tauchen and Rouwenhorst methods allow continous persistent income or productivity shocks to enter Bellman equations as a finite Markov chains. |
+| [<img src="dynamic-programming/cake-eating/figures/thumb.png" width="160">](dynamic-programming/cake-eating/figures/value-function.png) | **[Finite-Resource Cake Eating](dynamic-programming/cake-eating/)** | Allocate a fixed resource over time. Value function iteration recovers the closed-form optimal policy. |
 | [<img src="dynamic-programming/optimal-growth/figures/thumb.png" width="160">](dynamic-programming/optimal-growth/figures/value-function.png) | **[Optimal Growth by Value Function Iteration](dynamic-programming/optimal-growth/)** | Allocate output between consumption and productive capital. Value function iteration recovers the log-utility policy and checks it against the closed form. |
-| [<img src="computational-methods/projection-methods/figures/thumb.png" width="160">](computational-methods/projection-methods/figures/chebyshev-basis.png) | **[Growth-Model Capital Policy by Chebyshev Projection](computational-methods/projection-methods/)** | Study the planner's capital-saving rule in a deterministic growth model. Chebyshev collocation stores the smooth policy in a few coefficients. |
-| [<img src="dynamic-programming/q-learning-growth/figures/thumb.png" width="160">](dynamic-programming/q-learning-growth/figures/policy-comparison.png) | **[Stochastic Optimal Growth by Q-Learning](dynamic-programming/q-learning-growth/)** | Solve a Brock-Mirman growth MDP without a transition matrix. Tabular Q-learning learns the saving rule from sampled transitions. |
+| [<img src="computational-methods/projection-methods/figures/thumb.png" width="160">](computational-methods/projection-methods/figures/chebyshev-basis.png) | **[Growth-Model Capital Policy by Chebyshev Projection](computational-methods/projection-methods/)** | Study the planner's capital-saving rule in a deterministic growth model. Chebyshev polynomial help represent the optimal policy in just a few coefficients. |
+| [<img src="dynamic-programming/q-learning-growth/figures/thumb.png" width="160">](dynamic-programming/q-learning-growth/figures/policy-comparison.png) | **[Stochastic Optimal Growth by Q-Learning](dynamic-programming/q-learning-growth/)** | Solve a Brock-Mirman growth MDP without knowing the transitions. Tabular Q-learning learns the saving rule from sampled transitions. |
 | [<img src="dynamic-programming/solow-growth/figures/thumb.png" width="160">](dynamic-programming/solow-growth/figures/solow-diagram.png) | **[Solow Growth and Conditional Convergence](dynamic-programming/solow-growth/)** | Capital per effective worker converges to a Solow steady state. Iterating the transition shows how saving shifts levels. |
 | [<img src="dynamic-programming/consumption-savings/figures/thumb.png" width="160">](dynamic-programming/consumption-savings/figures/value-functions.png) | **[Buffer-Stock Saving with Persistent Income by VFI](dynamic-programming/consumption-savings/)** | Households save under persistent income risk and a borrowing limit. Value function iteration on the asset-income grid recovers high MPCs near zero assets and a buffer-stock target. |
 | [<img src="dynamic-programming/job-search-mccall/figures/thumb.png" width="160">](dynamic-programming/job-search-mccall/figures/accept-vs-reject.png) | **[McCall Job Search and the Reservation Wage](dynamic-programming/job-search-mccall/)** | Unemployed workers choose when to accept wage offers. A scalar Bellman fixed point gives the reservation wage and checks finite-grid VFI. |
@@ -205,39 +205,39 @@ These tutorials simulate local behavior and market institutions, then compare th
 
 ### Core Computational Economics
 
-- [QuantEcon](https://github.com/QuantEcon) - Open-source lectures and libraries for quantitative economics.
-- [John Stachurski GitHub](https://github.com/jstac) - Computational economics, stochastic dynamics, and numerical-methods code.
-- [OpenSourceEcon CompMethods](https://github.com/OpenSourceEcon/CompMethods) - Executable course materials on computational methods for economists.
-- [OpenSourceEconomics](https://github.com/OpenSourceEconomics) - Open-source tools for structural modeling, simulation, and policy analysis.
-- [CompEcon (Iskhakov)](https://github.com/fediskhakov/CompEcon) - Foundations of Computational Economics course materials.
-- [Sciences Po CompEcon CoursePack](https://github.com/ScPo-CompEcon/CoursePack) - Computational economics course pack used at Sciences Po.
-- [EconRL](https://github.com/SimonHashtag/EconRL) - Bibliography of economics and finance papers using reinforcement learning.
+- [QuantEcon](https://github.com/QuantEcon)
+- [John Stachurski GitHub](https://github.com/jstac)
+- [OpenSourceEcon CompMethods](https://github.com/OpenSourceEcon/CompMethods)
+- [OpenSourceEconomics](https://github.com/OpenSourceEconomics)
+- [CompEcon (Iskhakov)](https://github.com/fediskhakov/CompEcon)
+- [Sciences Po CompEcon CoursePack](https://github.com/ScPo-CompEcon/CoursePack)
+- [EconRL](https://github.com/SimonHashtag/EconRL)
 
 ### Heterogeneous-Agent & HANK Models
 
-- [Sequence-Jacobian](https://github.com/shade-econ/sequence-jacobian) - Python toolkit for solving heterogeneous-agent macro models with sequence-space Jacobians.
-- [Rognlie ECON 411-3](https://github.com/mrognlie/econ411-3) - Graduate macro materials on heterogeneous-agent models and sequence-space methods.
-- [HARK](https://github.com/econ-ark/HARK) - Econ-ARK toolkit for heterogeneous-agent consumption, saving, and portfolio models.
-- [Benjamin Moll Codes](https://benjaminmoll.com/codes/) - Finite-difference codes for continuous-time heterogeneous-agent models.
-- [Quantitative Macro Models](https://github.com/hessjacob/Quantitative-Macro-Models) - Python implementations of heterogeneous-agent and firm-dynamics models.
-- [BASEforHANK](https://github.com/BASEforHANK) - Julia toolboxes for Bayesian HANK solution and estimation.
+- [Sequence-Jacobian](https://github.com/shade-econ/sequence-jacobian)
+- [Rognlie ECON 411-3](https://github.com/mrognlie/econ411-3)
+- [HARK](https://github.com/econ-ark/HARK)
+- [Benjamin Moll Codes](https://benjaminmoll.com/codes/)
+- [Quantitative Macro Models](https://github.com/hessjacob/Quantitative-Macro-Models)
+- [BASEforHANK](https://github.com/BASEforHANK)
 
 ### Empirical IO & Structural Estimation
 
-- [PyBLP](https://github.com/jeffgortmaker/pyblp) - Python package for estimating differentiated-products demand and supply models.
-- [Chris Conlon Grad IO](https://github.com/chrisconlon/Grad-IO) - PhD empirical IO course materials with practical estimation code.
-- [Courthoud PhD Industrial Organization](https://github.com/matteocourthoud/Phd-Industrial-Organization) - Applied IO notes and code for demand, auctions, and structural estimation.
-- [respy](https://github.com/OpenSourceEconomics/respy) - Python package for estimating and simulating dynamic discrete-choice models.
-- [Dynamic Structural Econometrics (DSE 2023)](https://github.com/dseconf/DSE2023) - Summer-school materials on solving and estimating dynamic models.
-- [Kenneth Train Software](https://eml.berkeley.edu/~train/software.html) - Mixed logit and discrete-choice estimation code.
-- [Victor Aguirregabiria Computer Code](https://sites.google.com/view/victoraguirregabiriaswebsite/computer-code?authuser=0) - Dynamic discrete-choice and dynamic-game estimation code.
-- [EmpiricalIO](https://github.com/kohei-kawaguchi/EmpiricalIO) - Empirical IO lecture notes, assignments, and R code.
-- [Archive of Empirical Dynamic Programming Research](https://github.com/CForg/Archive-of-Empirical-Dynamic-Programming-Research) - Replication materials for empirical dynamic programming.
+- [PyBLP](https://github.com/jeffgortmaker/pyblp)
+- [Chris Conlon Grad IO](https://github.com/chrisconlon/Grad-IO)
+- [Courthoud PhD Industrial Organization](https://github.com/matteocourthoud/Phd-Industrial-Organization)
+- [respy](https://github.com/OpenSourceEconomics/respy)
+- [Dynamic Structural Econometrics (DSE 2023)](https://github.com/dseconf/DSE2023)]
+- [Kenneth Train Software](https://eml.berkeley.edu/~train/software.html)
+- [Victor Aguirregabiria Computer Code](https://sites.google.com/view/victoraguirregabiriaswebsite/computer-code?authuser=0)
+- [EmpiricalIO](https://github.com/kohei-kawaguchi/EmpiricalIO)
+- [Archive of Empirical Dynamic Programming Research](https://github.com/CForg/Archive-of-Empirical-Dynamic-Programming-Research)
 
 ### DSGE, Dynamics, and Filtering
 
-- [New York Fed DSGE.jl](https://github.com/FRBNY-DSGE/DSGE.jl) - Julia tools for solving and estimating DSGE models.
-- [GDSGE](https://github.com/gdsge/gdsge) - Toolbox for global nonlinear DSGE solution.
-- [DSGE_mod](https://github.com/JohannesPfeifer/DSGE_mod) - Dynare `.mod` files for canonical DSGE models.
-- [DynamicalSystems.jl](https://github.com/JuliaDynamics/DynamicalSystems.jl) - Julia library for nonlinear dynamics and time-series analysis.
-- [Kalman and Bayesian Filters in Python](https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python) - Interactive book on Kalman filtering, particle filtering, and Bayesian state estimation.
+- [New York Fed DSGE.jl](https://github.com/FRBNY-DSGE/DSGE.jl)
+- [Global DGSE Solver](https://github.com/gdsge/gdsge)
+- [DSGE_mod](https://github.com/JohannesPfeifer/DSGE_mod)
+- [DynamicalSystems.jl](https://github.com/JuliaDynamics/DynamicalSystems.jl)
+- [Kalman and Bayesian Filters in Python](https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python)
