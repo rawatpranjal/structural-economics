@@ -30,7 +30,8 @@ with constraints
 
 $$s_i'\geq 0,\qquad b_i'\geq \bar K^b.$$
 
-The Kuhn-Tucker conditions for equity and bond positions are
+The Kuhn-Tucker conditions for equity and bond positions are, where $E_z[\cdot]$
+denotes the expectation over next-period shocks $z'$ conditional on current shock $z$,
 
 $$1=\beta E_z\left[
 g_{z'}^{1-\gamma}\left(\frac{c_i'}{c_i}\right)^{-\gamma}

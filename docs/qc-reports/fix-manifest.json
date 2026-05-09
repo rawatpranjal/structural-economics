@@ -1,6 +1,6 @@
 {
   "pass_name": "tutorial-fix-sweep-v1",
-  "updated_at": "2026-05-09T06:06:56Z",
+  "updated_at": "2026-05-09T06:13:58Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/consumption-savings/",
@@ -225,6 +225,15 @@
       "validate_ok": true,
       "summary": "(see claude stdout for fix-summary line)",
       "updated_at": "2026-05-09T06:06:56Z"
+    },
+    {
+      "tutorial_path": "global-dsge/heaton-lucas/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 390.08,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T06:13:58Z"
     }
   ]
 }
