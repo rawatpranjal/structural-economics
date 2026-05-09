@@ -55,24 +55,34 @@ The low-price peak is a strict local maximum.
 A start in $[c,\, p_L^{\max}]$ flows to the low peak under any local ascent.
 A start in $(p_L^{\max},\, p_H^{\max}]$ flows to the high peak.
 
-Multi-start L-BFGS-B draws $N$ initial prices uniformly on the bracket and runs the local optimizer from each.
+The next four subsections describe one method at a time.
+
+### Method 1: Multi-start L-BFGS-B
+
+Multi-start L-BFGS-B draws $N$ initial prices uniformly on the bracket and runs the local optimiser from each.
 
 $$\hat p_{\mathrm{multi}}^{(N)} = \arg\max_{k \in \lbrace 1, \ldots, N\rbrace} \pi\left(\mathrm{LBFGSB}(p_0^{(k)})\right),
 \qquad p_0^{(k)} \sim \mathrm{Uniform}[p_{\mathrm{lo}}, p_{\mathrm{hi}}].$$
 
 The probability of finding the global optimum is one minus the probability that all $N$ starts land in the low basin.
-Reporting that probability is the diagnostic.
+Reporting that probability is the diagnostic for whether the start budget is large enough.
 
-Random search drops the local optimizer entirely and uses a single sample of $N$ uniform draws.
+### Method 2: Random search
+
+Random search drops the local optimiser entirely and uses a single sample of $N$ uniform draws.
 
 $$\hat p_{\mathrm{rand}}^{(N)} = \arg\max_{k \in \lbrace 1, \ldots, N\rbrace} \pi(p^{(k)}),
 \qquad p^{(k)} \sim \mathrm{Uniform}[p_{\mathrm{lo}}, p_{\mathrm{hi}}].$$
 
-Random search is cheaper per evaluation than multi-start L-BFGS-B but converges only at $1/\sqrt{N}$.
+Random search is cheaper per evaluation than multi-start L-BFGS-B but converges only at rate $1/\sqrt{N}$.
+
+### Method 3: Nelder-Mead
 
 Nelder-Mead is a derivative-free local search.
 It maintains a simplex of candidate points and reflects, expands, contracts, or shrinks it based on the ranks of the function values at the vertices.
-Convergence is local; basin dependence is the same as L-BFGS-B.
+Convergence is local; basin dependence is the same as L-BFGS-B, so a single Nelder-Mead start with a poor initial point misses the global maximum on this problem.
+
+### Method 4: Simulated annealing
 
 Simulated annealing samples a Markov chain that proposes random moves and accepts them with a probability that depends on the change in objective and a slowly decreasing temperature.
 SciPy's `dual_annealing` combines a generalised-simulated-annealing global search with local refinement at each accepted move.

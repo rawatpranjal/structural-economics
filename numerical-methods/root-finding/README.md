@@ -10,6 +10,12 @@ These are the four solvers behind $\mathrm{scipy.optimize.brentq}$ and the equil
 
 ## Equations
 
+The general problem is to find $r$ satisfying $Z(r) = 0$ for a scalar function $Z : \mathbb{R} \to \mathbb{R}$.
+The methods below produce a sequence $\{r_n\}$ that converges to a root $r^{\ast}$.
+
+### The test instance
+
+The test instance is the equilibrium real interest rate in a stylised one-good production economy.
 Aggregate capital demand from the firm-side first-order condition is
 
 $$K_d(r) = \left( \frac{\alpha}{r + \delta} \right)^{\frac{1}{1 - \alpha}}.$$
@@ -23,23 +29,39 @@ The derivative used by Newton is
 
 $$Z'(r) = -\frac{1}{1 - \alpha} \frac{K_d(r)}{r + \delta} < 0.$$
 
-Bisection halves a sign-change bracket:
+The next four subsections describe one method at a time.
+
+### Method 1: Bisection
+
+Bisection halves a sign-change bracket at every iteration.
 
 $$m_n = \frac{a_n + b_n}{2}, \qquad b_{n+1} - a_{n+1} = \frac{1}{2}(b_n - a_n).$$
 
-Secant fits a chord through the last two iterates:
+The sub-bracket containing the sign change is kept and the rest is discarded.
+Convergence is linear with rate one half, regardless of curvature.
+
+### Method 2: Secant
+
+Secant fits a chord through the last two iterates and steps to the chord's zero.
 
 $$x_{n+1} = x_n - Z(x_n) \frac{x_n - x_{n-1}}{Z(x_n) - Z(x_{n-1})}.$$
 
-Newton-Raphson follows the tangent:
+The method needs two starting points but no derivative.
+Local convergence is superlinear with order $(1 + \sqrt{5}) / 2 \approx 1.618$.
+
+### Method 3: Newton-Raphson
+
+Newton-Raphson follows the tangent of $Z$ at the current iterate.
 
 $$x_{n+1} = x_n - \frac{Z(x_n)}{Z'(x_n)}.$$
 
-Brent's method tries inverse quadratic interpolation through the last
-three ordinates, falls back to secant when ordinates coincide, and
-falls back to bisection when the proposed step would leave the bracket
-or fails to halve the previous step. The bracket invariant is
-maintained at every iteration.
+The method needs a derivative but only one starting point.
+Local convergence is quadratic when $Z'(r^{\ast}) \neq 0$.
+
+### Method 4: Brent
+
+Brent's method tries inverse quadratic interpolation through the last three ordinates, falls back to secant when ordinates coincide, and falls back to bisection when the proposed step would leave the bracket or fails to halve the previous step.
+The bracket invariant is maintained at every iteration, which gives Brent the global guarantee of bisection together with the asymptotic speed of secant or interpolation when the local problem is well behaved.
 
 ## Model Setup
 

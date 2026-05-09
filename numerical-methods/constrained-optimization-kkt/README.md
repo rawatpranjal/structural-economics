@@ -79,7 +79,11 @@ $$x^{\ast} = (2,\, 1,\, 0),
 The non-zero multiplier $\mu_3^{\ast} = 1.5$ is the shadow price of the non-negativity bound on project 3.
 It is the utility a vanishingly small relaxation of $x_3 \geq 0$ would buy.
 
-The baseline failure follows when an analyst keeps only the budget equality and drops the non-negativity bounds.
+The next four subsections describe a baseline and three methods.
+
+### Baseline failure: drop the non-negativity bounds
+
+A common shortcut keeps only the budget equality and drops the non-negativity bounds.
 The Lagrangian is then linear in $x$ and $\lambda$.
 
 $$x = a - \lambda\, \mathbf{1},
@@ -88,23 +92,26 @@ $$x = a - \lambda\, \mathbf{1},
 
 At the calibration this gives $\lambda = 1.5$ and $x = (2.5, 1.5, -1)$.
 Project 3 receives a negative allocation, which has no economic meaning.
+The three methods below all enforce the non-negativity bounds and recover the correct optimum.
 
-Method 1 takes a gradient step on $u$ and then projects the result onto the simplex $\Delta_I = \lbrace x : x \geq 0,\, \sum_j x_j = I \rbrace$.
+### Method 1: Projected gradient
+
+Projected gradient takes a gradient step on $u$ and then projects the result onto the simplex $\Delta_I = \lbrace x : x \geq 0,\, \sum_j x_j = I \rbrace$.
 
 $$x_{k+1} = \Pi_{\Delta_I}\left(x_k + \alpha\, (a - B x_k)\right).$$
 
-$\alpha$ is the step size and $\Pi_{\Delta_I}$ is Euclidean projection onto the simplex.
-The step size must satisfy $\alpha \leq 1/L$ where $L$ is the operator norm of $B$.
-With $B = I_3$ the bound is $\alpha \leq 1$.
+Here $\alpha$ is the step size and $\Pi_{\Delta_I}$ is Euclidean projection onto the simplex.
+The step size must satisfy $\alpha \leq 1/L$ where $L$ is the operator norm of $B$; with $B = I_3$ the bound is $\alpha \leq 1$.
 
-Method 2 replaces the non-negativity inequalities with a log-barrier penalty controlled by a parameter $t > 0$.
+### Method 2: Log barrier
+
+Log barrier replaces the non-negativity inequalities with a smooth penalty controlled by a parameter $t > 0$.
 
 $$\min_x\, -u(x) - t \sum_j \log x_j
 \qquad \text{subject to} \quad \sum_j x_j = I.$$
 
 The barrier penalises iterates that approach the boundary $x_j = 0$.
-As $t$ shrinks the optimum of the smoothed problem traces a central path.
-The path converges to the true optimum $x^{\ast}$ in the limit $t \to 0$.
+As $t$ shrinks the optimum of the smoothed problem traces a central path that converges to the true optimum $x^{\ast}$ in the limit $t \to 0$.
 
 The first-order condition for the barrier subproblem is one equation per project plus the budget equality.
 
@@ -115,15 +122,14 @@ For diagonal $B = I_3$ each project's component solves a quadratic in $x_j$.
 
 $$x_j(\lambda;\, t) = \frac{(a_j - \lambda) + \sqrt{(a_j - \lambda)^2 + 4 t}}{2}.$$
 
-The budget multiplier $\lambda$ is then the unique scalar that makes $\sum_j x_j(\lambda;\, t)$ equal $I$.
-A single one-dimensional root finder solves for it.
+The budget multiplier $\lambda$ is the unique scalar that makes $\sum_j x_j(\lambda;\, t)$ equal $I$, and a single one-dimensional root finder solves for it.
 The duality gap of the barrier problem is exactly $n \cdot t$, which is the per-project complementarity slack along the central path.
 
-Method 3 calls SLSQP through `scipy.optimize.minimize`.
-SLSQP linearises the constraints around the current iterate and solves a small quadratic-programming (QP) subproblem at each step.
-The QP uses a BFGS approximation of the Hessian of the Lagrangian.
-The QP solution becomes the search direction.
-A line search along that direction picks the next iterate.
+### Method 3: SLSQP
+
+SLSQP calls `scipy.optimize.minimize` and treats the problem as sequential quadratic programming.
+Each step linearises the constraints around the current iterate and solves a small quadratic-programming (QP) subproblem.
+The QP uses a BFGS approximation of the Hessian of the Lagrangian; the QP solution becomes the search direction; a line search along that direction picks the next iterate.
 Multipliers are recovered after the fact from the stationarity equation by averaging $a_j - (B x)_j$ over the active set and solving for the bound multipliers on the inactive set.
 
 ## Model Setup

@@ -10,11 +10,13 @@ The lesson is that solving the first-order condition is not automatically safer 
 
 ## Equations
 
-Demand at price $p$ is constant-elasticity.
-Three constants pin down the curve.
-$A$ is a scale parameter that absorbs market size.
-$\epsilon$ is the demand elasticity, with $\epsilon > 1$ required for the optimum to exist.
-$c$ is the constant marginal cost.
+The general problem is to maximise a scalar profit function $\pi : [p_{\mathrm{lo}}, p_{\mathrm{hi}}] \to \mathbb{R}$ on a bounded interval.
+The methods below differ in what they evaluate (the function, its derivative, both) and in how they update the candidate optimum.
+
+### The test instance
+
+The test instance is monopoly pricing under constant-elasticity demand.
+Three constants pin down the demand curve: $A$ is a scale parameter that absorbs market size, $\epsilon$ is the demand elasticity (with $\epsilon > 1$ required for the optimum to exist), and $c$ is the constant marginal cost.
 
 $$D(p) = A\, p^{-\epsilon}.$$
 
@@ -22,44 +24,47 @@ Profit is the price-cost margin times the quantity sold.
 
 $$\pi(p) = (p - c)\, D(p) = A\, (p - c)\, p^{-\epsilon}.$$
 
-The first-order condition $\pi'(p) = 0$ is the natural starting point for derivative-based methods.
-The first derivative factors cleanly.
+The first-order condition $\pi'(p) = 0$ has a closed-form root that pins down what every method should return.
 
-$$\pi'(p) = A\, p^{-(\epsilon + 1)} \left[(1 - \epsilon)\, p + \epsilon\, c\right].$$
-
-The bracketed factor $(1 - \epsilon)\, p + \epsilon\, c$ is linear in $p$.
-Setting it to zero gives a single root in closed form.
-
-$$p^{\ast} = \frac{\epsilon}{\epsilon - 1}\, c.$$
+$$\pi'(p) = A\, p^{-(\epsilon + 1)} \left[(1 - \epsilon)\, p + \epsilon\, c\right],
+\qquad
+p^{\ast} = \frac{\epsilon}{\epsilon - 1}\, c.$$
 
 Rearranging the optimum gives the Lerner price-cost margin.
-The price-cost margin equals the inverse of the demand elasticity.
 
 $$\frac{p^{\ast} - c}{p^{\ast}} = \frac{1}{\epsilon}.$$
 
-At the baseline calibration $\epsilon = 2.5$ and $c = 1$ the closed form gives $p^{\ast} = 5/3 \approx 1.667$.
-The Lerner markup is $1/2.5 = 0.4$.
+At the baseline calibration $\epsilon = 2.5$ and $c = 1$ the closed form gives $p^{\ast} = 5/3 \approx 1.667$ and Lerner markup $1/2.5 = 0.4$.
 
-Newton on the FOC will need the second derivative.
-The same factorization recurs.
+The second derivative is needed by Newton and to identify the inflection point of $\pi$.
 
-$$\pi''(p) = -A\, \epsilon\, p^{-(\epsilon + 2)} \left[(1 - \epsilon)\, p + (\epsilon + 1)\, c\right].$$
+$$\pi''(p) = -A\, \epsilon\, p^{-(\epsilon + 2)} \left[(1 - \epsilon)\, p + (\epsilon + 1)\, c\right],
+\qquad
+p_{\mathrm{inflect}} = \frac{\epsilon + 1}{\epsilon - 1}\, c.$$
 
-The bracketed factor in $\pi''$ is again linear in $p$.
-It vanishes at one price.
+Profit is concave on $(0, p_{\mathrm{inflect}})$ and convex on $(p_{\mathrm{inflect}}, \infty)$, with the optimum strictly inside the concave region ($p^{\ast} < p_{\mathrm{inflect}}$).
 
-$$p_{\mathrm{inflect}} = \frac{\epsilon + 1}{\epsilon - 1}\, c.$$
+The next four subsections describe one method at a time.
 
-Profit is concave on $(0, p_{\mathrm{inflect}})$ and convex on $(p_{\mathrm{inflect}}, \infty)$.
-The optimum sits inside the concave region, with $p^{\ast} < p_{\mathrm{inflect}}$.
+### Method 1: Grid search
 
-The four methods evaluate $\pi$ in different ways.
-Random search and the bracket-contraction methods refer back to the price interval $[p_{\mathrm{lo}}, p_{\mathrm{hi}}]$ used as the search bracket.
+Grid search covers the bracket with a uniform mesh of $N$ nodes and returns the argmax over the mesh.
+
+$$\hat p_{\mathrm{grid}} = \arg\max_{i \in \lbrace 1, \ldots, N\rbrace} \pi(p_i),
+\qquad p_i = p_{\mathrm{lo}} + \frac{(i - 1)\,(p_{\mathrm{hi}} - p_{\mathrm{lo}})}{N - 1}.$$
+
+The distance from the nearest mesh point to $p^{\ast}$ is at most half the spacing, so the error scales as $1/N$.
+
+### Method 2: Random search
 
 Random search draws $N$ prices uniformly on the bracket and returns the argmax of the sampled profits.
 
 $$\hat p_{\mathrm{rand}} = \arg\max_{i \in \lbrace 1, \ldots, N\rbrace} \pi(p_i),
 \qquad p_i \stackrel{\mathrm{iid}}{\sim} \mathrm{Uniform}[p_{\mathrm{lo}}, p_{\mathrm{hi}}].$$
+
+The expected error scales as $1/N$ in one dimension, the same order as the grid but with stochastic noise on each draw.
+
+### Method 3: Golden-section search
 
 Golden-section search contracts a unimodal bracket $[a_n, b_n]$ using the golden ratio.
 Two interior probes split the bracket so that one is reused after each shrink.
@@ -71,14 +76,17 @@ p_n = b_n - \phi\, (b_n - a_n),
 q_n = a_n + \phi\, (b_n - a_n).$$
 
 Here $p_n$ and $q_n$ are the left and right probe prices at iteration $n$, distinct from the price control $p$.
+The bracket shrinks by a constant factor $\phi$ each step, giving linear convergence.
 
-Newton on the FOC follows the tangent of $\pi'$ at the current iterate.
+### Method 4: Newton on the FOC
+
+Newton follows the tangent of $\pi'$ at the current iterate.
 
 $$x_{n+1} = x_n - \frac{\pi'(x_n)}{\pi''(x_n)}.$$
 
-Newton is equivalent to maximizing a parabolic surrogate that matches $\pi$ in value, slope, and curvature at $x_n$.
-The surrogate is concave only when $\pi''(x_n)$ is negative.
-Concavity of the surrogate holds only when $x_n$ lies below $p_{\mathrm{inflect}}$.
+Newton is equivalent to maximising a parabolic surrogate that matches $\pi$ in value, slope, and curvature at $x_n$.
+The surrogate is concave only when $\pi''(x_n)$ is negative, which holds only when $x_n$ lies below $p_{\mathrm{inflect}}$.
+A start in the convex region drives the iterates away from $p^{\ast}$.
 
 ## Model Setup
 

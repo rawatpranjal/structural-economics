@@ -161,14 +161,17 @@ def main() -> None:
     )
 
     report.add_equations(
-        r"""
-The first target is the closed-form log-utility cake-eating value
-function
+        r"""The general problem is to recover an unknown function $f : [x_0, x_N] \to \mathbb{R}$ from values $\{(x_i, y_i)\}_{i=0}^{N}$ at a finite set of nodes.
+An interpolant $\hat f$ matches the data ($\hat f(x_i) = y_i$ for every $i$) and provides a rule for evaluating $\hat f(x)$ at any $x$ between nodes.
+
+### The test instances
+
+Two targets stress different smoothness regimes.
+The first target is the closed-form log-utility cake-eating value function on a smooth interior.
 
 $$V(W) = \frac{\log((1-\beta) W)}{1-\beta} + \frac{\beta \log \beta}{(1-\beta)^2}.$$
 
-The second target is a stylized consumption policy with a borrowing
-constraint at $a_{\text{kink}}$:
+The second target is a stylised consumption policy with a borrowing constraint at $a_{\text{kink}}$.
 
 $$c(a) =
 \begin{cases}
@@ -176,25 +179,31 @@ $$c(a) =
 c(a_{\text{kink}}) + (1 + r)\, \mathrm{MPC}\, (a - a_{\text{kink}}), & a > a_{\text{kink}}.
 \end{cases}$$
 
-Below the kink the agent is constrained and consumes everything; above
-the kink they save with marginal propensity to consume $\mathrm{MPC} < 1$.
-The function is continuous in level but the slope drops from $(1 + r)$
-to $(1 + r)\,\mathrm{MPC}$ at $a_{\text{kink}}$.
+Below the kink the agent is constrained and consumes everything; above the kink they save with marginal propensity to consume $\mathrm{MPC} < 1$.
+The function is continuous in level but the slope drops from $(1 + r)$ to $(1 + r)\,\mathrm{MPC}$ at $a_{\text{kink}}$.
 
-Piecewise linear interpolation between adjacent nodes
-$x_i \le x \le x_{i+1}$ is
+The next three subsections describe one method at a time.
+
+### Method 1: Piecewise linear
+
+Piecewise linear interpolation connects adjacent nodes with straight segments.
+For a query $x$ in $[x_i, x_{i+1}]$ the interpolant is the convex combination of the bracketing values.
 
 $$\hat{f}(x) = \frac{x_{i+1} - x}{x_{i+1} - x_i}\, f(x_i) + \frac{x - x_i}{x_{i+1} - x_i}\, f(x_{i+1}).$$
 
-Natural cubic spline fits a piecewise cubic with $\hat{f}, \hat{f}',
-\hat{f}''$ continuous everywhere and $\hat{f}''(x_0) = \hat{f}''(x_N) =
-0$. The coefficients solve a tridiagonal linear system for the second
-derivatives at interior nodes.
+The interpolant is $C^0$ but generally not differentiable at the nodes.
 
-PCHIP fits a piecewise cubic Hermite polynomial whose endpoint slopes
-are chosen by a monotonicity-preserving rule (Fritsch-Carlson 1980).
-The result is $C^1$ and never overshoots a monotone target; it loses
-the $C^2$ smoothness of the cubic spline.
+### Method 2: Natural cubic spline
+
+The natural cubic spline fits a piecewise cubic with $\hat{f}, \hat{f}', \hat{f}''$ continuous everywhere and $\hat{f}''(x_0) = \hat{f}''(x_N) = 0$.
+The coefficients solve a tridiagonal linear system for the second derivatives at interior nodes.
+The result is $C^2$ and is the smoothest interpolant in the integrated-squared-second-derivative sense.
+
+### Method 3: PCHIP
+
+PCHIP fits a piecewise cubic Hermite polynomial whose endpoint slopes are chosen by a monotonicity-preserving rule (Fritsch-Carlson 1980).
+The result is $C^1$ and never overshoots a monotone target; it loses the $C^2$ smoothness of the cubic spline.
+The trade is between curvature and shape preservation: cubic splines bend smoothly but can introduce ringing near a kink, while PCHIP holds the shape but drops one order of smoothness.
 """
     )
 

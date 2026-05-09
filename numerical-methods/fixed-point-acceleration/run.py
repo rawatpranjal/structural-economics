@@ -38,7 +38,6 @@ def main() -> None:
         return e / denom, 1.0 / denom
 
     s_obs, s0_obs = predicted_shares(delta_star)
-    log_ratio = np.log(s_obs / s0_obs)  # closed-form benchmark
 
     tol = 1e-12
     max_iter = 200
@@ -92,7 +91,7 @@ def main() -> None:
         return np.array(history), np.array(residuals), np.array(errors)
 
     damping = 0.5
-    dp_history, dp_residuals, dp_errors = damped_picard(delta0, alpha=damping)
+    _, dp_residuals, dp_errors = damped_picard(delta0, alpha=damping)
     dp_iter = len(dp_residuals)
 
     # =========================================================================
@@ -137,7 +136,7 @@ def main() -> None:
                 break
         return np.array(x_hist), np.array(residuals), np.array(errors)
 
-    an_history, an_residuals, an_errors = anderson(delta0, m_max=5)
+    _, an_residuals, an_errors = anderson(delta0, m_max=5)
     an_iter = len(an_residuals)
 
     # =========================================================================
@@ -161,7 +160,7 @@ def main() -> None:
             continue
         delta_true_full = np.concatenate([delta_true[:3], [np.log(e3)]])
 
-        s_obs_local, s0_local = predicted_shares(delta_true_full)
+        s_obs_local, _ = predicted_shares(delta_true_full)
         # Local fixed-point map and methods
         def T_local(delta, s_obs_=s_obs_local):
             s, _ = predicted_shares(delta)
