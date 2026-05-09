@@ -57,7 +57,7 @@ c_t + a_{t+1} = R a_t + y_t(d_t),
 \qquad a_{t+1} \geq \underline a .
 $$
 
-Resources are split between current consumption and next assets.
+Resources are split between current consumption and next assets. Throughout the branch problems below, $a^{+}$ denotes the same next-period assets as $a_{t+1}$ in the budget constraint, written without a time subscript to mark it as the free variable of the branch maximization.
 
 For any branch $d$, define the branch value
 
@@ -139,6 +139,8 @@ $$
 
 Each branch produces its own endogenous grid and value curve:
 
+Here $a^{+} = a_i^{+}$ is fixed at each grid point, so $\widetilde V_t^d(a_{t,i}^{\mathrm{endo},d})$ is shorthand for $\widetilde V_t^d(a_{t,i}^{\mathrm{endo},d}, a_i^{+})$.
+
 $$
 \widetilde V_t^d(a_{t,i}^{\mathrm{endo},d}) =
 u(c_{t,i}^d)+\psi_t(d)+\beta V_{t+1}^{m'(d)}(a_i^{+}).
@@ -162,6 +164,8 @@ $$
 g_t^d(a)=\underline a,\qquad
 c_t^d(a)=R a+y_t(d)-\underline a.
 $$
+
+In the constraint-binding region, $c_t^d(a)$ abbreviates $c_t^d(a,\underline a)$ with $a^{+}=\underline a$; elsewhere, $c_t^d(a)$ abbreviates $c_t^d(a,g_t^d(a))$ with $a^{+}$ at the optimal next asset.
 
 The final active policies copy the winning branch:
 
@@ -340,8 +344,8 @@ The runtime comparison is deliberately uneven: DC-EGM uses the larger main grid,
 | Share retired by age 67       |   1      |
 | Mean assets at age 55         |   3.0556 |
 | Mean assets at age 70         |   0.6717 |
-| DC-EGM runtime seconds        |   0.0031 |
-| Brute-force runtime seconds   |   0.0511 |
+| DC-EGM runtime seconds        |   0.0033 |
+| Brute-force runtime seconds   |   0.0485 |
 | Brute-force asset points      | 150      |
 | DC-EGM asset points           | 420      |
 

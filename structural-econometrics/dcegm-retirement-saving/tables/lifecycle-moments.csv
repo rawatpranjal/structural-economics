@@ -4,7 +4,7 @@ Share retired by age 62,0.5416
 Share retired by age 67,1.0
 Mean assets at age 55,3.0556
 Mean assets at age 70,0.6717
-DC-EGM runtime seconds,0.0031
-Brute-force runtime seconds,0.0511
+DC-EGM runtime seconds,0.0033
+Brute-force runtime seconds,0.0485
 Brute-force asset points,150.0
 DC-EGM asset points,420.0

@@ -559,8 +559,7 @@ $$
 The spending share $\pi_{ij}$ is destination $j$'s spending on goods from origin $i$:
 
 $$
-\pi_{ij}
-=
+\pi_{ij} =
 \frac{T_{ij}^{1-\sigma} A_i^{\sigma-1} w_i^{1-\sigma}}
 {\sum_k T_{kj}^{1-\sigma} A_k^{\sigma-1} w_k^{1-\sigma}}.
 $$
@@ -568,8 +567,7 @@ $$
 Balanced trade says income at origin $i$ equals its sales across destinations:
 
 $$
-w_i L_i
-=
+w_i L_i =
 \sum_j \pi_{ij} w_j L_j.
 $$
 

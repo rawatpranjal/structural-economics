@@ -8,7 +8,6 @@ This repository gives graduate students and researchers short, executable exampl
 - [Numerical Methods](#numerical-methods)
 - [Dynamic Programming](#dynamic-programming)
 - [Macroeconomics](#macroeconomics)
-- [Spatial Economics](#spatial-economics)
 - [Industrial Organization](#industrial-organization)
 - [Structural Econometrics](#structural-econometrics)
 - [Choice and Demand](#choice-and-demand)
@@ -104,14 +103,6 @@ These examples cover HJB equations, phase diagrams, shooting, and shadow prices.
 | [<img src="optimal-control/ramsey-growth/figures/thumb.png" width="160">](optimal-control/ramsey-growth/figures/phase-diagram.png) | **[Ramsey Saving by Saddle-Path Shooting](optimal-control/ramsey-growth/)** | A Ramsey planner chooses initial consumption with inherited capital. Shooting adjusts the jump variable until the path reaches the saddle steady state. |
 | [<img src="optimal-control/continuous-cake-eating/figures/thumb.png" width="160">](optimal-control/continuous-cake-eating/figures/consumption-path.png) | **[Fixed-Resource Consumption and Pontryagin Shadow Prices](optimal-control/continuous-cake-eating/)** | A planner allocates a fixed resource over continuous time. Pontryagin's costate equation prices remaining stock and pins down the depletion path. |
 
-## Spatial Economics
-
-These tutorials solve equilibrium allocations across locations when geography changes prices, market access, and population.
-
-| Preview | Tutorial | Description |
-|---|---|---|
-| [<img src="spatial-economics/allen-arkolakis/figures/thumb.png" width="160">](spatial-economics/allen-arkolakis/figures/equilibrium-wages-population.png) | **[Allen-Arkolakis Spatial Equilibrium on a Grid](spatial-economics/allen-arkolakis/)** | Solve a many-location spatial model with trade costs, labor mobility, and agglomeration. A two-equation fixed point delivers wages and population. |
-
 ## Industrial Organization
 
 The IO section covers firm boundaries, vertical relationships, demand, pricing, production, mergers, collusion, bargaining, and industry dynamics.
@@ -154,6 +145,7 @@ Structural econometrics focuses on estimating economic primitives from observed 
 | [<img src="structural-econometrics/rum-choice-networks/figures/thumb.png" width="160">](structural-econometrics/rum-choice-networks/figures/choice-fit.png) | **[Choice Prediction with RUMnets](structural-econometrics/rum-choice-networks/)** | Estimate product choices with a neural random-utility model. Fixed latent draws give RUMnet probabilities while preserving utility maximization. |
 | [<img src="choice/sequential-search-ursu/figures/thumb.png" width="160">](choice/sequential-search-ursu/figures/search-and-choice-fit.png) | **[Consumer Search with Sequential Inspection Costs](choice/sequential-search-ursu/)** | Consumers inspect products one at a time before buying. A Weitzman-style search rule and simulated moments recover search costs from search paths and purchases. |
 | [<img src="computational-methods/metropolis-hastings/figures/thumb.png" width="160">](computational-methods/metropolis-hastings/figures/mh-walk.png) | **[Sampling a Two-Regime Structural Posterior](computational-methods/metropolis-hastings/)** | Sample a structural posterior with two plausible regimes. Random-walk Metropolis-Hastings shows how proposal scale changes mode crossing and posterior averages. |
+| [<img src="spatial-economics/allen-arkolakis/figures/thumb.png" width="160">](spatial-economics/allen-arkolakis/figures/equilibrium-wages-population.png) | **[Allen-Arkolakis Spatial Equilibrium on a Grid](spatial-economics/allen-arkolakis/)** | Solve a many-location spatial model with trade costs, labor mobility, and agglomeration. A two-equation fixed point delivers wages and population. |
 
 ## Choice and Demand
 
