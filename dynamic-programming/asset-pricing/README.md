@@ -1,7 +1,5 @@
 # Lucas Tree Asset Prices and the Stochastic Discount Factor
 
-> A representative-agent exchange economy where dividend risk is priced by marginal utility.
-
 ## Overview
 
 A Lucas tree pays a stochastic dividend $y_t$ each period. A representative household owns the tree and consumes the dividend. Market clearing sets $c_t=y_t$, so there is no savings choice.
@@ -45,6 +43,8 @@ $$f(y)\equiv u'(y)\,p(y).$$
 Multiplying the Euler equation by $u'(y_t)$ gives
 
 $$f(y)=\beta\,\mathbb{E}\left[f(y')+u'(y')\,y'\,\big|\,y\right].$$
+
+Here $y'$ denotes next-period endowment ($y_{t+1}$); primes denote next-period values throughout.
 
 This is a linear fixed point in $f$.
 The price and price-dividend ratio recover from

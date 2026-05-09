@@ -141,7 +141,6 @@ def main() -> None:
     setup_style()
     report = ModelReport(
         "Finite Strategic Games and Nash Equilibrium Checks",
-        "Payoff tables, deviation gains, and mixed-strategy indifference.",
         include_reproduce=False,
         show_figure_captions=False,
     )

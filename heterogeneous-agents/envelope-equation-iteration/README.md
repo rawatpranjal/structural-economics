@@ -1,7 +1,5 @@
 # Envelope-Equation Iteration for Buffer-Stock Saving
 
-> Iterating the marginal continuation value $W_a(a)$ to solve a partial-equilibrium income-risk household problem.
-
 ## Overview
 
 A CRRA household faces IID labor income and cannot borrow. Wealth is a buffer against low income. The policy says how assets shape consumption and saving.
@@ -67,7 +65,7 @@ This case produces high MPCs near zero assets.
 | CRRA $\gamma$ | 2.0 | Curvature; sets the precautionary motive and the slope of $W_a$ |
 | Discount factor $\beta$ | 0.95 | Annual time preference |
 | Net rate $r$ | 0.03 | Exogenous risk-free return |
-| Patience–return product $\beta R$ | 0.9785 | $<1$ rules out an unbounded asset target |
+| Patience-return product $\beta R$ | 0.9785 | $<1$ rules out an unbounded asset target |
 | Income mean $\mu_y$ | 1.0 | Normalisation |
 | Income s.d. $\sigma_y$ | 0.2 | Width of the IID labor-income shock |
 | Income states $n_y$ | 5 | Width-fitted equal-spaced normal grid |
@@ -145,7 +143,7 @@ $W_a(a)$ is steep near zero assets. One more dollar is most valuable when the bu
 
 <img src="figures/value-derivative.png" alt="Marginal continuation value with state-specific decomposition" width="80%">
 
-The simulated asset distribution is right-skewed. Mean assets are $\bar a = 0.41$. 3.1% of households sit at the borrowing limit. IID income keeps the asset scale modest. The borrowing-limit mass raises the average MPC to 0.220.
+The simulated asset distribution is right-skewed. Mean assets are 0.41. 3.1% of households sit at the borrowing limit. IID income keeps the asset scale modest. The borrowing-limit mass raises the average MPC to 0.220.
 
 <img src="figures/wealth-distribution.png" alt="Simulated terminal wealth distribution under the EEI policy" width="80%">
 
@@ -176,13 +174,13 @@ The table reports the main economic moments and policy checks. The fine-grid row
 
 ## Takeaway
 
-EEI is a fixed point for the same buffer-stock household. It iterates $W_a(a)$ instead of the value level. Low-wealth households consume more of a transfer. High-wealth households smooth toward the perfect-foresight MPC $\kappa^{\ast}\approx0.041$.
+EEI is a fixed point for the same buffer-stock household. It iterates $W_a(a)$ instead of the value level. Low-wealth households consume more of a transfer. High-wealth households smooth toward the perfect-foresight MPC $\kappa^{\ast}\approx0.041$. Here $\kappa^{\ast} = R(\beta R)^{-1/\gamma}-1$ is the MPC in the perfect-foresight limit.
 
 The computational lesson is simple. The envelope condition can be an update rule. EGP is faster here because it uses an analytic inverse. All three methods agree up to the fine-grid gap.
 
 ## References
 
-- Maliar, L. and Maliar, S. (2013). Envelope Condition Method with an Application to Default Risk Models. *Journal of Economic Dynamics and Control*, 37(7), 1439-1459.
+- Arellano, C., Maliar, L., Maliar, S. and Tsyrennikov, V. (2016). Envelope Condition Method with an Application to Default Risk Models. *Journal of Economic Dynamics and Control*, 69, 436-459.
 - Carroll, C. D. (2006). The Method of Endogenous Gridpoints for Solving Dynamic Stochastic Optimization Problems. *Economics Letters*, 91(3), 312-320.
 - Deaton, A. (1991). Saving and Liquidity Constraints. *Econometrica*, 59(5), 1221-1248.
 - Carroll, C. D. (1997). Buffer-Stock Saving and the Life Cycle/Permanent Income Hypothesis. *Quarterly Journal of Economics*, 112(1), 1-55.

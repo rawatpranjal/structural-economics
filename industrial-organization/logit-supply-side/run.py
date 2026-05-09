@@ -388,7 +388,6 @@ def main():
 
     report = ModelReport(
         "Cereal Demand and Markup Recovery from Prices",
-        "Berry inversion, IV/2SLS, and Bertrand-Nash pricing FOCs.",
         include_reproduce=False,
         show_figure_captions=False,
     )

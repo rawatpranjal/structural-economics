@@ -380,6 +380,9 @@ def build_prompt(tutorial: Path, model: str) -> str:
             split the cell. Example: `"Discount factor $\\beta$ \\| 0.95"`.
           - Do not introduce literal `*` or `_` characters as math
             scripts in any other form. If unsure, use `\\ast`.
+          - Do NOT use em-dashes or en-dashes anywhere in the report. Hard
+            no. Use a plain hyphen `-`, a comma, or rephrase. This applies
+            to prose, list bullets, table cells, and the Summary paragraph.
 
         After you finish writing the file, stop. Do not summarize in chat
         output. Do not edit the tutorial. Do not run python. Do not commit.

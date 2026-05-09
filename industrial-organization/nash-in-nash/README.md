@@ -1,7 +1,5 @@
 # Hospital-Insurer Network Bargaining with Nash-in-Nash
 
-> How network outside options shape negotiated hospital payments.
-
 ## Overview
 
 Health insurers sell hospital networks. A plan loses value when it drops a high-quality hospital. It loses more when it drops the whole system.

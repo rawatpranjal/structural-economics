@@ -22,7 +22,7 @@ At each collocation point (z, s), solve: F(s, x, z, {s'(z'), P^n(z', s'(z'))}) =
 - Complementary slackness via min(mu, constraint) formulation
 - Convergence: sup-norm of policy function changes
 
-Shared solver: `lib/stpfi.py` — `solve_stpfi(step, policy_init, trans_init)`
+Shared solver: `lib/stpfi.py` - `solve_stpfi(step, policy_init, trans_init)`
 
 ## STPFI Models
 - **heaton-lucas**: Two agents, equity+bonds, wealth share dynamics (1D state)

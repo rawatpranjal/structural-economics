@@ -1,7 +1,5 @@
 # First-Price Auctions, Bid Shading, and Deviation Checks
 
-> Private-value bidding, the symmetric rule, and a direct deviation check.
-
 ## Overview
 
 In a first-price sealed-bid auction, each bidder pays its own bid if it wins. Bidding value helps win, but it leaves no surplus.

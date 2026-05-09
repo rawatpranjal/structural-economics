@@ -1,7 +1,5 @@
 # Choice Prediction with RUMnets
 
-> A neural utility model predicts choices while staying inside random utility maximization.
-
 ## Overview
 
 A retailer observes which product a customer buys. It also observes the product prices, product qualities, and a customer context variable.

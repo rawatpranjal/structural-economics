@@ -1,7 +1,5 @@
 # Cournot Quantity Competition and Best-Response Iteration
 
-> A quantity-setting duopoly solved by Nash first-order conditions and checked by best-response iteration.
-
 ## Overview
 
 Two firms sell a homogeneous good in one market. Each firm chooses output before the market price clears. Extra output raises own sales and lowers the price on every unit.

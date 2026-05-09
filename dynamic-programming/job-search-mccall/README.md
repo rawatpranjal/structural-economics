@@ -1,7 +1,5 @@
 # McCall Job Search and the Reservation Wage
 
-> Sequential wage-offer search with a scalar reservation-wage fixed point.
-
 ## Overview
 
 An unemployed worker draws one wage offer each period. Accepting locks in that wage forever. Rejecting pays benefit $b$ and returns the worker to search next period.

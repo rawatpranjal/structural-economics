@@ -329,7 +329,6 @@ def main():
 
     report = ModelReport(
         "Entry, Exit, and Market Structure in Oligopoly",
-        "Sunk entry costs and persistent firm counts.",
         include_reproduce=False,
         show_figure_captions=False,
     )

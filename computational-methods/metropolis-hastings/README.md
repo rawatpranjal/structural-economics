@@ -1,7 +1,5 @@
 # Sampling a Two-Regime Structural Posterior
 
-> Random-walk Metropolis-Hastings for structural parameters with two posterior modes.
-
 ## Overview
 
 Suppose a structural model leaves two parameter regions that fit the same data. Counterfactual prices or welfare can depend on which region receives posterior weight.

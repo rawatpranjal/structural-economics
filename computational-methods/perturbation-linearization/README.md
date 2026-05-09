@@ -1,7 +1,5 @@
 # Aggregate Adjustment Around a Steady State
 
-> Taylor perturbations for nonlinear macro dynamics and impulse responses.
-
 ## Overview
 
 A macro model tracks an aggregate state after a shock. Here $x_t$ is a deviation from steady state. The shock can be positive or negative.

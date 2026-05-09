@@ -89,7 +89,6 @@ def main():
 
     report = ModelReport(
         "Fixed-Resource Consumption and Pontryagin Shadow Prices",
-        "A finite-resource consumption problem in continuous time, solved by costate equations.",
         include_reproduce=False,
         show_figure_captions=False,
     )

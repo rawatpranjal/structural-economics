@@ -8,7 +8,7 @@ shape but loses smoothness; natural cubic spline gives the best convergence
 on smooth functions but rings near kinks; PCHIP keeps monotonicity at the
 cost of $C^1$ smoothness.
 
-Target 1: closed-form cake-eating value function $V(W)$ — smooth, monotone.
+Target 1: closed-form cake-eating value function $V(W)$ - smooth, monotone.
 Target 2: a stylized consumption policy with a borrowing-constraint kink.
 
 Reference: Mukoyama, T. (2021), Basic Numerical Methods, ECON 606, Georgetown.
@@ -140,7 +140,6 @@ def main() -> None:
 
     report = ModelReport(
         "Off-Grid Function Approximation by Interpolation",
-        "Piecewise linear, natural cubic spline, and PCHIP reconstruct a function from values at discrete nodes; smooth and kinked targets expose the trade-offs.",
         include_reproduce=False,
         show_figure_captions=False,
     )
@@ -153,7 +152,7 @@ def main() -> None:
         "interpolating polynomial).\n\n"
         "This tutorial fits each one to two targets. "
         "The first target is the closed-form cake-eating value function "
-        "$V(W)$ — smooth and monotone. "
+        "$V(W)$ - smooth and monotone. "
         "The second is a stylized consumption policy with a borrowing-"
         "constraint kink: the level is continuous but the slope drops "
         "sharply at $a_{\\text{kink}}$.\n\n"

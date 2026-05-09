@@ -1,7 +1,5 @@
 # Recovering Auction Values from First-Price Bids
 
-> Use the first-price auction equilibrium condition to turn observed bids into pseudo-values.
-
 ## Overview
 
 We observe bids from repeated first-price auctions.

@@ -1,7 +1,5 @@
 # Aiyagari Saving and Capital-Market Clearing
 
-> An incomplete-markets economy where household precautionary saving determines aggregate capital and the equilibrium real rate.
-
 ## Overview
 
 In Aiyagari (1994), households face persistent idiosyncratic income risk and cannot borrow. They save in one risk-free asset to smooth consumption across income states.
@@ -53,7 +51,7 @@ $$
 \mu(a',z_k) = \sum_j P_{jk}\sum_{i:\,g_a(a_i,z_j)=a'} \mu(a_i,z_j),
 $$
 
-Aggregate household assets are
+Here $i$ indexes nodes of the asset grid $\{a_i\}$. Aggregate household assets are
 $K^s(r) = \sum_{i,j} a_i\,\mu(a_i,z_j)$.
 
 **Firm.** Cobb-Douglas technology $Y = K^{\alpha} L^{1-\alpha}$ with capital
@@ -127,7 +125,7 @@ Value functions rise with assets and income. Asset policies show stronger saving
 
 <img src="figures/savings-policy.png" alt="Equilibrium value function and asset policy" width="80%">
 
-The stationary distribution comes from the asset policy and income chain at $r^{\ast}=0.0260$. Mean wealth ($\bar a=6.76$) exceeds median wealth ($\tilde a=4.47$). $2.5\%$ of households sit at the borrowing limit. The right tail comes from repeated high-income draws. With no ex-ante heterogeneity, the run produces Gini $G=0.526$.
+The stationary distribution comes from the asset policy and income chain at $r^{\ast}=0.0260$. Mean wealth ($\mathbb{E}[a]=6.76$) exceeds median wealth ($\tilde a=4.47$). $2.5\%$ of households sit at the borrowing limit. The right tail comes from repeated high-income draws. With no ex-ante heterogeneity, the run produces Gini $G=0.526$.
 
 <img src="figures/wealth-distribution.png" alt="Stationary wealth distribution and Lorenz curve at the equilibrium prices" width="80%">
 
@@ -142,7 +140,7 @@ The market-clearing gap is the bisection residual. It is numerical error, not a 
 | Aggregate capital $K^{\ast}$ |  6.7599    |
 | Output $Y^{\ast}$            |  1.9897    |
 | Capital-output ratio $K/Y$   |  3.3975    |
-| Mean wealth $\bar a$         |  6.7633    |
+| Mean wealth $\mathbb{E}[a]$  |  6.7633    |
 | Median wealth $\tilde a$     |  4.4728    |
 | P90 wealth                   | 16.3145    |
 | Gini                         |  0.5261    |

@@ -1,7 +1,5 @@
 # Quality Investment in Dynamic Oligopoly
 
-> Markov-perfect policies for a quality-ladder rivalry.
-
 ## Overview
 
 Two firms sell differentiated products whose quality carries over. A firm can invest today to raise tomorrow's quality, while its rival moves too.

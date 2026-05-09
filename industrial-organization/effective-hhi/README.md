@@ -1,7 +1,5 @@
 # Market Concentration Screens with HHI
 
-> HHI turns firm shares into a fast antitrust screen. Pricing effects require a demand and ownership model.
-
 ## Overview
 
 An antitrust screen often starts with a sales table. Suppose two large firms in a snack market propose to merge. The first question is how concentrated sales control would be after the ownership change.

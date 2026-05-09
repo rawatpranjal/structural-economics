@@ -1,7 +1,5 @@
 # Business-Cycle Moments from a FRED-Style Macro Panel
 
-> HP filtering and moment measurement for a quarterly macro panel.
-
 ## Overview
 
 Macroeconomic models are often judged by business-cycle moments. The researcher starts with quarterly output growth, inflation, unemployment, and a policy rate.

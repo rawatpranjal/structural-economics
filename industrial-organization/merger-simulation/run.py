@@ -568,7 +568,6 @@ def main():
 
     report = ModelReport(
         "Merger Pricing in Differentiated-Products Markets",
-        "GUPPI screens and Bertrand-Nash counterfactuals with calibrated substitution.",
         include_reproduce=False,
         show_figure_captions=False,
     )

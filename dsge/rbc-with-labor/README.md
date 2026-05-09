@@ -1,7 +1,5 @@
 # RBC Labor Supply and TFP Shocks
 
-> Endogenous hours shape a productivity shock, and Klein QZ solves the local rational-expectations system.
-
 ## Overview
 
 A positive TFP shock raises the marginal product of inputs. Capital is mostly inherited, so hours carry much of the impact response.
@@ -20,6 +18,8 @@ subject to $C_t+I_t=Y_t$, $K_t=I_t+(1-\delta)K_{t-1}$, and a Cobb-Douglas
 production technology
 
 $$Y_t=A_t K_{t-1}^\alpha N_t^{1-\alpha},\qquad \log A_t=\rho\log A_{t-1}+\varepsilon_t.$$
+
+The shock $\varepsilon_t$ is i.i.d. with mean zero and standard deviation $\sigma_\varepsilon$.
 
 The intratemporal labor-supply condition is
 
@@ -63,7 +63,7 @@ Stack the linearized equilibrium as
 
 $$A\,\mathbb{E}_t s_{t+1}=B\,s_t.$$
 
-Use $s_t=(\hat k_{t-1},\hat a_t,\hat c_t,\hat n_t)'$. The first two entries are states. The last two entries are jump variables.
+Use $s_t=(\hat k_{t-1},\hat a_t,\hat c_t,\hat n_t)'$, where a hat denotes the log-deviation from steady state. The first two entries are states. The last two entries are jump variables.
 
 The rows are capital accumulation, TFP, labor supply, and the Euler equation.
 

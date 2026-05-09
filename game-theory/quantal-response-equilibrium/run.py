@@ -96,7 +96,6 @@ def main() -> None:
     setup_style()
     report = ModelReport(
         "Market Entry with Quantal Response Equilibrium",
-        "Payoff-sensitive mistakes turn entry into a fixed-point problem.",
         include_reproduce=False,
         show_figure_captions=False,
     )

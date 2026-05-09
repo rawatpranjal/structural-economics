@@ -105,7 +105,6 @@ def main() -> None:
 
     report = ModelReport(
         "Production Elasticities and Firm Markups",
-        "Recover firm-year markups from a corrected materials elasticity and materials shares.",
         include_reproduce=False,
         show_figure_captions=False,
     )

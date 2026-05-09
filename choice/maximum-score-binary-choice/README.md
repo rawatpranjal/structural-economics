@@ -1,7 +1,5 @@
 # Binary Participation with Maximum Score
 
-> Estimate a participation boundary without specifying the full error distribution.
-
 ## Overview
 
 A worker enrolls in training when expected gains exceed travel and time costs. The econometrician observes participation and covariates, not latent surplus.

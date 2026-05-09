@@ -1,7 +1,5 @@
 # Consumer Search with Sequential Inspection Costs
 
-> Estimate search costs from observed search paths and purchases.
-
 ## Overview
 
 A consumer does not see every product match value before choosing. She can inspect products one at a time, pay a search cost, remember what she has seen, and stop when further inspection is no longer worth it.

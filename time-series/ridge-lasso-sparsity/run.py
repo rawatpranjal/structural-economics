@@ -455,7 +455,6 @@ def main() -> None:
     setup_style()
     report = ModelReport(
         "Policy Forecasting with Ridge, Lasso, and Sparsity",
-        "Measure monetary policy shocks after forecasting the systematic policy-rate change.",
         include_reproduce=False,
         show_figure_captions=False,
     )

@@ -1,7 +1,5 @@
 # Income Risk and Buffer-Stock Saving
 
-> A partial-equilibrium savings problem with persistent idiosyncratic income.
-
 ## Overview
 
 Households often face income paths they cannot insure. A worker with low assets must absorb a bad income draw through current consumption.

@@ -284,7 +284,6 @@ def main():
 
     report = ModelReport(
         "Macro Forecasting with Stock-Watson Diffusion Indexes",
-        "Estimating a common business-cycle factor for macro forecasting.",
         include_reproduce=False,
         show_figure_captions=False,
     )

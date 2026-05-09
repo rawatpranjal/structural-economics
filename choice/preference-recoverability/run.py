@@ -242,7 +242,6 @@ def main() -> None:
 
     report = ModelReport(
         "Recovering Preference Bounds from Budget Choices",
-        "Afriat numbers turn finite budget data into a rationalizing utility contour.",
         include_reproduce=False,
         show_figure_captions=False,
     )

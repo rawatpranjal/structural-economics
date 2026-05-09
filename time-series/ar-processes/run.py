@@ -177,10 +177,6 @@ def main() -> None:
     setup_style()
     report = ModelReport(
         "Fiscal-Shock Persistence and Income Dynamics",
-        (
-            "How AR(1) propagation and a multiplier-accelerator block turn a "
-            "spending innovation into an income path."
-        ),
         include_reproduce=False,
         show_figure_captions=False,
     )

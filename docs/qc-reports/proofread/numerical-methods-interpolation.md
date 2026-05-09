@@ -18,7 +18,7 @@ _Model: claude-sonnet-4-6. Generated: 2026-05-08T19:00:00Z._
 
 - **Located:** https://epubs.siam.org/doi/10.1137/0717021
 - **Tutorial claims:** PCHIP endpoint slopes are chosen by a monotonicity-preserving rule (Fritsch-Carlson 1980); the method is $C^1$ and never overshoots a monotone target.
-- **Source says:** The paper derives necessary and sufficient conditions for piecewise cubics to be monotone and provides an algorithm constructing a visually pleasing monotone interpolant — the foundational PCHIP algorithm. Vol. 17, issue 2, pp. 238–246, April 1980.
+- **Source says:** The paper derives necessary and sufficient conditions for piecewise cubics to be monotone and provides an algorithm constructing a visually pleasing monotone interpolant - the foundational PCHIP algorithm. Vol. 17, issue 2, pp. 238-246, April 1980.
 - **Verdict:** OK
 - **Note:** All bibliographic details (authors, year, journal, volume, issue, pages) verified correct.
 
@@ -46,7 +46,7 @@ _Model: claude-sonnet-4-6. Generated: 2026-05-08T19:00:00Z._
 
 ## Main Message Audit
 
-> "Piecewise linear is the safe default for value functions with borrowing constraints: it preserves shape, never overshoots, and requires no setup. Natural cubic spline gives the best convergence on smooth functions but rings near kinks and can violate monotonicity. PCHIP is the right middle ground for monotone-but-non-smooth policies — the case EGP and consumption-savings VFI face every period — beating both linear (more accurate) and cubic (no ringing) at the same node count."
+> "Piecewise linear is the safe default for value functions with borrowing constraints: it preserves shape, never overshoots, and requires no setup. Natural cubic spline gives the best convergence on smooth functions but rings near kinks and can violate monotonicity. PCHIP is the right middle ground for monotone-but-non-smooth policies - the case EGP and consumption-savings VFI face every period - beating both linear (more accurate) and cubic (no ringing) at the same node count."
 
 | Clause | Supported by | Verdict |
 |--------|--------------|---------|
@@ -59,30 +59,30 @@ _Model: claude-sonnet-4-6. Generated: 2026-05-08T19:00:00Z._
 | PCHIP beats cubic by avoiding ringing | Results table and error-curves figure | OK |
 
 Issues:
-- **OVERREACH — "cubic gives best convergence on smooth functions":** The convergence section states "cubic and PCHIP drop at roughly slope −4" (identical rate). The smooth-target error table at N=10 shows PCHIP has lower sup-error (0.781) and lower L2 error (0.171) than cubic (sup 1.09, L2 0.258). The tutorial does not demonstrate cubic being superior to PCHIP on smooth functions within the node range shown.
+- **OVERREACH - "cubic gives best convergence on smooth functions":** The convergence section states "cubic and PCHIP drop at roughly slope −4" (identical rate). The smooth-target error table at N=10 shows PCHIP has lower sup-error (0.781) and lower L2 error (0.171) than cubic (sup 1.09, L2 0.258). The tutorial does not demonstrate cubic being superior to PCHIP on smooth functions within the node range shown.
 - **Internal inconsistency in Results text:** The second results paragraph reads "with cubic uniformly smallest" (for smooth-target pointwise errors). The error table in the same Results section shows PCHIP has strictly lower smooth sup-error and smooth L2 error than cubic at N=10. These two statements within the README contradict each other.
 
 ## Notation Completeness
 
 | Symbol | First appearance | Defined? | Notes |
 |--------|------------------|----------|-------|
-| $V$ | Overview ("stores $V$ at a finite set of grid points") | Yes — Equations defines $V(W)$ | OK |
-| $W$ | Equations ($V(W)$ formula) | Yes — Equations; Model Setup gives domain | OK |
-| $\beta$ | Equations ($V(W)$ formula) | Partial — Model Setup table (next section, within 50 lines) | Acceptable |
-| $a$ | Equations ($c(a)$ formula) | Yes — Equations | OK |
-| $a_{\text{kink}}$ | Equations ("borrowing constraint at $a_{\text{kink}}$") | Yes — Equations + Model Setup | OK |
-| $r$ | Equations ($c(a) = (1+r)\,a + y$) | No — never listed in Model Setup or prose | Flagged |
-| $y$ | Equations ($c(a) = (1+r)\,a + y$) | No — never listed in Model Setup or prose | Flagged |
-| $\mathrm{MPC}$ | Equations ($c(a)$ piecewise formula) | Yes — prose immediately after equation: "marginal propensity to consume" | OK |
-| $\hat{f}$ | Equations (piecewise linear formula header) | Yes — context of interpolant | OK |
-| $x_i,\,x_{i+1}$ | Equations ("adjacent nodes $x_i \le x \le x_{i+1}$") | Yes — defined by context | OK |
-| $f(x_i),\,f(x_{i+1})$ | Equations (piecewise linear formula) | Yes — function values at nodes | OK |
-| $x_0,\,x_N$ | Equations (natural spline BCs: $\hat{f}''(x_0)=\hat{f}''(x_N)=0$) | Yes — boundary-node notation consistent throughout | OK |
-| $N$ | Equations ($x_N$) | Yes — Model Setup: "Display node count $N$ = 10" | OK |
-| $\hat{f}',\,\hat{f}''$ | Equations (cubic spline continuity conditions) | Yes — derivative notation, standard | OK |
-| $C^1,\,C^2$ | Equations (PCHIP / spline smoothness comparison) | Implicit — standard smoothness class notation | OK |
-| $m_i$ | Pseudocode ("compute secant slopes $m_i$ between adjacent nodes") | Partial — defined by descriptive label in pseudocode | Acceptable |
-| $h_i$ | Pseudocode ("w ← (x − x_i) / h_i") | No — never defined anywhere in README | Flagged |
+| $V$ | Overview ("stores $V$ at a finite set of grid points") | Yes - Equations defines $V(W)$ | OK |
+| $W$ | Equations ($V(W)$ formula) | Yes - Equations; Model Setup gives domain | OK |
+| $\beta$ | Equations ($V(W)$ formula) | Partial - Model Setup table (next section, within 50 lines) | Acceptable |
+| $a$ | Equations ($c(a)$ formula) | Yes - Equations | OK |
+| $a_{\text{kink}}$ | Equations ("borrowing constraint at $a_{\text{kink}}$") | Yes - Equations + Model Setup | OK |
+| $r$ | Equations ($c(a) = (1+r)\,a + y$) | No - never listed in Model Setup or prose | Flagged |
+| $y$ | Equations ($c(a) = (1+r)\,a + y$) | No - never listed in Model Setup or prose | Flagged |
+| $\mathrm{MPC}$ | Equations ($c(a)$ piecewise formula) | Yes - prose immediately after equation: "marginal propensity to consume" | OK |
+| $\hat{f}$ | Equations (piecewise linear formula header) | Yes - context of interpolant | OK |
+| $x_i,\,x_{i+1}$ | Equations ("adjacent nodes $x_i \le x \le x_{i+1}$") | Yes - defined by context | OK |
+| $f(x_i),\,f(x_{i+1})$ | Equations (piecewise linear formula) | Yes - function values at nodes | OK |
+| $x_0,\,x_N$ | Equations (natural spline BCs: $\hat{f}''(x_0)=\hat{f}''(x_N)=0$) | Yes - boundary-node notation consistent throughout | OK |
+| $N$ | Equations ($x_N$) | Yes - Model Setup: "Display node count $N$ = 10" | OK |
+| $\hat{f}',\,\hat{f}''$ | Equations (cubic spline continuity conditions) | Yes - derivative notation, standard | OK |
+| $C^1,\,C^2$ | Equations (PCHIP / spline smoothness comparison) | Implicit - standard smoothness class notation | OK |
+| $m_i$ | Pseudocode ("compute secant slopes $m_i$ between adjacent nodes") | Partial - defined by descriptive label in pseudocode | Acceptable |
+| $h_i$ | Pseudocode ("w ← (x − x_i) / h_i") | No - never defined anywhere in README | Flagged |
 
 Flagged issues:
 - **$r$ (interest rate):** first used in $c(a) = (1+r)\,a + y$ in the Equations section; no value or definition appears in the Model Setup table or surrounding prose. The code sets `r=0.04`.
@@ -91,4 +91,4 @@ Flagged issues:
 
 ## Summary
 
-Three of the four references verified correctly (Fritsch & Carlson 1980, Press et al. 2007, Judd 1998); the Mukoyama (2021) slides are internal course material and cannot be independently verified. The main substantive issues are: (1) the Takeaway claims "Natural cubic spline gives the best convergence on smooth functions," which is OVERREACH — the tutorial's own convergence figure and table show PCHIP outperforming cubic at every node count in the tested range and matching its asymptotic slope; (2) the Results prose states "with cubic uniformly smallest" for smooth-target errors, directly contradicted by the smooth-target error table in the same section (PCHIP sup-error 0.781 < cubic 1.09). Three notation symbols lack definitions in the README: $r$, $y$, and $h_i$. The single most important fix is correcting the "cubic uniformly smallest" claim in Results (and the corresponding Takeaway sentence), since it is an internal factual contradiction between the results text and the results table generated by the same code.
+Three of the four references verified correctly (Fritsch & Carlson 1980, Press et al. 2007, Judd 1998); the Mukoyama (2021) slides are internal course material and cannot be independently verified. The main substantive issues are: (1) the Takeaway claims "Natural cubic spline gives the best convergence on smooth functions," which is OVERREACH - the tutorial's own convergence figure and table show PCHIP outperforming cubic at every node count in the tested range and matching its asymptotic slope; (2) the Results prose states "with cubic uniformly smallest" for smooth-target errors, directly contradicted by the smooth-target error table in the same section (PCHIP sup-error 0.781 < cubic 1.09). Three notation symbols lack definitions in the README: $r$, $y$, and $h_i$. The single most important fix is correcting the "cubic uniformly smallest" claim in Results (and the corresponding Takeaway sentence), since it is an internal factual contradiction between the results text and the results table generated by the same code.

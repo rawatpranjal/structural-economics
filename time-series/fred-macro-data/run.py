@@ -215,7 +215,6 @@ def main() -> None:
     setup_style()
     report = ModelReport(
         "Business-Cycle Moments from a FRED-Style Macro Panel",
-        "HP filtering and moment measurement for a quarterly macro panel.",
         include_reproduce=False,
         show_figure_captions=False,
     )

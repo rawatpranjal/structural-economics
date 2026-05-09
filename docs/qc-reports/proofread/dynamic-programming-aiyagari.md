@@ -8,7 +8,7 @@ _Model: claude-sonnet-4-6. Generated: 2026-05-08T22:30:00Z._
 
 - **Located:** https://academic.oup.com/qje/article-abstract/109/3/659/1838287
 - **Tutorial claims:** Aiyagari (1994) introduces an incomplete-markets economy where households face persistent idiosyncratic income risk, cannot borrow, and save in a risk-free asset; the equilibrium interest rate clears the capital market.
-- **Source says:** Title, author (S. Rao Aiyagari), journal (The Quarterly Journal of Economics), volume 109, issue 3, pages 659–684, year 1994 all match the Oxford Academic publisher record. DOI: 10.2307/2118417.
+- **Source says:** Title, author (S. Rao Aiyagari), journal (The Quarterly Journal of Economics), volume 109, issue 3, pages 659-684, year 1994 all match the Oxford Academic publisher record. DOI: 10.2307/2118417.
 - **Verdict:** OK
 - **Note:** All bibliographic fields verified.
 
@@ -41,7 +41,7 @@ Issues:
 |--------|-----------------|----------|-------|
 | $a_t$ | Equations | Yes | "beginning-of-period assets" |
 | $\underline a$ | Equations | Yes | "no-borrowing constraint $\underline a=0$" |
-| $\bar a$ | Equations | Partial | Introduced as upper bound of asset bracket $[\underline a,\bar a]$; reused as mean wealth in Results — two distinct objects |
+| $\bar a$ | Equations | Partial | Introduced as upper bound of asset bracket $[\underline a,\bar a]$; reused as mean wealth in Results - two distinct objects |
 | $z_t$ | Equations | Yes | "idiosyncratic labor efficiency" |
 | $r$, $w$ | Equations | Yes | prices $(r,w)$; fully characterized as firm FOCs in the firm subsection |
 | $a'$ | Equations | Yes | "$a_{t+1}=a'$" |
@@ -70,9 +70,9 @@ Issues:
 | $K^d(r)$ | Equations (firm) | Yes | "capital demand at $r$" |
 | $r^{\ast}$, $w^{\ast}$ | Equations | Yes | stationary equilibrium prices |
 | $r_H$, $r_L$ | Model Setup table | Partial | Used in "Backup stop on $r_H-r_L$" before the pseudocode introduces them as bracket endpoints; meaning is clear from context |
-| $\tilde a$ | Results | Yes | "median wealth ($\tilde a=4.47$)" — defined at first use |
+| $\tilde a$ | Results | Yes | "median wealth ($\tilde a=4.47$)" - defined at first use |
 | $\bar a$ (mean) | Results | Partial | Defined inline as "Mean wealth ($\bar a=6.76$)" but collides with Equations usage (see above) |
-| $G$ | Results | Yes | "Gini $G=0.526$" — defined at first use |
+| $G$ | Results | Yes | "Gini $G=0.526$" - defined at first use |
 
 Flagged issues:
 - **$\bar a$ overloaded**: In the Equations section $\bar a$ is the upper bound of the asset bracket $[\underline a,\bar a]$ (= 50 in the calibration). In the Results section and the equilibrium diagnostics table, the same symbol denotes mean household wealth (= 6.76). These are two distinct quantities.

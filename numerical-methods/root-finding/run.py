@@ -217,7 +217,6 @@ def main() -> None:
 
     report = ModelReport(
         "Scalar Root Finding for Equilibrium Rates",
-        "Bisection, secant, Brent, and Newton-Raphson recover the rate that clears a stylized bond market with a closed-form root.",
         include_reproduce=False,
         show_figure_captions=False,
     )

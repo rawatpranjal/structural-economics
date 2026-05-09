@@ -333,7 +333,6 @@ def main() -> None:
 
     report = ModelReport(
         "Rationalizable Choice Cores with Houtman-Maks",
-        "Measuring how much of a finite choice dataset can still come from one stable utility ordering.",
         include_reproduce=False,
         show_figure_captions=False,
     )

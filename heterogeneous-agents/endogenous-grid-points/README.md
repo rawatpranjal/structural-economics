@@ -1,7 +1,5 @@
 # Buffer-Stock Saving by Endogenous Grid Points
 
-> Euler-equation inversion for a partial-equilibrium income-risk household problem.
-
 ## Overview
 
 An impatient household faces IID labor-income risk and cannot borrow below zero. Bad income draws make the household hold assets as a buffer.

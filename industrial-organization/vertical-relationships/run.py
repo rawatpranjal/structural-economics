@@ -91,7 +91,6 @@ def main() -> None:
 
     report = ModelReport(
         "Double Marginalization in Vertical Supply Chains",
-        "A manufacturer-retailer pricing game solved by backward induction.",
         include_reproduce=False,
         show_figure_captions=False,
     )

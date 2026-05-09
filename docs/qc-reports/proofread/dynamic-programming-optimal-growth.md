@@ -28,7 +28,7 @@ _Model: claude-sonnet-4-6. Generated: 2026-05-08T18:42:00Z._
 
 - **Located:** https://academic.oup.com/ej/article-abstract/38/152/543/5282967
 - **Tutorial claims:** Seminal paper on optimal saving; implicitly provides the consumption-savings problem that this model solves.
-- **Source says:** Oxford Academic and JSTOR confirm: *Economic Journal*, volume 38, issue 152, pages 543–559, 1928. The paper addresses how much of its income a nation should save.
+- **Source says:** Oxford Academic and JSTOR confirm: *Economic Journal*, volume 38, issue 152, pages 543-559, 1928. The paper addresses how much of its income a nation should save.
 - **Verdict:** OK
 - **Note:** All bibliographic details (journal, volume, issue, pages, year) are correct.
 
@@ -38,7 +38,7 @@ _Model: claude-sonnet-4-6. Generated: 2026-05-08T18:42:00Z._
 
 - **Located:** https://academic.oup.com/restud/article-abstract/32/3/233/1551001
 - **Tutorial claims:** Foundational optimal growth paper contributing the Ramsey-Cass-Koopmans framework.
-- **Source says:** *Review of Economic Studies*, volume 32, issue 3, pages 233–240, 1965. The paper establishes turnpike properties of optimal capital accumulation paths in an aggregated model.
+- **Source says:** *Review of Economic Studies*, volume 32, issue 3, pages 233-240, 1965. The paper establishes turnpike properties of optimal capital accumulation paths in an aggregated model.
 - **Verdict:** OK
 - **Note:** All bibliographic details confirmed; one of the defining papers in optimal growth theory.
 
@@ -48,7 +48,7 @@ _Model: claude-sonnet-4-6. Generated: 2026-05-08T18:42:00Z._
 
 - **Located:** https://elischolar.library.yale.edu/cowles-discussion-paper-series/392/ (Cowles Foundation Discussion Paper 163; volume confirmed via Stanford catalog and Pontifical Academy of Sciences records)
 - **Tutorial claims:** Koopmans' contribution to the Ramsey-Cass-Koopmans framework on optimal growth.
-- **Source says:** The chapter appears in "The Econometric Approach to Development Planning" (1965), North-Holland Publishing Company, Amsterdam, pages 225–287. Based on a 1963 Study Week organized by the Pontifical Academy of Sciences.
+- **Source says:** The chapter appears in "The Econometric Approach to Development Planning" (1965), North-Holland Publishing Company, Amsterdam, pages 225-287. Based on a 1963 Study Week organized by the Pontifical Academy of Sciences.
 - **Verdict:** OK
 - **Note:** Publisher, year, and volume title all confirmed.
 
@@ -62,7 +62,7 @@ _Model: claude-sonnet-4-6. Generated: 2026-05-08T18:42:00Z._
 |--------|--------------|---------|
 | "The one-capital growth problem makes saving productive" | Equations (resource constraint, diminishing-returns production) | OK |
 | "In the log Cobb-Douglas case, the exact policy saves αβ = 0.27 of output" | Equations (Euler equation derivation yields s = αβ; Model Setup: α=0.3, β=0.9) | OK |
-| "VFI recovers that rule to grid accuracy" | Results (policy gap outside bottom decile is 2.87e-02; table shows k' errors ~0.005–0.020 on a 500-point grid) | OK |
+| "VFI recovers that rule to grid accuracy" | Results (policy gap outside bottom decile is 2.87e-02; table shows k' errors ~0.005-0.020 on a 500-point grid) | OK |
 | "The example shows how to audit a Bellman solver when an exact benchmark exists" | Solution Method + Results (full pointwise comparison of numerical vs closed-form) | OK |
 
 Issues:
@@ -96,7 +96,7 @@ Issues:
 | $k_0$ | Model Setup (table) | Yes (table) | Initial capital; stated as $0.1\,k_{ss}\approx0.9952$ |
 | $TV$ | Solution Method | Yes (Solution Method) | Bellman operator; defined in its introducing equation |
 | $k_{min}$ | Solution Method (pseudocode) | Partial | Used in pseudocode as lower bound on $k'$; value 0.01 implicit from the Model Setup "k domain" row, but the symbol $k_{min}$ is not introduced before the pseudocode |
-| $N_{kp}$ (pseudocode) | Solution Method (pseudocode) | — | Notation drift: the pseudocode uses "$N_{kp}$" but the Model Setup table uses "$N_{k'}$" for the same quantity |
+| $N_{kp}$ (pseudocode) | Solution Method (pseudocode) | - | Notation drift: the pseudocode uses "$N_{kp}$" but the Model Setup table uses "$N_{k'}$" for the same quantity |
 
 Flagged issues:
 - **$A$, $\alpha$, $\beta$ used in Overview before formal definition in Equations.** The Overview writes "$Ak^{\alpha}$" and "saving rate $\alpha\beta$" before any of the three are introduced or constrained. For a tutorial-style document this is a low-severity issue, but readers who pause on the Overview will encounter undefined symbols.

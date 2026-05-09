@@ -1,7 +1,5 @@
 # Sequential Investment Under Bayesian Learning
 
-> Use posterior beliefs to time investment when project quality is hidden.
-
 ## Overview
 
 Suppose a firm can invest in a project, but project quality is hidden. Each signal is red or blue. A red signal raises the chance that the project is good. A blue signal lowers it.

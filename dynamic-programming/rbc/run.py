@@ -249,8 +249,6 @@ def main():
 
     report = ModelReport(
         "RBC Capital, Labor, and Business-Cycle Moments",
-        "A representative-household RBC model with endogenous labor and two-state "
-        "TFP, solved by global-grid value function iteration.",
         include_reproduce=False,
         show_figure_captions=False,
     )
@@ -278,7 +276,7 @@ The resource constraint is
 
 $$c_t + k_{t+1} = z_t\,k_t^{\alpha}\,l_t^{1-\alpha} + (1-\delta)\,k_t,$$
 
-with $c_t>0$ and $k_{t+1}\geq 0$.
+with $c_t>0$ and $k_{t+1}\geq 0$. Investment is $i_t = k_{t+1} - (1-\delta)\,k_t$.
 
 **Preferences.** Period utility uses log consumption and log leisure:
 

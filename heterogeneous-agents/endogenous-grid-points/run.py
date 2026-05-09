@@ -348,7 +348,6 @@ def main() -> None:
 
     report = ModelReport(
         "Buffer-Stock Saving by Endogenous Grid Points",
-        "Euler-equation inversion for a partial-equilibrium income-risk household problem.",
         include_reproduce=False,
         show_figure_captions=False,
     )
@@ -420,7 +419,7 @@ the constraint before it mainly raises saving.
         f"| EGP asset grid | {n_asset} pts | Exponential, denser at $\\underline a$ |\n"
         f"| Audit grid | {n_asset_refined} pts | Fine-grid reference for the discretization check |\n"
         f"| Convergence tolerance | {tol:.0e} | Sup-norm on consumption iterates |\n"
-        f"| Simulation | {n_agents:,} households, {periods} periods | Forward-iterated cross section under $g_a$ |"
+        f"| Simulation | {n_agents:,} households, {periods} periods | Forward-iterated cross section under $g(a,y_j)$ |"
     )
 
     report.add_solution_method(
@@ -638,7 +637,7 @@ $a \leq {accuracy_asset_max:g}$, the consumption and saving gaps are both
         fig4,
         description=(
             "Forward simulation gives a right-skewed wealth distribution. Mean "
-            f"assets are $\\bar a={mean_assets:.2f}$, and "
+            f"assets are {mean_assets:.2f}, and "
             f"{frac_constrained:.1f}\\% of households are at the borrowing "
             "limit. The scale is modest because income is IID and "
             "$\\beta R<1$."
@@ -675,6 +674,8 @@ $a \leq {accuracy_asset_max:g}$, the consumption and saving gaps are both
             "wealthy households. The average MPC out of a 0.10 transfer is "
             f"{mean_mpc_large:.3f}. The dotted line marks the perfect-foresight "
             f"limit, $\\kappa^{{\\ast}}\\approx{mpclim:.3f}$."
+            " Here $\\kappa^{\\ast}=R(\\beta R)^{-1/\\gamma}-1$"
+            " is the perfect-foresight MPC limit for CRRA utility."
         ),
     )
 

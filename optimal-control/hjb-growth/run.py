@@ -301,8 +301,6 @@ def main():
 
     report = ModelReport(
         "Ramsey Capital Accumulation by HJB Upwinding",
-        "A Ramsey planner allocates output between consumption and investment. "
-        "An implicit upwind HJB computes the shadow value of capital.",
         include_reproduce=False,
         show_figure_captions=False,
     )

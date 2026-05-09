@@ -228,7 +228,6 @@ def main():
 
     report = ModelReport(
         "Sequential Investment Under Bayesian Learning",
-        "Use posterior beliefs to time investment when project quality is hidden.",
         include_reproduce=False,
         show_figure_captions=False,
     )

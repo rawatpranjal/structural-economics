@@ -644,7 +644,6 @@ def main() -> None:
 
     report = ModelReport(
         "Choice Prediction with RUMnets",
-        "A neural utility model predicts choices while staying inside random utility maximization.",
         include_reproduce=False,
         show_figure_captions=False,
     )

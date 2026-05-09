@@ -1,7 +1,5 @@
 # Solow Growth and Conditional Convergence
 
-> Capital per effective worker follows one transition map toward a closed-form steady state.
-
 ## Overview
 
 A Solow economy saves a fixed share of output each period. Capital grows through investment and shrinks through depreciation. Labor and technology growth make each unit of capital serve more effective workers.

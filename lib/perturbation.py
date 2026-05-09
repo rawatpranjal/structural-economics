@@ -12,7 +12,7 @@ forward-looking variables, this module returns the policy function
 
 following Klein (2000), "Using the generalized Schur form to solve a
 multivariate linear rational expectations model," J. Econ. Dynamics and
-Control, 24(10), 1405–1423. This is the same algorithm Dynare uses for
+Control, 24(10), 1405-1423. This is the same algorithm Dynare uses for
 ``stoch_simul, order=1`` (see Villemot 2011, "Solving Rational Expectations
 Models at First Order: What Dynare Does", CEPREMAP Working Paper 2).
 """
@@ -53,7 +53,7 @@ def solve_klein(A: np.ndarray, B: np.ndarray, n_predetermined: int) -> KleinSolu
     Returns:
         KleinSolution with policy matrices F (state transition) and P
         (decision rule), the sorted eigenvalues, stable-eigenvalue count,
-        and a Blanchard–Kahn diagnostic.
+        and a Blanchard-Kahn diagnostic.
     """
     A = np.asarray(A, dtype=float)
     B = np.asarray(B, dtype=float)
@@ -81,7 +81,7 @@ def solve_klein(A: np.ndarray, B: np.ndarray, n_predetermined: int) -> KleinSolu
     elif n_stable > n_x:
         msg = f"no solution: {n_stable} stable eigenvalues exceed {n_x} predetermined vars"
     else:
-        msg = "Blanchard–Kahn satisfied"
+        msg = "Blanchard-Kahn satisfied"
 
     Z11 = Z[:n_x, :n_x]
     Z21 = Z[n_x:, :n_x]

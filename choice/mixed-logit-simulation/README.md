@@ -1,7 +1,5 @@
 # Mixed Logit Demand with Simulated Likelihood
 
-> Estimate random-coefficient demand and compare substitution with plain logit.
-
 ## Overview
 
 Consumers choose among differentiated products. The econometrician observes prices, qualities, and choices, but not each consumer's price sensitivity or quality taste.

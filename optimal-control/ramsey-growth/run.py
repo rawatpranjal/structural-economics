@@ -142,7 +142,6 @@ def main() -> None:
 
     report = ModelReport(
         "Ramsey Saving by Saddle-Path Shooting",
-        "A continuous-time Ramsey planner inherits capital and uses the consumption jump to reach the saddle path.",
         include_reproduce=False,
         show_figure_captions=False,
     )

@@ -163,7 +163,6 @@ def main() -> None:
 
     report = ModelReport(
         "Optimal Growth by Value Function Iteration",
-        "A one-capital planner problem with an exact check on VFI.",
         include_reproduce=False,
         show_figure_captions=False,
     )
@@ -256,11 +255,12 @@ $$k_{ss} = (\alpha\beta A)^{1/(1-\alpha)},
         "$$\n\n"
         "VFI starts from an initial value on the capital grid. "
         "At each $k_i$, the code searches over feasible $k'$ values. "
+        "The feasible range is $k' \\in [k_{min},\\, A k_i^{\\alpha})$ where $k_{min}=0.01$ is the lower bound on next-period capital. "
         "It chooses the $k'$ with the highest current utility plus interpolated continuation value. "
         "The loop stops when the sup-norm change in $V$ is below $\\varepsilon$.\n\n"
         "```text\n"
         "Algorithm: Optimal-growth VFI with continuous k'\n"
-        "Input : capital grid {k_i}_{i=1..N_k}, choice grid size N_k',\n"
+        "Input : capital grid {k_i}_{i=1..N_k}, choice grid size N_{k'},\n"
         "        k_min (lower bound on k'; = 0.01), primitives (A, alpha, beta),\n"
         "        utility u(c) = log c, tolerance epsilon\n"
         "Output: value V*(k_i), capital policy g(k_i)\n"
@@ -269,7 +269,7 @@ $$k_{ss} = (\alpha\beta A)^{1/(1-\alpha)},
         "      for each state k_i :\n"
         "          y_i    <- A * k_i^alpha\n"
         "          kp_max <- min(y_i, k_max)\n"
-        "          kp     <- N_k' points uniform on [k_min, kp_max)\n"
+        "          kp     <- N_{k'} points uniform on [k_min, kp_max)\n"
         "          c      <- y_i - kp                         # period consumption\n"
         "          V_cont <- interp(V_n, kp)                  # off-grid continuation\n"
         "          obj    <- log(c) + beta * V_cont\n"

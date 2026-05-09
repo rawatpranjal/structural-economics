@@ -202,7 +202,6 @@ def main() -> None:
 
     report = ModelReport(
         "Growth-Model Capital Policy by Chebyshev Projection",
-        "Solving a deterministic saving rule with collocation and Euler residuals.",
         include_reproduce=False,
         show_figure_captions=False,
     )

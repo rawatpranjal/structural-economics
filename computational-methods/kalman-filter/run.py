@@ -157,7 +157,6 @@ def main() -> None:
 
     report = ModelReport(
         "Nowcasting a Latent Business-Cycle State",
-        "Kalman filtering turns noisy economic indicators into state estimates, uncertainty bands, and a likelihood.",
         include_reproduce=False,
         show_figure_captions=False,
     )

@@ -1,7 +1,5 @@
 # Bus Engine Replacement by Q-Learning
 
-> Soft Q-learning recovers Rust's replacement hazard from a simulated bus panel without the mileage transition matrix.
-
 ## Overview
 
 A bus depot decides each period whether to keep a high-mileage engine or pay a lump-sum replacement cost. Higher mileage raises operating costs. The trade-off tilts toward replacement.

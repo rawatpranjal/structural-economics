@@ -1,7 +1,5 @@
 # Cereal Demand and Markup Recovery from Prices
 
-> Berry inversion, IV/2SLS, and Bertrand-Nash pricing FOCs.
-
 ## Overview
 
 A cereal market has differentiated products, observed shares, observed prices, and multi-product owners.

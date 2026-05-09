@@ -188,7 +188,6 @@ def main() -> None:
 
     report = ModelReport(
         "McCall Job Search and the Reservation Wage",
-        "Sequential wage-offer search with a scalar reservation-wage fixed point.",
         include_reproduce=False,
         show_figure_captions=False,
     )

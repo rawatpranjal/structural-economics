@@ -1,7 +1,5 @@
 # Double Marginalization in Vertical Supply Chains
 
-> A manufacturer-retailer pricing game solved by backward induction.
-
 ## Overview
 
 A manufacturer sells through an independent retailer. The manufacturer sets wholesale terms. The retailer sets the shelf price. Consumers buy from the retailer.

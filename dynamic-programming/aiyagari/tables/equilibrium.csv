@@ -4,7 +4,7 @@ Wage $w^{\ast}$,1.2734
 Aggregate capital $K^{\ast}$,6.7599
 Output $Y^{\ast}$,1.9897
 Capital-output ratio $K/Y$,3.3975
-Mean wealth $\bar a$,6.7633
+Mean wealth $\mathbb{E}[a]$,6.7633
 Median wealth $\tilde a$,4.4728
 P90 wealth,16.3145
 Gini,0.5261

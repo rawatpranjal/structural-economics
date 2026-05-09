@@ -430,7 +430,6 @@ def main() -> None:
 
     report = ModelReport(
         "Envelope-Equation Iteration for Buffer-Stock Saving",
-        "Iterating the marginal continuation value $W_a(a)$ to solve a partial-equilibrium income-risk household problem.",
         include_reproduce=False,
         show_figure_captions=False,
     )
@@ -505,7 +504,7 @@ This case produces high MPCs near zero assets.
         f"| CRRA $\\gamma$ | {gamma:.1f} | Curvature; sets the precautionary motive and the slope of $W_a$ |\n"
         f"| Discount factor $\\beta$ | {beta:.2f} | Annual time preference |\n"
         f"| Net rate $r$ | {r:.2f} | Exogenous risk-free return |\n"
-        f"| Patience–return product $\\beta R$ | {beta_R:.4f} | $<1$ rules out an unbounded asset target |\n"
+        f"| Patience-return product $\\beta R$ | {beta_R:.4f} | $<1$ rules out an unbounded asset target |\n"
         f"| Income mean $\\mu_y$ | {mean_income:.1f} | Normalisation |\n"
         f"| Income s.d. $\\sigma_y$ | {sd_income:.1f} | Width of the IID labor-income shock |\n"
         f"| Income states $n_y$ | {n_income} | Width-fitted equal-spaced normal grid |\n"
@@ -660,7 +659,7 @@ The same gap for next assets is {savings_gap:.2e}.
         fig3,
         description=(
             "The simulated asset distribution is right-skewed. "
-            f"Mean assets are $\\bar a = {mean_assets:.2f}$. "
+            f"Mean assets are {mean_assets:.2f}. "
             f"{frac_constrained:.1f}% of households sit at the borrowing limit. "
             "IID income keeps the asset scale modest. "
             f"The borrowing-limit mass raises the average MPC to {mean_mpc:.3f}."
@@ -746,7 +745,9 @@ The same gap for next assets is {savings_gap:.2e}.
         "It iterates $W_a(a)$ instead of the value level. "
         "Low-wealth households consume more of a transfer. "
         "High-wealth households smooth toward the perfect-foresight MPC "
-        f"$\\kappa^{{\\ast}}\\approx{mpc_lim:.3f}$.\n\n"
+        f"$\\kappa^{{\\ast}}\\approx{mpc_lim:.3f}$. "
+        f"Here $\\kappa^{{\\ast}} = R(\\beta R)^{{-1/\\gamma}}-1$ is the MPC "
+        f"in the perfect-foresight limit.\n\n"
         "The computational lesson is simple. "
         "The envelope condition can be an update rule. "
         "EGP is faster here because it uses an analytic inverse. "
@@ -754,9 +755,9 @@ The same gap for next assets is {savings_gap:.2e}.
     )
 
     report.add_references([
-        "Maliar, L. and Maliar, S. (2013). Envelope Condition Method with an "
-        "Application to Default Risk Models. *Journal of Economic Dynamics and "
-        "Control*, 37(7), 1439-1459.",
+        "Arellano, C., Maliar, L., Maliar, S. and Tsyrennikov, V. (2016). Envelope "
+        "Condition Method with an Application to Default Risk Models. *Journal of "
+        "Economic Dynamics and Control*, 69, 436-459.",
         "Carroll, C. D. (2006). The Method of Endogenous Gridpoints for Solving "
         "Dynamic Stochastic Optimization Problems. *Economics Letters*, 91(3), "
         "312-320.",

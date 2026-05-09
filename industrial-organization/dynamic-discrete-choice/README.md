@@ -1,7 +1,5 @@
 # Bus Engine Replacement in a Dynamic Choice Model
 
-> Mileage, continuation values, and observed replacement hazards in a Rust-style maintenance model.
-
 ## Overview
 
 A transit agency observes each bus before deciding whether to replace its engine. Keeping the old engine saves money today. It also lets mileage rise and makes future operation worse.

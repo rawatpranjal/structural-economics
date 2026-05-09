@@ -221,7 +221,6 @@ def main():
 
     report = ModelReport(
         "Sticky-Price Monetary Transmission in a New Keynesian DSGE",
-        "Policy and demand shocks in a three-equation New Keynesian model, solved by coefficient matching.",
         include_reproduce=False,
         show_figure_captions=False,
     )

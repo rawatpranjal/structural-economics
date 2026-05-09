@@ -1,7 +1,5 @@
 # Scalar Root Finding for Equilibrium Rates
 
-> Bisection, secant, Brent, and Newton-Raphson recover the rate that clears a stylized bond market with a closed-form root.
-
 ## Overview
 
 A representative-firm economy with Cobb-Douglas production has a closed-form clearing rate $r^{\ast} = 1/\beta - 1$. The market-clearing condition is one scalar equation in $r$.

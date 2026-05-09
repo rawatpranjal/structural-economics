@@ -297,7 +297,6 @@ def main() -> None:
 
     report = ModelReport(
         "Latent-Regime Likelihoods and Optimizer Basins",
-        "How optimization choices shape estimates when a likelihood has more than one basin.",
         include_reproduce=False,
         show_figure_captions=False,
     )

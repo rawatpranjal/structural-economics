@@ -42,6 +42,24 @@ The standard README section flow is:
 Overview -> Equations -> Model Setup -> Solution Method -> Results -> Takeaway
 -> References.
 
+Do not pass a subtitle / description string to `ModelReport(...)`. Tutorials
+have a title (`#`) and an Overview section; the blockquote line under the title
+is removed and must not be reintroduced. New `run.py` files should call
+`ModelReport("Title", include_reproduce=False, ...)` with no second positional
+argument.
+
+Do not use em-dashes (U+2014) or en-dashes (U+2013) anywhere in the repo,
+including prose in `run.py` strings, generated `README.md` files, `CLAUDE.md`,
+the style guide, scripts, and QC reports. Use a plain hyphen (`-`), a comma,
+or rephrase. This applies to AI-generated reports as well; the proofread
+prompt enforces this for new outputs.
+
+Formal tutorials should use symbols where they make the model clearer. Include
+symbols in `Model Setup` tables when the tutorial defines a formal state,
+estimator, market, or equilibrium object. Write pseudocode in the same notation
+when the method is mathematical, and keep reader-facing tables free of
+code-style column names.
+
 `Reproduce` is optional in the generated report. The folder contract still
 requires `python run.py` to regenerate outputs, but the report does not need to
 repeat that command when it adds clutter. Visible figure captions are also
@@ -83,6 +101,20 @@ After adding or changing tutorials, run:
 ```bash
 python scripts/validate_catalog.py
 ```
+
+## Math Rendering
+- Edit math in `run.py`, regenerate the tutorial, and inspect the generated
+  `README.md` before accepting the page.
+- Prefer plain parentheses, square brackets, or `\lbrace ... \rbrace` for set
+  braces. Avoid raw escaped curly braces and left/right curly-brace delimiters
+  in generated Markdown.
+- Avoid GitHub-fragile size-delimiter commands from the big-l/big-r family; use
+  plain delimiters or `\left(...\right)` when needed.
+- Do not emit display-math lines that begin with `+`, `-`, or another
+  Markdown-list-like operator. Keep the operator on the previous line.
+- Literal-star scripts should use `\ast` inside the script braces.
+- Underbraces are allowed when they clarify economics, but keep each expression
+  compact and inspect the rendered Markdown after regeneration.
 
 ## Legacy Policy
 - Active topic folders should contain polished tutorial folders only.

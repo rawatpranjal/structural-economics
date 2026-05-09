@@ -120,7 +120,6 @@ def main() -> None:
 
     report = ModelReport(
         "Finite-Resource Cake Eating",
-        "A fixed resource allocated over time, with a log-utility closed-form check.",
         include_reproduce=False,
         show_figure_captions=False,
     )
@@ -143,6 +142,8 @@ Let $W_t$ be remaining cake at the start of period $t$.
 The household chooses $c_t \in [0, W_t]$ and leaves next-period cake:
 
 $$W_{t+1} = W_t - c_t, \qquad W_0 \text{ given}.$$
+
+Here $W_0$ is the initial cake endowment.
 
 Preferences use discount factor $\beta \in (0,1)$ and CRRA flow utility:
 

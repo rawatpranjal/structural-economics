@@ -1,7 +1,5 @@
 # Capital Taxes and Saving in a Global RBC Model
 
-> A rebated capital tax lowers the private return to saving while the resource constraint keeps all goods.
-
 ## Overview
 
 A government taxes capital income and rebates the revenue to the household. Current goods are unchanged at the aggregate level.
@@ -128,6 +126,6 @@ The rebate balances the government budget while the intertemporal wedge remains.
 
 ## References
 
-- Chamley, C. (1986). *Optimal Taxation of Capital Income in General Equilibrium*. Econometrica.
-- Judd, K. (1985). *Redistributive Taxation in a Simple Perfect Foresight Model*. JPE.
-- Cao, D., Luo, W., and Nie, G. (2023). *Global DSGE Models*. Review of Economic Dynamics.
+- Chamley, C. (1986). *Optimal Taxation of Capital Income in General Equilibrium with Infinite Lives*. Econometrica.
+- Judd, K. (1985). *Redistributive Taxation in a Simple Perfect Foresight Model*. Journal of Public Economics.
+- Cao, D., Luo, W., and Nie, G. (2023). *Global GDSGE Models*. Review of Economic Dynamics.

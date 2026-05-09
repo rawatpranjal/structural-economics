@@ -221,7 +221,6 @@ def main() -> None:
 
     report = ModelReport(
         "Product Demand with Plain Logit and IIA",
-        "Estimate product demand by maximum likelihood and inspect the IIA substitution rule.",
         include_reproduce=False,
         show_figure_captions=False,
     )

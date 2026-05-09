@@ -385,7 +385,6 @@ def main() -> None:
     setup_style()
     report = ModelReport(
         "Mixed Logit Demand with Simulated Likelihood",
-        "Estimate random-coefficient demand and compare substitution with plain logit.",
         include_reproduce=False,
         show_figure_captions=False,
     )

@@ -172,7 +172,6 @@ def main():
 
     report = ModelReport(
         "Differentiated-Products Merger Pricing with Logit Demand",
-        "Ownership, diversion, and Bertrand-Nash price effects in a four-product market.",
         include_reproduce=False,
         show_figure_captions=False,
     )

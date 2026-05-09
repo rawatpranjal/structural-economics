@@ -103,7 +103,6 @@ def main() -> None:
 
     report = ModelReport(
         "Vending Assortments Under Vertical Contracts",
-        "Rebates, slotting fees, and exact assortment choice in a capacity-constrained vending channel.",
         include_reproduce=False,
         show_figure_captions=False,
     )

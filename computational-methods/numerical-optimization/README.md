@@ -1,7 +1,5 @@
 # Latent-Regime Likelihoods and Optimizer Basins
 
-> How optimization choices shape estimates when a likelihood has more than one basin.
-
 ## Overview
 
 An economist may estimate a model with two latent regimes. Each regime can explain the same data with a different parameter vector.

@@ -316,7 +316,6 @@ def main() -> None:
 
     report = ModelReport(
         "Revealed-Preference Cycles and the Money Pump Index",
-        "Measuring the expenditure exposed by inconsistent choices.",
         include_reproduce=False,
         show_figure_captions=False,
     )

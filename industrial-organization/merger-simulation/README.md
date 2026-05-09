@@ -1,7 +1,5 @@
 # Merger Pricing in Differentiated-Products Markets
 
-> GUPPI screens and Bertrand-Nash counterfactuals with calibrated substitution.
-
 ## Overview
 
 A merger between close substitutes changes pricing incentives even when marginal costs stay fixed. Before the merger, Firm 1 loses diverted customers to Firm 2. After the merger, some diverted sales remain inside the combined firm.

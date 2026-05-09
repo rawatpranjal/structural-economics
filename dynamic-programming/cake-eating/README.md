@@ -1,7 +1,5 @@
 # Finite-Resource Cake Eating
 
-> A fixed resource allocated over time, with a log-utility closed-form check.
-
 ## Overview
 
 A household owns a fixed cake and chooses consumption each period. The cake does not grow, and there is no income or uncertainty. Consuming more today leaves less cake for every future period.

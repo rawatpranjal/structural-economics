@@ -1,7 +1,5 @@
 # Fiscal-Shock Persistence and Income Dynamics
 
-> How AR(1) propagation and a multiplier-accelerator block turn a spending innovation into an income path.
-
 ## Overview
 
 Suppose a fiscal authority raises spending during a downturn. The economic question is how long that impulse moves income.

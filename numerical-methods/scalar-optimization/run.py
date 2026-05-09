@@ -168,7 +168,6 @@ def main() -> None:
 
     report = ModelReport(
         "One-Dimensional Optimization for Bellman Inner Steps",
-        "Golden section search and Newton-on-FOC find the per-state cake-eating maximum, with a log-utility closed-form check.",
         include_reproduce=False,
         show_figure_captions=False,
     )

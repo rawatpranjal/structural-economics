@@ -1,7 +1,5 @@
 # Optimal Growth by Value Function Iteration
 
-> A one-capital planner problem with an exact check on VFI.
-
 ## Overview
 
 A planner allocates output between consumption today and capital tomorrow. Capital produces future output, so saving has a return that falls with $k$. The economy settles where impatience balances the marginal product of capital.
@@ -82,11 +80,11 @@ Define the Bellman operator on bounded continuous functions of capital,
 
 $$(TV)(k) = \max_{0 < k' < A k^{\alpha}}\{\, \log(A k^{\alpha} - k') + \beta\, V(k') \,\}.$$
 
-VFI starts from an initial value on the capital grid. At each $k_i$, the code searches over feasible $k'$ values. It chooses the $k'$ with the highest current utility plus interpolated continuation value. The loop stops when the sup-norm change in $V$ is below $\varepsilon$.
+VFI starts from an initial value on the capital grid. At each $k_i$, the code searches over feasible $k'$ values. The feasible range is $k' \in [k_{min},\, A k_i^{\alpha})$ where $k_{min}=0.01$ is the lower bound on next-period capital. It chooses the $k'$ with the highest current utility plus interpolated continuation value. The loop stops when the sup-norm change in $V$ is below $\varepsilon$.
 
 ```text
 Algorithm: Optimal-growth VFI with continuous k'
-Input : capital grid {k_i}_{i=1..N_k}, choice grid size N_k',
+Input : capital grid {k_i}_{i=1..N_k}, choice grid size N_{k'},
         k_min (lower bound on k'; = 0.01), primitives (A, alpha, beta),
         utility u(c) = log c, tolerance epsilon
 Output: value V*(k_i), capital policy g(k_i)
@@ -95,7 +93,7 @@ Output: value V*(k_i), capital policy g(k_i)
       for each state k_i :
           y_i    <- A * k_i^alpha
           kp_max <- min(y_i, k_max)
-          kp     <- N_k' points uniform on [k_min, kp_max)
+          kp     <- N_{k'} points uniform on [k_min, kp_max)
           c      <- y_i - kp                         # period consumption
           V_cont <- interp(V_n, kp)                  # off-grid continuation
           obj    <- log(c) + beta * V_cont

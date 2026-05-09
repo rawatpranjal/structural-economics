@@ -333,7 +333,6 @@ def main() -> None:
     setup_style()
     report = ModelReport(
         "Deep Learning for Optimal Auction Design",
-        "A small neural auction learns revenue with a regret constraint and is audited against Myerson.",
         include_reproduce=False,
         show_figure_captions=False,
     )

@@ -92,7 +92,6 @@ def main() -> None:
 
     report = ModelReport(
         "Firm Boundaries, Hold-Up, and Vertical Integration",
-        "Relationship-specific investment, ownership, and hierarchy cost.",
         include_reproduce=False,
         show_figure_captions=False,
     )

@@ -1,7 +1,5 @@
 # Estimating a Search Acceptance Rule by Simulation
 
-> Estimate offer distribution and reservation wage with simulated summaries.
-
 ## Overview
 
 A researcher observes wage offers and whether workers accept them. The reservation wage is hidden.

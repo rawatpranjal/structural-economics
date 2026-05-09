@@ -286,8 +286,6 @@ def main() -> None:
     setup_style()
     report = ModelReport(
         "Aiyagari Saving and Capital-Market Clearing",
-        "An incomplete-markets economy where household precautionary saving "
-        "determines aggregate capital and the equilibrium real rate.",
         include_reproduce=False,
         show_figure_captions=False,
     )
@@ -349,7 +347,7 @@ $$
 \mu(a',z_k) = \sum_j P_{jk}\sum_{i:\,g_a(a_i,z_j)=a'} \mu(a_i,z_j),
 $$
 
-Aggregate household assets are
+Here $i$ indexes nodes of the asset grid $\{a_i\}$. Aggregate household assets are
 $K^s(r) = \sum_{i,j} a_i\,\mu(a_i,z_j)$.
 
 **Firm.** Cobb-Douglas technology $Y = K^{\alpha} L^{1-\alpha}$ with capital
@@ -543,7 +541,7 @@ precautionary saving becomes unbounded. The economy has excess capital supply.
         description=(
             "The stationary distribution comes from the asset policy and "
             f"income chain at $r^{{\\ast}}={r_eq:.4f}$. Mean wealth "
-            f"($\\bar a={mean_wealth:.2f}$) exceeds median wealth "
+            f"($\\mathbb{{E}}[a]={mean_wealth:.2f}$) exceeds median wealth "
             f"($\\tilde a={median_wealth:.2f}$). "
             f"${100*frac_constrained:.1f}\\%$ of households sit at the "
             "borrowing limit. The right tail comes from repeated high-income "
@@ -562,7 +560,7 @@ precautionary saving becomes unbounded. The economy has excess capital supply.
             "Aggregate capital $K^{\\ast}$",
             "Output $Y^{\\ast}$",
             "Capital-output ratio $K/Y$",
-            "Mean wealth $\\bar a$",
+            "Mean wealth $\\mathbb{E}[a]$",
             "Median wealth $\\tilde a$",
             "P90 wealth",
             "Gini",

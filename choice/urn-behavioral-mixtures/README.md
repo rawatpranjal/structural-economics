@@ -1,7 +1,5 @@
 # Urn Choices and Latent Decision Rules
 
-> Bayesian learning benchmarks and EM mixtures for repeated urn classifications.
-
 ## Overview
 
 In an urn experiment, a subject sees a small sample from one of two urns. The choice is whether the hidden state is high red.

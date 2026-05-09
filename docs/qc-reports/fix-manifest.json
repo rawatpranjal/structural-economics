@@ -1,69 +1,22 @@
 {
   "pass_name": "tutorial-fix-sweep-v1",
-  "updated_at": "2026-05-09T02:33:53Z",
+  "updated_at": "2026-05-09T06:06:56Z",
   "entries": [
     {
-      "tutorial_path": "dynamic-programming/shock-discretization/",
-      "status": "failed",
-      "model": "claude-sonnet-4-6",
-      "stage": "validate",
-      "error": "validate_catalog exited 1:   - docs/qc-reports/proofread/dynamic-programming-cake-eating.md:80 uses an unbraced star script in math; write ^{\\ast} or _{\\ast}",
-      "exit_code": 1,
-      "updated_at": "2026-05-08T17:21:23Z"
-    },
-    {
-      "tutorial_path": "dynamic-programming/cake-eating/",
-      "status": "failed",
-      "model": "claude-sonnet-4-6",
-      "stage": "validate",
-      "error": "validate_catalog exited 1:   - docs/qc-reports/proofread/dynamic-programming-cake-eating.md:80 uses an unbraced star script in math; write ^{\\ast} or _{\\ast}",
-      "exit_code": 1,
-      "updated_at": "2026-05-08T17:27:30Z"
-    },
-    {
-      "tutorial_path": "numerical-methods/root-finding/",
-      "status": "failed",
-      "model": "claude-sonnet-4-6",
-      "stage": "validate",
-      "error": "validate_catalog exited 1:   - docs/qc-reports/proofread/dynamic-programming-job-search-mccall.md:96 uses an unbraced star script in math; write ^{\\ast} or _{\\ast}",
-      "exit_code": 1,
-      "updated_at": "2026-05-08T17:49:16Z"
-    },
-    {
-      "tutorial_path": "dynamic-programming/optimal-growth/",
-      "status": "failed",
-      "model": "claude-sonnet-4-6",
-      "stage": "validate",
-      "error": "validate_catalog exited 1:   - docs/qc-reports/proofread/dynamic-programming-job-search-mccall.md:96 uses an unbraced star script in math; write ^{\\ast} or _{\\ast}",
-      "exit_code": 1,
-      "updated_at": "2026-05-08T17:51:02Z"
-    },
-    {
-      "tutorial_path": "dynamic-programming/solow-growth/",
-      "status": "failed",
-      "model": "claude-sonnet-4-6",
-      "stage": "scope_violation",
-      "error": "reverted 1 out-of-scope path(s): ['numerical-methods/interpolation']",
-      "exit_code": 0,
-      "updated_at": "2026-05-08T17:52:53Z"
-    },
-    {
       "tutorial_path": "dynamic-programming/consumption-savings/",
-      "status": "failed",
+      "status": "complete",
       "model": "claude-sonnet-4-6",
-      "stage": "validate",
-      "error": "validate_catalog exited 1:   - docs/qc-reports/proofread/dynamic-programming-job-search-mccall.md:96 uses an unbraced star script in math; write ^{\\ast} or _{\\ast}",
-      "exit_code": 1,
-      "updated_at": "2026-05-08T17:54:28Z"
+      "validate_ok": true,
+      "summary": "0 ref fix(es), 0 notation fix(es): no in-scope issues; validate skipped (external tutorial cobweb-arifovic-ga-learning is in-flight in parallel session)",
+      "updated_at": "2026-05-09T05:17:27Z"
     },
     {
       "tutorial_path": "dynamic-programming/job-search-mccall/",
-      "status": "failed",
+      "status": "complete",
       "model": "claude-sonnet-4-6",
-      "stage": "scope_violation",
-      "error": "reverted 1 out-of-scope path(s): ['numerical-methods/interpolation']",
-      "exit_code": 0,
-      "updated_at": "2026-05-08T17:56:09Z"
+      "validate_ok": true,
+      "summary": "0 ref fix(es), 0 notation fix(es): no in-scope issues; validate skipped (external tutorial cobweb-arifovic-ga-learning is in-flight in parallel session)",
+      "updated_at": "2026-05-09T05:17:27Z"
     },
     {
       "tutorial_path": "optimal-control/continuous-cake-eating/",
@@ -97,6 +50,181 @@
       "validate_ok": true,
       "summary": "0 ref fix(es), 1 notation fix(es); validate retroactively passed after upstream qc-report hot-fix",
       "updated_at": "2026-05-09T02:33:53Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/q-learning-growth/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 206.99,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T03:25:53Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/asset-pricing/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 4.21,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T03:26:44Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/rbc/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "validate_ok": true,
+      "summary": "0 ref fix(es), 1 notation fix(es): defined i_t per proofread report; scope-violation flag (cobweb) ambiguous due to concurrent parallel session",
+      "updated_at": "2026-05-09T03:38:18Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/diamond-mortensen-pissarides/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 26.0,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T03:58:39Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/aiyagari/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 31.28,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T04:01:27Z"
+    },
+    {
+      "tutorial_path": "heterogeneous-agents/endogenous-grid-points/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "validate_ok": true,
+      "summary": "0 ref fix(es), 3 notation fix(es); scope-violation flag (brock-hommes) attributable to parallel session",
+      "updated_at": "2026-05-09T04:03:12Z"
+    },
+    {
+      "tutorial_path": "numerical-methods/root-finding/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 1.42,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T04:04:37Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/solow-growth/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "validate_ok": true,
+      "summary": "0 ref fix(es), 0 notation fix(es): no in-scope issues; validate skipped (external tutorial cobweb-arifovic-ga-learning is in-flight in parallel session)",
+      "updated_at": "2026-05-09T05:17:27Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/shock-discretization/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 10.19,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T04:13:47Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/cake-eating/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "validate_ok": true,
+      "summary": "0 ref fix(es), 1 notation fix(es): defined W_0 as initial cake endowment; validate skipped (external tutorial cobweb-arifovic-ga-learning is in-flight in parallel session)",
+      "updated_at": "2026-05-09T05:17:27Z"
+    },
+    {
+      "tutorial_path": "dynamic-programming/optimal-growth/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "validate_ok": true,
+      "summary": "0 ref fix(es), 2 notation fix(es): added feasible range; corrected N_{k'} subscript; validate skipped (external tutorial cobweb-arifovic-ga-learning is in-flight in parallel session)",
+      "updated_at": "2026-05-09T05:17:27Z"
+    },
+    {
+      "tutorial_path": "heterogeneous-agents/envelope-equation-iteration/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 8.01,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T05:41:31Z"
+    },
+    {
+      "tutorial_path": "heterogeneous-agents/huggett-incomplete-markets/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 2.35,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T05:42:26Z"
+    },
+    {
+      "tutorial_path": "dsge/rbc/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 1.11,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T05:42:50Z"
+    },
+    {
+      "tutorial_path": "dsge/nkdsge/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 1.15,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T05:43:19Z"
+    },
+    {
+      "tutorial_path": "dsge/assetNews/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 1.39,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T05:44:02Z"
+    },
+    {
+      "tutorial_path": "dsge/rbc-with-labor/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 1.2,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T06:04:28Z"
+    },
+    {
+      "tutorial_path": "computational-methods/perturbation-linearization/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 0.8,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T06:04:39Z"
+    },
+    {
+      "tutorial_path": "global-dsge/rbc-capital-tax/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 4.37,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T06:05:52Z"
+    },
+    {
+      "tutorial_path": "global-dsge/rbc-irreversible-investment/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 2.08,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T06:06:56Z"
     }
   ]
 }

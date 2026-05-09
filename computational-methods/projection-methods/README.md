@@ -1,7 +1,5 @@
 # Growth-Model Capital Policy by Chebyshev Projection
 
-> Solving a deterministic saving rule with collocation and Euler residuals.
-
 ## Overview
 
 A planner starts each period with capital. Output can be consumed today or saved as next-period capital.

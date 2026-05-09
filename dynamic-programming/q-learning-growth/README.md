@@ -1,7 +1,5 @@
 # Stochastic Optimal Growth by Q-Learning
 
-> Q-learning recovers the planner's saving rule from sampled transitions and matches the closed-form Brock-Mirman policy.
-
 ## Overview
 
 A planner allocates output between consumption and productive capital. Productivity moves stochastically each period. The saving choice carries today's shock into tomorrow's capital stock.
@@ -22,6 +20,8 @@ Tabular Q-learning stores an action-value $Q(s, a)$ for each state-action pair a
 
 $$Q(s, a) \leftarrow Q(s, a) + \alpha_t [\, r + \beta \max_{a'} Q(s', a') - Q(s, a) \,].$$
 
+Here $\alpha_t$ is the step size (learning rate) for update $t$.
+
 Exploration draws each transition uniformly over feasible state-action pairs $(s, a)$, so every region of the grid receives updates regardless of the on-policy distribution. The greedy policy is read off the table as $a^{\ast}(s) = \arg\max_a Q(s, a)$.
 
 ## Model Setup
@@ -35,6 +35,7 @@ Exploration draws each transition uniformly over feasible state-action pairs $(s
 | Discount $\beta$ | 0.95 |
 | Productivity persistence $\rho$ | 0.70 |
 | Innovation std $\sigma$ | 0.10 |
+| TFP parameter $A$ | 1.0 |
 | Q-learning steps per seed | 1,500,000 |
 | Q-learning seeds (averaged) | 4 |
 | DQN training steps | 250,000 |
@@ -98,8 +99,8 @@ The table compares the solvers on the same calibration. Q-learning uses no trans
 | algorithm                         | transition matrix   |   policy MAE |   value sup-norm vs VFI |   samples |   runtime sec |
 |:----------------------------------|:--------------------|-------------:|------------------------:|----------:|--------------:|
 | value iteration                   | yes                 |       0.0038 |                  0      |   2175747 |         0.006 |
-| tabular Q-learning (4 seeds avg.) | no                  |       0.0154 |                  0.6721 |   6000000 |        82.109 |
-| DQN                               | no                  |       0.0299 |                nan      |    250000 |       139.194 |
+| tabular Q-learning (4 seeds avg.) | no                  |       0.0154 |                  0.6721 |   6000000 |        79.278 |
+| DQN                               | no                  |       0.0299 |                nan      |    250000 |       121.828 |
 
 VFI converges in 361 sweeps. Q-learning hits a policy MAE of 0.0154 after 6,000,000 sampled transitions across 4 seeds. DQN reaches 0.0299 after 250,000 steps.
 

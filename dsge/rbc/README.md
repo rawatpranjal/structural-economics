@@ -1,7 +1,5 @@
 # RBC TFP Shocks and Capital Propagation
 
-> How a productivity shock moves output when capital adjusts slowly.
-
 ## Overview
 
 When TFP rises, the existing capital stock produces more output. Capital was chosen last period. The household can carry the shock forward only by investing some extra output.

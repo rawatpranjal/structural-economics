@@ -1,7 +1,5 @@
 # Cereal Demand with Nested Logit Substitution
 
-> Estimate where buyers go after a cereal price increase when some products are closer substitutes than others.
-
 ## Overview
 
 A supermarket raises the price of Choco-Bombs. Fewer shoppers choose it. Some switch to Store-Frosted, and some leave the cereal category.

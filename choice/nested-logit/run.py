@@ -495,8 +495,6 @@ def main():
 
     report = ModelReport(
         "Cereal Demand with Nested Logit Substitution",
-        "Estimate where buyers go after a cereal price increase when some "
-        "products are closer substitutes than others.",
         include_reproduce=False,
         show_figure_captions=False,
     )

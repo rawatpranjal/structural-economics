@@ -1,7 +1,5 @@
 # Fixed-Resource Consumption and Pontryagin Shadow Prices
 
-> A finite-resource consumption problem in continuous time, solved by costate equations.
-
 ## Overview
 
 A planner owns a fixed stock $W_0$ of a consumption good. Consuming more today leaves less for every future date.

@@ -1,7 +1,5 @@
 # RBC Capital, Labor, and Business-Cycle Moments
 
-> A representative-household RBC model with endogenous labor and two-state TFP, solved by global-grid value function iteration.
-
 ## Overview
 
 Aggregate productivity changes over time. A representative household owns capital, supplies labor, and chooses investment after observing productivity. The shock moves output directly and also changes work and saving.
@@ -21,7 +19,7 @@ The resource constraint is
 
 $$c_t + k_{t+1} = z_t\,k_t^{\alpha}\,l_t^{1-\alpha} + (1-\delta)\,k_t,$$
 
-with $c_t>0$ and $k_{t+1}\geq 0$.
+with $c_t>0$ and $k_{t+1}\geq 0$. Investment is $i_t = k_{t+1} - (1-\delta)\,k_t$.
 
 **Preferences.** Period utility uses log consumption and log leisure:
 

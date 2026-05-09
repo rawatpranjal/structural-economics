@@ -500,7 +500,6 @@ def main():
 
     report = ModelReport(
         "Differentiated-Products Demand with BLP",
-        "Random-coefficients demand for substitution patterns.",
         include_reproduce=False,
         show_figure_captions=False,
     )

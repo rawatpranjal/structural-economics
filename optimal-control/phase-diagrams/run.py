@@ -174,7 +174,6 @@ def main():
 
     report = ModelReport(
         "Ramsey Consumption Choice and Saddle Paths",
-        "Trace the stable arm that selects initial Ramsey consumption.",
         include_reproduce=False,
         show_figure_captions=False,
     )

@@ -236,7 +236,6 @@ def main() -> None:
     setup_style()
     report = ModelReport(
         "Lucas-Tree Dividend News and Asset Prices",
-        "Price a tree claim when investors learn about future dividends before the cash flow arrives.",
         include_reproduce=False,
         show_figure_captions=False,
     )
@@ -549,7 +548,7 @@ For this calibration, $A={coeffs["A"]:.3f}$ and $B={coeffs["B"]:.3f}$.
             "Lucas, R. (1978). Asset Prices in an Exchange Economy. *Econometrica*, 46(6), 1429-1445.",
             "Cochrane, J. (2005). *Asset Pricing*. Princeton University Press.",
             "Beaudry, P. and Portier, F. (2006). Stock Prices, News, and Economic Fluctuations. *American Economic Review*, 96(4), 1293-1307.",
-            "Schmitt-Grohe, S. and Uribe, M. (2012). What's News in Business Cycles. *Econometrica*, 80(6), 2733-2764.",
+            "Schmitt-Grohé, S. and Uribe, M. (2012). What's News in Business Cycles. *Econometrica*, 80(6), 2733-2764.",
             "Klein, P. (2000). Using the Generalized Schur Form to Solve a Multivariate Linear Rational Expectations Model. *Journal of Economic Dynamics and Control*, 24(10), 1405-1423.",
         ]
     )

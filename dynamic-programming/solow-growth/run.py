@@ -146,7 +146,6 @@ def main() -> None:
 
     report = ModelReport(
         "Solow Growth and Conditional Convergence",
-        "Capital per effective worker follows one transition map toward a closed-form steady state.",
         include_reproduce=False,
         show_figure_captions=False,
     )

@@ -1,4 +1,4 @@
-# QC Report — `global-dsge/` (2026-05-05)
+# QC Report - `global-dsge/` (2026-05-05)
 
 Quality-control sweep over the 3 tutorials in `global-dsge/`. Same four
 dimensions (crux, pseudocode, coherence, reproducibility) as the prior
@@ -17,17 +17,17 @@ economic friction or payoff from global solution: taxation, irreversibility,
 incomplete markets, constraints, or risk premia." That contract is the
 rubric the reviewer applied below.
 
-## Stage 1 — Static intake
+## Stage 1 - Static intake
 
 `scripts/qc_subject.py global-dsge`:
 
 | tutorial | sections | pseudocode | broken refs | notes |
 |---|---|---|---|---|
-| heaton-lucas | 7/7 | present | 0 | — |
-| rbc-capital-tax | 7/7 | present | 0 | — |
-| rbc-irreversible-investment | 7/7 | present | 0 | — |
+| heaton-lucas | 7/7 | present | 0 | - |
+| rbc-capital-tax | 7/7 | present | 0 | - |
+| rbc-irreversible-investment | 7/7 | present | 0 | - |
 
-## Stage 2 — Reproducibility sweep
+## Stage 2 - Reproducibility sweep
 
 `scripts/qc_repro.py global-dsge --timeout 600`:
 
@@ -38,15 +38,15 @@ rubric the reviewer applied below.
 | rbc-irreversible-investment | 0 | 2.0 | 0 | idempotent |
 
 heaton-lucas is the long pole at 6.5 min wall time. STPFI is fundamentally
-iterative — `lib/stpfi.py` solves a nonlinear system per collocation point
+iterative - `lib/stpfi.py` solves a nonlinear system per collocation point
 per iteration. No regression, no change to action; just a note for future
 sweep budgeting.
 
-## Stage 3 — Subjective grading
+## Stage 3 - Subjective grading
 
 | tutorial | crux | pseudocode | coherence claim | verdict |
 |---|---|---|---|---|
-| heaton-lucas | A | present | "computed equity premium ranges from 0.43% to 1.42% across the wealth-share grid" | match (run.py 329–331) |
+| heaton-lucas | A | present | "computed equity premium ranges from 0.43% to 1.42% across the wealth-share grid" | match (run.py 329-331) |
 | rbc-capital-tax | B | present | "at τ_k=30%, capital is 42.7% below the no-tax value, output is 18.2% lower, consumption 9.7% lower" | match (CSV: 21.7584/37.9893, 3.0307/3.7041, 2.4868/2.7543) |
 | rbc-irreversible-investment | A | present | "binding frequency: 9.5% of state space; 0.42% in the stationary distribution; 13.3% in the overhang experiment" | match (numerical-checks.csv) |
 
@@ -59,7 +59,7 @@ None.
 ### Majors
 
 **`rbc-capital-tax` does not articulate why a global solution is needed.**
-The capital tax is a permanent, linear wedge on the Euler equation — a setting
+The capital tax is a permanent, linear wedge on the Euler equation - a setting
 where log-linear approximation around the *new* steady state typically performs
 well. The tutorial computes a global VFI policy but never explains what that
 buys over a local approximation. Per `global-dsge/CLAUDE.md`, this section's
@@ -77,7 +77,7 @@ either:
 **Not auto-fixed** because the right framing depends on the user's
 pedagogical intent. Suggested edits in `global-dsge/rbc-capital-tax/run.py`:
 
-- Overview (around line 270–290): add one sentence justifying global over
+- Overview (around line 270-290): add one sentence justifying global over
   linear.
 - Solution Method: optionally add a one-line comparison against a log-linear
   approximation around the no-tax SS, showing where they agree and disagree.
@@ -87,7 +87,7 @@ pedagogical intent. Suggested edits in `global-dsge/rbc-capital-tax/run.py`:
 ### Minors
 
 - **`heaton-lucas`** (`run.py` Results section): the fine-grid 10th and 90th
-  percentiles for `omega_all` are reported as -0.050 and 1.050 — i.e., the
+  percentiles for `omega_all` are reported as -0.050 and 1.050 - i.e., the
   grid bounds. The simulated wealth distribution is hitting the boundary of
   the state space. Worth a sentence noting that this is a real modeling
   feature (extreme realizations of relative wealth), not a numerical

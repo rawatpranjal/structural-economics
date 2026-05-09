@@ -1,7 +1,5 @@
 # Differentiated-Products Merger Pricing with Logit Demand
 
-> Ownership, diversion, and Bertrand-Nash price effects in a four-product market.
-
 ## Overview
 
 Products 1 and 2 begin as separate firms in a four-product category. A merger puts both products under one owner.

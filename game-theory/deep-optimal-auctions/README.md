@@ -1,7 +1,5 @@
 # Deep Learning for Optimal Auction Design
 
-> A small neural auction learns revenue with a regret constraint and is audited against Myerson.
-
 ## Overview
 
 A seller knows the distribution of bidder values but not the realized values. The design problem is to choose an auction that earns revenue while still making truthful bidding optimal.

@@ -1,7 +1,5 @@
 # Lottery Risk Aversion with Monotone Choice
 
-> Estimate risk aversion from a lottery ladder with ordered choice probabilities.
-
 ## Overview
 
 A Holt-Laury ladder gives subjects repeated choices between a safer lottery and a riskier lottery.

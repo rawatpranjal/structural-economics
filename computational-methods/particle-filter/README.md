@@ -1,7 +1,5 @@
 # Nowcasting Hidden Economic States with Particle Filters
 
-> Sequential Monte Carlo for hidden-state nowcasting.
-
 ## Overview
 
 A policy analyst observes a noisy activity indicator and wants a current estimate of the hidden state. The state may combine persistent demand pressure and real activity.

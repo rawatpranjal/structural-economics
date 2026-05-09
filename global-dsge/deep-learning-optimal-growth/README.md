@@ -1,7 +1,5 @@
 # Deep Learning for Optimal Growth
 
-> A JAX neural net learns the Brock-Mirman saving rule from Euler residuals.
-
 ## Overview
 
 A planner chooses how much output to consume today. Remaining output becomes capital tomorrow. The log Cobb-Douglas case has an exact saving rule. That exact rule makes the neural solver easy to audit.

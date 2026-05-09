@@ -1,7 +1,5 @@
 # Inverse Reinforcement Learning for the Rust Bus Problem
 
-> Reward recovery and dynamic discrete choice share the same soft Bellman likelihood.
-
 ## Overview
 
 Rust estimates payoffs from replacement choices by solving a dynamic discrete choice model. Maximum causal entropy inverse reinforcement learning estimates a reward from demonstrations. In this finite-state logit setting, the two routes meet at the same object: a soft Bellman policy likelihood.

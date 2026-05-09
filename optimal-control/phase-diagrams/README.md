@@ -1,7 +1,5 @@
 # Ramsey Consumption Choice and Saddle Paths
 
-> Trace the stable arm that selects initial Ramsey consumption.
-
 ## Overview
 
 An economy begins with inherited capital. A Ramsey planner chooses consumption today and lets investment carry capital forward. The wrong choice either runs capital down or delays consumption too long.

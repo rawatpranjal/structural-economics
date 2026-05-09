@@ -343,7 +343,6 @@ def main() -> None:
     setup_style()
     report = ModelReport(
         "RBC TFP Shocks and Capital Propagation",
-        "How a productivity shock moves output when capital adjusts slowly.",
         include_reproduce=False,
         show_figure_captions=False,
     )

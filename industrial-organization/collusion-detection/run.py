@@ -198,7 +198,6 @@ def main():
     # =========================================================================
     report = ModelReport(
         "Repeated-Game Cartels and Price Screens",
-        "A price break becomes informative when it is tied to a repeated-game discipline condition.",
         include_reproduce=False,
         show_figure_captions=False,
     )

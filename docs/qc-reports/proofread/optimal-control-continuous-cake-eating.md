@@ -22,9 +22,9 @@ _Model: claude-sonnet-4-6. Generated: 2026-05-08T22:10:00Z._
 
 ### Chiang, A. (1992). *Elements of Dynamic Optimization*. Waveland Press.
 
-- **Located:** McGraw-Hill 1992 edition — https://www.abebooks.com/9780070109117; Waveland Press reprint — https://www.amazon.com/Elements-Dynamic-Optimization-Alpha-Chiang/dp/157766096X
+- **Located:** McGraw-Hill 1992 edition - https://www.abebooks.com/9780070109117; Waveland Press reprint - https://www.amazon.com/Elements-Dynamic-Optimization-Alpha-Chiang/dp/157766096X
 - **Tutorial claims:** Cited as a general reference on dynamic optimization.
-- **Source says:** The 1992 edition was published by McGraw-Hill (ISBN 9780070109117). Waveland Press issued a reprint in 1999–2000 (ISBN 9781577660965).
+- **Source says:** The 1992 edition was published by McGraw-Hill (ISBN 9780070109117). Waveland Press issued a reprint in 1999-2000 (ISBN 9781577660965).
 - **Verdict:** MINOR
 - **Note:** Year and publisher do not correspond to the same edition: cite either "McGraw-Hill, 1992" or "Waveland Press, 1999".
 
@@ -70,4 +70,4 @@ Flagged issues:
 
 ## Summary
 
-The tutorial is mathematically sound and internally consistent. All equations in the Equations section are correct, the closed-form solution is consistent with the code in `run.py`, and all main-message clauses are supported by the shown derivations. The single issue is a MINOR bibliographic mismatch in the Chiang citation: the year 1992 belongs to the McGraw-Hill first edition, while Waveland Press issued its reprint in 1999–2000; the citation should use one consistent year–publisher pair. No MAJOR issues, no unsupported claims, and no undefined notation.
+The tutorial is mathematically sound and internally consistent. All equations in the Equations section are correct, the closed-form solution is consistent with the code in `run.py`, and all main-message clauses are supported by the shown derivations. The single issue is a MINOR bibliographic mismatch in the Chiang citation: the year 1992 belongs to the McGraw-Hill first edition, while Waveland Press issued its reprint in 1999-2000; the citation should use one consistent year-publisher pair. No MAJOR issues, no unsupported claims, and no undefined notation.

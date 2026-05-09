@@ -235,7 +235,6 @@ def main() -> None:
 
     report = ModelReport(
         "Price-Regime Revealed Preference",
-        "Use observed bundles to test whether price schedules can be ranked consistently.",
         include_reproduce=False,
         show_figure_captions=False,
     )

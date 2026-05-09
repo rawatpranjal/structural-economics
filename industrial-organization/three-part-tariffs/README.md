@@ -1,7 +1,5 @@
 # Broadband Data Caps and Forward-Looking Plan Choice
 
-> A finite-horizon usage model for valuing monthly allowances in three-part tariffs.
-
 ## Overview
 
 Broadband plans often combine a fixed fee, a monthly data allowance, and an overage price. A household chooses the plan before it knows monthly usage.

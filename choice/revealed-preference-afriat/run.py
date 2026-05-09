@@ -316,7 +316,6 @@ def main():
 
     report = ModelReport(
         "Consumer Rationalizability with Afriat's Test",
-        "Checking whether finite bundle choices can come from one stable utility function.",
         include_reproduce=False,
         show_figure_captions=False,
     )

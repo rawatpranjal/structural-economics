@@ -1,7 +1,5 @@
 # Production Elasticities and Firm Markups
 
-> Recover firm-year markups from a corrected materials elasticity and materials shares.
-
 ## Overview
 
 Plant panels often record output, labor, capital, materials, and input spending. They usually do not record marginal cost.

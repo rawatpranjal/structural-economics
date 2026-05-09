@@ -1,7 +1,5 @@
 # Revealed-Preference Cycles and the Money Pump Index
 
-> Measuring the expenditure exposed by inconsistent choices.
-
 ## Overview
 
 A consumer buys bundle A at one price vector, bundle B at another, and bundle C at a third. These choices can violate GARP because each chosen bundle makes another affordable bundle look strictly better.

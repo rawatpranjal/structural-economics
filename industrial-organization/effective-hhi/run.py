@@ -233,8 +233,6 @@ def main():
 
     report = ModelReport(
         "Market Concentration Screens with HHI",
-        "HHI turns firm shares into a fast antitrust screen. Pricing effects require "
-        "a demand and ownership model.",
         include_reproduce=False,
         show_figure_captions=False,
     )

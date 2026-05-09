@@ -470,7 +470,6 @@ def main() -> None:
     setup_style()
     report = ModelReport(
         "Retirement and Saving by Discrete-Continuous EGM",
-        "Life-cycle retirement choice with branch-specific endogenous grids and an upper envelope.",
         include_reproduce=False,
         show_figure_captions=False,
     )
@@ -491,23 +490,43 @@ def main() -> None:
     report.add_equations(
         r"""
 At age $t$, the household enters with assets $a_t$ and retirement status
-$m_t \in \{0,1\}$. Status $m_t=0$ means still active, and $m_t=1$ means already
+$m_t \in \lbrace 0,1 \rbrace$. Status $m_t=0$ means still active, and $m_t=1$ means already
 retired. An active household can choose work or retire:
 
 $$
 d_t \in D(m_t), \qquad
-D(0)=\{\mathrm{work},\mathrm{retire}\}, \qquad
-D(1)=\{\mathrm{retire}\}.
+D(0)=\lbrace \mathrm{work},\mathrm{retire} \rbrace, \qquad
+D(1)=\lbrace \mathrm{retire} \rbrace.
 $$
 
 The next retirement status is absorbing:
 
 $$
-m'(d)=
-\begin{cases}
-0, & d=\mathrm{work}, \\
-1, & d=\mathrm{retire}.
-\end{cases}
+m'(\mathrm{work})=0, \qquad m'(\mathrm{retire})=1.
+$$
+
+Preferences are CRRA, and the terminal value is a bequest value:
+
+$$
+u(c)=\frac{c^{1-\gamma}-1}{1-\gamma}, \qquad
+u'(c)=c^{-\gamma}, \qquad
+V_T^m(a)=\omega_B u(a+\bar b).
+$$
+
+Let calendar age be $\alpha_t=55+t$. The branch income and nonconsumption
+utility terms are
+
+$$
+\begin{aligned}
+y_t(\mathrm{work}) &=
+1.42-0.012(\alpha_t-55)
+\quad -0.006\max \lbrace \alpha_t-62,0 \rbrace^2,\\
+y_t(\mathrm{retire}) &= \bar y^R,\\
+\psi_t(\mathrm{work}) &=
+{}-\left[0.16+0.024(\alpha_t-55)
+\quad +0.010\max \lbrace \alpha_t-62,0 \rbrace^2\right],\\
+\psi_t(\mathrm{retire}) &= \chi_R.
+\end{aligned}
 $$
 
 The budget constraint is
@@ -517,17 +536,35 @@ c_t + a_{t+1} = R a_t + y_t(d_t),
 \qquad a_{t+1} \geq \underline a .
 $$
 
+Resources are split between current consumption and next assets.
+
 For any branch $d$, define the branch value
 
 $$
 V_t^d(a) =
-\max_{a' \geq \underline a}
-\{
-\underbrace{u(Ra+y_t(d)-a')}_{\text{utility from consumption}} +
+\max_{a^{+} \geq \underline a}
+\left[
+\underbrace{u(Ra+y_t(d)-a^{+})}_{\text{utility from consumption}} +
 \underbrace{\psi_t(d)}_{\text{work cost or retirement amenity}} +
-\underbrace{\beta V_{t+1}^{m'(d)}(a')}_{\text{continuation value under next status}}
-\}.
+\underbrace{\beta V_{t+1}^{m'(d)}(a^{+})}_{\text{continuation value under next status}}
+\right].
 $$
+
+This branch Bellman equation solves work and retirement as separate
+continuous-saving problems.
+
+The branch objects are
+
+$$
+\begin{aligned}
+c_t^d(a,a^{+}) &= R a + y_t(d) - a^{+}, \\
+\widetilde V_t^d(a,a^{+}) &=
+u(c_t^d(a,a^{+}))+\psi_t(d)+\beta V_{t+1}^{m'(d)}(a^{+}).
+\end{aligned}
+$$
+
+The branch maximization is over feasible next assets with positive
+consumption, so infeasible choices are discarded.
 
 The active and retired value functions are then
 
@@ -536,8 +573,11 @@ V_t^1(a) =
 V_t^{\mathrm{retire}}(a),
 \qquad
 V_t^0(a)=
-\max\{V_t^{\mathrm{work}}(a), V_t^{\mathrm{retire}}(a)\}.
+\max \lbrace V_t^{\mathrm{work}}(a), V_t^{\mathrm{retire}}(a) \rbrace.
 $$
+
+The upper envelope chooses retirement where the retirement branch value exceeds
+the work branch value.
 
 This upper envelope is the central DC-EGM object. It preserves the discrete
 retirement kink instead of forcing the value function to be globally concave.
@@ -545,36 +585,73 @@ retirement kink instead of forcing the value function to be globally concave.
 On a fixed branch, the continuous saving problem has the Euler equation
 
 $$
-u'(c_t^d(a')) =
+u'(c_t^d(a^{+})) =
 \beta R
-\frac{\partial V_{t+1}^{m'(d)}(a')}{\partial a'}.
+\frac{\partial V_{t+1}^{m'(d)}(a^{+})}{\partial a^{+}}.
 $$
 
-With CRRA utility, $u'(c)=c^{-\gamma}$, so EGM fixes the next-asset grid
-$a'_i$, evaluates the next marginal value $\mu_{t+1}^{m'(d)}(a'_i)$, and
-inverts the Euler equation:
+Write $a_i^{+}$ for a candidate next-period asset point on the exogenous grid.
+Write $\mu_{t+1}^{m'(d)}(a_i^{+})$ for the next-period marginal value evaluated
+at that candidate asset.
+
+$$
+\mu_{t+1}^{m'(d)}(a_i^{+})
+=
+\frac{\partial V_{t+1}^{m'(d)}(a_i^{+})}{\partial a^{+}}.
+$$
+
+EGM works backward from next assets: choose a grid point for tomorrow's assets,
+compute the marginal value of arriving there, then invert marginal utility to
+recover today's consumption.
 
 $$
 c_{t,i}^d =
-(\beta R \mu_{t+1}^{m'(d)}(a'_i))^{-1/\gamma}.
+(\beta R \mu_{t+1}^{m'(d)}(a_i^{+}))^{-1/\gamma}.
 $$
 
 The endogenous current asset attached to that next-asset point is
 
 $$
 a_{t,i}^{\mathrm{endo},d} =
-\frac{c_{t,i}^d + a'_i - y_t(d)}{R}.
+\frac{c_{t,i}^d + a_i^{+} - y_t(d)}{R}.
 $$
 
 Each branch produces its own endogenous grid and value curve:
 
 $$
 \widetilde V_t^d(a_{t,i}^{\mathrm{endo},d}) =
-u(c_{t,i}^d)+\psi_t(d)+\beta V_{t+1}^{m'(d)}(a'_i).
+u(c_{t,i}^d)+\psi_t(d)+\beta V_{t+1}^{m'(d)}(a_i^{+}).
 $$
 
-DC-EGM interpolates the branch curves back to the common current-asset grid and
-then takes the upper envelope across $d$.
+After sorting and dropping repeated endogenous assets, DC-EGM interpolates the
+branch curve back to the common current-asset grid:
+
+$$
+g_t^d(a)=\mathrm{interp}\left(a;\,
+a_{t,i}^{\mathrm{endo},d}, a_i^{+}\right),
+\qquad
+V_t^d(a)=\mathrm{interp}\left(a;\,
+a_{t,i}^{\mathrm{endo},d}, \widetilde V_t^d(a_{t,i}^{\mathrm{endo},d})\right).
+$$
+
+For current assets below the first endogenous grid point, the borrowing
+constraint binds:
+
+$$
+g_t^d(a)=\underline a,\qquad
+c_t^d(a)=R a+y_t(d)-\underline a.
+$$
+
+The final active policies copy the winning branch:
+
+$$
+\begin{aligned}
+d_t^{\ast}(a) &=
+\arg\max_{d \in \lbrace \mathrm{work},\mathrm{retire} \rbrace} V_t^d(a),\\
+g_t^0(a) &= g_t^{d_t^{\ast}(a)}(a),\\
+c_t^0(a) &= c_t^{d_t^{\ast}(a)}(a).
+\end{aligned}
+$$
 """
     )
 
@@ -586,13 +663,15 @@ then takes the upper envelope across $d$.
         f"| $m_t$ | $0$ active, $1$ retired | Absorbing retirement status |\n"
         f"| $d_t$ | $\\mathrm{{work}}$ or $\\mathrm{{retire}}$ | Discrete labor-supply choice |\n"
         f"| $c_t$ | residual from budget | Consumption after choosing next assets |\n"
-        f"| $a'_i$ | {p.n_assets} points | Exogenous next-asset grid used by DC-EGM |\n"
+        f"| $a_i^{{+}}$ | {p.n_assets} points | Exogenous next-asset grid used by DC-EGM |\n"
         f"| $a^{{\\mathrm{{endo}},d}}_{{t,i}}$ | branch-specific | Current asset implied by Euler inversion on branch $d$ |\n"
         f"| $\\beta$ | {p.beta:.2f} | Discount factor |\n"
         f"| $R=1+r$ | {p.R:.2f} | Gross asset return |\n"
         f"| $\\gamma$ | {p.gamma:.1f} | CRRA curvature |\n"
         f"| $y_t(\\mathrm{{retire}})$ | {p.pension:.2f} | Pension income after retirement |\n"
         f"| $\\psi_t(\\mathrm{{retire}})$ | {p.retire_amenity:.2f} | Retirement amenity relative to work cost |\n"
+        f"| $\\omega_B$ | {p.bequest_weight:.2f} | Terminal bequest weight |\n"
+        f"| $\\bar b$ | {p.bequest_floor:.1f} | Bequest utility floor |\n"
         f"| $\\underline a$ | {p.asset_min:.1f} | Borrowing limit on next assets |\n"
         f"| Brute-force audit grid | {p.audit_assets} assets | Smaller benchmark grid for exhaustive search |\n"
         f"| Synthetic panel | {p.simulation_agents:,} households | Simulated with initial assets centered at {p.initial_asset_mean:.1f} |"
@@ -606,7 +685,7 @@ handled after each branch has produced its own value function.
 For each branch $d$, DC-EGM constructs points
 
 $$
-(a_{t,i}^{\mathrm{endo},d}, c_{t,i}^d, a'_i, \widetilde V_t^d(a_{t,i}^{\mathrm{endo},d})).
+(a_{t,i}^{\mathrm{endo},d}, c_{t,i}^d, a_i^{+}, \widetilde V_t^d(a_{t,i}^{\mathrm{endo},d})).
 $$
 
 Interpolation converts those branch-specific points into functions on the
@@ -614,35 +693,87 @@ common current-asset grid. The active policy is then
 
 $$
 d_t^{\ast}(a)=
-\begin{cases}
-\mathrm{work}, & V_t^{\mathrm{work}}(a) \geq V_t^{\mathrm{retire}}(a), \\
-\mathrm{retire}, & V_t^{\mathrm{retire}}(a) > V_t^{\mathrm{work}}(a).
-\end{cases}
+\mathrm{work} \quad \text{if } V_t^{\mathrm{work}}(a) \geq V_t^{\mathrm{retire}}(a),
+\quad \text{and } \mathrm{retire} \text{ otherwise}.
 $$
 
 The selected consumption and saving policies are copied from the winning branch.
 
 ```text
 Algorithm: DC-EGM for retirement and saving
-Input: current asset grid A, next asset grid A', ages t=0,...,T
-Terminal: V_T^0(a) = V_T^1(a) = bequest(a)
+Input:
+    current asset grid A = {a_j}_{j=1}^J
+    next asset grid A^+ = {a_i^+}_{i=1}^J
+    ages t = 0,...,T-1
+    primitives beta, R, gamma, y_t(d), psi_t(d), borrowing limit a_min
+
+Initialize:
+    for every asset a in A:
+        V_T^0(a) = V_T^1(a) = omega_B * u(a + b_bar)
+
+Subroutine SOLVE_BRANCH(t, d, next_status):
+    y = y_t(d)
+    psi = psi_t(d)
+    compute mu_i = d V_{t+1}^{next_status}(a_i^+) / d a^+
+        at every next-asset grid point a_i^+
+    clip mu_i to a small positive value if a numerical derivative is nonpositive
+
+    for each grid point a_i^+ in A^+:
+        c_i = (beta * R * mu_i)^(-1 / gamma)
+        a_i_endo = (c_i + a_i^+ - y) / R
+        V_i_endo = u(c_i) + psi + beta * V_{t+1}^{next_status}(a_i^+)
+
+    sort rows by a_i_endo
+    repair monotonicity by replacing a_i_endo with its running maximum
+    drop repeated a_i_endo values created by the monotonicity repair
+
+    interpolate a_i^+ on a_i_endo to get the branch saving rule g_t^d(a)
+    interpolate V_i_endo on a_i_endo to get the branch value V_t^d(a)
+
+    for current assets a below the first endogenous point:
+        set g_t^d(a) = a_min
+        set c_t^d(a) = R * a + y - a_min
+        set V_t^d(a) = u(c_t^d(a)) + psi
+                         + beta * V_{t+1}^{next_status}(a_min)
+
+    for all other current assets a:
+        set c_t^d(a) = R * a + y - g_t^d(a)
+
+    clip g_t^d(a) to the feasible asset grid
+    return V_t^d(a), c_t^d(a), g_t^d(a)
+
+Backward recursion:
 for t = T-1, T-2, ..., 0:
-    # retired status: only the retire branch is feasible
-    for a'_i in A':
-        mu_i = d V_{t+1}^1(a'_i) / d a'
-        c_i^retire = (beta R mu_i)^(-1/gamma)
-        a_i^{endo,retire} = (c_i^retire + a'_i - y_t(retire)) / R
-        V_i^retire = u(c_i^retire) + psi_t(retire) + beta V_{t+1}^1(a'_i)
-    interpolate retire branch onto A to get V_t^1(a)
+    # already retired: only the retirement branch is feasible
+    V_retired, c_retired, g_retired = SOLVE_BRANCH(t, retire, 1)
+    store V_t^1(a) = V_retired(a), c_t^1(a) = c_retired(a),
+          g_t^1(a) = g_retired(a)
 
-    # active status: solve work and retire branches separately
-    for d in {work, retire}:
-        next status is m'(d)
-        repeat the Euler inversion above using V_{t+1}^{m'(d)}
-        interpolate branch values V_t^d(a), c_t^d(a), and g_t^d(a)
+    # active household: solve both feasible branches before the discrete choice
+    V_work, c_work, g_work = SOLVE_BRANCH(t, work, 0)
+    V_retire, c_retire, g_retire = SOLVE_BRANCH(t, retire, 1)
 
-    V_t^0(a) = max{V_t^work(a), V_t^retire(a)}
-    choose c_t^0(a) and g_t^0(a) from the branch attaining the max
+    for each current asset a in A:
+        retirement_gap(a) = V_retire(a) - V_work(a)
+        if retirement_gap(a) >= 0:
+            choose retire
+            V_t^0(a) = V_retire(a)
+            c_t^0(a) = c_retire(a)
+            g_t^0(a) = g_retire(a)
+        else:
+            choose work
+            V_t^0(a) = V_work(a)
+            c_t^0(a) = c_work(a)
+            g_t^0(a) = g_work(a)
+
+Simulation after solving:
+    draw initial assets for each household
+    for each age:
+        interpolate the active retirement gap at the household asset
+        convert the gap into a smooth retirement probability
+        once retired, keep status retired forever
+        interpolate the selected saving and consumption policies
+        record age, status, assets, next assets, and consumption
 ```
 
 The brute-force audit solves the same model on a smaller asset grid by checking

@@ -1,7 +1,5 @@
 # Sticky-Price Monetary Transmission in a New Keynesian DSGE
 
-> Policy and demand shocks in a three-equation New Keynesian model, solved by coefficient matching.
-
 ## Overview
 
 A central bank raises the policy rate when firms adjust prices slowly. The nominal surprise raises the real rate before prices catch up. Demand falls, and the Phillips curve turns the lower output gap into lower inflation.

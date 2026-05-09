@@ -158,7 +158,6 @@ def main() -> None:
     setup_style()
     report = ModelReport(
         "Binary Participation with Maximum Score",
-        "Estimate a participation boundary without specifying the full error distribution.",
         include_reproduce=False,
         show_figure_captions=False,
     )

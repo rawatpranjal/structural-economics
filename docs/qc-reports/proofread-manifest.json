@@ -1,6 +1,6 @@
 {
   "pass_name": "tutorial-proofread-sweep-v1",
-  "updated_at": "2026-05-09T03:21:22Z",
+  "updated_at": "2026-05-09T06:03:27Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -137,6 +137,86 @@
       "output_bytes": 6944,
       "model": "claude-sonnet-4-6",
       "updated_at": "2026-05-09T03:21:22Z"
+    },
+    {
+      "tutorial_path": "heterogeneous-agents/envelope-equation-iteration/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/heterogeneous-agents-envelope-equation-iteration.md",
+      "output_bytes": 9796,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T05:21:31Z"
+    },
+    {
+      "tutorial_path": "heterogeneous-agents/huggett-incomplete-markets/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/heterogeneous-agents-huggett-incomplete-markets.md",
+      "output_bytes": 7995,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T05:25:46Z"
+    },
+    {
+      "tutorial_path": "dsge/rbc/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/dsge-rbc.md",
+      "output_bytes": 7227,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T05:30:00Z"
+    },
+    {
+      "tutorial_path": "dsge/nkdsge/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/dsge-nkdsge.md",
+      "output_bytes": 7803,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T05:34:09Z"
+    },
+    {
+      "tutorial_path": "dsge/assetNews/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/dsge-assetNews.md",
+      "output_bytes": 7385,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T05:39:17Z"
+    },
+    {
+      "tutorial_path": "dsge/rbc-with-labor/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/dsge-rbc-with-labor.md",
+      "output_bytes": 8332,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T05:47:39Z"
+    },
+    {
+      "tutorial_path": "computational-methods/perturbation-linearization/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/computational-methods-perturbation-linearization.md",
+      "output_bytes": 5491,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T05:51:43Z"
+    },
+    {
+      "tutorial_path": "global-dsge/rbc-capital-tax/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/global-dsge-rbc-capital-tax.md",
+      "output_bytes": 6682,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T05:54:23Z"
+    },
+    {
+      "tutorial_path": "global-dsge/rbc-irreversible-investment/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/global-dsge-rbc-irreversible-investment.md",
+      "output_bytes": 7088,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T05:58:09Z"
+    },
+    {
+      "tutorial_path": "global-dsge/heaton-lucas/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/global-dsge-heaton-lucas.md",
+      "output_bytes": 6365,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T06:03:27Z"
     }
   ]
 }

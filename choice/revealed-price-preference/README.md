@@ -1,7 +1,5 @@
 # Price-Regime Revealed Preference
 
-> Use observed bundles to test whether price schedules can be ranked consistently.
-
 ## Overview
 
 A researcher may observe one household, city, or market under several price schedules. The schedules could be tariffs, taxes, subsidies, or insurance menus. Each schedule produces one chosen bundle.

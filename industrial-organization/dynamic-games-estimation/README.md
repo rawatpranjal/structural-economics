@@ -1,7 +1,5 @@
 # Quality Investment Game Estimation with CCPs
 
-> Estimate payoff primitives in a two-firm quality ladder using CCPs and forward values.
-
 ## Overview
 
 Two firms invest to climb a product-quality ladder. A laggard may spend to catch up. A leader may save the investment cost.

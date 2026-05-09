@@ -1,7 +1,5 @@
 # Repeated-Game Cartels and Price Screens
 
-> A price break becomes informative when it is tied to a repeated-game discipline condition.
-
 ## Overview
 
 Cartel investigations often start with a price path. Prices rise together and stay high. They fall after detection or a breakdown.

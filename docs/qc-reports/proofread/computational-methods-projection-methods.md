@@ -45,27 +45,27 @@ Issues:
 
 | Symbol | First appearance | Defined? | Notes |
 |--------|------------------|----------|-------|
-| $k$ | Overview, sentence 1 | Yes — "A planner starts each period with capital" | |
-| $g(k)$ | Overview, sentence 3 | Yes — "the policy $g(k)$ from current capital to capital tomorrow" | |
-| $V(k)$ | Equations, Bellman eq. | Implicit — standard DP value-function notation | |
-| $k'$ | Equations, Bellman eq. | Yes — budget constraint $c = Ak^\alpha - k'$ implies next-period capital | |
-| $c$ | Equations, Bellman eq. | Yes — $c = Ak^\alpha - k'$ | Scalar form only; see flagged issue below |
-| $\beta$ | Equations, Bellman eq. | Acceptable — Model Setup table defines "Discount factor $\beta$ \| 0.95" ~30 lines later | |
-| $\alpha$ | Equations, Bellman eq. | Acceptable — Model Setup table defines "Capital share $\alpha$ \| 0.36" ~30 lines later | |
-| $A$ | Equations, Bellman eq. | Acceptable — Model Setup table defines "Productivity $A$ \| 1.0" ~30 lines later | |
-| $c_t$, $c_{t+1}$ | Equations, Euler eq. | Implicit — time-indexed form of $c$; relation to scalar $c$ unstated | |
-| $k_{t+1}$ | Equations, Euler eq. | Implicit — next-period capital in time-indexed form | |
-| $\theta_j$ | Equations, projection eq. | Implicit — coefficients in Chebyshev expansion; no surrounding prose definition | |
-| $\theta$ | Equations, projection eq. | Implicit — coefficient vector; same symbol used for both vector and indexed element | |
-| $T_j(x)$ | Equations, projection eq. | Partial — called "Chebyshev basis functions" in prose; $j$ index implicit | |
-| $x(k)$ | Equations, projection eq. | Partial — constrained to $[-1,1]$; mapping formula not given in Equations prose | |
-| $n$ | Equations, projection eq. | Acceptable — Model Setup table has "Main basis terms \| 8" ~28 lines later; pseudocode names it "basis size n" | |
-| $j$ | Equations, projection eq. | Implicit — summation index running from 0 to $n-1$ | |
-| $R_i(\theta)$ | Equations, residual eq. | Yes — "the log Euler residual" | |
-| $k_i$ | Equations, residual eq. | Yes — "selected capital nodes $k_i$" | |
+| $k$ | Overview, sentence 1 | Yes - "A planner starts each period with capital" | |
+| $g(k)$ | Overview, sentence 3 | Yes - "the policy $g(k)$ from current capital to capital tomorrow" | |
+| $V(k)$ | Equations, Bellman eq. | Implicit - standard DP value-function notation | |
+| $k'$ | Equations, Bellman eq. | Yes - budget constraint $c = Ak^\alpha - k'$ implies next-period capital | |
+| $c$ | Equations, Bellman eq. | Yes - $c = Ak^\alpha - k'$ | Scalar form only; see flagged issue below |
+| $\beta$ | Equations, Bellman eq. | Acceptable - Model Setup table defines "Discount factor $\beta$ \| 0.95" ~30 lines later | |
+| $\alpha$ | Equations, Bellman eq. | Acceptable - Model Setup table defines "Capital share $\alpha$ \| 0.36" ~30 lines later | |
+| $A$ | Equations, Bellman eq. | Acceptable - Model Setup table defines "Productivity $A$ \| 1.0" ~30 lines later | |
+| $c_t$, $c_{t+1}$ | Equations, Euler eq. | Implicit - time-indexed form of $c$; relation to scalar $c$ unstated | |
+| $k_{t+1}$ | Equations, Euler eq. | Implicit - next-period capital in time-indexed form | |
+| $\theta_j$ | Equations, projection eq. | Implicit - coefficients in Chebyshev expansion; no surrounding prose definition | |
+| $\theta$ | Equations, projection eq. | Implicit - coefficient vector; same symbol used for both vector and indexed element | |
+| $T_j(x)$ | Equations, projection eq. | Partial - called "Chebyshev basis functions" in prose; $j$ index implicit | |
+| $x(k)$ | Equations, projection eq. | Partial - constrained to $[-1,1]$; mapping formula not given in Equations prose | |
+| $n$ | Equations, projection eq. | Acceptable - Model Setup table has "Main basis terms \| 8" ~28 lines later; pseudocode names it "basis size n" | |
+| $j$ | Equations, projection eq. | Implicit - summation index running from 0 to $n-1$ | |
+| $R_i(\theta)$ | Equations, residual eq. | Yes - "the log Euler residual" | |
+| $k_i$ | Equations, residual eq. | Yes - "selected capital nodes $k_i$" | |
 | $c(k_i;\theta)$ | Equations, residual eq. | Undefined as a function | See flagged issue below |
-| $g^{\ast}(k)$ | Equations, after residual | Yes — "the exact policy" | |
-| $g(k;\theta)$ | Equations, projection eq. | Implicit — parameterized version of $g(k)$; extension from $g(k)$ unstated | |
+| $g^{\ast}(k)$ | Equations, after residual | Yes - "the exact policy" | |
+| $g(k;\theta)$ | Equations, projection eq. | Implicit - parameterized version of $g(k)$; extension from $g(k)$ unstated | |
 
 Flagged issues:
 - **$c(k_i;\theta)$ and $c(g(k_i;\theta);\theta)$ undefined as functions.** The Bellman defines $c$ as a scalar via $c = Ak^\alpha - k'$. The residual formula uses $c$ as a function $c(k;\theta)$, implying $c(k;\theta) \equiv Ak^\alpha - g(k;\theta)$, but this functional form is never written down in the README.

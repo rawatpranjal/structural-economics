@@ -125,7 +125,6 @@ def main() -> None:
 
     report = ModelReport(
         "Aggregate Adjustment Around a Steady State",
-        "Taylor perturbations for nonlinear macro dynamics and impulse responses.",
         include_reproduce=False,
         show_figure_captions=False,
     )

@@ -129,7 +129,6 @@ def main() -> None:
     setup_style()
     report = ModelReport(
         "Discretizing Persistent Shocks",
-        "Why persistent shocks need a finite-state approximation before they enter Bellman equations.",
         include_reproduce=False,
         show_figure_captions=False,
     )

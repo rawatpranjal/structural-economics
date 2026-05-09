@@ -1,7 +1,5 @@
 # Product Demand with Plain Logit and IIA
 
-> Estimate product demand by maximum likelihood and inspect the IIA substitution rule.
-
 ## Overview
 
 Five products sit on one shelf. Each product has a price and a quality level, and each buyer chooses one product.

@@ -73,7 +73,6 @@ def main() -> None:
     setup_style()
     report = ModelReport(
         "First-Price Auctions, Bid Shading, and Deviation Checks",
-        "Private-value bidding, the symmetric rule, and a direct deviation check.",
         include_reproduce=False,
         show_figure_captions=False,
     )

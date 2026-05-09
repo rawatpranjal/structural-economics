@@ -266,7 +266,6 @@ def main():
 
     report = ModelReport(
         "Capital Taxes and Saving in a Global RBC Model",
-        "A rebated capital tax lowers the private return to saving while the resource constraint keeps all goods.",
         include_reproduce=False,
         show_figure_captions=False,
     )
@@ -509,9 +508,9 @@ tax revenue $T_{ss}=\tau_k \alpha Y_{ss}$.
     )
 
     report.add_references([
-        "Chamley, C. (1986). *Optimal Taxation of Capital Income in General Equilibrium*. Econometrica.",
-        "Judd, K. (1985). *Redistributive Taxation in a Simple Perfect Foresight Model*. JPE.",
-        "Cao, D., Luo, W., and Nie, G. (2023). *Global DSGE Models*. Review of Economic Dynamics.",
+        "Chamley, C. (1986). *Optimal Taxation of Capital Income in General Equilibrium with Infinite Lives*. Econometrica.",
+        "Judd, K. (1985). *Redistributive Taxation in a Simple Perfect Foresight Model*. Journal of Public Economics.",
+        "Cao, D., Luo, W., and Nie, G. (2023). *Global GDSGE Models*. Review of Economic Dynamics.",
     ])
 
     report.write("README.md")

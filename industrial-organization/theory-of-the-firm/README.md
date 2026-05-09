@@ -1,7 +1,5 @@
 # Firm Boundaries, Hold-Up, and Vertical Integration
 
-> Relationship-specific investment, ownership, and hierarchy cost.
-
 ## Overview
 
 A supplier may invest in tooling useful only for one buyer. The asset raises joint surplus. After the asset is sunk, bargaining may leave the supplier with too little of the return. The supplier then invests for private surplus.

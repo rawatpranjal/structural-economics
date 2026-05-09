@@ -276,7 +276,6 @@ def main() -> None:
 
     report = ModelReport(
         "Deep Learning for Optimal Growth",
-        "A JAX neural net learns the Brock-Mirman saving rule from Euler residuals.",
         include_reproduce=False,
         show_figure_captions=False,
     )

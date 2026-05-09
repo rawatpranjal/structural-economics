@@ -201,7 +201,6 @@ def main() -> None:
     setup_style()
     report = ModelReport(
         "Urn Choices and Latent Decision Rules",
-        "Bayesian learning benchmarks and EM mixtures for repeated urn classifications.",
         include_reproduce=False,
         show_figure_captions=False,
     )

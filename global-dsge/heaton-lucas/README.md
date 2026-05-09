@@ -1,7 +1,5 @@
 # Heaton-Lucas Risk Sharing and Equity Premia
 
-> Incomplete risk sharing makes the wealth distribution part of the asset-pricing state.
-
 ## Overview
 
 Households face different endowment shocks and cannot fully insure each other. In Heaton and Lucas (1996), two CRRA agents trade equity and a one-period bond. Short-sale and borrowing limits make marginal utilities depend on who holds wealth after each shock.

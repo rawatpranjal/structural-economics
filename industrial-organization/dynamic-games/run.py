@@ -137,7 +137,6 @@ def main() -> None:
 
     report = ModelReport(
         "Quality Investment in Dynamic Oligopoly",
-        "Markov-perfect policies for a quality-ladder rivalry.",
         include_reproduce=False,
         show_figure_captions=False,
     )

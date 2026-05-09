@@ -1,7 +1,5 @@
 # Vending Assortments Under Vertical Contracts
 
-> Rebates, slotting fees, and exact assortment choice in a capacity-constrained vending channel.
-
 ## Overview
 
 Vending space is scarce. A retailer has seven slots and twelve snack products. A manufacturer can use contract terms to make its products more attractive to stock.

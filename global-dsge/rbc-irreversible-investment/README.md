@@ -1,7 +1,5 @@
 # Capital Overhang from Irreversible Investment in RBC
 
-> Installed capital depreciates slowly, so a bad shock can leave the economy carrying unwanted capital.
-
 ## Overview
 
 A firm can install machines before it learns that productivity will be low. It can stop new investment. Installed capital only leaves through depreciation.
@@ -23,6 +21,8 @@ The Bellman equation is
 $$V(K,z)=\max_{K'\in \Gamma(K,z)}\Bigg[
 \frac{\left[zK^\alpha+(1-\delta)K-K'\right]^{1-\sigma}}{1-\sigma}
 +\beta \sum_{z'} P(z,z')V(K',z')\Bigg].$$
+
+Here $P(z,z')$ is the transition probability from productivity state $z$ to next-period state $z'$, obtained from the Tauchen discretization of the log-AR(1).
 
 The standard RBC choice set is
 
@@ -66,14 +66,14 @@ The computation uses global value function iteration. It solves the standard and
 ```text
 Algorithm: global VFI with an irreversible-investment boundary
 Input: grids K and Z, transition matrix P, primitives beta, alpha, sigma, delta
-Output: value V(z,K), policies g_K(z,K), g_c(z,K), binding indicator b(z,K)
+Output: value V(K,z), policies g_K(z,K), g_c(z,K), binding indicator b(z,K)
 Precompute resources R(z,K)=z K^alpha+(1-delta)K and utility for all grid choices K'
 repeat:
     for each productivity state z_i and capital state K_m:
         set A_std(K_m) to all feasible grid choices K'
         set A_irr(K_m) to choices in A_std with K' >= (1-delta)K_m
         add the exact boundary K'=(1-delta)K_m to A_irr when it is between grid nodes
-        choose K' to maximize u(R(z_i,K_m)-K') + beta * sum_j P_ij V_n(z_j,K')
+        choose K' to maximize u(R(z_i,K_m)-K') + beta * sum_j P_ij V_n(K',z_j)
         set b(z_i,K_m)=1 if the boundary K'=(1-delta)K_m is chosen
     apply Howard improvement to the fixed policy
 until the sup-norm Bellman update is below epsilon
@@ -121,4 +121,4 @@ Irreversibility is a theory of bad states. It does not change the deterministic 
 
 - Abel, A. and Eberly, J. (1996). *Optimal Investment with Costly Reversibility*. Review of Economic Studies.
 - Bertola, G. and Caballero, R. (1994). *Irreversibility and Aggregate Investment*. Review of Economic Studies.
-- Cao, D., Luo, W., and Nie, G. (2023). *Global DSGE Models*. Review of Economic Dynamics.
+- Cao, D., Luo, W., and Nie, G. (2023). *Global GDSGE Models*. Review of Economic Dynamics.

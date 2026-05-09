@@ -1,7 +1,5 @@
 # Differentiated-Products Demand with BLP
 
-> Random-coefficients demand for substitution patterns.
-
 ## Overview
 
 An antitrust analyst needs to know where demand goes after one product raises price. Market shares alone do not answer that question.

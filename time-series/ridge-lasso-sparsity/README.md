@@ -1,7 +1,5 @@
 # Policy Forecasting with Ridge, Lasso, and Sparsity
 
-> Measure monetary policy shocks after forecasting the systematic policy-rate change.
-
 ## Overview
 
 A central bank moves the policy rate after reading a large flow of economic text. Inflation, labor, credit, output, and financial-stress language all contain signals. Each individual indicator is noisy.

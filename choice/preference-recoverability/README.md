@@ -1,7 +1,5 @@
 # Recovering Preference Bounds from Budget Choices
 
-> Afriat numbers turn finite budget data into a rationalizing utility contour.
-
 ## Overview
 
 Suppose we observe a consumer choosing bundles from several two-good budgets. Prices rotate the budget line, and income shifts it. The analyst sees prices and chosen bundles, not the utility function.

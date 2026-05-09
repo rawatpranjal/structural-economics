@@ -1,7 +1,5 @@
 # Finite Strategic Games and Nash Equilibrium Checks
 
-> Payoff tables, deviation gains, and mixed-strategy indifference.
-
 ## Overview
 
 Strategic settings often turn on unilateral incentives. An outcome is stable only when each player is content with its own action.

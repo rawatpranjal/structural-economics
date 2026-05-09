@@ -506,7 +506,6 @@ def main() -> None:
     print("Building report ...")
     report = ModelReport(
         "Stochastic Optimal Growth by Q-Learning",
-        "Q-learning recovers the planner's saving rule from sampled transitions and matches the closed-form Brock-Mirman policy.",
         include_reproduce=False,
         show_figure_captions=False,
     )

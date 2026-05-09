@@ -174,7 +174,6 @@ def main() -> None:
 
     report = ModelReport(
         "Recovering Auction Values from First-Price Bids",
-        "Use the first-price auction equilibrium condition to turn observed bids into pseudo-values.",
         include_reproduce=False,
         show_figure_captions=False,
     )

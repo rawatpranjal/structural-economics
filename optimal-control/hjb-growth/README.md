@@ -1,7 +1,5 @@
 # Ramsey Capital Accumulation by HJB Upwinding
 
-> A Ramsey planner allocates output between consumption and investment. An implicit upwind HJB computes the shadow value of capital.
-
 ## Overview
 
 A Ramsey planner inherits aggregate capital $k$. Output can be consumed today or invested for future production. Scarce capital raises investment value. Abundant capital makes current consumption cheaper.

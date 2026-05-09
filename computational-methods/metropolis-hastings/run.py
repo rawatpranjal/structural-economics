@@ -163,7 +163,6 @@ def main() -> None:
 
     report = ModelReport(
         "Sampling a Two-Regime Structural Posterior",
-        "Random-walk Metropolis-Hastings for structural parameters with two posterior modes.",
         include_reproduce=False,
         show_figure_captions=False,
     )

@@ -67,13 +67,13 @@ Issues:
 | $l_t$ | Equations: same phrase | Yes | Defined at first use |
 | $z_t$ | Equations: same phrase | Yes | Defined at first use |
 | $y_t$ | Equations: LHS of production function | Yes | Defined by equation |
-| $\alpha$ | Equations: production function, "$\alpha\in(0,1)$" | Partial | Identified as parameter at first use; named "Capital share in Cobb-Douglas" in Model Setup table (~47 lines later) — within 50-line window |
+| $\alpha$ | Equations: production function, "$\alpha\in(0,1)$" | Partial | Identified as parameter at first use; named "Capital share in Cobb-Douglas" in Model Setup table (~47 lines later) - within 50-line window |
 | $c_t$ | Equations: resource constraint | Yes | Defined by constraint context |
 | $k_{t+1}$ | Equations: resource constraint | Yes | Defined by constraint context |
-| $\delta$ | Equations: resource constraint "$(1-\delta)\,k_t$" | Partial | Unnamed at first use; named "Depreciation rate" in Model Setup table (~43 lines later) — within 50-line window |
+| $\delta$ | Equations: resource constraint "$(1-\delta)\,k_t$" | Partial | Unnamed at first use; named "Depreciation rate" in Model Setup table (~43 lines later) - within 50-line window |
 | $u(c,l)$ | Equations: "Period utility uses log consumption and log leisure" | Yes | Defined at first use |
-| $\phi$ | Equations: utility function, "$\phi>0$" | Partial | Identified as positive at first use; named "Leisure weight in utility" in Model Setup table (~39 lines later) — within 50-line window |
-| $\beta$ | Equations: household objective | Partial | Unnamed at first use; named "Discount factor (quarterly)" in Model Setup table (~33 lines later) — within 50-line window |
+| $\phi$ | Equations: utility function, "$\phi>0$" | Partial | Identified as positive at first use; named "Leisure weight in utility" in Model Setup table (~39 lines later) - within 50-line window |
+| $\beta$ | Equations: household objective | Partial | Unnamed at first use; named "Discount factor (quarterly)" in Model Setup table (~33 lines later) - within 50-line window |
 | $\mathbb{E}_0$ | Equations: household objective | No explicit definition | Standard notation for expectation at $t=0$; acceptable for target audience |
 | $z_L,z_H$ | Equations: TFP process, "$z_t\in\{z_L,z_H\}=\{0.95,1.05\}$" | Yes | Defined with values at first use |
 | $P_{ij}$ | Equations: TFP process | Yes | Defined as conditional probability at first use |
@@ -84,7 +84,7 @@ Issues:
 | $g_l(k,z)$ | Equations: after Bellman constraint | Yes | Defined as labor policy function |
 | $k_{ss}$ | Equations: deterministic benchmark | Yes | Defined as steady-state capital |
 | $l_{ss}$ | Equations: deterministic benchmark | Yes | Defined as steady-state hours |
-| $c_{ss}$ | Equations: appears inside $l_{ss}$ formula | Partial | Used in the $l_{ss}$ expression before being named; defined as "steady-state consumption" in Model Setup table (~17 lines later) — within 50-line window |
+| $c_{ss}$ | Equations: appears inside $l_{ss}$ formula | Partial | Used in the $l_{ss}$ expression before being named; defined as "steady-state consumption" in Model Setup table (~17 lines later) - within 50-line window |
 | $w_{ss}$ | Equations: deterministic benchmark | Yes | Defined in the same display equation block |
 | $i_{ss}$ | Model Setup table | Partial | Defined in table as "Deterministic steady-state investment"; however, investment $i$ is never given a defining equation in the Equations section |
 | $TV$ | Solution Method | Yes | Defined as Bellman operator |
@@ -94,6 +94,6 @@ Flagged issues:
 
 ## Summary
 
-All five cited references are verified correct (volume, issue, page range, and edition year each match authoritative sources). The main message contains one OVERREACH: the claim that the fine-grid audit demonstrates moments are robust to coarse discretization is not supported because no fine-grid business-cycle moments are computed or compared — the audit validates only value functions and policy functions. The notation is largely complete, with one flagged gap: investment $i$ is reported in the results and its steady-state value $i_{ss}$ appears in the Model Setup table, but no defining equation for $i_t$ appears in the Equations section. The most important fix is adding "$i_t = k_{t+1} - (1-\delta)k_t$" to the Equations section so that the investment variable is formally introduced before it is used in the results.
+All five cited references are verified correct (volume, issue, page range, and edition year each match authoritative sources). The main message contains one OVERREACH: the claim that the fine-grid audit demonstrates moments are robust to coarse discretization is not supported because no fine-grid business-cycle moments are computed or compared - the audit validates only value functions and policy functions. The notation is largely complete, with one flagged gap: investment $i$ is reported in the results and its steady-state value $i_{ss}$ appears in the Model Setup table, but no defining equation for $i_t$ appears in the Equations section. The most important fix is adding "$i_t = k_{t+1} - (1-\delta)k_t$" to the Equations section so that the investment variable is formally introduced before it is used in the results.
 
 Overall: 0 MAJOR, 0 MINOR (references), 1 OVERREACH, 1 notation gap.

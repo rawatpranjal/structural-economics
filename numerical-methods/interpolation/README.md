@@ -1,12 +1,10 @@
 # Off-Grid Function Approximation by Interpolation
 
-> Piecewise linear, natural cubic spline, and PCHIP reconstruct a function from values at discrete nodes; smooth and kinked targets expose the trade-offs.
-
 ## Overview
 
 Value function iteration stores $V$ at a finite grid and reads it off-grid every step. Three classical interpolators are the workhorses: piecewise linear, natural cubic spline, and PCHIP (piecewise cubic Hermite interpolating polynomial).
 
-This tutorial fits each one to two targets. The first target is the closed-form cake-eating value function $V(W)$ — smooth and monotone. The second is a stylized consumption policy with a borrowing-constraint kink: the level is continuous but the slope drops sharply at $a_{\text{kink}}$.
+This tutorial fits each one to two targets. The first target is the closed-form cake-eating value function $V(W)$ - smooth and monotone. The second is a stylized consumption policy with a borrowing-constraint kink: the level is continuous but the slope drops sharply at $a_{\text{kink}}$.
 
 Cubic splines shine on the smooth target. They ring on the kinked one. Linear interpolation and PCHIP do not.
 

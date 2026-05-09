@@ -159,7 +159,6 @@ def main() -> None:
 
     report = ModelReport(
         "Broadband Data Caps and Forward-Looking Plan Choice",
-        "A finite-horizon usage model for valuing monthly allowances in three-part tariffs.",
         include_reproduce=False,
         show_figure_captions=False,
     )

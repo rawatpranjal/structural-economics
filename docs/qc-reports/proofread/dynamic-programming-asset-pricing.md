@@ -8,7 +8,7 @@ _Model: claude-sonnet-4-6. Generated: 2026-05-08T18:12:00Z._
 
 - **Located:** https://ideas.repec.org/a/ecm/emetrp/v46y1978i6p1429-45.html
 - **Tutorial claims:** The tutorial uses this as the foundational reference for the Lucas tree exchange economy, the stochastic discount factor, and the constant price-dividend ratio under log utility.
-- **Source says:** Author is Robert E. Lucas Jr.; journal Econometrica; volume 46, issue 6, pages 1429–1445, 1978. The paper introduces the representative-agent exchange economy with a Lucas tree, derives the SDF, and establishes the log-utility constant ratio result. All claims match.
+- **Source says:** Author is Robert E. Lucas Jr.; journal Econometrica; volume 46, issue 6, pages 1429-1445, 1978. The paper introduces the representative-agent exchange economy with a Lucas tree, derives the SDF, and establishes the log-utility constant ratio result. All claims match.
 - **Verdict:** OK
 - **Note:** Full bibliographic details confirmed via IDEAS/RePEC (DOI: 10.2307/1913837); all fields correct.
 
@@ -16,7 +16,7 @@ _Model: claude-sonnet-4-6. Generated: 2026-05-08T18:12:00Z._
 
 - **Located:** https://ideas.repec.org/a/eee/moneco/v15y1985i2p145-161.html
 - **Tutorial claims:** Cited as a reference with no explicit description in the prose; the tutorial borrows the Lucas-tree framework to study asset pricing, and Mehra-Prescott is listed as companion reading.
-- **Source says:** Authors Rajnish Mehra and Edward C. Prescott; journal Journal of Monetary Economics; volume 15, issue 2, pages 145–161, 1985. Title is "The equity premium: A puzzle." All bibliographic fields match the tutorial's citation.
+- **Source says:** Authors Rajnish Mehra and Edward C. Prescott; journal Journal of Monetary Economics; volume 15, issue 2, pages 145-161, 1985. Title is "The equity premium: A puzzle." All bibliographic fields match the tutorial's citation.
 - **Verdict:** OK
 - **Note:** ScienceDirect and IDEAS/RePEC both confirm volume, issue, and page range; capitalization in the README title ("The Equity Premium: A Puzzle") matches conventional citation style.
 
@@ -58,24 +58,24 @@ Issues:
 
 | Symbol | First appearance | Defined? | Notes |
 |--------|------------------|----------|-------|
-| $y_t$ | Overview ("stochastic dividend $y_t$") | Yes — Equations: endowment process | |
-| $p(y)$ | Overview ("price function $p(y)$") | Yes — Equations: pricing equation | |
-| $c_t$ | Overview ("$c_t=y_t$") | Yes — Equations: market clearing | Appears as $c$ (no subscript) in the utility definition; same object, minor stylistic drift |
-| $x_t$ | Equations ("$x_t=\log y_t$") | Yes — same line | |
-| $\rho$ | Equations (endowment AR(1)) | Yes — Model Setup table | |
-| $\varepsilon_{t+1}$ | Equations (endowment AR(1)) | Yes — same equation: $\sim\mathcal{N}(0,\sigma^2)$ | |
-| $\sigma$ | Equations (endowment variance) | Yes — Model Setup table | |
-| $u(c)$ | Equations (CRRA utility) | Yes — same line | |
-| $\gamma$ | Equations (CRRA exponent) | Yes — Model Setup table | |
-| $\beta$ | Equations (SDF definition $M_{t+1}=\beta(\cdots)^{-\gamma}$) | Quantified in Model Setup table; role described there | First used in Equations, tabulated in Model Setup — acceptable ordering for a parameter |
-| $M_{t+1}$ | Equations (pricing equation) | Yes — same equation | |
-| $f(y)$ | Equations ("Define the marginal-utility-scaled price $f(y)\equiv u'(y)p(y)$") | Yes — explicit definition | |
-| $y'$ | Equations ("$f(y)=\beta\,\mathbb{E}[f(y')+u'(y')\,y'\,\mid y]$") | No — prime notation for next-period value is never formally introduced | Used as shorthand for $y_{t+1}$; standard convention but undefined in the README |
-| $Tf$ / $T$ | Solution Method ("$(Tf)(y)=\ldots$") | Yes — operator defined inline | |
+| $y_t$ | Overview ("stochastic dividend $y_t$") | Yes - Equations: endowment process | |
+| $p(y)$ | Overview ("price function $p(y)$") | Yes - Equations: pricing equation | |
+| $c_t$ | Overview ("$c_t=y_t$") | Yes - Equations: market clearing | Appears as $c$ (no subscript) in the utility definition; same object, minor stylistic drift |
+| $x_t$ | Equations ("$x_t=\log y_t$") | Yes - same line | |
+| $\rho$ | Equations (endowment AR(1)) | Yes - Model Setup table | |
+| $\varepsilon_{t+1}$ | Equations (endowment AR(1)) | Yes - same equation: $\sim\mathcal{N}(0,\sigma^2)$ | |
+| $\sigma$ | Equations (endowment variance) | Yes - Model Setup table | |
+| $u(c)$ | Equations (CRRA utility) | Yes - same line | |
+| $\gamma$ | Equations (CRRA exponent) | Yes - Model Setup table | |
+| $\beta$ | Equations (SDF definition $M_{t+1}=\beta(\cdots)^{-\gamma}$) | Quantified in Model Setup table; role described there | First used in Equations, tabulated in Model Setup - acceptable ordering for a parameter |
+| $M_{t+1}$ | Equations (pricing equation) | Yes - same equation | |
+| $f(y)$ | Equations ("Define the marginal-utility-scaled price $f(y)\equiv u'(y)p(y)$") | Yes - explicit definition | |
+| $y'$ | Equations ("$f(y)=\beta\,\mathbb{E}[f(y')+u'(y')\,y'\,\mid y]$") | No - prime notation for next-period value is never formally introduced | Used as shorthand for $y_{t+1}$; standard convention but undefined in the README |
+| $Tf$ / $T$ | Solution Method ("$(Tf)(y)=\ldots$") | Yes - operator defined inline | |
 | $\varepsilon_j$, $w_j$ | Solution Method pseudocode | Implicitly defined as quadrature nodes/weights | Consistent with text description of Gauss-Hermite quadrature |
-| $f_n$ | Solution Method pseudocode | Yes — iterate index clear from context | |
-| $x$ (no subscript) | Solution Method ("The state $x=\log y$") | Yes — equated to $\log y$ inline | Same object as $x_t$; omission of subscript in a stationary-policy context is standard |
-| $\mathrm{sd}(\log y)$ | Model Setup table | Yes — formula $\sigma/\sqrt{1-\rho^2}$ in same row | |
+| $f_n$ | Solution Method pseudocode | Yes - iterate index clear from context | |
+| $x$ (no subscript) | Solution Method ("The state $x=\log y$") | Yes - equated to $\log y$ inline | Same object as $x_t$; omission of subscript in a stationary-policy context is standard |
+| $\mathrm{sd}(\log y)$ | Model Setup table | Yes - formula $\sigma/\sqrt{1-\rho^2}$ in same row | |
 
 Flagged issues:
 - **$y'$ (prime notation) is undefined.** The symbol first appears in the Scaled Price subsection of Equations as next-period endowment. No sentence introduces the prime convention. A one-line note ("where primes denote next-period values") would close the gap. This is a minor presentational issue; the meaning is inferable from context.

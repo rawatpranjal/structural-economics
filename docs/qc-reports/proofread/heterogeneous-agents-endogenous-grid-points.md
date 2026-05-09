@@ -8,7 +8,7 @@ _Model: claude-sonnet-4-6. Generated: 2026-05-08T23:30:00Z._
 
 - **Located:** https://ideas.repec.org/a/eee/ecolet/v91y2006i3p312-320.html
 - **Tutorial claims:** The reference is cited as the source of the EGP method; the tutorial describes inverting the Euler equation on a next-asset grid to avoid inner grid search.
-- **Source says:** The paper introduces a method for solving dynamic stochastic optimization problems that avoids rootfinding by exploiting the invertibility of the Euler equation; volume 91, issue 3, pages 312–320, Economics Letters, 2006.
+- **Source says:** The paper introduces a method for solving dynamic stochastic optimization problems that avoids rootfinding by exploiting the invertibility of the Euler equation; volume 91, issue 3, pages 312-320, Economics Letters, 2006.
 - **Verdict:** OK
 - **Note:** All bibliographic fields (journal, volume, issue, pages, year) match exactly.
 
@@ -16,7 +16,7 @@ _Model: claude-sonnet-4-6. Generated: 2026-05-08T23:30:00Z._
 
 - **Located:** https://ideas.repec.org/a/ecm/emetrp/v59y1991i5p1221-48.html
 - **Tutorial claims:** Cited as background for the buffer-stock saving problem with borrowing constraints.
-- **Source says:** The paper develops theoretical models of saving under liquidity constraints, showing that borrowing-constrained models explain empirical saving patterns not captured by the standard life-cycle model; Econometrica, vol. 59, no. 5, pp. 1221–1248, 1991.
+- **Source says:** The paper develops theoretical models of saving under liquidity constraints, showing that borrowing-constrained models explain empirical saving patterns not captured by the standard life-cycle model; Econometrica, vol. 59, no. 5, pp. 1221-1248, 1991.
 - **Verdict:** OK
 - **Note:** All bibliographic fields match exactly.
 
@@ -24,7 +24,7 @@ _Model: claude-sonnet-4-6. Generated: 2026-05-08T23:30:00Z._
 
 - **Located:** https://academic.oup.com/qje/article-abstract/112/1/1/1870884
 - **Tutorial claims:** Cited in the Model Setup row for the patience-return product: "$\beta R < 1$ rules out the unbounded-saving target of Carroll (1997)."
-- **Source says:** The paper introduces buffer-stock saving theory and shows that under the impatience condition ($\beta R < 1$) household wealth converges to a finite buffer-stock target rather than growing without bound; QJE, vol. 112, no. 1, pp. 1–55, 1997.
+- **Source says:** The paper introduces buffer-stock saving theory and shows that under the impatience condition ($\beta R < 1$) household wealth converges to a finite buffer-stock target rather than growing without bound; QJE, vol. 112, no. 1, pp. 1-55, 1997.
 - **Verdict:** OK
 - **Note:** The tutorial's paraphrase is consistent with Carroll (1997)'s impatience condition.
 
@@ -32,7 +32,7 @@ _Model: claude-sonnet-4-6. Generated: 2026-05-08T23:30:00Z._
 
 - **Located:** https://www.nber.org/papers/w30013
 - **Tutorial claims:** Cited as background for MPC heterogeneity in incomplete-market models.
-- **Source says:** The paper examines what model features generate large average MPCs in heterogeneous agent models, finding that the share and type of hand-to-mouth households is the most critical factor; Annual Review of Economics, vol. 14, pp. 747–775, 2022.
+- **Source says:** The paper examines what model features generate large average MPCs in heterogeneous agent models, finding that the share and type of hand-to-mouth households is the most critical factor; Annual Review of Economics, vol. 14, pp. 747-775, 2022.
 - **Verdict:** OK
 - **Note:** All bibliographic fields match exactly.
 
@@ -67,14 +67,14 @@ Issues:
 | $\underline a$ | Equations §1 | Yes | borrowing limit |
 | $V(a,y_j)$ | Equations (Bellman) | Yes (by equation) | value function |
 | $u(\cdot)$ | Equations (Bellman) | Yes, via CRRA formula | utility function |
-| $\beta$ | Equations (Bellman) | Later, Model Setup table | discount factor; table appears after first use in Bellman — standard enough for target audience |
+| $\beta$ | Equations (Bellman) | Later, Model Setup table | discount factor; table appears after first use in Bellman - standard enough for target audience |
 | $c(a,y_j)$ | Equations §1 | Yes | consumption |
 | $\ell$ | Equations (Bellman sum) | Yes (standard index) | summation index |
 | $\gamma$ | Equations: $u'(c)=c^{-\gamma}$ | Later, Model Setup table | CRRA curvature; same late-definition as $\beta$ |
 | $\mu$ | Equations: $(u')^{-1}(\mu)=\mu^{-1/\gamma}$ | Yes (inline as argument) | generic marginal utility value |
 | $\mu_y$ | Model Setup table | Yes | income mean (distinct from $\mu$) |
 | $\sigma_y$ | Model Setup table | Yes | income standard deviation |
-| $\bar a$ | Model Setup table: "Upper grid bound $\bar a$ \| 20.0" | Yes — but **overloaded** | reused in Results for mean assets: "Mean assets are $\bar a=0.39$" |
+| $\bar a$ | Model Setup table: "Upper grid bound $\bar a$ \| 20.0" | Yes - but **overloaded** | reused in Results for mean assets: "Mean assets are $\bar a=0.39$" |
 | $g_a$ | Model Setup table, simulation row | No | abbreviation for the saving policy; not defined; $g(a,y_j)$ is used everywhere else |
 | $c_i$ | Solution Method (EGP formula) | Yes (contextually) | consumption at candidate next asset $a_i'$ |
 | $a_i'$ | Solution Method (EGP formula) | Yes | candidate next-asset grid point $i$ |

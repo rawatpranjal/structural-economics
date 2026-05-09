@@ -1,7 +1,5 @@
 # Ramsey Saving by Saddle-Path Shooting
 
-> A continuous-time Ramsey planner inherits capital and uses the consumption jump to reach the saddle path.
-
 ## Overview
 
 In Ramsey growth, an economy inherits its capital stock. A capital-poor economy saves to build productive capacity. A capital-rich economy can consume more while capital falls toward its long-run level.

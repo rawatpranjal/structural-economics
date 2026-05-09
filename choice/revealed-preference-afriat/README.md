@@ -1,7 +1,5 @@
 # Consumer Rationalizability with Afriat's Test
 
-> Checking whether finite bundle choices can come from one stable utility function.
-
 ## Overview
 
 Prices and budgets change across shopping trips. Each trip leaves one chosen bundle, so the data show choices under different budget sets. The economic question is whether one stable utility function could have chosen all bundles.

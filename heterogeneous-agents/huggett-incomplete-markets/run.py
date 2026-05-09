@@ -349,8 +349,6 @@ def main():
 
     report = ModelReport(
         "Huggett Equilibrium and the Risk-Free Rate",
-        "A continuous-time exchange economy where income risk and a borrowing "
-        r"limit lower the equilibrium bond return below $\rho$.",
         include_reproduce=False,
         show_figure_captions=False,
     )
@@ -607,7 +605,7 @@ repeat (outer bisection)
         "figures/bond-market.png",
         "Aggregate asset demand against the interest rate",
         fig4,
-        description="The supply curve plots aggregate asset demand against $r$. "
+        description="The demand curve plots aggregate asset demand against $r$. "
         "Higher returns raise saving and reduce borrowing, so $S(r)$ rises with $r$. "
         "The complete-markets benchmark is $r = \\rho$. "
         f"The Huggett equilibrium is lower, at $r^{{\\ast}} = {r_eq:.4f}$. "

@@ -291,7 +291,6 @@ def main() -> None:
 
     report = ModelReport(
         "Nowcasting Hidden Economic States with Particle Filters",
-        "Sequential Monte Carlo for hidden-state nowcasting.",
         include_reproduce=False,
         show_figure_captions=False,
     )

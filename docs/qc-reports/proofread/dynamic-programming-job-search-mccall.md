@@ -67,25 +67,25 @@ Issues:
 
 | Symbol | First appearance | Defined? | Notes |
 |--------|------------------|----------|-------|
-| $b$ | Overview ("benefit $b$") | Yes — informal introduction in Overview, context clear | Used consistently throughout |
+| $b$ | Overview ("benefit $b$") | Yes - informal introduction in Overview, context clear | Used consistently throughout |
 | $W$ | Equations ("Let $W$ be a wage offer") | Yes | Explicitly defined |
 | $F$ | Equations ("with distribution $F$") | Yes | Explicitly defined alongside $W$ |
 | $w$ | Equations ("The current offer is $w$") | Yes | Explicitly defined |
 | $\beta$ | Equations ("The worker discounts at $\beta\in(0,1)$") | Yes | Explicitly defined |
-| $A(w)$ | Equations (displayed equation) | Yes — named "Accepting gives a permanent income stream" | |
+| $A(w)$ | Equations (displayed equation) | Yes - named "Accepting gives a permanent income stream" | |
 | $C$ | Equations ("rejection has one value: $C = \ldots$") | Yes | Explicitly named |
-| $V(w)$ | Equations (Bellman equation) | Yes — introduced in Bellman equation | |
+| $V(w)$ | Equations (Bellman equation) | Yes - introduced in Bellman equation | |
 | $w^{\ast}$ | Overview ("reservation wage $w^{\ast}$") | Yes | Introduced in Overview |
 | $W'$ | Equations ($\mathbb{E}_F[V(W')]$) | No explicit definition | Used as next-period wage draw; meaning is implied by context but never stated |
 | $T$ | Solution Method ("The Bellman operator $T$") | Yes | Explicitly named |
-| $r$ | Solution Method (scalar fixed-point equation) | No — introduced without statement | Plays the role of $w^{\ast}$ in the continuous case; not explicitly equated or linked to $w^{\ast}$ in prose |
-| $m(r)$ | Solution Method (scalar fixed-point equation) | Yes — "$m(r)=\mathbb{E}_F[\max(W,r)]$" | Defined inline |
-| $\mu$ | Model Setup table ("$e^\mu$ for the lognormal") | No — appears in the Role column of the table only | Value 0.0 is shown in the wage law notation but $\mu$ is never introduced as a named parameter in the prose |
+| $r$ | Solution Method (scalar fixed-point equation) | No - introduced without statement | Plays the role of $w^{\ast}$ in the continuous case; not explicitly equated or linked to $w^{\ast}$ in prose |
+| $m(r)$ | Solution Method (scalar fixed-point equation) | Yes - "$m(r)=\mathbb{E}_F[\max(W,r)]$" | Defined inline |
+| $\mu$ | Model Setup table ("$e^\mu$ for the lognormal") | No - appears in the Role column of the table only | Value 0.0 is shown in the wage law notation but $\mu$ is never introduced as a named parameter in the prose |
 | $\sigma$ | Model Setup table ("$\log W\sim N(0.0,1.0^2)$") | Implicit only | $\sigma=1.0$ can be read from the table but $\sigma$ is never named in the README text |
-| $n_w$ | Solution Method ("$n_w=50$ equal-probability bins") | Yes — value given inline | |
+| $n_w$ | Solution Method ("$n_w=50$ equal-probability bins") | Yes - value given inline | |
 
 Flagged issues:
-- **$W'$ (Equations):** Used in $C = b + \beta\,\mathbb{E}_F[V(W')]$ without explicit definition. A one-word gloss ("where $W'$ is an i.i.d. draw from $F$") would close the gap. Low severity — meaning is unambiguous from context.
+- **$W'$ (Equations):** Used in $C = b + \beta\,\mathbb{E}_F[V(W')]$ without explicit definition. A one-word gloss ("where $W'$ is an i.i.d. draw from $F$") would close the gap. Low severity - meaning is unambiguous from context.
 - **$r$ (Solution Method):** Introduced in the scalar fixed-point equation without connecting it to $w^{\ast}$. The reader must infer that $r$ is the continuous analog of the grid reservation wage. A phrase like "where $r$ denotes the reservation wage" would complete the link.
 - **$\mu$ (Model Setup table):** Appears in the Role column ("$e^\mu$ for the lognormal") but is never named as the lognormal location parameter in the README prose. The table shows the numeric value 0.0 inside the wage-law expression, which is $\mu$, but the symbol $\mu$ itself goes undefined.
 
@@ -93,4 +93,4 @@ Flagged issues:
 
 ## Summary
 
-All four cited references are verified correct — titles, authors, years, publishers, and edition numbers match authoritative sources, and Ljungqvist-Sargent Chapter 6 is confirmed as "Search and Unemployment." The main message is fully supported: every clause in the takeaway is demonstrated by the equations, figures, or parameter table. The only issues are three notation gaps of low-to-moderate severity: $W'$ is used in the Bellman equation without a one-line definition, $r$ is introduced in the continuous fixed-point equation without being explicitly linked to $w^{\ast}$, and $\mu$ appears in the Model Setup table role column without ever being named in the prose. The single most important fix is defining $r$ in the Solution Method section, since readers who skip back from the pseudocode to the scalar fixed-point equation may not immediately recognize it as the reservation wage.
+All four cited references are verified correct - titles, authors, years, publishers, and edition numbers match authoritative sources, and Ljungqvist-Sargent Chapter 6 is confirmed as "Search and Unemployment." The main message is fully supported: every clause in the takeaway is demonstrated by the equations, figures, or parameter table. The only issues are three notation gaps of low-to-moderate severity: $W'$ is used in the Bellman equation without a one-line definition, $r$ is introduced in the continuous fixed-point equation without being explicitly linked to $w^{\ast}$, and $\mu$ appears in the Model Setup table role column without ever being named in the prose. The single most important fix is defining $r$ in the Solution Method section, since readers who skip back from the pseudocode to the scalar fixed-point equation may not immediately recognize it as the reservation wage.

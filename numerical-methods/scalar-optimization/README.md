@@ -1,7 +1,5 @@
 # One-Dimensional Optimization for Bellman Inner Steps
 
-> Golden section search and Newton-on-FOC find the per-state cake-eating maximum, with a log-utility closed-form check.
-
 ## Overview
 
 The inner step in cake-eating value function iteration is a one-dimensional maximization on a bounded interval.

@@ -242,7 +242,6 @@ def main() -> None:
 
     report = ModelReport(
         "Income Risk and Buffer-Stock Saving",
-        "A partial-equilibrium savings problem with persistent idiosyncratic income.",
         include_reproduce=False,
         show_figure_captions=False,
     )

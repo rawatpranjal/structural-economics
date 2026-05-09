@@ -1,7 +1,5 @@
 # Nowcasting a Latent Business-Cycle State
 
-> Kalman filtering turns noisy economic indicators into state estimates, uncertainty bands, and a likelihood.
-
 ## Overview
 
 A policy team tracks current activity before the full national accounts arrive. It sees a noisy indicator, such as a survey or spending series.

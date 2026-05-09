@@ -10,7 +10,7 @@ _Model: claude-sonnet-4-6. Generated: 2026-05-08T17:35:00Z._
 - **Tutorial claims:** Course lecture slides covering basic numerical methods (bisection, Newton-Raphson) from Georgetown ECON 606.
 - **Source says:** Toshihiko Mukoyama is confirmed faculty at Georgetown Economics with a notes/materials page. No public index of ECON 606 numerical methods slides was found; the course is not publicly accessible. ECON 606 at Georgetown is currently titled "Macroeconomics II," not a dedicated numerical methods course.
 - **Verdict:** NOT FOUND
-- **Note:** Unpublished course material — correct author and institution, but chapter-level content and year cannot be independently verified.
+- **Note:** Unpublished course material - correct author and institution, but chapter-level content and year cannot be independently verified.
 
 ---
 
@@ -56,25 +56,25 @@ Issues:
 
 | Symbol | First appearance | Defined? | Notes |
 |--------|------------------|----------|-------|
-| $k^{\ast}$ | Overview | Yes — "the steady-state capital stock $k^{\ast}$" | |
-| $F'(k^{\ast})$ | Equations, first equation | Ambiguous — see flagged issue below | Used before $F$ is defined; intended as marginal product $f'(k)$, not derivative of the residual |
+| $k^{\ast}$ | Overview | Yes - "the steady-state capital stock $k^{\ast}$" | |
+| $F'(k^{\ast})$ | Equations, first equation | Ambiguous - see flagged issue below | Used before $F$ is defined; intended as marginal product $f'(k)$, not derivative of the residual |
 | $\beta$ | Equations, first equation | Not in Equations; defined in Model Setup table | Defined after first use; acceptable given standard parameter convention |
 | $\delta$ | Equations, first equation | Not in Equations; defined in Model Setup table | Defined after first use; acceptable |
-| $f(k)$ | Equations, second paragraph | Yes — "$f(k) = k^{\alpha}$" in the same sentence | |
+| $f(k)$ | Equations, second paragraph | Yes - "$f(k) = k^{\alpha}$" in the same sentence | |
 | $\alpha$ | Equations, second equation | Not in Equations; defined in Model Setup table | Defined after first use; acceptable |
-| $F(k)$ | Equations, second equation | Yes — "$F(k) = \alpha k^{\alpha-1} - \bar{r}$" | Defined as the residual function; conflicts with $F'$ in the preceding equation |
-| $\bar{r}$ | Equations, second equation | Yes — "$\bar{r} \equiv \tfrac{1}{\beta} - 1 + \delta$" inline | Defined at first use |
-| $m_n$ | Equations, bisection display | Yes — "$m_n = \tfrac{a_n + b_n}{2}$" inline | |
-| $a_n, b_n$ | Equations, bisection display | Partially — bracket $[a, b]$ introduced in the sentence above, subscripted form introduced with the equation | Acceptable |
-| $x_n$ | Equations, Newton display | Yes — defined in Newton equation | |
-| $\varepsilon$ | Model Setup table | Yes — "Tolerance $\varepsilon$" | Used as `eps` in pseudocode; informal but unambiguous |
+| $F(k)$ | Equations, second equation | Yes - "$F(k) = \alpha k^{\alpha-1} - \bar{r}$" | Defined as the residual function; conflicts with $F'$ in the preceding equation |
+| $\bar{r}$ | Equations, second equation | Yes - "$\bar{r} \equiv \tfrac{1}{\beta} - 1 + \delta$" inline | Defined at first use |
+| $m_n$ | Equations, bisection display | Yes - "$m_n = \tfrac{a_n + b_n}{2}$" inline | |
+| $a_n, b_n$ | Equations, bisection display | Partially - bracket $[a, b]$ introduced in the sentence above, subscripted form introduced with the equation | Acceptable |
+| $x_n$ | Equations, Newton display | Yes - defined in Newton equation | |
+| $\varepsilon$ | Model Setup table | Yes - "Tolerance $\varepsilon$" | Used as `eps` in pseudocode; informal but unambiguous |
 
 Flagged issues:
-- **Overloaded $F$ / $F'$**: The first equation in the Equations section writes $F'(k^{\ast}) = \tfrac{1}{\beta} - 1 + \delta$ to express the market-clearing condition (marginal product equals user cost). Here $F'$ is intended to mean $f'(k)$ — the derivative of the Cobb-Douglas production function $f(k) = k^{\alpha}$. However, in the very next equation $F(k)$ is introduced and defined as the **residual** $\alpha k^{\alpha-1} - \bar{r}$. This makes $F$ refer to two different objects within a few lines: (1) the production function (whose derivative $F'$ appears in the first equation) and (2) the residual function defined in the second equation. The derivative of the residual $F'(k) = \alpha(\alpha-1)k^{\alpha-2}$ (as computed in `run.py` as `Fprime`) is NOT equal to $\bar{r}$, so the first equation is incorrect if $F$ is interpreted as the residual. The fix is to use lowercase $f'(k^{\ast})$ in the first equation, consistent with the production function $f(k) = k^{\alpha}$ already introduced in the following sentence.
+- **Overloaded $F$ / $F'$**: The first equation in the Equations section writes $F'(k^{\ast}) = \tfrac{1}{\beta} - 1 + \delta$ to express the market-clearing condition (marginal product equals user cost). Here $F'$ is intended to mean $f'(k)$ - the derivative of the Cobb-Douglas production function $f(k) = k^{\alpha}$. However, in the very next equation $F(k)$ is introduced and defined as the **residual** $\alpha k^{\alpha-1} - \bar{r}$. This makes $F$ refer to two different objects within a few lines: (1) the production function (whose derivative $F'$ appears in the first equation) and (2) the residual function defined in the second equation. The derivative of the residual $F'(k) = \alpha(\alpha-1)k^{\alpha-2}$ (as computed in `run.py` as `Fprime`) is NOT equal to $\bar{r}$, so the first equation is incorrect if $F$ is interpreted as the residual. The fix is to use lowercase $f'(k^{\ast})$ in the first equation, consistent with the production function $f(k) = k^{\alpha}$ already introduced in the following sentence.
 - **$\alpha, \beta, \delta$ defined after first use**: These three parameters first appear in the Equations section but are only given values in the Model Setup table (which follows). This is a standard economics convention and is unlikely to confuse readers, but strictly speaking the symbols are undefined on first appearance.
 
 ---
 
 ## Summary
 
-The tutorial is clean and internally consistent with one notable exception. The most important fix is the notation overload in the Equations section: the opening equation uses $F'(k^{\ast})$ to express the marginal product of capital ($f'(k^{\ast})$), but $F$ is immediately thereafter defined as the residual function — making $F'$ mean two distinct objects within four lines of the same section. This should be corrected to $f'(k^{\ast}) = \bar{r}$, consistent with the production function $f(k) = k^{\alpha}$ introduced in the subsequent sentence and with the code's own `Fprime` function. Beyond that: one citation is NOT FOUND (Mukoyama 2021 lecture slides — unpublished, unverifiable), one is MINOR (Numerical Recipes subtitle truncated), and the Takeaway contains one OVERREACH (forward reference to Aiyagari/Huggett tutorials that this README cannot support). All numerical values in the Model Setup table are consistent with the code. Issue count: 1 notation overload (MAJOR concern), 1 MINOR citation, 1 NOT FOUND, 1 OVERREACH.
+The tutorial is clean and internally consistent with one notable exception. The most important fix is the notation overload in the Equations section: the opening equation uses $F'(k^{\ast})$ to express the marginal product of capital ($f'(k^{\ast})$), but $F$ is immediately thereafter defined as the residual function - making $F'$ mean two distinct objects within four lines of the same section. This should be corrected to $f'(k^{\ast}) = \bar{r}$, consistent with the production function $f(k) = k^{\alpha}$ introduced in the subsequent sentence and with the code's own `Fprime` function. Beyond that: one citation is NOT FOUND (Mukoyama 2021 lecture slides - unpublished, unverifiable), one is MINOR (Numerical Recipes subtitle truncated), and the Takeaway contains one OVERREACH (forward reference to Aiyagari/Huggett tutorials that this README cannot support). All numerical values in the Model Setup table are consistent with the code. Issue count: 1 notation overload (MAJOR concern), 1 MINOR citation, 1 NOT FOUND, 1 OVERREACH.

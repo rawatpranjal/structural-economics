@@ -1,7 +1,5 @@
 # Entry, Exit, and Market Structure in Oligopoly
 
-> Sunk entry costs and persistent firm counts.
-
 ## Overview
 
 Consider a local market with eight active firms. Some firms may be close to leaving. Potential entrants wait outside because entry requires a sunk cost. The firm count is therefore a state variable.

@@ -536,7 +536,6 @@ def main() -> None:
     print("Building report ...")
     report = ModelReport(
         "Bus Engine Replacement by Q-Learning",
-        "Soft Q-learning recovers Rust's replacement hazard from a simulated bus panel without the mileage transition matrix.",
         include_reproduce=False,
         show_figure_captions=False,
     )

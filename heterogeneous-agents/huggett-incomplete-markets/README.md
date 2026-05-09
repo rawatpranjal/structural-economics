@@ -1,7 +1,5 @@
 # Huggett Equilibrium and the Risk-Free Rate
 
-> A continuous-time exchange economy where income risk and a borrowing limit lower the equilibrium bond return below $\rho$.
-
 ## Overview
 
 Households receive stochastic income and trade one risk-free bond. They can borrow only
@@ -156,7 +154,7 @@ The KFE turns drift into a cross-sectional density. Low-income mass piles near t
 
 <img src="figures/wealth-distribution.png" alt="Stationary asset densities by income state at r*" width="80%">
 
-The supply curve plots aggregate asset demand against $r$. Higher returns raise saving and reduce borrowing, so $S(r)$ rises with $r$. The complete-markets benchmark is $r = \rho$. The Huggett equilibrium is lower, at $r^{\ast} = 0.0350$. The precautionary wedge is $\rho - r^{\ast} = 0.0150$.
+The demand curve plots aggregate asset demand against $r$. Higher returns raise saving and reduce borrowing, so $S(r)$ rises with $r$. The complete-markets benchmark is $r = \rho$. The Huggett equilibrium is lower, at $r^{\ast} = 0.0350$. The precautionary wedge is $\rho - r^{\ast} = 0.0150$.
 
 <img src="figures/bond-market.png" alt="Aggregate asset demand against the interest rate" width="80%">
 

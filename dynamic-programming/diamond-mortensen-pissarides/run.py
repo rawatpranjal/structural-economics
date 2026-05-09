@@ -350,7 +350,6 @@ def main() -> None:
 
     report = ModelReport(
         "DMP Search, Vacancies, and Unemployment",
-        "Free entry, Nash bargaining, and the Shimer amplification puzzle.",
         include_reproduce=False,
         show_figure_captions=False,
     )
@@ -430,6 +429,7 @@ innovation raises tightness by $C={elasticity:.2f}$ percent.
         f"| Discount factor $\\beta$ | {beta:.3f} | Monthly time preference |\n"
         f"| Productivity persistence $\\rho$ | {rho:.3f} | AR(1) coefficient on $\\hat z_t$ |\n"
         f"| Innovation s.d. $\\sigma_\\epsilon$ | {shock_sigma:.4f} | Monthly productivity shock |\n"
+        f"| Mean productivity $\\bar z$ | {z_bar:.2f} | Normalization |\n"
         f"| Separation rate $\\sigma$ | {separation_rate:.3f} | Exogenous job destruction |\n"
         f"| Matching efficiency $\\chi$ | {matching_efficiency:.2f} | Level of $m(u,v)$ |\n"
         f"| Matching elasticity $\\eta$ | {matching_elasticity:.2f} | Vacancy elasticity in $m$ |\n"

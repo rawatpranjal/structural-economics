@@ -276,7 +276,6 @@ def main() -> None:
     setup_style()
     report = ModelReport(
         "Consumer Search with Sequential Inspection Costs",
-        "Estimate search costs from observed search paths and purchases.",
         include_reproduce=False,
         show_figure_captions=False,
     )

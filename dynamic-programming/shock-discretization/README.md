@@ -1,7 +1,5 @@
 # Discretizing Persistent Shocks
 
-> Why persistent shocks need a finite-state approximation before they enter Bellman equations.
-
 ## Overview
 
 Suppose a household receives low income this year. Saving depends on whether low income is likely to persist. The same issue appears when productivity shocks guide investment.

@@ -12,7 +12,6 @@ from __future__ import annotations
 import argparse
 import json
 import re
-import shutil
 import subprocess
 import sys
 import time
@@ -202,7 +201,7 @@ def build_prompt(tutorial: Path, model: str) -> str:
           - CLAUDE.md
           - STYLE_GUIDE.md
           - GLOSSARY.md
-          - {report_rel}        (the proofread report — your fix list)
+          - {report_rel}        (the proofread report - your fix list)
           - {rel}run.py         (this is what you edit)
           - {rel}README.md      (current state; DO NOT edit, it is auto-regenerated)
 
@@ -337,7 +336,7 @@ def build_prompt(tutorial: Path, model: str) -> str:
         Diff-size cap:
           - Each flagged item should land as 1-3 added lines. Any fix that
             requires more than ~5 added/changed lines per flagged item is
-            out of scope for this pass — skip that item.
+            out of scope for this pass - skip that item.
           - If your total diff exceeds ~25 lines across run.py, you are
             doing too much. Stop, undo half of it, and only keep the most
             unambiguous fixes.
@@ -402,20 +401,16 @@ def in_scope(path: str, tutorial: Path) -> bool:
 
 
 def revert_out_of_scope(paths: list[str]) -> list[str]:
-    """Revert tracked modifications and remove untracked files/dirs at given paths."""
+    """Revert tracked modifications at given paths.
+
+    Untracked files/dirs are NOT deleted, because they may belong to a
+    concurrent session working on a different tutorial. The earlier behaviour
+    of unlink()/rmtree() on untracked paths could clobber another agent's
+    in-flight work and is no longer safe.
+    """
     if not paths:
         return []
     subprocess.run(["git", "restore", "--", *paths], cwd=ROOT, check=False)
-    for p in paths:
-        full = ROOT / p
-        if full.exists():
-            try:
-                if full.is_file():
-                    full.unlink()
-                elif full.is_dir():
-                    shutil.rmtree(full)
-            except OSError:
-                pass
     return paths
 
 

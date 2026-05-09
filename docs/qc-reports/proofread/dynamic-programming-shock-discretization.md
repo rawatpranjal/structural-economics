@@ -18,7 +18,7 @@ _Model: claude-sonnet-4-6. Generated: 2026-05-08T17:10:00Z._
 
 - **Located:** https://www.degruyterbrill.com/document/doi/10.1515/9780691218052-014/html
 - **Tutorial claims:** The chapter by Rouwenhorst introduces a recursive discretization method that matches ρ and σ_z² by construction for any N ≥ 2.
-- **Source says:** Chapter 10 (pp. 294–330) of Frontiers of Business Cycle Research, edited by Thomas F. Cooley, Princeton University Press, 1995. The Rouwenhorst discretization method is embedded in the chapter; the main focus is asset pricing in equilibrium business cycle models. Author is confirmed as K. Geert Rouwenhorst.
+- **Source says:** Chapter 10 (pp. 294-330) of Frontiers of Business Cycle Research, edited by Thomas F. Cooley, Princeton University Press, 1995. The Rouwenhorst discretization method is embedded in the chapter; the main focus is asset pricing in equilibrium business cycle models. Author is confirmed as K. Geert Rouwenhorst.
 - **Verdict:** OK
 - **Note:** The DOI resolves to the 2020 Princeton digital edition (ISBN 9780691218052), but the original 1995 publication details are correct as cited.
 
@@ -27,10 +27,10 @@ _Model: claude-sonnet-4-6. Generated: 2026-05-08T17:10:00Z._
 ### Kopecky, K. A. and Suen, R. M. H. (2010). Finite State Markov-Chain Approximations to Highly Persistent Processes. *Review of Economic Dynamics*, 13(3), 701-714.
 
 - **Located:** https://ideas.repec.org/a/red/issued/09-115.html
-- **Tutorial claims:** Implicitly cited as the source establishing the superiority of the Rouwenhorst method over Tauchen for highly persistent processes; journal, volume, issue, pages, and year are given as RED 13(3), 701–714, 2010.
+- **Tutorial claims:** Implicitly cited as the source establishing the superiority of the Rouwenhorst method over Tauchen for highly persistent processes; journal, volume, issue, pages, and year are given as RED 13(3), 701-714, 2010.
 - **Source says:** Journal, volume, issue, pages, and year all match. The paper proves analytically that Rouwenhorst exactly matches conditional and unconditional mean and variance and the first-order autocorrelation for any stationary AR(1). Correct DOI is `10.1016/j.red.2010.02.002`.
 - **Verdict:** MINOR
-- **Note:** The cited DOI `10.1016/j.red.2009.07.002` is wrong — it resolves to an unrelated article ("Fiscal policy and default risk in emerging markets"). The correct DOI is `10.1016/j.red.2010.02.002`.
+- **Note:** The cited DOI `10.1016/j.red.2009.07.002` is wrong - it resolves to an unrelated article ("Fiscal policy and default risk in emerging markets"). The correct DOI is `10.1016/j.red.2010.02.002`.
 
 ---
 
@@ -44,11 +44,11 @@ _Model: claude-sonnet-4-6. Generated: 2026-05-08T17:10:00Z._
 | With persistent shocks and small N, Rouwenhorst is the safer default | Results: moment-accuracy table shows Tauchen persistence error of 0.050 at N=3 vs Rouwenhorst at 0 | OK |
 | It matches σ_z and ρ by construction | Solution Method: "By construction, the chain matches ρ and σ_z² for any N ≥ 2. It has no quadrature error in those moments." | OK |
 | Tauchen is transparent and can approximate the Gaussian shape well on finer grids | Results: moment-accuracy table shows Tauchen errors shrinking toward zero as N grows to 15 | OK |
-| At ρ=0.95 and N=7, Tauchen overstates persistence enough to **change continuation values** | Not demonstrated — the tutorial never solves a Bellman equation; only the chain moments are compared | OVERREACH |
+| At ρ=0.95 and N=7, Tauchen overstates persistence enough to **change continuation values** | Not demonstrated - the tutorial never solves a Bellman equation; only the chain moments are compared | OVERREACH |
 | Choose the chain by the moments that matter in the Bellman equation | Equations: Bellman structure shown; Results: moment diagnostics framed around P entering continuation sums | OK |
 
 Issues:
-- **OVERREACH — "change continuation values":** The tutorial shows that Tauchen at N=7 overstates persistence by 0.0122 (0.9622 vs 0.95). It does not solve any Bellman equation or tabulate value functions under the two chains. The claim that this error "changes continuation values" is economically plausible but not demonstrated by the tutorial's own results. The stronger wording would be justified only if a companion figure or table compared V(a,z_i) under each chain.
+- **OVERREACH - "change continuation values":** The tutorial shows that Tauchen at N=7 overstates persistence by 0.0122 (0.9622 vs 0.95). It does not solve any Bellman equation or tabulate value functions under the two chains. The claim that this error "changes continuation values" is economically plausible but not demonstrated by the tutorial's own results. The stronger wording would be justified only if a companion figure or table compared V(a,z_i) under each chain.
 
 ---
 
@@ -81,14 +81,14 @@ Issues:
 | P_N, P_2, P_n | Algorithm 2 pseudocode | Contextual | Defined within the algorithm block |
 
 Flagged issues:
-- **R — undefined:** The gross return factor R in u(Ra+exp(z_i)−a') is never introduced. Readers must infer it from context.
-- **β — undefined:** The discount factor β appears in the Bellman without a name, definition, or value in the parameter table.
-- **u(·) — partially specified:** The utility function is referenced by name only through its argument; no functional form (CRRA, log) is given, nor is one needed for a shock-discretization tutorial, but flagging for completeness.
-- **x_{t+1} — undefined and inconsistent:** The conditional expectation formula uses x_{t+1} as the first argument of V, but the Bellman equation uses a and a'. The variable x is never introduced; this is a notation shift that goes unexplained.
-- **Φ — undefined in text:** The standard normal CDF is used directly in Algorithm 1 pseudocode without being named in the surrounding prose.
+- **R - undefined:** The gross return factor R in u(Ra+exp(z_i)−a') is never introduced. Readers must infer it from context.
+- **β - undefined:** The discount factor β appears in the Bellman without a name, definition, or value in the parameter table.
+- **u(·) - partially specified:** The utility function is referenced by name only through its argument; no functional form (CRRA, log) is given, nor is one needed for a shock-discretization tutorial, but flagging for completeness.
+- **x_{t+1} - undefined and inconsistent:** The conditional expectation formula uses x_{t+1} as the first argument of V, but the Bellman equation uses a and a'. The variable x is never introduced; this is a notation shift that goes unexplained.
+- **Φ - undefined in text:** The standard normal CDF is used directly in Algorithm 1 pseudocode without being named in the surrounding prose.
 
 ---
 
 ## Summary
 
-The tutorial is clean and self-consistent. The paper verification found one substantive issue: the Kopecky–Suen (2010) DOI is wrong (`10.1016/j.red.2009.07.002` resolves to an unrelated paper; the correct DOI is `10.1016/j.red.2010.02.002`). The other two citations are fully correct. The main message audit found one OVERREACH: the Takeaway claims that Tauchen's N=7 persistence error "changes continuation values," but the tutorial never solves a Bellman equation to demonstrate this — it remains a plausible but undemonstrated consequence. The notation audit found five issues, the most important being that R (the return factor) and β (the discount factor) appear in the Bellman equation without definition anywhere in the README, and x_{t+1} appears in the conditional expectation formula as a notation shift from a/a' without explanation. Overall: **1 MINOR citation issue, 1 OVERREACH, 0 MAJOR, 0 NOT FOUND; 5 notation gaps.** The single most important fix is correcting the Kopecky–Suen DOI to `10.1016/j.red.2010.02.002`.
+The tutorial is clean and self-consistent. The paper verification found one substantive issue: the Kopecky-Suen (2010) DOI is wrong (`10.1016/j.red.2009.07.002` resolves to an unrelated paper; the correct DOI is `10.1016/j.red.2010.02.002`). The other two citations are fully correct. The main message audit found one OVERREACH: the Takeaway claims that Tauchen's N=7 persistence error "changes continuation values," but the tutorial never solves a Bellman equation to demonstrate this - it remains a plausible but undemonstrated consequence. The notation audit found five issues, the most important being that R (the return factor) and β (the discount factor) appear in the Bellman equation without definition anywhere in the README, and x_{t+1} appears in the conditional expectation formula as a notation shift from a/a' without explanation. Overall: **1 MINOR citation issue, 1 OVERREACH, 0 MAJOR, 0 NOT FOUND; 5 notation gaps.** The single most important fix is correcting the Kopecky-Suen DOI to `10.1016/j.red.2010.02.002`.

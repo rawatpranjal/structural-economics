@@ -322,7 +322,6 @@ def main() -> None:
     setup_style()
     report = ModelReport(
         "Bus Engine Replacement in a Dynamic Choice Model",
-        "Mileage, continuation values, and observed replacement hazards in a Rust-style maintenance model.",
         include_reproduce=False,
         show_figure_captions=False,
     )

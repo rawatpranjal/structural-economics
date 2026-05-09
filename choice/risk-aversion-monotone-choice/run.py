@@ -188,7 +188,6 @@ def main() -> None:
     setup_style()
     report = ModelReport(
         "Lottery Risk Aversion with Monotone Choice",
-        "Estimate risk aversion from a lottery ladder with ordered choice probabilities.",
         include_reproduce=False,
         show_figure_captions=False,
     )

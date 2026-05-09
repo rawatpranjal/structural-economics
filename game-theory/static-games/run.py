@@ -95,7 +95,6 @@ def main() -> None:
     setup_style()
     report = ModelReport(
         "Cournot Quantity Competition and Best-Response Iteration",
-        "A quantity-setting duopoly solved by Nash first-order conditions and checked by best-response iteration.",
         include_reproduce=False,
         show_figure_captions=False,
     )

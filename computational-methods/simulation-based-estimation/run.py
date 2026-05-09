@@ -213,7 +213,6 @@ def main() -> None:
     setup_style()
     report = ModelReport(
         "Estimating a Search Acceptance Rule by Simulation",
-        "Estimate offer distribution and reservation wage with simulated summaries.",
         include_reproduce=False,
         show_figure_captions=False,
     )

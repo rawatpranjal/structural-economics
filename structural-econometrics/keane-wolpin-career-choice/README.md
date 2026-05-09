@@ -1,7 +1,5 @@
 # Keane-Wolpin Career Choice by Emax Approximation
 
-> Finite-horizon schooling and occupation choice with sampled continuation-value regression.
-
 ## Overview
 
 A young worker chooses whether to stay in school, work blue collar, work white collar, or stay home. Schooling raises later white-collar wages. Work builds occupation-specific experience. The relevant state is the stock of human capital accumulated before the current age.
@@ -23,15 +21,60 @@ experience stocks. The action set is
 
 $$
 d_t \in D(s_t,t)
-\subseteq \{\mathrm{school}, \mathrm{blue}, \mathrm{white}, \mathrm{home}\}.
+\subseteq \lbrace \mathrm{school}, \mathrm{blue}, \mathrm{white}, \mathrm{home} \rbrace.
 $$
 
-The transition is deterministic conditional on the choice. Schooling raises
-$E_t$ by one year, blue-collar work raises $X^b_t$, white-collar work raises
-$X^w_t$, and home leaves measured human capital unchanged:
+The state records accumulated human capital before the current choice.
+
+Schooling is feasible only before the schooling cap and before the maximum
+school age; blue-collar work, white-collar work, and home are always feasible.
+
+The transition is deterministic conditional on the choice:
 
 $$
-s_{t+1}=g(s_t,d_t).
+\begin{aligned}
+g(s,\mathrm{school}) &= (\min \lbrace E+1,\bar E \rbrace, X^b, X^w),\\
+g(s,\mathrm{blue}) &= (E, X^b+1, X^w),\\
+g(s,\mathrm{white}) &= (E, X^b, X^w+1),\\
+g(s,\mathrm{home}) &= (E, X^b, X^w).
+\end{aligned}
+$$
+
+School raises completed education, work raises occupation-specific experience,
+and home leaves measured human capital unchanged.
+
+Let age be $\alpha_t=16+t$ and college years be $C(E)=\max \lbrace E-12,0 \rbrace$.
+The wage offers and deterministic flow payoffs used by the recursion are
+
+$$
+\begin{aligned}
+\log w_b(s) &=
+0.46 + 0.050E + 0.175\sqrt{X^b+1}
+\quad -0.010X^b + 0.012X^w,\\
+\log w_w(s) &=
+{}-0.10 + 0.108E + 0.065\sqrt{X^w+1}
+\quad +0.055C(E)-0.006X^w+0.006X^b,\\
+u_{\mathrm{school}}(s,t) &=
+1.05 + 0.12\max \lbrace 18-\alpha_t,0 \rbrace
+\quad -0.08C(E)-0.05\max \lbrace \alpha_t-19,0 \rbrace,\\
+u_{\mathrm{blue}}(s,t) &=
+\log w_b(s)+0.18-0.010\max \lbrace \alpha_t-24,0 \rbrace,\\
+u_{\mathrm{white}}(s,t) &=
+\log w_w(s)-0.16\mathbb{1}\lbrace X^w=0 \text{ and } E<13 \rbrace,\\
+u_{\mathrm{home}}(s,t) &=
+1.04-0.018\max \lbrace \alpha_t-20,0 \rbrace +0.020(X^b+X^w).
+\end{aligned}
+$$
+
+The terminal value prices the best post-horizon use of accumulated human
+capital:
+
+$$
+\mathbb{E}_T(s)=4\max \lbrace
+u_{\mathrm{blue}}(s,T-1),
+u_{\mathrm{white}}(s,T-1),
+u_{\mathrm{home}}(s,T-1)
+\rbrace.
 $$
 
 The deterministic part of the choice-specific value is
@@ -42,9 +85,8 @@ v_t(d,s) =
 \underbrace{\beta \mathbb{E}_{t+1}(g(s,d))}_{\text{discounted continuation value}}.
 $$
 
-The underbraces are the key economic split. Current payoffs rank school, work,
-and home today. The continuation value prices the human capital state that the
-choice carries into tomorrow.
+Current payoffs and continuation values are the two objects backward induction
+needs.
 
 With Type-I extreme value taste shocks of scale $\sigma_\epsilon$, the Emax
 function is
@@ -53,17 +95,31 @@ $$
 \mathbb{E}_t(s) =
 \underbrace{\sigma_\epsilon
 \log \sum_{d \in D(s,t)} \exp(v_t(d,s)/\sigma_\epsilon)}_{\text{expected max over feasible discrete choices}} +
-\underbrace{\sigma_\epsilon \gamma}_{\text{mean of the extreme-value shock}}.
+\underbrace{\sigma_\epsilon \gamma_E}_{\text{mean of the extreme-value shock}}.
+$$
+
+The log-sum-exp term integrates over the Type-I extreme-value taste shocks.
+Here $\gamma_E$ is Euler's constant.
+
+The same objects imply logit conditional choice probabilities:
+
+$$
+P_t(d \mid s)=
+\frac{\exp(v_t(d,s)/\sigma_\epsilon)}
+{\sum_{j \in D(s,t)} \exp(v_t(j,s)/\sigma_\epsilon)}.
 $$
 
 The exact recursion evaluates this expression at every reachable state. The
 Keane-Wolpin approximation evaluates it only on a sampled set
-$S_t^{sample}=\{s_{t,1},\dots,s_{t,M_t}\}$, then fits the regression
+$S_t^{sample}=\lbrace s_{t,1},\dots,s_{t,M_t} \rbrace$, then fits the regression
 
 $$
 Y_{t,i} = \mathbb{E}_t(s_{t,i}), \qquad
 Y_{t,i} = \phi(s_{t,i},t)' b_t + \eta_{t,i}.
 $$
+
+Sampled exact Emax values become the training targets for the continuation-value
+approximation.
 
 In this tutorial the basis vector is
 
@@ -88,17 +144,29 @@ values from the fitted Emax surface rather than from fresh exact integrations.
 |---|---:|---|
 | $t$ | ages 16-29 | Finite-horizon decision age |
 | $s_t=(E_t,X^b_t,X^w_t)$ | starts at $(10,0,0)$ | Schooling, blue-collar experience, white-collar experience |
-| $D(s,t)$ | $\{\mathrm{school},\mathrm{blue},\mathrm{white},\mathrm{home}\}$ subject to feasibility | Discrete choice set |
+| $D(s,t)$ | $\lbrace \mathrm{school},\mathrm{blue},\mathrm{white},\mathrm{home} \rbrace$ subject to feasibility | Discrete choice set |
 | $g(s,d)$ | deterministic | Human-capital transition after choice $d$ |
 | $\beta$ | 0.94 | Discount factor in the Emax recursion |
 | $\sigma_\epsilon$ | 0.22 | Type-I extreme value scale for choice shocks |
+| $\gamma_E$ | 0.5772 | Euler's constant in the Emax formula |
 | $\sigma_w$ | 0.18 | Log wage shock used in simulated wage paths |
+| $\bar E$ | 18 years | Maximum completed schooling in the state grid |
+| Max school age | 23 | Last age at which school is feasible |
+| Terminal multiplier | 4.0 | Weight on post-horizon human capital value |
 | $\phi(s,t)$ | 12 polynomial terms | Basis for the sampled Emax regression |
 | $M_t$ | up to 260 sampled states | Exact Emax evaluations used to fit $\widehat b_t$ |
+| $\lambda$ | $10^{-6}$ | Ridge penalty in the sampled Emax regression |
 | $N_s$ | 2,310 pre-terminal states | Reachable state count in the exact benchmark |
 | Synthetic panel | 6,000 workers | Simulated from the approximate conditional choice probabilities |
 
 ## Solution Method
+
+Reachable states are generated forward from the initial state:
+
+$$
+S_0=\lbrace (E_0,0,0) \rbrace,\qquad
+S_{t+1}=\lbrace g(s,d): s \in S_t,\ d \in D(s,t) \rbrace.
+$$
 
 The exact benchmark is the finite-horizon recursion
 
@@ -106,8 +174,11 @@ $$
 Q_t(d,s)=u_d(s,t)+\beta \mathbb{E}_{t+1}(g(s,d)),
 \qquad
 \mathbb{E}_t(s)=\sigma_\epsilon \log \sum_{d\in D(s,t)}
-\exp(Q_t(d,s)/\sigma_\epsilon)+\sigma_\epsilon\gamma.
+\exp(Q_t(d,s)/\sigma_\epsilon)+\sigma_\epsilon\gamma_E.
 $$
+
+The exact recursion stores both the Emax value and the deterministic
+choice-specific values $Q_t(d,s)$ at every reachable state.
 
 The approximate solver keeps the same recursion but estimates
 $\mathbb{E}_t(s)$ from sampled states. At each age, stack the sampled targets
@@ -119,26 +190,82 @@ $$
 \widehat{\mathbb{E}}_t(s)=\phi(s,t)'\widehat b_t.
 $$
 
-The small ridge term $\lambda$ only stabilizes the least-squares fit when an
-early age has few reachable states.
+For unsampled states, $\widehat{\mathbb{E}}_t(s)$ replaces a fresh exact Emax
+integration. The small ridge term $\lambda$ only stabilizes the least-squares
+fit when an early age has few reachable states.
 
 ```text
 Algorithm: sampled Emax approximation
-Given reachable sets S_t and terminal values E_T(s)
-for t = T-1, T-2, ..., 0:
-    draw S_t^sample = {s_{t,1}, ..., s_{t,M_t}} from S_t
-    for each sampled state s_{t,i}:
-        Q_{t,i}(d) = u_d(s_{t,i},t) + beta * Ehat_{t+1}(g(s_{t,i},d))
-        Y_{t,i} = sigma_e * log sum_{d in D(s_{t,i},t)}
-                  exp(Q_{t,i}(d) / sigma_e) + sigma_e * gamma
-    form Phi_t with row i equal to phi(s_{t,i},t)'
-    b_hat_t = (Phi_t' Phi_t + lambda I)^{-1} Phi_t' Y_t
-    for each reachable state s in S_t:
-        Ehat_t(s) = phi(s,t)' b_hat_t
-        Qhat_t(d,s) = u_d(s,t) + beta * Ehat_{t+1}(g(s,d))
-        P_t(d | s) = exp(Qhat_t(d,s)/sigma_e)
-                     / sum_j exp(Qhat_t(j,s)/sigma_e)
-simulate histories from P_t(d | s)
+Input:
+    horizon T, initial state s_0 = (E_0, 0, 0)
+    feasible actions D(s,t), transition g(s,d), flow payoffs u_d(s,t)
+    discount factor beta, taste-shock scale sigma_e, basis phi(s,t)
+    sample cap M and ridge penalty lambda
+
+Build reachable state sets:
+    S_0 = {s_0}
+    for t = 0, 1, ..., T-1:
+        initialize S_{t+1} as empty
+        for each state s in S_t:
+            for each feasible action d in D(s,t):
+                add g(s,d) to S_{t+1}
+
+Terminal values:
+    for each state s in S_T:
+        E_T(s) = terminal_multiplier
+                 * max{u_blue(s,T-1), u_white(s,T-1), u_home(s,T-1)}
+
+Exact benchmark:
+    for t = T-1, T-2, ..., 0:
+        for each state s in S_t:
+            for each feasible action d in D(s,t):
+                s_next = g(s,d)
+                Q_t(d,s) = u_d(s,t) + beta * E_{t+1}(s_next)
+            E_t(s) = sigma_e * log sum_{d in D(s,t)}
+                     exp(Q_t(d,s) / sigma_e) + sigma_e * EulerGamma
+            store Q_t(d,s) for policy comparisons
+
+Approximate Emax recursion:
+    set Ehat_T(s) = E_T(s) for every terminal state
+    for t = T-1, T-2, ..., 0:
+        if |S_t| <= M:
+            use every state in S_t as the sample
+        else:
+            draw M states without replacement from S_t
+
+        for each sampled state s_i:
+            for each feasible action d in D(s_i,t):
+                s_next = g(s_i,d)
+                Q_i(d) = u_d(s_i,t) + beta * Ehat_{t+1}(s_next)
+            Y_i = sigma_e * log sum_{d in D(s_i,t)}
+                  exp(Q_i(d) / sigma_e) + sigma_e * EulerGamma
+
+        form Phi_t with row i equal to phi(s_i,t)'
+        solve b_hat_t = (Phi_t' Phi_t + lambda I)^{-1} Phi_t' Y_t
+
+        for each reachable state s in S_t:
+            Ehat_t(s) = phi(s,t)' b_hat_t
+            for each feasible action d in D(s,t):
+                s_next = g(s,d)
+                Qhat_t(d,s) = u_d(s,t) + beta * Ehat_{t+1}(s_next)
+            store Qhat_t(d,s)
+            store P_t(d | s) as the softmax of Qhat_t(d,s) / sigma_e
+
+Diagnostics:
+    for each age t:
+        compare E_t(s) and Ehat_t(s) on every state in S_t
+        compute MAE, RMSE, RMSE divided by the exact Emax standard deviation,
+        upper-tail absolute errors, and deterministic argmax agreement
+
+Simulation:
+    start every worker at s_0
+    for each worker and age:
+        read the stored approximate values Qhat_t(d,s)
+        convert them into probabilities P_t(d | s)
+        draw a discrete action from those probabilities
+        if the action is blue or white, draw the transitory wage shock
+        record age, state, action, schooling, experience, wage, and probability
+        update the state to g(s,d)
 ```
 
 The approximation is deliberately auditable here. The exact solve is still run,
@@ -213,8 +340,8 @@ These are moments from the simulated panel, not estimates from real data. They m
 | Mean blue experience at last observed age  |  5.9145 |
 | Mean white experience at last observed age |  3.1485 |
 | Mean years spent in school during model    |  3.5915 |
-| Approximation runtime seconds              |  0.0748 |
-| Exact runtime seconds                      |  0.0863 |
+| Approximation runtime seconds              |  0.0811 |
+| Exact runtime seconds                      |  0.085  |
 
 ## Takeaway
 

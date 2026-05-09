@@ -1,7 +1,5 @@
 # Rationalizable Choice Cores with Houtman-Maks
 
-> Measuring how much of a finite choice dataset can still come from one stable utility ordering.
-
 ## Overview
 
 Revealed-preference data can fail GARP even when most observations fit stable preferences. The failure says the full dataset is not rationalizable.

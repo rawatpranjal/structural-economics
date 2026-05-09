@@ -1,7 +1,5 @@
 # Market Entry with Quantal Response Equilibrium
 
-> Payoff-sensitive mistakes turn entry into a fixed-point problem.
-
 ## Overview
 
 Two firms decide whether to enter a small market. Entry pays when only one firm enters. Joint entry makes both firms lose money.

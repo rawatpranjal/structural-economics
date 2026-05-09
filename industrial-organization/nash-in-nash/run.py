@@ -179,7 +179,6 @@ def main() -> None:
 
     report = ModelReport(
         "Hospital-Insurer Network Bargaining with Nash-in-Nash",
-        "How network outside options shape negotiated hospital payments.",
         include_reproduce=False,
         show_figure_captions=False,
     )

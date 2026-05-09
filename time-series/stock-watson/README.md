@@ -1,7 +1,5 @@
 # Macro Forecasting with Stock-Watson Diffusion Indexes
 
-> Estimating a common business-cycle factor for macro forecasting.
-
 ## Overview
 
 A forecaster wants next month's industrial production. The data are monthly indicators such as employment and prices. Each series is noisy, but they move together over the business cycle.

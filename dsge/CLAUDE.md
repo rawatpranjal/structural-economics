@@ -6,7 +6,7 @@ rational-expectations model around its deterministic steady state and solves
 the resulting linear system.
 
 Three tutorials (`rbc`, `nkdsge`, `assetNews`) use the method of undetermined
-coefficients — they hand-derive the closed-form linear policy because the
+coefficients - they hand-derive the closed-form linear policy because the
 state-space is small enough to make the algebra visible. Each one cross-checks
 its closed-form coefficients against Klein-style generalized Schur (QZ)
 decomposition via `lib.perturbation.solve_klein`; agreement to ~1e-15 is the
@@ -28,7 +28,7 @@ coefficients comfortably handle.
 - `run.py` reads the `.mod` spec text for the Model Setup section but does
   not execute it.
 - The shared `lib/perturbation.py` provides Klein-style QZ via
-  `solve_klein(A, B, n_predetermined)` — used both as primary solver and as
+  `solve_klein(A, B, n_predetermined)` - used both as primary solver and as
   cross-check.
 - IRF (impulse response function) plots are the primary visualization.
 - Models are log-linearized around steady state; nonlinear perfect-foresight
@@ -44,6 +44,6 @@ coefficients comfortably handle.
   Multivariate Linear Rational Expectations Model." *Journal of Economic
   Dynamics and Control*, 24(10), 1405-1423.
 - Villemot, S. (2011). "Solving Rational Expectations Models at First
-  Order: What Dynare Does." Dynare Working Paper 2, CEPREMAP. — Confirms the
+  Order: What Dynare Does." Dynare Working Paper 2, CEPREMAP. - Confirms the
   same generalized Schur algorithm is what Dynare uses for `stoch_simul,
   order=1`.

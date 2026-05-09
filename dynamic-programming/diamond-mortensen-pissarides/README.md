@@ -1,7 +1,5 @@
 # DMP Search, Vacancies, and Unemployment
 
-> Free entry, Nash bargaining, and the Shimer amplification puzzle.
-
 ## Overview
 
 Unemployed workers and posted vacancies meet through a matching technology. A formed match produces surplus $z_t-b$, and Nash bargaining splits it.
@@ -72,6 +70,7 @@ innovation raises tightness by $C=1.55$ percent.
 | Discount factor $\beta$ | 0.996 | Monthly time preference |
 | Productivity persistence $\rho$ | 0.949 | AR(1) coefficient on $\hat z_t$ |
 | Innovation s.d. $\sigma_\epsilon$ | 0.0065 | Monthly productivity shock |
+| Mean productivity $\bar z$ | 1.00 | Normalization |
 | Separation rate $\sigma$ | 0.034 | Exogenous job destruction |
 | Matching efficiency $\chi$ | 0.49 | Level of $m(u,v)$ |
 | Matching elasticity $\eta$ | 0.72 | Vacancy elasticity in $m$ |
