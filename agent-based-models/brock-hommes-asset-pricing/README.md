@@ -54,6 +54,10 @@ realized excess return:
 $$\pi_{h,t} =
 \frac{e_t (f_{h,t} - R x_{t-1})}{a\sigma^2} - c_h.$$
 
+Here $a > 0$ is the coefficient of absolute risk aversion and $\sigma^2$ is the
+variance of excess returns; the model calibrates $a\sigma^2$ as a single combined
+risk-scaling constant.
+
 Scores are smoothed,
 
 $$U_{h,t} = \lambda U_{h,t-1} + (1-\lambda)\pi_{h,t},$$
@@ -80,8 +84,9 @@ The calibration is intentionally small. The point is to make strategy switching 
 | Forecast bound | $\bar x$ | 0.35 | Finite trend forecast |
 | Shock scale | $\sigma_\epsilon$ | 0.02 | Noise-trader supply shock |
 | Score memory | $\lambda$ | 0.80 | Profit-score persistence |
+| Risk scale | $a\sigma^2$ | 0.04 | Combined risk-aversion and return-variance scaling |
 | Trend cost | $c_T$ | 0.001 | Small information or trading cost |
-| Simulation horizon | $T$ | 700 | Price periods |
+| Simulation horizon | $T_{sim}$ | 700 | Price periods |
 | Burn-in | $T_0$ | 100 | Moments discard early periods |
 
 The plotted intensity values are $\beta = 2$, $\beta = 20$, and $\beta = 50$. The SMM exercise sets the true value to $\beta_0 = 30$ and searches over even candidates from 2 to 60.
@@ -97,7 +102,7 @@ Output: price deviations x_t, strategy shares n_ht, return moments
 
 1. Set p* = d / (R - 1), x_t = p_t - p*, and initialize x_0, x_1.
    Set initial scores U_F = U_T = 0 and shares n_F = n_T = 1/2.
-2. For t = 2 to T:
+2. For t = 2 to T_sim:
    2a. Forecast deviations:
        f_F,t = 0
        f_T,t = xbar * tanh((x_{t-1} + g * (x_{t-1} - x_{t-2})) / xbar)

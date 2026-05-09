@@ -531,7 +531,7 @@ above.
         f"|---|---|---|\n"
         f"| $G$ | {n} x {n} cells | City grid |\n"
         f"| $E_t$ | {vacancy_share:.0%} of cells initially vacant | Empty cells that permit movement |\n"
-        f"| $g_i$ | $A$ or $B$ | Occupant group in cell $i$ |\n"
+        f"| $g_i(t)$ | $A$ or $B$ | Occupant group in cell $i$ at iteration $t$ |\n"
         f"| $N_i$ | Moore neighborhood, up to 8 cells | Local reference group |\n"
         f"| $O_i(t)$ | occupied neighbors in $N_i$ | Denominator for local exposure |\n"
         f"| $s_i(t)$ | between 0 and 1 | Same-group neighbor share for cell $i$ |\n"

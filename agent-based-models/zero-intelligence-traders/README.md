@@ -73,6 +73,8 @@ $$
 \sigma_p=\sqrt{\frac{1}{T_p}\sum_{t:p_t\ \mathrm{exists}}(p_t-\bar p_T)^2}.
 $$
 
+Here $T_p$ is the number of realized transactions and $\bar p_T$ is the mean transaction price (distinct from $\bar p$, the maximum ask support defined above).
+
 ZIP-style buyers and sellers maintain feasible quote targets $z_i^B(t)$ and
 $z_j^S(t)$. After an accepted price $p_t$, active adaptive agents update by
 

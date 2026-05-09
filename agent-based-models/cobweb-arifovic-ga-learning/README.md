@@ -84,6 +84,7 @@ $$
 $$
 
 The simulation runs for $T$ generations.
+Here $b_{i,t}$ is firm $i$'s chromosome at the start of period $t$, and $b_i'$ is the candidate child produced by crossover and mutation at steps (4)-(5) before the election filter at step (6).
 
 ## Model Setup
 
@@ -116,7 +117,7 @@ Output: price path p_1, ..., p_T and per-period population quantities
    2a. Decode each chromosome into a quantity q_i in [q_min, q_max].
    2b. Aggregate Q = sum_i q_i; clear the market at p_t = (a + e_t - Q) / b.
    2c. Compute realized profit pi_i = p_t q_i - x q_i - (y/2) q_i^2.
-   2d. Roulette-select N parents in proportion to shifted profits.
+   2d. Tournament-select N parents using 3-way tournaments on realized profit.
    2e. Pair parents and apply single-point crossover with prob p_c.
    2f. Bit-flip mutate each child with prob p_m per bit.
    2g. ELECTION: keep each child only if its profit at p_t exceeds its parent's profit.

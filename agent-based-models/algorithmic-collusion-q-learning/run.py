@@ -463,8 +463,8 @@ $p_M$ be the monopoly price, and $\Delta$ be the grid step. The action set is
 $$\mathcal{P} = \{p_B-\Delta\} \cup \{p_B, p_B+\Delta,\dots,p_M\} \cup \{p_M+\Delta\}.$$
 
 The Q-learning state is the previous-period price-index pair
-$s_t = (a_{1,t-1}, a_{2,t-1})$. Firm $i$'s action is its current price-grid
-index $a_{i,t}$. After observing current profit and next state $s_{t+1}$,
+$s_t = (a_{1,t-1}, a_{2,t-1})$ (here $s_t$ is the Q-learning state pair, distinct from the demand share $s_i(p)$ defined above). Firm $i$'s action is its current price-grid
+index $a_{i,t}$ (where $a_{i,t}$ is a price-grid index, not the product quality parameter $a$ defined above). After observing current profit and next state $s_{t+1}$,
 the tabular update is
 
 $$Q_i(s_t, a_{i,t}) \leftarrow (1-\alpha) Q_i(s_t, a_{i,t}) + \alpha [\pi_i(p_t) + \delta \max_a Q_i(s_{t+1}, a)].$$

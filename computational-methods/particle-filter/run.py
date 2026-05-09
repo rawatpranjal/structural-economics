@@ -313,6 +313,8 @@ $$
 y_t = \Psi s_t + u_t, \qquad s_t = \Phi s_{t-1} + \epsilon_t.
 $$
 
+Here $u_t$ is measurement noise and $\epsilon_t$ is process noise.
+
 Particles approximate the filtered distribution with weighted simulated states.
 The bootstrap particle filter propagates particles from:
 

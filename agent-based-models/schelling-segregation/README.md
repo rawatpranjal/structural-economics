@@ -69,7 +69,7 @@ The calibration keeps Schelling's checkerboard simple. These numbers are not est
 |---|---|---|
 | $G$ | 50 x 50 cells | City grid |
 | $E_t$ | 10% of cells initially vacant | Empty cells that permit movement |
-| $g_i$ | $A$ or $B$ | Occupant group in cell $i$ |
+| $g_i(t)$ | $A$ or $B$ | Occupant group in cell $i$ at iteration $t$ |
 | $N_i$ | Moore neighborhood, up to 8 cells | Local reference group |
 | $O_i(t)$ | occupied neighbors in $N_i$ | Denominator for local exposure |
 | $s_i(t)$ | between 0 and 1 | Same-group neighbor share for cell $i$ |

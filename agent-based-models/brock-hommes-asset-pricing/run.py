@@ -292,6 +292,10 @@ realized excess return:
 $$\pi_{{h,t}} =
 \frac{{e_t (f_{{h,t}} - R x_{{t-1}})}}{{a\sigma^2}} - c_h.$$
 
+Here $a > 0$ is the coefficient of absolute risk aversion and $\sigma^2$ is the
+variance of excess returns; the model calibrates $a\sigma^2$ as a single combined
+risk-scaling constant.
+
 Scores are smoothed,
 
 $$U_{{h,t}} = \lambda U_{{h,t-1}} + (1-\lambda)\pi_{{h,t}},$$
@@ -319,8 +323,9 @@ across forecasting rules.
         f"| Forecast bound | $\\bar x$ | {params.forecast_bound:.2f} | Finite trend forecast |\n"
         f"| Shock scale | $\\sigma_\\epsilon$ | {params.shock_sigma:.2f} | Noise-trader supply shock |\n"
         f"| Score memory | $\\lambda$ | {params.memory:.2f} | Profit-score persistence |\n"
+        f"| Risk scale | $a\\sigma^2$ | {params.risk_scale:.2f} | Combined risk-aversion and return-variance scaling |\n"
         f"| Trend cost | $c_T$ | {params.trend_cost:.3f} | Small information or trading cost |\n"
-        f"| Simulation horizon | $T$ | {params.periods} | Price periods |\n"
+        f"| Simulation horizon | $T_{{sim}}$ | {params.periods} | Price periods |\n"
         f"| Burn-in | $T_0$ | {params.burn} | Moments discard early periods |\n\n"
         f"The plotted intensity values are $\\beta = {betas[0]:.0f}$, "
         f"$\\beta = {betas[1]:.0f}$, and $\\beta = {betas[2]:.0f}$. The SMM "
@@ -339,7 +344,7 @@ across forecasting rules.
         "Output: price deviations x_t, strategy shares n_ht, return moments\n\n"
         "1. Set p* = d / (R - 1), x_t = p_t - p*, and initialize x_0, x_1.\n"
         "   Set initial scores U_F = U_T = 0 and shares n_F = n_T = 1/2.\n"
-        "2. For t = 2 to T:\n"
+        "2. For t = 2 to T_sim:\n"
         "   2a. Forecast deviations:\n"
         "       f_F,t = 0\n"
         "       f_T,t = xbar * tanh((x_{t-1} + g * (x_{t-1} - x_{t-2})) / xbar)\n"
