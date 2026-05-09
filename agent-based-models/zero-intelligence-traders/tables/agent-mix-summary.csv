@@ -1,0 +1,4 @@
+Strategy mix,ZIP buyers,ZIP sellers,Trades,Mean price,Price SD,Allocative efficiency,Price inside competitive band
+All ZIC,0,0,7,68.95,7.11,98.3%,28.6%
+One ZIP buyer and one ZIP seller,1,1,7,68.79,4.49,100.0%,0.0%
+All ZIP,10,10,8,71.30,0.74,99.3%,62.5%

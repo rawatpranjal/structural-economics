@@ -426,12 +426,20 @@ def main() -> None:
     Path("tables").mkdir(exist_ok=True)
     save_city_gif(gif_result, "figures/schelling-tau-035.gif")
 
-    table = summary.copy()
-    table["tau"] = table["tau"].map(lambda x: f"{x:.3f}")
-    table["mean_final_S"] = table["mean_final_S"].map(lambda x: f"{x:.3f}")
-    table["sd_final_S"] = table["sd_final_S"].map(lambda x: f"{x:.3f}")
-    table["mean_iterations"] = table["mean_iterations"].map(lambda x: f"{x:.1f}")
-    table["mean_moves"] = table["mean_moves"].map(lambda x: f"{x:.0f}")
+    table = summary.rename(columns={
+        "tau": "Threshold tau",
+        "mean_final_S": "Mean final segregation S",
+        "sd_final_S": "SD final segregation S",
+        "mean_iterations": "Mean iterations",
+        "mean_moves": "Mean moves",
+        "converged_runs": "Converged runs",
+        "runs": "Replications",
+    }).copy()
+    table["Threshold tau"] = table["Threshold tau"].map(lambda x: f"{x:.3f}")
+    table["Mean final segregation S"] = table["Mean final segregation S"].map(lambda x: f"{x:.3f}")
+    table["SD final segregation S"] = table["SD final segregation S"].map(lambda x: f"{x:.3f}")
+    table["Mean iterations"] = table["Mean iterations"].map(lambda x: f"{x:.1f}")
+    table["Mean moves"] = table["Mean moves"].map(lambda x: f"{x:.0f}")
 
     transition_row = summary.iloc[(summary["tau"] - 1.0 / 3.0).abs().argmin()]
     low_row = summary[summary["tau"] == 0.25].iloc[0]
@@ -445,7 +453,6 @@ def main() -> None:
 
     report = ModelReport(
         "Schelling Segregation on a Checkerboard",
-        "How local tolerance rules can generate aggregate residential sorting.",
         include_reproduce=False,
         show_figure_captions=False,
     )
@@ -464,35 +471,58 @@ def main() -> None:
 
     report.add_equations(
         r"""
-Let the city be a finite grid. Each occupied location $i$ has type
-$g_i\in\{A,B\}$. Empty locations have no type. The local neighborhood
-$N(i)$ is the set of at most eight adjacent cells around $i$.
+Let $G$ be the city grid. The state variable is the whole checkerboard, not an
+aggregate stock. Cell $i$ at iteration $t$ is
+$X_t(i)$. Empty cells have $X_t(i)=0$. Occupied cells have group
+$g_i(t)=X_t(i)$, where $g_i(t)\in\lbrace A,B\rbrace$.
 
-The occupied neighbors of $i$ are
+For each occupied cell, $N_i$ is the local Moore neighborhood: the adjacent
+horizontal, vertical, and diagonal cells, up to eight in total. Empty cells are
+possible destinations, but they are not neighbors whose type enters the local
+composition. The occupied-neighbor count is
 
-$$O(i)=\{j\in N(i): j \text{ is occupied}\}.$$
+$$
+O_i(t)=\sum_{j\in N_i} \mathbf{1}[X_t(j)\neq 0].
+$$
 
-The same-group neighbor share is
+The same-group neighbor count keeps only occupied neighbors with the same group
+as the resident in cell $i$:
 
-$$s_i =
-\begin{cases}
-| \{j\in O(i): g_j=g_i\} | / |O(i)|, & |O(i)|>0, \\
-1, & |O(i)|=0.
-\end{cases}$$
+$$
+m_i(t)=\sum_{j\in N_i} \mathbf{1}[X_t(j)=g_i(t)].
+$$
 
-An occupied location is content when
+When $O_i(t)>0$, the local same-group share is the object agents care about:
 
-$$s_i \geq \tau.$$
+$$
+s_i(t)=\frac{m_i(t)}{O_i(t)}.
+$$
 
-If $s_i < \tau$, the agent is dissatisfied and may move to a vacant location.
-The aggregate segregation index is the average same-group exposure among
-occupied agents:
+When an occupied cell has no occupied neighbors, set $s_i(t)=1$. This convention
+treats isolation as not violating the local same-group requirement. The
+threshold $\tau$ is the minimum acceptable same-group share. An agent is content
+when
 
-$$S(t)=\frac{1}{M}\sum_{i:g_i(t)\neq \emptyset} s_i(t),$$
+$$
+s_i(t)\geq \tau.
+$$
 
-where $M$ is the number of occupied cells. A random initial city with equal
-group sizes has $S(t)$ near one half. Large values of $S(t)$ mean that the
-typical person mostly sees same-group neighbors.
+If $s_i(t)<\tau$, the agent is dissatisfied. Let $E_t$ be the set of vacant
+cells. A move is allowed only if the destination would satisfy the same local
+threshold for that agent's group. Thus agents do not choose a global segregation
+target; they only search for an acceptable local neighborhood.
+
+The aggregate segregation index averages local exposure among occupied cells:
+
+$$
+S(t)=\frac{1}{M}\sum_{i:X_t(i)\neq 0} s_i(t),
+$$
+
+where $M$ is the number of occupied cells, which stays fixed because moves only
+swap an occupied cell with a vacancy. A random initial city with equal group
+sizes has $S(t)$ near one half. Large values of $S(t)$ mean that the typical
+person mostly sees same-group neighbors, even though each decision used only
+the local rule above.
 """
     )
 
@@ -500,30 +530,38 @@ typical person mostly sees same-group neighbors.
         "The calibration follows the checkerboard spirit of Schelling's spatial "
         "proximity model. The numbers are artificial by design; they let us see the "
         "dynamic mechanism.\n\n"
-        f"| Object | Value | Role |\n"
-        f"|---|---:|---|\n"
-        f"| Grid size | {n} x {n} | City locations |\n"
-        f"| Vacancy share | {vacancy_share:.0%} | Empty cells that permit movement |\n"
-        f"| Group shares among occupied cells | 50% / 50% | Symmetric two-group benchmark |\n"
-        f"| Neighborhood | Moore, up to 8 cells | Local reference group |\n"
-        f"| Threshold sweep | 0.20 to 0.50 | Minimum same-group neighbor share |\n"
-        f"| Replications per threshold | {len(seeds)} | Simulation noise check |\n"
-        f"| Maximum iterations | {max_iter} | Stop rule cap |"
+        f"| Symbol | Value | Role |\n"
+        f"|---|---|---|\n"
+        f"| $G$ | {n} x {n} cells | City grid |\n"
+        f"| $E_t$ | {vacancy_share:.0%} of cells initially vacant | Empty cells that permit movement |\n"
+        f"| $g_i$ | $A$ or $B$ | Occupant group in cell $i$ |\n"
+        f"| $N_i$ | Moore neighborhood, up to 8 cells | Local reference group |\n"
+        f"| $O_i(t)$ | occupied neighbors in $N_i$ | Denominator for local exposure |\n"
+        f"| $s_i(t)$ | between 0 and 1 | Same-group neighbor share for cell $i$ |\n"
+        f"| $\\tau$ | 0.20 to 0.50 | Local tolerance threshold |\n"
+        f"| $S(t)$ | average of $s_i(t)$ | Aggregate segregation index |\n"
+        f"| $T$ | {max_iter} iterations | Stop rule cap |\n"
+        f"| Replications | {len(seeds)} per threshold | Simulation noise check |"
     )
 
     report.add_solution_method(
         "The model is an agent-based simulation. There is no representative agent "
         "and no global optimization problem. The state is the whole checkerboard.\n\n"
         "```text\n"
-        "Algorithm: classic Schelling checkerboard dynamics\n"
-        "Input: grid size n, vacancy share v, threshold tau, maximum iterations T\n"
-        "Output: city path, segregation index S(t), moved agents by iteration\n\n"
-        "1. Randomly place the two groups and vacant cells on the grid.\n"
-        "2. For every occupied cell, compute the share of occupied neighbors from the same group.\n"
-        "3. Mark an agent dissatisfied if the share is below tau.\n"
-        "4. Visit dissatisfied agents in random order.\n"
-        "5. Move each still-dissatisfied agent to a random vacant cell that satisfies the threshold.\n"
-        "6. Record S(t) and repeat until no agent is dissatisfied or T is reached.\n"
+        "Algorithm: Schelling checkerboard dynamics\n"
+        "Input: initial grid X_0, vacancy set E_0, threshold tau, horizon T\n"
+        "Output: city states X_t, segregation path S(t), move counts\n\n"
+        "For t = 0, 1, ..., T - 1:\n"
+        "  1. For every occupied cell i, compute O_i(t), m_i(t), and s_i(t).\n"
+        "  2. Let D_t be occupied cells with s_i(t) < tau.\n"
+        "  3. If D_t is empty, stop with a locally stable city.\n"
+        "  4. Visit cells in D_t in random order.\n"
+        "  5. For each still-dissatisfied i, form candidate vacant cells C_i(t):\n"
+        "       vacant cells e in E_t where group g_i would have exposure at least tau.\n"
+        "  6. If C_i(t) is nonempty, draw e from C_i(t), move g_i from i to e,\n"
+        "       and update X_t and E_t before visiting the next agent.\n"
+        "  7. Record X_{t+1}, S(t+1), and the number of moves.\n"
+        "  8. Stop if no one moves or if t + 1 = T.\n"
         "```\n\n"
         "The random order matters because one move changes the neighborhoods of "
         "nearby agents. That dependence is the point of the model. Small local "
@@ -533,18 +571,23 @@ typical person mostly sees same-group neighbors.
 
     report.add_results(
         "The animation shows the focal run at $\\tau=0.35$, just above one third. "
-        "The city begins close to a random mix. Dissatisfied agents move into "
-        "locations where their local threshold is met, and same-group clusters "
-        "become self-reinforcing.\n\n"
+        "Blue cells are one group, orange cells are the other group, and the light "
+        "cells are empty locations. Each frame is a saved city state after a wave "
+        "of relocation decisions. The city begins close to a random mix. "
+        "Dissatisfied agents move into locations where their local threshold is "
+        "met, and same-group clusters become self-reinforcing.\n\n"
         '<img src="figures/schelling-tau-035.gif" alt="Animated Schelling checkerboard at tau 0.35" width="80%">'
     )
 
     report.add_results(
         "The path plot tracks the segregation index $S(t)$ for four thresholds. "
+        "The critical hyperparameter is $\\tau$, the local tolerance threshold. "
         "At low thresholds, the city settles after little sorting. Near the "
         "one-third region, the same local rule produces a visibly higher "
-        "same-group exposure. The plateaus come from the integer number of "
-        "neighbors on a finite checkerboard."
+        "same-group exposure. Small integer neighborhoods make this region "
+        "important: with only a few occupied neighbors, one additional same-group "
+        "neighbor can move an agent across the threshold. The plateaus come from "
+        "the integer number of neighbors on a finite checkerboard."
     )
     report.add_figure(
         "figures/segregation-paths.png",

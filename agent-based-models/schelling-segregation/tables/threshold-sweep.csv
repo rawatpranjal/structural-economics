@@ -1,4 +1,4 @@
-tau,mean_final_S,sd_final_S,mean_iterations,mean_moves,converged_runs,runs
+Threshold tau,Mean final segregation S,SD final segregation S,Mean iterations,Mean moves,Converged runs,Replications
 0.200,0.574,0.011,3.6,154,5,5
 0.225,0.583,0.012,3.6,178,5,5
 0.250,0.583,0.012,3.6,178,5,5
