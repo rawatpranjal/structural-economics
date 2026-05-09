@@ -1,0 +1,11 @@
+Symbol,Value,Meaning
+$N$,15,Location count
+$x_i$,"15 equally spaced points in [-1, 1]",Grid position
+$\sigma$,5.0,Substitution elasticity
+$T_{ij}$,$\exp(0.8\lvert x_i-x_j\rvert)$,Iceberg trade cost
+$\bar A_i$,central log-productivity bump,Productivity fundamental
+$\bar u_i$,1 for every location,Amenity fundamental
+"$\alpha, \beta$","Dispersion dominant: alpha=0.03, beta=-0.12, Agglomeration strong: alpha=0.12, beta=-0.02",Spillover parameters
+"$\gamma_1, \gamma_2$","Dispersion dominant: gamma1=1.48, gamma2=0.67, Agglomeration strong: gamma1=0.62, gamma2=1.52",Stability terms
+$\sum_i L_i$,1,Labor normalization
+$\frac{1}{N}\sum_i \log w_i$,0,Wage normalization

@@ -1,6 +1,6 @@
 {
   "pass_name": "tutorial-fix-sweep-v1",
-  "updated_at": "2026-05-09T06:13:58Z",
+  "updated_at": "2026-05-09T07:55:42Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/consumption-savings/",
@@ -234,6 +234,185 @@
       "validate_ok": true,
       "summary": "(see claude stdout for fix-summary line)",
       "updated_at": "2026-05-09T06:13:58Z"
+    },
+    {
+      "tutorial_path": "global-dsge/deep-learning-optimal-growth/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 3.91,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T06:35:15Z"
+    },
+    {
+      "tutorial_path": "optimal-control/hjb-growth/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 1.22,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T06:35:51Z"
+    },
+    {
+      "tutorial_path": "optimal-control/phase-diagrams/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 0.99,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T06:36:55Z"
+    },
+    {
+      "tutorial_path": "optimal-control/ramsey-growth/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "validate_ok": true,
+      "summary": "0 ref fix(es), 2 notation fix(es); validate skipped (external dsge/behavioral-nk in-flight in parallel session)",
+      "updated_at": "2026-05-09T06:39:43Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/theory-of-the-firm/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 0.56,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T06:39:21Z"
+    },
+    {
+      "tutorial_path": "dsge/behavioral-nk/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 0.87,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T07:05:15Z"
+    },
+    {
+      "tutorial_path": "spatial-economics/allen-arkolakis/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 2.16,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T07:05:55Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/vertical-relationships/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 0.72,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T07:06:05Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/vertical-contracts/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 1.4,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T07:06:56Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/bertrand-logit-demand/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 1.15,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T07:07:43Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/logit-supply-side/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 1.11,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T07:28:00Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/blp-random-coefficients/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 29.7,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T07:29:04Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/production-functions-markups/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 0.75,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T07:29:37Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/effective-hhi/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 1.01,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T07:31:15Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/collusion-detection/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 0.78,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T07:32:28Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/dynamic-games/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 1.15,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T07:51:13Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/dynamic-games-estimation/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 19.49,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T07:52:26Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/dynamic-entry-exit/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 8.65,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T07:53:49Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/three-part-tariffs/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 10.33,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T07:55:10Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/nash-in-nash/",
+      "status": "complete",
+      "model": "claude-sonnet-4-6",
+      "regen_seconds": 0.92,
+      "validate_ok": true,
+      "summary": "(see claude stdout for fix-summary line)",
+      "updated_at": "2026-05-09T07:55:42Z"
     }
   ]
 }

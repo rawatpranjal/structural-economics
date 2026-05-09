@@ -1,0 +1,6 @@
+Object,Meaning,Assumption
+Reduced-form innovation,Forecast error $u_t$ from the VAR,Estimated covariance can be non-diagonal
+Structural shock,Orthogonal shock $\varepsilon_t$,Unit variance and no cross-shock correlation
+Recursive ordering,"Output gap, inflation, then policy rate",Policy can react within quarter to output and inflation
+Policy shock,Third Cholesky innovation,No impact effect on output or inflation
+Shock scale,Impact rise in policy rate,Normalized to 0.25 rate points

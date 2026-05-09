@@ -334,7 +334,7 @@ r(k;\theta)
 \right].
 $$
 
-The residual is zero when the Euler equation holds. Training chooses parameters that make this residual small.
+The residual is zero when the Euler equation holds. Training chooses parameters that make this residual small. Here $k'(k;\theta)$ and $c(k;\theta)$ denote the neural capital policy and consumption defined by the saving share below.
 
 The population risk is
 
@@ -357,6 +357,8 @@ s(k;\theta)
 = s_{\min} + (s_{\max}-s_{\min})
 \sigma\left(N_{\theta}(\log(k/k_{ss}))\right),
 $$
+
+Here $\sigma(z)=1/(1+e^{-z})$ is the sigmoid function, $N_\theta$ is a neural network with parameters $\theta$ (a 1-16-16-1 tanh MLP), and $k_{ss}$ is the steady-state capital defined below.
 
 It then imposes feasibility by construction:
 
@@ -581,7 +583,7 @@ $$
 
     report.add_references([
         "Brock, W. A., and Mirman, L. J. (1972). *Optimal Economic Growth and Uncertainty: The Discounted Case*. Journal of Economic Theory.",
-        "Maliar, L., Maliar, S., and Winant, P. (2022). *Deep Learning for Solving Dynamic Economic Models*. Lecture slides.",
+        "Maliar, L., Maliar, S., and Winant, P. (2021). *Deep Learning for Solving Dynamic Economic Models*. Journal of Monetary Economics, 122, 76-101.",
     ])
 
     report.write("README.md")

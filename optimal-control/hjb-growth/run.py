@@ -520,7 +520,7 @@ $$
             "$c_{ss}$ (consumption)",
             "$y_{ss}$ (output)",
             "$i_{ss} = \\delta k_{ss}$ (investment)",
-            "$s = i/y$ (saving rate)",
+            "$i/y$ (saving rate)",
             "$f'(k_{ss})$ (MPK)",
             "HJB iterations",
             "HJB residual",

@@ -85,7 +85,7 @@ The algorithm iterates on $V(N)$. Each pass computes exit probabilities and the 
 ```text
 Algorithm: symmetric entry-exit fixed point
 Input: state grid {1,...,N_max}, primitives (a,b,c,f,K,beta,sigma), tolerance epsilon
-Output: V(N), p_exit(N), expected entry, transition matrix P, stationary distribution mu
+Output: V(N), p_exit(N), expected entry, transition matrix T, stationary distribution mu
 Initialize V_0(N) from myopic operating values
 repeat for n = 0, 1, 2, ...:
     for each market size N:
@@ -98,11 +98,11 @@ repeat for n = 0, 1, 2, ...:
         update V_{n+1}(N) with the log-sum inclusive value
     replace V_n by a damped average of V_n and V_{n+1}
 until max_N |V_{n+1}(N)-V_n(N)| < epsilon
-Construct P(N'|N) from binomial survival and the same state-level entry rule
-Iterate mu_{m+1}=mu_m P until mu is invariant
+Construct T(N'|N) from binomial survival and the same state-level entry rule
+Iterate mu_{m+1}=mu_m T until mu is invariant
 ```
 
-The value iteration converged in **667 iterations** with sup-norm error **9.94e-09**. The invariant distribution solves $\mu=\mu P$ for the policy-induced Markov chain.
+The value iteration converged in **667 iterations** with sup-norm error **9.94e-09**. The invariant distribution solves $\mu=\mu T$ for the policy-induced Markov chain, where $T$ is the transition matrix.
 
 ## Results
 

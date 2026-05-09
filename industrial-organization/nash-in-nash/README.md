@@ -21,7 +21,7 @@ M \frac{\exp(v_d(G_d) / \sigma_\varepsilon)}
 {1 + \sum_{\ell=1}^{D} \exp(v_\ell(G_\ell) / \sigma_\varepsilon)} .
 $$
 
-The deterministic utility of an insurer is
+Here $D$ is the number of insurers. The deterministic utility of an insurer is
 
 $$
 v_d(G_d) = Q(G_d) - P_d,

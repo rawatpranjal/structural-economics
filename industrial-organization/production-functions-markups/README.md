@@ -30,6 +30,8 @@ control $\tilde \omega_{it}=h^{-1}(k_{it},I_{it})$. It estimates
 
 $$y_{it} = \beta_l l_{it}+\beta_k k_{it}+\beta_m m_{it} +\rho \tilde\omega_{it}+u_{it}.$$
 
+Here $\rho$ is the coefficient on the productivity control $\tilde\omega_{it}$.
+
 Markup recovery uses materials as the variable input. For Cobb-Douglas
 production, the materials elasticity is $\theta^m=\beta_m$. Let
 

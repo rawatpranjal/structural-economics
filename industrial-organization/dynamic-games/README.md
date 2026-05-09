@@ -62,7 +62,7 @@ For n = 0,1,2,...:
     Find pure Nash equilibria of the 2-by-2 state game.
     Select the equilibrium with the largest joint payoff if there is a tie.
     Set T_i V^n(omega) equal to the selected equilibrium payoff.
-  Update V_i^{n+1} = lambda T_i V^n + (1-lambda) V_i^n.
+  Update V_i^{n+1} = alpha T_i V^n + (1-alpha) V_i^n.  (alpha: iteration damping weight)
   Stop when max_{i,omega} |T_i V^n(omega)-V_i^n(omega)| < epsilon.
 Output: MPE policy a_i^{\ast}(omega), values V_i(omega), and deviation gains.
 ```

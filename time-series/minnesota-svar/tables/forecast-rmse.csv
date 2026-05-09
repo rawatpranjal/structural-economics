@@ -1,0 +1,5 @@
+Variable,OLS VAR RMSE,Minnesota BVAR RMSE,BVAR / OLS
+Output gap,0.486,0.449,0.924
+Inflation,0.376,0.319,0.849
+Policy rate,0.434,0.395,0.909
+All variables,0.434,0.391,0.901

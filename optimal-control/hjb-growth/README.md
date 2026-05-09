@@ -133,7 +133,7 @@ The closed-form steady state checks the finite-difference solution. The grid loc
 | $c_{ss}$ (consumption)                | 1.6855       |       1.6858   |
 | $y_{ss}$ (output)                     | 2.0555       |       2.0561   |
 | $i_{ss} = \delta k_{ss}$ (investment) | 0.3700       |       0.3703   |
-| $s = i/y$ (saving rate)               | 0.1800       |       0.1801   |
+| $i/y$ (saving rate)                   | 0.1800       |       0.1801   |
 | $f'(k_{ss})$ (MPK)                    | 0.1000       |       0.0999   |
 | HJB iterations                        | --           |      16        |
 | HJB residual                          | --           |       5.34e-07 |

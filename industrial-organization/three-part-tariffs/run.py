@@ -203,7 +203,7 @@ u(c_t;h)-q_k\Delta O_k(C_{t-1},c_t)
 with terminal value $V_{k,T+1}(\cdot;h)=0$. The policy
 $g_{k,t}(C_{t-1};h)$ gives daily usage.
 
-Plan choice adds the fixed fee and the value of speed $B(s_k)$:
+Let $i$ index consumers. Plan choice adds the fixed fee and the value of speed $B(s_k)$:
 
 $$W_i(k)=V_{k,1}(0;h_i)+B(s_k)-F_k,\qquad
 d_i=\arg\max_k W_i(k).$$
@@ -216,7 +216,7 @@ d_i=\arg\max_k W_i(k).$$
         "The metered plan is cheap but "
         "tight. The three-part plan buys a larger allowance. The unlimited plan removes "
         "overage risk at a higher fixed fee.\n\n"
-        "Consumer heterogeneity is a discrete taste distribution. The weights aggregate "
+        "Consumer heterogeneity is a discrete taste distribution. Let $\\omega_i$ denote the weight of consumer type $i$. The weights aggregate "
         "choices into plan shares and average outcomes.\n\n"
         "| Plan | Fixed fee | Allowance | Overage price | Speed |\n"
         "|------|-----------|-----------|---------------|-------|\n"

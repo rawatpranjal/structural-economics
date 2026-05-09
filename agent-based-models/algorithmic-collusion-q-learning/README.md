@@ -94,7 +94,7 @@ Input: price grid A={0,...,k-1}, profit table pi_i(a_1,a_2),
        alpha, beta, delta, training length T
 Output: greedy pricing rules for both firms
 
-1. Set the initial state to the Bertrand grid point for both firms.
+1. Set the initial state to the lowest price-grid point for both firms.
 2. Initialize Q_i(previous prices, own price) with optimistic
    discounted average one-period profits.
 3. For t = 0 to T-1:
@@ -102,7 +102,7 @@ Output: greedy pricing rules for both firms
    3b. Each firm observes the previous price-index pair s_t.
    3c. For each firm i:
        with probability epsilon_t, draw a_{i,t} = Uniform({0,...,k-1});
-       otherwise set a_{i,t} in argmax_a Q_i(s_t,a).
+       otherwise set a_{i,t} to the first argmax_a Q_i(s_t,a).
    3d. Current prices are the grid values indexed by (a_{1,t}, a_{2,t}).
    3e. Current profits are pi_i(a_{1,t},a_{2,t}).
    3f. Set s_{t+1} = (a_{1,t}, a_{2,t}).
@@ -124,7 +124,7 @@ Greedy play after training is above the Bertrand price in the fixed seed 202 run
 
 <img src="figures/price-paths.png" alt="Learned greedy price paths after Q-learning" width="80%">
 
-In the fixed seed 202 run, the learned average price is 1.605. The collusion index is 0.29, so the greedy policy sits about halfway between the Bertrand and monopoly benchmarks. After the one-period price-deviation shock, the lowest post-shock average price is 1.473; the path returns to 95 percent of its pre-shock level after 2 periods. Read this as an impulse response to a price-deviation shock. The single run shows how the frozen policy reacts after one forced undercut, but it does not establish robust price-war discipline.
+In the fixed seed 202 run, the learned average price is 1.708. The collusion index is 0.52, so the greedy policy sits about halfway between the Bertrand and monopoly benchmarks. After the one-period price-deviation shock, the lowest post-shock average price is 1.492; the path returns to 95 percent of its pre-shock level after 2 periods. Read this as an impulse response to a price-deviation shock. The single run shows how the frozen policy reacts after one forced undercut, but it does not establish robust price-war discipline.
 
 <img src="figures/impulse-response.png" alt="Impulse response to a one-period price-deviation shock" width="80%">
 
@@ -146,7 +146,7 @@ A recovery horizon of -1 means the average price did not return to 95 percent of
 
 |   Seed |   Learned average price |   Learned profit |   Collusion index |   Pre-shock average price |   Minimum post-shock average price |   Recovery horizon |
 |-------:|------------------------:|-----------------:|------------------:|--------------------------:|-----------------------------------:|-------------------:|
-|    202 |                 1.60478 |          0.26737 |          0.291667 |                   1.60478 |                            1.47293 |                  2 |
+|    202 |                 1.70837 |         0.305172 |          0.520833 |                   1.70837 |                            1.49176 |                  2 |
 
 ## Takeaway
 

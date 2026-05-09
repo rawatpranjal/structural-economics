@@ -200,7 +200,7 @@ def main() -> None:
 
     setup_style()
     report = ModelReport(
-        "Urn Choices and Latent Decision Rules",
+        "Are People Bayesian? Decision-Rule Mixtures via EM",
         include_reproduce=False,
         show_figure_captions=False,
     )

@@ -1,4 +1,4 @@
-# Urn Choices and Latent Decision Rules
+# Are People Bayesian? Decision-Rule Mixtures via EM
 
 ## Overview
 

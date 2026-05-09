@@ -46,11 +46,13 @@ The price-screen simulation uses the same exact benchmarks. It observes
 
 $$
 P_t=P^{r_t}+\eta_t,\qquad
-r_t\in\{N,M,N\},
+r_t\in(N,M,N),
 $$
 
 Here $P^N$ is the Cournot price. $P^M$ is the joint-monopoly price. The regime
-$r_t$ moves from competition to cartel conduct and back after detection.
+$r_t$ follows the sequence competition, cartel, then post-detection. The noise
+$\eta_t\sim N(0,\sigma^2)$ is i.i.d. across periods, with $\sigma=1.5$ in the
+simulation.
 
 The reported margin is $m_t=(P_t-c)/P_t$.
 
@@ -138,4 +140,4 @@ A price break is a lead, not a cartel finding. The repeated-game check asks whet
 - Stigler, G. (1964). A Theory of Oligopoly. *Journal of Political Economy*, 72(1), 44--61.
 - Porter, R. (1983). A Study of Cartel Stability: The Joint Executive Committee, 1880--1886. *Bell Journal of Economics*, 14(2), 301--314.
 - Harrington, J. (2008). Detecting Cartels. In *Handbook of Antitrust Economics*. MIT Press.
-- Igami, M. and Sugaya, T. (2021). Measuring the Incentive to Collude: The Vitamin Cartels, 1990--1999. *Review of Economic Studies*, 89(3), 1460--1494.
+- Igami, M. and Sugaya, T. (2022). Measuring the Incentive to Collude: The Vitamin Cartels, 1990--1999. *Review of Economic Studies*, 89(3), 1460--1494.

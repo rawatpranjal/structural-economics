@@ -1,0 +1,6 @@
+Coefficient,Equation,Regressor,Prior mean,Posterior mean,Posterior sd,Approx 95% interval
+Output persistence,Output gap,y(t-1),0.850,0.799,0.079,"[0.643, 0.954]"
+Inflation persistence,Inflation,pi(t-1),0.850,0.840,0.080,"[0.683, 0.996]"
+Policy-rate persistence,Policy rate,i(t-1),0.850,0.758,0.075,"[0.611, 0.905]"
+Policy rate effect on output,Output gap,i(t-1),0.000,-0.073,0.067,"[-0.205, 0.059]"
+Policy rate effect on inflation,Inflation,i(t-1),0.000,-0.033,0.043,"[-0.117, 0.051]"

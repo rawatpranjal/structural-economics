@@ -172,7 +172,7 @@ def train_q_learning(seed: int, bench: Benchmarks, params: Params) -> np.ndarray
     """Train independent tabular Q-learning policies."""
     rng = np.random.default_rng(seed)
     q = initialize_q(bench, params)
-    state = np.array([bench.bertrand_index, bench.bertrand_index], dtype=int)
+    state = np.zeros(2, dtype=int)
 
     for t in range(params.steps):
         epsilon = np.exp(-params.beta * t)
@@ -181,9 +181,7 @@ def train_q_learning(seed: int, bench: Benchmarks, params: Params) -> np.ndarray
             if rng.random() < epsilon:
                 action[firm] = int(rng.integers(params.k))
             else:
-                values = q[firm, state[0], state[1]]
-                best = np.flatnonzero(np.isclose(values, values.max()))
-                action[firm] = int(rng.choice(best))
+                action[firm] = int(np.argmax(q[firm, state[0], state[1]]))
 
         reward = bench.profit_table[action[0], action[1]]
         next_state = action.copy()
@@ -202,7 +200,7 @@ def train_q_learning(seed: int, bench: Benchmarks, params: Params) -> np.ndarray
 def greedy_rollout(q: np.ndarray, bench: Benchmarks, periods: int, start: np.ndarray | None = None) -> np.ndarray:
     """Roll out the learned greedy policy."""
     if start is None:
-        state = np.array([bench.bertrand_index, bench.bertrand_index], dtype=int)
+        state = np.zeros(2, dtype=int)
     else:
         state = np.asarray(start, dtype=int).copy()
     actions = np.empty((periods, 2), dtype=int)
@@ -512,7 +510,7 @@ $$\mathrm{CI} = \frac{\bar p_{\mathrm{learned}} - p_{\mathrm{Bertrand}}}{p_{\mat
         "Input: price grid A={0,...,k-1}, profit table pi_i(a_1,a_2),\n"
         "       alpha, beta, delta, training length T\n"
         "Output: greedy pricing rules for both firms\n\n"
-        "1. Set the initial state to the Bertrand grid point for both firms.\n"
+        "1. Set the initial state to the lowest price-grid point for both firms.\n"
         "2. Initialize Q_i(previous prices, own price) with optimistic\n"
         "   discounted average one-period profits.\n"
         "3. For t = 0 to T-1:\n"
@@ -520,7 +518,7 @@ $$\mathrm{CI} = \frac{\bar p_{\mathrm{learned}} - p_{\mathrm{Bertrand}}}{p_{\mat
         "   3b. Each firm observes the previous price-index pair s_t.\n"
         "   3c. For each firm i:\n"
         "       with probability epsilon_t, draw a_{i,t} = Uniform({0,...,k-1});\n"
-        "       otherwise set a_{i,t} in argmax_a Q_i(s_t,a).\n"
+        "       otherwise set a_{i,t} to the first argmax_a Q_i(s_t,a).\n"
         "   3d. Current prices are the grid values indexed by (a_{1,t}, a_{2,t}).\n"
         "   3e. Current profits are pi_i(a_{1,t},a_{2,t}).\n"
         "   3f. Set s_{t+1} = (a_{1,t}, a_{2,t}).\n"

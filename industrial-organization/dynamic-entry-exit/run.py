@@ -425,7 +425,7 @@ $$
         "```text\n"
         "Algorithm: symmetric entry-exit fixed point\n"
         "Input: state grid {1,...,N_max}, primitives (a,b,c,f,K,beta,sigma), tolerance epsilon\n"
-        "Output: V(N), p_exit(N), expected entry, transition matrix P, stationary distribution mu\n"
+        "Output: V(N), p_exit(N), expected entry, transition matrix T, stationary distribution mu\n"
         "Initialize V_0(N) from myopic operating values\n"
         "repeat for n = 0, 1, 2, ...:\n"
         "    for each market size N:\n"
@@ -438,12 +438,12 @@ $$
         "        update V_{n+1}(N) with the log-sum inclusive value\n"
         "    replace V_n by a damped average of V_n and V_{n+1}\n"
         "until max_N |V_{n+1}(N)-V_n(N)| < epsilon\n"
-        "Construct P(N'|N) from binomial survival and the same state-level entry rule\n"
-        "Iterate mu_{m+1}=mu_m P until mu is invariant\n"
+        "Construct T(N'|N) from binomial survival and the same state-level entry rule\n"
+        "Iterate mu_{m+1}=mu_m T until mu is invariant\n"
         "```\n\n"
         f"The value iteration converged in **{info['iterations']} iterations** with "
         f"sup-norm error **{info['error']:.2e}**. The invariant distribution solves "
-        "$\\mu=\\mu P$ for the policy-induced Markov chain."
+        "$\\mu=\\mu T$ for the policy-induced Markov chain, where $T$ is the transition matrix."
     )
 
     # --- Figure 1: Value Function ---

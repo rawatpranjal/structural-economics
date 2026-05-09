@@ -18,7 +18,7 @@ $$
 q_j(p_j)=\max\{a_j-bp_j,0\}.
 $$
 
-Given wholesale price $w_j$, the retailer sets the product price by
+Here $b$ is the common demand slope. Given wholesale price $w_j$, the retailer sets the product price by
 
 $$
 p_j^{\ast}(w_j)
@@ -39,6 +39,8 @@ A_C^{\ast}
 =\arg\max_{A\subset\mathcal J:\ |A|=K}
 \sum_{j\in A}\left[(p_j^{\ast}-w_j^C(A))q_j(p_j^{\ast})+F_j^C(A)\right].
 $$
+
+Write $\Pi^D_C(A)$ for the sum inside the argmax, the retailer's total payoff under contract $C$.
 
 The upstream payoff reported in the results is
 

@@ -47,12 +47,16 @@ $$
 q(p)=a+Dp,\qquad D_{jj}=\alpha<0,\quad D_{jk}=\beta\geq 0\ (j\neq k).
 $$
 
+Here $a$ is the vector of demand intercepts (distinct from the firm labels used in the merger formula) and $p$ is the price vector.
+
 Let $\Omega_{jk}=1$ if products $j$ and $k$ are commonly owned. Bertrand-Nash
 prices satisfy
 
 $$
 q(p)+(\Omega\circ D^\top)(p-c)=0.
 $$
+
+Here $\circ$ denotes the element-wise (Hadamard) product and $c$ is the vector of marginal costs.
 
 The 2023 DOJ/FTC Merger Guidelines treat HHI above 1,800 as highly
 concentrated. An HHI increase above 100 points is significant for the structural

@@ -1,0 +1,6 @@
+Hyperparameter,Value,Role
+Own first-lag mean,0.85,Pulls each variable toward persistent own-lag dynamics
+Overall tightness,0.18,Controls how strongly coefficients are shrunk toward prior means
+Cross-variable tightness,0.35,Shrinks lags of other variables more tightly than own lags
+Lag decay,1.40,Makes distant lags less important a priori
+Intercept prior sd,3.0,Leaves equation intercepts weakly regularized

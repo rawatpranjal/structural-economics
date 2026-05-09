@@ -55,6 +55,8 @@ $$
 \lim_{t\to\infty} e^{-\rho t}u'(c(t))k(t)=0 .
 $$
 
+Here $u(c)=\frac{c^{1-\sigma}}{1-\sigma}$ is the CRRA utility function, so $u'(c(t))=c(t)^{-\sigma}$.
+
 ## Model Setup
 
 The calibration keeps the mechanics visible. Output is Cobb-Douglas. Preferences are CRRA. There are no shocks, so each arrow shows the same law of motion.

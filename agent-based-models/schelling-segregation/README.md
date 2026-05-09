@@ -2,70 +2,68 @@
 
 ## Overview
 
-Schelling's segregation model starts from a simple city. Two groups occupy a checkerboard with some vacant locations. Each person looks only at nearby neighbors and moves if too few are from the same group.
+Schelling starts with a simple city. Two groups fill a checkerboard. Some cells stay empty. Each person checks nearby neighbors. A person moves when too few neighbors belong to the same group.
 
-The economic point is not that agents choose segregation as a social outcome. They choose local neighborhoods. The aggregate pattern is produced by the feedback from many moves.
+Agents do not choose segregation as a social outcome. They choose acceptable local neighborhoods. Their moves change the choices that other agents face next.
 
-This tutorial keeps the model in its classic form. We simulate a 50 x 50 city, sweep the minimum same-group neighbor share $\tau$, and track the segregation index $S(t)$ until the city stops moving.
+This tutorial keeps the classic model. We simulate a 50 x 50 city. We sweep the minimum same-group neighbor share $\tau$. We track the segregation index $S(t)$ until the city stops moving.
 
 ## Equations
 
-Let $G$ be the city grid. The state variable is the whole checkerboard, not an
-aggregate stock. Cell $i$ at iteration $t$ is
+Use $G$ for the city grid. Track the whole checkerboard as the state. Do not
+collapse the city to one aggregate stock. Write cell $i$ at iteration $t$ as
 $X_t(i)$. Empty cells have $X_t(i)=0$. Occupied cells have group
-$g_i(t)=X_t(i)$, where $g_i(t)\in\lbrace A,B\rbrace$.
+$g_i(t)=X_t(i)$ with $g_i(t)\in\lbrace A,B\rbrace$.
 
-For each occupied cell, $N_i$ is the local Moore neighborhood: the adjacent
-horizontal, vertical, and diagonal cells, up to eight in total. Empty cells are
-possible destinations, but they are not neighbors whose type enters the local
-composition. The occupied-neighbor count is
+For each occupied cell, $N_i$ gives the local Moore neighborhood. It includes
+horizontal, vertical, and diagonal cells. It has at most eight cells. Empty
+cells can receive movers. Empty cells do not enter the local group composition.
+Count occupied neighbors as
 
 $$
 O_i(t)=\sum_{j\in N_i} \mathbf{1}[X_t(j)\neq 0].
 $$
 
-The same-group neighbor count keeps only occupied neighbors with the same group
-as the resident in cell $i$:
+Count same-group neighbors as
 
 $$
 m_i(t)=\sum_{j\in N_i} \mathbf{1}[X_t(j)=g_i(t)].
 $$
 
-When $O_i(t)>0$, the local same-group share is the object agents care about:
+When $O_i(t)>0$, define the local same-group share as
 
 $$
 s_i(t)=\frac{m_i(t)}{O_i(t)}.
 $$
 
 When an occupied cell has no occupied neighbors, set $s_i(t)=1$. This convention
-treats isolation as not violating the local same-group requirement. The
-threshold $\tau$ is the minimum acceptable same-group share. An agent is content
-when
+treats isolation as acceptable. The threshold $\tau$ gives the minimum
+acceptable same-group share. An agent stays content when
 
 $$
 s_i(t)\geq \tau.
 $$
 
-If $s_i(t)<\tau$, the agent is dissatisfied. Let $E_t$ be the set of vacant
-cells. A move is allowed only if the destination would satisfy the same local
-threshold for that agent's group. Thus agents do not choose a global segregation
-target; they only search for an acceptable local neighborhood.
+If $s_i(t)<\tau$, the agent becomes dissatisfied. Let $E_t$ collect the vacant
+cells. The agent can move only to a vacant cell that satisfies the same
+threshold for that agent's group. Agents do not choose a global segregation
+target. They search for an acceptable local neighborhood.
 
-The aggregate segregation index averages local exposure among occupied cells:
+Measure aggregate segregation by average local exposure:
 
 $$
 S(t)=\frac{1}{M}\sum_{i:X_t(i)\neq 0} s_i(t),
 $$
 
-where $M$ is the number of occupied cells, which stays fixed because moves only
-swap an occupied cell with a vacancy. A random initial city with equal group
-sizes has $S(t)$ near one half. Large values of $S(t)$ mean that the typical
-person mostly sees same-group neighbors, even though each decision used only
-the local rule above.
+where $M$ counts occupied cells. Moves keep $M$ fixed because each move swaps
+one occupied cell with one vacancy. A random initial city with equal group sizes
+puts $S(t)$ near one half. Large values of $S(t)$ mean that the typical person
+mostly sees same-group neighbors. Each decision still uses only the local rule
+above.
 
 ## Model Setup
 
-The calibration follows the checkerboard spirit of Schelling's spatial proximity model. The numbers are artificial by design; they let us see the dynamic mechanism.
+The calibration keeps Schelling's checkerboard simple. These numbers are not estimates. They make the mechanism easy to see.
 
 | Symbol | Value | Role |
 |---|---|---|
@@ -82,7 +80,7 @@ The calibration follows the checkerboard spirit of Schelling's spatial proximity
 
 ## Solution Method
 
-The model is an agent-based simulation. There is no representative agent and no global optimization problem. The state is the whole checkerboard.
+We simulate agents directly. We do not solve for a representative agent. We do not optimize a global objective. The state is the whole checkerboard.
 
 ```text
 Algorithm: Schelling checkerboard dynamics
@@ -102,31 +100,31 @@ For t = 0, 1, ..., T - 1:
   8. Stop if no one moves or if t + 1 = T.
 ```
 
-The random order matters because one move changes the neighborhoods of nearby agents. That dependence is the point of the model. Small local moves change the local incentives faced by others, and the city can tip toward a much more sorted pattern.
+A random visit order matters. One move changes nearby neighborhoods. That dependence drives the model. Small local moves change the incentives that other agents face. The city can then tip toward a much more sorted pattern.
 
 ## Results
 
-The animation shows the focal run at $\tau=0.35$, just above one third. Blue cells are one group, orange cells are the other group, and the light cells are empty locations. Each frame is a saved city state after a wave of relocation decisions. The city begins close to a random mix. Dissatisfied agents move into locations where their local threshold is met, and same-group clusters become self-reinforcing.
+The animation follows one run at $\tau=0.35$. Blue cells mark one group. Orange cells mark the other group. Light cells mark empty locations. Each frame saves the city after one wave of relocation decisions. The city starts close to a random mix. Dissatisfied agents move into acceptable locations. Same-group clusters then reinforce themselves.
 
 <img src="figures/schelling-tau-035.gif" alt="Animated Schelling checkerboard at tau 0.35" width="80%">
 
-The path plot tracks the segregation index $S(t)$ for four thresholds. The critical hyperparameter is $\tau$, the local tolerance threshold. At low thresholds, the city settles after little sorting. Near the one-third region, the same local rule produces a visibly higher same-group exposure. Small integer neighborhoods make this region important: with only a few occupied neighbors, one additional same-group neighbor can move an agent across the threshold. The plateaus come from the integer number of neighbors on a finite checkerboard.
+The path plot tracks $S(t)$ for four thresholds. The key parameter is $\tau$. It sets the local tolerance threshold. At low thresholds, the city settles with little sorting. Near the one-third region, the same rule raises same-group exposure sharply. Small neighborhoods make this region important. One extra same-group neighbor can move an agent across the threshold. The plateaus come from integer neighbor counts on a finite checkerboard.
 
 <img src="figures/segregation-paths.png" alt="Segregation-index paths for selected thresholds" width="80%">
 
-The threshold sweep makes the nonlinearity clearer. Schelling emphasized that a demand around one third generated much less segregation than a demand near one half in his checkerboard examples. This run shows the same qualitative lesson: final segregation rises quickly as the local demand moves out of the low-tolerance range.
+The threshold sweep makes the nonlinearity clear. Schelling emphasized a simple comparison. A one-third demand produced much less segregation than a one-half demand in his checkerboard examples. This run gives the same lesson. Final segregation rises quickly when the local demand leaves the low-tolerance range.
 
 <img src="figures/phase-transition.png" alt="Final segregation index by same-group threshold" width="80%">
 
-Movement is concentrated early. Once enough agents have relocated, many neighborhoods become locally stable even though the aggregate city is far more sorted than the initial draw.
+Most movement happens early. Enough relocation can stabilize many neighborhoods. The final city still looks much more sorted than the initial draw.
 
 <img src="figures/move-counts.png" alt="Moved agents by iteration" width="80%">
 
-The final city at $\tau=0.35$ has same-group clusters even though every agent used only local neighbor composition.
+The final city at $\tau=0.35$ shows same-group clusters. Each agent still used only local neighbor composition.
 
 <img src="figures/final-city-tau-035.png" alt="Final checkerboard city for tau 0.35" width="80%">
 
-Simulation detail behind the phase-transition figure. Each row averages over 5 random initial cities.
+This table gives the simulation detail behind the phase-transition figure. Each row averages over 5 random initial cities.
 
 **Threshold sweep summary**
 
@@ -148,7 +146,7 @@ Simulation detail behind the phase-transition figure. Each row averages over 5 r
 
 ## Takeaway
 
-The Schelling model is a warning about aggregation. Modest local tolerance rules need not preserve a mixed city. When movement changes the local environment faced by others, individual relocation decisions can create segregated aggregate patterns that are much stronger than the rule each agent follows.
+The Schelling model warns us about aggregation. Modest local tolerance rules may not preserve a mixed city. Movement changes the local environment that other agents face. Individual relocation decisions can then create segregated aggregate patterns. Those patterns can look much stronger than the rule each agent follows.
 
 ## References
 

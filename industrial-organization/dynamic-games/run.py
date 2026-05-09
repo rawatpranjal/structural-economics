@@ -207,7 +207,7 @@ with $V_i(\omega)=G_i(a_i^{*},a_j^{*};\omega,V)$ at every state.
         "    Find pure Nash equilibria of the 2-by-2 state game.\n"
         "    Select the equilibrium with the largest joint payoff if there is a tie.\n"
         "    Set T_i V^n(omega) equal to the selected equilibrium payoff.\n"
-        "  Update V_i^{n+1} = lambda T_i V^n + (1-lambda) V_i^n.\n"
+        "  Update V_i^{n+1} = alpha T_i V^n + (1-alpha) V_i^n.  (alpha: iteration damping weight)\n"
         "  Stop when max_{i,omega} |T_i V^n(omega)-V_i^n(omega)| < epsilon.\n"
         "Output: MPE policy a_i^{*}(omega), values V_i(omega), and deviation gains.\n"
         "```\n\n"

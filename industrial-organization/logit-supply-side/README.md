@@ -24,8 +24,10 @@ plays that role in the simulation.
 The supply inversion uses the logit derivative matrix:
 $$\frac{\partial s_k}{\partial p_j} =\begin{cases} {}-\alpha s_j(1-s_j), & k=j,\\ \alpha s_k s_j, & k\neq j. \end{cases}$$
 
+In the supply equations, $p$ and $s$ are vectors collecting prices and shares across all products in a market.
 Firm $f$ chooses prices for its products. Product $j$'s FOC is
 $$0=s_j(p)+\sum_k \mathbf 1[f(j)=f(k)](p_k-c_k)\frac{\partial s_k(p)}{\partial p_j}.$$
+Here $c_k$ denotes the marginal cost of product $k$.
 Let $O_{jk}=1$ when products $j$ and $k$ share an owner. Define the pricing
 matrix
 $$\Omega_{jk}=-O_{jk}\frac{\partial s_k}{\partial p_j}.$$

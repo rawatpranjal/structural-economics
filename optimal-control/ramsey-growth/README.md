@@ -22,7 +22,7 @@ $$
 
 Here $\rho$ is the continuous-time discount rate. The parameter $\delta$ is
 depreciation. The parameter $\sigma$ is the CRRA coefficient and inverse EIS.
-The parameter $A$ is total factor productivity.
+The parameter $A$ is total factor productivity. The parameter $\alpha$ is the capital share.
 
 The Euler equation is the Keynes-Ramsey rule
 
@@ -59,6 +59,7 @@ $$
 
 along with the two differential equations above. The finite shooting
 calculation chooses $c_0$ so the path is near $(k^{\ast},c^{\ast})$ at date $T$.
+Here $u(c)=c^{1-\sigma}/(1-\sigma)$ is the period utility function, so $u'(c)=c^{-\sigma}$.
 
 ## Model Setup
 

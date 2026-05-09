@@ -1,6 +1,6 @@
 {
   "pass_name": "tutorial-proofread-sweep-v1",
-  "updated_at": "2026-05-09T06:17:26Z",
+  "updated_at": "2026-05-09T08:23:30Z",
   "entries": [
     {
       "tutorial_path": "dynamic-programming/shock-discretization/",
@@ -225,6 +225,198 @@
       "output_bytes": 8224,
       "model": "claude-sonnet-4-6",
       "updated_at": "2026-05-09T06:17:26Z"
+    },
+    {
+      "tutorial_path": "optimal-control/hjb-growth/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/optimal-control-hjb-growth.md",
+      "output_bytes": 6965,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T06:21:12Z"
+    },
+    {
+      "tutorial_path": "optimal-control/phase-diagrams/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/optimal-control-phase-diagrams.md",
+      "output_bytes": 5640,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T06:26:11Z"
+    },
+    {
+      "tutorial_path": "optimal-control/ramsey-growth/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/optimal-control-ramsey-growth.md",
+      "output_bytes": 7201,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T06:30:11Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/theory-of-the-firm/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/industrial-organization-theory-of-the-firm.md",
+      "output_bytes": 6447,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T06:33:26Z"
+    },
+    {
+      "tutorial_path": "dsge/behavioral-nk/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/dsge-behavioral-nk.md",
+      "output_bytes": 8787,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T06:43:02Z"
+    },
+    {
+      "tutorial_path": "spatial-economics/allen-arkolakis/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/spatial-economics-allen-arkolakis.md",
+      "output_bytes": 7949,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T06:47:02Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/vertical-relationships/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/industrial-organization-vertical-relationships.md",
+      "output_bytes": 4036,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T06:49:26Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/vertical-contracts/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/industrial-organization-vertical-contracts.md",
+      "output_bytes": 7267,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T06:51:42Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/bertrand-logit-demand/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/industrial-organization-bertrand-logit-demand.md",
+      "output_bytes": 5026,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T07:03:58Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/logit-supply-side/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/industrial-organization-logit-supply-side.md",
+      "output_bytes": 8086,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T07:12:12Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/blp-random-coefficients/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/industrial-organization-blp-random-coefficients.md",
+      "output_bytes": 7438,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T07:15:43Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/production-functions-markups/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/industrial-organization-production-functions-markups.md",
+      "output_bytes": 7911,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T07:18:11Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/effective-hhi/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/industrial-organization-effective-hhi.md",
+      "output_bytes": 6533,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T07:22:03Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/collusion-detection/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/industrial-organization-collusion-detection.md",
+      "output_bytes": 6904,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T07:26:32Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/dynamic-games/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/industrial-organization-dynamic-games.md",
+      "output_bytes": 6478,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T07:35:00Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/dynamic-games-estimation/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/industrial-organization-dynamic-games-estimation.md",
+      "output_bytes": 7489,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T07:39:37Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/dynamic-entry-exit/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/industrial-organization-dynamic-entry-exit.md",
+      "output_bytes": 6421,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T07:43:23Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/three-part-tariffs/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/industrial-organization-three-part-tariffs.md",
+      "output_bytes": 6711,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T07:45:46Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/nash-in-nash/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/industrial-organization-nash-in-nash.md",
+      "output_bytes": 7715,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T07:50:01Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/merger-simulation/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/industrial-organization-merger-simulation.md",
+      "output_bytes": 8626,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T08:01:51Z"
+    },
+    {
+      "tutorial_path": "industrial-organization/dynamic-discrete-choice/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/industrial-organization-dynamic-discrete-choice.md",
+      "output_bytes": 6849,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T08:05:22Z"
+    },
+    {
+      "tutorial_path": "structural-econometrics/keane-wolpin-career-choice/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/structural-econometrics-keane-wolpin-career-choice.md",
+      "output_bytes": 9461,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T08:15:22Z"
+    },
+    {
+      "tutorial_path": "structural-econometrics/dcegm-retirement-saving/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/structural-econometrics-dcegm-retirement-saving.md",
+      "output_bytes": 12004,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T08:20:12Z"
+    },
+    {
+      "tutorial_path": "structural-econometrics/auction-valuation-recovery/",
+      "status": "complete",
+      "output_path": "docs/qc-reports/proofread/structural-econometrics-auction-valuation-recovery.md",
+      "output_bytes": 8165,
+      "model": "claude-sonnet-4-6",
+      "updated_at": "2026-05-09T08:23:30Z"
     }
   ]
 }

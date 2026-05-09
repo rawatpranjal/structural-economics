@@ -235,6 +235,8 @@ condition selecting the planner's path is transversality:
 $$
 \lim_{t\to\infty} e^{-\rho t}u'(c(t))k(t)=0 .
 $$
+
+Here $u(c)=\frac{c^{1-\sigma}}{1-\sigma}$ is the CRRA utility function, so $u'(c(t))=c(t)^{-\sigma}$.
 """)
 
     report.add_model_setup(

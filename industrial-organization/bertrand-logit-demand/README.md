@@ -48,6 +48,8 @@ $$
 p-c=-(\Omega\circ \Delta')^{-1}s.
 $$
 
+Here $\circ$ is the Hadamard (element-wise) product of two matrices.
+
 The diversion ratio records where a lost sale goes. For $j\neq k$,
 
 $$
