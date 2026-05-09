@@ -362,6 +362,94 @@ def save_population_gif(run: GARun, path: str, n_frames: int = 32, duration_ms: 
     )
 
 
+def cobweb_frame(
+    params: MarketParams,
+    prices: np.ndarray,
+    step: int,
+    q_axis_lim: tuple[float, float],
+    p_axis_lim: tuple[float, float],
+) -> Image.Image:
+    """Render one frame of the cobweb staircase up to `step` periods."""
+    fig, ax = plt.subplots(figsize=(7, 6), dpi=100)
+
+    p_grid = np.linspace(p_axis_lim[0], p_axis_lim[1], 200)
+    q_demand = params.a - params.b * p_grid
+    q_supply = params.n_firms * (p_grid - params.x) / params.y
+    demand_visible = q_demand >= 0
+    supply_visible = q_supply >= 0
+    ax.plot(q_demand[demand_visible], p_grid[demand_visible], color="C0", linewidth=2, label="Demand $a - bp$")
+    ax.plot(q_supply[supply_visible], p_grid[supply_visible], color="C1", linewidth=2, label="Supply $n(p-x)/y$")
+    ax.scatter([params.n_firms * params.ree_quantity], [params.ree_price],
+               color="black", zorder=5, s=40, label=r"REE $(Q^{\ast}, p^{\ast})$")
+
+    for k in range(step):
+        p_curr = float(prices[k])
+        p_next = float(prices[k + 1])
+        q_at_curr = max(params.n_firms * (p_curr - params.x) / params.y, 0.0)
+        q_at_next = max(params.n_firms * (p_next - params.x) / params.y, 0.0)
+        ax.plot([q_at_curr, q_at_curr], [p_curr, p_next], color="C3", linewidth=1.4, alpha=0.85)
+        ax.plot([q_at_curr, q_at_next], [p_next, p_next], color="C3", linewidth=1.4, alpha=0.85)
+
+    if step >= 1:
+        p_curr = float(prices[step])
+        q_curr = max(params.n_firms * (p_curr - params.x) / params.y, 0.0)
+        ax.scatter([q_curr], [p_curr], color="C3", zorder=6, s=60)
+
+    ax.set_xlim(*q_axis_lim)
+    ax.set_ylim(*p_axis_lim)
+    ax.set_xlabel(r"Total quantity $Q$")
+    ax.set_ylabel(r"Price $p$")
+    p_now = float(prices[min(step, len(prices) - 1)])
+    ax.set_title(
+        rf"Naive cobweb, $\beta = {params.naive_slope:.2f}$"
+        "\n"
+        rf"Step $t = {step}$   |   $p_t = {p_now:.2f}$, $p^{{\ast}} = {params.ree_price:.2f}$"
+    )
+    ax.legend(loc="upper right")
+    fig.tight_layout()
+
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", dpi=100, facecolor="white")
+    plt.close(fig)
+    buf.seek(0)
+    return Image.open(buf).convert("RGB")
+
+
+def save_cobweb_gif(
+    params: MarketParams,
+    prices: np.ndarray,
+    path: str,
+    duration_ms: int = 500,
+    hold_last_ms: int = 1500,
+) -> None:
+    """Animate the cobweb staircase, one period per frame."""
+    out_path = Path(path)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    n_steps = len(prices) - 1
+    q_max = max(
+        params.n_firms * (prices.max() - params.x) / params.y,
+        params.a - params.b * max(prices.min(), 0.0),
+    )
+    q_pad = 0.05 * q_max
+    q_axis_lim = (-q_pad, q_max + q_pad)
+
+    p_max = float(max(prices.max(), params.ree_price)) * 1.15
+    p_min = float(min(prices.min(), 0.0)) - 0.5
+    p_axis_lim = (p_min, p_max)
+
+    frames = [cobweb_frame(params, prices, step, q_axis_lim, p_axis_lim) for step in range(n_steps + 1)]
+    durations = [duration_ms] * (len(frames) - 1) + [hold_last_ms]
+    frames[0].save(
+        out_path,
+        save_all=True,
+        append_images=frames[1:],
+        duration=durations,
+        loop=0,
+        optimize=True,
+    )
+
+
 def plot_iv_recovery(
     quantities: np.ndarray,
     prices: np.ndarray,
@@ -462,7 +550,8 @@ def main() -> None:
         ],
     })
 
-    save_population_gif(ga_run_unstable, "figures/ga-evolution.gif", n_frames=60, duration_ms=400)
+    cobweb_anim_unstable = naive_cobweb_path(unstable, p0=unstable.ree_price + 1.2, n_steps=14)
+    save_cobweb_gif(unstable, cobweb_anim_unstable, "figures/cobweb-staircase.gif", duration_ms=600, hold_last_ms=1800)
 
     report = ModelReport(
         "Cobweb Markets and Arifovic Genetic-Algorithm Learning",
@@ -647,6 +736,14 @@ The simulation runs for $T$ generations.
     )
 
     report.add_results(
+        "Watching the unstable cobweb draw itself one period at a time makes "
+        "the divergence visceral. Each frame adds one supply-then-demand step "
+        "to the spiral, and the price walks farther from $p^{\\ast}$ on every "
+        "iteration.\n\n"
+        '<img src="figures/cobweb-staircase.gif" alt="Animated naive cobweb staircase, unstable regime" width="70%">'
+    )
+
+    report.add_results(
         "Replacing naive expectations with the GA changes the picture. In the "
         "stable regime both rules behave similarly; the GA has a slightly noisier "
         "approach to REE because mutation never fully shuts off. In the unstable "
@@ -670,12 +767,6 @@ The simulation runs for $T$ generations.
         "figures/chromosome-snapshots.png",
         "Population quantity histograms at four generations (unstable regime)",
         plot_chromosome_snapshots(ga_run_unstable, snap_steps=[0, 25, 100, 499]),
-    )
-
-    report.add_results(
-        "An animated view of the same population shows the convergence as a "
-        "shrinking distribution centered on the REE reference line.\n\n"
-        '<img src="figures/ga-evolution.gif" alt="Animated GA population distribution converging to REE" width="80%">'
     )
 
     report.add_results(

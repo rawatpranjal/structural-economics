@@ -133,6 +133,10 @@ The cobweb diagram makes the stability story visible. In the stable regime, the 
 
 <img src="figures/cobweb-naive-vs-ree.png" alt="Naive cobweb staircase in the stable and unstable regimes" width="80%">
 
+Watching the unstable cobweb draw itself one period at a time makes the divergence visceral. Each frame adds one supply-then-demand step to the spiral, and the price walks farther from $p^{\ast}$ on every iteration.
+
+<img src="figures/cobweb-staircase.gif" alt="Animated naive cobweb staircase, unstable regime" width="70%">
+
 Replacing naive expectations with the GA changes the picture. In the stable regime both rules behave similarly; the GA has a slightly noisier approach to REE because mutation never fully shuts off. In the unstable regime naive expectations diverge within a few periods while the GA settles into a tight band around the REE price.
 
 <img src="figures/price-paths.png" alt="Naive vs GA price paths in both regimes" width="80%">
@@ -140,10 +144,6 @@ Replacing naive expectations with the GA changes the picture. In the stable regi
 Looking inside the GA population shows what convergence means in this model. The initial chromosome distribution is uniform over the encoded quantity grid. Within a few dozen generations the bulk of firms are producing close to the REE quantity, and by generation 500 the population is concentrated in a narrow band around $q^{\ast}$.
 
 <img src="figures/chromosome-snapshots.png" alt="Population quantity histograms at four generations (unstable regime)" width="80%">
-
-An animated view of the same population shows the convergence as a shrinking distribution centered on the REE reference line.
-
-<img src="figures/ga-evolution.gif" alt="Animated GA population distribution converging to REE" width="80%">
 
 The estimation block uses a naive-cobweb price series with i.i.d. demand-intercept shocks $\varepsilon_t$ as test data. The GA itself tracks REE so closely under the election operator that the resulting price barely moves. The naive cobweb provides the AR(1)-style persistence that makes the IV exercise interesting.
 
