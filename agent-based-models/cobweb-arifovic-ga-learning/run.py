@@ -217,6 +217,21 @@ def run_ga(
     )
 
 
+def ols_with_hc0(
+    quantities: np.ndarray,
+    prices: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray]:
+    """OLS of `quantities` on a constant and `prices`, with HC0 standard errors."""
+    n = len(quantities)
+    X = np.column_stack([np.ones(n), prices])
+    XtX_inv = np.linalg.inv(X.T @ X)
+    beta = XtX_inv @ X.T @ quantities
+    residuals = quantities - X @ beta
+    Omega = (X.T * residuals**2) @ X
+    cov = XtX_inv @ Omega @ XtX_inv
+    return beta, np.sqrt(np.diag(cov))
+
+
 def two_stage_least_squares(
     quantities: np.ndarray,
     prices: np.ndarray,
@@ -351,6 +366,7 @@ def plot_iv_recovery(
     quantities: np.ndarray,
     prices: np.ndarray,
     params: MarketParams,
+    ols_beta: np.ndarray,
     iv_beta: np.ndarray,
 ) -> plt.Figure:
     fig, axes = plt.subplots(1, 2, figsize=(13, 5))
@@ -358,23 +374,26 @@ def plot_iv_recovery(
     p_grid = np.linspace(prices.min(), prices.max(), 100)
     axes[0].scatter(prices, quantities, s=10, alpha=0.45, color="C0", label="Cobweb market periods")
     axes[0].plot(p_grid, params.a - params.b * p_grid, color="black", label=f"True demand $a={params.a:.0f}, b={params.b:.0f}$")
+    axes[0].plot(p_grid, ols_beta[0] + ols_beta[1] * p_grid, color="C1", linestyle="--", label=rf"Naive OLS fit $\hat b_{{\mathrm{{OLS}}}} = {-ols_beta[1]:.2f}$")
     axes[0].plot(p_grid, iv_beta[0] + iv_beta[1] * p_grid, color="C2", linestyle="--", label=rf"2SLS fit $\hat b_{{\mathrm{{IV}}}} = {-iv_beta[1]:.2f}$")
     axes[0].set_xlabel(r"Price $p_t$")
     axes[0].set_ylabel(r"Quantity $Q_t$")
-    axes[0].set_title("Lagged-price 2SLS demand recovery")
+    axes[0].set_title("Demand recovery: naive OLS biased by simultaneity")
     axes[0].legend(loc="upper right")
 
     labels = [r"Intercept $a$", r"Slope $b$"]
     truth = [params.a, params.b]
+    ols_vals = [ols_beta[0], -ols_beta[1]]
     iv_vals = [iv_beta[0], -iv_beta[1]]
     pos = np.arange(len(labels))
-    width = 0.32
-    axes[1].bar(pos - width / 2, truth, width, label="True", color="black")
-    axes[1].bar(pos + width / 2, iv_vals, width, label="2SLS", color="C2")
+    width = 0.27
+    axes[1].bar(pos - width, truth, width, label="True", color="black")
+    axes[1].bar(pos, ols_vals, width, label="Naive OLS", color="C1")
+    axes[1].bar(pos + width, iv_vals, width, label="2SLS", color="C2")
     axes[1].set_xticks(pos)
     axes[1].set_xticklabels(labels)
     axes[1].set_ylabel("Coefficient")
-    axes[1].set_title("True coefficients vs 2SLS estimates")
+    axes[1].set_title("Lagged-price IV closes the bias")
     axes[1].legend(loc="upper right")
 
     fig.tight_layout()
@@ -412,29 +431,32 @@ def main() -> None:
     Q = iv_quantities[burn + 1 :]
     P = iv_prices[burn + 1 :]
     P_lag = iv_prices[burn : -1]
+    ols_beta, ols_se = ols_with_hc0(Q, P)
     iv_beta, iv_se = two_stage_least_squares(Q, P, P_lag)
 
     iv_table = pd.DataFrame({
-        "parameter": ["intercept a", "slope b"],
-        "true": [stable.a, stable.b],
-        "iv_estimate": [iv_beta[0], -iv_beta[1]],
-        "iv_se": [iv_se[0], iv_se[1]],
+        "Parameter": ["Intercept $a$", "Slope $b$"],
+        "True value": [stable.a, stable.b],
+        "Naive OLS": [ols_beta[0], -ols_beta[1]],
+        "OLS SE": [ols_se[0], ols_se[1]],
+        "2SLS": [iv_beta[0], -iv_beta[1]],
+        "2SLS SE": [iv_se[0], iv_se[1]],
     })
 
     regime_table = pd.DataFrame({
-        "regime": ["stable", "unstable"],
-        "demand_slope_b": [stable.b, unstable.b],
-        "supply_slope_y": [stable.y, unstable.y],
-        "n_firms": [stable.n_firms, unstable.n_firms],
-        "naive_slope_beta": [stable.naive_slope, unstable.naive_slope],
-        "ree_price": [stable.ree_price, unstable.ree_price],
-        "ree_quantity_per_firm": [stable.ree_quantity, unstable.ree_quantity],
-        "naive_diverges": [not stable.is_stable, not unstable.is_stable],
-        "ga_mean_price_last100": [
+        "Regime": ["Stable", "Unstable"],
+        "Demand slope $b$": [stable.b, unstable.b],
+        "Supply slope $y$": [stable.y, unstable.y],
+        "Firms $n$": [stable.n_firms, unstable.n_firms],
+        "Naive slope $\\beta$": [stable.naive_slope, unstable.naive_slope],
+        "REE price $p^{\\ast}$": [stable.ree_price, unstable.ree_price],
+        "REE quantity $q^{\\ast}$": [stable.ree_quantity, unstable.ree_quantity],
+        "Naive diverges": [not stable.is_stable, not unstable.is_stable],
+        "GA mean $p_t$ (last 100)": [
             float(ga_run_stable.prices[-100:].mean()),
             float(ga_run_unstable.prices[-100:].mean()),
         ],
-        "ga_abs_dev_from_ree": [
+        "Distance to $p^{\\ast}$": [
             float(abs(ga_run_stable.prices[-100:].mean() - stable.ree_price)),
             float(abs(ga_run_unstable.prices[-100:].mean() - unstable.ree_price)),
         ],
@@ -468,8 +490,7 @@ def main() -> None:
 
     report.add_equations(
         r"""
-**Notation.** Each row below is one symbol. Read this first; everything else in
-this section uses these letters.
+**Notation.**
 
 | Symbol | What it means |
 |---|---|
@@ -507,7 +528,7 @@ $$q_{i,t} = \frac{p_{i,t}^{e} - x}{y}.$$
 supply rule for every firm and substituting into inverse demand gives a
 one-step recursion in price:
 
-$$p_t = \underbrace{\alpha}_{\text{intercept}} - \underbrace{\beta}_{\text{slope ratio}}\, p_{t-1}, \qquad \alpha = \frac{a y + n x}{b y}, \quad \beta = \frac{n}{b y}.$$
+$$p_t = \underbrace{\alpha}_{\text{intercept}} - \underbrace{\beta}_{\text{slope ratio}} \cdot p_{t-1}, \qquad \alpha = \frac{a y + n x}{b y}, \quad \beta = \frac{n}{b y}.$$
 
 The fixed point of this recursion is the rational-expectations equilibrium
 
@@ -524,17 +545,25 @@ plan in the current period.
 
 **Fitness function.** The realized profit at the cleared price $p_t$ is
 
-$$\pi_{i,t} = \underbrace{p_t\, q_{i,t}}_{\text{revenue}} - \underbrace{x\, q_{i,t}}_{\text{linear cost}} - \underbrace{\tfrac{y}{2} q_{i,t}^{2}}_{\text{convex cost}}.$$
+$$\pi_{i,t} = \underbrace{p_t \cdot q_{i,t}}_{\text{revenue}} - \underbrace{x \cdot q_{i,t}}_{\text{linear cost}} - \underbrace{\tfrac{y}{2} q_{i,t}^{2}}_{\text{convex cost}}.$$
 
-This profit is the GA's fitness signal. The next generation is built by
-tournament selection on $\pi_{i,t}$, single-point crossover with probability
-$p_c$, bit-flip mutation with probability $p_m$ per bit, and Arifovic's
-election operator: a candidate child replaces its parent only if its
-hypothetical profit at the just-realized price $p_t$ weakly exceeds the
-parent's actual profit.
+**Abstract GA loop.** Let $\mathbf{B}_t = (b_{1,t}, \ldots, b_{n,t})$ be the
+population of chromosomes at the start of period $t$. One generation
+executes:
 
-The simulation runs for $T$ generations. The hyperparameters $L, N, p_c,
-p_m, T$ are listed alongside the market calibration in the next section.
+$$
+\begin{aligned}
+\text{(1) Decode} \quad & q_{i,t} = \mathrm{decode}(b_{i,t}). \\
+\text{(2) Clear} \quad & Q_t = \sum_{i=1}^{n} q_{i,t}, \qquad p_t = \tfrac{a + \varepsilon_t - Q_t}{b}. \\
+\text{(3) Score} \quad & \pi_{i,t} = p_t \cdot q_{i,t} - x \cdot q_{i,t} - \tfrac{y}{2} q_{i,t}^{2}. \\
+\text{(4) Select} \quad & \text{tournament on } \{\pi_{i,t}\}_{i=1}^{n} \text{ produces parent indices.} \\
+\text{(5) Recombine} \quad & \text{crossover with prob.\ } p_c, \text{ then bit-flip mutation with per-bit prob.\ } p_m. \\
+\text{(6) Elect} \quad & \text{keep child } b_i' \text{ iff } \pi(\mathrm{decode}(b_i'), p_t) \geq \pi_{i,t}; \text{ else keep parent.} \\
+\text{(7) Update} \quad & \mathbf{B}_{t+1} \leftarrow \text{surviving population.}
+\end{aligned}
+$$
+
+The simulation runs for $T$ generations.
 """
     )
 
@@ -582,29 +611,27 @@ p_m, T$ are listed alongside the market calibration in the next section.
         "   2h. Replace the population with the survivors of step 2g.\n"
         "```\n\n"
         "The election step is the difference-maker. Without it, lucky offspring "
-        "from a crossover that happened to land in a low-supply period are "
-        "rewarded with high realized profit and propagate even though their "
-        "implied quantity is far from the equilibrium. The election filter "
-        "evaluates each child *as if it had played in the current market* and "
-        "only keeps it if the same population's price would have rewarded that "
-        "decision.\n\n"
-        "**Where this fits in evolutionary computation.** The genetic algorithm "
-        "is the original member of a wider family of evolutionary search "
-        "methods. Holland (1975) introduced the GA as a population-based "
-        "heuristic for fixed-length bit strings under selection, crossover, "
-        "and mutation. Koza (1992) generalized to genetic programming, where "
-        "candidates are variable-length expressions or programs. Modern "
-        "relatives such as evolution strategies, CMA-ES, and neuroevolution "
-        "replace the bit string with continuous parameters and Gaussian "
-        "perturbations. Arifovic's contribution is the election operator: a "
-        "domain-specific filter that ties the GA's fitness to a counterfactual "
-        "evaluation at the just-realized market price. The election operator "
-        "is what stabilizes the otherwise unstable cobweb, and it is "
-        "structurally similar in spirit to the policy-improvement step that "
-        "stabilizes Q-learning in the "
-        "[`q-learning-growth`](../../dynamic-programming/q-learning-growth/) "
-        "tutorial: in both, a learner accepts a candidate update only if it "
-        "would have been an improvement under the most recent observed state."
+        "from a crossover that happened to land in a low-supply period propagate "
+        "on inflated profits even though their implied quantity is far from "
+        "the equilibrium. The election filter scores each child at the "
+        "just-realized price and keeps it only if it beats its parent there.\n\n"
+        "**Where this fits in evolutionary computation.** "
+        "The genetic algorithm sits inside a wider family of evolutionary "
+        "search methods. "
+        "Holland (1975) introduced it as a population-based heuristic on "
+        "fixed-length bit strings. "
+        "Koza (1992) generalized to genetic programming, where the candidates "
+        "are variable-length expressions or programs. "
+        "Evolution strategies, CMA-ES, and neuroevolution swap the bit string "
+        "for continuous parameters under Gaussian perturbations. "
+        "Arifovic's contribution is the election operator. "
+        "The operator filters each candidate child against a counterfactual "
+        "profit at the just-realized market price. "
+        "This filter is what stabilizes the otherwise unstable cobweb. "
+        "It mirrors the policy-improvement step in Q-learning "
+        "(see [`q-learning-growth`](../../dynamic-programming/q-learning-growth/)). "
+        "In both, a learner accepts a candidate update only if it would have "
+        "been an improvement under the most recently observed state."
     )
 
     report.add_results(
@@ -655,21 +682,29 @@ p_m, T$ are listed alongside the market calibration in the next section.
         "The estimation block uses a naive-cobweb price series with i.i.d. "
         "demand-intercept shocks $\\varepsilon_t$ as test data. The GA itself "
         "tracks REE so closely under the election operator that the resulting "
-        "price barely moves; the naive cobweb provides the AR(1)-style "
+        "price barely moves. The naive cobweb provides the AR(1)-style "
         "persistence that makes the IV exercise interesting.\n\n"
-        "The demand shock $\\varepsilon_t$ feeds into the realized price "
-        "through market clearing, which makes a same-period regression of "
-        "$Q_t$ on $p_t$ inconsistent. The lagged price $p_{t-1}$ side-steps "
-        "the simultaneity: it drives the next-period quantity through firms' "
-        "naive expectations, so it is correlated with $p_t$, while remaining "
-        "uncorrelated with $\\varepsilon_t$ when shocks are independent across "
-        "periods. Two-stage least squares with $p_{t-1}$ as instrument "
-        "recovers the true demand intercept and slope."
+        "**Structural demand equation.** The data are the realized pairs "
+        "$\\{(p_t, Q_t)\\}_{t=1}^{T}$. The demand we want to recover is\n\n"
+        "$$Q_t = a - b \\cdot p_t + \\varepsilon_t.$$\n\n"
+        "**Why naive OLS is biased.** Market clearing forces the realized "
+        "price to absorb the demand shock,\n\n"
+        "$$p_t = \\frac{a + \\varepsilon_t - Q_t}{b} \\quad \\Longrightarrow \\quad \\mathrm{Cov}(p_t,\\, \\varepsilon_t) = \\frac{\\mathrm{Var}(\\varepsilon_t)}{b} > 0.$$\n\n"
+        "An OLS regression of $Q_t$ on $p_t$ therefore underestimates the "
+        "demand slope; the same simultaneity that drives prices in real "
+        "markets drives them here.\n\n"
+        "**Lagged-price IV.** The lagged price $p_{t-1}$ is correlated with "
+        "$p_t$ through firms' naive supply rule but uncorrelated with the "
+        "current shock under i.i.d. $\\varepsilon_t$,\n\n"
+        "$$\\mathrm{Cov}(p_{t-1},\\, p_t) \\neq 0, \\qquad \\mathbb{E}[\\,p_{t-1} \\cdot \\varepsilon_t\\,] = 0.$$\n\n"
+        "Two-stage least squares with $p_{t-1}$ as instrument is consistent. "
+        "The first stage projects $p_t$ onto $(1, p_{t-1})$; the second stage "
+        "regresses $Q_t$ on the fitted prices."
     )
     report.add_figure(
         "figures/iv-recovery.png",
-        "Lagged-price 2SLS demand-curve recovery from a naive-cobweb price series",
-        plot_iv_recovery(Q, P, stable, iv_beta),
+        "Naive OLS vs lagged-price 2SLS demand-curve recovery",
+        plot_iv_recovery(Q, P, stable, ols_beta, iv_beta),
     )
 
     report.add_table(
@@ -683,11 +718,11 @@ p_m, T$ are listed alongside the market calibration in the next section.
 
     report.add_table(
         "tables/iv-estimates.csv",
-        "Demand-curve recovery: true vs 2SLS",
+        "Demand-curve recovery: true vs naive OLS vs 2SLS",
         iv_table,
-        "Coefficients with HC0 standard errors. 2SLS with lagged price as "
-        "instrument is consistent under i.i.d. demand shocks because "
-        "$p_{t-1}$ enters $p_t$ only through firms' naive supply rule.",
+        "Coefficients with HC0 standard errors. Naive OLS underestimates the "
+        "demand slope because $\\varepsilon_t$ enters $p_t$ through market "
+        "clearing. 2SLS with lagged price as instrument is consistent.",
     )
 
     report.add_takeaway(

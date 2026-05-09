@@ -10,8 +10,7 @@ This tutorial reproduces the headline result. We solve for the REE in closed for
 
 ## Equations
 
-**Notation.** Each row below is one symbol. Read this first; everything else in
-this section uses these letters.
+**Notation.**
 
 | Symbol | What it means |
 |---|---|
@@ -49,7 +48,7 @@ $$q_{i,t} = \frac{p_{i,t}^{e} - x}{y}.$$
 supply rule for every firm and substituting into inverse demand gives a
 one-step recursion in price:
 
-$$p_t = \underbrace{\alpha}_{\text{intercept}} - \underbrace{\beta}_{\text{slope ratio}}\, p_{t-1}, \qquad \alpha = \frac{a y + n x}{b y}, \quad \beta = \frac{n}{b y}.$$
+$$p_t = \underbrace{\alpha}_{\text{intercept}} - \underbrace{\beta}_{\text{slope ratio}} \cdot p_{t-1}, \qquad \alpha = \frac{a y + n x}{b y}, \quad \beta = \frac{n}{b y}.$$
 
 The fixed point of this recursion is the rational-expectations equilibrium
 
@@ -66,17 +65,25 @@ plan in the current period.
 
 **Fitness function.** The realized profit at the cleared price $p_t$ is
 
-$$\pi_{i,t} = \underbrace{p_t\, q_{i,t}}_{\text{revenue}} - \underbrace{x\, q_{i,t}}_{\text{linear cost}} - \underbrace{\tfrac{y}{2} q_{i,t}^{2}}_{\text{convex cost}}.$$
+$$\pi_{i,t} = \underbrace{p_t \cdot q_{i,t}}_{\text{revenue}} - \underbrace{x \cdot q_{i,t}}_{\text{linear cost}} - \underbrace{\tfrac{y}{2} q_{i,t}^{2}}_{\text{convex cost}}.$$
 
-This profit is the GA's fitness signal. The next generation is built by
-tournament selection on $\pi_{i,t}$, single-point crossover with probability
-$p_c$, bit-flip mutation with probability $p_m$ per bit, and Arifovic's
-election operator: a candidate child replaces its parent only if its
-hypothetical profit at the just-realized price $p_t$ weakly exceeds the
-parent's actual profit.
+**Abstract GA loop.** Let $\mathbf{B}_t = (b_{1,t}, \ldots, b_{n,t})$ be the
+population of chromosomes at the start of period $t$. One generation
+executes:
 
-The simulation runs for $T$ generations. The hyperparameters $L, N, p_c,
-p_m, T$ are listed alongside the market calibration in the next section.
+$$
+\begin{aligned}
+\text{(1) Decode} \quad & q_{i,t} = \mathrm{decode}(b_{i,t}). \\
+\text{(2) Clear} \quad & Q_t = \sum_{i=1}^{n} q_{i,t}, \qquad p_t = \tfrac{a + \varepsilon_t - Q_t}{b}. \\
+\text{(3) Score} \quad & \pi_{i,t} = p_t \cdot q_{i,t} - x \cdot q_{i,t} - \tfrac{y}{2} q_{i,t}^{2}. \\
+\text{(4) Select} \quad & \text{tournament on } \{\pi_{i,t}\}_{i=1}^{n} \text{ produces parent indices.} \\
+\text{(5) Recombine} \quad & \text{crossover with prob.\ } p_c, \text{ then bit-flip mutation with per-bit prob.\ } p_m. \\
+\text{(6) Elect} \quad & \text{keep child } b_i' \text{ iff } \pi(\mathrm{decode}(b_i'), p_t) \geq \pi_{i,t}; \text{ else keep parent.} \\
+\text{(7) Update} \quad & \mathbf{B}_{t+1} \leftarrow \text{surviving population.}
+\end{aligned}
+$$
+
+The simulation runs for $T$ generations.
 
 ## Model Setup
 
@@ -116,9 +123,9 @@ Output: price path p_1, ..., p_T and per-period population quantities
    2h. Replace the population with the survivors of step 2g.
 ```
 
-The election step is the difference-maker. Without it, lucky offspring from a crossover that happened to land in a low-supply period are rewarded with high realized profit and propagate even though their implied quantity is far from the equilibrium. The election filter evaluates each child *as if it had played in the current market* and only keeps it if the same population's price would have rewarded that decision.
+The election step is the difference-maker. Without it, lucky offspring from a crossover that happened to land in a low-supply period propagate on inflated profits even though their implied quantity is far from the equilibrium. The election filter scores each child at the just-realized price and keeps it only if it beats its parent there.
 
-**Where this fits in evolutionary computation.** The genetic algorithm is the original member of a wider family of evolutionary search methods. Holland (1975) introduced the GA as a population-based heuristic for fixed-length bit strings under selection, crossover, and mutation. Koza (1992) generalized to genetic programming, where candidates are variable-length expressions or programs. Modern relatives such as evolution strategies, CMA-ES, and neuroevolution replace the bit string with continuous parameters and Gaussian perturbations. Arifovic's contribution is the election operator: a domain-specific filter that ties the GA's fitness to a counterfactual evaluation at the just-realized market price. The election operator is what stabilizes the otherwise unstable cobweb, and it is structurally similar in spirit to the policy-improvement step that stabilizes Q-learning in the [`q-learning-growth`](../../dynamic-programming/q-learning-growth/) tutorial: in both, a learner accepts a candidate update only if it would have been an improvement under the most recent observed state.
+**Where this fits in evolutionary computation.** The genetic algorithm sits inside a wider family of evolutionary search methods. Holland (1975) introduced it as a population-based heuristic on fixed-length bit strings. Koza (1992) generalized to genetic programming, where the candidates are variable-length expressions or programs. Evolution strategies, CMA-ES, and neuroevolution swap the bit string for continuous parameters under Gaussian perturbations. Arifovic's contribution is the election operator. The operator filters each candidate child against a counterfactual profit at the just-realized market price. This filter is what stabilizes the otherwise unstable cobweb. It mirrors the policy-improvement step in Q-learning (see [`q-learning-growth`](../../dynamic-programming/q-learning-growth/)). In both, a learner accepts a candidate update only if it would have been an improvement under the most recently observed state.
 
 ## Results
 
@@ -138,29 +145,43 @@ An animated view of the same population shows the convergence as a shrinking dis
 
 <img src="figures/ga-evolution.gif" alt="Animated GA population distribution converging to REE" width="80%">
 
-The estimation block uses a naive-cobweb price series with i.i.d. demand-intercept shocks $\varepsilon_t$ as test data. The GA itself tracks REE so closely under the election operator that the resulting price barely moves; the naive cobweb provides the AR(1)-style persistence that makes the IV exercise interesting.
+The estimation block uses a naive-cobweb price series with i.i.d. demand-intercept shocks $\varepsilon_t$ as test data. The GA itself tracks REE so closely under the election operator that the resulting price barely moves. The naive cobweb provides the AR(1)-style persistence that makes the IV exercise interesting.
 
-The demand shock $\varepsilon_t$ feeds into the realized price through market clearing, which makes a same-period regression of $Q_t$ on $p_t$ inconsistent. The lagged price $p_{t-1}$ side-steps the simultaneity: it drives the next-period quantity through firms' naive expectations, so it is correlated with $p_t$, while remaining uncorrelated with $\varepsilon_t$ when shocks are independent across periods. Two-stage least squares with $p_{t-1}$ as instrument recovers the true demand intercept and slope.
+**Structural demand equation.** The data are the realized pairs $\{(p_t, Q_t)\}_{t=1}^{T}$. The demand we want to recover is
 
-<img src="figures/iv-recovery.png" alt="Lagged-price 2SLS demand-curve recovery from a naive-cobweb price series" width="80%">
+$$Q_t = a - b \cdot p_t + \varepsilon_t.$$
+
+**Why naive OLS is biased.** Market clearing forces the realized price to absorb the demand shock,
+
+$$p_t = \frac{a + \varepsilon_t - Q_t}{b} \quad \Longrightarrow \quad \mathrm{Cov}(p_t,\, \varepsilon_t) = \frac{\mathrm{Var}(\varepsilon_t)}{b} > 0.$$
+
+An OLS regression of $Q_t$ on $p_t$ therefore underestimates the demand slope; the same simultaneity that drives prices in real markets drives them here.
+
+**Lagged-price IV.** The lagged price $p_{t-1}$ is correlated with $p_t$ through firms' naive supply rule but uncorrelated with the current shock under i.i.d. $\varepsilon_t$,
+
+$$\mathrm{Cov}(p_{t-1},\, p_t) \neq 0, \qquad \mathbb{E}[\,p_{t-1} \cdot \varepsilon_t\,] = 0.$$
+
+Two-stage least squares with $p_{t-1}$ as instrument is consistent. The first stage projects $p_t$ onto $(1, p_{t-1})$; the second stage regresses $Q_t$ on the fitted prices.
+
+<img src="figures/iv-recovery.png" alt="Naive OLS vs lagged-price 2SLS demand-curve recovery" width="80%">
 
 Naive cobweb stability is a knife-edge in $\beta$. The GA tracks REE in both regimes; the absolute deviation of the last-100-period mean price from $p^{\ast}$ stays small even when the naive rule diverges.
 
 **Regime grid and GA convergence summary**
 
-| regime   |   demand_slope_b |   supply_slope_y |   n_firms |   naive_slope_beta |   ree_price |   ree_quantity_per_firm | naive_diverges   |   ga_mean_price_last100 |   ga_abs_dev_from_ree |
-|:---------|-----------------:|-----------------:|----------:|-------------------:|------------:|------------------------:|:-----------------|------------------------:|----------------------:|
-| stable   |               30 |                2 |        30 |                0.5 |     1.66667 |                0.333333 | False            |                 1.66655 |           0.000112418 |
-| unstable |               10 |                2 |        30 |                1.5 |     3       |                1        | True             |                 3.01176 |           0.0117647   |
+| Regime   |   Demand slope $b$ |   Supply slope $y$ |   Firms $n$ |   Naive slope $\beta$ |   REE price $p^{\ast}$ |   REE quantity $q^{\ast}$ | Naive diverges   |   GA mean $p_t$ (last 100) |   Distance to $p^{\ast}$ |
+|:---------|-------------------:|-------------------:|------------:|----------------------:|-----------------------:|--------------------------:|:-----------------|---------------------------:|-------------------------:|
+| Stable   |                 30 |                  2 |          30 |                   0.5 |                1.66667 |                  0.333333 | False            |                    1.66655 |              0.000112418 |
+| Unstable |                 10 |                  2 |          30 |                   1.5 |                3       |                  1        | True             |                    3.01176 |              0.0117647   |
 
-Coefficients with HC0 standard errors. 2SLS with lagged price as instrument is consistent under i.i.d. demand shocks because $p_{t-1}$ enters $p_t$ only through firms' naive supply rule.
+Coefficients with HC0 standard errors. Naive OLS underestimates the demand slope because $\varepsilon_t$ enters $p_t$ through market clearing. 2SLS with lagged price as instrument is consistent.
 
-**Demand-curve recovery: true vs 2SLS**
+**Demand-curve recovery: true vs naive OLS vs 2SLS**
 
-| parameter   |   true |   iv_estimate |   iv_se |
-|:------------|-------:|--------------:|--------:|
-| intercept a |     60 |       67.059  | 3.08055 |
-| slope b     |     30 |       34.2436 | 1.84817 |
+| Parameter     |   True value |   Naive OLS |   OLS SE |    2SLS |   2SLS SE |
+|:--------------|-------------:|------------:|---------:|--------:|----------:|
+| Intercept $a$ |           60 |     20.9452 | 0.562537 | 67.059  |   3.08055 |
+| Slope $b$     |           30 |      6.5707 | 0.337715 | 34.2436 |   1.84817 |
 
 ## Takeaway
 
