@@ -1,0 +1,4 @@
+Type,True alpha,Estimated alpha (M3),True gamma,Estimated gamma (M3),True delta,Estimated delta (M3),True share,Estimated share (M3)
+EUT,0.950,0.951,1.000,0.985,1.000,1.033,0.20,0.19
+Mild CPT,0.850,0.872,0.650,0.643,0.850,0.837,0.50,0.52
+Strong CPT,0.700,0.720,0.400,0.405,0.950,0.929,0.30,0.29

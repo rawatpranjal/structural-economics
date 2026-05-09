@@ -1,0 +1,5 @@
+Mixture size,Log-likelihood,Number of parameters,BIC,Normalised entropy
+C = 1 (single type),-21035.2,203,43868,n/a
+C = 2,-20541.5,207,42916,0.0309
+C = 3 (BFDE),-20241.6,211,42351,0.0656
+C = 4,-20238.8,215,42381,0.1572
