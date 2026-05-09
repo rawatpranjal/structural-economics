@@ -17,6 +17,8 @@ $$
 \pi(\theta \mid D) \propto L(D \mid \theta) p_0(\theta).
 $$
 
+The normalizing constant $\int L(D\mid\theta) p_0(\theta)\,d\theta$ is the integral we cannot compute. Sampling avoids it.
+
 The target used here is a two-component mixture:
 
 $$
@@ -28,6 +30,8 @@ $$
 $$
 
 Here $\phi(\cdot;\mu,\Sigma)$ denotes the bivariate normal density with mean $\mu$ and covariance $\Sigma$.
+
+A random-walk proposal does not need to know the target's shape. It is the natural default when only the kernel can be evaluated. The acceptance step is what filters out moves into low-density regions.
 
 Given current draw $\theta_t$, a random-walk proposal draws:
 
@@ -41,6 +45,8 @@ $$
 \alpha(\theta_t,\theta^\star) =
 \min[1, \pi(\theta^\star \mid D) / \pi(\theta_t \mid D)].
 $$
+
+The acceptance ratio depends only on the kernel ratio. The unknown normalizing constant cancels, which is the load-bearing reason MH works without a partition function.
 
 Retained draws approximate posterior averages for any counterfactual object
 $g(\theta)$. The approximation is weak when the chain rarely crosses modes.
@@ -78,6 +84,10 @@ Output: draws from pi(theta | D), plus mode-crossing summaries
 ```
 
 Proposal scale $s$ controls local move size. Tiny steps accept often but cross modes slowly. Large steps cross low-density regions more often, but many proposals are rejected. The known mixture mean lets the code measure finite-chain error.
+
+For high-dimensional Gaussian targets the asymptotically optimal acceptance rate is roughly 0.23 (Roberts, Gelman, and Gilks 1997). That result is why tuning advice for $s$ usually targets acceptance between 0.2 and 0.5. On bimodal targets like this one, the rule is a guide but not a guarantee, because what limits the chain is mode-jumping rather than local mixing.
+
+Two diagnostics measure these chain qualities. Effective sample size turns the autocorrelated chain into an equivalent count of independent draws. Mode switches count how often the chain crosses between regimes. Together these checks say whether posterior averages weight the structural regimes correctly or report a regime artifact.
 
 ## Results
 
