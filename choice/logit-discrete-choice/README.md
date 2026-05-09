@@ -30,7 +30,7 @@ log-likelihood is
 $$\ell(\beta)=\sum_{i=1}^N\sum_{j=1}^J d_{ij}\log P_j(\beta).$$
 
 Because this one-market example has no individual covariates, fitted market
-shares are $s_j=P_j(\hat\beta)$. The implied price elasticities are
+shares are $s_j=P_j(\hat\beta)$, where $\hat\beta$ denotes the MLE of $\beta$. The implied price elasticities are
 $$\eta_{jj}=\beta_p p_j(1-s_j), \qquad
 \eta_{jk}=-\beta_p p_k s_k \quad (j\neq k).$$
 

@@ -217,7 +217,8 @@ def main() -> None:
     report.add_equations(
         r"""
 Let $H$ denote the high-red urn and $L$ the low-red urn. A task draws $n$ balls
-and observes $k$ red balls. The likelihood-ratio statistic is
+and observes $k$ red balls. Let $p_H$ and $p_L$ denote the red-ball probability
+under urns $H$ and $L$. The likelihood-ratio statistic is
 
 $$
 \Lambda(k,n)
@@ -233,7 +234,7 @@ $$
 $$
 
 Rule $m$ maps the sufficient statistic and counts into a choice probability
-$q_m(k,n)$. With subject $i$'s choices $d_{it}\in\{0,1\}$, the panel likelihood
+$q_m(k,n)$. With subject $i$'s choices $d_{it}\in\{0,1\}$ (where $t$ indexes tasks), the panel likelihood
 under rule $m$ is
 
 $$
@@ -255,6 +256,8 @@ $$
 \tau_{im}
 = \frac{w_m L_{im}}{\sum_h w_h L_{ih}}.
 $$
+
+Here $h$ is a summation index ranging over the same rule set as $m$.
 """
     )
 

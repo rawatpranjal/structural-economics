@@ -116,8 +116,7 @@ Write $\mu_{t+1}^{m'(d)}(a_i^{+})$ for the next-period marginal value evaluated
 at that candidate asset.
 
 $$
-\mu_{t+1}^{m'(d)}(a_i^{+})
-=
+\mu_{t+1}^{m'(d)}(a_i^{+}) =
 \frac{\partial V_{t+1}^{m'(d)}(a_i^{+})}{\partial a^{+}}.
 $$
 
@@ -344,8 +343,8 @@ The runtime comparison is deliberately uneven: DC-EGM uses the larger main grid,
 | Share retired by age 67       |   1      |
 | Mean assets at age 55         |   3.0556 |
 | Mean assets at age 70         |   0.6717 |
-| DC-EGM runtime seconds        |   0.0033 |
-| Brute-force runtime seconds   |   0.0485 |
+| DC-EGM runtime seconds        |   0.0037 |
+| Brute-force runtime seconds   |   0.0499 |
 | Brute-force asset points      | 150      |
 | DC-EGM asset points           | 420      |
 

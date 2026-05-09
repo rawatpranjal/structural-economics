@@ -116,7 +116,7 @@ entry probability. If the rival enters with probability $q$, the payoff gap is:
 
 $$
 \Delta(q)
-= E[u_i(E,a_{-i})]-E[u_i(O,a_{-i})]
+= \mathbb{E}[u_i(E,a_{-i})]-\mathbb{E}[u_i(O,a_{-i})]
 = 2(1-q)-q
 = 2-3q.
 $$

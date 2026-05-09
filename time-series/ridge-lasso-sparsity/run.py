@@ -479,6 +479,8 @@ $x_t$ of standardized policy-concept indicators.
 
 $$\Delta r_t = \phi r_{t-1} + x_t'\beta + u_t.$$
 
+Here $\phi$ is the autoregressive coefficient on the lagged policy rate.
+
 The systematic policy component is
 
 $$m_t = \phi r_{t-1} + x_t'\beta,$$

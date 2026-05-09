@@ -595,8 +595,7 @@ Write $\mu_{t+1}^{m'(d)}(a_i^{+})$ for the next-period marginal value evaluated
 at that candidate asset.
 
 $$
-\mu_{t+1}^{m'(d)}(a_i^{+})
-=
+\mu_{t+1}^{m'(d)}(a_i^{+}) =
 \frac{\partial V_{t+1}^{m'(d)}(a_i^{+})}{\partial a^{+}}.
 $$
 

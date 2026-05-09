@@ -25,8 +25,10 @@ In the multiplier-accelerator economy, income is the sum of three components.
 $$
 C_t = \beta Y_{t-1},
 \qquad
-G_t = \rho_g G_{t-1} + (1-\rho_g)\bar G + \varepsilon_t,
+G_t = \rho_g G_{t-1} + (1-\rho_g)\bar G + \eta_t,
 $$
+
+The spending innovation $\eta_t \sim N(0,\sigma^2)$ is drawn independently of $\varepsilon_t$.
 
 $$
 I_t = \alpha(C_t-C_{t-1}),
@@ -41,7 +43,7 @@ impulse response uses the recursion below.
 $$
 y_t = \beta(1+\alpha)y_{t-1}-\alpha\beta y_{t-2}+g_t,
 \qquad
-g_t=\rho_g g_{t-1}+\varepsilon_t.
+g_t=\rho_g g_{t-1}+\eta_t.
 $$
 
 ## Model Setup
@@ -89,7 +91,7 @@ Outputs: AR path x_t and multiplier-accelerator paths y_t, c_t, i_t, g_t
 
 ## Results
 
-A unit shock follows the exact path $\rho^h$. Raising $\rho$ from 0.5 to 0.9 lengthens the half-life from one to seven periods.
+A unit shock follows the exact path $\rho^h$ ($h$ = periods after the shock). Raising $\rho$ from 0.5 to 0.9 lengthens the half-life from one to seven periods.
 
 <img src="figures/ar1-irfs.png" alt="Exact AR(1) impulse responses by persistence" width="80%">
 

@@ -45,6 +45,8 @@ $$
 \ell(\alpha)=\sum_j y_j\log\Lambda(\alpha_j) + (N_j-y_j)\log[1-\Lambda(\alpha_j)].
 $$
 
+Here $\Lambda(\alpha_j)=1/(1+\exp(-\alpha_j))$ is the logistic function.
+
 The shape restriction is
 
 $$

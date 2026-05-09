@@ -129,6 +129,7 @@ that consumers dislike from products that consumers rarely inspect.
 | True base search cost | 0.080 | Cost level before complexity adjustment |
 | Complexity slope | 0.48 | Fixed search-cost increase with product complexity |
 | Match-value sd | 0.85 | Fixed uncertainty about product fit |
+| Price taste | 0.32 | Fixed price sensitivity |
 
 **Numerical settings**
 
@@ -175,6 +176,8 @@ G(k_j)=c_j(\theta)/\sigma,
 \qquad
 G(k)=\phi(k)-k[1-\Phi(k)],
 $$
+
+Here $k_j$ is the standardized threshold solved by root-finding; $\phi$ is the standard normal PDF and $\Phi$ the standard normal CDF.
 
 4. Recover the reservation value:
 

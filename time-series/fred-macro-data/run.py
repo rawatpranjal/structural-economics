@@ -250,6 +250,7 @@ s_t = \rho \odot s_{t-1} + \sqrt{1-\rho^2}\odot \varepsilon_t,
 y_t=\mu+\sigma\odot s_t.
 $$
 
+The vector $s_t$ is a standardized latent state and $\sigma$ is the 4-vector of series standard deviations (3.0, 1.5, 1.5, 3.0); note that $\sigma_j = \mathrm{sd}(c_{j,t})$ below is the HP-cycle standard deviation, a numerically distinct quantity.
 Here $\odot$ is element-by-element multiplication. The correlation matrix $C$
 sets the contemporaneous macro relationships in the example. The parameter
 $\rho_j$ controls how slowly each series adjusts after an innovation.

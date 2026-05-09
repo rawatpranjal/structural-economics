@@ -292,11 +292,10 @@ $$
 Writing $y=(y_1,y_2)$, its lower boundary can be computed pointwise:
 
 $$
-y_2(y_1)=
+y_2(y_1) =
 \max_{j=1,\ldots,T}
 \left[
-x_{2j}
-+
+x_{2j} +
 \frac{
 u_k-u_j-\lambda_j p_{1j}(y_1-x_{1j})
 }{

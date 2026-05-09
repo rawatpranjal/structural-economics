@@ -30,6 +30,8 @@ The logit estimate minimizes the average negative log likelihood
 
 $$ Q_L(a^L,b^L)=\frac{-1}{N}\sum_{i=1}^{N}\log P^L_{i y_i}. $$
 
+Here $N$ is the number of choice occasions and $y_i \in \mathcal{J}$ is the product chosen by consumer $i$.
+
 The data-generating model is still random utility, but the systematic utility is
 not linear. The simulation uses
 
@@ -37,7 +39,9 @@ $$ U_{ij}=v^0_{ij}+\varepsilon_{ij}, \quad \varepsilon_{ij}\sim \mathrm{Type\ I\
 
 One convenient way to write the nonlinear part is
 
-$$ v^0_{ij}=\delta_j+\alpha_i p_{ij}+\beta_i q_{ij}+m_j(z_i)+\ell_j(q_{ij},z_i)+s_j(z_i)+r_{ij}(\eta_i). $$
+$$ v^0_{ij}=\delta_j+\alpha_i p_{ij}+\beta_i q_{ij}+m_j(z_i)+\ell_j(q_{ij},z_i)+\sigma_j(z_i)+r_{ij}(\eta_i). $$
+
+Here $\delta_j$ is the product-specific intercept in the systematic utility.
 
 The random price and quality tastes are
 
@@ -55,7 +59,7 @@ $$ \ell_j(q_{ij},z_i)=\kappa_j\tanh(1.15(q_{ij}-1.25)z_i), \quad \kappa=(-0.15,0
 
 The extra nonlinear product shifter is
 
-$$ s(z_i)=(0,0.12\tanh(1.80z_i)^2,0.35\tanh(1.50z_i)^2). $$
+$$ \sigma_j(z_i)=(0,0.12\tanh(1.80z_i)^2,0.35\tanh(1.50z_i)^2). $$
 
 The latent-taste interaction is
 
@@ -86,6 +90,8 @@ $$ \widehat P_{ij}(\theta)=\frac{1}{R}\sum_{r=1}^{R}P_{ijr}(\theta). $$
 The estimated RUMnet minimizes the penalized simulated likelihood
 
 $$ Q_R(\theta)=\frac{-1}{N}\sum_{i=1}^{N}\log \max(\widehat P_{i y_i}(\theta),10^{-12})+\lambda\frac{\theta_{\mathrm{net}}^{\top}\theta_{\mathrm{net}}}{d_{\mathrm{net}}}. $$
+
+Here $\theta_{\mathrm{net}}$ is the subset of neural-layer weights in $\theta$ and $d_{\mathrm{net}}$ is the count of those weights.
 
 ## Model Setup
 
@@ -130,9 +136,9 @@ The same fixed draws are used for every trial $\theta$.
 After estimation, the Premium price counterfactual recomputes fitted shares
 after adding $\Delta p$ to Premium. If $s_j$ is the baseline fitted share and
 $s_j^{+}$ is the fitted share after the price increase, the recapture rate for
-receiving product $m$ is
+receiving product $n$ is
 
-$$ D_{m,\mathrm{Premium}}=\frac{s_m^{+}-s_m}{s_{\mathrm{Premium}}-s_{\mathrm{Premium}}^{+}}. $$
+$$ D_{n,\mathrm{Premium}}=\frac{s_n^{+}-s_n}{s_{\mathrm{Premium}}-s_{\mathrm{Premium}}^{+}}. $$
 
 ```text
 Algorithm: RUMnet simulated likelihood and price-shock recapture
@@ -146,7 +152,7 @@ Output:
     theta_R_hat
     P_hat_ij(theta_R_hat) for each test choice occasion
     fitted shares s_j and shocked shares s_j^+
-    recapture rates D_{m,Premium}
+    recapture rates D_{n,Premium}
 
 1. Build the linear-logit features:
        x^L_ij = (p_ij, q_ij, p_ij z_i, q_ij z_i).
@@ -184,7 +190,7 @@ Output:
 7. Evaluate the Premium price shock on the test sample:
        s_j = (1 / N_test) sum_i P_hat_ij(theta_R_hat),
        s_j^+ = (1 / N_test) sum_i P_hat_ij^+(theta_R_hat),
-       D_{m,Premium} = (s_m^+ - s_m) / (s_Premium - s_Premium^+).
+       D_{n,Premium} = (s_n^+ - s_n) / (s_Premium - s_Premium^+).
 ```
 
 The learning curve repeats this estimation on growing prefixes of the same

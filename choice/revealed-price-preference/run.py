@@ -257,7 +257,7 @@ $p^t\in\mathbb{R}_{++}^{L}$ is the observed price vector and
 $x^t\in\mathbb{R}_{+}^{L}$ is the chosen bundle. Own expenditure is
 $m_t=p^t\cdot x^t$.
 
-For price-regime comparisons, define the cross-cost matrix
+For price-regime comparisons, where $s,t\in\{1,...,T\}$ each index an observation, define the cross-cost matrix
 
 $$
 C_{st}=p^s\cdot x^t .

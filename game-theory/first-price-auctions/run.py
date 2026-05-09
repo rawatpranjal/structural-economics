@@ -91,7 +91,7 @@ def main() -> None:
 An auction has $n$ risk-neutral bidders. Bidder $i$ observes a private value
 $v_i \sim U[0,1]$, independently across bidders, and submits one sealed bid.
 The highest bid wins, and the winner pays its own bid. A symmetric Bayesian
-Nash strategy is an increasing bid function $b(v)$.
+Nash strategy is an increasing bid function $b(v)$, where $v \in [0,1]$ is a bidder's type.
 
 Under uniform values, the equilibrium bid is
 

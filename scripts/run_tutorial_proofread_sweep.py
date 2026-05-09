@@ -383,6 +383,9 @@ def build_prompt(tutorial: Path, model: str) -> str:
           - Do NOT use em-dashes or en-dashes anywhere in the report. Hard
             no. Use a plain hyphen `-`, a comma, or rephrase. This applies
             to prose, list bullets, table cells, and the Summary paragraph.
+          - Do NOT use renderer-fragile math spacing commands like `\\;`,
+            `\\!`, `\\quad`, `\\qquad` in inline math. Use `\\,` or just a
+            plain space. The validator rejects `\\;`.
 
         After you finish writing the file, stop. Do not summarize in chat
         output. Do not edit the tutorial. Do not run python. Do not commit.

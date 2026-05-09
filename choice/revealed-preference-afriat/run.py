@@ -341,7 +341,7 @@ Let $\mathcal{D}=\{(p_t,x_t)\}_{t=1}^T$ denote the observed data. Price vectors 
 Direct revealed preference is written as $iRj$.
 
 $$
-p_i\cdot x_i \geq p_i\cdot x_j .
+m_i \geq p_i\cdot x_j .
 $$
 
 The bundle $x_j$ was affordable when $x_i$ was chosen.
@@ -351,7 +351,7 @@ Let $R^{\ast}$ denote the transitive closure of $R$. GARP rules out this pair of
 $$
 iR^{\ast}j
 \quad\text{and}\quad
-p_j\cdot x_j > p_j\cdot x_i .
+m_j > p_j\cdot x_i .
 $$
 
 The first statement says $x_i$ is revealed at least as good as $x_j$ through a chain of budgets. The second says that, at budget $j$, $x_i$ was strictly cheaper than the bundle actually chosen.

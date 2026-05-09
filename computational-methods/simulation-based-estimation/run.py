@@ -256,6 +256,8 @@ W_m
 \left[m_{sim}(\theta)-m_{obs}\right].
 $$
 
+The weight matrix $W_m$ is diagonal, scaling each moment residual by the reciprocal of the target moment's magnitude.
+
 Indirect inference fits an auxiliary model $a(d_i,\log w_i)$ and matches its
 estimated statistics:
 
@@ -266,6 +268,8 @@ $$
 W_b
 \left[b_{sim}(\theta)-b_{obs}\right].
 $$
+
+The weight matrix $W_b$ is diagonal, scaling each auxiliary-statistic residual by the reciprocal of the target statistic's magnitude.
 
 Here the auxiliary model is a linear probability regression of acceptance on
 log wages. It also includes offer-distribution and acceptance summaries. It is

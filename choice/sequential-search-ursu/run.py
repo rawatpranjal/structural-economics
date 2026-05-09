@@ -415,7 +415,8 @@ that consumers dislike from products that consumers rarely inspect.
         f"| True quality taste | {beta_true:.2f} | Preference weight on product quality |\n"
         f"| True base search cost | {base_true:.3f} | Cost level before complexity adjustment |\n"
         f"| Complexity slope | {COST_COMPLEXITY_SLOPE:.2f} | Fixed search-cost increase with product complexity |\n"
-        f"| Match-value sd | {match_sd:.2f} | Fixed uncertainty about product fit |\n\n"
+        f"| Match-value sd | {match_sd:.2f} | Fixed uncertainty about product fit |\n"
+        f"| Price taste | 0.32 | Fixed price sensitivity |\n\n"
         f"**Numerical settings**\n\n"
         f"| Setting | Value | Role |\n"
         f"|---------|-------|------|\n"
@@ -461,6 +462,8 @@ G(k_j)=c_j(\theta)/\sigma,
 \qquad
 G(k)=\phi(k)-k[1-\Phi(k)],
 $$
+
+Here $k_j$ is the standardized threshold solved by root-finding; $\phi$ is the standard normal PDF and $\Phi$ the standard normal CDF.
 
 4. Recover the reservation value:
 

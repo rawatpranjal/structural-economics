@@ -34,6 +34,8 @@ $$
 u_i(v_i,b;\theta)=v_i x_i(b;\theta)-p_i(b;\theta).
 $$
 
+Here $\theta$ denotes the neural network parameter vector.
+
 The seller wants revenue, but the mechanism is useful only if bidders want to
 tell the truth. Dominant-strategy incentive compatibility says that truthful
 reporting must weakly dominate every one-player misreport:
@@ -93,6 +95,8 @@ $$
 {}+ \sum_{i=1}^{2} \lambda_i \mathrm{rgt}_i(\theta)
 {}+ \frac{\rho}{2}\sum_{i=1}^{2}\mathrm{rgt}_i(\theta)^2.
 $$
+
+Here $\lambda_i$ is the Lagrange multiplier for bidder $i$'s regret constraint and $\rho$ is the penalty weight.
 
 The first term rewards revenue. The multiplier term prices each bidder's
 regret violation. The quadratic term makes large violations increasingly

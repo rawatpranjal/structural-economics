@@ -27,6 +27,8 @@ $$
 \end{aligned}
 $$
 
+Here $\phi(\cdot;\mu,\Sigma)$ denotes the bivariate normal density with mean $\mu$ and covariance $\Sigma$.
+
 Given current draw $\theta_t$, a random-walk proposal draws:
 
 $$

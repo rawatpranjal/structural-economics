@@ -36,12 +36,14 @@ $$
 P_{ij}(\theta,\nu_r)
 &=
 \frac{\exp(\alpha_r p_{ij}+\beta_r q_{ij})}
-{\sum_{k\in\mathcal{J}} \exp(\alpha_r p_{ik}+\beta_r q_{ik})}.
+{\sum_{k=1}^J \exp(\alpha_r p_{ik}+\beta_r q_{ik})}.
 \end{aligned}
 $$
 
+Here $\alpha_r = \bar\alpha + \sigma_\alpha\nu_{r\alpha}$ and $\beta_r = \bar\beta + \sigma_\beta\nu_{r\beta}$ are the draw-specific taste coefficients.
+
 The mixed-logit probability integrates over random tastes. The code approximates
-that integral with fixed simulation draws. The exact integral
+that integral with fixed simulation draws. Here $\phi$ is the $N(0,I)$ density. The exact integral
 $\int P_{ij}(\theta,\nu)\phi(\nu)d\nu$ has no closed form here because the
 logit probability is nonlinear in the random coefficients. The code draws
 $\nu_1,\ldots,\nu_R$ once and replaces the integral with the same finite
@@ -101,7 +103,7 @@ The standard deviations are optimized in logs. The optimizer can move freely ove
 
 ### Algorithm 1. Simulated likelihood at a trial $\theta$
 
-**Inputs.** Observed choices and characteristics $\{y_i,p_{ij},q_{ij}\}_{i=1,j=1}^{N,J}$, fixed draws $\nu_r=(\nu_{r\alpha},\nu_{r\beta})$ for $r=1,\ldots,R$, and a trial parameter vector $\theta=(\bar\alpha,\bar\beta,\ell_\alpha,\ell_\beta)$.
+**Inputs.** Observed choices and characteristics $\{y_i,p_{ij},q_{ij}\}_{i=1,j=1}^{N,J}$, fixed draws $\nu_r=(\nu_{r\alpha},\nu_{r\beta})$ for $r=1,\ldots,R$, a trial parameter vector $\theta=(\bar\alpha,\bar\beta,\ell_\alpha,\ell_\beta)$, and probability floor $\eta>0$.
 
 **Output.** The simulated objective $Q_R(\theta)$.
 
@@ -124,7 +126,7 @@ $$
 3. For each consumer-product pair $(i,j)$, compute the draw-specific logit probability:
 
 $$
-P_{ijr}(\theta)=
+P_{ij}(\theta,\nu_r)=
 \frac{\exp(\alpha_r p_{ij}+\beta_r q_{ij})}
 {\sum_{k=1}^J \exp(\alpha_r p_{ik}+\beta_r q_{ik})}.
 $$
@@ -132,7 +134,7 @@ $$
 4. Average those probabilities over the fixed simulation draws:
 
 $$
-\widehat P_{ij}(\theta)=\frac{1}{R}\sum_{r=1}^R P_{ijr}(\theta).
+\widehat P_{ij}(\theta)=\frac{1}{R}\sum_{r=1}^R P_{ij}(\theta,\nu_r).
 $$
 
 5. Score the observed choice $y_i$ with the simulated probability $\widehat P_{i y_i}(\theta)$.

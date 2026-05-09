@@ -25,12 +25,12 @@ Each series is standardized before PCA:
 
 $$Z_{it}=\frac{X_{it}-\bar X_i}{s_i}.$$
 
-PCA uses the eigenvectors with the largest eigenvalues of $T^{-1}Z'Z$. The
+Here $\bar X_i$ and $s_i$ are the sample mean and standard deviation of series $i$. PCA uses the eigenvectors with the largest eigenvalues of $T^{-1}Z'Z$. The
 estimated factor projects each date's standardized panel onto those directions:
 
 $$\hat F_t=(Z_t'v_1,\ldots,Z_t'v_r)'.$$
 
-Factors are identified only up to scale, sign, and rotation. The plots align
+Here $Z_t=(Z_{1t},\ldots,Z_{Nt})'$ is the standardized panel vector at date $t$. Factors are identified only up to scale, sign, and rotation. The plots align
 signs and compare standardized factors. The forecast regression adds the
 estimated factor to own lags of a target series:
 
