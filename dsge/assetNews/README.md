@@ -1,4 +1,4 @@
-# Lucas-Tree Dividend News and Asset Prices
+# Lucas Tree II: Dividend News by Linearized Pricing
 
 ## Overview
 

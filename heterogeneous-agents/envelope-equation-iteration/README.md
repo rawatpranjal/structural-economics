@@ -1,4 +1,4 @@
-# Envelope-Equation Iteration for Buffer-Stock Saving
+# Buffer-Stock Saving with Persistent Income by Envelope-Equation Iteration
 
 ## Overview
 

@@ -1,0 +1,7 @@
+Method,Setting,Estimated optimum,Absolute error,Iterations,Status
+Grid search,1001 grid nodes,1.6662,4.67e-04,1001,converged
+Random search,"1001 random draws, seed 42",1.6640,2.67e-03,1001,converged
+Golden section,Bracket from 1.05 to 5.00,1.6667,1.08e-08,51,converged
+Newton (good start),Starting price 1.20,1.6667,6.43e-12,6,converged
+Newton (bad start),Starting price 3.00,5.4000,3.73e+00,1,diverged
+Newton with safeguard (bad start),Starting price 3.00,1.6667,1.33e-15,9,converged

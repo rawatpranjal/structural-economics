@@ -1,4 +1,4 @@
-# Buffer-Stock Saving by Endogenous Grid Points
+# Buffer-Stock Saving with IID Income by Endogenous Grid Points
 
 ## Overview
 

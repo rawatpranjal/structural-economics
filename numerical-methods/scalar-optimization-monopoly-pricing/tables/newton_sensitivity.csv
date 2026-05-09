@@ -1,0 +1,10 @@
+Starting price,Iterations,Status,Above inflection point
+1.05,7,converged,no
+1.20,6,converged,no
+1.40,5,converged,no
+1.60,4,converged,no
+1.80,5,converged,no
+2.00,7,converged,no
+2.50,1,diverged,yes
+3.50,1,diverged,yes
+4.50,1,diverged,yes

@@ -1,0 +1,3 @@
+Method,Quantity firm 1,Quantity firm 2,Iterations,Final residual
+Vanilla Picard,3.0000,3.0000,44,5.12e-13
+Damped Picard,3.0000,3.0000,22,5.12e-13

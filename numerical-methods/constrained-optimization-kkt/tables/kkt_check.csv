@@ -1,0 +1,5 @@
+Method,Stationarity error,Feasibility error,Dual feasibility error,Complementarity error,Active constraints recovered
+"Baseline failure: Lagrangian, budget only",0.00e+00,1.00e+00,0.00e+00,0.00e+00,budget only (mis-recovered)
+Method 1: Projected gradient,9.56e-13,0.00e+00,0.00e+00,0.00e+00,budget; project 3 bound
+Method 2: Interior-point log barrier,3.54e-09,0.00e+00,0.00e+00,1.00e-08,budget; project 3 bound
+Method 3: SLSQP,4.44e-16,0.00e+00,0.00e+00,9.99e-16,budget; project 3 bound

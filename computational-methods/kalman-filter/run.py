@@ -156,7 +156,7 @@ def main() -> None:
     )
 
     report = ModelReport(
-        "Nowcasting a Latent Business-Cycle State",
+        "Nowcasting a Latent Business-Cycle State by Kalman Filtering",
         include_reproduce=False,
         show_figure_captions=False,
     )

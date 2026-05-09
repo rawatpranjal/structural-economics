@@ -1,0 +1,6 @@
+Method,Project 1,Project 2,Project 3,Total spend,Utility,Iterations,Feasible?
+"Baseline failure: Lagrangian, budget only",2.5000,1.5000,-1.0000,3.0000,9.2500,1 (closed form),"no, x_3 < 0"
+Method 1: Projected gradient,2.0000,1.0000,0.0000,3.0000,8.5000,95,yes
+Method 2: Interior-point log barrier,2.0000,1.0000,0.0000,3.0000,8.5000,9 barrier values,yes
+Method 3: SLSQP,2.0000,1.0000,0.0000,3.0000,8.5000,2,yes
+Closed form,2.0000,1.0000,0.0000,3.0000,8.5000,n/a,yes

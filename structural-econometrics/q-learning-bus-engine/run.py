@@ -535,7 +535,7 @@ def main() -> None:
 
     print("Building report ...")
     report = ModelReport(
-        "Bus Engine Replacement by Q-Learning",
+        "Rust Bus Replacement by Soft Q-Learning and DQN",
         include_reproduce=False,
         show_figure_captions=False,
     )

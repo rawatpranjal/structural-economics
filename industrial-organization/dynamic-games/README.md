@@ -1,4 +1,4 @@
-# Quality Investment in Dynamic Oligopoly
+# Quality-Ladder Dynamic Game: Solving the Markov-Perfect Equilibrium
 
 ## Overview
 

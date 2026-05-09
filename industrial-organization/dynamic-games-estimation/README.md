@@ -1,4 +1,4 @@
-# Quality Investment Game Estimation with CCPs
+# Quality-Ladder Dynamic Game: Estimating with CCPs
 
 ## Overview
 

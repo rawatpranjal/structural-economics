@@ -136,7 +136,7 @@ def main() -> None:
     print(f"Largest one-step deviation gain: {np.max(deviation_gains):.2e}")
 
     report = ModelReport(
-        "Quality Investment in Dynamic Oligopoly",
+        "Quality-Ladder Dynamic Game: Solving the Markov-Perfect Equilibrium",
         include_reproduce=False,
         show_figure_captions=False,
     )

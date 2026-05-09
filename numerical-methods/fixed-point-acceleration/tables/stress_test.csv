@@ -1,0 +1,5 @@
+Outside share,Picard iterations,Picard residual,Anderson iterations,Anderson residual
+0.10,200,3.92e-11,16,9.60e-14
+0.05,200,1.38e-06,20,4.11e-15
+0.02,200,3.28e-04,22,1.33e-15
+0.01,200,1.47e-03,21,1.47e-13

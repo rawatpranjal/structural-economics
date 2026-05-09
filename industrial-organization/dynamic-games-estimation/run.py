@@ -305,7 +305,7 @@ def main() -> None:
 
     setup_style()
     report = ModelReport(
-        "Quality Investment Game Estimation with CCPs",
+        "Quality-Ladder Dynamic Game: Estimating with CCPs",
         include_reproduce=False,
         show_figure_captions=False,
     )

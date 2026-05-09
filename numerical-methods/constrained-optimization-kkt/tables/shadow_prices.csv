@@ -1,0 +1,5 @@
+Constraint,Multiplier,Status,Economic interpretation
+Budget $\sum_j x_j \leq I$,2.00,binding,Utility gain from one extra unit of budget
+Project 1 bound $x_1 \geq 0$,0.00,slack,Project 1 receives interior allocation; bound has no value
+Project 2 bound $x_2 \geq 0$,0.00,slack,Project 2 receives interior allocation; bound has no value
+Project 3 bound $x_3 \geq 0$,1.50,binding,Utility loss avoided by holding project 3 at zero

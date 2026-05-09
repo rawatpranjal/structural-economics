@@ -321,7 +321,7 @@ def main() -> None:
 
     setup_style()
     report = ModelReport(
-        "Bus Engine Replacement in a Dynamic Choice Model",
+        "Bus Engine Replacement: NFXP, CCP, MPEC, and the MCE-IRL Equivalence",
         include_reproduce=False,
         show_figure_captions=False,
     )
@@ -467,7 +467,30 @@ the objective.
         "Constraints: Bellman residuals equal zero for both actions and all states\n"
         "Use a constrained nonlinear optimizer to move theta and v jointly\n"
         "Report theta, likelihood, optimizer status, and the max Bellman residual\n"
-        "```"
+        "```\n\n"
+        "Maximum-causal-entropy inverse reinforcement learning (MCE-IRL) recovers the "
+        "same parameters from the same data using a different vocabulary. Under known "
+        "transitions and Type-I extreme value shocks, the soft-Bellman equations and the "
+        "MCE-IRL objective coincide algebraically with NFXP. The likelihood is identical "
+        "and the estimator returns the same $\\theta$ to within solver tolerance. The "
+        "two literatures rename the same fixed point: payoffs become rewards, conditional "
+        "value functions become soft-Q functions, and the replacement hazard becomes the "
+        "soft policy.\n\n"
+        "```text\n"
+        "Algorithm: MCE-IRL on Rust's bus engine (algorithmically identical to NFXP)\n"
+        "Input: same grid X, transitions F_0 and F_1, discount beta, panel choices\n"
+        "Output: reward parameters theta_IRL == theta_NFXP up to solver tolerance\n"
+        "for each candidate theta:\n"
+        "    solve the soft-Bellman equations                # = NFXP inner fixed point\n"
+        "    compute the soft policy from the logit formula  # = replacement hazard\n"
+        "    evaluate the maximum-causal-entropy log-likelihood\n"
+        "    (= NFXP panel-choice log-likelihood, term by term)\n"
+        "choose theta that maximizes the likelihood\n"
+        "```\n\n"
+        "The point of including MCE-IRL here is not a new estimator. The point is that the "
+        "structural-econometrics and inverse-RL literatures use different names for the "
+        "same recovery problem. At this finite-state, known-transition, logit-shock setup "
+        "they are the same algorithm."
     )
 
     values = np.asarray(solution_true["values"])
@@ -601,11 +624,17 @@ the objective.
     )
 
     report.add_takeaway(
-        "Dynamic discrete choice turns observed hazards into statements about current payoffs "
-        "and continuation values. In this replacement problem, mileage matters today "
-        "and tomorrow. NFXP solves the Bellman fixed point inside the likelihood. "
-        "CCP estimation uses a first-stage hazard before the structural step. "
-        "MPEC estimates parameters and values while enforcing Bellman equations."
+        "Dynamic discrete choice turns observed hazards into statements about current "
+        "payoffs and continuation values. In this replacement problem, mileage matters "
+        "today and tomorrow. NFXP solves the Bellman fixed point inside the likelihood. "
+        "CCP estimation uses a first-stage hazard before the structural step. MPEC "
+        "estimates parameters and values jointly while enforcing the Bellman equations as "
+        "constraints.\n\n"
+        "Maximum-causal-entropy IRL is the same algorithm as NFXP under this setup. The "
+        "structural-econometrics and inverse-RL literatures rename payoffs as rewards "
+        "and value functions as soft-Q functions, but the soft-Bellman fixed point and "
+        "the panel-choice likelihood are identical. Knowing both vocabularies makes the "
+        "structural and reinforcement-learning literatures easier to read."
     )
 
     report.add_references([

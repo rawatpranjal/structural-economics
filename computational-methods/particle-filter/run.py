@@ -290,7 +290,7 @@ def main() -> None:
     print(f"  optimal RMSE vs Kalman={np.sqrt(np.mean(mse_opt)):.4f}")
 
     report = ModelReport(
-        "Nowcasting Hidden Economic States with Particle Filters",
+        "Nowcasting Hidden Economic States by Particle Filtering",
         include_reproduce=False,
         show_figure_captions=False,
     )

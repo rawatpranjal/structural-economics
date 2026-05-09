@@ -235,7 +235,7 @@ def main() -> None:
 
     setup_style()
     report = ModelReport(
-        "Lucas-Tree Dividend News and Asset Prices",
+        "Lucas Tree II: Dividend News by Linearized Pricing",
         include_reproduce=False,
         show_figure_captions=False,
     )

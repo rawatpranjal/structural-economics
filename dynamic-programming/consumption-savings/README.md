@@ -1,4 +1,4 @@
-# Income Risk and Buffer-Stock Saving
+# Buffer-Stock Saving with Persistent Income by Value Function Iteration
 
 ## Overview
 

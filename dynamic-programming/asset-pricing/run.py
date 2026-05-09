@@ -216,7 +216,7 @@ def main() -> None:
     setup_style()
 
     report = ModelReport(
-        "Lucas Tree Asset Prices and the Stochastic Discount Factor",
+        "Lucas Tree I: SDF Baseline by Scaled-Price Iteration",
         include_reproduce=False,
         show_figure_captions=False,
     )

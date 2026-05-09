@@ -1,4 +1,4 @@
-# Bus Engine Replacement by Q-Learning
+# Rust Bus Replacement by Soft Q-Learning and DQN
 
 ## Overview
 
@@ -101,9 +101,9 @@ The table compares the three methods on the same calibration. Q-learning and DQN
 
 | method                         | transition matrix   |   hazard MAE |   P=0.5 mileage |   samples |   runtime sec |
 |:-------------------------------|:--------------------|-------------:|----------------:|----------:|--------------:|
-| NFXP (model-based)             | yes                 |       0      |               6 |       228 |        0.0104 |
-| soft Q-learning (4 seeds avg.) | no                  |       0.0105 |               6 |   6120000 |      199.179  |
-| soft DQN                       | no                  |       0.0046 |               6 |   4080000 |       10.611  |
+| NFXP (model-based)             | yes                 |       0      |               6 |       228 |        0.0106 |
+| soft Q-learning (4 seeds avg.) | no                  |       0.0105 |               6 |   6120000 |      198.239  |
+| soft DQN                       | no                  |       0.0046 |               6 |   4080000 |       11.044  |
 
 NFXP converges in 228 Bellman iterations. Soft Q-learning hits a hazard MAE of 0.0105 after 30 passes through 51,000 observed transitions. Soft DQN reaches 0.0046 on the same panel.
 

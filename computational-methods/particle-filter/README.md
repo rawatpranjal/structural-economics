@@ -1,4 +1,4 @@
-# Nowcasting Hidden Economic States with Particle Filters
+# Nowcasting Hidden Economic States by Particle Filtering
 
 ## Overview
 

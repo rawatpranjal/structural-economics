@@ -347,7 +347,7 @@ def main() -> None:
     setup_style()
 
     report = ModelReport(
-        "Buffer-Stock Saving by Endogenous Grid Points",
+        "Buffer-Stock Saving with IID Income by Endogenous Grid Points",
         include_reproduce=False,
         show_figure_captions=False,
     )

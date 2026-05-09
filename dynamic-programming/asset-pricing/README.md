@@ -1,4 +1,4 @@
-# Lucas Tree Asset Prices and the Stochastic Discount Factor
+# Lucas Tree I: SDF Baseline by Scaled-Price Iteration
 
 ## Overview
 
