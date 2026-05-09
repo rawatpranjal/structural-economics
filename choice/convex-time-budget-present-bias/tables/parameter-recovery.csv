@@ -1,0 +1,4 @@
+Parameter,True,NLS estimate,NLS bootstrap SE,Tobit estimate
+Present bias beta,0.9000,0.8998,0.0010,0.9030
+Daily discount factor delta,0.99928,0.99929,0.00001,0.99924
+CRRA exponent alpha,0.9200,0.9187,0.0004,0.9240

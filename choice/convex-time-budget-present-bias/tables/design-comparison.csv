@@ -1,0 +1,3 @@
+Design,Cells per subject,NLS beta estimate,NLS beta bootstrap SE,NLS delta estimate,NLS alpha estimate
+"Strong (t in 0, 7, 35)",45,0.8998,0.0010,0.99929,0.9187
+Weak (t = 0 only),15,0.8996,0.0020,0.99929,0.9183
