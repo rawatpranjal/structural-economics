@@ -71,3 +71,4 @@ docs/qc-reports/proofread-manifest.json
 docs/qc-reports/fix-manifest.json
 docs/qc-reports/tutorial-claude-sweep-manifest.json
 scripts/run_tutorial_claude_sweep.py
+plan.md
