@@ -249,15 +249,22 @@ def main() -> None:
     report.add_equations(
         rf"""
 The risky asset pays a constant dividend $d$. The gross risk-free return is
-$R = 1+r$. If dividends are constant and all traders expect the same future
-price, the no-arbitrage price is also constant. It equals the present value of
-the dividend stream:
+$R = 1+r$. Let $p_t$ be the risky asset price and let $p^{{\ast}}$ be the
+constant fundamental price. Let $x_t = p_t - p^{{\ast}}$ be the deviation from
+that fundamental. The two forecasting rules are fundamentalist ($F$) and trend
+follower ($T$). Rule $h$ has forecast $f_{{h,t}}$, share $n_{{h,t}}$, smoothed
+score $U_{{h,t}}$, profit score $\pi_{{h,t}}$, and cost $c_h$. The shock
+$\epsilon_t$ is noise-trader supply.
+
+If dividends are constant and all traders expect the same future price, the
+no-arbitrage price is also constant. It equals the present value of the dividend
+stream:
 
 $$p^{{\ast}} = \frac{{d}}{{R-1}}.$$
 
-The model studies deviations from that benchmark. Let
-$x_t = p_t - p^{{\ast}}$. A positive $x_t$ means the asset is priced above the
-dividend fundamental. A negative $x_t$ means it is priced below it.
+The model studies deviations from that benchmark. A positive $x_t$ means the
+asset is priced above the dividend fundamental. A negative $x_t$ means it is
+priced below it.
 
 Fundamentalists forecast that the deviation will disappear:
 
