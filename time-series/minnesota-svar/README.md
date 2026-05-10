@@ -6,6 +6,8 @@ A quarterly macro VAR tries to summarize the joint dynamics of output, inflation
 
 The problem is that even a small VAR can be noisy in a short macro sample. Four lags of three variables already give each equation thirteen coefficients including the intercept. Unrestricted OLS can fit accidental lag patterns and then produce unstable forecasts or impulse responses.
 
+The economic object is still a reduced-form forecasting system plus an identifying assumption for shocks. Shrinkage regularizes the reduced form; the recursive SVAR ordering is a separate step that gives one residual innovation a monetary-policy interpretation.
+
 The Minnesota prior is ridge-like shrinkage for dynamic systems. It puts prior mass on persistent own first lags, pulls most other coefficients toward zero, and tightens the prior for cross-variable and distant-lag effects. The shrinkage is soft, so the data can still move coefficients away from the prior when the sample is informative.
 
 ## Equations
@@ -161,6 +163,8 @@ $$
 ## Solution Method
 
 The tutorial estimates the same reduced-form VAR in two ways. OLS treats all lag coefficients as free. The Minnesota BVAR treats the OLS residual scales as fixed, then computes the Gaussian posterior for each equation. That makes this an empirical-Bayes shrinkage estimator: posterior means and posterior covariance matrices are available without running an MCMC sampler.
+
+There are two stages. First, estimate stable reduced-form dynamics with the Minnesota prior. Second, take the reduced-form residual covariance and impose a Cholesky ordering to name the policy shock. The prior controls coefficient noise; the ordering controls the shock interpretation.
 
 ```text
 Procedure: Minnesota-prior monetary policy SVAR

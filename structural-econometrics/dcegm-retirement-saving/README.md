@@ -8,6 +8,8 @@ The economic object is the retirement boundary: at each age, which asset levels 
 
 A plain grid search treats every current asset and every next asset as a nested maximization. DC-EGM avoids that inner search. It solves the continuous saving problem separately for work and retirement, then keeps the upper envelope of the choice-specific value functions.
 
+The staging is branch first, envelope second. On each branch, the household is solving a standard Euler-equation saving problem. The discrete retirement choice enters only after those branch values have been placed on the same asset grid.
+
 ## Equations
 
 At age $t$, the household enters with assets $a_t$ and retirement status
@@ -203,6 +205,12 @@ $$
 
 The continuous decision is solved on a next-asset grid. The discrete choice is
 handled after each branch has produced its own value function.
+
+That order matters. If the algorithm maximized jointly over retirement and
+saving at every current asset, it would return to a brute-force search. DC-EGM
+instead inverts the Euler equation on each feasible branch, maps tomorrow's
+asset grid back to today's assets, and only then compares work against
+retirement.
 
 For each branch $d$, DC-EGM constructs points
 

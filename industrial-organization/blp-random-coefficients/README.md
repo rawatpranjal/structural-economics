@@ -6,6 +6,8 @@ An antitrust analyst needs to know where demand goes after one product raises pr
 
 The object is differentiated-products demand with heterogeneous consumers. Products are closer substitutes when they attract similar buyers.
 
+The main difficulty is that market shares are aggregate outcomes. The analyst does not observe each consumer's taste draw, but the substitution calculation depends on the distribution of those tastes.
+
 The computation estimates those tastes from market shares. A BLP contraction recovers mean utility for each trial dispersion, and IV/GMM chooses dispersion.
 
 ## Equations
@@ -66,6 +68,8 @@ The example has 100 independent markets with five products per market. Each prod
 ## Solution Method
 
 The estimator is a nested fixed point with GMM. The outer search chooses the taste-dispersion parameters $\sigma=(\sigma_x,\sigma_p)$. For each trial $\sigma$, the inner contraction finds the mean utilities $\delta(\sigma)$ that reproduce the observed shares.
+
+It helps to separate two jobs. The contraction is an inversion: it finds the product-level mean utilities that rationalize the observed shares for the current taste distribution. The IV/GMM step is identification: it asks whether the implied unobserved quality is orthogonal to cost and rival-characteristic instruments. The elasticity matrix is computed only after both jobs are done.
 
 ```text
 Inputs: observed shares s_obs, characteristics x, prices p, instruments Z, draws nu

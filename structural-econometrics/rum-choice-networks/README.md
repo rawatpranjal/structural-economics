@@ -6,6 +6,8 @@ A retailer observes which product a customer buys. It also observes the product 
 
 A plain logit puts those objects into a linear utility index. That is easy to estimate, but it can miss nonlinear taste patterns. A flexible neural predictor can fit those patterns, but it may no longer look like an economic choice model.
 
+The tutorial keeps those two concerns separate. Prediction improves only if the model learns the nonlinear utility surface out of sample. Economic discipline comes from keeping probabilities tied to utility maximization over a choice set.
+
 RUMnets keep the random-utility discipline. The utility function is flexible, but choice probabilities still come from maximizing utility with random tastes. This tutorial uses a small synthetic example to show the idea.
 
 ## Equations
@@ -113,6 +115,11 @@ Here $\theta_{\mathrm{net}}$ is the subset of neural-layer weights in $\theta$ a
 The estimation uses common latent draws. The draws are fixed normal quantiles,
 so the simulated likelihood is a smooth function of $\theta$ rather than a new
 Monte Carlo objective at every optimizer step.
+
+The baseline and the RUMnet answer the same choice question. The baseline asks
+whether a linear utility index is enough. The RUMnet keeps the same price,
+quality, context, and latent-taste inputs, but lets a small neural layer bend
+the utility surface before the softmax.
 
 The first step estimates the plain logit. With
 $\theta_L=(a^L_2,a^L_3,b^L)$ and $a^L_1=0$ for normalization, the optimizer

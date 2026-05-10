@@ -4,9 +4,9 @@
 
 A policy analyst observes a noisy activity indicator and wants a current estimate of the hidden state. The state may combine persistent demand pressure and real activity.
 
-The object is the filtered distribution $p(s_t \mid y_{1:t})$. Its mean is the nowcast used in later likelihood or policy calculations.
+The object is the filtered distribution $p(s_t \mid y_{1:t})$. Its mean is the nowcast used in later likelihood or policy calculations. The whole distribution matters because uncertainty, not only the point estimate, determines how much the next signal should move the state.
 
-A Kalman filter is exact in this linear Gaussian example. We use it as a benchmark for a particle filter. The particle filter is needed when analytic filtering is unavailable.
+Filtering is a predict-update problem. The transition equation carries yesterday's distribution forward. The likelihood of the new signal then reweights that prediction. A Kalman filter does this exactly in the linear Gaussian case. A particle filter does the same Bayesian recursion with simulated states, so it also applies when analytic filtering is unavailable.
 
 ## Equations
 
@@ -20,13 +20,53 @@ $$
 Here $u_t$ is measurement noise and $\epsilon_t$ is process noise.
 
 Particles approximate the filtered distribution with weighted simulated states.
+The filtering recursion has two steps. Prediction integrates over yesterday's
+filtered distribution:
+
+$$
+p(s_t \mid y_{1:t-1}) =
+\int p(s_t \mid s_{t-1})p(s_{t-1} \mid y_{1:t-1})ds_{t-1}.
+$$
+
+Updating multiplies that prior by the likelihood of the new signal:
+
+$$
+p(s_t \mid y_{1:t}) =
+\frac{p(y_t \mid s_t)p(s_t \mid y_{1:t-1})}
+{p(y_t \mid y_{1:t-1})}.
+$$
+
+The denominator is also the likelihood increment:
+
+$$
+p(y_t \mid y_{1:t-1}) =
+\int p(y_t \mid s_t)p(s_t \mid y_{1:t-1})ds_t.
+$$
+
+Particles replace those integrals with simulated draws and importance weights.
+For a proposal density $q$, a proposed particle receives unnormalized weight:
+
+$$
+\widetilde w_t^{(i)} =
+\frac{p(y_t \mid s_t^{(i)})p(s_t^{(i)} \mid s_{t-1}^{(i)})}
+{q(s_t^{(i)} \mid s_{t-1}^{(i)}, y_t)}.
+$$
+
+Normalized weights approximate the posterior:
+
+$$
+\widehat p(s_t \mid y_{1:t}) =
+\sum_{i=1}^{N} w_t^{(i)} \delta_{s_t^{(i)}}.
+$$
+
 The bootstrap particle filter propagates particles from:
 
 $$
-s_t^{(i)} \sim p(s_t \mid s_{t-1}^{(i)})
+q_B(s_t \mid s_{t-1}^{(i)},y_t) =
+p(s_t \mid s_{t-1}^{(i)})
 $$
 
-and weights them by the observation likelihood:
+so its weights are just the observation likelihood:
 
 $$
 w_t^{(i)} \propto p(y_t \mid s_t^{(i)}).
@@ -35,14 +75,24 @@ $$
 The conditionally optimal proposal uses the current observation:
 
 $$
-s_t^{(i)} \sim p(s_t \mid s_{t-1}^{(i)}, y_t).
+q_O(s_t \mid s_{t-1}^{(i)},y_t) =
+p(s_t \mid s_{t-1}^{(i)}, y_t).
 $$
+
+In this linear Gaussian example, the optimal proposal is available in closed
+form. It draws particles from states that are already plausible after seeing
+$y_t$, then weights the ancestor by the predictive likelihood of the signal.
 
 Effective sample size summarizes weight concentration:
 
 $$
 ESS_t = \frac{1}{\sum_i (w_t^{(i)})^2}.
 $$
+
+When signals are sharp, most bootstrap particles land far from the observed
+$y_t$. Their likelihood weights are nearly zero, ESS collapses, and resampling
+copies a small number of particles many times. The optimal proposal reduces
+that problem by using the signal before drawing the new state.
 
 ## Model Setup
 
@@ -60,9 +110,9 @@ $$
 
 ## Solution Method
 
-The bootstrap filter first draws each particle from the state transition. It then weights the draw by the signal likelihood.
+Read the algorithm as the same Bayesian update that the Kalman filter performs, but represented by points and weights. At the start of a period, yesterday's resampled particles represent $p(s_{t-1} \mid y_{1:t-1})$. The proposal moves them into candidate states for period $t$. The weights then turn those candidates into an approximation to $p(s_t \mid y_{1:t})$.
 
-The optimal proposal in this example uses the signal before drawing. That timing keeps particles near states that can explain the observation.
+The bootstrap proposal is simple because it only uses the transition law. It is also fragile when the signal is precise: many simulated states receive tiny likelihood weights. The optimal proposal is more work per particle, but it uses $y_t$ before drawing the state. That timing keeps proposed states close to the part of the state space the signal supports.
 
 ```text
 Algorithm: particle filtering with resampling
@@ -78,7 +128,9 @@ for t = 1, ..., T:
     accumulate the likelihood increment
 ```
 
-We repeat each filter and compare its mean with the Kalman mean. ESS records how many particles carry meaningful weight.
+Resampling is not a statistical afterthought. It prevents the next period from spending computation on particles with negligible posterior weight. The cost is that duplicated particles reduce diversity, so ESS is the diagnostic to watch.
+
+We repeat each filter and compare its mean with the Kalman mean. The repeated-run error measures Monte Carlo accuracy, while the likelihood increments show how noisy the particle likelihood would be inside an estimator.
 
 ## Results
 
@@ -118,11 +170,11 @@ Lower measurement noise makes the signal more informative. That setting reveals 
 |              0.05 | bootstrap |              0.051  |    42.0492 |       1.4592 |                 0.2062 |
 |              0.05 | optimal   |              0.0117 |   347.331  |       0.0345 |                 0.2062 |
 
-With 500 particles, bootstrap RMSE is 0.0273. The optimal proposal lowers RMSE to 0.0100. The tables show the reason. Bootstrap ESS falls when the signal is sharp.
+With 500 particles, bootstrap RMSE is 0.0273. The optimal proposal lowers RMSE to 0.0100. The tables show the reason. Bootstrap ESS falls when the signal is sharp because most predicted particles do not explain the observation.
 
 ## Takeaway
 
-Particle filters nowcast hidden economic states with weighted simulations. The main diagnostic is whether the weights collapse. Use ESS and repeated-run error before treating filtered states as inputs to estimation.
+Particle filters nowcast hidden economic states with weighted simulations. The main diagnostic is whether the weights collapse. Bootstrap filtering is easy to implement, but precise signals can leave it with only a few effective particles. A proposal that conditions on the signal buys accuracy by moving simulation effort toward plausible states. Use ESS and repeated-run error before treating filtered states as inputs to estimation.
 
 ## References
 

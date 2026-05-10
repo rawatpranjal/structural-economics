@@ -6,6 +6,8 @@ A policy team tracks current activity before the full national accounts arrive. 
 
 The target is a latent business-cycle state. The indicator reveals part of that state, but it also includes measurement noise.
 
+The filter keeps a distribution, not just a fitted line. Its mean is the nowcast and its covariance records how much uncertainty remains after the current signal.
+
 The computational need is recursive inference. After each signal, the filter updates the nowcast, its covariance, and the likelihood.
 
 ## Equations
@@ -66,6 +68,8 @@ the state-space parameters are unknown.
 ## Solution Method
 
 The simulation draws the true latent path and the noisy observed indicator. The filter starts from zero and makes a one-period forecast. It compares the forecasted indicator with observed $y_t$. The Kalman gain moves the state estimate toward that surprise.
+
+The prediction step asks what the state should look like before seeing the new signal. The update step asks how surprising the signal is relative to that prediction. A precise signal or an uncertain prior produces a larger gain; a noisy signal produces a smaller gain. The same forecast error also contributes the likelihood increment used for estimation.
 
 ```text
 Algorithm: nowcasting a latent state with the Kalman filter

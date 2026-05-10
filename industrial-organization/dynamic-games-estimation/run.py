@@ -315,6 +315,9 @@ def main() -> None:
         "A leader may save the investment cost.\n\n"
         "The object is the payoff vector: the value of quality, the cost of investment, and "
         "the catch-up incentive. The data contain firm qualities and investment choices.\n\n"
+        "The hard part is strategic dynamics. A firm's current investment changes its own "
+        "future quality, but the payoff from that investment also depends on how the rival "
+        "is expected to move.\n\n"
         "A likelihood needs continuation values because today's investment changes tomorrow's "
         "state. The CCP estimator first estimates investment rates by state. It then evaluates "
         "values under those policies, instead of solving a new MPE at each trial parameter."
@@ -365,6 +368,10 @@ $$\ell(\theta)=\sum_{i,t} d_{it}\log \Lambda[v_\theta(1,\omega_{it})-v_\theta(0,
 
     report.add_solution_method(
         "The code solves the soft MPE once to create data with known truth.\n\n"
+        "For estimation, the first-stage CCPs play the role of a measured strategy profile. "
+        "Once that profile is fixed, the dynamic game becomes a policy-evaluation problem: "
+        "compute the value of being in each quality state when both firms keep following the "
+        "estimated investment rules.\n\n"
         "Estimation then treats the first-stage CCPs as future play. For each candidate payoff vector, it "
         "evaluates the value of following those policies. The resulting invest and no-invest "
         "values enter a logit likelihood.\n\n"

@@ -332,6 +332,9 @@ def main() -> None:
         "future operation worse.\n\n"
         "The object is the mileage-specific replacement hazard. It depends on current "
         "keep payoffs and the continuation value from resetting the engine.\n\n"
+        "That continuation value is the reason the model is dynamic. A bus with low "
+        "current operating cost may still be close to replacement if keeping it pushes "
+        "the next-period mileage distribution into costly states.\n\n"
         "Computation is needed because each trial parameter vector implies a dynamic "
         "program. The likelihood uses the replacement policy produced by that fixed point. "
         "The tutorial compares NFXP, CCP, and MPEC estimates for the same hazard."
@@ -424,6 +427,11 @@ the objective.
     )
 
     report.add_solution_method(
+        "The three estimators organize the same economic restrictions differently. NFXP "
+        "solves the Bellman fixed point inside every likelihood evaluation. CCP estimation "
+        "uses a first-stage replacement hazard to turn continuation values into a linear "
+        "policy-evaluation problem. MPEC gives the optimizer the values directly and enforces "
+        "the Bellman equations as constraints.\n\n"
         "The nested fixed-point estimator treats the dynamic program as part of the "
         "likelihood. Every candidate $\\theta$ implies a replacement hazard only after the "
         "conditional value functions have been solved.\n\n"
