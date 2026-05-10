@@ -1,0 +1,14 @@
+Diagnostic,Value
+Converged by policy movement criterion,No
+Epochs completed,90
+Final parameter movement,0.0272527
+Convergence threshold,0.0003
+Final normalized utility objective,-0.0237778
+Mean soft market residual during training,0.101114
+Mean interpolated market-clearing residual,9.77753e-18
+Maximum interpolated market-clearing residual,5.55112e-17
+Share of periods with a bracketing root,1.000
+Mean equilibrium interest rate,0.041674
+Interest-rate standard deviation,0.00289853
+Mean aggregate consumption,1.04502
+Aggregate consumption volatility divided by income volatility,1

@@ -1,0 +1,16 @@
+Parameter,Published SRL benchmark,Tutorial setting
+Asset grid points,200.0,56.0
+Asset upper bound,50.0,12.0
+Idiosyncratic states,3.0,3.0
+Aggregate states,30.0,7.0
+Interest-rate grid points,20.0,9.0
+Interest-rate lower bound,0.01,0.01
+Interest-rate upper bound,0.06,0.06
+Truncation horizon,170.0,44.0
+Maximum parameter updates,1000.0,90.0
+Warm-up epochs,50.0,12.0
+Batch size,512.0,14.0
+Initial learning rate,0.001,0.045
+Learning-rate decay,0.5,0.55
+Convergence threshold,0.0003,0.0001
+Diagnostic horizon,170.0,44.0

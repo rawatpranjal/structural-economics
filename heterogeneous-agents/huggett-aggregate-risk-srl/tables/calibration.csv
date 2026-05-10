@@ -1,0 +1,10 @@
+Parameter,Value,Symbol
+Discount factor,0.96,beta
+CRRA coefficient,2.0,gamma
+Idiosyncratic log-income persistence,0.6,rho_e
+Idiosyncratic log-income volatility,0.2,sigma_e
+Aggregate log-income persistence,0.9,rho_z
+Aggregate log-income volatility,0.02,sigma_z
+Borrowing limit,-1.0,a_min
+Net bond supply,0.0,B
+Minimum consumption,0.001,c_min

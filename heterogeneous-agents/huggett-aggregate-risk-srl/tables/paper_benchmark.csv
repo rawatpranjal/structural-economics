@@ -1,0 +1,6 @@
+Benchmark item,Published SRL benchmark,Tutorial run,Assessment
+Calibration,"beta=0.96, sigma=2, rho_y=0.6, nu_y=0.2, rho_z=0.9, nu_z=0.02, B=0, borrowing limit=-1",Uses the same Huggett calibration and c_min=1e-3,Matched
+Grid and training settings,"200 bond points, b_max=50, 3 income states, 30 aggregate states, 20 rate points on [0.01, 0.06], T=170, 1000 epochs, 50 warm-up epochs, lr_ini=1e-3, lr_decay=0.5, batch=512","Uses the same grid, horizon, learning-rate schedule, and batch size",Matched
+Convergence status,Average convergence at 480.6 epochs over 10 runs,Did not converge after 90 epochs; final movement 0.0273,Not met
+Market-clearing residual,Average bond-market clearing gap about 4.4e-6,Mean absolute residual 9.78e-18; maximum 5.55e-17; bracketing share 1.000,Matched
+Qualitative figure match,"monotone and concave consumption, smoother aggregate consumption than income, endogenous interest rates, saving schedule crossing zero",monotone share 0.897; concave share 0.852; C/Y volatility ratio 1.000; saving schedule crosses zero: yes,Mixed
