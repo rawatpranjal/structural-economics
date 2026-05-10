@@ -743,6 +743,11 @@ def main() -> None:
         "[Watkins, C. J. C. H. and Dayan, P. (1992). Q-Learning. *Machine Learning*, 8(3), 279-292.](https://doi.org/10.1007/BF00992698)",
         "[Haarnoja, T., Tang, H., Abbeel, P., and Levine, S. (2017). Reinforcement Learning with Deep Energy-Based Policies. *ICML*.](https://proceedings.mlr.press/v70/haarnoja17a.html)",
         "[Mnih, V., Kavukcuoglu, K., Silver, D., et al. (2015). Human-Level Control through Deep Reinforcement Learning. *Nature*, 518, 529-533.](https://doi.org/10.1038/nature14236)",
+        "**See also.** The same Rust replacement model is estimated by "
+        "NFXP, CCP, MPEC, and a maximum-causal-entropy IRL benchmark in "
+        "`industrial-organization/dynamic-discrete-choice/`. The four "
+        "estimators recover the identical hazard the soft Q-learning here "
+        "reproduces.",
     ])
 
     report.write(str(folder / "README.md"))

@@ -107,9 +107,9 @@ The table compares the three methods on the same calibration. Q-learning and DQN
 
 | method                         | transition matrix   |   hazard MAE |   P=0.5 mileage |   samples |   runtime sec |
 |:-------------------------------|:--------------------|-------------:|----------------:|----------:|--------------:|
-| NFXP (model-based)             | yes                 |       0      |               6 |       228 |        0.0106 |
-| soft Q-learning (4 seeds avg.) | no                  |       0.0105 |               6 |   6120000 |      198.239  |
-| soft DQN                       | no                  |       0.0046 |               6 |   4080000 |       11.044  |
+| NFXP (model-based)             | yes                 |       0      |               6 |       228 |        0.0095 |
+| soft Q-learning (4 seeds avg.) | no                  |       0.0105 |               6 |   6120000 |      193.383  |
+| soft DQN                       | no                  |       0.0046 |               6 |   4080000 |       10.372  |
 
 NFXP converges in 228 Bellman iterations. Soft Q-learning hits a hazard MAE of 0.0105 after 30 passes through 51,000 observed transitions. Soft DQN reaches 0.0046 on the same panel.
 
@@ -126,3 +126,4 @@ Soft Q-learning recovers the same hazard from observed buses and the model's flo
 - [Watkins, C. J. C. H. and Dayan, P. (1992). Q-Learning. *Machine Learning*, 8(3), 279-292.](https://doi.org/10.1007/BF00992698)
 - [Haarnoja, T., Tang, H., Abbeel, P., and Levine, S. (2017). Reinforcement Learning with Deep Energy-Based Policies. *ICML*.](https://proceedings.mlr.press/v70/haarnoja17a.html)
 - [Mnih, V., Kavukcuoglu, K., Silver, D., et al. (2015). Human-Level Control through Deep Reinforcement Learning. *Nature*, 518, 529-533.](https://doi.org/10.1038/nature14236)
+- **See also.** The same Rust replacement model is estimated by NFXP, CCP, MPEC, and a maximum-causal-entropy IRL benchmark in `industrial-organization/dynamic-discrete-choice/`. The four estimators recover the identical hazard the soft Q-learning here reproduces.

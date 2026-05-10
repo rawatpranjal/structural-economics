@@ -648,6 +648,10 @@ the objective.
     report.add_references([
         "[Rust, J. (1987). Optimal Replacement of GMC Bus Engines: An Empirical Model of Harold Zurcher. *Econometrica*, 55(5), 999-1033.](https://doi.org/10.2307/1911259)",
         "[Hotz, V. J. and Miller, R. A. (1993). Conditional Choice Probabilities and the Estimation of Dynamic Models. *Review of Economic Studies*, 60(3), 497-529.](https://doi.org/10.2307/2298122)",
+        "**See also.** The same Rust replacement model is estimated by "
+        "soft Q-learning and a Deep Q-Network in "
+        "`structural-econometrics/q-learning-bus-engine/`, recovering the "
+        "identical fixed point without an explicit transition matrix.",
     ])
     report.write()
     save_thumbnail("figures/estimated-policies.png", "figures/thumb.png")
