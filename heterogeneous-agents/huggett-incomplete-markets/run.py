@@ -371,44 +371,149 @@ Bisection updates $r$ until aggregate bond demand clears.
 
     report.add_equations(
         r"""
-A household in income state $i \in \{L, H\}$ receives endowment $z_i$. Income jumps to
-the other state $j$ with Poisson intensity $\lambda_i$. Assets move between jumps by
+A household in income state $i \in \lbrace L, H \rbrace$ receives endowment
+$z_i$ as a flow per unit time. Income jumps from state $i$ to the other state
+$j$ at Poisson intensity $\lambda_i$, so the expected duration in state $i$ is
+$1/\lambda_i$. Assets $a$ accumulate continuously between jumps according to
 
-$$\dot a = s_i(a) = z_i + r\,a - c_i(a), \qquad a \geq \underline a.$$
+$$
+\dot a \,=\, s_i(a) \,=\, z_i + r\, a - c_i(a),
+\qquad a \,\geq\, \underline a ,
+$$
 
-The value function solves the HJB equation. With CRRA utility and discount rate $\rho$,
-the equation is
+where $r$ is the equilibrium return on the bond, $c_i(a)$ is the consumption
+policy in state $i$, and $\underline a$ is the borrowing limit. Period utility
+is CRRA: $u(c) = c^{1-\sigma}/(1-\sigma)$ for $\sigma \ne 1$.
 
-$$\rho\,V_i(a) = \max_{c > 0}\,
-[\,u(c) + V_i'(a)\,(z_i + r\,a - c) + \lambda_i\,(V_j(a) - V_i(a))\,].$$
+### Deriving the HJB with Poisson income switching
 
-The first-order condition links marginal value to consumption. It also defines the
-savings drift used by the density equation:
+Let $V_i(a)$ be the household's value when assets are $a$ and income state is
+$i$. Over a small interval of length $\Delta t$, with probability
+$1 - \lambda_i\, \Delta t + o(\Delta t)$ the income state stays at $i$ and
+assets drift by $\dot a\, \Delta t$. With probability
+$\lambda_i\, \Delta t + o(\Delta t)$ the income state jumps to $j$ at the start
+of the interval and the household enters next period with the same assets but
+the new value function $V_j$. The discrete-time Bellman is
 
-$$c_i(a) = [V_i'(a)]^{-1/\sigma}, \qquad
-s_i(a) = z_i + r\,a - c_i(a).$$
+$$
+V_i(a) \,=\, \max_{c \,\geq\, 0} \Big\lbrace
+u(c)\, \Delta t \,+\, e^{-\rho\, \Delta t}\,
+\big[(1 - \lambda_i\, \Delta t)\, V_i(a + \dot a\, \Delta t)
+\,+\, \lambda_i\, \Delta t\, V_j(a)\big] \Big\rbrace
+\,+\, o(\Delta t) .
+$$
 
-The borrowing limit is a state constraint. At $a = \underline a$, the drift cannot point
-outside the grid:
+Expand $e^{-\rho \Delta t} = 1 - \rho\, \Delta t + o(\Delta t)$ and
+$V_i(a + \dot a\, \Delta t) = V_i(a) + V_i'(a)\, \dot a\, \Delta t +
+o(\Delta t)$. Subtract $V_i(a)$, divide by $\Delta t$, and take
+$\Delta t \to 0$. The cross terms $\rho\, \Delta t \cdot \lambda_i$ and
+$\rho\, \Delta t \cdot V_i'(a)\, \dot a$ are $o(\Delta t)$ and drop out. The
+result is the **HJB equation with Poisson switching**
 
-$$s_i(\underline a) \geq 0
+$$
+\rho\, V_i(a) \,=\, \max_{c \,>\, 0}\, \Big\lbrace
+\underbrace{u(c)}_{\text{flow utility}}
+\,+\, \underbrace{V_i'(a)\, (z_i + r\, a - c)}_{\text{drift in } a}
+\,+\, \underbrace{\lambda_i\, (V_j(a) - V_i(a))}_{\text{income jump}}
+\Big\rbrace .
+$$
+
+This is one continuous-state HJB per income state, coupled by the jump term.
+The first two pieces are exactly the Ramsey-style HJB (flow utility plus
+shadow value times drift). The third piece is new: it is the rate
+$\lambda_i$ of leaving the current income state times the value gain
+$V_j(a) - V_i(a)$ from arriving in the other one.
+
+### First-order condition
+
+The maximand depends on $c$ through $u(c) - V_i'(a)\, c$, so the interior
+first-order condition equates marginal utility to the marginal value of
+assets,
+
+$$
+u'(c_i(a)) \,=\, V_i'(a)
+\quad\Longrightarrow\quad
+c_i(a) \,=\, [V_i'(a)]^{-1/\sigma} ,
+$$
+
+and the implied savings drift is
+
+$$
+s_i(a) \,=\, z_i + r\, a - c_i(a) .
+$$
+
+The marginal value $V_i'(a)$ is the **shadow price** of one extra unit of
+assets in state $i$ and serves the same role here as $V'(k)$ in the Ramsey
+HJB.
+
+### The borrowing limit as a state constraint
+
+The borrowing limit $a \geq \underline a$ is a state constraint, not a budget
+constraint. It binds whenever the unconstrained drift would push assets
+through the floor. The Kuhn-Tucker condition is
+
+$$
+s_i(\underline a) \,\geq\, 0
 \quad\Longleftrightarrow\quad
-V_i'(\underline a) \geq u'(z_i + r\,\underline a),$$
+V_i'(\underline a) \,\geq\, u'(z_i + r\, \underline a) ,
+$$
 
-with equality only when the constraint is slack.
+with equality when the constraint is slack and strict inequality (a kink in
+$V_i'$) when the household would prefer to dissave further. The numerical
+scheme enforces this by computing the implied unconstrained drift at
+$a = \underline a$ and clipping consumption to $z_i + r\, \underline a$ when
+the drift would be negative.
 
-The stationary density $g_i(a)$ satisfies the KFE. It moves mass along the asset drift
-and across income states:
+### The Kolmogorov forward equation
 
-$$0 = -\frac{\partial}{\partial a}[s_i(a)\,g_i(a)]
-- \lambda_i\,g_i(a) + \lambda_j\,g_j(a),
-\qquad \int g_L + g_H = 1,$$
+Once the household policy is known, the cross-section of households evolves
+as a deterministic transport along the drift, plus stochastic switching
+between income states. Let $g_i(a, t)$ be the time-$t$ density of households
+in state $i$ at asset level $a$. Mass conservation requires the density to
+satisfy a continuity equation: the rate of change of mass in any region
+equals the inflow at the left boundary minus the outflow at the right
+boundary, plus the income-switching gain or loss. In differential form,
 
-The bond market clears when aggregate assets are zero:
+$$
+\frac{\partial g_i}{\partial t}(a, t)
+\,=\,
+-\frac{\partial}{\partial a}\big[s_i(a)\, g_i(a, t)\big]
+\,-\, \lambda_i\, g_i(a, t)
+\,+\, \lambda_j\, g_j(a, t) .
+$$
 
-$$S(r) \equiv \int_{\underline a}^{\bar a} a\,[g_L(a) + g_H(a)]\,da = 0.$$
+The first term is the divergence of the deterministic flux $s_i\, g_i$ along
+the asset axis. The second term removes mass from state $i$ at the leaving
+rate $\lambda_i$. The third term adds mass arriving from state $j$ at rate
+$\lambda_j$. The stationary density satisfies
 
-The equilibrium return is the root of this function. In this run,
+$$
+0 \,=\, -\frac{\partial}{\partial a}\big[s_i(a)\, g_i(a)\big]
+\,-\, \lambda_i\, g_i(a) \,+\, \lambda_j\, g_j(a),
+\qquad \int_{\underline a}^{\bar a} \big[g_L(a) + g_H(a)\big]\, da \,=\, 1 .
+$$
+
+Discretised on the same asset grid as the HJB, this becomes
+$\mathbf{A}^{\top} g \,=\, 0$, where $\mathbf{A}$ is the upwind generator
+used to solve the HJB and $g$ is the joint density across grid points and
+income states. The HJB and KFE are dual under one transposition: the same
+matrix encodes both the operator that propagates values backward and the
+operator that propagates densities forward.
+
+### Equilibrium return
+
+The single bond is in zero net supply. The bond market clears when the
+average asset holding integrates to zero,
+
+$$
+S(r) \,\equiv\, \int_{\underline a}^{\bar a} a\, [g_L(a) + g_H(a)]\, da \,=\, 0 .
+$$
+
+The equilibrium return $r^{\ast}$ is the root of $S(r)$. With incomplete
+insurance, households want a buffer at $r = \rho$ (so $S(\rho) > 0$), and
+they want to borrow at very low $r$ (so $S(r) < 0$ for small $r$). The
+bisection on $r$ finds the wedge $r^{\ast} < \rho$ that closes the bond
+market. In this run,
 """ + f"$r^{{\\ast}} = {r_eq:.5f}$ " + r"""and the residual is """
         + f"${market_residual:.2e}$." + r"""
 """
@@ -441,24 +546,111 @@ $|p_L - 0.5| = {p_balance_err:.2e}$.
 
     report.add_solution_method(
         r"""
-At a candidate $r$, the code solves the household HJB on the asset grid. It uses an
-upwind finite-difference scheme because the asset drift can point left or right.
+The equilibrium is found by three nested loops. The outer loop bisects on the
+return $r$. For each candidate $r$, the middle loop solves the HJB by an
+implicit upwind iteration, then solves the KFE for the stationary density,
+then evaluates the bond-market residual $S(r)$. Each piece below is the
+Achdou-Han-Lasry-Lions-Moll method specialised to two income states.
 
-**Upwind derivative.** The algorithm computes forward and backward derivatives of
-$V_i(a_k)$. Each derivative implies a consumption choice and a drift. The update keeps
-the derivative whose drift points into the grid.
+### Upwind discretisation of the HJB
 
-**Implicit step.** The HJB update stacks both income states into one vector:
+Place a uniform grid $a_1 < a_2 < \cdots < a_I$ on $[\underline a, \bar a]$
+with spacing $\Delta a$. At each pair $(a_k, i)$ the solver computes the
+forward and backward asset slopes
 
-$$[(\Delta^{-1} + \rho)\,\mathbf I - A^{n}]\,V^{n+1} = u(c^{n}) + \Delta^{-1} V^{n},$$
+$$
+D^{+}_{k, i} V \,=\, \frac{V_i(a_{k+1}) - V_i(a_k)}{\Delta a},
+\qquad
+D^{-}_{k, i} V \,=\, \frac{V_i(a_k) - V_i(a_{k-1})}{\Delta a},
+$$
 
-where $A^n$ is the upwind generator. It combines asset drift and income switching.
+and the candidate consumptions $c^{+}_{k, i} = (D^{+}_{k, i} V)^{-1/\sigma}$
+and $c^{-}_{k, i} = (D^{-}_{k, i} V)^{-1/\sigma}$. The implied drifts are
+$s^{+}_{k, i} = z_i + r\, a_k - c^{+}_{k, i}$ and $s^{-}_{k, i}$ analogously.
+The upwind rule keeps the side whose drift points away from the grid point:
+forward when $s^{+}_{k, i} > 0$, backward when $s^{-}_{k, i} < 0$, and the
+zero-drift consumption $c^{0}_{k, i} = z_i + r\, a_k$ otherwise. A central
+difference would mix the two sides with equal weight and produce oscillating
+iterates because information in the HJB flows in the direction of the drift.
 
-**KFE.** Once $V$ converges, the same generator gives the stationary distribution. The
-code solves $A^{\top} g = 0$ and rescales $g$ to integrate to one.
+At the borrowing limit $a_1 = \underline a$ the backward difference is
+undefined, so the algorithm uses the forward difference and additionally
+enforces the state constraint by clipping consumption to
+$z_i + r\, \underline a$ when the implied forward drift is negative. At the
+upper end $a_I = \bar a$ the forward difference is undefined, so the
+algorithm uses the backward difference; the upper bound is set wide enough
+that no probability mass sits there in equilibrium.
 
-**Equilibrium.** The outer loop computes $S(r)$ and updates $r$ by bisection. Higher
-returns raise saving and reduce borrowing, so the zero of $S(r)$ is well defined here.
+### The upwind generator
+
+Once the upwind drifts are picked at every grid point, define $s^{+}_{k, i}
+\equiv \max(s_{k, i}, 0)$ and $s^{-}_{k, i} \equiv \min(s_{k, i}, 0)$. The
+asset block of the upwind generator is tridiagonal: at row $(k, i)$ the
+super-diagonal entry is $s^{+}_{k, i}/\Delta a$, the sub-diagonal entry is
+$-s^{-}_{k, i}/\Delta a$, and the diagonal entry is the negative of their sum.
+Stacking both income states gives a $2I \times 2I$ block-tridiagonal generator
+$\mathbf A^{n}$,
+
+$$
+\mathbf A^{n} \,=\, \mathrm{diag}(A_{L}^{n},\, A_{H}^{n})
+\,+\,
+\begin{pmatrix} -\lambda_L\, \mathbf I & \lambda_L\, \mathbf I \\
+\lambda_H\, \mathbf I & -\lambda_H\, \mathbf I \end{pmatrix} ,
+$$
+
+where $A_i^{n}$ is the upwind asset-drift block for income state $i$ at the
+current consumption policy and the off-block matrices encode income
+switching. The matrix has zero row sums (it is a CTMC generator) and
+non-positive diagonal.
+
+### Implicit pseudo-time step
+
+An explicit update $V^{n+1} = V^n + \Delta\, (u(c^n) + \mathbf A^{n} V^n -
+\rho V^n)$ is unstable for moderate $\Delta$ because the upwind transition
+rates $|s_{k, i}|/\Delta a$ can be large on fine grids. The implicit version
+replaces $\mathbf A^{n} V^n$ with $\mathbf A^{n} V^{n+1}$ and rearranges to
+
+$$
+[(1/\Delta + \rho)\, \mathbf{I} - \mathbf A^{n}]\, V^{n+1}
+\,=\, u(c^{n}) + V^{n} / \Delta .
+$$
+
+The matrix on the left is strictly diagonally dominant with positive
+diagonal (because $\mathbf A^{n}$ has zero row sums and non-positive
+diagonal), so the system is unconditionally invertible regardless of
+$\Delta$. Taking $\Delta \to \infty$ recovers a Newton step on
+$\rho V - u(c) - \mathbf A V = 0$ with the policy frozen, which is why the
+HJB inner loop converges in a handful of iterations rather than the hundreds
+that an explicit value iteration would need.
+
+### KFE by transposing the same generator
+
+When the HJB inner loop converges, the upwind generator $\mathbf A^{\ast}$ at
+the equilibrium policy is exactly the operator whose transpose pushes the
+density forward in time:
+
+$$
+\frac{\partial g}{\partial t} \,=\, \mathbf A^{\top}\, g .
+$$
+
+The stationary density solves $\mathbf A^{\top} g = 0$, a singular system
+because $\mathbf A$ has zero row sums (so $\mathbf A^{\top}$ has a zero
+right-singular vector). The code pins down the scale by replacing one row
+with a normalisation constraint, solving the resulting non-singular system
+by sparse LU, and rescaling so that $\int (g_L + g_H)\, da = 1$. The same
+matrix that solved the HJB therefore solves the KFE; this **operator
+duality** is the elegance of the continuous-time framework.
+
+### Outer bisection on $r$
+
+Bond demand $S(r) \,=\, \int a\, (g_L + g_H)\, da$ is monotone increasing in
+$r$ at this calibration: a higher return makes saving more attractive
+($s_i(a)$ rises by $a$ for all $a > 0$) and borrowing more painful, so the
+density shifts rightward on the asset axis. Since $S(\rho) > 0$ (the
+precautionary motive at $r = \rho$ pulls households toward positive assets)
+and $S(r) < 0$ for $r$ small enough that low-income borrowers would max out
+at $\underline a$, bisection finds a unique $r^{\ast} \in (0, \rho)$ with
+$S(r^{\ast}) = 0$.
 
 ```text
 Algorithm: Huggett equilibrium by HJB-KFE bisection
