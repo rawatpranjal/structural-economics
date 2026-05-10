@@ -118,3 +118,4 @@ The phase diagram shows direction. It does not choose initial consumption. The t
 
 - Ramsey, F. (1928). "A Mathematical Theory of Saving." *Economic Journal*, 38(152).
 - Barro, R. and Sala-i-Martin, X. (2004). *Economic Growth*. MIT Press, 2nd edition, Ch. 2.
+- **See also.** The same Ramsey model is solved by upwind HJB finite differences in `optimal-control/hjb-growth/` and by saddle-path forward shooting in `optimal-control/ramsey-growth/`.

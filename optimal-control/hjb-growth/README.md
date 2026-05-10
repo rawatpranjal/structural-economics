@@ -271,3 +271,4 @@ The HJB turns this logic into a value derivative. Upwinding uses the direction o
 - Achdou, Y., Han, J., Lasry, J.-M., Lions, P.-L., and Moll, B. (2022). "Income and Wealth Distribution in Macroeconomics: A Continuous-Time Approach." *Review of Economic Studies*, 89(1), 45-86.
 - Moll, B. (2022). "Lecture notes on continuous-time methods in macroeconomics." https://benjaminmoll.com/lectures/
 - Barro, R. and Sala-i-Martin, X. (2004). *Economic Growth*. MIT Press, 2nd edition.
+- **See also.** The same Ramsey model is solved by phase-plane eigenanalysis with backward integration in `optimal-control/phase-diagrams/` and by saddle-path forward shooting in `optimal-control/ramsey-growth/`.
