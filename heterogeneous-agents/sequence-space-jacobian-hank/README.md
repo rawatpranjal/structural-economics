@@ -6,7 +6,7 @@ A HANK economy maps the path of a monetary policy shock into paths of output, in
 
 Sequence-space Jacobians make that propagation tractable. Each block is linearized around the steady state and represented by a matrix that maps a sequence of inputs into a sequence of outputs. The aggregate impulse response is then the solution of a single linear system whose blocks compose like Lego pieces.
 
-This tutorial follows the canonical one-asset HANK setup from Auclert, Bardóczy, Rognlie, and Straub (2021). Households save in bonds, supply labor elastically, and receive firm dividends as a skill-proportional transfer. The household block is solved by joint endogenous-grid points in consumption and hours. The figure overlays a representative-agent New Keynesian benchmark from the same primitives, so the reader can read off the contribution of heterogeneity to monetary transmission.
+This tutorial follows the canonical one-asset HANK setup from Auclert, Bardóczy, Rognlie, and Straub (2021). Households save in bonds, supply labor elastically, and receive firm dividends as a skill-proportional transfer. The steady-state household block reuses ideas from the discrete-time Aiyagari tutorial [`dynamic-programming/aiyagari/`](../../dynamic-programming/aiyagari/) and the endogenous-grid-point inversion in [`heterogeneous-agents/endogenous-grid-points/`](../endogenous-grid-points/), extended to elastic labor via a joint endogenous-grid step over consumption and hours. The figure overlays a representative-agent New Keynesian benchmark, the same three-equation NK model solved in [`dsge/nkdsge/`](../../dsge/nkdsge/), so the reader can read off the contribution of heterogeneity to monetary transmission.
 
 ## Equations
 
@@ -178,7 +178,7 @@ $3 T \times 3 T$ system is solved by a single dense linear solve.
 424 iterations to a sup-norm residual of
 9.82e-10. The joint $(\beta, v_{\varphi})$ calibration
 converged in a few Broyden steps to the targets $A^\\ast = B$ and
-$N^E_{\ast} = 1$. The Jacobian construction took 26.4 seconds at
+$N^E_{\ast} = 1$. The Jacobian construction took 25.2 seconds at
 $T = 300$. The aggregate condition number of $H_U$ is order
 $10^{3}$, well within double-precision range.
 
@@ -216,7 +216,7 @@ The household block is the costly piece; the aggregate solve is a single dense s
 | Aggregate consumption C*                    | 1.0000    |
 | Aggregate output Y*                         | 1.0000    |
 | Steady-state real rate r* (quarterly)       | 0.0050    |
-| Jacobian construction time (seconds, T=300) | 26.41     |
+| Jacobian construction time (seconds, T=300) | 25.21     |
 | H_U matrix size                             | 900 x 900 |
 | H_U condition number                        | 4.41e+03  |
 | Peak HANK output response (% of Y*)         | -0.190    |
@@ -231,7 +231,7 @@ Sequence-space Jacobians turn HANK with aggregate shocks into a tractable linear
 
 Block composition pays for itself: firm, NKPC, fiscal, and monetary blocks are closed-form $T \times T$ matrices and stack against the household block without recomputing anything. The aggregate IRF is then a single dense solve.
 
-The HANK-vs-RA comparison shows what the heterogeneity is doing economically. At this calibration, the aggregate output and consumption responses are of similar size to the RA NK benchmark, but the cross-section is dramatic: lower wealth quintiles cut consumption several times as much as the upper quintiles. The amplification at the level of inflation and the real rate is also larger in HANK. The same SSJ scaffolding extends to two-asset HANK, sticky wages, estimation by likelihood, and richer fiscal blocks; those extensions and a more aggressive amplification calibration (e.g., shareholder-only dividend rebates) are in the `sequence-jacobian` package, which is the natural next stop.
+The HANK-vs-RA comparison shows what the heterogeneity is doing economically. At this calibration, the aggregate output and consumption responses are of similar size to the RA NK benchmark, but the cross-section is dramatic: lower wealth quintiles cut consumption several times as much as the upper quintiles. The amplification at the level of inflation and the real rate is also larger in HANK. The same SSJ scaffolding extends to two-asset HANK, sticky wages, estimation by likelihood, and richer fiscal blocks; those extensions and a more aggressive amplification calibration (e.g., shareholder-only dividend rebates) are in the [`sequence-jacobian`](https://github.com/shade-econ/sequence-jacobian) package, which is the natural next stop.
 
 ## References
 
@@ -239,4 +239,4 @@ The HANK-vs-RA comparison shows what the heterogeneity is doing economically. At
 - Carroll, C. D. (2006). The Method of Endogenous Gridpoints for Solving Dynamic Stochastic Optimization Problems. *Economics Letters*, 91(3), 312-320.
 - Galí, J. (2015). *Monetary Policy, Inflation, and the Business Cycle: An Introduction to the New Keynesian Framework and Its Applications.* Princeton University Press.
 - Young, E. R. (2010). Solving the Incomplete Markets Model with Aggregate Uncertainty Using the Krusell-Smith Algorithm and Non-Stochastic Simulations. *Journal of Economic Dynamics and Control*, 34(1), 36-41.
-- `sequence-jacobian` Python package: https://github.com/shade-econ/sequence-jacobian
+- [`sequence-jacobian`](https://github.com/shade-econ/sequence-jacobian) Python package, reference implementation by Auclert, Bardóczy, Rognlie, and Straub.

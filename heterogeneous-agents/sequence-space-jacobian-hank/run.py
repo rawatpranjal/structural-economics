@@ -953,11 +953,16 @@ def main() -> None:
         "This tutorial follows the canonical one-asset HANK setup from "
         "Auclert, Bardóczy, Rognlie, and Straub (2021). Households save in "
         "bonds, supply labor elastically, and receive firm dividends as a "
-        "skill-proportional transfer. The household block is solved by joint "
-        "endogenous-grid points in consumption and hours. The figure overlays "
-        "a representative-agent New Keynesian benchmark from the same "
-        "primitives, so the reader can read off the contribution of "
-        "heterogeneity to monetary transmission."
+        "skill-proportional transfer. The steady-state household block reuses "
+        "ideas from the discrete-time Aiyagari tutorial "
+        "[`dynamic-programming/aiyagari/`](../../dynamic-programming/aiyagari/) "
+        "and the endogenous-grid-point inversion in "
+        "[`heterogeneous-agents/endogenous-grid-points/`](../endogenous-grid-points/), "
+        "extended to elastic labor via a joint endogenous-grid step over "
+        "consumption and hours. The figure overlays a representative-agent "
+        "New Keynesian benchmark, the same three-equation NK model solved in "
+        "[`dsge/nkdsge/`](../../dsge/nkdsge/), so the reader can read off "
+        "the contribution of heterogeneity to monetary transmission."
     )
 
     report.add_equations(
@@ -1295,7 +1300,8 @@ $10^{{{int(np.log10(cond))}}}$, well within double-precision range.
         "HANK, sticky wages, estimation by likelihood, and richer fiscal "
         "blocks; those extensions and a more aggressive amplification "
         "calibration (e.g., shareholder-only dividend rebates) are in the "
-        "`sequence-jacobian` package, which is the natural next stop."
+        "[`sequence-jacobian`](https://github.com/shade-econ/sequence-jacobian) "
+        "package, which is the natural next stop."
     )
 
     report.add_references(
@@ -1313,8 +1319,9 @@ $10^{{{int(np.log10(cond))}}}$, well within double-precision range.
             "Aggregate Uncertainty Using the Krusell-Smith Algorithm and "
             "Non-Stochastic Simulations. *Journal of Economic Dynamics and "
             "Control*, 34(1), 36-41.",
-            "`sequence-jacobian` Python package: "
-            "https://github.com/shade-econ/sequence-jacobian",
+            "[`sequence-jacobian`](https://github.com/shade-econ/sequence-jacobian) "
+            "Python package, reference implementation by Auclert, Bardóczy, "
+            "Rognlie, and Straub.",
         ]
     )
 
