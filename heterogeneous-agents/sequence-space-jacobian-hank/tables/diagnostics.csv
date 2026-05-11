@@ -1,15 +1,17 @@
 Quantity,Value
-Household EGP iterations to convergence,945
-Household EGP final sup-norm residual,9.83e-10
-Stationary distribution iterations,iterated to tol
-Calibrated discount factor,0.98918
-Aggregate savings A*,31.084
-Capital target K*,31.084
-Aggregate consumption C*,2.048
+Household EGM iterations to convergence,424
+Household EGM final sup-norm residual,9.82e-10
+Calibrated discount factor,0.98223
+Calibrated labor disutility,0.7862
+Aggregate savings A*,5.6000
+Bond supply B (target),5.6000
+Aggregate effective labor NE,1.0000
+Aggregate consumption C*,1.0000
+Aggregate output Y*,1.0000
 Steady-state real rate r* (quarterly),0.0050
-"Jacobian construction time (seconds, T=300)",24.06
-H_U matrix size,600 x 600
-H_U condition number,1.17e+02
-Peak HA output response (% of Y*),-0.024
-Peak HA consumption response (% of C*),-0.036
-Peak RA output response (%),-0.055
+"Jacobian construction time (seconds, T=300)",26.41
+H_U matrix size,900 x 900
+H_U condition number,4.41e+03
+Peak HANK output response (% of Y*),-0.190
+Peak HANK consumption response (% of C*),-0.190
+Peak RA NK output response (%),-0.249
