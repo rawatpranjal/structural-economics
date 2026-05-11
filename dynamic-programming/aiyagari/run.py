@@ -605,6 +605,11 @@ precautionary saving becomes unbounded. The economy has excess capital supply.
         "Saving. *Quarterly Journal of Economics*, 109(3), 659-684.",
         "Ljungqvist, L. and Sargent, T. (2018). *Recursive Macroeconomic "
         "Theory*. MIT Press, 4th edition, Ch. 18.",
+        "**See also.** The continuous-time analogue with HJB and KFE solvers "
+        "is in [`heterogeneous-agents/aiyagari-hact/`](../../heterogeneous-agents/aiyagari-hact/), "
+        "and the steady state here is reused as the household block of the "
+        "HANK model in [`heterogeneous-agents/sequence-space-jacobian-hank/`](../../heterogeneous-agents/sequence-space-jacobian-hank/), "
+        "where sequence-space Jacobians give the impulse responses to MIT shocks.",
     ])
 
     report.write("README.md")

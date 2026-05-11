@@ -135,4 +135,4 @@ The selected path gives the Ramsey saving logic. Build capital when it is scarce
 - Barro, R. and Sala-i-Martin, X. (2004). *Economic Growth*. MIT Press, 2nd edition, Ch. 2.
 - Acemoglu, D. (2009). *Introduction to Modern Economic Growth*. Princeton University Press, Ch. 8.
 - Romer, D. (2019). *Advanced Macroeconomics*. McGraw-Hill, 5th edition, Ch. 2.
-- **See also.** The same Ramsey model is solved by upwind HJB finite differences in `optimal-control/hjb-growth/` and by phase-plane eigenanalysis with backward integration in `optimal-control/phase-diagrams/`.
+- **See also.** The same Ramsey model is solved by upwind HJB finite differences in [`optimal-control/hjb-growth/`](../../optimal-control/hjb-growth/) and by phase-plane eigenanalysis with backward integration in [`optimal-control/phase-diagrams/`](../../optimal-control/phase-diagrams/).

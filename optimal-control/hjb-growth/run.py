@@ -721,8 +721,8 @@ with steady-state consumption $c_{ss} = f(k_{ss}) - \delta\, k_{ss}$.
         "Barro, R. and Sala-i-Martin, X. (2004). *Economic Growth*. MIT Press, 2nd edition.",
         "**See also.** The same Ramsey model is solved by phase-plane "
         "eigenanalysis with backward integration in "
-        "`optimal-control/phase-diagrams/` and by saddle-path forward "
-        "shooting in `optimal-control/ramsey-growth/`.",
+        "[`optimal-control/phase-diagrams/`](../../optimal-control/phase-diagrams/) and by saddle-path forward "
+        "shooting in [`optimal-control/ramsey-growth/`](../../optimal-control/ramsey-growth/).",
     ])
 
     report.write("README.md")

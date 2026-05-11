@@ -11,8 +11,10 @@ dependencies = [
     "scipy>=1.11",
     "matplotlib>=3.8",
     "pandas>=2.0",
+    "sbi>=0.23",
+    "torch>=2.1",
 ]
 
 [project.optional-dependencies]
 dev = ["pytest", "ruff"]
-ml = ["torch", "scikit-learn", "xgboost"]
+ml = ["scikit-learn", "xgboost"]

@@ -219,6 +219,7 @@ $$
         "[Vickrey, W. (1961). Counterspeculation, Auctions, and Competitive Sealed Tenders. *Journal of Finance*, 16(1), 8-37.](https://doi.org/10.1111/j.1540-6261.1961.tb02789.x)",
         "[Riley, J. G. and Samuelson, W. F. (1981). Optimal Auctions. *American Economic Review*, 71(3), 381-392.](https://www.jstor.org/stable/1802786)",
         "[Krishna, V. (2009). *Auction Theory*, 2nd ed. Academic Press.](https://shop.elsevier.com/books/auction-theory/krishna/978-0-12-374507-1)",
+        "**See also.** The asymmetric two-bidder auction is solved by counterfactual regret minimisation in [`game-theory/cfr-asymmetric-auction/`](../../game-theory/cfr-asymmetric-auction/), which uses the symmetric closed form developed here as its ground-truth anchor.",
     ])
 
     report.write("README.md")

@@ -1,6 +1,9 @@
 jax>=0.4.20
 jaxlib>=0.4.20
+blackjax>=1.2
 numpy>=1.24
 scipy>=1.11
 matplotlib>=3.8
 pandas>=2.0
+sbi>=0.23
+torch>=2.1

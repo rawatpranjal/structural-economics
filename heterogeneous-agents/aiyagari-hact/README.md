@@ -14,8 +14,8 @@ The two equations are closed by an aggregation condition that recovers the field
 A stationary equilibrium is a fixed point of this coupled system, and the algorithm here is the natural iterative scheme that finds it.
 
 The same three coupled objects are the steady-state block of continuous-time heterogeneous-agent New Keynesian models.
-The exposition of the HJB and KFE solvers in this tutorial reuses the upwind discretisation already explained in the Huggett continuous-time tutorial at `heterogeneous-agents/huggett-incomplete-markets/`, and is not re-derived here.
-For readers who want the discrete-time formulation as a benchmark, see the Aiyagari tutorial at `dynamic-programming/aiyagari/`.
+The exposition of the HJB and KFE solvers in this tutorial reuses the upwind discretisation already explained in the Huggett continuous-time tutorial at [`heterogeneous-agents/huggett-incomplete-markets/`](../../heterogeneous-agents/huggett-incomplete-markets/), and is not re-derived here.
+For readers who want the discrete-time formulation as a benchmark, see the Aiyagari tutorial at [`dynamic-programming/aiyagari/`](../../dynamic-programming/aiyagari/).
 
 ## Equations
 
@@ -132,7 +132,7 @@ At a candidate $r$, the firm side delivers $K^{d}(r)$ and the wage $w(r)$ from t
 The household HJB is then solved by implicit upwind iteration at the prices $(r, w(r))$, and the same upwind generator is transposed to produce the stationary density in one sparse solve.
 Aggregate capital supply $K^{s}(r) = \int a \sum_j g_j(a)\, da$ is compared against $K^{d}(r)$, and the bracket on $r$ is updated by bisection until the two match.
 The shared upwind generator is what makes the algorithm cheap: the same matrix discretises both the HJB and the KFE, so each pass through the inner loop costs one matrix assembly rather than two separate discretisations.
-The construction of that generator and the boundary handling are explained in `heterogeneous-agents/huggett-incomplete-markets/` and are reused here without re-derivation.
+The construction of that generator and the boundary handling are explained in [`heterogeneous-agents/huggett-incomplete-markets/`](../../heterogeneous-agents/huggett-incomplete-markets/) and are reused here without re-derivation.
 
 ### Implicit upwind HJB
 
@@ -191,7 +191,7 @@ repeat (outer iteration on the mean field r)
 
 The HACT inner loop converged in **11 HJB iterations** at the equilibrium price. The final sup-norm change in the value function was $3.91e-07$, well below the tolerance. The outer bisection on $r$ used **11** steps to reach $r^{\ast} = 0.02536$. The relative capital-market gap at this $r^{\ast}$ is $3.54e-04$, which is the numerical residual rather than a model object.
 
-A discrete-time Aiyagari solver runs on the same calibration to produce the side-by-side comparisons in Results; the discrete-time model and its solver are explained in the companion tutorial at `dynamic-programming/aiyagari/`.
+A discrete-time Aiyagari solver runs on the same calibration to produce the side-by-side comparisons in Results; the discrete-time model and its solver are explained in the companion tutorial at [`dynamic-programming/aiyagari/`](../../dynamic-programming/aiyagari/).
 
 ## Results
 
@@ -269,3 +269,4 @@ The discrete-time Aiyagari is one point in this larger picture, and the continuo
 - Achdou, Y., Han, J., Lasry, J.-M., Lions, P.-L., and Moll, B. (2022). "Income and Wealth Distribution in Macroeconomics: A Continuous-Time Approach." *Review of Economic Studies* 89(1), 45-86.
 - Lasry, J.-M., and Lions, P.-L. (2007). "Mean field games." *Japanese Journal of Mathematics* 2(1), 229-260.
 - Moll, B. "Lecture notes on continuous-time heterogeneous-agent models." https://benjaminmoll.com/lectures/
+- **See also.** The upwind HJB and KFE solver reused throughout is developed in [`heterogeneous-agents/huggett-incomplete-markets/`](../../heterogeneous-agents/huggett-incomplete-markets/); the discrete-time companion model used as the side-by-side benchmark in Results is in [`dynamic-programming/aiyagari/`](../../dynamic-programming/aiyagari/).

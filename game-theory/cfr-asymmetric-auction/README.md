@@ -6,7 +6,7 @@ Two bidders compete in a sealed-bid first-price auction with private values. The
 
 Counterfactual regret minimization is a learning algorithm that handles this case. Each bidder type is treated as an information set. The bidder accumulates regret for each candidate bid against the opponent's current strategy. The next strategy puts probability on bids in proportion to their positive cumulative regret. The time-averaged strategy converges to a Bayesian Nash equilibrium.
 
-The tutorial implements vanilla CFR on the asymmetric game and gives it two independent ground-truth checks. The symmetric closed form anchors the implementation when both value distributions are made equal. The continuous asymmetric BNE itself is recovered separately by solving the Marshall, Meurer, Richard, and Stromquist boundary-value problem on the inverse bid functions, and overlaid on the CFR result. Exploitability of the average strategy on the discretized game is the third diagnostic, the same no-deviation idea as the bid-grid deviation check in the existing first-price auction tutorial.
+The tutorial implements vanilla CFR on the asymmetric game and gives it three diagnostics. The symmetric closed form anchors the implementation when both value distributions are made equal. The continuous asymmetric BNE itself is recovered independently by solving the Marshall, Meurer, Richard, and Stromquist boundary-value problem on the inverse bid functions, and overlaid on the CFR result. Exploitability of the average strategy on the discretized game is the no-deviation diagnostic, the same idea as the bid-grid deviation check in the existing first-price auction tutorial.
 
 ## Equations
 
@@ -80,11 +80,12 @@ payoff.
 
 The continuous-game BNE itself can be written down as an ODE system on the
 inverse bid functions $\phi_i(b)$, which give the type of bidder $i$ that bids
-$b$ in equilibrium. Differentiating the bidder's first-order condition and
-imposing equilibrium $v_i = \phi_i(b)$ yields the MMRS system
+$b$ in equilibrium. Bidder $i$ with value $v$ chooses $b$ to maximize the
+expected payoff $(v - b) F_j(\phi_j(b))$. The first-order condition with the
+equilibrium identity $v = \phi_i(b)$ rearranges to the MMRS system
 
 $$
-\phi_i'(b) = \frac{F_i(\phi_i(b))}{f_i(\phi_i(b)) \cdot (\phi_j(b) - b)}, \quad j = 3 - i.
+\phi_j'(b) = \frac{F_j(\phi_j(b))}{f_j(\phi_j(b)) \cdot (\phi_i(b) - b)}, \quad i = 3 - j.
 $$
 
 For uniform value distributions on $[0, M_i]$, $F_i / f_i = v$ identically, so
@@ -92,17 +93,20 @@ the system simplifies to $\phi_1'(b) = \phi_1 / (\phi_2 - b)$ and
 $\phi_2'(b) = \phi_2 / (\phi_1 - b)$. The boundary conditions are
 $\phi_1(0) = \phi_2(0) = 0$ and $\phi_1(\bar{b}) = 1$, $\phi_2(\bar{b}) = 2$,
 where the common upper bid $\bar{b}$ is an unknown that the boundary-value
-problem pins down. Near $b = 0$ the inverse functions admit the asymptotic
+problem pins down. Near $b = 0$ both denominators vanish, so the system is
+singular at the lower boundary. A series expansion shows that the system admits
+the asymptotic
 
 $$
 \phi_1(b) = 2b - \alpha b^3 + O(b^5), \qquad \phi_2(b) = 2b + \alpha b^3 + O(b^5),
 $$
 
-where $\alpha$ is a free coefficient. Shooting forward from a small $b_0$ with
-this asymptotic initial condition and bisecting $\alpha$ on the constraint
-$\phi_2(\bar{b}) = 2$ produces $\alpha = 3/2$ and $\bar{b} = 2/3$ for our
-distributions. The continuous BNE bid function $b_i(v)$ is the inverse of
-$\phi_i(b)$.
+with a single free coefficient $\alpha$. The leading slope is fixed at two by
+the ODE, but the cubic correction is a one-parameter family that pins down the
+asymmetry. Shooting forward from a small $b_0$ with this asymptotic initial
+condition and bisecting $\alpha$ on the constraint $\phi_2(\bar{b}) = 2$
+produces $\alpha = 3/2$ and $\bar{b} = 2/3$ for our distributions. The
+continuous BNE bid function $b_i(v)$ is the inverse of $\phi_i(b)$.
 
 ## Model Setup
 
@@ -118,9 +122,15 @@ $\phi_i(b)$.
 
 ## Solution Method
 
-Each bidder type is its own information set. The bidder runs regret matching locally at every type, accumulating regret for each candidate bid against the opponent's current strategy. Regret matching is Hannan-consistent at each information set, so the per-set average regret shrinks at rate of order one over the square root of iterations. The chance-reach weighting glues these per-set bounds into a global average regret bound on the time-averaged strategy. The tightest theoretical guarantee that the time-averaged strategy converges to a Nash equilibrium holds in two-player zero-sum games. The first-price auction is general-sum from the bidders' point of view, but CFR converges in practice on this game and on many other extensive-form Bayesian games beyond the zero-sum case. Exploitability of the average strategy is the diagnostic that confirms convergence on this run.
+Each bidder type is its own information set. The bidder runs regret matching locally at every type, accumulating regret for each candidate bid against the opponent's current strategy. Regret matching is Hannan-consistent at each information set, so the per-set average regret shrinks at rate of order one over the square root of iterations. The chance-reach weighting glues these per-set bounds into a global average regret bound on the time-averaged strategy.
 
-Why regret matching works can be seen in a one-information-set toy. Suppose action $a$ always pays 2 and action $b$ always pays 1 against a fixed opponent. Starting from uniform play the average payoff is 1.5. Action $a$ accumulates regret 0.5 per iteration and action $b$ accumulates regret minus 0.5. After a few iterations the strategy puts all mass on $a$. The time-averaged strategy converges to the dominant action.
+The tightest theoretical guarantee that the time-averaged strategy converges to a Nash equilibrium holds in two-player zero-sum games. The first-price auction is general-sum from the bidders' point of view, so CFR's convergence here is empirical rather than guaranteed by the textbook bound. Two checks pin it down on this run anyway: the MMRS BNE recovered in the Results section, and the exploitability of the average strategy logged across iterations.
+
+### Worked example
+
+To see CFR step by step, work one iteration on a tiny bid grid $B = \lbrace 0, 0.5 \rbrace$ for the weak bidder's high-value type $v = 1$, against an opponent who plays uniformly over those two bids at every type. The marginal opponent bid distribution is $q = (0.5, 0.5)$. Win probabilities under uniform tie-break are $w(0) = 0.25$ and $w(0.5) = 0.75$. Expected payoffs at $v = 1$ are $(1 - 0) \cdot 0.25 = 0.25$ at the low bid and $(1 - 0.5) \cdot 0.75 = 0.375$ at the high bid. The uniform current strategy mixes these into a strategy-mixture value of $0.3125$. Regret for the low bid is $0.25 - 0.3125 = -0.0625$ and regret for the high bid is $0.375 - 0.3125 = +0.0625$. Regret matching on $\max(R, 0)$ then sets the next strategy at this information set to put all weight on the high bid, which is exactly the symmetric BNE bid for type $v = 1$. The full algorithm repeats this calculation independently at every type for both bidders; the time-averaged strategy across many iterations on a finer bid grid is what converges to the asymmetric BNE.
+
+### Algorithm
 
 ```text
 Algorithm: vanilla CFR for the asymmetric first-price auction
@@ -135,17 +145,17 @@ Outputs: time-averaged strategies sigma_bar_1, sigma_bar_2
    c. Compute the win probability w_{-i}(b) under uniform tie-break.
    d. For each i, v in V_i, b in B, compute the counterfactual value
       cf_i(v, b) = P_i(v) (v - b) w_{-i}(b)
-      and the iteration-average value cf_i_avg(v) = sum_b sigma_i^t(b | v) cf_i(v, b).
-   e. R_i(v, b) <- R_i(v, b) + cf_i(v, b) - cf_i_avg(v).
+      and the strategy-mixture value cf_i_mix(v) = sum_b sigma_i^t(b | v) cf_i(v, b).
+   e. R_i(v, b) <- R_i(v, b) + cf_i(v, b) - cf_i_mix(v).
    f. S_i(v, b) <- S_i(v, b) + sigma_i^t(b | v).
 3. Return sigma_bar_i(b | v) = S_i(v, b) / sum_{b'} S_i(v, b').
 ```
 
-Exploitability of the average strategy is the deviation diagnostic. At each logged iteration the code computes the best-response payoff at every type and subtracts the average-strategy payoff. The expected gap, summed across bidders, is the exploitability.
+The exploitability $\varepsilon(\bar{\sigma})$ from the Equations section is the convergence diagnostic. It is logged at a logarithmic grid of iteration counts so the decay shows up cleanly on a log-log plot.
 
 ## Results
 
-The average strategies on the asymmetric game match the continuous BNE computed independently from the MMRS boundary-value problem. The weak bidder bids more aggressively per unit of value than in the symmetric game because the rival often holds a higher value and shading too much loses too many auctions. The strong bidder shades more deeply and tops out at a maximum bid of about 0.667, well below the weak-support upper bound at one. Both CFR bid functions track the BNE within bid-grid spacing across the full type range. The asymmetric game has no closed-form solution, but the BNE is pinned down by a coupled ODE system on the inverse bid functions.
+The average strategies on the asymmetric game match the continuous BNE computed independently from the MMRS boundary-value problem. The weak bidder bids more aggressively per unit of value than in the symmetric game because the rival often holds a higher value, so shading too much loses too many auctions. The strong bidder shades more deeply and tops out at a maximum bid of about 0.667, well below the weak-support upper bound at one. Both CFR bid functions track the BNE within bid-grid spacing across the full type range. The agreement between two independent computations is the convergence test that exploitability alone cannot give.
 
 <img src="figures/bid-functions-asymmetric.png" alt="Asymmetric bid functions: CFR average vs MMRS BNE" width="80%">
 

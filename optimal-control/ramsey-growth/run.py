@@ -403,9 +403,9 @@ Here $u(c)=c^{{1-\sigma}}/(1-\sigma)$ is the period utility function, so $u'(c)=
         "Acemoglu, D. (2009). *Introduction to Modern Economic Growth*. Princeton University Press, Ch. 8.",
         "Romer, D. (2019). *Advanced Macroeconomics*. McGraw-Hill, 5th edition, Ch. 2.",
         "**See also.** The same Ramsey model is solved by upwind HJB "
-        "finite differences in `optimal-control/hjb-growth/` and by "
+        "finite differences in [`optimal-control/hjb-growth/`](../../optimal-control/hjb-growth/) and by "
         "phase-plane eigenanalysis with backward integration in "
-        "`optimal-control/phase-diagrams/`.",
+        "[`optimal-control/phase-diagrams/`](../../optimal-control/phase-diagrams/).",
     ])
 
     report.write("README.md")

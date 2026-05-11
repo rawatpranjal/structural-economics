@@ -389,3 +389,4 @@ on $r$ closes the zero-net-supply bond market.
 - Huggett, M. (1993). "The risk-free rate in heterogeneous-agent incomplete-insurance economies." *Journal of Economic Dynamics and Control* 17(5-6), 953-969.
 - Achdou, Y., Han, J., Lasry, J.-M., Lions, P.-L., and Moll, B. (2022). "Income and Wealth Distribution in Macroeconomics: A Continuous-Time Approach." *Review of Economic Studies* 89(1), 45-86.
 - Moll, B. "Lecture notes on continuous-time heterogeneous-agent models." https://benjaminmoll.com/lectures/
+- **See also.** The continuous-time Aiyagari extension in [`heterogeneous-agents/aiyagari-hact/`](../../heterogeneous-agents/aiyagari-hact/) reuses the upwind HJB and KFE solver developed here, then adds production, mean-field game equilibrium, and a discrete-time benchmark.

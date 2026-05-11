@@ -650,7 +650,7 @@ the objective.
         "[Hotz, V. J. and Miller, R. A. (1993). Conditional Choice Probabilities and the Estimation of Dynamic Models. *Review of Economic Studies*, 60(3), 497-529.](https://doi.org/10.2307/2298122)",
         "**See also.** The same Rust replacement model is estimated by "
         "soft Q-learning and a Deep Q-Network in "
-        "`structural-econometrics/q-learning-bus-engine/`, recovering the "
+        "[`structural-econometrics/q-learning-bus-engine/`](../../structural-econometrics/q-learning-bus-engine/), recovering the "
         "identical fixed point without an explicit transition matrix.",
     ])
     report.write()
