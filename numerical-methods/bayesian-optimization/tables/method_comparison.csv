@@ -1,0 +1,6 @@
+Method,Setting,Estimated optimum,Profit,Function evaluations,Evaluations to global
+Bayesian optimization (EI),"5 initial + 25 EI steps, seed 0",4.2505,5.6250,30,12
+Bayesian optimization (UCB),"5 initial + 25 UCB steps, kappa 2.0, seed 0",4.2505,5.6250,30,13
+Multi-start L-BFGS-B,"50 starts, seed 2",4.2500,5.6250,312,5
+Random search,"500 draws, seed 1",4.2532,5.6250,500,140
+Simulated annealing,"max iterations 500, seed 3",4.2500,5.6250,1007,6

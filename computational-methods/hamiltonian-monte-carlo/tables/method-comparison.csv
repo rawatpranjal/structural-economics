@@ -1,0 +1,3 @@
+Method,Draws,Acceptance rate,Mean error x,Mean error y,ESS x,ESS y,Target evaluations,Gradient evaluations
+Random-walk MH,38000,0.671,0.097,0.340,203,201,40000.0,
+Hamiltonian Monte Carlo,3500,0.991,0.040,0.082,726,841,,103974.0

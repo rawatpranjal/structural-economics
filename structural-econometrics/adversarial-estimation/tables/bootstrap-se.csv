@@ -1,0 +1,4 @@
+Source,sd $\times \sqrt{n}$
+"Asymptotic (Theorem 3, paper)",2.449
+Monte Carlo across 200 replications,3.276
+Bootstrap with B=200,3.526

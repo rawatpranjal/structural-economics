@@ -692,6 +692,7 @@ The result is a stochastic global search that does not need a starting point ins
         "Tirole, J. (1988). *The Theory of Industrial Organization*. MIT Press, Ch. 3 on segmented markets.",
         "Xiang, Y., Sun, D. Y., Fan, W., and Gong, X. G. (1997). *Generalized simulated annealing algorithm and its application to the Thomson model*. Physics Letters A 233, 216-220.",
         "Bergstra, J. and Bengio, Y. (2012). *Random Search for Hyper-Parameter Optimization*. Journal of Machine Learning Research, 13, 281-305.",
+        "**See also.** The same two-segment monopoly profit is optimized by Bayesian optimization with a Gaussian-process surrogate in `numerical-methods/bayesian-optimization/`. Thirty evaluations there recover the global peak that multi-start and simulated annealing here spend hundreds to thousands of evaluations to certify, which is the sample-efficient alternative for expensive structural likelihoods.",
     ])
 
     report.write("README.md")

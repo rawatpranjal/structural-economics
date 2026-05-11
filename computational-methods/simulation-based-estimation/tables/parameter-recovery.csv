@@ -1,4 +1,4 @@
-Parameter,True,MSM estimate,MSM error,Indirect inference estimate,Indirect inference error
-Offer mean mu,3.0,3.00719,0.00719,3.01486,0.01486
-Offer sd sigma,0.45,0.44364,-0.00636,0.44714,-0.00286
-Reservation log wage,3.15,3.14907,-0.00093,3.15368,0.00368
+Parameter,True,MSM estimate,MSM error,Indirect inference estimate,Indirect inference error,ABC posterior mean,ABC error,ABC 5%,ABC 95%
+Offer mean mu,3.0,3.00719,0.00719,3.01486,0.01486,3.00758,0.00758,2.71967,3.30883
+Offer sd sigma,0.45,0.44364,-0.00636,0.44714,-0.00286,0.44533,-0.00467,0.40109,0.49045
+Reservation log wage,3.15,3.14907,-0.00093,3.15368,0.00368,3.14843,-0.00157,2.84949,3.44159

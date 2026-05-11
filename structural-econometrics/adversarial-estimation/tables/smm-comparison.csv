@@ -1,0 +1,8 @@
+Estimator,Moments d,Bias,sd $\times \sqrt{n}$,RMSE $\times \sqrt{n}$
+MLE (reference),-,0.0019,1.572,1.568
+SMM,3,-0.0018,2.402,2.396
+Adversarial logistic,3,-0.0021,2.222,2.217
+SMM,7,0.0035,13.728,13.694
+Adversarial logistic,7,-0.0045,3.276,3.269
+SMM,11,-0.0061,17.278,17.235
+Adversarial logistic,11,0.0187,6.434,6.426

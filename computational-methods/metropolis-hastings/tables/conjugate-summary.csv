@@ -1,0 +1,4 @@
+Quantity,Analytical,MH empirical,Absolute error
+Posterior mean,0.6667,0.6661,0.0005
+Posterior variance,0.00889,0.00901,0.00012
+Posterior P(theta > 0.5),0.9534,0.9517,0.0017

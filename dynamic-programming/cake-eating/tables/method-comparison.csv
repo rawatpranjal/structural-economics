@@ -1,0 +1,4 @@
+Method,Outer iterations,Final update,Sup-norm vs closed form,Wall time (s)
+Value function iteration,68,4.23e-07,2.52e-02,0.44
+Modified policy iteration,13,1.88e-12,2.52e-02,0.08
+Exact policy iteration,11,0.00e+00,2.52e-02,0.09

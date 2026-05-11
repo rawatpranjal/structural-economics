@@ -1,0 +1,7 @@
+Estimator,Bias,Monte Carlo sd $\times \sqrt{n}$,Asymptotic sd $\times \sqrt{n}$,RMSE $\times \sqrt{n}$
+MLE (reference),0.0019,1.572,1.732,1.568
+Oracle adversarial,-0.0032,2.173,2.449,2.168
+"Logistic disc., d=3",-0.0021,2.222,-,2.217
+"Logistic disc., d=7",-0.0045,3.276,-,3.269
+"Logistic disc., d=11",0.0187,6.434,-,6.426
+Neural net disc.,-0.004,2.562,2.449,2.541
