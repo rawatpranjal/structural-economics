@@ -1,0 +1,15 @@
+Statistic,Value
+Interest rate r*,0.025359
+Wage w*,1.2775
+Aggregate capital K*,6.8203
+Output Y*,1.9960
+Capital-output ratio K/Y,3.4169
+Precautionary wedge 1/beta - 1 - r*,0.01631
+Mean wealth E[a],6.8178
+Wealth Gini,0.5146
+Mass within 0.02 of borrowing limit,0.0541
+"HACT MPC at borrowing limit, lowest income",1.2315
+HJB iterations at equilibrium,11
+HJB sup-norm change at equilibrium,3.91e-07
+Bisection iterations,11
+Relative capital-market gap,-3.544e-04
