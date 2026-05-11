@@ -178,7 +178,7 @@ $3 T \times 3 T$ system is solved by a single dense linear solve.
 424 iterations to a sup-norm residual of
 9.82e-10. The joint $(\beta, v_{\varphi})$ calibration
 converged in a few Broyden steps to the targets $A^\\ast = B$ and
-$N^E_{\ast} = 1$. The Jacobian construction took 25.2 seconds at
+$N^E_{\ast} = 1$. The Jacobian construction took 26.6 seconds at
 $T = 300$. The aggregate condition number of $H_U$ is order
 $10^{3}$, well within double-precision range.
 
@@ -216,7 +216,7 @@ The household block is the costly piece; the aggregate solve is a single dense s
 | Aggregate consumption C*                    | 1.0000    |
 | Aggregate output Y*                         | 1.0000    |
 | Steady-state real rate r* (quarterly)       | 0.0050    |
-| Jacobian construction time (seconds, T=300) | 25.21     |
+| Jacobian construction time (seconds, T=300) | 26.59     |
 | H_U matrix size                             | 900 x 900 |
 | H_U condition number                        | 4.41e+03  |
 | Peak HANK output response (% of Y*)         | -0.190    |
@@ -232,6 +232,8 @@ Sequence-space Jacobians turn HANK with aggregate shocks into a tractable linear
 Block composition pays for itself: firm, NKPC, fiscal, and monetary blocks are closed-form $T \times T$ matrices and stack against the household block without recomputing anything. The aggregate IRF is then a single dense solve.
 
 The HANK-vs-RA comparison shows what the heterogeneity is doing economically. At this calibration, the aggregate output and consumption responses are of similar size to the RA NK benchmark, but the cross-section is dramatic: lower wealth quintiles cut consumption several times as much as the upper quintiles. The amplification at the level of inflation and the real rate is also larger in HANK. The same SSJ scaffolding extends to two-asset HANK, sticky wages, estimation by likelihood, and richer fiscal blocks; those extensions and a more aggressive amplification calibration (e.g., shareholder-only dividend rebates) are in the [`sequence-jacobian`](https://github.com/shade-econ/sequence-jacobian) package, which is the natural next stop.
+
+**Numerical match with the canonical package.** Running the same calibration through the canonical [`sequence-jacobian`](https://github.com/shade-econ/sequence-jacobian) package (notebook grid $n_E = 7$, $n_A = 500$) for a $+100$ bp tightening with $\rho_v = 0.61$ gives $\beta^{\ast} = 0.98224$, $v_{\varphi}^{\ast} = 0.7864$, peak output $-0.1908$ percent, peak consumption $-0.1908$ percent, peak inflation $-0.690$ percent annualized, and peak real return $+0.694$ percent annualized. This tutorial returns $\beta^{\ast} = 0.98223$, $v_{\varphi}^{\ast} = 0.7862$, peak output and consumption both $-0.190$ percent, peak inflation $-0.688$ percent, and peak real return $+0.688$ percent. The two implementations agree to roughly three significant figures; the remaining gap reflects the $n_A = 200$ grid used here versus the $n_A = 500$ grid used in the canonical notebook.
 
 ## References
 

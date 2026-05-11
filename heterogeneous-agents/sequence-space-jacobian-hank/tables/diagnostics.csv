@@ -9,7 +9,7 @@ Aggregate effective labor NE,1.0000
 Aggregate consumption C*,1.0000
 Aggregate output Y*,1.0000
 Steady-state real rate r* (quarterly),0.0050
-"Jacobian construction time (seconds, T=300)",25.21
+"Jacobian construction time (seconds, T=300)",26.59
 H_U matrix size,900 x 900
 H_U condition number,4.41e+03
 Peak HANK output response (% of Y*),-0.190

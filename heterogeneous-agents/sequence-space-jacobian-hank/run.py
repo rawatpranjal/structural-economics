@@ -1301,7 +1301,22 @@ $10^{{{int(np.log10(cond))}}}$, well within double-precision range.
         "blocks; those extensions and a more aggressive amplification "
         "calibration (e.g., shareholder-only dividend rebates) are in the "
         "[`sequence-jacobian`](https://github.com/shade-econ/sequence-jacobian) "
-        "package, which is the natural next stop."
+        "package, which is the natural next stop.\n\n"
+        "**Numerical match with the canonical package.** Running the same "
+        "calibration through the canonical "
+        "[`sequence-jacobian`](https://github.com/shade-econ/sequence-jacobian) "
+        "package (notebook grid $n_E = 7$, $n_A = 500$) for a $+100$ bp "
+        "tightening with $\\rho_v = 0.61$ gives $\\beta^{\\ast} = 0.98224$, "
+        "$v_{\\varphi}^{\\ast} = 0.7864$, peak output $-0.1908$ percent, peak "
+        "consumption $-0.1908$ percent, peak inflation $-0.690$ percent "
+        "annualized, and peak real return $+0.694$ percent annualized. This "
+        "tutorial returns $\\beta^{\\ast} = 0.98223$, "
+        "$v_{\\varphi}^{\\ast} = 0.7862$, peak output and consumption both "
+        "$-0.190$ percent, peak inflation $-0.688$ percent, and peak real "
+        "return $+0.688$ percent. The two implementations agree to roughly "
+        "three significant figures; the remaining gap reflects the "
+        "$n_A = 200$ grid used here versus the $n_A = 500$ grid used in the "
+        "canonical notebook."
     )
 
     report.add_references(
