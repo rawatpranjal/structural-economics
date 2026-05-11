@@ -12,9 +12,10 @@ This repo was sourced from ideas and contributions of PhD colleagues [Shahzoor S
 - [Macroeconomics](#macroeconomics)
 - [Industrial Organization](#industrial-organization)
 - [Structural Econometrics](#structural-econometrics)
+- [Bayesian Methods](#bayesian-methods)
 - [Choice and Demand](#choice-and-demand)
 - [Computational Game Theory](#computational-game-theory)
-- [Time Series and Filtering Methods](#time-series-and-filtering-methods)
+- [Time Series](#time-series)
 - [Agent-Based Models](#agent-based-models)
 - [Selected External Resources](#selected-external-resources)
 
@@ -39,7 +40,6 @@ Here we cover common tools the rest of the repo uses. This covers solving `f(x) 
 | [<img src="numerical-methods/constrained-optimization-kkt/figures/thumb.png" width="160">](numerical-methods/constrained-optimization-kkt/figures/simplex-paths.png) | **[Constrained Optimization and KKT Conditions](numerical-methods/constrained-optimization-kkt/)** | Allocate a fixed budget across three projects with diminishing returns. We compare projected gradient, log barrier, and SLSQP. |
 | [<img src="numerical-methods/fixed-point-acceleration/figures/thumb.png" width="160">](numerical-methods/fixed-point-acceleration/figures/share-fit.png) | **[Fixed-Point Iteration and Acceleration](numerical-methods/fixed-point-acceleration/)** | Recover product mean utilities from observed plain-logit shares using fixed point solvers. Picard, damped Picard, and Anderson acceleration are compared against the closed-form solution. |
 | [<img src="numerical-methods/global-search-multistart/figures/thumb.png" width="160">](numerical-methods/global-search-multistart/figures/profit-surface.png) | **[Global Search and Multi-Start Diagnostics](numerical-methods/global-search-multistart/)** | Optimize a two-segment monopoly profit with one local and one global optima. Multi-start, random search, and simulated annealing are able to recover the global optima. |
-| [<img src="numerical-methods/bayesian-optimization/figures/thumb.png" width="160">](numerical-methods/bayesian-optimization/figures/bo-iterations.png) | **[Bayesian Optimization with a Gaussian-Process Surrogate](numerical-methods/bayesian-optimization/)** | Optimize the same two-segment monopoly profit with a Gaussian-process surrogate and Expected Improvement. Thirty evaluations recover the global peak that multi-start and simulated annealing spend hundreds to thousands of evaluations to certify. |
 
 ## Dynamic Programming
 
@@ -148,9 +148,20 @@ Structural econometrics focuses on estimating economic primitives from observed 
 | [<img src="choice/mixed-logit-simulation/figures/thumb.png" width="160">](choice/mixed-logit-simulation/figures/choice-fit.png) | **[Mixed Logit Demand with Simulated Likelihood](choice/mixed-logit-simulation/)** | Consumers differ in price sensitivity and quality tastes. Fixed simulation draws approximate mixed-logit probabilities and break IIA. |
 | [<img src="structural-econometrics/rum-choice-networks/figures/thumb.png" width="160">](structural-econometrics/rum-choice-networks/figures/choice-fit.png) | **[Choice Prediction with RUMnets](structural-econometrics/rum-choice-networks/)** | Estimate product choices with a neural random-utility model. Fixed latent draws give RUMnet probabilities while preserving utility maximization. |
 | [<img src="choice/sequential-search-ursu/figures/thumb.png" width="160">](choice/sequential-search-ursu/figures/search-and-choice-fit.png) | **[Consumer Search with Sequential Inspection Costs](choice/sequential-search-ursu/)** | Consumers inspect products one at a time before buying. A Weitzman-style search rule and simulated moments recover search costs from search paths and purchases. |
-| [<img src="computational-methods/metropolis-hastings/figures/thumb.png" width="160">](computational-methods/metropolis-hastings/figures/conjugate-posterior.png) | **[Posterior Sampling: Conjugate Bayes and Metropolis-Hastings](computational-methods/metropolis-hastings/)** | Start with the Beta-Binomial conjugate model, where the posterior is closed-form Beta. Then run random-walk Metropolis-Hastings on a two-regime mixture posterior and use the conjugate model as the sanity check the chain has to pass. |
-| [<img src="computational-methods/hamiltonian-monte-carlo/figures/thumb.png" width="160">](computational-methods/hamiltonian-monte-carlo/figures/posterior-coverage.png) | **[Hamiltonian Monte Carlo on a Banana Posterior](computational-methods/hamiltonian-monte-carlo/)** | Replace the random-walk proposal with leapfrog Hamiltonian dynamics. On a curved banana ridge HMC achieves an order of magnitude better effective sample size per gradient evaluation than random-walk Metropolis-Hastings. |
 | [<img src="spatial-economics/allen-arkolakis/figures/thumb.png" width="160">](spatial-economics/allen-arkolakis/figures/equilibrium-wages-population.png) | **[Allen-Arkolakis Spatial Equilibrium on a Grid](spatial-economics/allen-arkolakis/)** | Solve a many-location spatial model with trade costs, labor mobility, and agglomeration. A two-equation fixed point delivers wages and population. |
+
+## Bayesian Methods
+
+These tutorials teach Bayesian inference as the researcher's tool. Each one places a probabilistic prior on an unknown object (a parameter, a regression coefficient, a hidden state, or an unknown function) and updates it with observed data to do inference, sampling, optimization, or forecasting. They are ordered from canonical closed-form examples to general-purpose Monte Carlo machinery to the most abstract function-space case.
+
+| Preview | Tutorial | Description |
+|---|---|---|
+| [<img src="computational-methods/metropolis-hastings/figures/thumb.png" width="160">](computational-methods/metropolis-hastings/figures/conjugate-posterior.png) | **[Posterior Sampling: Conjugate Bayes and Metropolis-Hastings](computational-methods/metropolis-hastings/)** | Start with the Beta-Binomial conjugate model, where the posterior is closed-form Beta. Then run random-walk Metropolis-Hastings on a two-regime mixture posterior and use the conjugate model as the sanity check the chain has to pass. |
+| [<img src="time-series/minnesota-svar/figures/thumb.png" width="160">](time-series/minnesota-svar/figures/policy-shock-irfs.png) | **[Monetary Policy SVARs with Minnesota Priors](time-series/minnesota-svar/)** | Estimate a small monetary-policy VAR with OLS and Minnesota-prior shrinkage. A recursive SVAR identifies a policy-rate shock and compares stable forecasts and impulse responses. |
+| [<img src="computational-methods/kalman-filter/figures/thumb.png" width="160">](computational-methods/kalman-filter/figures/simulated-signal.png) | **[Nowcasting a Latent Business-Cycle State by Kalman Filtering](computational-methods/kalman-filter/)** | Nowcast hidden activity from a noisy indicator. The Kalman filter weighs each signal with model-implied uncertainty and records the likelihood. |
+| [<img src="computational-methods/particle-filter/figures/thumb.png" width="160">](computational-methods/particle-filter/figures/filter-comparison.png) | **[Nowcasting Hidden Economic States by Particle Filtering](computational-methods/particle-filter/)** | Nowcast a hidden economic state from a noisy signal. Particle filters approximate the filtered distribution with weighted simulations, and ESS reveals proposal failure. |
+| [<img src="computational-methods/hamiltonian-monte-carlo/figures/thumb.png" width="160">](computational-methods/hamiltonian-monte-carlo/figures/posterior-coverage.png) | **[Hamiltonian Monte Carlo on a Banana Posterior](computational-methods/hamiltonian-monte-carlo/)** | Replace the random-walk proposal with leapfrog Hamiltonian dynamics. On a curved banana ridge HMC achieves an order of magnitude better effective sample size per gradient evaluation than random-walk Metropolis-Hastings. |
+| [<img src="numerical-methods/bayesian-optimization/figures/thumb.png" width="160">](numerical-methods/bayesian-optimization/figures/bo-iterations.png) | **[Bayesian Optimization with a Gaussian-Process Surrogate](numerical-methods/bayesian-optimization/)** | Optimize the same two-segment monopoly profit with a Gaussian-process surrogate and Expected Improvement. Thirty evaluations recover the global peak that multi-start and simulated annealing spend hundreds to thousands of evaluations to certify. |
 
 ## Choice and Demand
 
@@ -184,9 +195,9 @@ These tutorials introduce computational methods to solve game theoretic equilibr
 | [<img src="game-theory/deep-optimal-auctions/figures/thumb.png" width="160">](game-theory/deep-optimal-auctions/figures/learned-mechanism.png) | **[Deep Learning for Optimal Auction Design](game-theory/deep-optimal-auctions/)** | Learn a two-bidder auction as a neural mechanism. Revenue is trained with a regret penalty and audited against Myerson's reserve-price benchmark. |
 | [<img src="game-theory/quantal-response-equilibrium/figures/thumb.png" width="160">](game-theory/quantal-response-equilibrium/figures/qre-path.png) | **[Market Entry with Quantal Response Equilibrium](game-theory/quantal-response-equilibrium/)** | Two firms decide whether to enter a small market. Logit QRE solves the noisy entry probability as a fixed point. |
 
-## Time Series and Filtering Methods
+## Time Series
 
-These tutorials cover stochastic processes, macroeconomic data, forecasting, and state-space filtering.
+These tutorials cover stochastic processes, macroeconomic data, and forecasting.
 
 | Preview | Tutorial | Description |
 |---|---|---|
@@ -194,9 +205,6 @@ These tutorials cover stochastic processes, macroeconomic data, forecasting, and
 | [<img src="time-series/ar-processes/figures/thumb.png" width="160">](time-series/ar-processes/figures/ar1-irfs.png) | **[Fiscal-Shock Persistence and Income Dynamics](time-series/ar-processes/)** | Track a spending innovation through income dynamics. AR(1) impulse responses and multiplier-accelerator recursions show how persistence becomes an income path. |
 | [<img src="time-series/stock-watson/figures/thumb.png" width="160">](time-series/stock-watson/figures/factor-comparison.png) | **[Macro Forecasting with Stock-Watson Diffusion Indexes](time-series/stock-watson/)** | Forecast industrial production from many macro indicators. PCA estimates a common business-cycle factor for an expanding-window AR comparison. |
 | [<img src="time-series/ridge-lasso-sparsity/figures/thumb.png" width="160">](time-series/ridge-lasso-sparsity/figures/forecast-comparison.png) | **[Policy Forecasting with Ridge, Lasso, and Sparsity](time-series/ridge-lasso-sparsity/)** | Measure monetary policy shocks by first forecasting rate changes from many noisy indicators. Ridge and lasso give different meanings of shrinkage and selection. |
-| [<img src="time-series/minnesota-svar/figures/thumb.png" width="160">](time-series/minnesota-svar/figures/policy-shock-irfs.png) | **[Monetary Policy SVARs with Minnesota Priors](time-series/minnesota-svar/)** | Estimate a small monetary-policy VAR with OLS and Minnesota-prior shrinkage. A recursive SVAR identifies a policy-rate shock and compares stable forecasts and impulse responses. |
-| [<img src="computational-methods/kalman-filter/figures/thumb.png" width="160">](computational-methods/kalman-filter/figures/simulated-signal.png) | **[Nowcasting a Latent Business-Cycle State by Kalman Filtering](computational-methods/kalman-filter/)** | Nowcast hidden activity from a noisy indicator. The Kalman filter weighs each signal with model-implied uncertainty and records the likelihood. |
-| [<img src="computational-methods/particle-filter/figures/thumb.png" width="160">](computational-methods/particle-filter/figures/filter-comparison.png) | **[Nowcasting Hidden Economic States by Particle Filtering](computational-methods/particle-filter/)** | Nowcast a hidden economic state from a noisy signal. Particle filters approximate the filtered distribution with weighted simulations, and ESS reveals proposal failure. |
 
 ## Agent-Based Models
 
