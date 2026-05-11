@@ -313,7 +313,6 @@ def main() -> None:
         "Bayesian optimization is a sample-efficient alternative for that regime. "
         "It places a probabilistic prior on the unknown objective and updates that prior to a posterior conditional on the evaluations collected so far. "
         "It then chooses the next evaluation by maximizing an acquisition function that trades off exploration of uncertain regions against exploitation of high-mean regions. "
-        "The same Bayesian update machinery powers the conjugate Beta-Binomial example in [`computational-methods/metropolis-hastings/`](../../computational-methods/metropolis-hastings/); here it acts on an unknown function rather than a scalar probability. "
         "On problems with a few tens of dimensions and expensive black-box evaluations, this loop typically finds the global optimum in tens of evaluations rather than thousands.\n\n"
         "Bayesian optimization is the gradient-free member of a family. "
         "When the objective is differentiable and the goal is to sample its posterior rather than maximize it, Hamiltonian Monte Carlo in [`computational-methods/hamiltonian-monte-carlo/`](../../computational-methods/hamiltonian-monte-carlo/) is the gradient-based analogue. "
@@ -385,6 +384,8 @@ z = \frac{\mu(x) - f^{\ast} - \xi}{\sigma(x)},$$
 
 valid whenever $\sigma(x) > 0$.
 Here $\Phi$ and $\phi$ denote the cumulative distribution function and probability density function of the standard normal distribution $\mathcal{N}(0, 1)$.
+
+**Worked example.** Suppose after a handful of evaluations the GP at a candidate $x$ has posterior mean $\mu(x) = 5.2$ and standard deviation $\sigma(x) = 0.5$, and the best observation so far is $f^{\ast} = 4.5$. With $\xi = 0$, the standardized improvement is $z = (5.2 - 4.5)/0.5 = 1.4$. The closed form gives $\mathrm{EI}(x) = 0.7 \cdot \Phi(1.4) + 0.5 \cdot \phi(1.4) \approx 0.7 \cdot 0.919 + 0.5 \cdot 0.150 \approx 0.72$. The exploitation term dominates because the posterior mean already sits well above $f^{\ast}$; the candidate is mostly an exploit pick.
 The split into exploitation plus exploration is why Expected Improvement works without a hand-tuned trade-off.
 The first term is large where the posterior mean already exceeds the best observation, so it pulls the search toward known promising regions.
 The second term is large where the posterior standard deviation is high, which only happens away from evaluated points, so it pulls the search toward unexplored regions.

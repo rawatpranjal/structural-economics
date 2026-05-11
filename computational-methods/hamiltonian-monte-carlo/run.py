@@ -435,6 +435,8 @@ $$
 r_{{t + 1}} = r_{{t + \tfrac{{1}}{{2}}}} - \underbrace{{\tfrac{{\varepsilon}}{{2}}\, \nabla U(\theta_{{t + 1}})}}_{{\text{{half kick from the force at the new position}}}}.
 $$
 
+**Worked example.** Start at $\theta_t = (0, 0)$ with momentum $r_t = (0.3, 0.2)$ and step size $\varepsilon = 0.1$ on the banana with $\sigma_x = 2$, $\alpha = 0.5$, $\sigma_y = 1$. At the origin the residual is $\theta_2 - \alpha(\theta_1^2 - \sigma_x^2) = 0 - 0.5 \cdot (0 - 4) = 2$, so $\nabla U(\theta_t) = (0, 2)$. The half-kick gives $r_{{t + 1/2}} = (0.3, 0.2) - 0.05 \cdot (0, 2) = (0.3, 0.1)$. The drift gives $\theta_{{t+1}} = (0, 0) + 0.1 \cdot (0.3, 0.1) = (0.03, 0.01)$. The closing half-kick uses $\nabla U$ at the new position to update $r$ once more. Three operations, no nonlinear solve, and the position has moved while the energy has barely changed.
+
 The half-kick / drift / half-kick split is the design choice that makes the integrator work.
 A naive Euler scheme would update momentum and position with the same force evaluation, breaking time reversibility and letting energy drift linearly in $\varepsilon$.
 The symmetric split makes one leapfrog step invariant under the time reversal $(\theta, r) \mapsto (\theta, -r)$ followed by stepping with $-\varepsilon$, which is what buys both volume preservation and the $\mathcal{{O}}(\varepsilon^2)$ energy drift.
