@@ -313,12 +313,12 @@ def main() -> None:
         "Bayesian optimization is a sample-efficient alternative for that regime. "
         "It places a probabilistic prior on the unknown objective and updates that prior to a posterior conditional on the evaluations collected so far. "
         "It then chooses the next evaluation by maximizing an acquisition function that trades off exploration of uncertain regions against exploitation of high-mean regions. "
-        "The same Bayesian update machinery powers the conjugate Beta-Binomial example in `computational-methods/metropolis-hastings/`; here it acts on an unknown function rather than a scalar probability. "
+        "The same Bayesian update machinery powers the conjugate Beta-Binomial example in [`computational-methods/metropolis-hastings/`](../../computational-methods/metropolis-hastings/); here it acts on an unknown function rather than a scalar probability. "
         "On problems with a few tens of dimensions and expensive black-box evaluations, this loop typically finds the global optimum in tens of evaluations rather than thousands.\n\n"
         "Bayesian optimization is the gradient-free member of a family. "
-        "When the objective is differentiable and the goal is to sample its posterior rather than maximize it, Hamiltonian Monte Carlo in `computational-methods/hamiltonian-monte-carlo/` is the gradient-based analogue. "
+        "When the objective is differentiable and the goal is to sample its posterior rather than maximize it, Hamiltonian Monte Carlo in [`computational-methods/hamiltonian-monte-carlo/`](../../computational-methods/hamiltonian-monte-carlo/) is the gradient-based analogue. "
         "Both methods share the same motivation, sample efficiency under expensive evaluations, and the same probabilistic framing, but they apply at opposite ends of the gradient-availability spectrum.\n\n"
-        "The objective here is the same two-segment monopoly profit used in `numerical-methods/global-search-multistart/`. "
+        "The objective here is the same two-segment monopoly profit used in [`numerical-methods/global-search-multistart/`](../../numerical-methods/global-search-multistart/). "
         "It is cheap to evaluate, which makes it a poor production target for Bayesian optimization. "
         "It is a good teaching target. "
         "The two local peaks are well separated, the global is known analytically, and the head-to-head budget is directly comparable to multi-start, random search, and simulated annealing on the same problem."
@@ -342,7 +342,7 @@ On the calibration used here, $p_L^{\ast} \approx 1.603$ with $\pi \approx 4.14$
 
 Bayesian optimization treats $\pi$ as an unknown function on a bracket $\mathcal{X} = [p_{\mathrm{lo}}, p_{\mathrm{hi}}]$.
 It places a probabilistic prior on $\pi$, updates that prior to a posterior conditional on the evaluations collected so far, and selects the next evaluation by maximizing an acquisition function on the posterior.
-This is the same Bayesian update that produces a Beta posterior from a Beta-Binomial conjugate model in `computational-methods/metropolis-hastings/`; here the prior is over an unknown function rather than a scalar probability, and conjugacy is replaced by the closed form for conditioning a joint Gaussian.
+This is the same Bayesian update that produces a Beta posterior from a Beta-Binomial conjugate model in [`computational-methods/metropolis-hastings/`](../../computational-methods/metropolis-hastings/); here the prior is over an unknown function rather than a scalar probability, and conjugacy is replaced by the closed form for conditioning a joint Gaussian.
 
 ### Method 1: Gaussian-process surrogate
 
@@ -499,7 +499,7 @@ The Bayesian-optimization loop alternates between fitting the GP and maximizing 
     ax1.set_title("Two-segment monopoly profit and its two local peaks")
     ax1.legend(loc="upper right", fontsize=9)
     report.add_results(
-        f"The profit surface is reproduced from `numerical-methods/global-search-multistart/`. "
+        f"The profit surface is reproduced from [`numerical-methods/global-search-multistart/`](../../numerical-methods/global-search-multistart/). "
         f"It has a local peak at $p_L^{{\\ast}} = {p_low_peak:.3f}$ with profit $\\pi = {profit_low_peak:.3f}$. "
         f"Above the kink at $p_L^{{\\max}} = {p_kink:.2f}$ only the high-valuation segment is active. "
         f"The high-only regime has its own peak at $p_H^{{\\ast}} = {p_high_peak:.2f}$ with profit $\\pi = {profit_high_peak:.3f}$, which is the global maximum on this calibration."
@@ -572,7 +572,7 @@ The Bayesian-optimization loop alternates between fitting the GP and maximizing 
     ax3.legend(loc="lower right", fontsize=8)
     fig3.tight_layout()
     report.add_results(
-        f"The convergence plot is the head-to-head against the same three baselines as `numerical-methods/global-search-multistart/`. "
+        f"The convergence plot is the head-to-head against the same three baselines as [`numerical-methods/global-search-multistart/`](../../numerical-methods/global-search-multistart/). "
         f"Bayesian optimization with Expected Improvement finds the global at evaluation {eval_to_global_ei} and converges sharply within its budget of {n_total} evaluations. "
         f"The baselines also recover the global on this seed, but they spend much larger budgets to do so. "
         f"Random search needs {eval_to_global_rs} draws before luck delivers an above-global point, and runs through all {n_random} draws because it has no stopping rule. "
@@ -673,7 +673,7 @@ The Bayesian-optimization loop alternates between fitting the GP and maximizing 
         "Beyond about twenty dimensions the curse of dimensionality erodes the sample-efficiency gain, and the right tool is usually a structured surrogate or a trust-region method.\n\n"
         "The Bayesian framing of the surrogate matters. "
         "Each acquisition decision is a tractable inference on the posterior of the unknown profit. "
-        "The same framing returns in `computational-methods/metropolis-hastings/` for posterior sampling of structural parameters, "
+        "The same framing returns in [`computational-methods/metropolis-hastings/`](../../computational-methods/metropolis-hastings/) for posterior sampling of structural parameters, "
         "and the natural use case for Bayesian optimization in structural work is the outer search over a small set of parameters whose likelihood is itself estimated by an expensive inner routine."
     )
 
@@ -684,7 +684,7 @@ The Bayesian-optimization loop alternates between fitting the GP and maximizing 
         "Srinivas, N., Krause, A., Kakade, S., and Seeger, M. (2010). *Gaussian Process Optimization in the Bandit Setting: No Regret and Experimental Design*. ICML.",
         "Frazier, P. I. (2018). *A Tutorial on Bayesian Optimization*. arXiv:1807.02811.",
         "Rasmussen, C. E. and Williams, C. K. I. (2006). *Gaussian Processes for Machine Learning*. MIT Press, Ch. 2 and 5.",
-        "**See also.** The same two-segment monopoly profit is optimized by single-start and multi-start L-BFGS-B, random search, Nelder-Mead, and simulated annealing in `numerical-methods/global-search-multistart/`. That tutorial documents the reporting discipline for global search; the present one documents a sample-efficient alternative for expensive evaluations. The Bayesian update behind the Gaussian-process posterior is the same one used in conjugate form in `computational-methods/metropolis-hastings/`, and the gradient-based sampling analogue for expensive *differentiable* posteriors is `computational-methods/hamiltonian-monte-carlo/`. Together the four tutorials cover the global-search, surrogate-optimization, posterior-sampling, and gradient-sampling corners of expensive-objective inference.",
+        "**See also.** The same two-segment monopoly profit is optimized by single-start and multi-start L-BFGS-B, random search, Nelder-Mead, and simulated annealing in [`numerical-methods/global-search-multistart/`](../../numerical-methods/global-search-multistart/). That tutorial documents the reporting discipline for global search; the present one documents a sample-efficient alternative for expensive evaluations. The Bayesian update behind the Gaussian-process posterior is the same one used in conjugate form in [`computational-methods/metropolis-hastings/`](../../computational-methods/metropolis-hastings/), and the gradient-based sampling analogue for expensive *differentiable* posteriors is [`computational-methods/hamiltonian-monte-carlo/`](../../computational-methods/hamiltonian-monte-carlo/). Together the four tutorials cover the global-search, surrogate-optimization, posterior-sampling, and gradient-sampling corners of expensive-objective inference.",
     ])
 
     report.write("README.md")

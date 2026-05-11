@@ -347,7 +347,7 @@ $$
 
 Written this way the posterior mean is a convex combination of the prior mean and the sample fraction, with weights summing to one.
 The prior weight $(\alpha + \beta)/(\alpha + \beta + n)$ shrinks toward zero as the sample size grows, so a Bayesian with a flat prior and a large dataset reports essentially the sample fraction.
-This is the same shrinkage logic that drives the Gaussian-process posterior in `numerical-methods/bayesian-optimization/`: in both models the posterior mean is a weighted average of a prior anchor and a data-driven estimate, weighted by their respective precisions.
+This is the same shrinkage logic that drives the Gaussian-process posterior in [`numerical-methods/bayesian-optimization/`](../../numerical-methods/bayesian-optimization/): in both models the posterior mean is a weighted average of a prior anchor and a data-driven estimate, weighted by their respective precisions.
 The posterior variance is
 
 $$
@@ -363,7 +363,7 @@ I_t(a, b) = \frac{{1}}{{B(a, b)}} \int_0^t u^{{a - 1}} (1 - u)^{{b - 1}}\, du.
 $$
 
 These three moments are computed in code without any Monte-Carlo simulation, which is what makes Method 1 the controlled sanity check for Method 2 below.
-The same Bayesian update machinery, in a different geometry, drives the Gaussian-process posterior in `numerical-methods/bayesian-optimization/`: there the prior is over an unknown function and conditioning a joint Gaussian replaces the Beta-Binomial conjugacy.
+The same Bayesian update machinery, in a different geometry, drives the Gaussian-process posterior in [`numerical-methods/bayesian-optimization/`](../../numerical-methods/bayesian-optimization/): there the prior is over an unknown function and conditioning a joint Gaussian replaces the Beta-Binomial conjugacy.
 
 On the calibration here ($\alpha = {ALPHA_PRIOR:.0f}$, $\beta = {BETA_PRIOR:.0f}$, $n = {N_TRIALS}$, $k = {K_SUCCESSES}$) the posterior is $\mathrm{{Beta}}({ALPHA_POST:.0f}, {BETA_POST:.0f})$ with mean ${POST_MEAN:.4f}$ and variance ${POST_VAR:.5f}$.
 
@@ -416,7 +416,7 @@ The acceptance ratio depends only on the kernel ratio, so the marginal likelihoo
 That is the load-bearing reason MH works without ever computing the partition function.
 The same algorithm applies to the conjugate model above with the bound $\theta \in (0, 1)$ enforced by rejecting proposals outside the unit interval; running it there is how we verify the sampler before applying it to the harder mixture target.
 
-For curved or strongly correlated posteriors the random walk mixes slowly and effective sample size per evaluation is small; the gradient-based proposal in `computational-methods/hamiltonian-monte-carlo/` is the fix when $\nabla \log \pi$ is available.
+For curved or strongly correlated posteriors the random walk mixes slowly and effective sample size per evaluation is small; the gradient-based proposal in [`computational-methods/hamiltonian-monte-carlo/`](../../computational-methods/hamiltonian-monte-carlo/) is the fix when $\nabla \log \pi$ is available.
 
 Retained draws from the chain approximate posterior averages of any integrable function $g : \Theta \to \mathbb{{R}}$:
 
@@ -699,8 +699,8 @@ On a finite run it is only as good as the chain's mixing, which on multimodal ta
         "They are what stand between a posterior average and a regime artifact, and they extend naturally to gradient-based samplers like Hamiltonian Monte Carlo for harder posteriors.\n\n"
         "Random-walk Metropolis-Hastings, Hamiltonian Monte Carlo, and Bayesian optimization are three corners of the same problem: doing inference when each evaluation of the posterior or likelihood is expensive. "
         "Random-walk MH is the gradient-free, posterior-sampling tool that this tutorial introduces. "
-        "Hamiltonian Monte Carlo in `computational-methods/hamiltonian-monte-carlo/` is the gradient-aware posterior-sampling alternative for curved or strongly correlated posteriors. "
-        "Bayesian optimization in `numerical-methods/bayesian-optimization/` is the gradient-free alternative when the goal is to *maximize* the posterior or any other expensive black-box objective rather than to sample it."
+        "Hamiltonian Monte Carlo in [`computational-methods/hamiltonian-monte-carlo/`](../../computational-methods/hamiltonian-monte-carlo/) is the gradient-aware posterior-sampling alternative for curved or strongly correlated posteriors. "
+        "Bayesian optimization in [`numerical-methods/bayesian-optimization/`](../../numerical-methods/bayesian-optimization/) is the gradient-free alternative when the goal is to *maximize* the posterior or any other expensive black-box objective rather than to sample it."
     )
 
     report.add_references(
@@ -710,7 +710,7 @@ On a finite run it is only as good as the chain's mixing, which on multimodal ta
             "[Hastings, W. K. (1970). Monte Carlo Sampling Methods Using Markov Chains and Their Applications. *Biometrika*, 57(1), 97-109.](https://doi.org/10.1093/biomet/57.1.97)",
             "[Chib, S. and Greenberg, E. (1995). Understanding the Metropolis-Hastings Algorithm. *The American Statistician*, 49(4), 327-335.](https://doi.org/10.1080/00031305.1995.10476177)",
             "Roberts, G. O., Gelman, A., and Gilks, W. R. (1997). *Weak Convergence and Optimal Scaling of Random Walk Metropolis Algorithms*. Annals of Applied Probability, 7, 110-120.",
-            "**See also.** Method 1 of this tutorial is the closed-form Bayesian baseline. Method 2 is the Markov-chain sampler. Hamiltonian Monte Carlo on a curved banana posterior is in `computational-methods/hamiltonian-monte-carlo/`, which repeats the Method 2 algorithm here as its random-walk baseline. Gaussian-process Bayesian optimization for expensive black-box maximization is in `numerical-methods/bayesian-optimization/`, which uses the same prior-times-likelihood-equals-posterior framework as Method 1 here but over an unknown function instead of a scalar probability.",
+            "**See also.** Method 1 of this tutorial is the closed-form Bayesian baseline. Method 2 is the Markov-chain sampler. Hamiltonian Monte Carlo on a curved banana posterior is in [`computational-methods/hamiltonian-monte-carlo/`](../../computational-methods/hamiltonian-monte-carlo/), which repeats the Method 2 algorithm here as its random-walk baseline. Gaussian-process Bayesian optimization for expensive black-box maximization is in [`numerical-methods/bayesian-optimization/`](../../numerical-methods/bayesian-optimization/), which uses the same prior-times-likelihood-equals-posterior framework as Method 1 here but over an unknown function instead of a scalar probability.",
         ]
     )
 

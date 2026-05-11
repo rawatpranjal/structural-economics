@@ -346,7 +346,7 @@ def main() -> None:
         "It follows the curvature of the log density because the trajectory uses the gradient. "
         "The acceptance rate stays high because the Hamiltonian is conserved. "
         "On hard posteriors like this banana, HMC reaches the same finite-chain error as random-walk MH with one or two orders of magnitude fewer effective evaluations.\n\n"
-        "HMC is the natural next step after the random-walk Metropolis-Hastings tutorial in `computational-methods/metropolis-hastings/`. "
+        "HMC is the natural next step after the random-walk Metropolis-Hastings tutorial in [`computational-methods/metropolis-hastings/`](../../computational-methods/metropolis-hastings/). "
         "It is also the right tool when a structural likelihood is differentiable and expensive: each gradient evaluation pays for itself many times over by amortizing the cost across the trajectory."
     )
 
@@ -460,7 +460,7 @@ Three things are doing work in this expression.
 The energy difference replaces the kernel ratio of Metropolis-Hastings because the augmented density is $\exp(-H)$ up to a constant, so the kernel ratio is $\exp(H_t - H^{{\star}})$.
 There is no Jacobian factor because leapfrog is volume-preserving, so the change-of-variables determinant from $(\theta_t, r)$ to $(\theta^{{\star}}, r^{{\star}})$ is exactly one.
 The proposal ratio that would normally appear is also one because the leapfrog map run forward and the same map run backward are inverses of each other, by time-reversibility.
-This rule satisfies detailed balance for the augmented target $\tilde\pi$ (the same detailed-balance derivation as in Method 2 of `computational-methods/metropolis-hastings/`, applied here to the augmented $(\theta, r)$ density).
+This rule satisfies detailed balance for the augmented target $\tilde\pi$ (the same detailed-balance derivation as in Method 2 of [`computational-methods/metropolis-hastings/`](../../computational-methods/metropolis-hastings/), applied here to the augmented $(\theta, r)$ density).
 If continuous-time dynamics were used the energy difference would be exactly zero and the acceptance rate would be one.
 The leapfrog discretization introduces an $\mathcal{{O}}(\varepsilon^2)$ error in $H$ and the Metropolis step rejects exactly when that error is large.
 
@@ -481,7 +481,7 @@ $$
 \alpha(\theta_t, \theta^{{\star}}) = \min\lbrace 1,\, \pi(\theta^{{\star}} \mid D) / \pi(\theta_t \mid D) \rbrace.
 $$
 
-This is identical to Method 2 of `computational-methods/metropolis-hastings/`; we repeat it here so the per-evaluation comparison against HMC is direct and uses the same banana target.
+This is identical to Method 2 of [`computational-methods/metropolis-hastings/`](../../computational-methods/metropolis-hastings/); we repeat it here so the per-evaluation comparison against HMC is direct and uses the same banana target.
 On a banana ridge, each random-walk step is approximately isotropic in $\theta$.
 The chain crosses the ridge in many small steps, autocorrelations decay slowly, and effective sample size per evaluation is small.
 HMC follows the ridge with one trajectory and pays $L$ gradient evaluations per iteration in return.
@@ -540,7 +540,7 @@ HMC follows the ridge with one trajectory and pays $L$ gradient evaluations per 
         "The number of steps $L$ controls trajectory length $L\\,\\varepsilon$; long trajectories explore aggressively but at higher cost and with a risk of trajectory U-turn, which is the motivation for the No-U-Turn Sampler that automates $L$.\n\n"
         "HMC fails on multimodal posteriors with isolated modes. "
         "Hamiltonian dynamics is local; it does not jump between separated basins of probability mass any more than a random walk does. "
-        "It also fails when the gradient is unavailable or unreliable, which is why HMC is the wrong tool for black-box objectives where Bayesian optimization (`numerical-methods/bayesian-optimization/`) wins instead.\n\n"
+        "It also fails when the gradient is unavailable or unreliable, which is why HMC is the wrong tool for black-box objectives where Bayesian optimization ([`numerical-methods/bayesian-optimization/`](../../numerical-methods/bayesian-optimization/)) wins instead.\n\n"
 
         "### Method 2: Random-walk Metropolis-Hastings (comparison)\n\n"
         "Random-walk MH is the comparison. "
@@ -556,7 +556,7 @@ HMC follows the ridge with one trajectory and pays $L$ gradient evaluations per 
         "  alpha = min(1, exp(log pi(theta_star) - log pi(theta_t)))\n"
         "  if uniform() < alpha: theta_{t+1} = theta_star else theta_{t+1} = theta_t\n"
         "```\n\n"
-        "The full algorithm is documented in `computational-methods/metropolis-hastings/`, which also pairs RW-MH with the closed-form Beta-Binomial conjugate model as the sanity check. "
+        "The full algorithm is documented in [`computational-methods/metropolis-hastings/`](../../computational-methods/metropolis-hastings/), which also pairs RW-MH with the closed-form Beta-Binomial conjugate model as the sanity check. "
         "Here the same sampler is run on a harder target so the gradient-aware HMC can dominate it directly."
     )
 
@@ -732,7 +732,7 @@ HMC follows the ridge with one trajectory and pays $L$ gradient evaluations per 
         "Production samplers like NUTS automate $L$ via no-U-turn termination and adapt $\\varepsilon$ via dual averaging during warm-up, but the underlying mechanics are the leapfrog and the Metropolis correction implemented here.\n\n"
         "HMC fails on multimodal posteriors with isolated modes. "
         "Hamiltonian dynamics is local: a leapfrog trajectory cannot tunnel through low-density regions any more than a random walk can. "
-        "On the two-regime mixture in `computational-methods/metropolis-hastings/` HMC would not solve the mode-crossing problem; tempered or parallel-tempered variants are needed instead.\n\n"
+        "On the two-regime mixture in [`computational-methods/metropolis-hastings/`](../../computational-methods/metropolis-hastings/) HMC would not solve the mode-crossing problem; tempered or parallel-tempered variants are needed instead.\n\n"
         "The pairing of expensive structural objectives and sample-efficient samplers is the broader theme. "
         "When the likelihood is differentiable, HMC is the right tool: gradient information is reused across the trajectory. "
         "When the likelihood is a black box without gradients, Bayesian optimization on a Gaussian-process surrogate is the right tool: function evaluations are reused through the surrogate model. "
@@ -745,7 +745,7 @@ HMC follows the ridge with one trajectory and pays $L$ gradient evaluations per 
         "[Hoffman, M. D. and Gelman, A. (2014). The No-U-Turn Sampler: Adaptively Setting Path Lengths in Hamiltonian Monte Carlo. *JMLR*, 15, 1593-1623.](https://jmlr.org/papers/v15/hoffman14a.html)",
         "Betancourt, M. (2017). *A Conceptual Introduction to Hamiltonian Monte Carlo*. arXiv:1701.02434.",
         "Gelman, A., Carlin, J. B., Stern, H. S., Dunson, D. B., Vehtari, A., and Rubin, D. B. (2013). *Bayesian Data Analysis*, 3rd edition. CRC Press, Ch. 12 on HMC.",
-        "**See also.** The random-walk Metropolis-Hastings baseline in Method 2 above is the same algorithm developed in Method 2 of `computational-methods/metropolis-hastings/`, which also runs the Beta-Binomial conjugate sanity check the sampler has to pass. When the log posterior is differentiable but evaluating it (and its gradient) is expensive, HMC is the right tool; when it is a black box without gradients and the goal is to maximize rather than sample, the Gaussian-process surrogate plus Expected Improvement in `numerical-methods/bayesian-optimization/` is the gradient-free analogue.",
+        "**See also.** The random-walk Metropolis-Hastings baseline in Method 2 above is the same algorithm developed in Method 2 of [`computational-methods/metropolis-hastings/`](../../computational-methods/metropolis-hastings/), which also runs the Beta-Binomial conjugate sanity check the sampler has to pass. When the log posterior is differentiable but evaluating it (and its gradient) is expensive, HMC is the right tool; when it is a black box without gradients and the goal is to maximize rather than sample, the Gaussian-process surrogate plus Expected Improvement in [`numerical-methods/bayesian-optimization/`](../../numerical-methods/bayesian-optimization/) is the gradient-free analogue.",
     ])
 
     report.write("README.md")
