@@ -365,7 +365,11 @@ $$
 These three moments are computed in code without any Monte-Carlo simulation, which is what makes Method 1 the controlled sanity check for Method 2 below.
 The same Bayesian update machinery, in a different geometry, drives the Gaussian-process posterior in [`numerical-methods/bayesian-optimization/`](../../numerical-methods/bayesian-optimization/): there the prior is over an unknown function and conditioning a joint Gaussian replaces the Beta-Binomial conjugacy.
 
-**Worked example.** To make the update concrete on a tiny dataset, take an uninformative prior $\alpha = \beta = 1$ (the uniform $\mathrm{{Beta}}(1, 1)$) and observe $k = 3$ successes in $n = 4$ trials. The posterior is $\mathrm{{Beta}}(1 + 3,\, 1 + 4 - 3) = \mathrm{{Beta}}(4, 2)$ with mean $4/6 = 0.667$. The prior mean is $1/2$ and the sample fraction is $3/4 = 0.75$; the posterior mean lies between them, leaning toward the sample fraction because the data weight $4/6$ dominates the prior weight $2/6$.
+#### Worked example
+
+To make the update concrete on a tiny dataset, take an uninformative prior $\alpha = \beta = 1$ (the uniform $\mathrm{{Beta}}(1, 1)$) and observe $k = 3$ successes in $n = 4$ trials.
+The posterior is $\mathrm{{Beta}}(1 + 3,\, 1 + 4 - 3) = \mathrm{{Beta}}(4, 2)$ with mean $4/6 = 0.667$.
+The prior mean is $1/2$ and the sample fraction is $3/4 = 0.75$; the posterior mean lies between them, leaning toward the sample fraction because the data weight $4/6$ dominates the prior weight $2/6$.
 
 On the calibration used in the rest of this tutorial ($\alpha = {ALPHA_PRIOR:.0f}$, $\beta = {BETA_PRIOR:.0f}$, $n = {N_TRIALS}$, $k = {K_SUCCESSES}$) the posterior is $\mathrm{{Beta}}({ALPHA_POST:.0f}, {BETA_POST:.0f})$ with mean ${POST_MEAN:.4f}$ and variance ${POST_VAR:.5f}$.
 
