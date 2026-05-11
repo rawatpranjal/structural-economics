@@ -6,7 +6,7 @@ Two bidders compete in a sealed-bid first-price auction with private values. The
 
 Counterfactual regret minimization is a learning algorithm that handles this case. Each bidder type is treated as an information set. The bidder accumulates regret for each candidate bid against the opponent's current strategy. The next strategy puts probability on bids in proportion to their positive cumulative regret. The time-averaged strategy converges to a Bayesian Nash equilibrium.
 
-The tutorial implements vanilla CFR and CFR+ on the asymmetric game. It checks both algorithms against the symmetric closed form by setting the two value distributions equal. It tracks exploitability of the average strategy on the asymmetric game as the no-deviation diagnostic, the same idea as the bid-grid deviation check in the existing first-price auction tutorial.
+The tutorial implements vanilla CFR on the asymmetric game and gives it two independent ground-truth checks. The symmetric closed form anchors the implementation when both value distributions are made equal. The continuous asymmetric BNE itself is recovered separately by solving the Marshall, Meurer, Richard, and Stromquist boundary-value problem on the inverse bid functions, and overlaid on the CFR result. Exploitability of the average strategy on the discretized game is the third diagnostic, the same no-deviation idea as the bid-grid deviation check in the existing first-price auction tutorial.
 
 ## Equations
 
@@ -58,23 +58,12 @@ $$
 \sigma_i^{T+1}(b \mid v) = \frac{\max(R_i^{T}(I_v, b), 0)}{\sum_{b'} \max(R_i^{T}(I_v, b'), 0)},
 $$
 
-with a uniform fallback when every cumulative regret is non-positive.
-
-CFR+ replaces the cumulative regret with a non-negative running sum. Negative
-contributions cannot accumulate:
+with a uniform fallback when every cumulative regret is non-positive. The output
+of the algorithm is the time-averaged strategy
 
 $$
-R_i^{+,T}(I_v, b) = \max(R_i^{+,T-1}(I_v, b) + r_i^{t}(I_v, b),\ 0).
+\bar{\sigma}_i^{T}(b \mid v) = \frac{1}{T} \sum_{t = 1}^{T} \sigma_i^{t}(b \mid v).
 $$
-
-CFR+ also alternates updates so that one player at a time refreshes its regret,
-and weighs each iteration's strategy by $t$ in the average:
-
-$$
-\bar{\sigma}_i^{T}(b \mid v) = \frac{\sum_{t = 1}^{T} t \cdot \sigma_i^{t}(b \mid v)}{\sum_{t = 1}^{T} t \cdot \sum_{b'} \sigma_i^{t}(b' \mid v)}.
-$$
-
-Vanilla CFR uses uniform averaging in place of the linear weight $t$.
 
 The exploitability of a strategy profile $\sigma$ is the sum across players of
 the most a single bidder could gain by switching to the best response:
@@ -89,6 +78,32 @@ Nash equilibrium of the discretized game. The best response in the maximization
 is computed by picking, at each type, the bid on $B$ with the highest expected
 payoff.
 
+The continuous-game BNE itself can be written down as an ODE system on the
+inverse bid functions $\phi_i(b)$, which give the type of bidder $i$ that bids
+$b$ in equilibrium. Differentiating the bidder's first-order condition and
+imposing equilibrium $v_i = \phi_i(b)$ yields the MMRS system
+
+$$
+\phi_i'(b) = \frac{F_i(\phi_i(b))}{f_i(\phi_i(b)) \cdot (\phi_j(b) - b)}, \quad j = 3 - i.
+$$
+
+For uniform value distributions on $[0, M_i]$, $F_i / f_i = v$ identically, so
+the system simplifies to $\phi_1'(b) = \phi_1 / (\phi_2 - b)$ and
+$\phi_2'(b) = \phi_2 / (\phi_1 - b)$. The boundary conditions are
+$\phi_1(0) = \phi_2(0) = 0$ and $\phi_1(\bar{b}) = 1$, $\phi_2(\bar{b}) = 2$,
+where the common upper bid $\bar{b}$ is an unknown that the boundary-value
+problem pins down. Near $b = 0$ the inverse functions admit the asymptotic
+
+$$
+\phi_1(b) = 2b - \alpha b^3 + O(b^5), \qquad \phi_2(b) = 2b + \alpha b^3 + O(b^5),
+$$
+
+where $\alpha$ is a free coefficient. Shooting forward from a small $b_0$ with
+this asymptotic initial condition and bisecting $\alpha$ on the constraint
+$\phi_2(\bar{b}) = 2$ produces $\alpha = 3/2$ and $\bar{b} = 2/3$ for our
+distributions. The continuous BNE bid function $b_i(v)$ is the inverse of
+$\phi_i(b)$.
+
 ## Model Setup
 
 | Object | Value | Role |
@@ -97,13 +112,13 @@ payoff.
 | Strong bidder values | $v_2 \sim U[0, 2]$ | Larger-support distribution |
 | Type grid | 21 nodes per bidder | Each type is one information set |
 | Bid grid | 41 nodes on $[0, 1]$ | Shared discrete action set |
-| Iterations | 5,000 | Same budget for vanilla CFR and CFR+ |
+| Iterations | 5,000 | Simultaneous regret updates |
 | Tie-break | Uniform | Splits ties evenly across bidders |
 | Symmetric check | $v_1, v_2 \sim U[0, 1]$ | Compares to $b^{\ast}(v) = v / 2$ |
 
 ## Solution Method
 
-Each bidder type is its own information set. The bidder runs regret matching locally at every type, accumulating regret for each candidate bid against the opponent's current strategy. The Hannan-consistent regret bound at each information set, together with the chance reach weighting, gives a global bound on the average regret of the time-averaged strategy. In two-player zero-sum games, that bound translates directly into exploitability, so the average strategy is an approximate Bayesian Nash equilibrium.
+Each bidder type is its own information set. The bidder runs regret matching locally at every type, accumulating regret for each candidate bid against the opponent's current strategy. Regret matching is Hannan-consistent at each information set, so the per-set average regret shrinks at rate of order one over the square root of iterations. The chance-reach weighting glues these per-set bounds into a global average regret bound on the time-averaged strategy. The tightest theoretical guarantee that the time-averaged strategy converges to a Nash equilibrium holds in two-player zero-sum games. The first-price auction is general-sum from the bidders' point of view, but CFR converges in practice on this game and on many other extensive-form Bayesian games beyond the zero-sum case. Exploitability of the average strategy is the diagnostic that confirms convergence on this run.
 
 Why regret matching works can be seen in a one-information-set toy. Suppose action $a$ always pays 2 and action $b$ always pays 1 against a fixed opponent. Starting from uniform play the average payoff is 1.5. Action $a$ accumulates regret 0.5 per iteration and action $b$ accumulates regret minus 0.5. After a few iterations the strategy puts all mass on $a$. The time-averaged strategy converges to the dominant action.
 
@@ -126,92 +141,86 @@ Outputs: time-averaged strategies sigma_bar_1, sigma_bar_2
 3. Return sigma_bar_i(b | v) = S_i(v, b) / sum_{b'} S_i(v, b').
 ```
 
-CFR+ changes three lines and converges much faster on this game.
-
-```text
-Algorithm: CFR+ (changes versus vanilla CFR)
-- Step 2e: R_i(v, b) <- max(R_i(v, b) + cf_i(v, b) - cf_i_avg(v), 0).
-- Step 2 alternates updates: refresh player 1, then refresh player 2 against
-  player 1's already updated regret. Each iteration still touches both players.
-- Step 2f: S_i(v, b) <- S_i(v, b) + t * sigma_i^t(b | v) (linear averaging).
-```
-
 Exploitability of the average strategy is the deviation diagnostic. At each logged iteration the code computes the best-response payoff at every type and subtracts the average-strategy payoff. The expected gap, summed across bidders, is the exploitability.
 
 ## Results
 
-The average strategies of CFR+ on the asymmetric game show the textbook asymmetry. The weak bidder bids more aggressively per unit of value than they would in the symmetric game with the same support. The weak bidder faces a rival who often holds a higher value, so shading too much loses too many auctions. The strong bidder shades more deeply for any given value because the weak rival rarely bids above the weak support upper bound. Strong-bidder bids stay below the weak-support upper bound at one. The asymmetric game has no closed-form solution but the bid functions are smooth and monotone.
+The average strategies on the asymmetric game match the continuous BNE computed independently from the MMRS boundary-value problem. The weak bidder bids more aggressively per unit of value than in the symmetric game because the rival often holds a higher value and shading too much loses too many auctions. The strong bidder shades more deeply and tops out at a maximum bid of about 0.667, well below the weak-support upper bound at one. Both CFR bid functions track the BNE within bid-grid spacing across the full type range. The asymmetric game has no closed-form solution, but the BNE is pinned down by a coupled ODE system on the inverse bid functions.
 
-<img src="figures/bid-functions-asymmetric.png" alt="Asymmetric bid functions from CFR+" width="80%">
+<img src="figures/bid-functions-asymmetric.png" alt="Asymmetric bid functions: CFR average vs MMRS BNE" width="80%">
 
-Exploitability of the average strategy falls steadily for both algorithms. Vanilla CFR drops at roughly the textbook rate of order one over the square root of iterations. CFR+ is about an order of magnitude smaller for a fixed iteration budget thanks to the regret floor, alternating updates, and linear weighting of the strategy average. Exploitability never reaches exactly zero because the bid grid is finite and the symmetric closed form is the true target only on a continuum, but the residual gap is small relative to expected revenue. Exploitability is the asymmetric analogue of the bid-grid deviation check used by the existing first-price auction tutorial.
+Exploitability of the average strategy falls steadily across iterations and tracks the textbook rate of order one over the square root of iterations on a log-log plot. Exploitability never reaches exactly zero because the bid grid is finite, but the residual gap is small relative to expected revenue. Exploitability is the asymmetric analogue of the bid-grid deviation check used by the existing first-price auction tutorial.
 
-<img src="figures/exploitability.png" alt="Exploitability decay for vanilla CFR and CFR+" width="80%">
+<img src="figures/exploitability.png" alt="Exploitability decay for vanilla CFR" width="80%">
 
-Setting both value distributions to uniform on the unit interval recovers a case where the analytic Bayesian Nash bid is half the value. Both CFR variants track the closed form to within bid-grid spacing. CFR+ tracks the closed form more tightly because it averages later iterations more heavily, when the strategy is closer to the equilibrium bid. The sanity check confirms that the implementation finds the right equilibrium on a case where the right answer is known.
+Setting both value distributions to uniform on the unit interval recovers a case where the analytic Bayesian Nash bid is half the value. The CFR average strategy tracks the closed form to within bid-grid spacing. The sanity check confirms that the implementation finds the right equilibrium on a case where the right answer is known.
 
 <img src="figures/bid-functions-symmetric.png" alt="Symmetric uniform sanity check" width="80%">
 
-The symmetric residual is the maximum gap between the CFR average bid and the closed-form rule when both bidders draw from the same uniform distribution. Asymmetric exploitability is the sum of best-response payoff gains at the average strategy on the asymmetric game.
+Symmetric residual benchmarks the CFR average against the $v / 2$ closed form when both bidders draw from $U[0, 1]$. Asymmetric residuals benchmark the CFR average against the BNE bid function obtained by solving the MMRS boundary-value problem with `scipy.integrate.solve_ivp` plus bisection on $\bar{b}$. Asymmetric exploitability is the sum of best-response payoff gains at the average strategy on the discretized asymmetric game.
 
-**Methods summary**
+**Run summary**
 
-| Method      |   Symmetric residual (max bid error) |   Asymmetric exploitability (final) | Iterations   |
-|:------------|-------------------------------------:|------------------------------------:|:-------------|
-| Vanilla CFR |                             0.009741 |                           0.0003624 | 5,000        |
-| CFR+        |                             0.008108 |                           5.573e-05 | 5,000        |
+| Quantity                                                           | Value     |
+|:-------------------------------------------------------------------|:----------|
+| Symmetric residual (max CFR bid error vs $v / 2$)                  | 9.741e-03 |
+| Asymmetric residual: weak bidder (max CFR bid error vs MMRS BNE)   | 2.768e-02 |
+| Asymmetric residual: strong bidder (max CFR bid error vs MMRS BNE) | 1.760e-02 |
+| MMRS upper bid $\bar{b}$                                           | 0.6667    |
+| Asymmetric exploitability (final iteration)                        | 3.624e-04 |
+| CFR iterations                                                     | 5,000     |
 
-Logarithmically spaced iteration checkpoints. Each row reports the exploitability of the time-averaged strategy under vanilla CFR and CFR+.
+Logarithmically spaced iteration checkpoints. Each row reports the exploitability of the time-averaged strategy at that iteration.
 
 **Exploitability decay on the asymmetric game**
 
-|   Iteration |   Vanilla CFR exploitability |   CFR+ exploitability |
-|------------:|-----------------------------:|----------------------:|
-|           1 |                    0.3465    |             0.3465    |
-|           2 |                    0.2286    |             0.1875    |
-|           3 |                    0.1809    |             0.1236    |
-|           4 |                    0.1505    |             0.09046   |
-|           5 |                    0.1291    |             0.07089   |
-|           6 |                    0.1133    |             0.05831   |
-|           7 |                    0.1011    |             0.04962   |
-|           9 |                    0.08366   |             0.03852   |
-|          11 |                    0.0718    |             0.03174   |
-|          14 |                    0.05955   |             0.02533   |
-|          17 |                    0.05098   |             0.02133   |
-|          21 |                    0.04301   |             0.01793   |
-|          26 |                    0.03614   |             0.01506   |
-|          33 |                    0.03      |             0.01243   |
-|          41 |                    0.02508   |             0.01007   |
-|          51 |                    0.02093   |             0.00817   |
-|          63 |                    0.01745   |             0.006664  |
-|          79 |                    0.01446   |             0.005375  |
-|          98 |                    0.01216   |             0.004377  |
-|         122 |                    0.01016   |             0.003589  |
-|         152 |                    0.008572  |             0.002911  |
-|         189 |                    0.007109  |             0.002485  |
-|         235 |                    0.005916  |             0.002065  |
-|         292 |                    0.00493   |             0.001692  |
-|         364 |                    0.004067  |             0.001323  |
-|         453 |                    0.003386  |             0.001066  |
-|         563 |                    0.002807  |             0.0008233 |
-|         700 |                    0.002282  |             0.0006412 |
-|         871 |                    0.001847  |             0.0005137 |
-|        1084 |                    0.001505  |             0.0003971 |
-|        1349 |                    0.001266  |             0.0003055 |
-|        1678 |                    0.001019  |             0.0002454 |
-|        2087 |                    0.0008371 |             0.0001853 |
-|        2597 |                    0.0006796 |             0.0001392 |
-|        3231 |                    0.0005538 |             9.982e-05 |
-|        4019 |                    0.0004489 |             7.473e-05 |
-|        5000 |                    0.0003624 |             5.573e-05 |
+|   Iteration |   Exploitability |
+|------------:|-----------------:|
+|           1 |        0.3465    |
+|           2 |        0.2286    |
+|           3 |        0.1809    |
+|           4 |        0.1505    |
+|           5 |        0.1291    |
+|           6 |        0.1133    |
+|           7 |        0.1011    |
+|           9 |        0.08366   |
+|          11 |        0.0718    |
+|          14 |        0.05955   |
+|          17 |        0.05098   |
+|          21 |        0.04301   |
+|          26 |        0.03614   |
+|          33 |        0.03      |
+|          41 |        0.02508   |
+|          51 |        0.02093   |
+|          63 |        0.01745   |
+|          79 |        0.01446   |
+|          98 |        0.01216   |
+|         122 |        0.01016   |
+|         152 |        0.008572  |
+|         189 |        0.007109  |
+|         235 |        0.005916  |
+|         292 |        0.00493   |
+|         364 |        0.004067  |
+|         453 |        0.003386  |
+|         563 |        0.002807  |
+|         700 |        0.002282  |
+|         871 |        0.001847  |
+|        1084 |        0.001505  |
+|        1349 |        0.001266  |
+|        1678 |        0.001019  |
+|        2087 |        0.0008371 |
+|        2597 |        0.0006796 |
+|        3231 |        0.0005538 |
+|        4019 |        0.0004489 |
+|        5000 |        0.0003624 |
 
 ## Takeaway
 
-Counterfactual regret minimization replaces the analytic Bayesian Nash calculation with a regret-matching loop on the discretized game. The algorithm applies whenever each player has its own information set, including auctions where the closed form is unavailable.
+Counterfactual regret minimization replaces the analytic Bayesian Nash calculation with a regret-matching loop on the discretized game. The algorithm applies whenever each player has its own information set, including auctions where no closed form is available.
 
-Exploitability is the no-deviation diagnostic that takes the place of the bid-grid deviation check used in the symmetric tutorial. CFR+ converges roughly an order of magnitude faster than vanilla CFR by clipping negative cumulative regret, alternating updates, and weighing later iterations more heavily in the strategy average.
+On this asymmetric auction the CFR average strategy lands within bid-grid spacing of the continuous BNE recovered from the MMRS boundary-value problem. Two independent computations agreeing on the same bid functions is the convergence test that the exploitability metric alone could not provide.
 
-The same algorithm, scaled up to large extensive-form games, is the engine behind modern poker AI.
+The same algorithm, scaled up to large extensive-form games with carefully tuned variants such as CFR+, is the engine behind modern poker AI.
 
 ## References
 
@@ -219,3 +228,4 @@ The same algorithm, scaled up to large extensive-form games, is the engine behin
 - [Tammelin, O., Burch, N., Johanson, M., and Bowling, M. (2015). Solving Heads-Up Limit Texas Hold'em. *IJCAI*, 645-652.](https://www.ijcai.org/Proceedings/15/Papers/097.pdf)
 - [Maskin, E. and Riley, J. (2000). Asymmetric Auctions. *Review of Economic Studies*, 67(3), 413-438.](https://doi.org/10.1111/1467-937X.00137)
 - [Krishna, V. (2009). *Auction Theory*, 2nd ed. Academic Press.](https://shop.elsevier.com/books/auction-theory/krishna/978-0-12-374507-1)
+- **See also.** The symmetric uniform first-price auction is solved by the closed-form bid rule and verified by a bid-grid deviation check in [`game-theory/first-price-auctions/`](../../game-theory/first-price-auctions/). That tutorial is the symmetric ground-truth anchor for this one.

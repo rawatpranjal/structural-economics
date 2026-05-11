@@ -1,3 +1,7 @@
-Method,Symmetric residual (max bid error),Asymmetric exploitability (final),Iterations
-Vanilla CFR,9.741e-03,3.624e-04,"5,000"
-CFR+,8.108e-03,5.573e-05,"5,000"
+Quantity,Value
+Symmetric residual (max CFR bid error vs $v / 2$),9.741e-03
+Asymmetric residual: weak bidder (max CFR bid error vs MMRS BNE),2.768e-02
+Asymmetric residual: strong bidder (max CFR bid error vs MMRS BNE),1.760e-02
+MMRS upper bid $\bar{b}$,0.6667
+Asymmetric exploitability (final iteration),3.624e-04
+CFR iterations,"5,000"
