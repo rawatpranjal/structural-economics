@@ -515,13 +515,15 @@ Write $m_{sim}(\theta) = m(S(\theta, \varepsilon_{sim}))$ for the same moments c
 
 $$
 \hat\theta_{MSM} = \arg\min_\theta\,
-\underbrace{
-[m_{sim}(\theta) - m_{obs}]^{\prime}\, W_m\,
-[m_{sim}(\theta) - m_{obs}]
-}_{Q_{MSM}(\theta)},
+\underbrace{[m_{sim}(\theta) - m_{obs}]^{\prime}}_{\text{moment gap, simulated vs observed}}\
+\underbrace{W_m}_{\text{scale matrix}}\
+\underbrace{[m_{sim}(\theta) - m_{obs}]}_{\text{moment gap}}
+\equiv Q_{MSM}(\theta),
 $$
 
 with the diagonal weight $W_m = \mathrm{diag}(1 / \max(|m_{obs}|, 0.1))^{2}$.
+The criterion is a weighted sum of squared moment gaps, so $W_m$ is what makes a 1% gap in the acceptance rate comparable to a 0.01 gap in the offer mean.
+Scaling each gap by the magnitude of the observed moment is the simplest such normalization; in production code one would replace it by the inverse of the moment covariance estimated by bootstrap.
 
 ### Method 2: Indirect Inference
 
@@ -554,10 +556,13 @@ $$
 For a tolerance $\varepsilon > 0$ the ABC posterior is
 
 $$
-\pi_\varepsilon(\theta \mid m_{obs}) \propto \pi(\theta)\, \Pr[\rho(\theta) \le \varepsilon].
+\pi_\varepsilon(\theta \mid m_{obs}) \propto \underbrace{\pi(\theta)}_{\text{prior}}\, \underbrace{\Pr[\rho(\theta) \le \varepsilon]}_{\text{ABC pseudo-likelihood}}.
 $$
 
-As $\varepsilon \to 0$ the posterior concentrates on $\arg\min_\theta \rho^2 = \hat\theta_{MSM}$, so ABC and MSM target the same point in the noise-free limit. ABC adds the spread.
+The pseudo-likelihood replaces the unknown true likelihood by the probability that a fresh simulation lands within $\varepsilon$ of the observed moments.
+That trade is the entire point of ABC: any model that can be simulated has a usable Bayesian update, even when its density is not available.
+As $\varepsilon \to 0$ the pseudo-likelihood concentrates on parameters whose simulator matches $m_{obs}$ exactly, so the posterior concentrates on $\arg\min_\theta \rho^2 = \hat\theta_{MSM}$ and ABC and MSM target the same point in the noise-free limit.
+ABC adds the spread around that point that MSM's point estimate alone cannot report.
 
 ABC-SMC approaches $\pi_0$ through a sequence $\varepsilon_0 > \varepsilon_1 > \cdots > \varepsilon_{T-1}$ of shrinking tolerances. Round $t$ maintains $N$ weighted particles $\lbrace (\theta_t^{(i)}, w_t^{(i)}) \rbrace_{i=1}^{N}$ that approximate $\pi_{\varepsilon_t}$. The schedule is adaptive: $\varepsilon_t$ is the $\alpha$-quantile of the distances at round $t-1$, with $\alpha = 0.5$.
 

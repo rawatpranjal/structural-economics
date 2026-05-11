@@ -670,7 +670,7 @@ The same shocks are reused at every candidate $\theta$. This is the standard com
 The estimator is the min-max
 
 $$
-\hat\theta = \arg\min_{\theta \in \Theta}\, \max_{D \in \mathcal D_n}\, M(\theta, D),
+\hat\theta = \arg\underbrace{\min_{\theta \in \Theta}}_{\text{outer: match real data}}\, \underbrace{\max_{D \in \mathcal D_n}}_{\text{inner: best telltale}}\, M(\theta, D),
 $$
 
 with the cross-entropy
@@ -679,15 +679,20 @@ $$
 M(\theta, D) = \underbrace{\frac{1}{n}\sum_{i=1}^{n} \log D(X_i)}_{\text{score on real data}} + \underbrace{\frac{1}{m}\sum_{i=1}^{m} \log(1 - D(X_{i,\theta}))}_{\text{score on simulated data}}.
 $$
 
-Read $M$ as the log-likelihood of a classification problem in which real points carry label $1$ and simulated points carry label $0$. The inner step trains the discriminator. The outer step picks the structural $\theta$ at which the best-trained discriminator does worst. This is the Goodfellow et al. (2014) GAN objective, with the simulator $T_\theta$ in the role of the generator.
+Read the inner $\max$ as a hostile critic and the outer $\min$ as the modeller responding to that critic.
+The inner step searches the class $\mathcal D_n$ for the discriminator that most easily tells real points from simulated points; this is exactly the log-likelihood of a binary classification problem with labels $1$ for real and $0$ for simulated.
+The outer step then picks the structural $\theta$ that makes this best-case classifier do worst, which forces the simulated distribution toward the real one.
+This is the Goodfellow et al. (2014) GAN objective, with the simulator $T_\theta$ in the role of the generator.
 
 The population inner maximum has a known form. When both densities exist, it is attained pointwise by the Bayes-optimal classifier
 
 $$
-D^{\ast}_\theta(x) = \frac{p_0(x)}{p_0(x) + p_\theta(x)}.
+D^{\ast}_\theta(x) = \underbrace{\frac{p_0(x)}{p_0(x) + p_\theta(x)}}_{\text{posterior probability that }x\text{ is real}}.
 $$
 
-At $\theta = \theta_0$ the two densities coincide, $D^{\ast}_\theta \equiv 1/2$, and $M$ is at its worst. Minimizing the inner maximum over $\theta$ therefore drives the simulated distribution toward the real one.
+This is just Bayes' rule for a 50-50 mixture of real and simulated points: given $x$, the optimal classifier returns the share of real-data density at $x$.
+At $\theta = \theta_0$ the two densities coincide, $D^{\ast}_\theta \equiv 1/2$, and $M$ is at its worst because no rule can do better than a coin flip.
+Minimizing the inner maximum over $\theta$ therefore drives the simulated distribution toward the real one, which is the population identification result.
 
 ### Method 1: Oracle discriminator
 

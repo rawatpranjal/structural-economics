@@ -577,10 +577,13 @@ def main() -> None:
     report.add_overview(
         "A planner manages four sectoral capital stocks under one common "
         "productivity shock. Output flows from each sector and feeds back "
-        "into consumption and next-period capitals.\n\n"
-        "The state vector has five continuous coordinates. Tensor Chebyshev "
-        "grids would charge $m^5$ nodes for $m$ points per dimension, which "
-        "becomes wasteful long before the policy is captured.\n\n"
+        "into consumption and the next-period capital allocations.\n\n"
+        "The state vector has five continuous coordinates. A tensor Chebyshev "
+        "grid pays an exponential price in dimension for nodes per axis, which "
+        "becomes wasteful long before the policy is captured. The single-state "
+        "version of this projection problem is in "
+        "[`computational-methods/projection-methods/`](../projection-methods/), "
+        "which uses Chebyshev collocation on one capital variable.\n\n"
         "Smolyak sparse grids keep only the tensor blocks that carry new "
         "interaction information at a chosen accuracy level. The node count "
         "then grows polynomially in dimension, and Chebyshev collocation "
@@ -609,7 +612,8 @@ $$
 
 Taking the ratio of two sector FOCs eliminates the expectation. Because the
 shock $z$ is common, the ratio of marginal products of capital must equal the
-ratio of saving choices raised to $\alpha - 1$:
+ratio of saving choices raised to $\alpha - 1$, which pins down the cross-sector
+allocation in closed form:
 
 $$
 \frac{A_i (k_i')^{\alpha - 1}}{A_j (k_j')^{\alpha - 1}} = 1,
@@ -620,68 +624,131 @@ k_i' = \omega_i\, S,
 $$
 
 Here $S \equiv \sum_i k_i'$ is total savings and $\omega_i$ is the sector
-share. With $Z \equiv \sum_j A_j^{1 / (1 - \alpha)}$ the Euler equation
-collapses to a single condition on $S$:
+share. With the calibration $\alpha = 0.36$ and
+$A = (1.00, 0.90, 1.10, 0.80)$ the exponent is $1/(1-\alpha) \approx 1.5625$
+and the worked shares are
+
+$$
+A^{1/(1-\alpha)} \approx (1.000, 0.846, 1.161, 0.703),
+\qquad
+Z \approx 3.710,
+\qquad
+\omega \approx (0.269, 0.228, 0.313, 0.190).
+$$
+
+With $Z \equiv \sum_j A_j^{1 / (1 - \alpha)}$, the four sector Euler
+equations collapse to a single scalar condition on $S$:
 
 $$
 \frac{1}{c} = \beta \alpha Z^{1 - \alpha} S^{\alpha - 1} \mathbb{E}\left[ \frac{e^{z'}}{c'} \,\middle|\, z \right].
 $$
 
-For this calibration the closed-form policy is $S^{\ast}(k, z) = \alpha \beta Y(k, z)$, with
-$Y(k, z) = e^{z} \sum_i A_i k_i^{\alpha}$. Each sector then receives $k_i' = \omega_i S$ and the
-planner consumes $c = (1 - \alpha \beta) Y$.
+This is the unknown that Smolyak collocation will fit on $[-1, 1]^{d}$ after a
+linear rescaling of the state. For this calibration the closed-form policy is
+$S^{\ast}(k, z) = \alpha \beta Y(k, z)$, with $Y(k, z) = e^{z} \sum_i A_i k_i^{\alpha}$.
+Each sector then receives $k_i' = \omega_i S$ and the planner consumes
+$c = (1 - \alpha \beta) Y$.
 
-### Method 1: nested Chebyshev extrema nodes
+### Sparse grid construction
 
-The 1D nested rule uses $m_1 = 1$ and $m_i = 2^{i-1} + 1$ for $i \ge 2$:
+The construction reuses one-dimensional nested Chebyshev extrema with the
+doubling rule $m_1 = 1$ and $m_i = 2^{i-1} + 1$ for $i \ge 2$. The 1D node
+set at level $i$ is $X_i = \lbrace -\cos(\pi (j - 1) / (m_i - 1)) : j = 1, \dots, m_i \rbrace$
+with $X_1 = \lbrace 0 \rbrace$, and the doubling rule guarantees
+$X_i \subset X_{i+1}$ so refinement reuses prior function evaluations.
+
+Smolyak builds a $d$-dimensional grid by combining only the tensor blocks whose
+total level falls in a narrow band. A level multi-index
+$\mathbf{i} = (i_1, \dots, i_d)$ with $i_k \ge 1$ is admissible at level
+$\mu \ge 0$ when
 
 $$
-X_i = \lbrace -\cos(\pi (j - 1) / (m_i - 1)) : j = 1, \dots, m_i \rbrace,
+\underbrace{\mu + 1 \le |\mathbf{i}|}_{\text{enough resolution}} \le \underbrace{|\mathbf{i}| \le \mu + d}_{\text{not too refined in any dimension}},
 \qquad
-X_1 = \lbrace 0 \rbrace.
+|\mathbf{i}| \equiv i_1 + \cdots + i_d.
 $$
 
-The doubling rule gives $X_i \subset X_{i+1}$ so refinement does not throw away
-prior function evaluations.
-
-### Method 2: Smolyak sparse grid in d dimensions
-
-Given dimension $d$ and level $\mu \ge 0$, admissible level multi-indices
-$\mathbf{i} = (i_1, \dots, i_d)$ satisfy $i_k \ge 1$ and $\mu + 1 \le |\mathbf{i}| \le \mu + d$.
-The Smolyak grid is the union of admissible tensor products:
+The sparse grid is the deduplicated union of admissible tensor products:
 
 $$
 H(d, \mu) = \bigcup_{\mu + 1 \le |\mathbf{i}| \le \mu + d} X_{i_1} \times \cdots \times X_{i_d}.
 $$
 
-Concrete enumerations in $d = 2$: at $\mu = 1$ the admissible blocks are
-$(1, 1), (1, 2), (2, 1)$, whose union has $5$ unique points (the center plus
-two axis endpoints in each direction). At $\mu = 2$ the admissible blocks add
-$(2, 2), (1, 3), (3, 1)$, whose union has $13$ unique points. Asymptotically
-$|H(d, \mu)| = O(2^{\mu} d^{\mu} / \mu!)$, polynomial in $d$ for fixed $\mu$.
+The admissibility band is the entire point of the method, and each side of the band is there for a different reason.
+The lower bound $|\mathbf{i}| \ge \mu + 1$ excludes blocks that are too coarse: their contribution is already captured inside a finer admissible block, so keeping them duplicates information.
+The upper bound $|\mathbf{i}| \le \mu + d$ excludes blocks that refine too aggressively in a single dimension at the expense of the others: those blocks belong to a tensor product, not a sparse grid, because they refine one axis far beyond the joint resolution the method targets.
+Keeping only the band in between is what reduces the node count from the tensor product
+$|H_{\mathrm{tensor}}| = \underbrace{(2^{\mu} + 1)^{d}}_{\text{exponential in } d}$
+to
+$|H(d, \mu)| = \underbrace{O(2^{\mu} d^{\mu} / \mu!)}_{\text{polynomial in } d \text{ for fixed } \mu}$.
+At the calibration used below ($d = 5$, $\mu = 2$) the band gives 61 nodes whereas the tensor product would need 3125, which is why Smolyak scales and dense Chebyshev does not.
 
-### Method 3: Smolyak polynomial basis and collocation
+In two dimensions the construction is easy to enumerate. At $\mu = 1$ the
+admissible level multi-indices satisfy $2 \le |\mathbf{i}| \le 3$, so the
+admissible blocks are $(1, 1), (1, 2), (2, 1)$. With $X_1 = \lbrace 0 \rbrace$
+and $X_2 = \lbrace -1, 0, 1 \rbrace$ the three tensor blocks are
 
-For each 1D Chebyshev degree $a \ge 0$ define the polynomial level
-$\ell(a) = 0$ if $a = 0$, $\ell(1) = 1$, and $\ell(a) = \lceil \log_2 a \rceil$
-for $a \ge 2$. The Smolyak polynomial basis is the set of tensor products
-whose summed polynomial level fits within $\mu$:
+$$
+X_1 \times X_1 = \lbrace (0, 0) \rbrace,
+\qquad
+X_1 \times X_2 = \lbrace (0, -1), (0, 0), (0, 1) \rbrace,
+$$
+
+$$
+X_2 \times X_1 = \lbrace (-1, 0), (0, 0), (1, 0) \rbrace.
+$$
+
+Their union, after removing the duplicate $(0, 0)$, is the five-point set
+
+$$
+H(2, 1) = \lbrace (0, 0), (0, -1), (0, 1), (-1, 0), (1, 0) \rbrace,
+$$
+
+a center point with two axis endpoints in each direction. At $\mu = 2$ the
+admissible blocks expand to add $(2, 2), (1, 3), (3, 1)$, and the union grows
+to thirteen unique points. The figure of two-dimensional grids in the results
+section visualizes these point sets next to the $5 \times 5$ tensor
+alternative.
+
+### Polynomial basis paired with the grid
+
+The Smolyak collocation system is square only when the polynomial basis is
+chosen to match the node set. For each 1D Chebyshev degree $a \ge 0$, define
+the polynomial level needed to first include $T_a$ in the level-$i$
+polynomial space:
+
+$$
+\ell(a) = \begin{cases} 0 & a = 0, \\ 1 & a = 1, \\ \lceil \log_2 a \rceil & a \ge 2. \end{cases}
+$$
+
+The first few values are $\ell(0) = 0, \ell(1) = \ell(2) = 1, \ell(3) = \ell(4) = 2$:
+each level $i \ge 2$ adds Chebyshev polynomials of degree up to $m_i - 1 = 2^{i-1}$.
+The Smolyak basis at level $\mu$ in dimension $d$ then consists of the tensor
+products whose summed polynomial level fits within the budget:
 
 $$
 \mathcal{B}(d, \mu) = \left\lbrace T_{a_1}(x_1) \cdots T_{a_d}(x_d) : \sum_{k=1}^{d} \ell(a_k) \le \mu \right\rbrace.
 $$
 
-The basis matrix $\Phi_{n,k} = \prod_j T_{a_{k,j}}(x_n^{(j)})$ is square and
-invertible at the Smolyak nodes. Collocation sets the policy residual to zero
-at each node.
+Returning to the worked $d = 2, \mu = 1$ case, the admissible degree pairs
+$(a_1, a_2)$ are those with $\ell(a_1) + \ell(a_2) \le 1$:
 
-### Method 4: time iteration with Smolyak collocation
+$$
+(0, 0),\ (0, 1),\ (0, 2),\ (1, 0),\ (2, 0),
+$$
 
-Let $\theta$ be the coefficient vector for $\log S(x; \theta) = \Phi(x) \theta$.
-Time iteration freezes $\theta^{\text{old}}$ on the right-hand side of the
-Euler equation, solves a Smolyak collocation problem for $\theta^{\text{new}}$,
-and iterates until $\|\theta^{\text{new}} - \theta^{\text{old}}\|_{\infty}$
-falls below tolerance.
+so the basis polynomials are
+
+$$
+T_0(x_1) T_0(x_2),\ T_0(x_1) T_1(x_2),\ T_0(x_1) T_2(x_2),\ T_1(x_1) T_0(x_2),\ T_2(x_1) T_0(x_2).
+$$
+
+Five basis polynomials match the five nodes of $H(2, 1)$. The cardinality of
+$\mathcal{B}(d, \mu)$ equals the cardinality of $H(d, \mu)$ in general, so the
+basis matrix $\Phi_{n,k} = \prod_j T_{a_{k,j}}(x_n^{(j)})$ is square and
+invertible at the Smolyak nodes. Collocation then sets the policy residual to
+zero at each node and recovers the unique coefficient vector $\theta$ that
+represents $\log S(x; \theta) = \Phi(x) \theta$.
 """
     )
 
@@ -707,79 +774,64 @@ falls below tolerance.
 
     report.add_solution_method(
         "The Smolyak approximator targets $\\log S(x; \\theta) = \\Phi(x) \\theta$ on "
-        "$[-1, 1]^{d}$ after a linear rescaling of the state. Solution proceeds in "
-        "four steps that mirror the equations above.\n\n"
-        "### Method 1: nested Chebyshev extrema nodes\n\n"
-        "Nested nodes let the algorithm reuse function evaluations across refinement "
-        "levels. Without nesting, every increase in $\\mu$ would resample the model "
-        "from scratch.\n\n"
+        "$[-1, 1]^{d}$ after a linear rescaling of the state. Three ideas do the heavy "
+        "lifting: the admissible grid construction defined in the Equations section, "
+        "the matching polynomial basis that makes $\\Phi$ square, and a time-iteration "
+        "scheme that exploits the cross-sector FOC structure so each node decouples "
+        "into a scalar root problem.\n\n"
+        "The single-state Chebyshev collocation step is the same one used in the "
+        "[`projection-methods/`](../projection-methods/) tutorial. What is new here "
+        "is how nodes and basis polynomials are selected jointly across $d$ "
+        "dimensions, and how the planner's symmetric Euler equations let the "
+        "$d$-dimensional fixed point reduce to a sequence of $1$-D solves.\n\n"
+        "### Decoupling the collocation residual\n\n"
+        "Time iteration freezes $\\theta^{\\mathrm{old}}$ on the right-hand side of the "
+        "Euler equation. At each node $x^{(n)}$ the conditional expectation\n\n"
+        "$$\n"
+        "E_n(\\theta^{\\mathrm{old}}) = \\sum_{q} w_q \\frac{e^{z'_q}}{c'_q(\\theta^{\\mathrm{old}})}\n"
+        "$$\n\n"
+        "is a known number once $\\theta^{\\mathrm{old}}$ is fixed, where "
+        "$(z'_q, w_q)$ are Gauss-Hermite nodes and weights for the productivity "
+        "innovation and $c'_q(\\theta^{\\mathrm{old}})$ is consumption next period "
+        "evaluated through the old policy. The collapsed Euler condition then becomes\n\n"
+        "$$\n"
+        "(Y_n - S_n) \\cdot S_n^{\\alpha - 1} = \\frac{1}{\\beta \\alpha Z^{1-\\alpha} E_n},\n"
+        "$$\n\n"
+        "a scalar equation in $S_n \\in (0, Y_n)$. The left-hand side is strictly "
+        "decreasing in $S_n$ on that interval, so a one-dimensional bracketed root "
+        "solver returns the unique $S_n^{\\mathrm{new}}$ at each node. The new "
+        "coefficient vector is $\\theta^{\\mathrm{new}} = \\Phi^{-1} \\log S^{\\mathrm{new}}$, "
+        "and the iteration stops when "
+        "$\\|\\theta^{\\mathrm{new}} - \\theta^{\\mathrm{old}}\\|_{\\infty}$ falls below "
+        "tolerance. Without the cross-sector ratio identity, each node would carry "
+        "$N$ unknowns and the system would have to be solved jointly across nodes.\n\n"
+        "### Full algorithm\n\n"
         "```text\n"
-        "Algorithm: Nested 1D Chebyshev extrema\n"
-        "Input: level i in {1, 2, 3, ...}\n"
-        "Output: node set X_i in [-1, 1] with |X_i| = m_i\n"
-        "1. if i == 1: return {0}\n"
-        "2. m_i <- 2^(i-1) + 1\n"
-        "3. for j = 1, ..., m_i:\n"
-        "     x_j <- -cos(pi (j - 1) / (m_i - 1))\n"
-        "4. return {x_1, ..., x_m_i}\n"
-        "```\n\n"
-        "Failure mode: using Chebyshev roots breaks nesting because root sets at "
-        "different orders share no points.\n\n"
-        "### Method 2: Smolyak sparse grid in d dimensions\n\n"
-        "Smolyak keeps only the tensor blocks whose total level fits in the band "
-        "$\\mu + 1 \\le |\\mathbf{i}| \\le \\mu + d$. The union is deduplicated by "
-        "nesting so each unique node is counted once.\n\n"
-        "```text\n"
-        "Algorithm: Smolyak grid H(d, mu)\n"
-        "Input: dimension d, level mu\n"
-        "Output: sparse grid H in [-1, 1]^d\n"
-        "1. H <- empty set\n"
-        "2. for every multi-index i = (i_1, ..., i_d) with i_k >= 1\n"
-        "       and mu + 1 <= |i| <= mu + d:\n"
-        "     G_i <- X_{i_1} x ... x X_{i_d}\n"
-        "     H <- H union G_i\n"
-        "3. return H (deduplicated)\n"
-        "```\n\n"
-        "Failure mode: forgetting to deduplicate produces a multiset that "
-        "double-counts shared nodes, breaking the square structure of the "
-        "collocation system.\n\n"
-        "### Method 3: Smolyak polynomial basis and collocation\n\n"
-        "The basis multi-indices are paired with the grid via the same admissibility "
-        "rule, expressed in degree space. The resulting basis matrix is square and "
-        "invertible at the Smolyak nodes.\n\n"
-        "```text\n"
-        "Algorithm: Smolyak collocation residual\n"
-        "Input: grid H = {x^(n)}, basis multi-indices A, model primitives\n"
-        "Output: coefficient vector theta\n"
-        "1. Build basis matrix Phi with Phi[n, k] = prod_j T_{A[k, j]}(x^(n)_j)\n"
-        "2. Define policy log S(x; theta) = Phi(x) theta\n"
-        "3. At each node x^(n), assemble the Euler residual R_n(theta)\n"
-        "4. Solve R(theta) = 0 for the coefficient vector\n"
-        "```\n\n"
-        "Failure mode: pairing a hyperbolic-cross basis with a Smolyak grid leaves "
-        "Phi non-square and the solver stalls.\n\n"
-        "### Method 4: time iteration with Smolyak collocation\n\n"
-        "Time iteration decouples the nonlinear problem across nodes. At each node "
-        "the Euler equation reduces to a one-dimensional condition on $S_n$ because "
-        "the sector allocation $k_i = \\omega_i S$ is fixed by the FOC ratio.\n\n"
-        "```text\n"
-        "Algorithm: Time iteration with Smolyak collocation\n"
-        "Input: grid H, basis Phi, shock nodes (eps_q, w_q), tol = 1e-7\n"
+        "Algorithm: Smolyak time iteration for the multi-sector planner\n"
+        "Input: dimension d, level mu, parameters (beta, alpha, A_1..A_N, rho, sigma),\n"
+        "       state bounds [lo, hi], quadrature nodes (eps_q, w_q), tol = 1e-7\n"
         "Output: converged coefficients theta_star\n"
-        "1. theta_old <- initial guess (constant saving fraction)\n"
-        "2. repeat:\n"
-        "     for n = 1, ..., N:\n"
-        "       compute E_n = sum_q w_q exp(z'_q) / c'_q using theta_old\n"
-        "       solve S_n in (0, Y_n) from log Euler equation\n"
+        "1. Build admissible level set I = {i : mu+1 <= |i| <= mu+d, i_k >= 1}\n"
+        "2. Build sparse grid H = dedup union over i in I of X_{i_1} x ... x X_{i_d}\n"
+        "3. Build admissible degree set A = {a : sum_k level(a_k) <= mu}\n"
+        "4. Build basis matrix Phi with Phi[n, k] = prod_j T_{A[k, j]}(H[n, j])\n"
+        "5. theta_old <- coefficients of a constant saving fraction\n"
+        "6. repeat:\n"
+        "     for each node x_n in H:\n"
+        "       compute next-period state x_n' under k' = omega * S(x_n; theta_old)\n"
+        "       evaluate E_n by Gauss-Hermite quadrature over productivity shocks\n"
+        "       solve scalar Euler equation for S_n in (0, Y_n) via brentq\n"
         "     theta_new <- Phi^{-1} log S\n"
-        "     delta <- max_k |theta_new[k] - theta_old[k]|\n"
+        "     if max_k |theta_new[k] - theta_old[k]| < tol: break\n"
         "     theta_old <- theta_new\n"
-        "   until delta < tol\n"
-        "3. return theta_old\n"
+        "7. return theta_new\n"
         "```\n\n"
-        "Failure mode: updating $\\theta^{\\text{new}}$ inside the expectation "
-        "(full Euler iteration) couples every node and the Jacobian becomes "
-        "ill-conditioned at higher $\\mu$."
+        "Two failure modes show up if the construction is altered. Pairing the "
+        "Smolyak grid with a hyperbolic-cross basis leaves $\\Phi$ non-square and the "
+        "inverse in step 7 fails. Updating $\\theta^{\\mathrm{new}}$ inside the "
+        "expectation rather than holding $\\theta^{\\mathrm{old}}$ fixed couples every "
+        "node with every other and the implicit Jacobian becomes ill-conditioned at "
+        "higher $\\mu$. Time iteration sidesteps both."
     )
 
     report.add_figure(

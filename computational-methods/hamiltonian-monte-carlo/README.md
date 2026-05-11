@@ -79,30 +79,31 @@ $$
 Second, the flow map $\Phi_t : (\theta_0, r_0) \mapsto (\theta_t, r_t)$ is *symplectic* and in particular volume-preserving in the $(\theta, r)$ phase space, so the Jacobian determinant $\lvert \det \nabla \Phi_t \rvert = 1$.
 Volume preservation is the technical reason the Metropolis correction below has no Jacobian factor.
 
-### Method 1: Leapfrog integration
+### Method 1: Hamiltonian Monte Carlo
 
 Continuous Hamiltonian dynamics is unavailable in closed form, so we discretize it with the leapfrog integrator at step size $\varepsilon > 0$.
 One leapfrog step from $(\theta_t, r_t)$ to $(\theta_{t+1}, r_{t+1})$ is a half momentum step, a full position step, and another half momentum step:
 
 $$
-r_{t + \tfrac{1}{2}} = r_t - \tfrac{\varepsilon}{2}\, \nabla U(\theta_t),
+r_{t + \tfrac{1}{2}} = \underbrace{r_t}_{\text{current momentum}} - \underbrace{\tfrac{\varepsilon}{2}\, \nabla U(\theta_t)}_{\text{half kick from the force at } \theta_t},
 $$
 
 $$
-\theta_{t + 1} = \theta_t + \varepsilon\, r_{t + \tfrac{1}{2}},
+\theta_{t + 1} = \underbrace{\theta_t}_{\text{current position}} + \underbrace{\varepsilon\, r_{t + \tfrac{1}{2}}}_{\text{drift using the half-step momentum}},
 $$
 
 $$
-r_{t + 1} = r_{t + \tfrac{1}{2}} - \tfrac{\varepsilon}{2}\, \nabla U(\theta_{t + 1}).
+r_{t + 1} = r_{t + \tfrac{1}{2}} - \underbrace{\tfrac{\varepsilon}{2}\, \nabla U(\theta_{t + 1})}_{\text{half kick from the force at the new position}}.
 $$
 
-The integrator inherits two key properties of the continuous flow.
+The half-kick / drift / half-kick split is the design choice that makes the integrator work.
+A naive Euler scheme would update momentum and position with the same force evaluation, breaking time reversibility and letting energy drift linearly in $\varepsilon$.
+The symmetric split makes one leapfrog step invariant under the time reversal $(\theta, r) \mapsto (\theta, -r)$ followed by stepping with $-\varepsilon$, which is what buys both volume preservation and the $\mathcal{O}(\varepsilon^2)$ energy drift.
+The leapfrog integrator inherits two key properties of the continuous flow.
 It is *time-reversible*: applying it with $-\varepsilon$ to $(\theta_{t+1}, r_{t+1})$ returns $(\theta_t, r_t)$.
 It is *symplectic*: it preserves the differential form $\sum_i d\theta_i \wedge dr_i$, which implies volume preservation in $(\theta, r)$-space.
 What it does not preserve exactly is $H$.
 Over $L$ leapfrog steps the Hamiltonian drifts by $\mathcal{O}(\varepsilon^2)$ rather than the $\mathcal{O}(\varepsilon)$ drift of a non-symplectic integrator, which is what makes HMC trajectories of moderate length still accept with high probability.
-
-### Method 2: HMC acceptance step
 
 One HMC iteration starts from the current parameter $\theta_t \in \mathbb{R}^d$ and runs three substeps.
 First, sample a fresh momentum $r \sim \mathcal{N}(0, I_d)$ independently of the chain history.
@@ -110,16 +111,21 @@ Second, run $L \ge 1$ leapfrog steps with step size $\varepsilon$ from $(\theta_
 Third, accept the proposal with Metropolis probability
 
 $$
-\alpha(\theta_t, r;\, \theta^{\star}, r^{\star}) = \min\lbrace 1,\, \exp(H(\theta_t, r) - H(\theta^{\star}, r^{\star})) \rbrace,
+\alpha(\theta_t, r;\, \theta^{\star}, r^{\star}) = \min\Big\lbrace 1,\, \exp\big(\underbrace{H(\theta_t, r)}_{\text{energy at trajectory start}} - \underbrace{H(\theta^{\star}, r^{\star})}_{\text{energy at trajectory end}}\big) \Big\rbrace,
 $$
 
 setting $\theta_{t+1} = \theta^{\star}$ if accepted and $\theta_{t+1} = \theta_t$ otherwise.
 The momentum is discarded after each iteration.
-This rule satisfies detailed balance for the augmented target $\tilde\pi$ because the leapfrog flow is time-reversible and volume-preserving, so the Jacobian factor that would otherwise appear in the Metropolis-Hastings acceptance ratio is identically one (this is the same detailed-balance derivation as in Method 2 of `computational-methods/metropolis-hastings/`, applied here to the augmented $(\theta, r)$ density).
-If continuous-time dynamics were used the difference $H(\theta_t, r) - H(\theta^{\star}, r^{\star})$ would be exactly zero and the acceptance rate would be one.
+The energy difference inside the exponent is the only thing the accept-reject step looks at, which is exactly the discretization error the leapfrog integrator commits.
+Three things are doing work in this expression.
+The energy difference replaces the kernel ratio of Metropolis-Hastings because the augmented density is $\exp(-H)$ up to a constant, so the kernel ratio is $\exp(H_t - H^{\star})$.
+There is no Jacobian factor because leapfrog is volume-preserving, so the change-of-variables determinant from $(\theta_t, r)$ to $(\theta^{\star}, r^{\star})$ is exactly one.
+The proposal ratio that would normally appear is also one because the leapfrog map run forward and the same map run backward are inverses of each other, by time-reversibility.
+This rule satisfies detailed balance for the augmented target $\tilde\pi$ (the same detailed-balance derivation as in Method 2 of `computational-methods/metropolis-hastings/`, applied here to the augmented $(\theta, r)$ density).
+If continuous-time dynamics were used the energy difference would be exactly zero and the acceptance rate would be one.
 The leapfrog discretization introduces an $\mathcal{O}(\varepsilon^2)$ error in $H$ and the Metropolis step rejects exactly when that error is large.
 
-### Method 3: Random-walk Metropolis-Hastings (comparison)
+### Method 2: Random-walk Metropolis-Hastings (comparison)
 
 Random-walk Metropolis-Hastings is the gradient-free baseline.
 It uses no momentum and no gradient.
@@ -158,46 +164,38 @@ HMC follows the ridge with one trajectory and pays $L$ gradient evaluations per 
 
 ## Solution Method
 
-Hamiltonian Monte Carlo replaces the random-walk proposal with a leapfrog trajectory. Random-walk Metropolis-Hastings is included as the baseline because the difference is exactly the point of HMC.
+Hamiltonian Monte Carlo replaces the random-walk proposal with a leapfrog trajectory. Random-walk Metropolis-Hastings is included as the comparison baseline because the difference is exactly the point of HMC.
 
-### Method 1: Leapfrog integration
+### Method 1: Hamiltonian Monte Carlo
 
-Leapfrog is the standard symplectic integrator for Hamiltonian systems. It interleaves momentum half-steps with position full-steps. The order matters: two half-steps in the momentum bracket one position step, so the integrator is time-reversible at each substep and conserves volume in $(\theta, r)$-space. Volume preservation is the technical reason the Metropolis correction needs only the energy difference and not a Jacobian.
-
-```text
-Algorithm: Leapfrog with step size eps over L steps
-Input : initial (theta, r), gradient of U
-Output: trajectory endpoint (theta_L, r_L)
-  r <- r - 0.5 * eps * grad_U(theta)
-  for i = 1, ..., L:
-      theta <- theta + eps * r
-      if i < L:
-          r <- r - eps * grad_U(theta)
-  r <- r - 0.5 * eps * grad_U(theta)
-  return (theta, r)
-```
-
-Step size $\varepsilon$ controls discretization error. Too large, and the Hamiltonian drifts and acceptance collapses. Too small, and the trajectory barely moves and each iteration spends $L$ gradient evaluations for a tiny exploration step. The number of steps $L$ controls trajectory length, $L\,\varepsilon$. Long trajectories explore the posterior aggressively but at higher cost per iteration and with a risk of trajectory U-turn, which is the motivation for the No-U-Turn Sampler that automates $L$.
-
-### Method 2: Hamiltonian Monte Carlo iteration
-
-Each HMC iteration is a momentum resample plus a leapfrog trajectory plus a Metropolis accept-reject. Discarding the momentum after every iteration marginalizes it out and leaves the $\theta$-chain stationary on the target posterior. The Metropolis step is necessary because leapfrog conserves the Hamiltonian only approximately, but on a well-tuned trajectory the error is tiny and acceptance rates of 0.7 to 0.9 are typical.
+Each HMC iteration is a momentum resample, a leapfrog trajectory, and a Metropolis accept-reject. The leapfrog integrator interleaves momentum half-steps with position full-steps; the order matters because two half-steps in the momentum bracket one position step, so the integrator is time-reversible at each substep and conserves volume in $(\theta, r)$-space. Volume preservation is the technical reason the Metropolis correction needs only the energy difference and not a Jacobian. Discarding the momentum after every iteration marginalizes it out and leaves the $\theta$-chain stationary on the target posterior. On a well-tuned trajectory the leapfrog energy drift is tiny and acceptance rates of 0.7 to 0.9 are typical.
 
 ```text
 Algorithm: One HMC iteration
 Input : current theta_t, step size eps, leapfrog steps L
 Output: next theta_{t+1}
   draw r ~ N(0, I)
-  (theta_star, r_star) <- Leapfrog(theta_t, r, eps, L)
+  # Leapfrog trajectory from (theta_t, r)
+  q, p = theta_t, r
+  p <- p - 0.5 * eps * grad_U(q)
+  for i = 1, ..., L:
+      q <- q + eps * p
+      if i < L:
+          p <- p - eps * grad_U(q)
+  p <- p - 0.5 * eps * grad_U(q)
+  theta_star, r_star = q, p
+  # Metropolis accept-reject
   H_t    = -log pi(theta_t)    + 0.5 * r^T r
   H_star = -log pi(theta_star) + 0.5 * r_star^T r_star
   alpha  = min(1, exp(H_t - H_star))
   if uniform() < alpha: theta_{t+1} = theta_star else theta_{t+1} = theta_t
 ```
 
+Step size $\varepsilon$ controls discretization error. Too large, and the Hamiltonian drifts and acceptance collapses. Too small, and the trajectory barely moves and each iteration spends $L$ gradient evaluations for a tiny exploration step. The number of steps $L$ controls trajectory length $L\,\varepsilon$; long trajectories explore aggressively but at higher cost and with a risk of trajectory U-turn, which is the motivation for the No-U-Turn Sampler that automates $L$.
+
 HMC fails on multimodal posteriors with isolated modes. Hamiltonian dynamics is local; it does not jump between separated basins of probability mass any more than a random walk does. It also fails when the gradient is unavailable or unreliable, which is why HMC is the wrong tool for black-box objectives where Bayesian optimization (`numerical-methods/bayesian-optimization/`) wins instead.
 
-### Method 3: Random-walk Metropolis-Hastings (baseline)
+### Method 2: Random-walk Metropolis-Hastings (comparison)
 
 Random-walk MH is the comparison. It uses no gradient and no momentum. On the banana target each proposal is an isotropic Gaussian step that can be aligned with the ridge only by chance. The chain crosses the ridge by accumulating many small steps, the autocorrelation decays slowly, and the effective sample size per target evaluation is small.
 

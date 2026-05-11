@@ -10,10 +10,9 @@ chooses each next evaluation to maximize an acquisition function that
 balances exploration and exploitation. Thirty evaluations are enough.
 
 The surrogate is a Gaussian process with a squared-exponential kernel.
-The acquisition rules are Expected Improvement and Upper Confidence Bound.
-The comparison is run on the same objective and bracket as
-`numerical-methods/global-search-multistart/` so the per-evaluation budget
-is directly comparable.
+The acquisition rule is Expected Improvement. The comparison is run on the
+same objective and bracket as `numerical-methods/global-search-multistart/`
+so the per-evaluation budget is directly comparable.
 
 References:
 - Mockus, J., Tiesis, V., and Zilinskas, A. (1978). The application of Bayesian methods for seeking the extremum.
@@ -121,11 +120,6 @@ def expected_improvement(mu: np.ndarray, sigma: np.ndarray, f_best: float, xi: f
     return improvement * norm.cdf(z) + sigma * norm.pdf(z)
 
 
-def upper_confidence_bound(mu: np.ndarray, sigma: np.ndarray, kappa: float = 2.0) -> np.ndarray:
-    """Upper Confidence Bound for maximization: mu + kappa * sigma."""
-    return mu + kappa * sigma
-
-
 # =============================================================================
 # Main
 # =============================================================================
@@ -174,7 +168,6 @@ def main() -> None:
     sigma_n = 1e-3
     length_grid = np.linspace(0.3, 2.5, 12)
     acq_grid = np.linspace(p_lo, p_hi, 1001)
-    kappa_ucb = 2.0
     xi_ei = 0.0
 
     # -------------------------------------------------------------------------
@@ -182,25 +175,22 @@ def main() -> None:
     # -------------------------------------------------------------------------
     snapshot_iters = [n_initial, 10, 20, n_total]
 
-    def take_snapshot(X_list, y_list, acquisition: str):
+    def take_snapshot(X_list, y_list):
         X_arr = np.array(X_list)
         y_arr = np.array(y_list)
         f_best = float(np.max(y_arr))
         ell = fit_length_scale(X_arr, y_arr, sigma_f, sigma_n, length_grid)
         gp = GaussianProcess(length_scale=ell, sigma_f=sigma_f, sigma_n=sigma_n).fit(X_arr, y_arr)
         mu, sd = gp.predict(acq_grid)
-        if acquisition == "EI":
-            acq = expected_improvement(mu, sd, f_best, xi=xi_ei)
-        else:
-            acq = upper_confidence_bound(mu, sd, kappa=kappa_ucb)
+        ei = expected_improvement(mu, sd, f_best, xi=xi_ei)
         return {
             "X": X_arr.copy(),
             "y": y_arr.copy(),
             "mu": mu.copy(),
             "sd": sd.copy(),
-            "acq": acq.copy(),
+            "acq": ei.copy(),
             "ell": ell,
-            "next_x": float(acq_grid[int(np.argmax(acq))]),
+            "next_x": float(acq_grid[int(np.argmax(ei))]),
         }
 
     rng = np.random.default_rng(seed_bo)
@@ -219,7 +209,7 @@ def main() -> None:
             "best_so_far": float(np.max(y_ei[: i + 1])),
         })
     if n_initial in snapshot_iters:
-        snapshots[n_initial] = take_snapshot(X_ei, y_ei, "EI")
+        snapshots[n_initial] = take_snapshot(X_ei, y_ei)
 
     # EI-guided iterations.
     for t in range(n_initial + 1, n_total + 1):
@@ -242,49 +232,12 @@ def main() -> None:
             "best_so_far": float(np.max(y_ei)),
         })
         if t in snapshot_iters:
-            snapshots[t] = take_snapshot(X_ei, y_ei, "EI")
+            snapshots[t] = take_snapshot(X_ei, y_ei)
 
     bo_log_df = pd.DataFrame(bo_log)
     best_bo_ei = float(np.max(y_ei))
     p_bo_ei = float(X_ei[int(np.argmax(y_ei))])
     eval_to_global_ei = next((row["iteration"] for row in bo_log if row["best_so_far"] >= profit_global - 1e-3), None)
-
-    # -------------------------------------------------------------------------
-    # BO with Upper Confidence Bound (for the contrast on the same problem)
-    # -------------------------------------------------------------------------
-    rng_ucb = np.random.default_rng(seed_bo)
-    X_ucb = list(rng_ucb.uniform(p_lo, p_hi, n_initial))
-    y_ucb = [float(profit(x)) for x in X_ucb]
-    ucb_log = []
-    for i in range(n_initial):
-        ucb_log.append({
-            "iteration": i + 1,
-            "phase": "initial",
-            "x": X_ucb[i],
-            "f": y_ucb[i],
-            "best_so_far": float(np.max(y_ucb[: i + 1])),
-        })
-    for t in range(n_initial + 1, n_total + 1):
-        X_arr = np.array(X_ucb)
-        y_arr = np.array(y_ucb)
-        ell = fit_length_scale(X_arr, y_arr, sigma_f, sigma_n, length_grid)
-        gp = GaussianProcess(length_scale=ell, sigma_f=sigma_f, sigma_n=sigma_n).fit(X_arr, y_arr)
-        mu, sd = gp.predict(acq_grid)
-        acq = upper_confidence_bound(mu, sd, kappa=kappa_ucb)
-        x_next = float(acq_grid[int(np.argmax(acq))])
-        y_next = float(profit(x_next))
-        X_ucb.append(x_next)
-        y_ucb.append(y_next)
-        ucb_log.append({
-            "iteration": t,
-            "phase": "UCB-guided",
-            "x": x_next,
-            "f": y_next,
-            "best_so_far": float(np.max(y_ucb)),
-        })
-    best_bo_ucb = float(np.max(y_ucb))
-    p_bo_ucb = float(X_ucb[int(np.argmax(y_ucb))])
-    eval_to_global_ucb = next((row["iteration"] for row in ucb_log if row["best_so_far"] >= profit_global - 1e-3), None)
 
     # -------------------------------------------------------------------------
     # Comparison baselines on the same objective
@@ -341,7 +294,6 @@ def main() -> None:
     eval_to_global_sa = int(np.argmax(sa_curve >= profit_global - 1e-3)) + 1 if np.any(sa_curve >= profit_global - 1e-3) else None
 
     bo_curve = best_so_far(y_ei)
-    bo_ucb_curve = best_so_far(y_ucb)
 
     # -------------------------------------------------------------------------
     # Report
@@ -406,15 +358,17 @@ Suppose we have observed evaluations $y_i = f(x_i) + \varepsilon_i$ for $i = 1, 
 Stack the targets into $y = (y_1, \ldots, y_n)^{\top} \in \mathbb{R}^n$.
 Because the joint distribution of $(y, f(x_{\ast}))$ at any new input $x_{\ast} \in \mathcal{X}$ is Gaussian by construction, the conditional distribution $f(x_{\ast}) \mid (X, y)$ is also Gaussian, with closed-form posterior mean $\mu(x_{\ast})$ and variance $\sigma^2(x_{\ast})$:
 
-$$\mu(x_{\ast}) = k(x_{\ast}, X) \left[K(X, X) + \sigma_n^2 I\right]^{-1} y,$$
+$$\mu(x_{\ast}) = \underbrace{k(x_{\ast}, X)}_{\text{similarity to training inputs}} \underbrace{\left[K(X, X) + \sigma_n^2 I\right]^{-1} y}_{\text{noise-corrected training residual}},$$
 
-$$\sigma^2(x_{\ast}) = k(x_{\ast}, x_{\ast}) - k(x_{\ast}, X) \left[K(X, X) + \sigma_n^2 I\right]^{-1} k(X, x_{\ast}).$$
+$$\sigma^2(x_{\ast}) = \underbrace{k(x_{\ast}, x_{\ast})}_{\text{prior variance at } x_{\ast}} - \underbrace{k(x_{\ast}, X) \left[K(X, X) + \sigma_n^2 I\right]^{-1} k(X, x_{\ast})}_{\text{variance explained by the data}}.$$
 
 The vector $k(x_{\ast}, X) \in \mathbb{R}^n$ collects the kernel values $(k(x_{\ast}, x_1), \ldots, k(x_{\ast}, x_n))$ and $I$ is the $n \times n$ identity matrix.
-The posterior mean is the surrogate prediction; the posterior variance is the surrogate's uncertainty.
-The variance collapses at evaluated points and grows with distance from them, which is what makes the variance useful for guiding the search.
+Read the posterior mean as a kernel-weighted regression: the row vector $k(x_{\ast}, X)$ gives the similarity of the candidate to each evaluated point, and the precision-weighted residual $[K + \sigma_n^2 I]^{-1} y$ tells the formula how to combine those similarities.
+Read the posterior variance as "prior variance minus what the data already explain", which is the GP analogue of the Bayesian shrinkage identity $\mathrm{Var}(\theta) = \mathrm{Var}(\mathbb{E}[\theta \mid D]) + \mathbb{E}[\mathrm{Var}(\theta \mid D)]$.
+The subtracted term cannot exceed the prior, so the posterior variance is always nonnegative and shrinks toward zero as the candidate moves close to an evaluated point.
+The variance collapsing at evaluated points is what makes Expected Improvement and Upper Confidence Bound both avoid re-querying the same input, and it is the reason posterior variance is the right signal for "where would another evaluation be informative".
 
-### Method 2: Expected Improvement
+### Method 2: Expected Improvement acquisition
 
 Let $f^{\ast} = \max_{i \le n} y_i$ denote the best observed value so far.
 Expected Improvement scores a candidate $x \in \mathcal{X}$ by the expected positive gain over $f^{\ast}$, with expectation taken under the GP posterior at $x$:
@@ -424,24 +378,17 @@ $$\mathrm{EI}(x) = \mathbb{E}\left[\max\lbrace f(x) - f^{\ast} - \xi,\, 0 \rbrac
 The parameter $\xi \ge 0$ is an exploration tilt, in units of the objective: it requires a posterior improvement of at least $\xi$ before contributing to the score.
 Since $f(x) \mid X, y \sim \mathcal{N}(\mu(x), \sigma^2(x))$, the expectation is a truncated-Gaussian integral with the closed form
 
-$$\mathrm{EI}(x) = (\mu(x) - f^{\ast} - \xi)\, \Phi(z) + \sigma(x)\, \phi(z),
+$$\mathrm{EI}(x) = \underbrace{(\mu(x) - f^{\ast} - \xi)\, \Phi(z)}_{\text{exploitation: bet on posterior mean}} + \underbrace{\sigma(x)\, \phi(z)}_{\text{exploration: bet on posterior spread}},
 \qquad
 z = \frac{\mu(x) - f^{\ast} - \xi}{\sigma(x)},$$
 
 valid whenever $\sigma(x) > 0$.
 Here $\Phi$ and $\phi$ denote the cumulative distribution function and probability density function of the standard normal distribution $\mathcal{N}(0, 1)$.
-The first term rewards a high posterior mean; the second term rewards a high posterior standard deviation, which is the value-of-information contribution at unexplored points.
+The split into exploitation plus exploration is why Expected Improvement works without a hand-tuned trade-off.
+The first term is large where the posterior mean already exceeds the best observation, so it pulls the search toward known promising regions.
+The second term is large where the posterior standard deviation is high, which only happens away from evaluated points, so it pulls the search toward unexplored regions.
 Expected Improvement vanishes at evaluated points because $\sigma(x_i) = 0$ there, so the loop never re-evaluates the same input.
-
-### Method 3: Upper Confidence Bound
-
-The Upper Confidence Bound replaces the Expected-Improvement integral with a simple posterior-quantile rule:
-
-$$\mathrm{UCB}(x) = \mu(x) + \kappa\, \sigma(x).$$
-
-The coefficient $\kappa > 0$ has units of posterior standard deviations.
-A small $\kappa$ collapses the rule to a greedy maximization of the posterior mean; a large $\kappa$ pushes the search toward uncertain regions.
-In the GP-bandit theory of Srinivas et al. (2010), choosing $\kappa$ to grow as $\sqrt{2 \log(t^{d/2 + 2})}$ at iteration $t$ in dimension $d$ produces no-regret behaviour with high probability; in practice $\kappa = 2$ is the common default and the value used below.
+The Bayesian-optimization loop alternates between fitting the GP and maximizing $\mathrm{EI}$ to pick the next evaluation, repeating until the evaluation budget is exhausted.
 """
     )
 
@@ -461,8 +408,7 @@ In the GP-bandit theory of Srinivas et al. (2010), choosing $\kappa$ to grow as 
         f"| Kernel signal std $\\sigma_f$ | {sigma_f:.2f} | Squared-exponential kernel |\n"
         f"| Kernel noise std $\\sigma_n$ | {sigma_n:.0e} | Almost-deterministic profit |\n"
         f"| Length-scale grid | $[{length_grid.min():.2f},\\, {length_grid.max():.2f}]$, {len(length_grid)} points | Tuned by log marginal likelihood |\n"
-        f"| UCB confidence $\\kappa$ | {kappa_ucb:.1f} | For Method 3 |\n"
-        f"| EI exploration $\\xi$ | {xi_ei:.2f} | For Method 2 |"
+        f"| EI exploration $\\xi$ | {xi_ei:.2f} | Posterior-improvement tilt |"
     )
 
     report.add_solution_method(
@@ -513,40 +459,18 @@ In the GP-bandit theory of Srinivas et al. (2010), choosing $\kappa$ to grow as 
         "If the length scale is too large the surrogate underestimates the local curvature near a peak and Expected Improvement under-explores. "
         "If the length scale is too small the surrogate over-credits noise and Expected Improvement over-explores. "
         "The diagnostic is to plot the posterior mean and the one-sigma band against the true objective at the snapshot iterations, which we do below.\n\n"
-
-        "### Method 3: Upper Confidence Bound acquisition\n\n"
-        "The Upper Confidence Bound is the GP-bandit acquisition with theoretical regret bounds. "
-        "It is linear in the posterior mean and standard deviation. "
-        "It has one tuning constant $\\kappa$ that fully determines the exploration-exploitation trade-off. "
-        "Small $\\kappa$ is greedy on the mean. "
-        "Large $\\kappa$ chases uncertainty.\n\n"
+        "The full Bayesian-optimization loop is the surrogate, the acquisition, and a small initial design glued together. "
+        "The initial design is needed because the GP needs a few observations before its posterior is informative; "
+        "five uniform draws is enough on this problem.\n\n"
         "```text\n"
-        "Algorithm: One step of Bayesian optimization with UCB\n"
-        "Input : evaluated inputs X, targets y, kernel hyperparameters, candidate grid X_star, kappa\n"
-        "Output: next evaluation x_new\n"
-        "  fit GP on (X, y)\n"
-        "  predict (mu, sigma) on X_star\n"
-        "  UCB = mu + kappa * sigma\n"
-        "  x_new = X_star[argmax(UCB)]\n"
-        "```\n\n"
-        "UCB is simpler than Expected Improvement and easier to inspect. "
-        "It can stall when $\\kappa$ is too small because all evaluations cluster around the current best basin. "
-        "It can overspend on exploration when $\\kappa$ is too large because the most-uncertain point is always far from the current best. "
-        "On bimodal surfaces the practical sweet spot is around $\\kappa = 2$, which is the default used here.\n\n"
-
-        "### Method 4: Full Bayesian-optimization loop\n\n"
-        "The full procedure is the GP surrogate, the acquisition, and a small initial design glued together. "
-        "The initial design is needed because the GP needs a few observations before its posterior is informative. "
-        "Five uniform draws is enough on this problem.\n\n"
-        "```text\n"
-        "Algorithm: Bayesian optimization\n"
-        "Input : objective f, bounds, kernel, acquisition a(.), initial size n0, total budget T\n"
+        "Algorithm: Bayesian optimization with Expected Improvement\n"
+        "Input : objective f, bounds, kernel, initial size n0, total budget T\n"
         "Output: argmax of evaluated points\n"
         "  draw n0 uniform points X = (x_1, ..., x_n0) from bounds, evaluate y = f(X)\n"
         "  for t = n0 + 1, ..., T:\n"
         "      refit GP hyperparameters by log marginal likelihood maximization\n"
         "      predict (mu, sigma) on a dense candidate grid\n"
-        "      x_t = argmax of a(x) on the grid\n"
+        "      x_t = argmax of EI(x) on the grid\n"
         "      y_t = f(x_t)\n"
         "      X, y <- append (x_t, y_t)\n"
         "  return (x_k, y_k) with k = argmax of y\n"
@@ -627,9 +551,6 @@ In the GP-bandit theory of Srinivas et al. (2010), choosing $\kappa$ to grow as 
     fig3, ax3 = plt.subplots(figsize=(9, 5.5))
     ax3.plot(np.arange(1, len(bo_curve) + 1), bo_curve, "o-", color="tab:purple",
              linewidth=2, markersize=4, label=f"Bayesian optimization (EI), best at eval {eval_to_global_ei}")
-    ax3.plot(np.arange(1, len(bo_ucb_curve) + 1), bo_ucb_curve, "s-", color="tab:cyan",
-             linewidth=1.5, markersize=4, alpha=0.85,
-             label=f"Bayesian optimization (UCB), best at eval {eval_to_global_ucb}")
     ax3.plot(np.arange(1, len(multi_curve) + 1), multi_curve, color="tab:blue",
              linewidth=1.5, alpha=0.8,
              label=f"Multi-start L-BFGS-B, global at eval {eval_to_global_ms}")
@@ -652,7 +573,6 @@ In the GP-bandit theory of Srinivas et al. (2010), choosing $\kappa$ to grow as 
     report.add_results(
         f"The convergence plot is the head-to-head against the same three baselines as `numerical-methods/global-search-multistart/`. "
         f"Bayesian optimization with Expected Improvement finds the global at evaluation {eval_to_global_ei} and converges sharply within its budget of {n_total} evaluations. "
-        f"Bayesian optimization with Upper Confidence Bound finds it at evaluation {eval_to_global_ucb}. "
         f"The baselines also recover the global on this seed, but they spend much larger budgets to do so. "
         f"Random search needs {eval_to_global_rs} draws before luck delivers an above-global point, and runs through all {n_random} draws because it has no stopping rule. "
         f"Multi-start L-BFGS-B happens to seed its first start in the high basin and converges there in {eval_to_global_ms} L-BFGS-B calls; over {n_starts} starts it spends {len(multi_curve)} L-BFGS-B calls in total. "
@@ -668,34 +588,29 @@ In the GP-bandit theory of Srinivas et al. (2010), choosing $\kappa$ to grow as 
     method_table = pd.DataFrame({
         "Method": [
             "Bayesian optimization (EI)",
-            "Bayesian optimization (UCB)",
             "Multi-start L-BFGS-B",
             "Random search",
             "Simulated annealing",
         ],
         "Setting": [
             f"{n_initial} initial + {n_iter_bo} EI steps, seed {seed_bo}",
-            f"{n_initial} initial + {n_iter_bo} UCB steps, kappa {kappa_ucb}, seed {seed_bo}",
             f"{n_starts} starts, seed {seed_bo + 2}",
             f"{n_random} draws, seed {seed_bo + 1}",
             f"max iterations 500, seed {seed_bo + 3}",
         ],
         "Estimated optimum": [
             f"{p_bo_ei:.4f}",
-            f"{p_bo_ucb:.4f}",
             f"{p_multi:.4f}",
             f"{p_rs:.4f}",
             f"{p_sa:.4f}",
         ],
         "Profit": [
             f"{best_bo_ei:.4f}",
-            f"{best_bo_ucb:.4f}",
             f"{best_multi:.4f}",
             f"{profit_rs:.4f}",
             f"{profit_sa:.4f}",
         ],
         "Function evaluations": [
-            f"{n_total}",
             f"{n_total}",
             f"{len(multi_curve)}",
             f"{n_random}",
@@ -703,7 +618,6 @@ In the GP-bandit theory of Srinivas et al. (2010), choosing $\kappa$ to grow as 
         ],
         "Evaluations to global": [
             f"{eval_to_global_ei}" if eval_to_global_ei else "not reached",
-            f"{eval_to_global_ucb}" if eval_to_global_ucb else "not reached",
             f"{eval_to_global_ms}" if eval_to_global_ms else "not reached",
             f"{eval_to_global_rs}" if eval_to_global_rs else "not reached",
             f"{eval_to_global_sa}" if eval_to_global_sa else "not reached",
@@ -711,9 +625,8 @@ In the GP-bandit theory of Srinivas et al. (2010), choosing $\kappa$ to grow as 
     })
     report.add_results(
         "The comparison table is normalized on the same objective and bracket. "
-        "All five methods recover the global peak. "
-        "The Bayesian-optimization budget is two orders of magnitude smaller than simulated annealing and one order smaller than random search or multi-start. "
-        "The two acquisition rules behave similarly on this problem because the surface is smooth between peaks and the global basin is wide once it is found."
+        "All four methods recover the global peak. "
+        "The Bayesian-optimization budget is two orders of magnitude smaller than simulated annealing and one order smaller than random search or multi-start."
     )
     report.add_table(
         "tables/method_comparison.csv",

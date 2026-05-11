@@ -295,11 +295,12 @@ def main() -> None:
 Bayes' rule combines a likelihood $L(D \mid \theta)$ with a prior density $p_0(\theta)$ into a posterior density
 
 $$
-p(\theta \mid D) = \frac{{L(D \mid \theta)\, p_0(\theta)}}{{\int_{{\Theta}} L(D \mid \theta')\, p_0(\theta')\, d\theta'}}.
+p(\theta \mid D) = \frac{{\overbrace{{L(D \mid \theta)}}^{{\text{{likelihood}}}}\, \overbrace{{p_0(\theta)}}^{{\text{{prior}}}}}}{{\underbrace{{\int_{{\Theta}} L(D \mid \theta')\, p_0(\theta')\, d\theta'}}_{{\text{{marginal likelihood }} m(D)}}}}.
 $$
 
-The numerator $L(D \mid \theta)\, p_0(\theta)$ is the posterior kernel.
-The denominator is the marginal likelihood $m(D) = \int L(D \mid \theta') p_0(\theta')\, d\theta'$, an integral over $\Theta$ that is usually intractable.
+The numerator $L(D \mid \theta)\, p_0(\theta)$ is the posterior kernel, the only thing the sampler needs.
+The denominator is the marginal likelihood $m(D)$, an integral over $\Theta$ that is usually intractable.
+That intractability is the whole reason MCMC exists: the sampler in Method 2 evaluates the kernel and never the marginal likelihood, because the kernel ratio cancels the unknown normalizing constant.
 Closed-form posteriors arise when the prior is conjugate to the likelihood (Method 1).
 Otherwise we sample (Method 2).
 
@@ -341,10 +342,12 @@ Writing $\alpha_{{\mathrm{{post}}}} = \alpha + k$ and $\beta_{{\mathrm{{post}}}}
 The posterior mean is
 
 $$
-\mathbb{{E}}[\theta \mid D] = \frac{{\alpha_{{\mathrm{{post}}}}}}{{\alpha_{{\mathrm{{post}}}} + \beta_{{\mathrm{{post}}}}}} = \frac{{\alpha + k}}{{\alpha + \beta + n}}.
+\mathbb{{E}}[\theta \mid D] = \frac{{\alpha_{{\mathrm{{post}}}}}}{{\alpha_{{\mathrm{{post}}}} + \beta_{{\mathrm{{post}}}}}} = \underbrace{{\frac{{\alpha + \beta}}{{\alpha + \beta + n}}}}_{{\text{{prior weight}}}} \cdot \underbrace{{\frac{{\alpha}}{{\alpha + \beta}}}}_{{\text{{prior mean}}}} + \underbrace{{\frac{{n}}{{\alpha + \beta + n}}}}_{{\text{{data weight}}}} \cdot \underbrace{{\frac{{k}}{{n}}}}_{{\text{{sample fraction}}}}.
 $$
 
-It interpolates between the prior mean $\alpha / (\alpha + \beta)$ and the sample fraction $k / n$, with weights proportional to the prior pseudo-count $\alpha + \beta$ and the sample size $n$.
+Written this way the posterior mean is a convex combination of the prior mean and the sample fraction, with weights summing to one.
+The prior weight $(\alpha + \beta)/(\alpha + \beta + n)$ shrinks toward zero as the sample size grows, so a Bayesian with a flat prior and a large dataset reports essentially the sample fraction.
+This is the same shrinkage logic that drives the Gaussian-process posterior in `numerical-methods/bayesian-optimization/`: in both models the posterior mean is a weighted average of a prior anchor and a data-driven estimate, weighted by their respective precisions.
 The posterior variance is
 
 $$
@@ -397,9 +400,10 @@ Because the proposal density $q(\theta^{{\star}} \mid \theta_t)$ is symmetric, t
 
 $$
 \alpha(\theta_t, \theta^{{\star}}) =
-\min\lbrace 1,\, \pi(\theta^{{\star}} \mid D) / \pi(\theta_t \mid D) \rbrace.
+\min\bigg\lbrace 1,\, \underbrace{{\frac{{\pi(\theta^{{\star}} \mid D)}}{{\pi(\theta_t \mid D)}}}}_{{\text{{kernel ratio, marginal cancels}}}} \bigg\rbrace.
 $$
 
+The marginal likelihood $m(D)$ appears in both the numerator and denominator of the kernel ratio and cancels exactly, which is why the sampler never needs to evaluate the partition function.
 This rule satisfies detailed balance: for any pair $(\theta, \theta')$ the joint density of "current state and proposal" is symmetric under swapping the two, since
 
 $$

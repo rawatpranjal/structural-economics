@@ -25,7 +25,11 @@ $$\sum_{t=0}^{\infty} \beta^t u(c_t),
 
 The value function solves a one-state Bellman equation:
 
-$$V(W) = \max_{0 \le c \le W} \{\, u(c) + \beta\, V(W-c) \,\}.$$
+$$V(W) = \max_{0 \le c \le W} \big\{\, \underbrace{u(c)}_{\text{flow utility today}} + \underbrace{\beta\, V(W-c)}_{\text{discounted continuation value}} \,\big\}.$$
+
+The flow / continuation split is the entire economic content of the Bellman equation.
+Eating one more unit today raises $u(c)$ but shrinks the stock left for tomorrow, which lowers $V(W-c)$.
+The optimum balances those two forces.
 
 The first-order condition and envelope condition give the Euler equation:
 
@@ -95,17 +99,19 @@ $$T_{\pi} V = u(\pi) + \beta\, P_{\pi}\, V.$$
 The fixed point $V_{\pi}$ satisfies $V_{\pi} = u(\pi) + \beta P_{\pi} V_{\pi}$.
 Rearranging gives a linear system in $V_{\pi}$:
 
-$$(I - \beta\, P_{\pi})\, V_{\pi} = u(\pi).$$
+$$\underbrace{(I - \beta\, P_{\pi})}_{\text{discounted resolvent}}\, V_{\pi} = \underbrace{u(\pi)}_{\text{flow utility under } \pi}.$$
 
+The resolvent $(I - \beta P_{\pi})^{-1}$ is the discrete analogue of the geometric series $\sum_{k=0}^{\infty} (\beta P_{\pi})^k$, which is exactly the discounted sum of flow utilities along the Markov chain induced by the policy.
+That is why the linear system is the exact policy evaluation: it computes the infinite expected discounted utility in one solve rather than approximating it by repeated application of $T_{\pi}$.
 The matrix $I - \beta P_{\pi}$ is invertible because $\beta P_{\pi}$ has spectral radius at most $\beta < 1$.
 Exact policy iteration alternates policy improvement with this exact solve:
 
 $$\pi_{n+1} \in \arg\max_{c} \{\, u(c) + \beta\, V_n(W-c) \,\},
-\qquad V_{n+1} = (I - \beta\, P_{\pi_{n+1}})^{-1}\, u(\pi_{n+1}).$$
+\qquad V_{n+1} = \underbrace{(I - \beta\, P_{\pi_{n+1}})^{-1}\, u(\pi_{n+1})}_{\text{exact value of always playing } \pi_{n+1}}.$$
 
 The iteration can be read as Newton's method applied to the fixed-point equation $V = T V$.
 Near an optimal policy the improvement step makes only second-order changes in $V$.
-Convergence is therefore super-linear once the policy is close to the optimum.
+Convergence is therefore super-linear once the policy is close to the optimum, which is why Howard typically finishes in three or four iterations while VFI needs hundreds.
 
 ## Model Setup
 
@@ -210,7 +216,7 @@ Starting from $W_0 = 1$ the policy produces geometric depletion of the cake. The
 
 <img src="figures/simulation.png" alt="Wealth and consumption paths starting from $W_0=1$, numerical against closed form" width="80%">
 
-The convergence plot shows three different rates on the same problem. VFI traces a straight line on the log scale with slope $\log_{10} \beta$. This is the contraction rate of the operator $T$ in the sup norm. MPI with $k = 5$ inner sweeps drops faster because each outer step composes the policy contraction $T_{\pi}$ a total of $k+1$ times. Exact PI reaches tolerance in a handful of outer iterations and shows the super-linear shape characteristic of Newton's method. The wall times on this run are recorded for reference. VFI took **0.44s**. MPI took **0.08s**. Exact PI took **0.09s**.
+The convergence plot shows three different rates on the same problem. VFI traces a straight line on the log scale with slope $\log_{10} \beta$. This is the contraction rate of the operator $T$ in the sup norm. MPI with $k = 5$ inner sweeps drops faster because each outer step composes the policy contraction $T_{\pi}$ a total of $k+1$ times. Exact PI reaches tolerance in a handful of outer iterations and shows the super-linear shape characteristic of Newton's method. The wall times on this run are recorded for reference. VFI took **0.45s**. MPI took **0.09s**. Exact PI took **0.10s**.
 
 <img src="figures/convergence.png" alt="Sup-norm update against outer iteration for the three solvers" width="80%">
 
@@ -235,9 +241,9 @@ The method table summarises the trade-off across the three solvers. VFI takes th
 
 | Method                    |   Outer iterations |   Final update |   Sup-norm vs closed form |   Wall time (s) |
 |:--------------------------|-------------------:|---------------:|--------------------------:|----------------:|
-| Value function iteration  |                 68 |       4.23e-07 |                    0.0252 |            0.44 |
-| Modified policy iteration |                 13 |       1.88e-12 |                    0.0252 |            0.08 |
-| Exact policy iteration    |                 11 |       0        |                    0.0252 |            0.09 |
+| Value function iteration  |                 68 |       4.23e-07 |                    0.0252 |            0.45 |
+| Modified policy iteration |                 13 |       1.88e-12 |                    0.0252 |            0.09 |
+| Exact policy iteration    |                 11 |       0        |                    0.0252 |            0.1  |
 
 ## Takeaway
 

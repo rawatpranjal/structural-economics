@@ -46,15 +46,17 @@ Suppose we have observed evaluations $y_i = f(x_i) + \varepsilon_i$ for $i = 1, 
 Stack the targets into $y = (y_1, \ldots, y_n)^{\top} \in \mathbb{R}^n$.
 Because the joint distribution of $(y, f(x_{\ast}))$ at any new input $x_{\ast} \in \mathcal{X}$ is Gaussian by construction, the conditional distribution $f(x_{\ast}) \mid (X, y)$ is also Gaussian, with closed-form posterior mean $\mu(x_{\ast})$ and variance $\sigma^2(x_{\ast})$:
 
-$$\mu(x_{\ast}) = k(x_{\ast}, X) \left[K(X, X) + \sigma_n^2 I\right]^{-1} y,$$
+$$\mu(x_{\ast}) = \underbrace{k(x_{\ast}, X)}_{\text{similarity to training inputs}} \underbrace{\left[K(X, X) + \sigma_n^2 I\right]^{-1} y}_{\text{noise-corrected training residual}},$$
 
-$$\sigma^2(x_{\ast}) = k(x_{\ast}, x_{\ast}) - k(x_{\ast}, X) \left[K(X, X) + \sigma_n^2 I\right]^{-1} k(X, x_{\ast}).$$
+$$\sigma^2(x_{\ast}) = \underbrace{k(x_{\ast}, x_{\ast})}_{\text{prior variance at } x_{\ast}} - \underbrace{k(x_{\ast}, X) \left[K(X, X) + \sigma_n^2 I\right]^{-1} k(X, x_{\ast})}_{\text{variance explained by the data}}.$$
 
 The vector $k(x_{\ast}, X) \in \mathbb{R}^n$ collects the kernel values $(k(x_{\ast}, x_1), \ldots, k(x_{\ast}, x_n))$ and $I$ is the $n \times n$ identity matrix.
-The posterior mean is the surrogate prediction; the posterior variance is the surrogate's uncertainty.
-The variance collapses at evaluated points and grows with distance from them, which is what makes the variance useful for guiding the search.
+Read the posterior mean as a kernel-weighted regression: the row vector $k(x_{\ast}, X)$ gives the similarity of the candidate to each evaluated point, and the precision-weighted residual $[K + \sigma_n^2 I]^{-1} y$ tells the formula how to combine those similarities.
+Read the posterior variance as "prior variance minus what the data already explain", which is the GP analogue of the Bayesian shrinkage identity $\mathrm{Var}(\theta) = \mathrm{Var}(\mathbb{E}[\theta \mid D]) + \mathbb{E}[\mathrm{Var}(\theta \mid D)]$.
+The subtracted term cannot exceed the prior, so the posterior variance is always nonnegative and shrinks toward zero as the candidate moves close to an evaluated point.
+The variance collapsing at evaluated points is what makes Expected Improvement and Upper Confidence Bound both avoid re-querying the same input, and it is the reason posterior variance is the right signal for "where would another evaluation be informative".
 
-### Method 2: Expected Improvement
+### Method 2: Expected Improvement acquisition
 
 Let $f^{\ast} = \max_{i \le n} y_i$ denote the best observed value so far.
 Expected Improvement scores a candidate $x \in \mathcal{X}$ by the expected positive gain over $f^{\ast}$, with expectation taken under the GP posterior at $x$:
@@ -64,24 +66,17 @@ $$\mathrm{EI}(x) = \mathbb{E}\left[\max\lbrace f(x) - f^{\ast} - \xi,\, 0 \rbrac
 The parameter $\xi \ge 0$ is an exploration tilt, in units of the objective: it requires a posterior improvement of at least $\xi$ before contributing to the score.
 Since $f(x) \mid X, y \sim \mathcal{N}(\mu(x), \sigma^2(x))$, the expectation is a truncated-Gaussian integral with the closed form
 
-$$\mathrm{EI}(x) = (\mu(x) - f^{\ast} - \xi)\, \Phi(z) + \sigma(x)\, \phi(z),
+$$\mathrm{EI}(x) = \underbrace{(\mu(x) - f^{\ast} - \xi)\, \Phi(z)}_{\text{exploitation: bet on posterior mean}} + \underbrace{\sigma(x)\, \phi(z)}_{\text{exploration: bet on posterior spread}},
 \qquad
 z = \frac{\mu(x) - f^{\ast} - \xi}{\sigma(x)},$$
 
 valid whenever $\sigma(x) > 0$.
 Here $\Phi$ and $\phi$ denote the cumulative distribution function and probability density function of the standard normal distribution $\mathcal{N}(0, 1)$.
-The first term rewards a high posterior mean; the second term rewards a high posterior standard deviation, which is the value-of-information contribution at unexplored points.
+The split into exploitation plus exploration is why Expected Improvement works without a hand-tuned trade-off.
+The first term is large where the posterior mean already exceeds the best observation, so it pulls the search toward known promising regions.
+The second term is large where the posterior standard deviation is high, which only happens away from evaluated points, so it pulls the search toward unexplored regions.
 Expected Improvement vanishes at evaluated points because $\sigma(x_i) = 0$ there, so the loop never re-evaluates the same input.
-
-### Method 3: Upper Confidence Bound
-
-The Upper Confidence Bound replaces the Expected-Improvement integral with a simple posterior-quantile rule:
-
-$$\mathrm{UCB}(x) = \mu(x) + \kappa\, \sigma(x).$$
-
-The coefficient $\kappa > 0$ has units of posterior standard deviations.
-A small $\kappa$ collapses the rule to a greedy maximization of the posterior mean; a large $\kappa$ pushes the search toward uncertain regions.
-In the GP-bandit theory of Srinivas et al. (2010), choosing $\kappa$ to grow as $\sqrt{2 \log(t^{d/2 + 2})}$ at iteration $t$ in dimension $d$ produces no-regret behaviour with high probability; in practice $\kappa = 2$ is the common default and the value used below.
+The Bayesian-optimization loop alternates between fitting the GP and maximizing $\mathrm{EI}$ to pick the next evaluation, repeating until the evaluation budget is exhausted.
 
 ## Model Setup
 
@@ -100,8 +95,7 @@ In the GP-bandit theory of Srinivas et al. (2010), choosing $\kappa$ to grow as 
 | Kernel signal std $\sigma_f$ | 2.00 | Squared-exponential kernel |
 | Kernel noise std $\sigma_n$ | 1e-03 | Almost-deterministic profit |
 | Length-scale grid | $[0.30,\, 2.50]$, 12 points | Tuned by log marginal likelihood |
-| UCB confidence $\kappa$ | 2.0 | For Method 3 |
-| EI exploration $\xi$ | 0.00 | For Method 2 |
+| EI exploration $\xi$ | 0.00 | Posterior-improvement tilt |
 
 ## Solution Method
 
@@ -144,35 +138,17 @@ Output: next evaluation x_new
 
 Expected Improvement fails when the posterior is badly miscalibrated. If the length scale is too large the surrogate underestimates the local curvature near a peak and Expected Improvement under-explores. If the length scale is too small the surrogate over-credits noise and Expected Improvement over-explores. The diagnostic is to plot the posterior mean and the one-sigma band against the true objective at the snapshot iterations, which we do below.
 
-### Method 3: Upper Confidence Bound acquisition
-
-The Upper Confidence Bound is the GP-bandit acquisition with theoretical regret bounds. It is linear in the posterior mean and standard deviation. It has one tuning constant $\kappa$ that fully determines the exploration-exploitation trade-off. Small $\kappa$ is greedy on the mean. Large $\kappa$ chases uncertainty.
+The full Bayesian-optimization loop is the surrogate, the acquisition, and a small initial design glued together. The initial design is needed because the GP needs a few observations before its posterior is informative; five uniform draws is enough on this problem.
 
 ```text
-Algorithm: One step of Bayesian optimization with UCB
-Input : evaluated inputs X, targets y, kernel hyperparameters, candidate grid X_star, kappa
-Output: next evaluation x_new
-  fit GP on (X, y)
-  predict (mu, sigma) on X_star
-  UCB = mu + kappa * sigma
-  x_new = X_star[argmax(UCB)]
-```
-
-UCB is simpler than Expected Improvement and easier to inspect. It can stall when $\kappa$ is too small because all evaluations cluster around the current best basin. It can overspend on exploration when $\kappa$ is too large because the most-uncertain point is always far from the current best. On bimodal surfaces the practical sweet spot is around $\kappa = 2$, which is the default used here.
-
-### Method 4: Full Bayesian-optimization loop
-
-The full procedure is the GP surrogate, the acquisition, and a small initial design glued together. The initial design is needed because the GP needs a few observations before its posterior is informative. Five uniform draws is enough on this problem.
-
-```text
-Algorithm: Bayesian optimization
-Input : objective f, bounds, kernel, acquisition a(.), initial size n0, total budget T
+Algorithm: Bayesian optimization with Expected Improvement
+Input : objective f, bounds, kernel, initial size n0, total budget T
 Output: argmax of evaluated points
   draw n0 uniform points X = (x_1, ..., x_n0) from bounds, evaluate y = f(X)
   for t = n0 + 1, ..., T:
       refit GP hyperparameters by log marginal likelihood maximization
       predict (mu, sigma) on a dense candidate grid
-      x_t = argmax of a(x) on the grid
+      x_t = argmax of EI(x) on the grid
       y_t = f(x_t)
       X, y <- append (x_t, y_t)
   return (x_k, y_k) with k = argmax of y
@@ -190,21 +166,20 @@ The four panels show the Gaussian-process posterior at 5, 10, 20, and 30 evaluat
 
 <img src="figures/bo-iterations.png" alt="GP posterior, evaluated points, and EI-chosen next pick at four iteration snapshots" width="80%">
 
-The convergence plot is the head-to-head against the same three baselines as `numerical-methods/global-search-multistart/`. Bayesian optimization with Expected Improvement finds the global at evaluation 12 and converges sharply within its budget of 30 evaluations. Bayesian optimization with Upper Confidence Bound finds it at evaluation 13. The baselines also recover the global on this seed, but they spend much larger budgets to do so. Random search needs 140 draws before luck delivers an above-global point, and runs through all 500 draws because it has no stopping rule. Multi-start L-BFGS-B happens to seed its first start in the high basin and converges there in 5 L-BFGS-B calls; over 50 starts it spends 312 L-BFGS-B calls in total. Simulated annealing also locates the global early in this run but burns roughly 1007 evaluations on its cooling schedule. The right comparison is total budget, not first discovery: Bayesian optimization uses 30 evaluations end to end, multi-start uses 312, random search uses 500, and simulated annealing uses about 1007.
+The convergence plot is the head-to-head against the same three baselines as `numerical-methods/global-search-multistart/`. Bayesian optimization with Expected Improvement finds the global at evaluation 12 and converges sharply within its budget of 30 evaluations. The baselines also recover the global on this seed, but they spend much larger budgets to do so. Random search needs 140 draws before luck delivers an above-global point, and runs through all 500 draws because it has no stopping rule. Multi-start L-BFGS-B happens to seed its first start in the high basin and converges there in 5 L-BFGS-B calls; over 50 starts it spends 312 L-BFGS-B calls in total. Simulated annealing also locates the global early in this run but burns roughly 1007 evaluations on its cooling schedule. The right comparison is total budget, not first discovery: Bayesian optimization uses 30 evaluations end to end, multi-start uses 312, random search uses 500, and simulated annealing uses about 1007.
 
 <img src="figures/convergence-comparison.png" alt="Best-so-far profit versus evaluation count for BO, multi-start, random search, and simulated annealing" width="80%">
 
-The comparison table is normalized on the same objective and bracket. All five methods recover the global peak. The Bayesian-optimization budget is two orders of magnitude smaller than simulated annealing and one order smaller than random search or multi-start. The two acquisition rules behave similarly on this problem because the surface is smooth between peaks and the global basin is wide once it is found.
+The comparison table is normalized on the same objective and bracket. All four methods recover the global peak. The Bayesian-optimization budget is two orders of magnitude smaller than simulated annealing and one order smaller than random search or multi-start.
 
 **Method comparison at $\lambda = 0.6$, $c = 0.5$, segment intercepts $(10, 8)$**
 
-| Method                      | Setting                                     |   Estimated optimum |   Profit |   Function evaluations |   Evaluations to global |
-|:----------------------------|:--------------------------------------------|--------------------:|---------:|-----------------------:|------------------------:|
-| Bayesian optimization (EI)  | 5 initial + 25 EI steps, seed 0             |              4.2505 |    5.625 |                     30 |                      12 |
-| Bayesian optimization (UCB) | 5 initial + 25 UCB steps, kappa 2.0, seed 0 |              4.2505 |    5.625 |                     30 |                      13 |
-| Multi-start L-BFGS-B        | 50 starts, seed 2                           |              4.25   |    5.625 |                    312 |                       5 |
-| Random search               | 500 draws, seed 1                           |              4.2532 |    5.625 |                    500 |                     140 |
-| Simulated annealing         | max iterations 500, seed 3                  |              4.25   |    5.625 |                   1007 |                       6 |
+| Method                     | Setting                         |   Estimated optimum |   Profit |   Function evaluations |   Evaluations to global |
+|:---------------------------|:--------------------------------|--------------------:|---------:|-----------------------:|------------------------:|
+| Bayesian optimization (EI) | 5 initial + 25 EI steps, seed 0 |              4.2505 |    5.625 |                     30 |                      12 |
+| Multi-start L-BFGS-B       | 50 starts, seed 2               |              4.25   |    5.625 |                    312 |                       5 |
+| Random search              | 500 draws, seed 1               |              4.2532 |    5.625 |                    500 |                     140 |
+| Simulated annealing        | max iterations 500, seed 3      |              4.25   |    5.625 |                   1007 |                       6 |
 
 The iteration log records every Bayesian-optimization evaluation with Expected Improvement. The first 5 rows are the initial uniform design. The remaining 25 rows are EI-chosen evaluations. The best-so-far column converges to the global peak well before the 30-evaluation budget is exhausted.
 
