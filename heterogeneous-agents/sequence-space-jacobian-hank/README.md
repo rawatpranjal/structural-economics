@@ -30,35 +30,41 @@ $$
 where $\eta$ is the elasticity of intertemporal substitution and $\varphi$ is
 the Frisch elasticity of labor supply.
 
-**Firm block.** A representative final-good firm produces $Y_t = Z_t L_t$ from
-labor with constant returns. Rotemberg price-setting gives a sticky-price
-markup $\mu_t$. To first order in deviations from the zero-inflation steady
-state,
+**Firm block.** A representative final-good firm produces $Y_t = Z_t\, L_t$
+from labor with constant returns. Labor demand $L_t = Y_t / Z_t$ follows from
+the production function. Real marginal cost and firm profits are
 
 $$
-w_t = (1 - 1/\mu_t)\,\text{ correction terms } + Z_t / \mu_t,
-\qquad mc_t = w_t / Z_t,
-\qquad \mathrm{Div}_t = Y_t - w_t\, L_t,
+mc_t = w_t / Z_t,
+\qquad
+\mathrm{Div}_t = Y_t - w_t\, L_t = Y_t\, (1 - mc_t).
 $$
 
-and the linearized New Keynesian Phillips curve is
+Monopolistic intermediate firms set prices subject to Rotemberg adjustment
+costs. To first order in deviations from the zero-inflation steady state
+$mc^{\ast} = 1 / \mu^{\ast}$, the New Keynesian Phillips curve is
 
 $$
-\pi_t = \beta\, \pi_{t+1} + \kappa\, (mc_t - 1/\mu^{\ast}).
+\pi_t = \frac{1}{1 + r^{\ast}}\, \pi_{t+1} + \kappa\, (mc_t - 1/\mu^{\ast}),
 $$
 
-**Monetary and fiscal blocks.** The central bank follows a predetermined-
-nominal-rate Taylor rule:
+where the discount factor $1/(1 + r^{\ast})$ comes from real-rate discounting
+of next-period price-setting profits (the exact Rotemberg first-order form
+matches the canonical sequence-jacobian notebook).
+
+**Monetary and fiscal blocks.** The central bank sets the nominal rate one
+period in advance via a Taylor rule on lagged inflation, with $i^{\ast}_t$ a
+shock to the rate target. The current real return is the predetermined
+nominal rate deflated by current inflation:
 
 $$
-1 + r_t = (1 + r^{\ast}_{t-1} + \phi_{\pi}\, \pi_{t-1}) / (1 + \pi_t),
-\qquad r^{\ast}_t = r^{\ast} + v_t.
+i^{\ast}_t = i^{\ast} + v_t,
+\qquad
+1 + r_t = (1 + i^{\ast}_{t-1} + \phi_{\pi}\, \pi_{t-1}) / (1 + \pi_t).
 $$
 
-The nominal rate at $t$ is set one period in advance; current real return is
-the nominal rate deflated by current inflation. Government debt $B$ is
-constant and the fiscal block balances the budget with a lump-sum tax
-$\mathrm{Tax}_t = r_t B$. The per-skill transfer is
+Government debt $B$ is constant and the fiscal block balances the budget with
+a lump-sum tax $\mathrm{Tax}_t = r_t\, B$. The per-skill transfer is
 
 $$
 T_t = \mathrm{Div}_t - \mathrm{Tax}_t = Y_t\,(1 - w_t / Z_t) - r_t\, B.
@@ -177,14 +183,14 @@ $3 T \times 3 T$ system is solved by a single dense linear solve.
 **Convergence.** The household EGM converged in
 424 iterations to a sup-norm residual of
 9.82e-10. The joint $(\beta, v_{\varphi})$ calibration
-converged in a few Broyden steps to the targets $A^\\ast = B$ and
-$N^E_{\ast} = 1$. The Jacobian construction took 26.6 seconds at
+converged in a few Broyden steps to the targets $A^{\ast} = B$ and
+$N^E_{\ast} = 1$. The Jacobian construction took 26.1 seconds at
 $T = 300$. The aggregate condition number of $H_U$ is order
 $10^{3}$, well within double-precision range.
 
 ## Results
 
-A 100 basis-point monetary tightening pushes the real rate up in both economies. Output and consumption fall on impact in HANK with a slightly smaller magnitude than in the representative-agent NK benchmark, because the skill-proportional dividend rule sends a relatively larger share of the dividend swing to high-skill, low-MPC households who absorb it through saving. The HANK economy still shows larger inflation and real-rate responses than RA, because the cross-section forces real marginal cost to move more to clear the goods market. The aggregate magnitudes here use a small (25 bp) shock to match the figure scale; the canonical Auclert et al. notebook uses a 1 percent annualized shock and reports proportionally larger responses.
+A 100 basis-point monetary tightening (matching the canonical Auclert et al. notebook) pushes the real rate up in both economies. Output and consumption fall on impact in HANK with a slightly smaller magnitude than in the representative-agent NK benchmark, because the skill-proportional dividend rule sends a relatively larger share of the dividend swing to high-skill, low-MPC households who absorb it through saving. Even so, HANK shows larger inflation and real-rate responses than RA because the cross-section forces real marginal cost to move more to clear the goods market.
 
 <img src="figures/irf-comparison.png" alt="Headline impulse responses: HANK vs representative-agent NK" width="80%">
 
@@ -216,7 +222,7 @@ The household block is the costly piece; the aggregate solve is a single dense s
 | Aggregate consumption C*                    | 1.0000    |
 | Aggregate output Y*                         | 1.0000    |
 | Steady-state real rate r* (quarterly)       | 0.0050    |
-| Jacobian construction time (seconds, T=300) | 26.59     |
+| Jacobian construction time (seconds, T=300) | 26.14     |
 | H_U matrix size                             | 900 x 900 |
 | H_U condition number                        | 4.41e+03  |
 | Peak HANK output response (% of Y*)         | -0.190    |
