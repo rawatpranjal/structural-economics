@@ -124,15 +124,15 @@ Output: ranking_hat, gamma_hat
     impact[i, j] <- mean over menus A containing both of
                     p_hat(j, A \ {i}) - p_hat(j, A)
   for each j:
-    score[j] <- sum_i impact[i, j] - sum_i impact[j, i]
-  ranking_hat <- argsort(-score)
+    score[j] <- sum_i impact[j, i] - sum_i impact[i, j]
+  ranking_hat <- argsort(-score)   # high score first = best to worst
 ```
 
 Method 2 needs both singleton menus (or binary menus with default) and at least pairs of menus that differ by one alternative. On dense menu coverage it is robust; on sparse coverage the impact averages are noisy and the ranking score can flip adjacent pairs.
 
 ## Results
 
-The Method-1 maximum-likelihood fit aligns observed frequencies with predicted probabilities across all 31 menus. Inside-alternative cells (blue) and default-option cells (red) both lie close to the 45-degree line. The recovered ranking matches the true ranking in 100% of bootstrap replications at $N = 500$ subjects per menu, and the recovered attention parameters lie within one standard error of the truth on every alternative.
+The Method-1 maximum-likelihood fit aligns observed frequencies with predicted probabilities across all 31 menus. Inside-alternative cells (blue) and default-option cells (red) both lie close to the 45-degree line. The recovered ranking matches the true ranking in 100% of bootstrap replications at $N = 500$ subjects per menu, and the recovered attention parameters lie within one bootstrap standard error of the truth on 3 of 5 alternatives.
 
 <img src="figures/menu-fit.png" alt="Observed vs Method-1 predicted choice frequencies across all menus" width="80%">
 
@@ -140,7 +140,7 @@ The menu-removal heat map is the empirical signature of the random consideration
 
 <img src="figures/menu-removal-asymmetry.png" alt="Menu-removal impact ratios" width="80%">
 
-The intransitivity replication reproduces Example 2 of Manzini and Mariotti exactly. At the calibration $\gamma(a) = 4/9$, $\gamma(b) = 1/2$, $\gamma(c) = 9/10$ with $a \succ b \succ c$, the closed-form probabilities are $p(a, \{a, b\}) = 0.000$, $p(b, \{b, c\}) = 0.000$, and $p(a, \{a, c\}) = 0.444$. Both $p(a, \{a, b\})$ and $p(a, \{a, c\})$ fall below the weak-stochastic-transitivity threshold of $0.5$, while $p(b, \{b, c\})$ meets it. The Luce rule must satisfy weak stochastic transitivity (since it satisfies the much stronger condition of strong stochastic transitivity) and so cannot rationalise this pattern. The random consideration set rule does, with $a$ as the strictly preferred alternative throughout.
+The intransitivity replication reproduces Example 2 of Manzini and Mariotti exactly. At the calibration $\gamma(a) = 4/9$, $\gamma(b) = 1/2$, $\gamma(c) = 9/10$ with $a \succ b \succ c$, the closed-form probabilities are $p(a, \{a, b\}) = 0.444$, $p(b, \{b, c\}) = 0.500$, and $p(a, \{a, c\}) = 0.444$. Both $p(a, \{a, b\})$ and $p(a, \{a, c\})$ fall below the weak-stochastic-transitivity threshold of $0.5$, while $p(b, \{b, c\})$ meets it. The Luce rule must satisfy weak stochastic transitivity (since it satisfies the much stronger condition of strong stochastic transitivity) and so cannot rationalise this pattern. The random consideration set rule does, with $a$ as the strictly preferred alternative throughout.
 
 <img src="figures/intransitivity-replication.png" alt="Replication of Manzini-Mariotti Example 2 (weak stochastic transitivity violation)" width="80%">
 
@@ -148,7 +148,7 @@ Both methods recover the attention parameters across all five alternatives. Meth
 
 <img src="figures/parameter-recovery.png" alt="Attention probability recovery, true vs Method 1 vs Method 2" width="80%">
 
-The ranking-recovery table summarises the J(J-1)/2 = 10 pairwise rankings each method gets right on the point estimate, plus the bootstrap exact-ranking accuracy across $N = 500$ subjects per menu. Both methods recover the full ranking on the point estimate at this sample size. Method 1 is more robust to bootstrap noise because it integrates the entire menu structure into the likelihood; Method 2 trades robustness for speed and avoids the $J!$ enumeration.
+The ranking-recovery table summarises the J(J-1)/2 = 10 pairwise rankings each method gets right on the point estimate, plus the bootstrap exact-ranking accuracy across $N = 500$ subjects per menu. Method 1 recovers the full ranking on the point estimate; Method 2 gets 9 of 10 pairs right and swaps one adjacent pair. Method 1 is more robust to bootstrap noise because it integrates the entire menu structure into the likelihood; Method 2 trades robustness for speed and avoids the $J!$ enumeration.
 
 **Pairwise ranking recovery on the point estimate and across bootstrap replications**
 
@@ -157,12 +157,13 @@ The ranking-recovery table summarises the J(J-1)/2 = 10 pairwise rankings each m
 | Method 1 MLE     | a_1 > a_2 > a_3 > a_4 > a_5         | 10 / 10         | 100%                           |
 | Method 2 moments | a_1 > a_2 > a_3 > a_5 > a_4         | 9 / 10          | 31%                            |
 
-The method-comparison table puts the two random-consideration-set fits next to a Luce / multinomial-logit benchmark on the same data. Both Method 1 and Method 2 reach a log-likelihood within one or two units of the true-DGP value and a Kullback-Leibler divergence of essentially zero. Luce sits well below on log-likelihood and well above on KL because IIA cannot match the asymmetric menu-removal pattern. The size of the Luce log-likelihood gap rises with $J$ and with the spread of the attention vector; on data with attention probabilities close to 1 across the board the gap shrinks because the model collapses onto something close to deterministic best choice.
+The method-comparison table puts the two random-consideration-set fits next to a Luce / multinomial-logit benchmark, alongside the log-likelihood evaluated at the true primitives. Method 1 lands within 2 log-likelihood units of the true-DGP value (slightly above it, since the maximum-likelihood fit tracks sampling noise in this particular draw) and reaches a Kullback-Leibler divergence of 0.0042, close to zero. Method 2 trails further: its log-likelihood is 771 units below the true-DGP value and its KL divergence is 1.4908, about 351 times Method 1's. The moment estimator loses information relative to the full likelihood, and the gap shows it. Luce sits below both on log-likelihood and well above both on KL because IIA cannot match the asymmetric menu-removal pattern. The size of the Luce log-likelihood gap rises with $J$ and with the spread of the attention vector; on data with attention probabilities close to 1 across the board the gap shrinks because the model collapses onto something close to deterministic best choice.
 
 **Log-likelihood and Kullback-Leibler divergence on the simulated data**
 
 | Method               |   Log-likelihood |   KL divergence to true | Captures asymmetric impact   |
 |:---------------------|-----------------:|------------------------:|:-----------------------------|
+| True DGP             |         -15075.5 |                  0      | yes                          |
 | Method 1 MLE         |         -15073.4 |                  0.0042 | yes                          |
 | Method 2 moments     |         -15847   |                  1.4908 | yes                          |
 | Luce / MNL benchmark |         -16234   |                  2.2885 | no                           |

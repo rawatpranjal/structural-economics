@@ -63,7 +63,8 @@ the state-space parameters are unknown.
 | Measurement std | 0.10 |
 | Process std | (0.30, 0.25) |
 | Periods | 50 |
-| Initial state | $s_0 = (0,0)$ |
+| Initial state mean $s_{0|0}$ | $(0,0)$ |
+| Initial state covariance $P_{0|0}$ | $0_{2\times 2}$ (zero matrix) |
 
 ## Solution Method
 
@@ -84,8 +85,11 @@ for t = 1, ..., T:
     gain:               K_t = P_{t|t-1} Psi' S_t^{-1}
     update state:       s_hat_{t|t} = s_hat_{t|t-1} + K_t nu_t
     update covariance:  P_{t|t} = P_{t|t-1} - K_t Psi P_{t|t-1}
+    symmetrize:         P_{t|t} <- 0.5 (P_{t|t} + P_{t|t}')
     add log p(nu_t; 0, S_t) to the likelihood
 ```
+
+The covariance update is symmetric in exact arithmetic; the explicit symmetrization step replaces $P_{t|t}$ with $0.5(P_{t|t} + P_{t|t}')$ to cancel floating-point drift and keep the matrix numerically symmetric. The filter starts from $P_{0|0} = 0$, treating the initial state as known with certainty, so the early-period posteriors understate uncertainty relative to a diffuse prior.
 
 ## Results
 

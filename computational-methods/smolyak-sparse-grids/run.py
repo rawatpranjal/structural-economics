@@ -312,7 +312,7 @@ def closed_form_savings(states: np.ndarray) -> np.ndarray:
 # --- Euler error diagnostic ------------------------------------------------
 
 def euler_errors_at(states: np.ndarray, solution: dict) -> np.ndarray:
-    """Absolute Euler equation error at given states."""
+    """Relative Euler equation error |lhs/rhs - 1| at given states."""
     omega = sector_shares()
     Z = Z_const()
     bounds_lower = solution["bounds_lower"]
@@ -466,7 +466,7 @@ def figure_euler_errors(
     solutions: list[dict],
     test_states: np.ndarray,
 ) -> plt.Figure:
-    """Empirical CDF of log10 absolute Euler errors per method."""
+    """Empirical CDF of log10 relative Euler errors per method."""
     fig, ax = plt.subplots(figsize=(8.0, 5.2))
     for sol in solutions:
         errs = euler_errors_at(test_states, sol)
@@ -474,7 +474,7 @@ def figure_euler_errors(
         log_errs = np.sort(log_errs)
         cdf = np.linspace(0.0, 1.0, log_errs.size, endpoint=False)
         ax.plot(log_errs, cdf, label=f"Smolyak mu={sol['mu']}")
-    ax.set_xlabel("log10 absolute Euler error")
+    ax.set_xlabel("log10 relative Euler error")
     ax.set_ylabel("Empirical CDF over test states")
     ax.set_title("Off-Grid Euler Equation Errors")
     ax.legend()
@@ -629,11 +629,11 @@ $A = (1.00, 0.90, 1.10, 0.80)$ the exponent is $1/(1-\alpha) \approx 1.5625$
 and the worked shares are
 
 $$
-A^{1/(1-\alpha)} \approx (1.000, 0.846, 1.161, 0.703),
+A^{1/(1-\alpha)} \approx (1.000, 0.848, 1.161, 0.706),
 \qquad
-Z \approx 3.710,
+Z \approx 3.714,
 \qquad
-\omega \approx (0.269, 0.228, 0.313, 0.190).
+\omega \approx (0.269, 0.228, 0.312, 0.190).
 $$
 
 With $Z \equiv \sum_j A_j^{1 / (1 - \alpha)}$, the four sector Euler
@@ -902,7 +902,7 @@ represents $\log S(x; \theta) = \Phi(x) \theta$.
     best_errs = euler_errors_at(test_states, best)
     report.add_results(
         f"With Smolyak level $\\mu = {best['mu']}$ on $d = {DIM}$ states the policy is stored in "
-        f"{best['nodes']} coefficients. The worst-case absolute Euler error on the "
+        f"{best['nodes']} coefficients. The worst-case relative Euler error on the "
         f"10,000-point Sobol test set is {float(np.max(best_errs)):.2e} and the "
         f"median is {float(np.median(best_errs)):.2e}. "
         f"The same accuracy under a tensor Chebyshev grid would charge "

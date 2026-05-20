@@ -272,7 +272,7 @@ def compute_ownership_matrix(firm_ids: np.ndarray) -> np.ndarray:
 
 
 def compute_share_derivatives(alpha: float, shares: np.ndarray) -> np.ndarray:
-    """ds_j/dp_k matrix.  Own: -alpha*s_j*(1-s_j).  Cross: alpha*s_j*s_k."""
+    """ds_k/dp_j matrix.  Own: -alpha*s_j*(1-s_j).  Cross: alpha*s_j*s_k."""
     J = len(shares)
     D = np.zeros((J, J))
     for j in range(J):
@@ -581,6 +581,28 @@ internalizes lost sales across its own products.
         df_table,
         description="The main demand error is alpha, the endogenous price coefficient. "
         "That error carries into the supply inversion.",
+    )
+
+    # Table: Market-0 cost recovery (makes the MAE figure verifiable from a CSV)
+    cost_recovery = {
+        "Product": product_names,
+        "Price": [f"{prices_m0[i]:.3f}" for i in range(N_PRODUCTS)],
+        "Markup": [f"{markups[i]:.3f}" for i in range(N_PRODUCTS)],
+        "Estimated MC": [f"{est_mc[i]:.3f}" for i in range(N_PRODUCTS)],
+        "True MC": [f"{true_mc[i]:.3f}" for i in range(N_PRODUCTS)],
+        "Absolute error": [f"{abs(est_mc[i] - true_mc[i]):.3f}" for i in range(N_PRODUCTS)],
+    }
+    df_cost_recovery = pd.DataFrame(cost_recovery)
+    df_cost_recovery.loc[len(df_cost_recovery)] = [
+        "Mean", "", "", "", "", f"{np.abs(est_mc - true_mc).mean():.3f}",
+    ]
+    report.add_table(
+        "tables/cost-recovery-market0.csv",
+        "Market-0 Cost Recovery: Estimated vs True Marginal Cost",
+        df_cost_recovery,
+        description="Each row decomposes a market-0 price into a recovered marginal cost "
+        "and a markup. The final row records the mean absolute error against the "
+        "simulated marginal costs.",
     )
 
     report.add_takeaway(

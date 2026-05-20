@@ -46,6 +46,7 @@ with $V_i(\omega)=G_i(a_i^{\ast},a_j^{\ast};\omega,V)$ at every state.
 | Market size | $M=14$ | Scale of current profits |
 | Quality in demand | $\eta=0.75$ | How quality shifts product share |
 | Direct quality payoff | $\lambda=0.35$ | Extra payoff from own quality |
+| Iteration damping weight | $\alpha=0.35$ | Step size in the value update |
 | Equilibrium concept | Pure-strategy MPE | Nash equilibrium in each state game |
 
 ## Solution Method
@@ -61,11 +62,14 @@ For n = 0,1,2,...:
     Build G_i^n(a_1,a_2; omega) from profit, cost, and continuation value.
     Find pure Nash equilibria of the 2-by-2 state game.
     Select the equilibrium with the largest joint payoff if there is a tie.
+    If no pure NE exists (fallback), take the joint-payoff-maximising profile.
     Set T_i V^n(omega) equal to the selected equilibrium payoff.
-  Update V_i^{n+1} = alpha T_i V^n + (1-alpha) V_i^n.  (alpha: iteration damping weight)
+  Update V_i^{n+1} = alpha T_i V^n + (1-alpha) V_i^n.  (alpha=0.35: damping weight)
   Stop when max_{i,omega} |T_i V^n(omega)-V_i^n(omega)| < epsilon.
 Output: MPE policy a_i^{\ast}(omega), values V_i(omega), and deviation gains.
 ```
+
+A 2-by-2 simultaneous game need not have a pure-strategy Nash equilibrium. While value iteration is still moving, an intermediate continuation-value guess can produce such a state game, so the inner step uses a fallback: when no pure NE exists it takes the joint-payoff-maximising profile. At the converged values every state game has a pure NE and the fallback no longer fires, which the solver checks before returning. The reported policy is therefore a genuine pure-strategy Markov-perfect equilibrium at every state.
 
 After convergence, compute one-step deviation gains. At the reported policy, every gain should be zero.
 
@@ -92,6 +96,10 @@ Symmetric states have symmetric values. States with a quality lead show a value 
 | (0,0)   | Invest          | Invest          |          60.03 |          60.03 |              0    |                    0 |
 | (1,2)   | Invest          | Invest          |          58.87 |          78.59 |            -19.72 |                    0 |
 | (2,1)   | Invest          | Invest          |          78.59 |          58.87 |             19.72 |                    0 |
+| (4,0)   | Wait            | Invest          |          99.76 |          42.63 |             57.13 |                    0 |
+| (4,1)   | Wait            | Invest          |          93.34 |          52.83 |             40.51 |                    0 |
+| (4,2)   | Wait            | Invest          |          86.99 |          62.92 |             24.07 |                    0 |
+| (4,3)   | Wait            | Invest          |          81.61 |          71.95 |              9.66 |                    0 |
 | (4,4)   | Wait            | Wait            |          78.52 |          78.52 |              0    |                    0 |
 
 ## Takeaway

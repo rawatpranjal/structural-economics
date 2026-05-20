@@ -60,8 +60,8 @@ The computation compares each Taylor map with the exact transition. Map error ch
 Algorithm: perturbation check for a shock response
 Input: nonlinear law F(x), steady state x_bar = 0, order n, shock epsilon
 Output: Taylor law, map errors, IRF errors, asymmetry statistic
-1. Differentiate F at x_bar and keep terms through order n
-2. Build the local law F_n(x) from those Taylor coefficients
+1. Read the Taylor coefficients of F at x_bar straight from the known parameters
+2. Build the local law F_n(x) from those Taylor coefficients, keeping terms through order n
 3. Compare F_n(x) with F(x) near and away from x_bar
 4. Starting from x_0 = epsilon, iterate x_{t+1} = F_n(x_t)
 5. Repeat from x_0 = -epsilon and add the two paths

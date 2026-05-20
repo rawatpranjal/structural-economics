@@ -79,19 +79,19 @@ The AR(1) half-life is $\log(0.5)/\log(\rho)=6.6$ periods. The income roots are 
 
 ```text
 Procedure: propagate a fiscal innovation through an AR(1) state
-Inputs: rho, sigma, alpha, beta, rho_g, horizon T, shock sequence eps_t
+Inputs: rho, sigma, alpha, beta, rho_g, horizon T, shock sequences eps_t, eta_t
 Outputs: AR path x_t and multiplier-accelerator paths y_t, c_t, i_t, g_t
 
-1. Set eps_0 = 1 for an impulse response.
-2. For a simulation, draw eps_t from N(0, sigma^2) after burn-in.
-3. Update x_t = rho x_{t-1} + eps_t and g_t = rho_g g_{t-1} + eps_t.
+1. Set eps_0 = 1 (or eta_0 = 1) for an impulse response.
+2. For a simulation, draw eps_t and eta_t independently from N(0, sigma^2) after burn-in.
+3. Update x_t = rho x_{t-1} + eps_t and g_t = rho_g g_{t-1} + eta_t.
 4. Set c_t = beta y_{t-1}, i_t = alpha(c_t - c_{t-1}), and y_t = c_t + i_t + g_t.
 5. Record impulse responses, autocorrelations, and the AR(1) spectrum.
 ```
 
 ## Results
 
-A unit shock follows the exact path $\rho^h$ ($h$ = periods after the shock). Raising $\rho$ from 0.5 to 0.9 lengthens the half-life from one to seven periods.
+A unit shock follows the exact path $\rho^h$ ($h$ = periods after the shock). Raising $\rho$ from 0.5 to 0.9 lengthens the half-life from 1.0 to 6.6 periods.
 
 <img src="figures/ar1-irfs.png" alt="Exact AR(1) impulse responses by persistence" width="80%">
 

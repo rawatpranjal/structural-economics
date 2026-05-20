@@ -90,7 +90,7 @@ The GMM step then checks whether the recovered unobserved qualities are orthogon
 
 At the true nonlinear parameters, the contraction converged in **627 iterations** with max $|\delta^{\mathrm{recovered}}-\delta^{\mathrm{true}}|=2.45e-11$.
 
-The GMM search used Nelder-Mead after a coarse starting grid and evaluated the objective 46 times.
+The GMM search first ran a coarse starting grid, where the grid evaluated the objective 25 times. The Nelder-Mead refinement from the best grid point then evaluated the objective 46 more times. The convergence diagnostics in the Results table record these counts so they can be checked against a fresh run.
 
 ## Results
 
@@ -123,6 +123,18 @@ The parameter table checks the simulation truth. The nonlinear dispersion estima
 | $\alpha$ (price)           |   -0.8 |      -0.835 |
 | $\sigma_x$ (RC on $x$)     |    0.8 |       0.951 |
 | $\sigma_p$ (RC on price)   |    0.3 |       0.196 |
+
+These are the runtime counts and accuracy checks the prose refers to: contraction iterations at the true parameters, the max recovered-versus-true mean-utility error, starting-grid objective evaluations, Nelder-Mead objective evaluations, and the largest own-elasticity error in market 1. Committing them lets a re-run verify the numbers in the text against an on-disk artifact.
+
+**Convergence and Search Diagnostics**
+
+| Diagnostic          |      Value |
+|:--------------------|-----------:|
+| contraction_iters   | 627        |
+| max_delta_error     |   2.45e-11 |
+| grid_evals          |  25        |
+| gmm_nfev            |  46        |
+| max_own_elast_error |   0.315    |
 
 ## Takeaway
 

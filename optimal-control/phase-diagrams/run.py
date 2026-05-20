@@ -332,6 +332,17 @@ Here $u(c)=\frac{c^{1-\sigma}}{1-\sigma}$ is the CRRA utility function, so $u'(c
     )
 
     fig3, ax3 = plt.subplots(figsize=(9, 6.5))
+    ax3.quiver(
+        K,
+        C,
+        DK_norm,
+        DC_norm,
+        speed,
+        cmap="viridis",
+        alpha=0.35,
+        scale=32,
+        width=0.003,
+    )
     ax3.plot(k_range, c_nullcline, color="#1f77b4", linestyle="--", linewidth=1.8,
              label="$\\dot{k}=0$")
     ax3.axvline(k_ss, color="#c44e52", linestyle="--", linewidth=1.8,

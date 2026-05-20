@@ -159,7 +159,7 @@ The average strategies on the asymmetric game match the continuous BNE computed 
 
 <img src="figures/bid-functions-asymmetric.png" alt="Asymmetric bid functions: CFR average vs MMRS BNE" width="80%">
 
-Exploitability of the average strategy falls steadily across iterations and tracks the textbook rate of order one over the square root of iterations on a log-log plot. Exploitability never reaches exactly zero because the bid grid is finite, but the residual gap is small relative to expected revenue. Exploitability is the asymmetric analogue of the bid-grid deviation check used by the existing first-price auction tutorial.
+Exploitability of the average strategy falls steadily across iterations. On a log-log plot the committed run decays at an empirical rate of approximately O(T^{-0.8}), faster than the O(1/sqrt(T)) Hannan bound rather than tracking it. Exploitability never reaches exactly zero because the bid grid is finite, but the residual gap is small relative to expected revenue. Exploitability is the asymmetric analogue of the bid-grid deviation check used by the existing first-price auction tutorial.
 
 <img src="figures/exploitability.png" alt="Exploitability decay for vanilla CFR" width="80%">
 
@@ -177,6 +177,7 @@ Symmetric residual benchmarks the CFR average against the $v / 2$ closed form wh
 | Asymmetric residual: weak bidder (max CFR bid error vs MMRS BNE)   | 2.768e-02 |
 | Asymmetric residual: strong bidder (max CFR bid error vs MMRS BNE) | 1.760e-02 |
 | MMRS upper bid $\bar{b}$                                           | 0.6667    |
+| MMRS shooting coefficient $\alpha$                                 | 1.5000    |
 | Asymmetric exploitability (final iteration)                        | 3.624e-04 |
 | CFR iterations                                                     | 5,000     |
 

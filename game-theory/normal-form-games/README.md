@@ -26,6 +26,15 @@ $$
 d_2(i,j)=\max_{j' \in J} B_{ij'}-B_{ij}.
 $$
 
+The combined deviation gain at $(i,j)$ is the larger of the two,
+
+$$
+d(i,j)=\max\lbrace d_1(i,j), d_2(i,j) \rbrace.
+$$
+
+The heat maps color each cell by $d(i,j)$, and the pseudocode tests
+$d(i,j)=0$.
+
 A pure Nash equilibrium is a profile $(i^{\ast}, j^{\ast})$ with
 
 $$

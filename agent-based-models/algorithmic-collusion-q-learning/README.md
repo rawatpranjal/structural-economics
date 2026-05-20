@@ -64,7 +64,7 @@ $$\mathrm{CI} = \frac{\bar p_{\mathrm{learned}} - p_{\mathrm{Bertrand}}}{p_{\mat
 
 ## Model Setup
 
-The grid is centered on the static economic benchmarks. First solve the Bertrand-Nash and joint-monopoly first-order conditions. Then form 13 evenly spaced prices between those two prices and add one padding point below and above. The padding point below Bertrand is the one-period undercut in the impulse-response diagnostic.
+The grid is centered on the static economic benchmarks. First solve the Bertrand-Nash and joint-monopoly first-order conditions. Then form 13 evenly spaced prices spanning from the Bertrand to the monopoly benchmark with both endpoints included, and add one padding point below and above. The padding point below Bertrand is the one-period undercut in the impulse-response diagnostic.
 
 | Object | Value | Role |
 |---|---:|---|

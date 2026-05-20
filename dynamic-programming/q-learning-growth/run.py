@@ -474,21 +474,27 @@ def main() -> None:
     dqn_mae = policy_mae(dqn_kp) if dqn_kp is not None else float("nan")
     value_supnorm_ql = float(np.max(np.abs(v_ql - v_vfi)))
 
+    # The "state-action evaluations" column counts (s, a) updates. For value
+    # iteration these are deterministic sweep evaluations; for Q-learning and
+    # DQN they are stochastic sampled transitions. The column name is kept
+    # neutral so it does not imply that value iteration draws random samples.
     rows = [
         {
             "algorithm": "value iteration",
             "transition matrix": "yes",
-            "policy MAE": round(vfi_mae, 4),
+            "policy MAE (interior)": round(vfi_mae, 4),
             "value sup-norm vs VFI": 0.0,
-            "samples": int(vfi_info["iterations"]) * int(N_K * N_Z * N_A),
+            "state-action evaluations": int(vfi_info["iterations"]) * int(N_K * N_Z * N_A),
+            "evaluation type": "deterministic sweeps",
             "runtime sec": round(vfi_info["runtime"], 3),
         },
         {
             "algorithm": f"tabular Q-learning ({N_QL_SEEDS} seeds avg.)",
             "transition matrix": "no",
-            "policy MAE": round(ql_mae, 4),
+            "policy MAE (interior)": round(ql_mae, 4),
             "value sup-norm vs VFI": round(value_supnorm_ql, 4),
-            "samples": int(ql_info["steps"]) * N_QL_SEEDS,
+            "state-action evaluations": int(ql_info["steps"]) * N_QL_SEEDS,
+            "evaluation type": "stochastic samples",
             "runtime sec": round(total_ql_runtime, 3),
         },
     ]
@@ -496,9 +502,10 @@ def main() -> None:
         rows.append({
             "algorithm": "DQN",
             "transition matrix": "no",
-            "policy MAE": round(dqn_mae, 4),
+            "policy MAE (interior)": round(dqn_mae, 4),
             "value sup-norm vs VFI": float("nan"),
-            "samples": int(dqn_result["steps"]),
+            "state-action evaluations": int(dqn_result["steps"]),
+            "evaluation type": "stochastic samples",
             "runtime sec": round(dqn_result["runtime"], 3),
         })
     comparison_df = pd.DataFrame(rows)
@@ -649,17 +656,32 @@ def main() -> None:
         description=(
             "The table compares the solvers on the same calibration. "
             "Q-learning uses no transition matrix. It matches the VFI policy "
-            "and value to a few hundredths in capital units."
+            "and value to a few hundredths in capital units. "
+            "The policy MAE column is computed on interior capital states "
+            "only: the three lowest and three highest capital grid rows are "
+            "excluded, since the closed-form rule can push next-period "
+            "capital outside the discrete action grid at the boundary. "
+            "All three solvers use the identical mask, so the comparison "
+            "stays apples-to-apples; a full-grid MAE would be somewhat "
+            "larger for every solver. The evaluation-count column counts "
+            "deterministic sweep evaluations for value iteration and "
+            "stochastic sampled transitions for Q-learning and DQN."
         ),
     )
     closing = (
         f"VFI converges in {vfi_info['iterations']} sweeps. "
-        f"Q-learning hits a policy MAE of {ql_mae:.4f} after "
+        f"Q-learning hits an interior-grid policy MAE of {ql_mae:.4f} after "
         f"{ql_info['steps'] * N_QL_SEEDS:,} sampled transitions across "
         f"{N_QL_SEEDS} seeds"
     )
     if dqn_result is not None:
         closing += f". DQN reaches {dqn_mae:.4f} after {DQN_STEPS:,} steps"
+    closing += (
+        ". The MAE figures exclude the three lowest and three highest "
+        "capital grid rows, where the closed-form rule can leave the "
+        "discrete action grid; the same boundary mask is applied to every "
+        "solver"
+    )
     report.add_results(closing + ".")
 
     report.add_takeaway(

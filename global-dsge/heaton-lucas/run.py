@@ -136,10 +136,10 @@ def main():
                 -1.0 + beta * es2 + ms2,   # 77
                 -1.0 + beta * eb1 + mb1,   # 78
                 -1.0 + beta * eb2 + mb2,   # 79
-                ms1 * s1p,                  # 80
-                ms2 * s2p,                  # 81
-                mb1 * nb1p,                 # 82
-                mb2 * nb2p,                 # 83
+                jnp.minimum(ms1, s1p),      # 80
+                jnp.minimum(ms2, s2p),      # 81
+                jnp.minimum(mb1, nb1p),     # 82
+                jnp.minimum(mb2, nb2p),     # 83
                 b1p + b2p,                  # 84
                 budget_1,                   # 85
                 budget_2,                   # 86
@@ -295,7 +295,7 @@ def main():
     # Euler errors
     print("Euler errors...")
     ee_s, ee_b = [], []
-    for p in range(min(n_paths, 4)):
+    for p in range(n_paths):
         zs = simulate_markov(shock_trans, n_per, 0, seed=42 + p)
         ws = np.zeros(n_per); ws[0] = 0.5
         for t in range(n_per - 1):
@@ -334,6 +334,28 @@ def main():
     omega_mean = float(np.mean(omega_all))
     omega_p10, omega_p90 = np.percentile(omega_all, [10, 90])
     status_phrase = "converged" if info["converged"] else "stopped at the iteration cap"
+
+    # Archive every runtime scalar that appears in the README so the page is
+    # verifiable against a committed artifact without a re-run.
+    scalars = pd.DataFrame({
+        "metric": [
+            "eq_premium_min_pct", "eq_premium_max_pct",
+            "omega_mean", "omega_p10", "omega_p90",
+            "no_short_share_pct", "borrow_share_pct",
+            "final_policy_change", "max_pointwise_residual",
+        ],
+        "value": [
+            eq_min, eq_max,
+            omega_mean, float(omega_p10), float(omega_p90),
+            no_short_share, borrow_share,
+            float(info["error"]), float(info["residual"]),
+        ],
+    })
+    (Path(__file__).resolve().parent / "tables").mkdir(exist_ok=True)
+    scalars.to_csv(
+        Path(__file__).resolve().parent / "tables" / "scalars.csv",
+        index=False,
+    )
 
     report = ModelReport(
         "Heaton-Lucas Risk Sharing and Equity Premia",

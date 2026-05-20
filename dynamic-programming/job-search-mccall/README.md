@@ -94,7 +94,7 @@ At baseline, finite-grid VFI converges in **178 iterations**. The sup-norm error
 
 ## Results
 
-The figure shows the reservation rule. The rising line is acceptance value. The dashed line is rejection value. They cross at the cutoff. The shaded region marks acceptable offers. The grid and continuous cutoffs nearly coincide. At baseline, continuous acceptance probability is **6.1%**. Expected unemployment duration is about **16 periods**.
+The figure shows the reservation rule. The rising line is acceptance value. The dashed line is rejection value. They cross at the cutoff. The shaded region marks acceptable offers. The grid and continuous cutoffs nearly coincide. At baseline, continuous acceptance probability is **6.1%**. Expected unemployment duration is about **16.5 periods**.
 
 <img src="figures/accept-vs-reject.png" alt="Accept and reject values with finite-grid and continuous reservation wages." width="80%">
 

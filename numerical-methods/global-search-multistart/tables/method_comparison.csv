@@ -1,6 +1,6 @@
 Method,Setting,Estimated optimum,Profit,Function evaluations,Found global?
-Single-start L-BFGS-B,Starting price 1.0,4.2500,5.6250,8,yes
+Single-start L-BFGS-B,Starting price 1.7,1.6029,4.1360,6,no
 Multi-start L-BFGS-B,"50 starts, seed 42",4.2500,5.6250,310,yes
 Random search,"500 draws, seed 43",4.2548,5.6250,500,yes
-Nelder-Mead,Starting price 1.0,1.6029,4.1360,59,no
+Nelder-Mead,Starting price 1.7,1.6029,4.1360,52,no
 Simulated annealing,"max iterations 500, seed 44",4.2500,5.6250,1007,yes

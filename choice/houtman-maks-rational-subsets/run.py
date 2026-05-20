@@ -408,8 +408,9 @@ initialize S = {1, ..., T}
 while GARP(S) fails:
     compute weak arcs, strict arcs, and violating pairs on S
     find strongly connected components of the weak graph
-    restrict attention to components containing a strict internal arc
-    remove the observation with the most violation participation
+    restrict attention to components of more than one observation with a strict internal arc
+    remove the observation with the most violation participation,
+        breaking ties by strict-arc degree, then by lower observation id
 return S
 ```
 

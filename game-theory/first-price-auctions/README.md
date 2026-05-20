@@ -78,7 +78,7 @@ The bid functions show less shading when more bidders compete. With two bidders,
 
 <img src="figures/bid-functions.png" alt="Equilibrium first-price bid functions by bidder count" width="80%">
 
-For value 0.8 with 2 rivals, the payoff curve peaks at the analytic bid. Lower bids raise margin only when they still win. Higher bids buy win probability at a higher payment. The grid best response sits on the analytic bid.
+For value 0.8 with 2 rivals, the payoff curve peaks at the analytic bid. Lower bids raise margin only when they still win. Higher bids buy win probability at a higher payment. The grid best response lands within one grid spacing of the analytic bid.
 
 <img src="figures/best-response-check.png" alt="Grid best response compared with the exact equilibrium bid" width="80%">
 

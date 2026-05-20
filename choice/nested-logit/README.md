@@ -67,14 +67,16 @@ Output: IV estimates, elasticity matrix, and diversion ratios
    and the true synthetic nested-logit benchmark.
 ```
 
-The instruments match the two endogenous variables. Cost variation moves prices. Rival characteristics and nest composition predict $\ln s_{j|g,t}$.
+The instruments match the two endogenous variables. Own and rival cost variation moves prices. Same-nest rival cost and same-nest rival sugar predict $\ln s_{j|g,t}$.
 
 | Instrument | Targets | Rationale |
 |---|---|---|
 | Cost shifter | Price | Moves marginal cost without entering utility directly |
-| Rival sugar, all products | Price | Summarizes rival characteristics in the market |
-| Number of products in nest | $\ln s_{j\mid g,t}$ | Changes the local competitive set |
-| Same-nest rival sugar | $\ln s_{j\mid g,t}$ | Moves the attractiveness of close substitutes |
+| Rival sugar, all products | Price | Total rival sugar varies by market because recipes shift across markets |
+| Same-nest rival cost | $\ln s_{j\mid g,t}$ | A close substitute's cost shock moves its price and so its conditional share |
+| Same-nest rival sugar | $\ln s_{j\mid g,t}$ | Recipe shifts for close substitutes move their attractiveness across markets |
+
+Each instrument carries genuine cross-market variation. Sugar content shifts by market through small recipe shocks, and same-nest rivals carry idiosyncratic cost shocks. Two excluded instruments target $\ln s_{j\mid g,t}$, so the order condition holds for both endogenous regressors.
 
 ## Results
 
@@ -90,16 +92,16 @@ Diversion ratios convert elasticities back into share derivatives. Plain logit s
 
 <img src="figures/diversion-ratios.png" alt="Product diversion ratios from a Choco-Bombs price increase." width="80%">
 
-The table checks whether estimation recovers the parameters used to generate the synthetic shares. Plain logit cannot estimate $\sigma$. Nested logit recovers the signs and the same-nest ranking.
+The table checks how closely estimation recovers the parameters used to generate the synthetic shares. Plain logit cannot estimate $\sigma$ and biases $\alpha$ because it ignores the within-nest term. Nested logit, identified by instruments that vary across markets, recovers $\sigma$ and $\alpha$ close to their true values. Small gaps remain as finite-sample bias: with 50 markets the estimates scatter around the truth rather than land on it exactly.
 
 **Parameter estimates: true values vs plain logit vs nested logit**
 
 | Parameter   |   True | Logit   |   Nested Logit |
 |:------------|-------:|:--------|---------------:|
-| alpha       |    1.5 | 1.649   |          1.455 |
-| beta_sugar  |    0.3 | 0.404   |          0.279 |
-| beta_const  |    1   | -0.034  |          1.518 |
-| sigma       |    0.7 | ---     |          0.913 |
+| alpha       |    1.5 | 1.716   |          1.426 |
+| beta_sugar  |    0.3 | 0.389   |          0.308 |
+| beta_const  |    1   | 0.190   |          1.081 |
+| sigma       |    0.7 | ---     |          0.774 |
 
 ## Takeaway
 

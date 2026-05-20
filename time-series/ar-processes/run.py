@@ -263,11 +263,11 @@ $$
         f"{ma_root_modulus:.3f}, so internal propagation is stable.\n\n"
         "```text\n"
         "Procedure: propagate a fiscal innovation through an AR(1) state\n"
-        "Inputs: rho, sigma, alpha, beta, rho_g, horizon T, shock sequence eps_t\n"
+        "Inputs: rho, sigma, alpha, beta, rho_g, horizon T, shock sequences eps_t, eta_t\n"
         "Outputs: AR path x_t and multiplier-accelerator paths y_t, c_t, i_t, g_t\n\n"
-        "1. Set eps_0 = 1 for an impulse response.\n"
-        "2. For a simulation, draw eps_t from N(0, sigma^2) after burn-in.\n"
-        "3. Update x_t = rho x_{t-1} + eps_t and g_t = rho_g g_{t-1} + eps_t.\n"
+        "1. Set eps_0 = 1 (or eta_0 = 1) for an impulse response.\n"
+        "2. For a simulation, draw eps_t and eta_t independently from N(0, sigma^2) after burn-in.\n"
+        "3. Update x_t = rho x_{t-1} + eps_t and g_t = rho_g g_{t-1} + eta_t.\n"
         "4. Set c_t = beta y_{t-1}, i_t = alpha(c_t - c_{t-1}), and y_t = c_t + i_t + g_t.\n"
         "5. Record impulse responses, autocorrelations, and the AR(1) spectrum.\n"
         "```"
@@ -291,7 +291,7 @@ $$
         fig1,
         description=(
             "A unit shock follows the exact path $\\rho^h$ ($h$ = periods after the shock). Raising $\\rho$ from "
-            "0.5 to 0.9 lengthens the half-life from one to seven periods."
+            "0.5 to 0.9 lengthens the half-life from 1.0 to 6.6 periods."
         ),
     )
 

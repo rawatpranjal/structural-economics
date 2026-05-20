@@ -294,7 +294,7 @@ Full-information demand is the benchmark where every match value is observed for
 
 <img src="figures/consideration-demand.png" alt="Sequential-search versus full-information demand" width="80%">
 
-Increasing search costs lowers the amount of inspection and pushes some consumers to stop earlier. The inside purchase share falls because consumers are less likely to discover a product match that beats the outside option.
+Increasing search costs lowers the amount of inspection and pushes some consumers to stop earlier: average searches falls from about three products at half the baseline cost to under two at twice the baseline cost. The inside purchase share stays at one across this grid. The outside option is coded as the zero floor in the best-value rule, but at this calibration the inside products have high enough mean utilities that every consumer still uncovers a positive match before stopping, even at twice the baseline search cost. The counterfactual lesson here is about search depth, not the inside-outside split: with a less generous product calibration, or a wider cost grid, the same mechanism would eventually send some consumers to the outside option.
 
 <img src="figures/search-cost-counterfactual.png" alt="Search-cost counterfactual" width="80%">
 

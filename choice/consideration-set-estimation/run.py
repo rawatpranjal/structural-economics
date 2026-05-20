@@ -329,6 +329,10 @@ def main() -> None:
     u_luce, ll_luce = fit_luce(counts, menus)
     luce_pred = luce_probs(u_luce, menus)
 
+    # Log-likelihood at the true primitives: the ceiling every estimator
+    # is chasing. Each fitted log-likelihood is read against this value.
+    ll_true = log_likelihood_at(ranking_true, gamma_true, counts, menus)
+
     # Bootstrap (Method 1 only; Method 2 is faster but its discrete output
     # makes bootstrap ranking-recovery the headline rather than a SE per gamma)
     gamma_se_m1, ranking_acc_m1 = bootstrap_se(
@@ -347,9 +351,18 @@ def main() -> None:
     # Map menus to readable labels
     label_for = {tuple(m.tolist()): "".join("abc"[j] for j in range(J_ex) if m[j])
                   for m in menus_ex}
-    p_ab = {"a": probs_ex[1, 0], "b": probs_ex[1, 1]}      # menu {a, b}
-    p_bc = {"b": probs_ex[3, 1], "c": probs_ex[3, 2]}      # menu {b, c}
-    p_ac = {"a": probs_ex[2, 0], "c": probs_ex[2, 2]}      # menu {a, c}
+    # Look up menu rows by membership mask rather than by hardcoded integer,
+    # so the labels {a,b}, {b,c}, {a,c} always point at the right rows.
+    def menu_row(members: list[bool]) -> int:
+        return next(i for i, m in enumerate(menus_ex)
+                    if np.array_equal(m, np.array(members, dtype=bool)))
+
+    i_ab = menu_row([True, True, False])   # menu {a, b}
+    i_bc = menu_row([False, True, True])   # menu {b, c}
+    i_ac = menu_row([True, False, True])   # menu {a, c}
+    p_ab = {"a": probs_ex[i_ab, 0], "b": probs_ex[i_ab, 1]}
+    p_bc = {"b": probs_ex[i_bc, 1], "c": probs_ex[i_bc, 2]}
+    p_ac = {"a": probs_ex[i_ac, 0], "c": probs_ex[i_ac, 2]}
 
     # =====================================================================
     # Report
@@ -514,8 +527,8 @@ The Manzini-Mariotti rule predicts a strictly asymmetric pattern and therefore l
         "    impact[i, j] <- mean over menus A containing both of\n"
         "                    p_hat(j, A \\ {i}) - p_hat(j, A)\n"
         "  for each j:\n"
-        "    score[j] <- sum_i impact[i, j] - sum_i impact[j, i]\n"
-        "  ranking_hat <- argsort(-score)\n"
+        "    score[j] <- sum_i impact[j, i] - sum_i impact[i, j]\n"
+        "  ranking_hat <- argsort(-score)   # high score first = best to worst\n"
         "```\n\n"
         "Method 2 needs both singleton menus (or binary menus with default) and at least pairs of menus that differ by one alternative. "
         "On dense menu coverage it is robust; on sparse coverage the impact averages are noisy and the ranking score can flip adjacent pairs."
@@ -546,11 +559,24 @@ The Manzini-Mariotti rule predicts a strictly asymmetric pattern and therefore l
     ax1.set_xlim(0, 1)
     ax1.set_ylim(0, 1)
     ax1.set_aspect("equal")
+    within_one_se = bool(np.all(np.abs(gamma_m1 - gamma_true) <= gamma_se_m1))
+    n_within_se = int(np.sum(np.abs(gamma_m1 - gamma_true) <= gamma_se_m1))
+    if within_one_se:
+        attention_sentence = (
+            "and the recovered attention parameters lie within one bootstrap "
+            "standard error of the truth on every alternative."
+        )
+    else:
+        attention_sentence = (
+            f"and the recovered attention parameters lie within one bootstrap "
+            f"standard error of the truth on {n_within_se} of {J} "
+            "alternatives."
+        )
     report.add_results(
         f"The Method-1 maximum-likelihood fit aligns observed frequencies with predicted probabilities across all {len(menus)} menus. "
         f"Inside-alternative cells (blue) and default-option cells (red) both lie close to the 45-degree line. "
         f"The recovered ranking matches the true ranking in {ranking_acc_m1:.0%} of bootstrap replications at $N = {n_subjects}$ subjects per menu, "
-        f"and the recovered attention parameters lie within one standard error of the truth on every alternative."
+        + attention_sentence
     )
     report.add_figure(
         "figures/menu-fit.png",
@@ -708,9 +734,26 @@ The Manzini-Mariotti rule predicts a strictly asymmetric pattern and therefore l
                            f"{rank_correct_m2} / {n_pairs}"],
         "Bootstrap exact-ranking rate": [f"{ranking_acc_m1:.0%}", f"{ranking_acc_m2:.0%}"],
     })
+    if rank_correct_m1 == n_pairs and rank_correct_m2 == n_pairs:
+        point_estimate_sentence = (
+            "Both methods recover the full ranking on the point estimate at "
+            "this sample size. "
+        )
+    elif rank_correct_m1 == n_pairs:
+        point_estimate_sentence = (
+            "Method 1 recovers the full ranking on the point estimate; "
+            f"Method 2 gets {rank_correct_m2} of {n_pairs} pairs right and "
+            "swaps one adjacent pair. "
+        )
+    else:
+        point_estimate_sentence = (
+            f"Method 1 gets {rank_correct_m1} of {n_pairs} pairs and "
+            f"Method 2 gets {rank_correct_m2} of {n_pairs} on the point "
+            "estimate. "
+        )
     report.add_results(
         f"The ranking-recovery table summarises the J(J-1)/2 = {n_pairs} pairwise rankings each method gets right on the point estimate, plus the bootstrap exact-ranking accuracy across $N = {n_subjects}$ subjects per menu. "
-        "Both methods recover the full ranking on the point estimate at this sample size. "
+        + point_estimate_sentence +
         "Method 1 is more robust to bootstrap noise because it integrates the entire menu structure into the likelihood; Method 2 trades robustness for speed and avoids the $J!$ enumeration."
     )
     report.add_table(
@@ -727,17 +770,24 @@ The Manzini-Mariotti rule predicts a strictly asymmetric pattern and therefore l
            - np.log(np.maximum(probs, eps)))
     ))
     method_table = pd.DataFrame({
-        "Method": ["Method 1 MLE", "Method 2 moments", "Luce / MNL benchmark"],
-        "Log-likelihood": [f"{ll_m1:.1f}", f"{ll_m2:.1f}", f"{ll_luce:.1f}"],
-        "KL divergence to true": [f"{kl_true(pred_m1):.4f}",
-                                    f"{kl_true(pred_m2):.4f}",
-                                    f"{kl_true(luce_pred):.4f}"],
-        "Captures asymmetric impact": ["yes", "yes", "no"],
+        "Method": ["True DGP", "Method 1 MLE", "Method 2 moments",
+                   "Luce / MNL benchmark"],
+        "Log-likelihood": [f"{ll_true:.1f}", f"{ll_m1:.1f}", f"{ll_m2:.1f}",
+                           f"{ll_luce:.1f}"],
+        "KL divergence to true": ["0.0000",
+                                  f"{kl_true(pred_m1):.4f}",
+                                  f"{kl_true(pred_m2):.4f}",
+                                  f"{kl_true(luce_pred):.4f}"],
+        "Captures asymmetric impact": ["yes", "yes", "yes", "no"],
     })
+    kl_m1 = kl_true(pred_m1)
+    kl_m2 = kl_true(pred_m2)
     report.add_results(
-        "The method-comparison table puts the two random-consideration-set fits next to a Luce / multinomial-logit benchmark on the same data. "
-        "Both Method 1 and Method 2 reach a log-likelihood within one or two units of the true-DGP value and a Kullback-Leibler divergence of essentially zero. "
-        "Luce sits well below on log-likelihood and well above on KL because IIA cannot match the asymmetric menu-removal pattern. "
+        "The method-comparison table puts the two random-consideration-set fits next to a Luce / multinomial-logit benchmark, alongside the log-likelihood evaluated at the true primitives. "
+        f"Method 1 lands within {abs(ll_m1 - ll_true):.0f} log-likelihood units of the true-DGP value (slightly above it, since the maximum-likelihood fit tracks sampling noise in this particular draw) and reaches a Kullback-Leibler divergence of {kl_m1:.4f}, close to zero. "
+        f"Method 2 trails further: its log-likelihood is {ll_true - ll_m2:.0f} units below the true-DGP value and its KL divergence is {kl_m2:.4f}, about {kl_m2 / kl_m1:.0f} times Method 1's. "
+        "The moment estimator loses information relative to the full likelihood, and the gap shows it. "
+        "Luce sits below both on log-likelihood and well above both on KL because IIA cannot match the asymmetric menu-removal pattern. "
         "The size of the Luce log-likelihood gap rises with $J$ and with the spread of the attention vector; on data with attention probabilities close to 1 across the board the gap shrinks because the model collapses onto something close to deterministic best choice."
     )
     report.add_table(

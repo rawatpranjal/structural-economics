@@ -120,7 +120,7 @@ The grid is deliberately small. The center has the only built-in location advant
 
 <img src="figures/fundamentals.png" alt="Fundamentals plus trade costs" width="80%">
 
-The dispersion-dominant center share is 15.1%. The strong-agglomeration largest share is 43.6%. Nominal wages, price indexes, and amenities differ across space. Real utility is still equalized.
+The dispersion-dominant largest labor share is 15.1%. The strong-agglomeration largest share is 43.6%. Nominal wages, price indexes, and amenities differ across space. Real utility is still equalized.
 
 <img src="figures/equilibrium-wages-population.png" alt="Wages plus population shares" width="80%">
 

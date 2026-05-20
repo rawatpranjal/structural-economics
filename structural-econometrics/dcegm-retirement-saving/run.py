@@ -680,7 +680,9 @@ $$
         f"| $\\bar b$ | {p.bequest_floor:.1f} | Bequest utility floor |\n"
         f"| $\\underline a$ | {p.asset_min:.1f} | Borrowing limit on next assets |\n"
         f"| Brute-force audit grid | {p.audit_assets} assets | Smaller benchmark grid for exhaustive search |\n"
-        f"| Synthetic panel | {p.simulation_agents:,} households | Simulated with initial assets centered at {p.initial_asset_mean:.1f} |"
+        f"| Synthetic panel | {p.simulation_agents:,} households | "
+        f"Initial assets lognormal with median {p.initial_asset_mean:.1f} "
+        f"(arithmetic mean {p.initial_asset_mean * np.exp(p.initial_asset_sigma ** 2 / 2):.2f}) |"
     )
 
     report.add_solution_method(

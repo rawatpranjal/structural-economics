@@ -47,11 +47,11 @@ $A = (1.00, 0.90, 1.10, 0.80)$ the exponent is $1/(1-\alpha) \approx 1.5625$
 and the worked shares are
 
 $$
-A^{1/(1-\alpha)} \approx (1.000, 0.846, 1.161, 0.703),
+A^{1/(1-\alpha)} \approx (1.000, 0.848, 1.161, 0.706),
 \qquad
-Z \approx 3.710,
+Z \approx 3.714,
 \qquad
-\omega \approx (0.269, 0.228, 0.313, 0.190).
+\omega \approx (0.269, 0.228, 0.312, 0.190).
 $$
 
 With $Z \equiv \sum_j A_j^{1 / (1 - \alpha)}$, the four sector Euler
@@ -282,9 +282,9 @@ The accuracy table shows that adding a Smolyak level cuts the worst-case Euler e
 |:-------------|--------:|------------------:|---------------------:|--------------------:|----------:|
 | Smolyak mu=1 |      11 |          0.012    |             0.00226  |            0.00911  |      0    |
 | Smolyak mu=2 |      61 |          0.00104  |             0.000191 |            0.000933 |      0.01 |
-| Smolyak mu=3 |     241 |          0.000165 |             9.49e-06 |            0.000166 |      0.04 |
+| Smolyak mu=3 |     241 |          0.000165 |             9.49e-06 |            0.000166 |      0.05 |
 
-With Smolyak level $\mu = 3$ on $d = 5$ states the policy is stored in 241 coefficients. The worst-case absolute Euler error on the 10,000-point Sobol test set is 1.65e-04 and the median is 9.49e-06. The same accuracy under a tensor Chebyshev grid would charge 59,049 nodes.
+With Smolyak level $\mu = 3$ on $d = 5$ states the policy is stored in 241 coefficients. The worst-case relative Euler error on the 10,000-point Sobol test set is 1.65e-04 and the median is 9.49e-06. The same accuracy under a tensor Chebyshev grid would charge 59,049 nodes.
 
 ## Takeaway
 

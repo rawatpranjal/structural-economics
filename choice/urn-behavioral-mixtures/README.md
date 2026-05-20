@@ -128,6 +128,14 @@ Rows are true simulated rules. Columns are posterior-modal assignments.
 | Share cutoff |       1 |              0 |            120 |              0 |
 | Count cutoff |       0 |              0 |              0 |             53 |
 
+Persists the runtime scalars quoted in the prose: the EM iteration count and log likelihood, and the number of tasks on which the Bayes rule differs from each alternative rule.
+
+**EM and rule-separation diagnostics**
+
+|   iterations |   log_likelihood |   bayes_conservative_split |   bayes_share_split |   bayes_count_split |
+|-------------:|-----------------:|---------------------------:|--------------------:|--------------------:|
+|            6 |         -8816.71 |                          6 |                   4 |                  10 |
+
 ## Takeaway
 
 The likelihood ratio gives a task-level belief benchmark. EM uses repeated choices to estimate shares of latent decision rules. The method is useful when simple rules are meaningful but rule labels are unobserved.

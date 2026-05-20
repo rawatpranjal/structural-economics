@@ -90,7 +90,7 @@ $$
 | Mixed-logit start | (-0.75, 0.85, log 0.25, log 0.35) | Initial mean tastes and heterogeneity |
 | Price-taste bound | [-3.00, -0.05] | Keeps price sensitivity negative |
 | Quality-taste bound | [0.05, 2.50] | Keeps quality taste positive |
-| SD bounds | [0.03, 1.30] | Applied to both random-coefficient standard deviations |
+| SD bounds | [0.03, 1.30] | Effective sigma range; the bound is enforced on log-sigma for both random coefficients |
 | Probability floor | 1e-14 | Prevents log zero during likelihood evaluation |
 | Max iterations | 220 | L-BFGS-B iteration cap |
 | Profile grid | 21 x 21 | Grid over $\sigma_\alpha$ and $\sigma_\beta$ for the likelihood surface |

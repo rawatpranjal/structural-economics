@@ -1,0 +1,10 @@
+metric,value
+eq_premium_min_pct,0.4668575667256203
+eq_premium_max_pct,1.0447286019511948
+omega_mean,0.5041137963715085
+omega_p10,0.1102894611656666
+omega_p90,0.8970253527164459
+no_short_share_pct,0.0
+borrow_share_pct,48.48066298342542
+final_policy_change,0.017821215161578863
+max_pointwise_residual,5.310868118613143e-07

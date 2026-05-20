@@ -526,6 +526,32 @@ The flat ratio gives a direct check on the numerical solution.
         ),
     )
 
+    convergence_df = pd.DataFrame(
+        {
+            "Quantity": [
+                "Baseline iterations",
+                "Baseline sup-norm residual",
+                "Central max relative error (%)",
+            ],
+            "Value": [
+                f"{solution.iterations}",
+                f"{solution.error:.2e}",
+                f"{max_relative_error_pct:.3f}",
+            ],
+        }
+    )
+    report.add_table(
+        "tables/convergence.csv",
+        "Solver convergence diagnostics for the baseline solution",
+        convergence_df,
+        description=(
+            "The iteration count, sup-norm residual, and central relative "
+            "error are persisted here so the convergence claims in the "
+            "Solution Method section can be cross-checked against a committed "
+            "artifact."
+        ),
+    )
+
     report.add_takeaway(
         "The Lucas tree has no household policy once market clearing sets $c=y$. "
         "The Euler equation is therefore a valuation equation for $p(y)$. "

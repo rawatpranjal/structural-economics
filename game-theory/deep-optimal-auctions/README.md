@@ -192,11 +192,11 @@ The neural auction is evaluated on fresh value draws and a finer misreport grid 
 
 **Revenue and Regret Audit**
 
-| Mechanism               |   Revenue |   Mean regret |   Max regret |   Max IR violation |
-|:------------------------|----------:|--------------:|-------------:|-------------------:|
-| Neural auction          |    0.4498 |        0.0012 |       0.0164 |                  0 |
-| Myerson reserve auction |    0.4185 |        0      |       0      |                  0 |
-| Second-price auction    |    0.3334 |        0      |       0      |                  0 |
+| Mechanism               |   Revenue |   Largest mean bidder regret |   Max regret |   Max IR violation |
+|:------------------------|----------:|-----------------------------:|-------------:|-------------------:|
+| Neural auction          |    0.4498 |                       0.0012 |       0.0164 |                  0 |
+| Myerson reserve auction |    0.4185 |                       0      |       0      |                  0 |
+| Second-price auction    |    0.3334 |                       0      |       0      |                  0 |
 
 ## Takeaway
 

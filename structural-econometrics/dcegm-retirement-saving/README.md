@@ -199,7 +199,7 @@ $$
 | $\bar b$ | 1.0 | Bequest utility floor |
 | $\underline a$ | 0.0 | Borrowing limit on next assets |
 | Brute-force audit grid | 150 assets | Smaller benchmark grid for exhaustive search |
-| Synthetic panel | 8,000 households | Simulated with initial assets centered at 2.8 |
+| Synthetic panel | 8,000 households | Initial assets lognormal with median 2.8 (arithmetic mean 3.06) |
 
 ## Solution Method
 
@@ -351,8 +351,8 @@ The runtime comparison is deliberately uneven: DC-EGM uses the larger main grid,
 | Share retired by age 67       |   1      |
 | Mean assets at age 55         |   3.0556 |
 | Mean assets at age 70         |   0.6717 |
-| DC-EGM runtime seconds        |   0.0037 |
-| Brute-force runtime seconds   |   0.0499 |
+| DC-EGM runtime seconds        |   0.0034 |
+| Brute-force runtime seconds   |   0.0566 |
 | Brute-force asset points      | 150      |
 | DC-EGM asset points           | 420      |
 

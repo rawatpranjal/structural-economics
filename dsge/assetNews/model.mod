@@ -38,7 +38,7 @@ var z; stderr 1;
 var n; stderr 1;
 end;
 
-stoch_simul(order=3);
+stoch_simul(order=1);
 rplot d;
 rplot p;
 

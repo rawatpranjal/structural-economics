@@ -218,7 +218,10 @@ def calibrate_logit(shares_obs: np.ndarray, prices_obs: np.ndarray,
     """
     omega = ownership_matrix(p2f)
     s0_total = np.sum(shares_obs)
-    alpha_estimates = -1.0 / (margins_obs * (1.0 - shares_obs))
+    # Single-product logit FOC: 0 = s_j + (p_j - c_j) * alpha * s_j * (1 - s_j),
+    # with p_j - c_j = m_j * p_j, gives alpha = -1 / (m_j * p_j * (1 - s_j)).
+    # The price factor is load-bearing whenever observed prices are not unity.
+    alpha_estimates = -1.0 / (margins_obs * prices_obs * (1.0 - shares_obs))
     alpha = float(np.mean(alpha_estimates))
     xi = np.log(shares_obs / (1.0 - s0_total)) - alpha * prices_obs
     dsdp = jacobian_logit(prices_obs, alpha, xi)
@@ -674,8 +677,14 @@ to one. The FOCs then solve for new prices.
 ### C. Three demand systems
 
 The same observed market can give very different counterfactual prices once we
-change the demand curvature. We calibrate three demand systems. Each one
-matches the observed shares, prices, and margins by construction.
+change the demand curvature. We calibrate three demand systems. Each one matches
+the observed shares and prices by construction. Linear and log-linear demand
+carry a full $J\times J$ slope matrix, so they also reproduce the entire
+observed margin vector exactly. Logit demand has a single price coefficient
+$\alpha$. We pin it down from the average single-product margin condition and
+recover marginal costs from the pre-merger FOC, so the logit FOC residual is
+zero at calibration while its implied margins track the observed margins only
+as closely as one coefficient allows.
 
 Logit shares are
 
@@ -807,7 +816,9 @@ the full pricing system under post-merger ownership.
         "prices clear the system.\n\n"
         "### Method 3: Six-product extension with three demand systems\n\n"
         "Now we run the same pricing FOC across three demand systems. Each one matches the "
-        "same observed shares and margins by construction. Any disagreement on counterfactual "
+        "same observed shares and prices by construction; linear and log-linear demand also "
+        "match the full observed margin vector, while logit matches margins only as closely "
+        "as one price coefficient allows. Any disagreement on counterfactual "
         "prices is therefore curvature, not data. UPP, GUPPI, and CMCR are local screens "
         "evaluated at observed prices. The post-merger FOC adds rival reactions and "
         "pass-through. The efficiency frontier sweeps a cost-reduction grid and re-solves "
@@ -1042,7 +1053,9 @@ the full pricing system under post-merger ownership.
     report.add_results(
         "### Part 3: Six-product extension\n\n"
         "Now we run the same merger logic on a market with six products and three demand "
-        "systems. Each system matches the same observed shares and margins. So any "
+        "systems. Each system matches the same observed shares and prices; linear and "
+        "log-linear also match the full margin vector, and logit matches margins as closely "
+        "as one price coefficient allows. So any "
         "differences below come from demand curvature, not from data. Firm 1 buys Firm 2. "
         "Products 1 through 4 move under common ownership."
     )

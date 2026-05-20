@@ -375,8 +375,9 @@ is the system-level per-enrollee transfer.
         "Surplus division as the hospital bargaining weight changes",
         fig2,
         description=(
-            "The vertical line marks the baseline calibration. The exercise does not "
-            "recompute demand for each $\\tau$."
+            "The vertical line marks the baseline calibration. The networks are the same "
+            "at every $\\tau$, so full-agreement and disagreement demand are held fixed; "
+            "only the surplus split changes across $\\tau$."
         ),
     )
 

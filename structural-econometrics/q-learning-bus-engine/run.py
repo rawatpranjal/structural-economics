@@ -477,6 +477,12 @@ def main() -> None:
         sub_trans["truth_p_replace"] = nfxp["p_replace"]
         _, info = soft_q_learning(sub_trans, flow, BETA, QL_EPOCHS, seed=999)
         hazard_mae_per_count.append(float(info["log_hazard_mae"][-1]))
+    sample_eff_df = pd.DataFrame({
+        "buses": bus_counts,
+        "hazard MAE": [round(m, 6) for m in hazard_mae_per_count],
+    })
+    (folder / "tables").mkdir(parents=True, exist_ok=True)
+    sample_eff_df.to_csv(folder / "tables" / "sample-efficiency.csv", index=False)
 
     print("Training DQN appendix ...")
     dqn_result = try_dqn_hazard(transitions, x_grid, flow, BETA)
@@ -632,7 +638,7 @@ def main() -> None:
         "P(replace | x) <- exp Q(x, replace) / [exp Q(x, replace) + exp Q(x, keep)]\n"
         "```\n\n"
         "The deep-RL appendix changes only the function approximation. Instead of a "
-        "table with one entry per mileage grid point, it fits a small two-layer MLP "
+        "table with one entry per mileage grid point, it fits a small two-hidden-layer MLP "
         r"$Q_\theta(x, \cdot)$ that maps mileage to the two action values. DQN can "
         "smooth and extrapolate across states, but it also introduces optimizer, "
         "target-network, and tuning choices that the table does not need. The target "
@@ -722,7 +728,10 @@ def main() -> None:
     closing = (
         f"NFXP converges in {nfxp['iterations']} Bellman iterations. "
         f"Soft Q-learning hits a hazard MAE of {hazard_mae_ql:.4f} after "
-        f"{QL_EPOCHS} passes through {n_samples:,} observed transitions"
+        f"{QL_EPOCHS} passes through {n_samples:,} observed transitions. "
+        "That MAE is measured over the visited mileage states only; the table "
+        "leaves high-mileage states the panel never reaches at their "
+        "uninformative initial value"
     )
     if dqn_result is not None:
         closing += f". Soft DQN reaches {hazard_mae_dqn:.4f} on the same panel"

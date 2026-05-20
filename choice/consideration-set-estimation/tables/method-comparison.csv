@@ -1,4 +1,5 @@
 Method,Log-likelihood,KL divergence to true,Captures asymmetric impact
+True DGP,-15075.5,0.0000,yes
 Method 1 MLE,-15073.4,0.0042,yes
 Method 2 moments,-15847.0,1.4908,yes
 Luce / MNL benchmark,-16234.0,2.2885,no

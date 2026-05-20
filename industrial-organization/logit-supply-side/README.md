@@ -96,6 +96,19 @@ The main demand error is alpha, the endogenous price coefficient. That error car
 | beta_fiber  |    0.5 |  0.519 |     0.63  |     0.027 |
 | beta_const  |    1   | -0.5   |    -0.1   |     0.23  |
 
+Each row decomposes a market-0 price into a recovered marginal cost and a markup. The final row records the mean absolute error against the simulated marginal costs.
+
+**Market-0 Cost Recovery: Estimated vs True Marginal Cost**
+
+| Product       | Price   | Markup   | Estimated MC   | True MC   |   Absolute error |
+|:--------------|:--------|:---------|:---------------|:----------|-----------------:|
+| Choco-Bombs   | 2.575   | 1.408    | 1.167          | 1.396     |            0.229 |
+| Fiber-Bran    | 3.089   | 1.060    | 2.029          | 2.506     |            0.477 |
+| Store-Frosted | 1.571   | 1.408    | 0.163          | 1.138     |            0.975 |
+| Honey-Os      | 2.747   | 0.750    | 1.997          | 1.886     |            0.11  |
+| Nutri-Crunch  | 2.823   | 1.060    | 1.763          | 2.249     |            0.486 |
+| Mean          |         |          |                |           |            0.455 |
+
 ## Takeaway
 
 Markup recovery is only as credible as the estimated demand slope. Berry inversion and IV/2SLS estimate that slope from shares, prices, and instruments. The Bertrand-Nash FOC then converts demand derivatives and ownership into marginal costs. Simple logit makes the inversion clear but imposes rigid substitution.

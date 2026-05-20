@@ -540,6 +540,35 @@ The stochastic policy fluctuates around this benchmark.
         "Ljungqvist, L. and Sargent, T. (2018). *Recursive Macroeconomic Theory*. MIT Press, 4th edition, Ch. 12.",
     ])
 
+    # Commit the fine-grid audit diagnostics so the convergence and
+    # coarse-vs-fine gap numbers quoted in Solution Method are grounded in an
+    # artifact, not only in the generated README.
+    fine_grid_audit = pd.DataFrame(
+        {
+            "metric": [
+                "bench_V_rel",
+                "bench_k_max_abs",
+                "bench_l_max_abs",
+                "coarse_iterations",
+                "coarse_error",
+                "fine_iterations",
+                "fine_error",
+            ],
+            "value": [
+                float(bench_V_rel),
+                float(bench_k_max_abs),
+                float(bench_l_max_abs),
+                info["iterations"],
+                info["error"],
+                info_fine["iterations"],
+                info_fine["error"],
+            ],
+        }
+    )
+    fine_grid_audit.to_csv(
+        Path(__file__).resolve().parent / "tables" / "fine-grid-audit.csv", index=False
+    )
+
     report.write("README.md")
     print(f"\nGenerated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
 

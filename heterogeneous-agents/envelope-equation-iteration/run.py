@@ -429,7 +429,7 @@ def main() -> None:
     setup_style()
 
     report = ModelReport(
-        "Buffer-Stock Saving with Persistent Income by Envelope-Equation Iteration",
+        "Buffer-Stock Saving with IID Income by Envelope-Equation Iteration",
         include_reproduce=False,
         show_figure_captions=False,
     )
@@ -659,10 +659,10 @@ The same gap for next assets is {savings_gap:.2e}.
         fig3,
         description=(
             "The simulated asset distribution is right-skewed. "
-            f"Mean assets are {mean_assets:.2f}. "
+            f"Mean assets are {mean_assets:.4f}. "
             f"{frac_constrained:.1f}% of households sit at the borrowing limit. "
             "IID income keeps the asset scale modest. "
-            f"The borrowing-limit mass raises the average MPC to {mean_mpc:.3f}."
+            f"The borrowing-limit mass raises the average MPC to {mean_mpc:.4f}."
         ),
     )
 
@@ -688,9 +688,14 @@ The same gap for next assets is {savings_gap:.2e}.
         fig4,
         description=(
             "EEI and EGP converge at nearly the same rate. "
-            "Both update policies through the Euler equation. "
-            "Grid VFI updates the value level and needs more iterations. "
-            "This is a fixed-point comparison, not a timing claim."
+            "Both update policies through the Euler equation and track a "
+            "consumption-level sup-norm error. "
+            "Grid VFI updates the value level and tracks a value-level error, "
+            "which is intrinsically larger-scaled, so VFI needs more iterations "
+            "to cross the same absolute tolerance. "
+            "The iteration counts are read against different error metrics, so "
+            "this is a fixed-point comparison and not a clean iteration race or "
+            "a timing claim."
         ),
     )
 
@@ -750,7 +755,9 @@ The same gap for next assets is {savings_gap:.2e}.
         f"in the perfect-foresight limit.\n\n"
         "The computational lesson is simple. "
         "The envelope condition can be an update rule. "
-        "EGP is faster here because it uses an analytic inverse. "
+        "EGP replaces the inner bisection with one analytic marginal-utility "
+        "inverse per state, so each iteration does less work than the EEI "
+        "Euler step. "
         "All three methods agree up to the fine-grid gap."
     )
 

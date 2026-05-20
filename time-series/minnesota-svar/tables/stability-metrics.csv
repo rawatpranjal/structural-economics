@@ -1,0 +1,4 @@
+Metric,Value
+Companion-matrix stability radius (OLS VAR),0.875
+Companion-matrix stability radius (Minnesota BVAR),0.765
+BVAR coefficient norm relative to OLS norm,0.698

@@ -281,7 +281,7 @@ def main() -> None:
         "optimal",
         seed=2_000,
     )
-    measurement_table = measurement_noise_sweep(n_periods, n_particles=350, n_runs=20)
+    measurement_table = measurement_noise_sweep(n_periods, n_particles=500, n_runs=50)
     time = np.arange(1, n_periods + 1)
 
     print("Particle filter tutorial")

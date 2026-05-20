@@ -631,8 +631,16 @@ Purchase data alone confound low demand with high search costs. Search paths hel
     ax3.legend(lines + lines_b, labels_left + labels_right, loc="center right")
     report.add_results(
         "Increasing search costs lowers the amount of inspection and pushes some "
-        "consumers to stop earlier. The inside purchase share falls because consumers "
-        "are less likely to discover a product match that beats the outside option."
+        "consumers to stop earlier: average searches falls from about three "
+        "products at half the baseline cost to under two at twice the baseline "
+        "cost. The inside purchase share stays at one across this grid. The "
+        "outside option is coded as the zero floor in the best-value rule, but at "
+        "this calibration the inside products have high enough mean utilities that "
+        "every consumer still uncovers a positive match before stopping, even at "
+        "twice the baseline search cost. The counterfactual lesson here is about "
+        "search depth, not the inside-outside split: with a less generous product "
+        "calibration, or a wider cost grid, the same mechanism would eventually "
+        "send some consumers to the outside option."
     )
     report.add_figure("figures/search-cost-counterfactual.png", "Search-cost counterfactual", fig3)
 

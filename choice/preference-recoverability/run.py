@@ -253,9 +253,10 @@ def main() -> None:
         "The object is the preference ordering implied by these finite choices. "
         "A GARP-consistent sample can be rationalized by many utility functions. "
         "We recover one upper-contour boundary through a chosen bundle.\n\n"
-        "The computation uses Afriat inequalities. A linear program finds utility "
-        "scores and supporting slopes. The lower envelope of those supports draws "
-        "the contour."
+        "The computation uses Afriat inequalities. The supporting slopes are fixed "
+        "to one over expenditure before the program runs, so a linear program only "
+        "finds the utility scores. The lower envelope of those supports draws the "
+        "contour."
     )
 
     report.add_equations(
@@ -342,7 +343,7 @@ $$
         "3. Set lambda_t = 1 / (p_t . x_t) to normalize supporting slopes.\n"
         "4. Solve for ordinal scores u_t subject to\n"
         "       u_i - u_j <= lambda_j p_j . (x_i - x_j) for every pair (i,j),\n"
-        "       average_t u_t = 1, and u_t >= 0.\n"
+        "       sum_t u_t = T, and u_t >= 0.\n"
         "5. Define U_hat(y) = min_j [u_j + lambda_j p_j . (y - x_j)].\n"
         "6. For a grid of y_1 values, compute the smallest y_2 that satisfies\n"
         "       U_hat((y_1,y_2)) >= u_k.\n"

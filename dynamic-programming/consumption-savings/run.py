@@ -10,6 +10,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from lib.discretize import rouwenhorst
@@ -218,7 +219,11 @@ def main() -> None:
     refined_gap_mid = policy_c[:, median_z_idx] - refined_c_mid_on_main
     max_refined_gap_mid = float(np.max(np.abs(refined_gap_mid)))
 
-    mpc_mid = np.gradient(policy_c[:, median_z_idx], a_grid)
+    # MPC is the consumption response to cash-on-hand w = R a + z, not to a.
+    # Since dw/da = R, the marginal propensity to consume out of cash-on-hand
+    # is dc/dw = (dc/da) / R.
+    dc_da_mid = np.gradient(policy_c[:, median_z_idx], a_grid)
+    mpc_mid = dc_da_mid / gross_return
     low_asset_mpc = float(np.mean(mpc_mid[5:20]))
     high_asset_mpc = float(np.mean(mpc_mid[-40:]))
 
@@ -346,7 +351,7 @@ $$u'(c_t)\geq \beta R\,\mathbb{E}_t[u'(c_{t+1})].$$
         "        EV(a_i) <- sum_k P_{jk} * V_n(a_i, z_k)                # expected continuation on A\n"
         "        EV_hat(g_l) <- interp(EV from A to G)                  # off-state continuation on G\n"
         "        for each asset state a_i:\n"
-        "            feasible(g_l) := { g_l <= R a_i + z_j }            # respects no-borrowing\n"
+        "            feasible(g_l) := { 0 <= g_l <= R a_i + z_j }       # no-borrowing and budget\n"
         "            obj(g_l) <- u(R a_i + z_j - g_l) + beta * EV_hat(g_l)\n"
         "            g_a(a_i, z_j) <- argmax_{feasible} obj\n"
         "            V_{n+1}(a_i, z_j) <- max obj\n"
@@ -460,6 +465,42 @@ $$u'(c_t)\geq \beta R\,\mathbb{E}_t[u'(c_{t+1})].$$
         "figures/simulated-paths.png",
         "Simulated asset paths and the induced cross-sectional asset distribution",
         fig4,
+    )
+
+    scalars_df = pd.DataFrame(
+        {
+            "Quantity": [
+                "Main-grid VFI iterations",
+                "Main-grid sup-norm residual",
+                "Refined-grid max gap (median z)",
+                "MPC near zero assets (median z)",
+                "MPC near top assets (median z)",
+                "Simulated median wealth",
+                "Simulated P90 wealth",
+                "Share near constraint",
+            ],
+            "Value": [
+                f"{solution['iterations']}",
+                f"{solution['error']:.2e}",
+                f"{max_refined_gap_mid:.2e}",
+                f"{low_asset_mpc:.4f}",
+                f"{high_asset_mpc:.4f}",
+                f"{median_assets:.4f}",
+                f"{p90_assets:.4f}",
+                f"{constraint_share:.4f}",
+            ],
+        }
+    )
+    report.add_table(
+        "tables/key-scalars.csv",
+        "Solver, policy, and simulation diagnostics",
+        scalars_df,
+        description=(
+            "Convergence statistics, marginal propensities to consume, and "
+            "simulated wealth quantiles are persisted here so the inline "
+            "numbers in the report can be cross-checked against a committed "
+            "artifact."
+        ),
     )
 
     report.add_takeaway(

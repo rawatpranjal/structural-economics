@@ -61,7 +61,7 @@ With the calibration below, $K_{ss}=37.989$, $Y_{ss}=3.704$, $C_{ss}=2.754$, and
 
 ## Solution Method
 
-The computation uses global value function iteration. It solves the standard and irreversible models on the same grids. In the irreversible model, the feasible lower bound is $K'=(1-\delta)K$. The code evaluates that boundary even when it falls between grid nodes. The binding indicator records states where the boundary choice wins.
+The computation uses global value function iteration. It solves the standard and irreversible models on the same grids. The point $K'=(1-\delta)K$ is the feasible lower bound under irreversibility. The code evaluates that off-grid boundary for both models so neither solution loses accuracy at the kink; for the standard model it can only win when the optimum is at or above $I=0$. The binding indicator is recorded for the irreversible model, where the boundary choice means the investment floor is active.
 
 ```text
 Algorithm: global VFI with an irreversible-investment boundary
@@ -72,7 +72,8 @@ repeat:
     for each productivity state z_i and capital state K_m:
         set A_std(K_m) to all feasible grid choices K'
         set A_irr(K_m) to choices in A_std with K' >= (1-delta)K_m
-        add the exact boundary K'=(1-delta)K_m to A_irr when it is between grid nodes
+        add the exact off-grid boundary K'=(1-delta)K_m to both A_std and A_irr
+            (for A_std it can only win when the optimum is at or above I=0)
         choose K' to maximize u(R(z_i,K_m)-K') + beta * sum_j P_ij V_n(K',z_j)
         set b(z_i,K_m)=1 if the boundary K'=(1-delta)K_m is chosen
     apply Howard improvement to the fixed policy

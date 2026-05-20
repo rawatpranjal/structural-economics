@@ -2,7 +2,7 @@ Diagnostic,Value
 Converged by policy movement criterion,No
 Epochs completed,90
 Final parameter movement,0.0272527
-Convergence threshold,0.0003
+Convergence threshold,0.0001
 Final normalized utility objective,-0.0237778
 Mean soft market residual during training,0.101114
 Mean interpolated market-clearing residual,9.77753e-18

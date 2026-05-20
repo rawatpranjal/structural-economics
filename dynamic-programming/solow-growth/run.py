@@ -410,9 +410,12 @@ y^{\ast}=(k^{\ast})^\alpha, \qquad c^{\ast}=(1-s)\,y^{\ast}.$$
         }
     )
     report.add_results(
-        "The table compares the closed form with the terminal simulation. Any gap "
-        "comes from finite horizon truncation. The geometric residual is about "
-        f"{abs(k0 - k_star) * local_lambda ** (periods - 1):.2e}."
+        "The table compares the closed form with the terminal simulation. The gap "
+        "comes from finite horizon truncation. The linear approximation predicts "
+        f"a remaining gap of about {abs(k0 - k_star) * local_lambda ** (periods - 1):.2e}; "
+        f"the actual gap is {abs(terminal['k'] - k_star):.2e}, larger because "
+        f"$k_0={k0:.1f}$ starts far from $k^{{\\ast}}$ in the nonlinear region "
+        "where the linearization underestimates the true distance."
     )
     report.add_table(
         "tables/steady-state-comparison.csv",

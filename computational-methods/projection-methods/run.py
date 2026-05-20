@@ -387,7 +387,7 @@ For this calibration, the exact policy is $g^{*}(k)=\alpha\beta A k^\alpha$.
         "Projection accuracy by basis size",
         format_table(table),
         description=(
-            "The table evaluates errors on a dense grid between collocation nodes."
+            "The table evaluates errors on a dense grid over the full approximation interval."
         ),
     )
 

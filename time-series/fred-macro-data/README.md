@@ -25,10 +25,10 @@ s_t = \rho \odot s_{t-1} + \sqrt{1-\rho^2}\odot \varepsilon_t,
 \qquad
 \varepsilon_t \sim N(0,C),
 \qquad
-y_t=\mu+\sigma\odot s_t.
+y_t=\mu+\sigma^{y}\odot s_t.
 $$
 
-The vector $s_t$ is a standardized latent state and $\sigma$ is the 4-vector of series standard deviations (3.0, 1.5, 1.5, 3.0); note that $\sigma_j = \mathrm{sd}(c_{j,t})$ below is the HP-cycle standard deviation, a numerically distinct quantity.
+The vector $s_t$ is a standardized latent state and $\sigma^{y}$ is the 4-vector of series standard deviations (3.0, 1.5, 1.5, 3.0). It is a separate quantity from the HP-cycle standard deviation $\sigma^{c}_j = \mathrm{sd}(c_{j,t})$ defined below; the superscripts $y$ and $c$ keep the DGP scaling and the cycle moment distinct.
 Here $\odot$ is element-by-element multiplication. The correlation matrix $C$
 sets the contemporaneous macro relationships in the example. The parameter
 $\rho_j$ controls how slowly each series adjusts after an innovation.
@@ -45,7 +45,7 @@ $$
 The cycle is $c_{j,t}=y_{j,t}-\tau_{j,t}$. The reported moments are
 
 $$
-\sigma_j=\mathrm{sd}(c_{j,t}),\qquad
+\sigma^{c}_j=\mathrm{sd}(c_{j,t}),\qquad
 r_{j,g}=\mathrm{corr}(c_{j,t},c_{g,t}),\qquad
 a_j=\mathrm{corr}(c_{j,t},c_{j,t-1}).
 $$

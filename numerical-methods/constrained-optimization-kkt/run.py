@@ -467,7 +467,7 @@ Multipliers are recovered after the fact from the stationarity equation by avera
         "      do a line search along d_k to pick the next x_k\n"
         "      update H_k by BFGS using the gradient difference\n"
         "  recover lambda from the active-set stationarity equation\n"
-        "  recover mu by complementary slackness on inactive bounds\n"
+        "  recover mu for binding bounds from stationarity: mu_j = lambda - (a_j - (B x)_j)\n"
         "```\n\n"
         "SLSQP is sensitive to the analytical Jacobian of the constraints. "
         "A wrong Jacobian silently mis-converges with no diagnostic. "
@@ -607,8 +607,9 @@ Multipliers are recovered after the fact from the stationarity equation by avera
         "Stationarity falls steadily as the iterate approaches the active-set boundary. "
         "Complementarity tracks the gap on the bound that should bind.\n\n"
         "The interior-point method reduces all three residuals together as the barrier shrinks. "
-        "Complementarity is bounded above by $n\\, t$ along the central path. "
-        "Reaching machine-precision feasibility takes about a dozen barrier values."
+        "The complementarity curve here uses the exact barrier multipliers $\\mu_t = t / x_t$, so it equals exactly $n\\, t$ at every point on the central path. "
+        f"The KKT table below instead reports the barrier row through the same heuristic multiplier recovery used for the other methods, so its complementarity entry differs from $n\\, t$ by the factor $n$. "
+        f"Reaching machine-precision feasibility takes {barrier_iter} barrier values."
     )
     report.add_figure(
         "figures/kkt-residuals.png",

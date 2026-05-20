@@ -873,7 +873,8 @@ The failure modes are familiar from neural training. The inner objective is non-
             "Bias is reported on the natural scale. "
             "Standard deviations are reported on the rate scale $\\sqrt{n} \\cdot \\mathrm{sd}(\\hat\\theta)$. "
             "Asymptotic values use $\\sqrt{1/I_0}$ for maximum likelihood and $\\sqrt{(1 + n/m) / I_0}$ for the adversarial estimator. "
-            "All Monte Carlo numbers are slightly below the asymptotic prediction at this sample size, which is the usual finite-sample behavior."
+            "The maximum-likelihood and oracle Monte Carlo numbers sit slightly below the asymptotic prediction at this sample size, the usual finite-sample behavior. "
+            "The neural-net discriminator is the exception: its Monte Carlo standard deviation runs about five percent above the asymptotic value, because its non-convex inner problem and limited training iterations add estimation noise the asymptotic formula does not capture."
         ),
     )
 

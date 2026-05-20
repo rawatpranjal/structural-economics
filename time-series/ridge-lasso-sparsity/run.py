@@ -697,7 +697,11 @@ zero, so it produces a compressed selected set.
         description=(
             "The selection table separates statistical selection from economic sparsity. "
             "The true rule contains many small nonzero indicators, so missed dense signal "
-            "matters even when the selected model forecasts well."
+            "matters even when the selected model forecasts well. Note that the "
+            "false-inclusion count is always zero by DGP construction: every one of "
+            "the 120 indicators has a nonzero true coefficient, so any indicator lasso "
+            "selects is true by construction. The zero reflects the DGP, not lasso "
+            "precision, and should not be read as a measurement of lasso selectivity."
         ),
     )
 

@@ -332,7 +332,7 @@ def main() -> None:
     mean_mpc_small = float(np.mean(mpc_small))
     mean_mpc_large = float(np.mean(mpc_large))
     frac_constrained = float(np.mean(final_assets <= borrowing_limit + 1e-8) * 100.0)
-    mpclim = gross_return * (beta_r ** (-1.0 / gamma)) - 1.0
+    mpclim = 1.0 - (beta_r ** (1.0 / gamma)) / gross_return
 
     print("\nStationary cross section from simulation:")
     print(f"  Mean assets:              {mean_assets:.3f}")
@@ -410,7 +410,7 @@ the constraint before it mainly raises saving.
         f"| CRRA $\\gamma$ | {gamma:.1f} | Curvature; sets the strength of precautionary motive and shapes MPCs |\n"
         f"| Discount factor $\\beta$ | {beta:.2f} | Annual time preference |\n"
         f"| Net rate $r$ | {r:.2f} | Exogenous risk-free return |\n"
-        f"| Patience-return product $\\beta R$ | {beta_r:.4f} | $<1$ rules out the unbounded-saving target of Carroll (1997) |\n"
+        f"| Patience-return product $\\beta R$ | {beta_r:.4f} | Carroll (1997) needs growth impatience $G_c < R$, i.e. $(\\beta R)^{{1/\\gamma}} < R$; here $\\beta R<1$ makes that hold, giving a finite target |\n"
         f"| Income mean $\\mu_y$ | {mean_income:.1f} | Normalization |\n"
         f"| Income s.d. $\\sigma_y$ | {sd_income:.1f} | Width of the IID labor-income shock |\n"
         f"| Income states $n_y$ | {n_income} | Width-fitted equal-spaced normal grid |\n"
@@ -674,8 +674,10 @@ $a \leq {accuracy_asset_max:g}$, the consumption and saving gaps are both
             "wealthy households. The average MPC out of a 0.10 transfer is "
             f"{mean_mpc_large:.3f}. The dotted line marks the perfect-foresight "
             f"limit, $\\kappa^{{\\ast}}\\approx{mpclim:.3f}$."
-            " Here $\\kappa^{\\ast}=R(\\beta R)^{-1/\\gamma}-1$"
-            " is the perfect-foresight MPC limit for CRRA utility."
+            " Here $\\kappa^{\\ast}=1-(\\beta R)^{1/\\gamma}/R$"
+            " is the perfect-foresight MPC limit for CRRA utility, where"
+            " $(\\beta R)^{1/\\gamma}$ is the perfect-foresight consumption"
+            " growth factor $G_c$."
         ),
     )
 
@@ -685,7 +687,7 @@ $a \leq {accuracy_asset_max:g}$, the consumption and saving gaps are both
             "Mean consumption",
             "Wealth Gini",
             "Average MPC, 0.10 transfer",
-            "Average local MPC",
+            "Average local consumption slope dc/da (numerical derivative, 1e-6 step)",
             "Fraction at borrowing limit",
             "Consumption gap vs fine grid, a <= 5",
             "Savings gap vs fine grid, a <= 5",

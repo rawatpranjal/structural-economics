@@ -79,8 +79,14 @@ to one. The FOCs then solve for new prices.
 ### C. Three demand systems
 
 The same observed market can give very different counterfactual prices once we
-change the demand curvature. We calibrate three demand systems. Each one
-matches the observed shares, prices, and margins by construction.
+change the demand curvature. We calibrate three demand systems. Each one matches
+the observed shares and prices by construction. Linear and log-linear demand
+carry a full $J\times J$ slope matrix, so they also reproduce the entire
+observed margin vector exactly. Logit demand has a single price coefficient
+$\alpha$. We pin it down from the average single-product margin condition and
+recover marginal costs from the pre-merger FOC, so the logit FOC residual is
+zero at calibration while its implied margins track the observed margins only
+as closely as one coefficient allows.
 
 Logit shares are
 
@@ -161,7 +167,7 @@ Two market setups run in sequence. The first is a small four-product market. We 
 | Prices | [1.00, 1.20, 0.90, 1.10, 1.30, 1.40] | Pre-merger prices |
 | Margins | [0.40, 0.35, 0.45, 0.40, 0.30, 0.28] | Price-cost margins by product |
 | Outside share | 0.35 | Outside option in the logit demand system |
-| $\alpha$ (logit) | -3.1611 | Calibrated price coefficient |
+| $\alpha$ (logit) | -2.7556 | Calibrated price coefficient |
 | Linear cross-slope ratio | 0.10 | Cross-slope relative to geometric mean own-slope |
 | Log-linear cross elasticity | 0.15 | Maintained symmetric cross-price elasticity |
 | Merger | Firm 1 buys Firm 2 | Products 1-4 move under common ownership |
@@ -210,7 +216,7 @@ The root finder can fail when the warm-start is too far from the equilibrium or 
 
 ### Method 3: Six-product extension with three demand systems
 
-Now we run the same pricing FOC across three demand systems. Each one matches the same observed shares and margins by construction. Any disagreement on counterfactual prices is therefore curvature, not data. UPP, GUPPI, and CMCR are local screens evaluated at observed prices. The post-merger FOC adds rival reactions and pass-through. The efficiency frontier sweeps a cost-reduction grid and re-solves at each step, warm-starting each solve from the previous one. That keeps the path monotone and the iteration count low.
+Now we run the same pricing FOC across three demand systems. Each one matches the same observed shares and prices by construction; linear and log-linear demand also match the full observed margin vector, while logit matches margins only as closely as one price coefficient allows. Any disagreement on counterfactual prices is therefore curvature, not data. UPP, GUPPI, and CMCR are local screens evaluated at observed prices. The post-merger FOC adds rival reactions and pass-through. The efficiency frontier sweeps a cost-reduction grid and re-solves at each step, warm-starting each solve from the previous one. That keeps the path monotone and the iteration count low.
 
 ```text
 Inputs:  shares s, prices p, margins m, owners f^pre, f^post
@@ -238,7 +244,7 @@ Outputs: per-system screens, post-merger prices, welfare, efficiency frontier
 
 Log-linear demand can drive prices negative during root-finder iterations. We solve in log-price space to keep prices positive at every step. Linear demand can return negative quantities at extreme prices, so we clip at a small positive value. Both safeguards leave the equilibrium unchanged where the unmodified solver also converges.
 
-FOC residuals after calibration: four-product baseline 5.6e-17; six-product extended (logit 1.4e-17, linear 2.8e-17, log-linear 2.8e-17). All calibrations reproduce the observed pricing conditions to numerical precision.
+FOC residuals after calibration: four-product baseline 5.6e-17; six-product extended (logit 2.8e-17, linear 2.8e-17, log-linear 2.8e-17). All calibrations reproduce the observed pricing conditions to numerical precision.
 
 ## Results
 
@@ -293,7 +299,7 @@ Average prices and inside share by scenario. The FOC residual confirms the repor
 
 ### Part 3: Six-product extension
 
-Now we run the same merger logic on a market with six products and three demand systems. Each system matches the same observed shares and margins. So any differences below come from demand curvature, not from data. Firm 1 buys Firm 2. Products 1 through 4 move under common ownership.
+Now we run the same merger logic on a market with six products and three demand systems. Each system matches the same observed shares and prices; linear and log-linear also match the full margin vector, and logit matches margins as closely as one price coefficient allows. So any differences below come from demand curvature, not from data. Firm 1 buys Firm 2. Products 1 through 4 move under common ownership.
 
 Logit and log-linear demand give double-digit average price increases on the merging products. Linear demand is much more muted under this cross-slope calibration. The same calibration anchors each system. The gap between them is curvature, not data.
 
@@ -317,7 +323,7 @@ The table puts local screens and solved counterfactuals side by side. Average pr
 
 | Demand Model   |   Avg Actual Price Inc. (%) |   Max Price Change (%) |   Avg GUPPI Screen (%) |   Screen Gap (pp) |   Avg CMCR Screen (%) |   Break-even Eff. (%) |   Delta CS |   Delta PS |   Delta W |   Post FOC Residual |
 |:---------------|----------------------------:|-----------------------:|-----------------------:|------------------:|----------------------:|----------------------:|-----------:|-----------:|----------:|--------------------:|
-| Logit          |                       11.15 |                  13.34 |                  11.59 |             -0.44 |                 19.76 |                 34.38 |    -0.0537 |     0.0204 |   -0.0333 |             2.4e-10 |
+| Logit          |                       12.79 |                  15.31 |                  13.29 |             -0.51 |                 25.37 |                 43.96 |    -0.0616 |     0.0234 |   -0.0382 |             3.4e-10 |
 | Linear         |                        5.13 |                   5.59 |                   7.27 |             -2.15 |                 12.15 |                 16.66 |    -0.0272 |     0.0078 |   -0.0193 |             5.6e-17 |
 | Log-linear     |                       10.27 |                  13.57 |                   4.56 |              5.7  |                  7.61 |                  9.29 |    -0.0489 |     0.0065 |   -0.0425 |             3e-12   |
 

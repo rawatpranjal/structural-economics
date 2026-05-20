@@ -1,4 +1,4 @@
 Metric,Equity EE,Bond EE,Interpretation
-Mean simulated residual,3.03e-03,9.16e-04,Average Euler-equation miss on simulated states
-Median simulated residual,2.69e-03,5.80e-04,Typical miss away from the worst simulated states
-Max simulated residual,2.40e-01,1.49e-01,Worst simulated miss in this coarse Python run
+Mean simulated residual,4.63e-03,2.51e-03,Average Euler-equation miss on simulated states
+Median simulated residual,3.14e-03,8.46e-05,Typical miss away from the worst simulated states
+Max simulated residual,1.24e-01,1.43e-01,Worst simulated miss in this coarse Python run

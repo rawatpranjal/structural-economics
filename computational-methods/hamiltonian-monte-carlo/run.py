@@ -522,7 +522,9 @@ HMC follows the ridge with one trajectory and pays $L$ gradient evaluations per 
         "the order matters because two half-steps in the momentum bracket one position step, so the integrator is time-reversible at each substep and conserves volume in $(\\theta, r)$-space. "
         "Volume preservation is the technical reason the Metropolis correction needs only the energy difference and not a Jacobian. "
         "Discarding the momentum after every iteration marginalizes it out and leaves the $\\theta$-chain stationary on the target posterior. "
-        "On a well-tuned trajectory the leapfrog energy drift is tiny and acceptance rates of 0.7 to 0.9 are typical.\n\n"
+        "On a well-tuned trajectory the leapfrog energy drift is tiny and the acceptance rate is high; "
+        "for this two-dimensional banana posterior at the tuned hyperparameters it sits near 0.99, "
+        "while the often-cited 0.7 to 0.9 range is the high-dimensional asymptotic benchmark.\n\n"
         "```text\n"
         "Algorithm: One HMC iteration\n"
         "Input : current theta_t, step size eps, leapfrog steps L\n"
@@ -681,9 +683,34 @@ HMC follows the ridge with one trajectory and pays $L$ gradient evaluations per 
     fig3.tight_layout()
     ess_hmc_x = effective_sample_size(hmc_kept[:, 0])
     ess_mh_x = effective_sample_size(mh_kept[:, 0])
+
+    # First lag at which each ACF drops below 0.05. argmax returns 0 when the
+    # series never crosses the threshold within max_lag; map that to max_lag so
+    # the committed artifact reports "still correlated past max_lag" honestly.
+    def _first_lag_below(acf: np.ndarray, threshold: float = 0.05) -> int:
+        below = acf < threshold
+        return int(np.argmax(below)) if below.any() else max_lag
+
+    lag_hmc_x = _first_lag_below(acf_hmc_x)
+    acf_summary = pd.DataFrame(
+        {
+            "series": ["hmc_x", "hmc_y", "mh_x", "mh_y"],
+            "lag_below_0.05": [
+                lag_hmc_x,
+                _first_lag_below(acf_hmc_y),
+                _first_lag_below(acf_mh_x),
+                _first_lag_below(acf_mh_y),
+            ],
+        }
+    )
+    acf_csv = Path(__file__).resolve().parent / "tables" / "acf-summary.csv"
+    acf_csv.parent.mkdir(parents=True, exist_ok=True)
+    acf_summary.to_csv(acf_csv, index=False)
+
     report.add_results(
         f"The autocorrelation plots show how quickly each chain forgets where it was. "
-        f"For $\\theta_1$, the HMC autocorrelation drops to near zero within {int(np.argmax(acf_hmc_x < 0.05))} lags, "
+        f"For $\\theta_1$, the HMC autocorrelation drops to near zero within {lag_hmc_x} lags "
+        f"(the per-series lag counts behind this figure are in `tables/acf-summary.csv`), "
         f"while random-walk MH stays correlated out beyond {max_lag} lags. "
         f"Effective sample size for $\\theta_1$ is {ess_hmc_x:.0f} for HMC across {len(hmc_kept):,} draws "
         f"and {ess_mh_x:.0f} for RW-MH across {len(mh_kept):,} draws. "
@@ -718,8 +745,9 @@ HMC follows the ridge with one trajectory and pays $L$ gradient evaluations per 
     report.add_results(
         "The leapfrog step-size sweep shows the trade-off behind HMC tuning. "
         "Acceptance drops sharply once $\\varepsilon$ pushes the discretization error past the implicit Metropolis tolerance. "
-        "Effective sample size is largest at a step size that keeps acceptance around 0.6 to 0.8, "
-        "which matches the asymptotic-optimal acceptance results in the HMC literature."
+        "Effective sample size is largest in this sweep at a step size that keeps acceptance around 0.96 to 0.99, "
+        "higher than the 0.6 to 0.8 asymptotic-optimal acceptance results in the HMC literature, "
+        "because those asymptotics describe the high-dimensional limit and this banana posterior is only two-dimensional."
     )
     report.add_table(
         "tables/stepsize-sweep.csv",

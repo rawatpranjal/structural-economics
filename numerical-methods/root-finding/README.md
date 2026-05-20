@@ -49,7 +49,15 @@ $$x_{n+1} = x_n - Z(x_n) \frac{x_n - x_{n-1}}{Z(x_n) - Z(x_{n-1})}.$$
 The method needs two starting points but no derivative.
 Local convergence is superlinear with order $(1 + \sqrt{5}) / 2 \approx 1.618$.
 
-### Method 3: Newton-Raphson
+### Method 3: Brent
+
+Brent's method tries inverse quadratic interpolation through the last three ordinates.
+It falls back to secant when ordinates coincide.
+It falls back to bisection when the proposed step would leave the bracket or fails to halve the previous step.
+The bracket invariant is maintained at every iteration.
+Brent therefore inherits the global guarantee of bisection together with the asymptotic speed of secant or interpolation when the local problem is well behaved.
+
+### Method 4: Newton-Raphson
 
 Newton-Raphson follows the tangent of $Z$ at the current iterate.
 
@@ -57,14 +65,6 @@ $$x_{n+1} = x_n - \frac{Z(x_n)}{Z'(x_n)}.$$
 
 The method needs a derivative but only one starting point.
 Local convergence is quadratic when $Z'(r^{\ast}) \neq 0$.
-
-### Method 4: Brent
-
-Brent's method tries inverse quadratic interpolation through the last three ordinates.
-It falls back to secant when ordinates coincide.
-It falls back to bisection when the proposed step would leave the bracket or fails to halve the previous step.
-The bracket invariant is maintained at every iteration.
-Brent therefore inherits the global guarantee of bisection together with the asymptotic speed of secant or interpolation when the local problem is well behaved.
 
 ## Model Setup
 
@@ -161,7 +161,7 @@ The sensitivity panel changes the starting point or bracket centre. Bisection an
 
 <img src="figures/convergence-and-sensitivity.png" alt="Log-axis convergence (top) and iteration-count sensitivity to the starting point (bottom)" width="80%">
 
-All four methods reach the closed-form root within tolerance. Brent and Newton finish in roughly an order of magnitude fewer iterations than bisection.
+All four methods reach the closed-form root within tolerance. Brent (7 iterations) and Newton (5) finish in about 4-6x fewer iterations than bisection (29): 29/7 = 4.1x for Brent and 29/5 = 5.8x for Newton, well under one order of magnitude.
 
 **Bisection, secant, Brent, and Newton-Raphson on the stylized bond market**
 

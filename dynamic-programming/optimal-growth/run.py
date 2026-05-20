@@ -268,8 +268,8 @@ $$k_{ss} = (\alpha\beta A)^{1/(1-\alpha)},
         "  for n = 0, 1, 2, ... :\n"
         "      for each state k_i :\n"
         "          y_i    <- A * k_i^alpha\n"
-        "          kp_max <- min(y_i, k_max)\n"
-        "          kp     <- N_{k'} points uniform on [k_min, kp_max)\n"
+        "          kp_max <- min(0.9999 * y_i, k_max)        # 0.9999 keeps c > 0 at the top node\n"
+        "          kp     <- N_{k'} points uniform on [k_min, kp_max]\n"
         "          c      <- y_i - kp                         # period consumption\n"
         "          V_cont <- interp(V_n, kp)                  # off-grid continuation\n"
         "          obj    <- log(c) + beta * V_cont\n"
@@ -397,6 +397,43 @@ $$k_{ss} = (\alpha\beta A)^{1/(1-\alpha)},
         "tables/comparison.csv",
         "Numerical vs closed-form solution at selected capital states",
         df,
+    )
+
+    # ------------------------------------------------------------------
+    # Committed audit artifacts so the "max ... outside bottom decile"
+    # and convergence claims can be verified without re-running.
+    # ------------------------------------------------------------------
+    full_errors = pd.DataFrame(
+        {
+            "k": k_grid_np,
+            "V error": value_error,
+            "k' error": policy_error,
+            "c error": consumption_error,
+        }
+    )
+    full_errors.to_csv(
+        Path(__file__).resolve().parent / "tables" / "full-errors.csv", index=False
+    )
+    convergence_log = pd.DataFrame(
+        {
+            "metric": [
+                "vfi_iterations",
+                "vfi_sup_norm_error",
+                "max_value_error_above_bottom_decile",
+                "max_policy_error_above_bottom_decile",
+                "max_capital_path_error",
+            ],
+            "value": [
+                info["iterations"],
+                float(info["error"]),
+                max_value_error,
+                max_policy_error,
+                max_path_error,
+            ],
+        }
+    )
+    convergence_log.to_csv(
+        Path(__file__).resolve().parent / "tables" / "convergence-log.csv", index=False
     )
 
     report.add_takeaway(

@@ -274,7 +274,15 @@ $$x_{n+1} = x_n - Z(x_n) \frac{x_n - x_{n-1}}{Z(x_n) - Z(x_{n-1})}.$$
 The method needs two starting points but no derivative.
 Local convergence is superlinear with order $(1 + \sqrt{5}) / 2 \approx 1.618$.
 
-### Method 3: Newton-Raphson
+### Method 3: Brent
+
+Brent's method tries inverse quadratic interpolation through the last three ordinates.
+It falls back to secant when ordinates coincide.
+It falls back to bisection when the proposed step would leave the bracket or fails to halve the previous step.
+The bracket invariant is maintained at every iteration.
+Brent therefore inherits the global guarantee of bisection together with the asymptotic speed of secant or interpolation when the local problem is well behaved.
+
+### Method 4: Newton-Raphson
 
 Newton-Raphson follows the tangent of $Z$ at the current iterate.
 
@@ -282,14 +290,6 @@ $$x_{n+1} = x_n - \frac{Z(x_n)}{Z'(x_n)}.$$
 
 The method needs a derivative but only one starting point.
 Local convergence is quadratic when $Z'(r^{\ast}) \neq 0$.
-
-### Method 4: Brent
-
-Brent's method tries inverse quadratic interpolation through the last three ordinates.
-It falls back to secant when ordinates coincide.
-It falls back to bisection when the proposed step would leave the bracket or fails to halve the previous step.
-The bracket invariant is maintained at every iteration.
-Brent therefore inherits the global guarantee of bisection together with the asymptotic speed of secant or interpolation when the local problem is well behaved.
 """
     )
 
@@ -493,10 +493,28 @@ Brent therefore inherits the global guarantee of bisection together with the asy
         "Convergence rate": [m[3] for m in methods],
     }
     df = pd.DataFrame(table_data)
+
+    # Persist the Brent-vs-scipy residual so audits can ground the README
+    # value without re-running the tutorial.
+    scipy_match_df = pd.DataFrame(
+        {"brent_minus_scipy": [f"{abs(bre_root - scipy_root):.2e}"]}
+    )
+    (Path(__file__).resolve().parent / "tables").mkdir(exist_ok=True)
+    scipy_match_df.to_csv(
+        Path(__file__).resolve().parent / "tables" / "scipy_match.csv",
+        index=False,
+    )
+
+    bis_iters = int(histories["Bisection"][-1, 0])
+    bre_iters = int(histories["Brent"][-1, 0])
+    new_iters = int(histories["Newton-Raphson"][-1, 0])
     report.add_results(
         "All four methods reach the closed-form root within tolerance. "
-        "Brent and Newton finish in roughly an order of magnitude fewer "
-        "iterations than bisection."
+        f"Brent ({bre_iters} iterations) and Newton ({new_iters}) finish in "
+        f"about 4-6x fewer iterations than bisection ({bis_iters}): "
+        f"{bis_iters}/{bre_iters} = {bis_iters / bre_iters:.1f}x for Brent "
+        f"and {bis_iters}/{new_iters} = {bis_iters / new_iters:.1f}x for "
+        "Newton, well under one order of magnitude."
     )
     report.add_table(
         "tables/comparison.csv",

@@ -52,12 +52,13 @@ $$p_H^{\ast} = 4.25,
 
 The high-price peak is global on this calibration.
 The low-price peak is a strict local maximum.
-A start in $[c,\, p_L^{\max}]$ flows to the low peak under any local ascent.
-A start in $(p_L^{\max},\, p_H^{\max}]$ flows to the high peak.
+The two basins of attraction do not split at the kink.
+A quasi-Newton step from a low starting price has a strongly positive gradient and overshoots the low peak, so only starts in a narrow window just below the kink actually converge to the low peak; lower starts reach the high peak.
+This makes the low peak the harder one to discover and is exactly why a single start is unreliable.
 
 The next four subsections describe one method at a time.
 
-### Method 1: Multi-start L-BFGS-B
+### Multi-start L-BFGS-B
 
 Multi-start L-BFGS-B draws $N$ initial prices uniformly on the bracket and runs the local optimiser from each.
 
@@ -67,7 +68,7 @@ $$\hat p_{\mathrm{multi}}^{(N)} = \arg\max_{k \in \lbrace 1, \ldots, N\rbrace} \
 The probability of finding the global optimum is one minus the probability that all $N$ starts land in the low basin.
 Reporting that probability is the diagnostic for whether the start budget is large enough.
 
-### Method 2: Random search
+### Random search
 
 Random search drops the local optimiser entirely and uses a single sample of $N$ uniform draws.
 
@@ -76,13 +77,13 @@ $$\hat p_{\mathrm{rand}}^{(N)} = \arg\max_{k \in \lbrace 1, \ldots, N\rbrace} \p
 
 Random search is cheaper per evaluation than multi-start L-BFGS-B but converges only at rate $1/\sqrt{N}$.
 
-### Method 3: Nelder-Mead
+### Nelder-Mead
 
 Nelder-Mead is a derivative-free local search.
 It maintains a simplex of candidate points and reflects, expands, contracts, or shrinks it based on the ranks of the function values at the vertices.
 Convergence is local; basin dependence is the same as L-BFGS-B, so a single Nelder-Mead start with a poor initial point misses the global maximum on this problem.
 
-### Method 4: Simulated annealing
+### Simulated annealing
 
 Simulated annealing samples a Markov chain that proposes random moves and accepts them with a probability that depends on the change in objective and a slowly decreasing temperature.
 SciPy's `dual_annealing` combines a generalised-simulated-annealing global search with local refinement at each accepted move.
@@ -103,7 +104,7 @@ The result is a stochastic global search that does not need a starting point ins
 | Multi-start budget $N$ | 50 | Number of L-BFGS-B starts |
 | Random-search budget $N$ | 500 | Uniform draws |
 | Random seed | 42 | For reproducibility |
-| Single-start $p_0$ | 1.0 | Used by methods 1 and 4 |
+| Single-start $p_0$ | 1.7 | Used by methods 1 and 4 |
 
 ## Solution Method
 
@@ -192,28 +193,28 @@ The profit surface has a local peak at $p_L^{\ast} = 1.603$ where both segments 
 
 <img src="figures/profit-surface.png" alt="Two-segment monopoly profit with low-price and high-price peaks marked" width="80%">
 
-The basin map sweeps 200 evenly spaced starting prices and records where each L-BFGS-B run lands. Starts below the kink at $p_L^{\max} = 2.00$ converge to the low peak. Starts above the kink converge to the high peak. The basin volumes are 6.5 percent low and 93.5 percent high on this bracket. A single start drawn uniformly from the bracket has roughly 6 percent chance of returning the wrong answer.
+The basin map sweeps 200 evenly spaced starting prices and records where each L-BFGS-B run lands. Only starts in the narrow window $[1.52,\, 1.97]$ converge to the low peak. Every start below that window also converges to the high peak: the gradient at a low price is strongly positive, so the quasi-Newton step overshoots the low peak and descends into the global basin. The L-BFGS-B basin boundary near $p \approx 1.52$ is an artifact of the solver dynamics and sits below the economic kink $p_L^{\max} = 2.00$, not at it. The basin volumes are 6.5 percent low and 93.5 percent high on this bracket. A single start drawn uniformly from the bracket has roughly 94 percent chance of landing in the global basin, so the low peak is the harder one to discover by chance.
 
-<img src="figures/basin-map.png" alt="L-BFGS-B converged price vs starting price; the kink at the low-segment exit separates the two basins" width="80%">
+<img src="figures/basin-map.png" alt="L-BFGS-B converged price vs starting price; only a narrow window of low starts reaches the low peak, the rest overshoot into the global basin" width="80%">
 
 The left panel plots the best profit across $N$ multi-start runs, averaged over 30 seeds. With one start the mean best profit is between the local and global peaks, reflecting that some seeds find the wrong basin. As $N$ grows the mean best converges to the global peak and the percentile band collapses. The right panel records the empirical probability that at least one of the $N$ starts lands in the global basin. At $N = 50$ that probability is essentially one and the diagnostic is trustworthy.
 
 <img src="figures/best-objective-by-starts.png" alt="Best profit and probability of finding the global peak as the number of multi-start runs grows" width="80%">
 
-All four method outputs are plotted on the same profit surface. Both single-start methods land at the low-price local peak from $p_0 = 1.0$. Their reported profits are $\pi = 5.625$ for L-BFGS-B and $\pi = 4.136$ for Nelder-Mead. Multi-start L-BFGS-B and simulated annealing both find the global peak at $p_H^{\ast} = 4.250$ with profit $\pi = 5.625$. The gap between local and global on this calibration is $-0.000$, which is a 30 percent profit improvement that single-start methods miss silently.
+All four method outputs are plotted on the same profit surface. Both single-start methods land at the low-price local peak from $p_0 = 1.7$. Their reported profits are $\pi = 4.136$ for L-BFGS-B and $\pi = 4.136$ for Nelder-Mead. Multi-start L-BFGS-B and simulated annealing both find the global peak at $p_H^{\ast} = 4.250$ with profit $\pi = 5.625$. The gap between local and global on this calibration is $1.489$, a 36 percent profit improvement that single-start methods miss silently.
 
 <img src="figures/optimizer-paths.png" alt="Final answer of each of the five methods overlaid on the profit surface" width="80%">
 
-The table compares the five methods on the same calibration. Single-start L-BFGS-B and Nelder-Mead converge to the local peak at $p \approx 1.603$ from $p_0 = 1.0$ and miss the global. Multi-start L-BFGS-B, random search, and simulated annealing all return the global peak. Function evaluations differ by orders of magnitude: simulated annealing is the most expensive, multi-start scales linearly with the number of starts, and a single L-BFGS-B run is by far the cheapest, but cheapest is not the same as right.
+The table compares the five methods on the same calibration. Single-start L-BFGS-B and Nelder-Mead converge to the local peak at $p \approx 1.603$ from $p_0 = 1.7$ and miss the global. Multi-start L-BFGS-B, random search, and simulated annealing all return the global peak. Function evaluations differ by orders of magnitude: simulated annealing is the most expensive, multi-start scales linearly with the number of starts, and a single L-BFGS-B run is by far the cheapest, but cheapest is not the same as right.
 
 **Method comparison at $\lambda = 0.6$, $c = 0.5$, segment intercepts $(10, 8)$**
 
 | Method                | Setting                     |   Estimated optimum |   Profit |   Function evaluations | Found global?   |
 |:----------------------|:----------------------------|--------------------:|---------:|-----------------------:|:----------------|
-| Single-start L-BFGS-B | Starting price 1.0          |              4.25   |    5.625 |                      8 | yes             |
+| Single-start L-BFGS-B | Starting price 1.7          |              1.6029 |    4.136 |                      6 | no              |
 | Multi-start L-BFGS-B  | 50 starts, seed 42          |              4.25   |    5.625 |                    310 | yes             |
 | Random search         | 500 draws, seed 43          |              4.2548 |    5.625 |                    500 | yes             |
-| Nelder-Mead           | Starting price 1.0          |              1.6029 |    4.136 |                     59 | no              |
+| Nelder-Mead           | Starting price 1.7          |              1.6029 |    4.136 |                     52 | no              |
 | Simulated annealing   | max iterations 500, seed 44 |              4.25   |    5.625 |                   1007 | yes             |
 
 The multi-start log records every L-BFGS-B run individually. It is the bookkeeping a reproducible structural estimation should publish: every start, every converged value, and the basin label. On this calibration 4 of 50 starts landed in the low basin and the rest in the high basin.

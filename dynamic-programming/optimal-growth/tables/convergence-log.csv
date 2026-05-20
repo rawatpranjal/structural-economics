@@ -1,0 +1,6 @@
+metric,value
+vfi_iterations,143.0
+vfi_sup_norm_error,9.318680156411574e-07
+max_value_error_above_bottom_decile,1.9073486328125e-05
+max_policy_error_above_bottom_decile,0.028688430786132812
+max_capital_path_error,0.023903846740722656

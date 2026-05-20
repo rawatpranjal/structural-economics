@@ -59,6 +59,7 @@ The signal process is symmetric around an uninformative prior. A red signal is e
 | $p_L$ | 0.3 | Probability of a red signal in state $L$ |
 | Prior $p_0$ | 0.5 | Initial belief $\Pr(H)$ |
 | Signal horizon | 50 | Draws used for belief paths |
+| Stopping horizon | 30 | Periods used for the backward-induction boundary |
 | Simulated paths | 200 per state | Monte Carlo paths shown against exact means |
 | Investment payoff in $H$ | 1.0 | Payoff if the project is good |
 | Investment payoff in $L$ | -0.5 | Payoff if the project is bad |

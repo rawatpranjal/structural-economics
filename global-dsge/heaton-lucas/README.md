@@ -82,17 +82,17 @@ until the sup-norm policy change is below epsilon or the iteration cap is reache
 simulate the Markov chain and the implied omega transition to read the ergodic distribution
 ```
 
-This run stopped at the iteration cap after **80** STPFI iterations. The final policy change was 2.06e-02, and the maximum pointwise residual was 1.27e-03. The nonlinear systems use `scipy.optimize.root`. JAX supplies the 19-by-19 Jacobian.
+This run stopped at the iteration cap after **80** STPFI iterations. The final policy change was 1.78e-02, and the maximum pointwise residual was 5.31e-07. The nonlinear systems use `scipy.optimize.root`. JAX supplies the 19-by-19 Jacobian.
 
 ## Results
 
-The computed equity premium ranges from 0.43% to 1.42% on the interior grid. It moves because constraints change whose marginal utility prices dividends. The variation is the asset-pricing effect of incomplete risk sharing.
+The computed equity premium ranges from 0.47% to 1.04% on the interior grid. It moves because constraints change whose marginal utility prices dividends. The variation is the asset-pricing effect of incomplete risk sharing.
 
-Panel one plots equity premia against the wealth-share state. Panel two shows the simulated ergodic distribution. The mean wealth share is 0.487, with 10th and 90th percentiles at -0.050 and 1.050.
+Panel one plots equity premia against the wealth-share state. Panel two shows the simulated ergodic distribution. The mean wealth share is 0.504, with 10th and 90th percentiles at 0.110 and 0.897.
 
 <img src="figures/equity-premium-and-distribution.png" alt="Equity premium and ergodic distribution of wealth share." width="80%">
 
-Agent 1's no-short-sale multiplier is positive at 0.3% of interior collocation points. The borrowing multiplier is positive at 2.7%. The right panel keeps the equity premium on the same state grid.
+Agent 1's no-short-sale multiplier is positive at 0.0% of interior collocation points. The borrowing multiplier is positive at 48.5%. The right panel keeps the equity premium on the same state grid.
 
 <img src="figures/policy-functions.png" alt="Multipliers and equity premium where constraints bind." width="80%">
 
@@ -102,9 +102,9 @@ The table reports simulated Euler-equation residuals. They show that this pedago
 
 | Metric                    |   Equity EE |   Bond EE | Interpretation                                    |
 |:--------------------------|------------:|----------:|:--------------------------------------------------|
-| Mean simulated residual   |     0.00303 |  0.000916 | Average Euler-equation miss on simulated states   |
-| Median simulated residual |     0.00269 |  0.00058  | Typical miss away from the worst simulated states |
-| Max simulated residual    |     0.24    |  0.149    | Worst simulated miss in this coarse Python run    |
+| Mean simulated residual   |     0.00463 |  0.00251  | Average Euler-equation miss on simulated states   |
+| Median simulated residual |     0.00314 |  8.46e-05 | Typical miss away from the worst simulated states |
+| Max simulated residual    |     0.124   |  0.143    | Worst simulated miss in this coarse Python run    |
 
 The Euler residuals are larger than a production asset-pricing run would allow. The figures still show the state dependence created by constraints. Treat the numbers as a teaching calculation, not final quantitative evidence.
 

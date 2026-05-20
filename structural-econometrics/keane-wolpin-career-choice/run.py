@@ -183,7 +183,7 @@ def solve_exact(
 def feature_matrix(states: list[State], t: int, p: CareerPrimitives) -> np.ndarray:
     """Polynomial state features for the Emax approximation."""
     if not states:
-        return np.empty((0, 11))
+        return np.empty((0, 12))
     arr = np.asarray(states, dtype=float)
     schooling = (arr[:, 0] - p.initial_schooling) / (p.max_schooling - p.initial_schooling)
     blue = arr[:, 1] / max(p.horizon, 1)
@@ -555,8 +555,15 @@ In this tutorial the basis vector is
 $$
 \phi(s,t)=
 (1, E, X^b, X^w, X^b+X^w, E^2, (X^b)^2, (X^w)^2,
-E X^b, E X^w, X^b X^w, t).
+E X^b, E X^w, X^b X^w, t),
 $$
+
+written above in raw state units for readability. In code each input is
+first normalized to a comparable scale before the polynomial terms are
+formed: schooling as $(E-E_0)/(\bar E-E_0)$, each experience stock divided
+by the horizon, and age divided by the maximum age. The fitted coefficient
+vector $\widehat b_t$ therefore lives in normalized units, so evaluating the
+surface requires applying the same normalization to any new state.
 
 The fitted continuation surface is
 
@@ -771,11 +778,13 @@ values or policies in this calibration.
         "Approximation errors against exact backward induction",
         fig3,
         description=(
-            "The exact solve provides a benchmark. Approximation errors are largest at "
-            "young ages because early states carry many future option values. Policy "
+            "The exact solve provides a benchmark. Absolute Emax RMSE grows with age "
+            "because later ages have more states and exceed the sample cap. Relative "
+            "to the exact Emax standard deviation at each age, the normalized error is "
+            "largest at young ages, where the Emax surface has little spread. Policy "
             "agreement is the share of states where exact and approximate deterministic "
-            "argmax choices match. In this run, the largest age-specific RMSE is "
-            f"{max_normalized_rmse:.1%} of the exact Emax standard deviation, and "
+            "argmax choices match. In this run, the largest age-specific normalized RMSE "
+            f"is {max_normalized_rmse:.1%} of the exact Emax standard deviation, and "
             f"the lowest policy agreement is {min_policy_agreement:.1%}. That is "
             "acceptable for a teaching approximation, not a universal tolerance: in "
             "estimation, the relevant test is whether simulated moments and the "
@@ -833,8 +842,10 @@ values or policies in this calibration.
         "Sampled regression fit by age",
         fit_table,
         description=(
-            "The Emax regression uses at most the sample cap at each age. Later ages "
-            "have fewer continuation states, so the approximation becomes nearly exact."
+            "The Emax regression uses at most the sample cap at each age. Early ages "
+            "have fewer states than the cap, so every state is sampled and the "
+            "regression fit is near-exact. Later ages exceed the cap, so only a "
+            "subset is sampled and the in-sample fit error grows."
         ),
     )
 

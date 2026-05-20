@@ -363,9 +363,15 @@ $$K^d(r) = (\tfrac{r+\delta}{\alpha})^{1/(\alpha-1)}.$$
 **Stationary equilibrium.** A stationary equilibrium contains price $r^{\ast}$,
 wage $w^{\ast}$, policy $g_a$, and distribution $\mu$. The household problem is
 solved at $(r^{\ast},w^{\ast})$. The distribution is invariant under
-$(g_a,P)$. The capital market clears:
+$(g_a,P)$. The capital market clears, $K^s(r^{\ast}) = K^d(r^{\ast})$, with
+household capital supply
 
-$$K^s(r^{\ast}) = \sum_{i,j} a_i\,\mu(a_i,z_j) = K^d(r^{\ast}).$$
+$$K^s(r^{\ast}) = \sum_{i,j} a_i\,\mu(a_i,z_j).$$
+
+Bisection stops once the relative gap falls below tolerance, so the run delivers
+$K^s(r^{\ast}) \approx K^d(r^{\ast})$ rather than exact equality. The diagnostics
+table reports both sides; the small residual between them is the tolerance gap,
+not a model object.
 
 A standard result is $r^{\ast}<1/\beta-1$. At or above that rate,
 precautionary saving becomes unbounded. The economy has excess capital supply.
@@ -566,6 +572,8 @@ precautionary saving becomes unbounded. The economy has excess capital supply.
             "Gini",
             "Mass at constraint",
             "Relative market-clearing gap",
+            "Bisection steps",
+            "VFI iterations",
         ],
         "Value": [
             f"{r_eq:.6f}",
@@ -579,6 +587,8 @@ precautionary saving becomes unbounded. The economy has excess capital supply.
             f"{gini:.4f}",
             f"{frac_constrained:.4f}",
             f"{market_gap_rel:+.3e}",
+            f"{ge_iter}",
+            f"{sol['iterations']}",
         ],
     })
     report.add_table(

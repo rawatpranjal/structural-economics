@@ -167,11 +167,13 @@ for s = 0..T-1:
 ```
 
 The two-step structure mirrors Auclert, Bardóczy, Rognlie, and Straub (2021):
-anticipation curves are translation-invariant, so they are computed once and
-then convolved with the time-varying input path during the forward sweep.
-The full SSJ library uses an additional Toeplitz trick that drops the overall
-cost to $O(T\,|state|)$; the algorithm above is the simplest version that
-still gives the correct Jacobians.
+anticipation curves are translation-invariant, so they are computed once by a
+single $O(T\,|state|)$ backward iteration. The forward distribution sweep
+above then runs $T$ separate passes of length $T$, restarting $delta_D$ for
+each pulse date, so the sweep costs $O(T^2\,|state|)$ in total. The full SSJ
+library uses an additional Toeplitz trick that drops the overall cost to
+$O(T\,|state|)$; the algorithm above is the simplest version that still gives
+the correct Jacobians.
 
 **Firm, NKPC, fiscal, and monetary blocks.** All four are closed-form
 $T \times T$ matrices once we substitute $L = Y / Z$ and impose the budget
@@ -184,13 +186,13 @@ $3 T \times 3 T$ system is solved by a single dense linear solve.
 424 iterations to a sup-norm residual of
 9.82e-10. The joint $(\beta, v_{\varphi})$ calibration
 converged in a few Broyden steps to the targets $A^{\ast} = B$ and
-$N^E_{\ast} = 1$. The Jacobian construction took 26.1 seconds at
+$N^E_{\ast} = 1$. The Jacobian construction took 35.9 seconds at
 $T = 300$. The aggregate condition number of $H_U$ is order
 $10^{3}$, well within double-precision range.
 
 ## Results
 
-A 100 basis-point monetary tightening (matching the canonical Auclert et al. notebook) pushes the real rate up in both economies. Output and consumption fall on impact in HANK with a slightly smaller magnitude than in the representative-agent NK benchmark, because the skill-proportional dividend rule sends a relatively larger share of the dividend swing to high-skill, low-MPC households who absorb it through saving. Even so, HANK shows larger inflation and real-rate responses than RA because the cross-section forces real marginal cost to move more to clear the goods market.
+A 100 basis-point monetary tightening (matching the canonical Auclert et al. notebook) pushes the real rate up in both economies. Output and consumption fall on impact in HANK with a slightly smaller magnitude than in the representative-agent NK benchmark, because the skill-proportional dividend rule sends a relatively larger share of the dividend swing to high-skill, low-MPC households who absorb it through saving. Even so, HANK shows a larger inflation response than RA because the cross-section forces real marginal cost to move more to clear the goods market; the real-rate response is close to the RA benchmark and slightly smaller on impact.
 
 <img src="figures/irf-comparison.png" alt="Headline impulse responses: HANK vs representative-agent NK" width="80%">
 
@@ -198,7 +200,7 @@ Splitting the household-block consumption response by steady-state wealth quinti
 
 <img src="figures/quintile-irf.png" alt="Consumption IRF decomposed by wealth quintile" width="80%">
 
-Each curve is the date-0 consumption response to a unit interest rate pulse anticipated to arrive at a future date $s$. Curves at longer lags are smaller and smoother because anticipation is filtered through the household's Euler equation: high-MPC households at the constraint barely respond to far-future news, while wealthy households respond similarly to news at any horizon below their planning window. These curves are the columns of $J^{C, r}_{0, s}$ before the forward distribution propagation.
+Each curve is the date-0 consumption response to a unit interest rate pulse anticipated to arrive at a future date $s$. Curves at longer lags are smaller and smoother because anticipation is filtered through the household's Euler equation: high-MPC households at the constraint barely respond to far-future news, while wealthy households respond similarly to news at any horizon below their planning window. Each curve is the skill-averaged date-0 policy perturbation $dc(a)$ for a unit $r$ pulse at lag $s$ -- the raw anticipation curve before it is integrated against the steady-state distribution to form a Jacobian entry.
 
 <img src="figures/anticipation-curves.png" alt="Anticipation curves: date-0 consumption response to a future $r$ pulse" width="80%">
 
@@ -210,26 +212,31 @@ The household block is the costly piece; the aggregate solve is a single dense s
 
 **Solver diagnostics and IRF peak responses**
 
-| Quantity                                    | Value     |
-|:--------------------------------------------|:----------|
-| Household EGM iterations to convergence     | 424       |
-| Household EGM final sup-norm residual       | 9.82e-10  |
-| Calibrated discount factor                  | 0.98223   |
-| Calibrated labor disutility                 | 0.7862    |
-| Aggregate savings A*                        | 5.6000    |
-| Bond supply B (target)                      | 5.6000    |
-| Aggregate effective labor NE                | 1.0000    |
-| Aggregate consumption C*                    | 1.0000    |
-| Aggregate output Y*                         | 1.0000    |
-| Steady-state real rate r* (quarterly)       | 0.0050    |
-| Jacobian construction time (seconds, T=300) | 26.14     |
-| H_U matrix size                             | 900 x 900 |
-| H_U condition number                        | 4.41e+03  |
-| Peak HANK output response (% of Y*)         | -0.190    |
-| Peak HANK consumption response (% of C*)    | -0.190    |
-| Peak RA NK output response (%)              | -0.249    |
+| Quantity                                     | Value     |
+|:---------------------------------------------|:----------|
+| Household EGM iterations to convergence      | 424       |
+| Household EGM final sup-norm residual        | 9.82e-10  |
+| Calibrated discount factor                   | 0.98223   |
+| Calibrated labor disutility                  | 0.7862    |
+| Aggregate savings A*                         | 5.6000    |
+| Bond supply B (target)                       | 5.6000    |
+| Aggregate effective labor NE                 | 1.0000    |
+| Aggregate consumption C*                     | 1.0000    |
+| Aggregate output Y*                          | 1.0000    |
+| Steady-state real rate r* (quarterly)        | 0.0050    |
+| Jacobian construction time (seconds, T=300)  | 35.86     |
+| H_U matrix size                              | 900 x 900 |
+| H_U condition number                         | 4.41e+03  |
+| Peak HANK output response (% of Y*)          | -0.190    |
+| Peak HANK consumption response (% of C*)     | -0.190    |
+| Peak RA NK output response (%)               | -0.249    |
+| Peak HANK inflation response (annualized %)  | -0.688    |
+| Peak RA NK inflation response (annualized %) | -0.249    |
+| Peak HANK real-rate response (annualized %)  | 0.688     |
+| Peak RA NK real-rate response (annualized %) | 0.778     |
+| Q1/Q5 peak consumption ratio                 | 3.77      |
 
-The sequence-space solve gives joint impulse responses of output, inflation, the real rate, and aggregate consumption. The representative-agent NK benchmark and the HANK economy share the same calibration and produce IRFs of comparable aggregate magnitude. The cross-sectional decomposition is where the heterogeneity becomes visible: the lowest wealth quintile cuts consumption roughly four times as much as the highest on impact, consistent with the textbook MPC story. Inflation and the real rate also respond more in HANK, because the cross-section forces real marginal cost to move more to clear the goods market. The anticipation curves show why distant future shocks still have a contemporaneous effect on the date-0 policy: even high-MPC households reoptimize over their saving horizon when news arrives, and the response decays smoothly with the anticipation lag.
+The sequence-space solve gives joint impulse responses of output, inflation, the real rate, and aggregate consumption. The representative-agent NK benchmark and the HANK economy share the same calibration and produce IRFs of comparable aggregate magnitude. The cross-sectional decomposition is where the heterogeneity becomes visible: the lowest wealth quintile cuts consumption close to four times as much as the highest on impact, consistent with the textbook MPC story. Inflation responds more sharply in HANK, because the cross-section forces real marginal cost to move more to clear the goods market; the real rate, in contrast, moves slightly less than in the RA benchmark on impact. The anticipation curves show why distant future shocks still have a contemporaneous effect on the date-0 policy: even high-MPC households reoptimize over their saving horizon when news arrives, and the response decays smoothly with the anticipation lag.
 
 ## Takeaway
 

@@ -175,13 +175,13 @@ At the trivial start $\delta^0 = 0$, every inside product is predicted to take t
 
 <img src="figures/share-fit.png" alt="Observed inside shares and Picard predictions at three iterations" width="80%">
 
-Picard reaches tolerance in **146** iterations on this calibration. Damped Picard at $\alpha = 0.5$ takes **200** iterations because the damping slows asymptotic convergence on a problem that is already well behaved. Anderson at $m = 5$ converges in **14** iterations, faster than Picard by roughly a factor of 10.4.
+Picard reaches tolerance in **146** iterations on this calibration. Damped Picard at $\alpha = 0.5$ exhausts the **200**-iteration budget without crossing the tolerance: the damping slows asymptotic convergence enough that its residual is still 2.51e-09, above the 1e-12 tolerance, when the loop stops. Anderson at $m = 5$ converges in **14** iterations, faster than Picard by roughly a factor of 10.4.
 
-Both panels show the same story on log scale. Anderson sits below Picard for almost every iteration. The damped variant is parallel to Picard with a slight vertical offset.
+Both panels show the same story on log scale. Anderson sits below Picard for almost every iteration. The damped variant is parallel to Picard with a slight vertical offset and has not yet reached tolerance at the iteration cap.
 
 <img src="figures/convergence.png" alt="Fixed-point residual (left) and error against closed-form (right) for Picard, damped Picard, and Anderson" width="80%">
 
-The stress test sweeps the outside share from a benign 0.5 down to 0.01. A small outside share pushes mean utilities out to large values where the contraction modulus approaches one. Picard iteration counts grow steeply on the small-$s_0$ end. Anderson stays much flatter because the residual history compensates for the slow contraction. The safeguard reverts to damped Picard whenever an Anderson step doubles the residual.
+The stress test sweeps the outside share from 0.1 down to 0.01. A small outside share pushes mean utilities out to large values where the contraction modulus approaches one. Picard iteration counts grow steeply on the small-$s_0$ end. Anderson stays much flatter because the residual history compensates for the slow contraction. The safeguard reverts to damped Picard whenever an Anderson step doubles the residual.
 
 <img src="figures/stress-test.png" alt="Iteration count vs outside share for Picard and Anderson" width="80%">
 
@@ -189,15 +189,15 @@ The Cournot example replaces the Berry contraction with a best-response map. Van
 
 <img src="figures/cournot-best-response.png" alt="Cournot best-response paths for vanilla and damped Picard, converging to the symmetric Nash quantity" width="80%">
 
-The table compares the three methods on the same calibration and the same starting point. Anderson cuts the iteration count to a small fraction of Picard. Final residuals and distances to the closed form are at machine precision for all three methods.
+The table compares the three methods on the same calibration and the same starting point. Anderson cuts the iteration count to a small fraction of Picard. Picard and Anderson reach the sup-norm tolerance; damped Picard at this damping factor exhausts the iteration budget before the residual crosses the tolerance, so its status reports the max-iteration stop rather than convergence. The Status column reports the actual termination condition: a method reads as converged only when its final residual met the tolerance.
 
 **Method comparison on the baseline four-product calibration**
 
-| Method           | Setting                          |   Iterations |   Final residual |   Distance to closed form | Status    |
-|:-----------------|:---------------------------------|-------------:|-----------------:|--------------------------:|:----------|
-| Picard           | no damping                       |          146 |         8.44e-13 |                  4.57e-12 | converged |
-| Damped Picard    | damping alpha = 0.5              |          200 |         2.51e-09 |                  2.97e-08 | converged |
-| Anderson (m = 5) | memory 5 with residual safeguard |           14 |         7.95e-14 |                  5.08e-13 | converged |
+| Method           | Setting                          |   Iterations |   Final residual |   Distance to closed form | Status                    |
+|:-----------------|:---------------------------------|-------------:|-----------------:|--------------------------:|:--------------------------|
+| Picard           | no damping                       |          146 |         8.44e-13 |                  4.57e-12 | converged                 |
+| Damped Picard    | damping alpha = 0.5              |          200 |         2.51e-09 |                  2.97e-08 | stopped at max_iter = 200 |
+| Anderson (m = 5) | memory 5 with residual safeguard |           14 |         7.95e-14 |                  5.08e-13 | converged                 |
 
 The stress test makes the contraction harder by shrinking the outside share. A small outside share pushes mean utilities out to large values, where the contraction modulus approaches one. Picard slows down sharply once the outside share falls below five percent. Anderson stays competitive across the range. This is the regime where acceleration matters most: an inner contraction solved many times inside an outer search pays the iteration savings many times over.
 

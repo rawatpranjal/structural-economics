@@ -92,8 +92,8 @@ Output: value V*(k_i), capital policy g(k_i)
   for n = 0, 1, 2, ... :
       for each state k_i :
           y_i    <- A * k_i^alpha
-          kp_max <- min(y_i, k_max)
-          kp     <- N_{k'} points uniform on [k_min, kp_max)
+          kp_max <- min(0.9999 * y_i, k_max)        # 0.9999 keeps c > 0 at the top node
+          kp     <- N_{k'} points uniform on [k_min, kp_max]
           c      <- y_i - kp                         # period consumption
           V_cont <- interp(V_n, kp)                  # off-grid continuation
           obj    <- log(c) + beta * V_cont

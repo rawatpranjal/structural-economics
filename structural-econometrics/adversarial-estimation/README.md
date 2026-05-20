@@ -199,7 +199,7 @@ Each panel overlays the maximum-likelihood histogram in grey with one adversaria
 
 <img src="figures/estimator-histograms.png" alt="Monte Carlo distributions of adversarial estimators against MLE" width="80%">
 
-Bias is reported on the natural scale. Standard deviations are reported on the rate scale $\sqrt{n} \cdot \mathrm{sd}(\hat\theta)$. Asymptotic values use $\sqrt{1/I_0}$ for maximum likelihood and $\sqrt{(1 + n/m) / I_0}$ for the adversarial estimator. All Monte Carlo numbers are slightly below the asymptotic prediction at this sample size, which is the usual finite-sample behavior.
+Bias is reported on the natural scale. Standard deviations are reported on the rate scale $\sqrt{n} \cdot \mathrm{sd}(\hat\theta)$. Asymptotic values use $\sqrt{1/I_0}$ for maximum likelihood and $\sqrt{(1 + n/m) / I_0}$ for the adversarial estimator. The maximum-likelihood and oracle Monte Carlo numbers sit slightly below the asymptotic prediction at this sample size, the usual finite-sample behavior. The neural-net discriminator is the exception: its Monte Carlo standard deviation runs about five percent above the asymptotic value, because its non-convex inner problem and limited training iterations add estimation noise the asymptotic formula does not capture.
 
 **Bias and standard errors across estimators**
 
@@ -231,18 +231,6 @@ Both estimators see the same polynomial features but use them differently. SMM m
 | Adversarial logistic | 7           | -0.0045 |                  3.276 |                    3.269 |
 | SMM                  | 11          | -0.0061 |                 17.278 |                   17.235 |
 | Adversarial logistic | 11          |  0.0187 |                  6.434 |                    6.426 |
-
-A nonparametric bootstrap gives a practical recipe for inference. Both the real and the common-shock samples are resampled with replacement. The discriminator class is held fixed and the adversarial estimator is recomputed on every resample. For the focal logistic-$d = 7$ discriminator the bootstrap standard error closely tracks the Monte Carlo standard error across the 200 simulated experiments. In a real application the Monte Carlo number would not be available, so the bootstrap is the inference tool the analyst would actually use.
-
-The bootstrap uses $B = 200$ joint resamples of the real and shock vectors with replacement. The asymptotic value is the oracle prediction. Both the Monte Carlo and the bootstrap numbers are slightly larger because the data-driven discriminator is less efficient than the oracle.
-
-**Bootstrap, Monte Carlo, and asymptotic standard errors for adversarial logistic d=7**
-
-| Source                              |   sd $\times \sqrt{n}$ |
-|:------------------------------------|-----------------------:|
-| Asymptotic (Theorem 3, paper)       |                  2.449 |
-| Monte Carlo across 200 replications |                  3.276 |
-| Bootstrap with B=200                |                  3.526 |
 
 ## Takeaway
 

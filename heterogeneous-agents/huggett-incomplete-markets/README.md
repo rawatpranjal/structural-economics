@@ -334,7 +334,7 @@ repeat (outer bisection)
 
 ## Results
 
-The value functions are increasing and concave in assets. $V_H(a)$ lies above $V_L(a)$ because high income raises cash on hand. Both curves steepen near the borrowing limit. The relative value gap against the reference grid is $0.16\%$.
+The value functions are increasing and concave in assets. $V_H(a)$ lies above $V_L(a)$ because high income raises cash on hand. Both curves steepen near the borrowing limit. The relative value gap against the reference grid is $0.155\%$.
 
 <img src="figures/value-function.png" alt="Value functions by income state at r*" width="80%">
 
@@ -346,11 +346,11 @@ The KFE turns drift into a cross-sectional density. Low-income mass piles near t
 
 <img src="figures/wealth-distribution.png" alt="Stationary asset densities by income state at r*" width="80%">
 
-The demand curve plots aggregate asset demand against $r$. Higher returns raise saving and reduce borrowing, so $S(r)$ rises with $r$. The complete-markets benchmark is $r = \rho$. The Huggett equilibrium is lower, at $r^{\ast} = 0.0350$. The precautionary wedge is $\rho - r^{\ast} = 0.0150$.
+The demand curve plots aggregate asset demand against $r$. Higher returns raise saving and reduce borrowing, so $S(r)$ rises with $r$. The complete-markets benchmark is $r = \rho$. The Huggett equilibrium is lower, at $r^{\ast} = 0.03499$. The precautionary wedge is $\rho - r^{\ast} = 0.01501$.
 
 <img src="figures/bond-market.png" alt="Aggregate asset demand against the interest rate" width="80%">
 
-The table reports prices, cross-sectional moments, and discretisation diagnostics. Mean assets are zero because bisection chose $r^{\ast}$ to satisfy $S(r^{\ast}) = 0$.
+The table reports prices, cross-sectional moments, and discretisation diagnostics. The mean-wealth and bond-market-residual rows report the same quantity: bisection drives $|S(r^{\ast})|$ down to the small residual shown, so mean assets are zero up to that bisection tolerance rather than exactly zero.
 
 **Equilibrium and Discretisation Summary**
 
@@ -360,7 +360,7 @@ The table reports prices, cross-sectional moments, and discretisation diagnostic
 | Equilibrium r* (working grid)         | 0.03499  |
 | Equilibrium r* (reference grid)       | 0.03572  |
 | Precautionary wedge rho - r*          | 0.01501  |
-| Mean wealth E[a]                      | 0.00000  |
+| Mean wealth E[a]                      | 5.43e-06 |
 | Mean income E[z]                      | 0.1500   |
 | Mean consumption E[c]                 | 0.1500   |
 | Mass within 0.02 of borrowing limit   | 0.0581   |
@@ -378,7 +378,7 @@ The table reports prices, cross-sectional moments, and discretisation diagnostic
 
 The Huggett price is a market-clearing return. Income risk and the borrowing limit make
 households want buffer wealth at $r = \rho$. The bond market clears only at a lower
-return. In this run the wedge is $\rho - r^{\ast} = 0.0150$.
+return. In this run the wedge is $\rho - r^{\ast} = 0.01501$.
 
 The HJB/KFE loop ties the household policy to the stationary cross section. The upwind
 HJB respects the borrowing limit. The KFE then measures aggregate asset demand. Bisection

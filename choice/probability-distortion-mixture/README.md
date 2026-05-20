@@ -109,7 +109,7 @@ Method 1's failure mode is mis-specification: it cannot recover that the populat
 
 ### Method 2: Finite-mixture EM with C = 2
 
-Method 2 introduces two latent types and uses the EM algorithm of Dempster, Laird, and Rubin (1977). The E-step computes posterior membership probabilities given current parameters. The M-step updates mixing proportions to the posterior means and re-fits each type's parameters by weighted maximum likelihood. Each subject's noise scale $\xi_i$ is profiled under the subject's maximum-posterior type, following the implementation in BFDE. EM is monotone in log-likelihood by construction.
+Method 2 introduces two latent types and uses the EM algorithm of Dempster, Laird, and Rubin (1977). The E-step computes posterior membership probabilities given current parameters. The M-step updates mixing proportions to the posterior means and re-fits each type's parameters by weighted maximum likelihood. Each subject's noise scale $\xi_i$ is profiled under the subject's maximum-posterior type, following the implementation in BFDE. Textbook EM raises the log-likelihood at every iteration, but the $\xi_i$ update here uses the maximum-posterior type rather than a type-weighted expectation. That is an approximation, also used in the BFDE implementation, which does not formally guarantee monotone improvement; in practice the log-likelihood still rises at every iteration on this design.
 
 ```text
 Algorithm: Finite-mixture EM
@@ -136,6 +136,8 @@ Method 2 fails when the true number of types exceeds two. It pools the strong-di
 ### Method 3: Finite-mixture EM with C = 3 (BFDE headline)
 
 Method 3 uses the same EM algorithm with three components. Initial values are seeded from the BFDE headline pattern, augmented with type-specific loss aversion: an EUT type with $\lambda = 1$, a mild-CPT type with $\lambda = 1.5$, and a strong-CPT type with $\lambda = 2.5$. Bayesian information criterion across $C \in \lbrace 1, 2, 3, 4\rbrace$ selects $C = 3$. Mixed lotteries are essential for identifying the type-specific $\lambda$; without them the three types still differ on $(\alpha, \gamma, \delta)$ but $\lambda$ remains unidentified.
+
+In this tutorial the C = 3 initial values coincide with the true data-generating parameters, so the recovery reported below is an oracle start: it shows EM converges and stays at the truth, not that EM finds the truth from a cold start. A realistic application would warm-start from BFDE headline values that differ from the unknown truth and would need restarts to guard against local maxima.
 
 Method 3 can fail through label switching (component permutations give the same likelihood) and through bad initial values (EM converges to local maxima in mixture problems). The label-switching fix is to reorder components by $\gamma$ after convergence; the local-maxima problem is mitigated by warm starts from the BFDE headline parameters.
 
@@ -165,7 +167,7 @@ The type-parameters table compares the true generating values to the Method 3 es
 
 | Type       |   True alpha |   Estimated alpha |   True lambda |   Estimated lambda |   True gamma |   Estimated gamma |   True delta |   Estimated delta |   True share |   Estimated share |
 |:-----------|-------------:|------------------:|--------------:|-------------------:|-------------:|------------------:|-------------:|------------------:|-------------:|------------------:|
-| EUT        |         0.95 |             0.974 |           1   |              0.996 |         1    |             0.95  |         1    |             1.005 |          0.2 |              0.2  |
+| EUT        |         0.95 |             0.975 |           1   |              1     |         1    |             0.95  |         1    |             1.006 |          0.2 |              0.2  |
 | Mild CPT   |         0.85 |             0.856 |           1.5 |              1.487 |         0.65 |             0.643 |         0.85 |             0.847 |          0.5 |              0.52 |
 | Strong CPT |         0.7  |             0.701 |           2.5 |              2.533 |         0.4  |             0.398 |         0.95 |             0.95  |          0.3 |              0.28 |
 

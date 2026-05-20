@@ -58,7 +58,7 @@ def make_consumption_policy(r=0.04, y=0.5, a_kink=0.5, mpc=0.1):
         out[~below] = c_kink + slope_above * (a[~below] - a_kink)
         return out
 
-    return c, a_kink
+    return c, a_kink, mpc
 
 
 # =============================================================================
@@ -112,7 +112,7 @@ def errors_at_nodes(target, method_fn, n_nodes, x_min, x_max, n_query=2000):
 def main() -> None:
     beta = 0.9
     V = make_cake_value(beta=beta)
-    c_policy, a_kink = make_consumption_policy()
+    c_policy, a_kink, mpc = make_consumption_policy()
 
     smooth_domain = (0.05, 1.0)
     kinked_domain = (0.05, 5.0)
@@ -220,6 +220,7 @@ PCHIP holds the shape but drops one order of smoothness.
         f"| $a_{{\\text{{kink}}}}$ | {a_kink} | Borrowing-constraint kink in the policy |\n"
         f"| $r$ | 0.04 | Interest rate in the consumption policy |\n"
         f"| $y$ | 0.5 | Endowment (income) in the consumption policy |\n"
+        f"| $\\mathrm{{MPC}}$ | {mpc} | Marginal propensity to consume above the kink |\n"
         f"| Display node count $N$ | {n_show} | Nodes per fit in the target-vs-fit figure |\n"
         f"| Convergence sweep | {list(node_counts)} | Node counts for the smooth-target sup-norm sweep |"
     )
@@ -337,7 +338,8 @@ PCHIP holds the shape but drops one order of smoothness.
     sup_pch = fits["kinked"]["PCHIP (shape-preserving)"]["sup_err"]
     report.add_results(
         "On the smooth target all three errors concentrate near $W = 0$, "
-        "where curvature is largest. Cubic is uniformly smallest.\n\n"
+        "where curvature is largest. PCHIP is uniformly smallest, ahead of "
+        "the cubic spline at this node count.\n\n"
         "On the kinked target the cubic-spline error oscillates above "
         f"and below zero around $a_{{\\text{{kink}}}}$ (sup-error "
         f"**{sup_cub:.2e}**).\n\n"
@@ -365,12 +367,27 @@ PCHIP holds the shape but drops one order of smoothness.
     ax3.set_ylabel("Sup-norm error on smooth target")
     ax3.set_title("Convergence vs node count, smooth target")
     ax3.legend()
+    log_n = np.log(node_counts)
+    slopes = {
+        name: float(np.polyfit(log_n, np.log(convergence[name]), 1)[0])
+        for name in convergence
+    }
+    slope_lin = slopes["Piecewise linear"]
+    slope_cub = slopes["Cubic spline (natural)"]
+    slope_pch = slopes["PCHIP (shape-preserving)"]
     report.add_results(
-        "On the smooth target, doubling $N$ improves linear error "
-        "roughly four-fold (slope $-2$).\n\n"
-        "Cubic and PCHIP drop at roughly slope $-4$.\n\n"
-        "On a kinked target this advantage disappears, and PCHIP becomes "
-        "the right default because it preserves shape."
+        "The log-log sup-norm slopes on the smooth target are "
+        f"**{slope_lin:.1f}** for piecewise linear, **{slope_cub:.1f}** for "
+        f"the cubic spline, and **{slope_pch:.1f}** for PCHIP.\n\n"
+        "All three fall short of their textbook asymptotic rates. "
+        "The cake-eating value function $V(W)$ has a logarithmic "
+        "singularity as $W \\to 0$, so curvature blows up near the left "
+        "edge of the domain. That near-singular region keeps every method "
+        "below its smooth-function rate at these node counts; the cubic "
+        "spline does not reach the $-4$ slope a fully smooth target would "
+        "give.\n\n"
+        "On a kinked target the smoothness advantage disappears entirely, "
+        "and PCHIP becomes the right default because it preserves shape."
     )
     report.add_figure(
         "figures/convergence-vs-nodes.png",
@@ -388,11 +405,17 @@ PCHIP holds the shape but drops one order of smoothness.
             "Kinked L2 error": f"{fits['kinked'][method_name]['l2_err']:.2e}",
         })
     df = pd.DataFrame(rows)
+    smooth_winner = min(
+        fits["smooth"], key=lambda m: fits["smooth"][m]["sup_err"]
+    )
+    kinked_winner = min(
+        fits["kinked"], key=lambda m: fits["kinked"][m]["sup_err"]
+    )
     report.add_results(
         f"At a fixed budget of {n_show} nodes the table summarises sup-norm "
-        "and L2 errors for each method on both targets. Cubic spline is "
-        "the lowest-error choice on the smooth target; PCHIP is the "
-        "lowest-error choice on the kinked one."
+        f"and L2 errors for each method on both targets. {smooth_winner} is "
+        f"the lowest-error choice on the smooth target; {kinked_winner} is "
+        f"the lowest-error choice on the kinked one."
     )
     report.add_table(
         "tables/comparison.csv",
@@ -404,11 +427,12 @@ PCHIP holds the shape but drops one order of smoothness.
         "Piecewise linear is the safe default for value functions with "
         "borrowing constraints. It preserves shape, never overshoots, and "
         "requires no setup. "
-        "Natural cubic spline gives the best convergence on smooth "
-        "functions but rings near kinks and can violate monotonicity. "
-        "PCHIP is the right middle ground for monotone-but-non-smooth "
-        "policies. It beats linear on accuracy and cubic on shape "
-        "preservation at the same node count.\n\n"
+        "Natural cubic spline is accurate on smooth functions but rings "
+        "near kinks and can violate monotonicity. "
+        "PCHIP gives the steepest log-log convergence slope on the smooth "
+        "target here, ahead of the cubic spline, and is the right default "
+        "for monotone-but-non-smooth policies. It beats linear on accuracy "
+        "and cubic on shape preservation at the same node count.\n\n"
         "`lib.interpolate.linear_interp` is what the existing tutorials "
         "use today. Promoting cubic and PCHIP wrappers to "
         "`lib/interpolate.py` is worth doing once a second tutorial needs "

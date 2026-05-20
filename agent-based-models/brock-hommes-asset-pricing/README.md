@@ -85,7 +85,10 @@ The calibration is intentionally small. The point is to make strategy switching 
 | Shock scale | $\sigma_\epsilon$ | 0.02 | Noise-trader supply shock |
 | Score memory | $\lambda$ | 0.80 | Profit-score persistence |
 | Risk scale | $a\sigma^2$ | 0.04 | Combined risk-aversion and return-variance scaling |
+| Fundamentalist cost | $c_F$ | 0.000 | Zero cost for the fundamental rule |
 | Trend cost | $c_T$ | 0.001 | Small information or trading cost |
+| Initial deviation lag | $x_0$ | 0.10 | Starting price deviation |
+| Initial deviation | $x_1$ | 0.12 | Starting price deviation |
 | Simulation horizon | $T_{sim}$ | 700 | Price periods |
 | Burn-in | $T_0$ | 100 | Moments discard early periods |
 

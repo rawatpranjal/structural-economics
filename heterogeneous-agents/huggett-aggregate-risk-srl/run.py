@@ -699,6 +699,7 @@ def hyperparameter_table(profile: Profile) -> pd.DataFrame:
 def diagnostics_table(
     train_info: dict[str, float],
     hard_sim: dict[str, np.ndarray],
+    profile: Profile,
 ) -> pd.DataFrame:
     """Summarize training and interpolated market-clearing diagnostics."""
     residuals = hard_sim["residuals"]
@@ -710,7 +711,7 @@ def diagnostics_table(
         ("Converged by policy movement criterion", "Yes" if train_info["converged"] else "No"),
         ("Epochs completed", f"{train_info['epochs_completed']:.0f}"),
         ("Final parameter movement", f"{train_info['final_max_parameter_update']:.6g}"),
-        ("Convergence threshold", f"{FULL_PROFILE.convergence_tol:.6g}"),
+        ("Convergence threshold", f"{profile.convergence_tol:.6g}"),
         ("Final normalized utility objective", f"{train_info['final_objective']:.6g}"),
         ("Mean soft market residual during training", f"{train_info['final_mean_abs_soft_residual']:.6g}"),
         ("Mean interpolated market-clearing residual", f"{np.mean(np.abs(residuals)):.6g}"),
@@ -739,6 +740,7 @@ def paper_benchmark_table(
     hard_sim: dict[str, np.ndarray],
     consumption_mid: np.ndarray,
     benchmark_schedule: dict[str, np.ndarray | float | bool],
+    profile: Profile,
 ) -> pd.DataFrame:
     """Compare this run with the published SRL Huggett benchmark."""
     residuals = hard_sim["residuals"]
@@ -760,11 +762,31 @@ def paper_benchmark_table(
     ]
     qualitative_status = "Matched" if all(qualitative_passes) else "Mixed"
     convergence_status = "Met" if train_info["converged"] else "Not met"
-    residual_status = (
-        "Matched"
-        if float(np.mean(np.abs(residuals))) < 1.0e-4 and float(np.mean(hard_sim["bracketed"])) > 0.95
-        else "Mixed"
-    )
+    # The interpolated residual is algebraically zero by construction of the
+    # linear-clearing weights, so it is not comparable to the published
+    # 4.4e-6 gap. Report it as a construction property, never "Matched".
+    bracketing_share = float(np.mean(hard_sim["bracketed"]))
+    residual_status = "Zero by construction" if bracketing_share > 0.95 else "Mixed"
+
+    # The grid and training row must describe the profile that actually ran.
+    # Only the full profile reproduces the published grid; the reduced quick
+    # profile shrinks every grid and training dimension.
+    grid_matches_benchmark = profile == FULL_PROFILE
+    if grid_matches_benchmark:
+        grid_tutorial_run = (
+            "Uses the published grid, horizon, learning-rate schedule, and "
+            "batch size"
+        )
+        grid_status = "Matched"
+    else:
+        grid_tutorial_run = (
+            f"Reduced quick grid: {profile.asset_points} bond points, "
+            f"b_max={profile.asset_upper:g}, {profile.aggregate_states} "
+            f"aggregate states, {profile.rate_points} rate points, "
+            f"T={profile.horizon}, {profile.epochs} epochs, "
+            f"batch={profile.batch_size}"
+        )
+        grid_status = "Not matched"
 
     rows = [
         {
@@ -783,8 +805,8 @@ def paper_benchmark_table(
                 "20 rate points on [0.01, 0.06], T=170, 1000 epochs, "
                 "50 warm-up epochs, lr_ini=1e-3, lr_decay=0.5, batch=512"
             ),
-            "Tutorial run": "Uses the same grid, horizon, learning-rate schedule, and batch size",
-            "Assessment": "Matched",
+            "Tutorial run": grid_tutorial_run,
+            "Assessment": grid_status,
         },
         {
             "Benchmark item": "Convergence status",
@@ -800,17 +822,18 @@ def paper_benchmark_table(
             "Benchmark item": "Market-clearing residual",
             "Published SRL benchmark": "Average bond-market clearing gap about 4.4e-6",
             "Tutorial run": (
-                f"Mean absolute residual {np.mean(np.abs(residuals)):.3g}; "
-                f"maximum {np.max(np.abs(residuals)):.3g}; "
-                f"bracketing share {np.mean(hard_sim['bracketed']):.3f}"
+                f"Interpolated residual is zero by construction of the linear "
+                f"clearing weights: mean {np.mean(np.abs(residuals)):.3g}, "
+                f"maximum {np.max(np.abs(residuals)):.3g}, bracketing share "
+                f"{bracketing_share:.3f}. Not comparable to the published gap"
             ),
             "Assessment": residual_status,
         },
         {
             "Benchmark item": "Qualitative figure match",
             "Published SRL benchmark": (
-                "monotone and concave consumption, smoother aggregate consumption "
-                "than income, endogenous interest rates, saving schedule crossing zero"
+                "monotone and concave consumption, a below-one C/Y volatility "
+                "ratio, endogenous interest rates, saving schedule crossing zero"
             ),
             "Tutorial run": (
                 f"monotone share {shape['monotone_share']:.3f}; "
@@ -1093,9 +1116,13 @@ def build_report(
 	$$c_t = x_t - g_\theta(b_t,y_t,z_t,r_t), \qquad u(c_t) = \frac{c_t^{1-\sigma}-1}{1-\sigma}.$$
 
 	The Structural Reinforcement Learning objective is a Monte Carlo estimate of
-	expected lifetime utility:
+	expected lifetime utility, with a small ridge penalty on the policy
+	parameters to keep the tabular logits bounded:
 
-	$$J(\theta) = \mathbb{E}[\sum_{t=0}^{T-1}\beta^t u(c_t)].$$
+	$$J(\theta) = \mathbb{E}\left[\sum_{t=0}^{T-1}\beta^t u(c_t)\right] - \kappa\,\overline{\theta^2}, \qquad \kappa = 10^{-5}.$$
+
+	The penalty coefficient $\kappa$ is small relative to per-period utility, so
+	it regularizes the parameters without materially distorting the policy.
 
 	For a candidate interest-rate grid point $r^\ell$, the current distribution
 	$\mu_t(b,y)$ implies aggregate desired bond holdings
@@ -1172,7 +1199,7 @@ $g_\theta$, then multiplied by the idiosyncratic transition matrix.
 
     calibration_df = calibration_table(cal)
     hyper_df = hyperparameter_table(profile)
-    diagnostics_df = diagnostics_table(train_info, hard_sim)
+    diagnostics_df = diagnostics_table(train_info, hard_sim, profile)
     z_mid = profile.aggregate_states // 2
     r_mid = profile.rate_points // 2
     _, consumption_mid = policy_np(theta, grids, cal, profile, z_mid, r_mid)
@@ -1184,6 +1211,7 @@ $g_\theta$, then multiplied by the idiosyncratic transition matrix.
         hard_sim,
         consumption_mid,
         benchmark_schedule,
+        profile,
     )
 
     report.add_results(
@@ -1209,14 +1237,36 @@ $g_\theta$, then multiplied by the idiosyncratic transition matrix.
     )
 
     max_hard_resid = float(np.max(np.abs(hard_sim["residuals"])))
+    income_levels = np.exp(hard_sim["aggregate_log_income"])
+    volatility_ratio = float(
+        np.std(hard_sim["aggregate_consumption"]) / max(np.std(income_levels), 1.0e-12)
+    )
+    grid_clause = (
+        "reproduces the paper benchmark's calibration and grid settings"
+        if profile == FULL_PROFILE
+        else "uses the paper benchmark's calibration with a reduced quick grid"
+    )
+    # Only claim smoothing when the ratio is materially below one. A ratio
+    # that rounds to 1.000 is not smoother in any meaningful sense.
+    if round(volatility_ratio, 3) < 1.0:
+        smoothing_clause = (
+            "aggregate consumption smoother than income "
+            f"(volatility ratio {volatility_ratio:.3f})"
+        )
+    else:
+        smoothing_clause = (
+            "an aggregate consumption volatility ratio of "
+            f"{volatility_ratio:.3f}, so this short run does not yet reproduce "
+            "the consumption-smoothing result"
+        )
     report.add_takeaway(
         "Structural Reinforcement Learning turns the aggregate-risk Huggett "
         "problem into a simulation-based policy optimization problem with prices "
-        "as low-dimensional state variables. The tutorial reproduces the paper "
-        "benchmark's calibration and grid settings, then checks the same economic "
-        "objects: concave consumption, endogenous prices, smoother aggregate "
-        f"consumption, and a near-zero market-clearing residual. In this run, the "
-        f"maximum interpolated bond-market residual is {max_hard_resid:.3e}."
+        f"as low-dimensional state variables. The tutorial {grid_clause}, then "
+        "checks the same economic objects: concave consumption, endogenous "
+        f"prices, {smoothing_clause}, and a market-clearing residual. In this "
+        f"run, the maximum interpolated bond-market residual is "
+        f"{max_hard_resid:.3e}."
     )
 
     report.add_references([

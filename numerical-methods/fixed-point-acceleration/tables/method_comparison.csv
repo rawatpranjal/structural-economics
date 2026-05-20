@@ -1,4 +1,4 @@
 Method,Setting,Iterations,Final residual,Distance to closed form,Status
 Picard,no damping,146,8.44e-13,4.57e-12,converged
-Damped Picard,damping alpha = 0.5,200,2.51e-09,2.97e-08,converged
+Damped Picard,damping alpha = 0.5,200,2.51e-09,2.97e-08,stopped at max_iter = 200
 Anderson (m = 5),memory 5 with residual safeguard,14,7.95e-14,5.08e-13,converged

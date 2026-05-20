@@ -589,6 +589,7 @@ def main() -> None:
 | $q_{i,t}$ | Quantity firm $i$ chooses to plant for period $t$, decided before $p_t$ is known. |
 | $Q_t$ | Total market quantity, $Q_t = \sum_{i=1}^{n} q_{i,t}$. |
 | $\pi_{i,t}$ | Firm $i$'s realized profit in period $t$ once the market clears. |
+| $\sigma(i)$ | Index of the tournament-selected parent placed at slot $i$ of the next generation. |
 | $a$ | Demand intercept. The price at which buyers stop buying ("choke price"). |
 | $b$ | Demand slope. How many extra units buyers absorb per one-unit price cut. |
 | $\varepsilon_t$ | Random demand shock in period $t$, mean zero, i.i.d. across periods. Stands in for weather, taste shifts, or news. |
@@ -647,13 +648,15 @@ $$
 \text{(3) Score} \quad & \pi_{i,t} = p_t \cdot q_{i,t} - x \cdot q_{i,t} - \tfrac{y}{2} q_{i,t}^{2}. \\
 \text{(4) Select} \quad & \text{tournament on } \{\pi_{i,t}\}_{i=1}^{n} \text{ produces parent indices.} \\
 \text{(5) Recombine} \quad & \text{crossover with prob.\ } p_c, \text{ then bit-flip mutation with per-bit prob.\ } p_m. \\
-\text{(6) Elect} \quad & \text{keep child } b_i' \text{ iff } \pi(\mathrm{decode}(b_i'), p_t) \geq \pi_{i,t}; \text{ else keep parent.} \\
+\text{(6) Elect} \quad & \text{keep child } b_i' \text{ iff } \pi(\mathrm{decode}(b_i'), p_t) \geq \pi_{\sigma(i),t}; \text{ else keep parent.} \\
 \text{(7) Update} \quad & \mathbf{B}_{t+1} \leftarrow \text{surviving population.}
 \end{aligned}
 $$
 
 The simulation runs for $T$ generations.
 Here $b_{i,t}$ is firm $i$'s chromosome at the start of period $t$, and $b_i'$ is the candidate child produced by crossover and mutation at steps (4)-(5) before the election filter at step (6).
+
+The election threshold $\pi_{\sigma(i),t}$ in step (6) is the realized profit of the *tournament-selected parent* placed at slot $i$, not of the original firm $i$. Tournament selection at step (4) writes a parent index $\sigma(i)$ into each slot $i$ of the new population, and the child at slot $i$ is built from that parent. The election filter then compares the child against its own parent, $\pi_{\sigma(i),t}$, which is the standard Arifovic (1994) election operator. Because $\sigma(i)$ is a tournament winner, $\pi_{\sigma(i),t}$ weakly exceeds the profit of a randomly drawn firm, so the filter is conservative: it accepts offspring only when they beat a parent that already survived selection.
 """
     )
 

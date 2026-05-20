@@ -1,4 +1,4 @@
 Method,Offer mean mu,Offer sd sigma,Reservation log wage,Criterion at point estimate or posterior mean,Iterations or proposals,Wall time (s)
-MSM,3.00719,0.44364,3.14907,0.00062,64,0.04304
-Indirect inference,3.01486,0.44714,3.15368,0.00017,84,0.11836
-ABC-SMC,3.00758,0.44533,3.14843,0.00065,19845,8.1701
+MSM,3.00719,0.44364,3.14907,0.00062,64,0.08758
+Indirect inference,3.01486,0.44714,3.15368,0.00017,84,0.52482
+ABC-SMC,3.00758,0.44533,3.14843,0.00065,19845,21.11878
