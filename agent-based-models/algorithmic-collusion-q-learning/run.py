@@ -18,8 +18,7 @@ import pandas as pd
 from scipy.optimize import root
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import save_figure, save_thumbnail, setup_style
 
 
 @dataclass(frozen=True)
@@ -365,19 +364,6 @@ def run_table(run: LearningRun) -> pd.DataFrame:
     }])
 
 
-def format_run_result(run: LearningRun) -> str:
-    """Short prose summary for the generated README."""
-    horizon = "not recovered" if run.recovery_horizon is None else f"{run.recovery_horizon} periods"
-    return (
-        f"In the fixed seed {run.seed} run, the learned average price is "
-        f"{run.learned_price:.3f}. The collusion index is {run.collusion_index:.2f}, "
-        f"so the greedy policy sits about halfway between the Bertrand and monopoly "
-        f"benchmarks. After the one-period price-deviation shock, the lowest "
-        f"post-shock average price is {run.min_post_shock_price:.3f}; the path "
-        f"returns to 95 percent of its pre-shock level after {horizon}."
-    )
-
-
 def main() -> None:
     setup_style()
     params = Params()
@@ -394,219 +380,20 @@ def main() -> None:
     print(f"  Learned price = {run.learned_price:.3f}")
     print(f"  Collusion index = {run.collusion_index:.3f}")
 
-    report = ModelReport(
-        "Algorithmic Collusion by Q-Learning",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
+    fig_price_paths = plot_price_paths(run, bench, params)
+    save_figure(fig_price_paths, "figures/price-paths.png", dpi=150)
 
-    report.add_overview(
-        "Algorithmic pricing turns a repeated oligopoly problem into a learning "
-        "problem. Two firms choose prices again and again. They do not solve the "
-        "dynamic game. They only observe the profit from the price they chose and "
-        "update a table of action values.\n\n"
-        "The economic question is whether this feedback can move prices above the "
-        "static Bertrand-Nash benchmark. In a one-shot differentiated-products "
-        "Bertrand game, each firm sets a price that is a best response to the "
-        "rival's price. Joint monopoly gives the upper benchmark because one owner "
-        "would internalize substitution between the two products.\n\n"
-        "This tutorial is deliberately smaller than the Calvano, Calzolari, "
-        "Denicolo, and Pastorello experiment and the Courthoud replication code. "
-        "It keeps the same model class and moves the main hyperparameters toward "
-        "the Courthoud replication defaults: logit demand, a finite price grid, "
-        "Courthoud's exponential exploration rule, and independent tabular "
-        "Q-learning. The page follows one compact calibrated run with seed "
-        f"{seed}. It is not a robustness exercise."
-    )
+    fig_impulse = plot_impulse_response(run, bench)
+    save_figure(fig_impulse, "figures/impulse-response.png", dpi=150)
 
-    report.add_equations(
-        r"""
-There are two firms, indexed by $i = 1,2$. Firm $i$ chooses price $p_i$ and has
-constant marginal cost $c$. Product quality is $a$, the outside-option value is
-$a_0$, and $\mu$ controls product differentiation. The inside utility index is
+    fig_diagnostics = plot_learning_diagnostics(run, bench)
+    save_figure(fig_diagnostics, "figures/learning-diagnostics.png", dpi=150)
 
-$$u_i = \frac{\{a - p_i\}}{\{\mu\}}, \qquad u_0 = \frac{\{a_0\}}{\{\mu\}}.$$
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    benchmarks.to_csv("tables/benchmark-summary.csv", index=False)
+    run_summary.to_csv("tables/run-summary.csv", index=False)
 
-The braces mark the numerator and denominator of each utility index. A lower
-price raises $u_i$; a larger $\mu$ makes a given price difference matter less.
-Logit demand is
-
-$$s_i(p) = \frac{\exp(u_i)}{\exp(u_0) + \sum_{j=1}^2 \exp(u_j)}.$$
-
-The numerator is product $i$'s exponentiated utility. The denominator is the
-outside-good term plus the exponentiated utilities of the two inside goods.
-
-Current profit is
-
-$$\pi_i(p) = (p_i - c)s_i(p).$$
-
-The own-price derivative of the logit share is
-
-$$\frac{\partial s_i}{\partial p_i} = -\frac{s_i(p)(1-s_i(p))}{\mu}.$$
-
-The static Bertrand-Nash price sets $\partial \pi_i / \partial p_i = 0$:
-
-$$\frac{\partial \pi_i}{\partial p_i} = s_i(p) + (p_i-c)\frac{\partial s_i}{\partial p_i} = s_i(p)[1 - \frac{(p_i-c)(1-s_i(p))}{\mu}] = 0.$$
-
-Since $s_i(p)>0$, the Bertrand first-order condition is
-
-$$1 - \frac{(p_i - c)(1 - s_i(p))}{\mu} = 0.$$
-
-The joint monopolist maximizes $\Pi(p)=\pi_1(p)+\pi_2(p)$. Its condition for
-product $i$ keeps the Bertrand own-profit term and adds the cross-product term:
-
-$$1 - \frac{(p_i - c)(1 - s_i(p))}{\mu} + \frac{(p_j - c)s_j(p)}{\mu} = 0,\quad j \ne i.$$
-
-The price grid uses the static benchmarks. Let $p_B$ be the Bertrand price,
-$p_M$ be the monopoly price, and $\Delta$ be the grid step. The action set is
-
-$$\mathcal{P} = \{p_B-\Delta\} \cup \{p_B, p_B+\Delta,\dots,p_M\} \cup \{p_M+\Delta\}.$$
-
-The Q-learning state is the previous-period price-index pair
-$s_t = (a_{1,t-1}, a_{2,t-1})$ (here $s_t$ is the Q-learning state pair, distinct from the demand share $s_i(p)$ defined above). Firm $i$'s action is its current price-grid
-index $a_{i,t}$ (where $a_{i,t}$ is a price-grid index, not the product quality parameter $a$ defined above). After observing current profit and next state $s_{t+1}$,
-the tabular update is
-
-$$Q_i(s_t, a_{i,t}) \leftarrow (1-\alpha) Q_i(s_t, a_{i,t}) + \alpha [\pi_i(p_t) + \delta \max_a Q_i(s_{t+1}, a)].$$
-
-The reported collusion index is
-
-$$\mathrm{CI} = \frac{\bar p_{\mathrm{learned}} - p_{\mathrm{Bertrand}}}{p_{\mathrm{Monopoly}} - p_{\mathrm{Bertrand}}}.$$
-"""
-    )
-
-    report.add_model_setup(
-        "The grid is centered on the static economic benchmarks. First solve the "
-        "Bertrand-Nash and joint-monopoly first-order conditions. Then form "
-        f"{params.k - 2} evenly spaced prices spanning from the Bertrand to the "
-        "monopoly benchmark with both endpoints included, and add one "
-        "padding point below and above. The padding point below Bertrand is the "
-        "one-period undercut in the impulse-response diagnostic.\n\n"
-        f"| Object | Value | Role |\n"
-        f"|---|---:|---|\n"
-        f"| Firms $n$ | {params.n} | Symmetric sellers |\n"
-        f"| Product value $a$ | {params.a:.2f} | Inside-good quality |\n"
-        f"| Outside value $a_0$ | {params.a0:.2f} | Outside option utility |\n"
-        f"| Differentiation $\\mu$ | {params.mu:.2f} | Smaller values make products closer substitutes |\n"
-        f"| Marginal cost $c$ | {params.c:.2f} | Constant production cost |\n"
-        f"| Bertrand price | {bench.bertrand_price:.3f} | Static competitive benchmark |\n"
-        f"| Monopoly price | {bench.monopoly_price:.3f} | Joint-profit benchmark |\n"
-        f"| Price grid size | {params.k} | Discrete action count per firm |\n"
-        f"| Training seed | {seed} | Fixed calibrated run |\n"
-        f"| Training steps | {params.steps:,} | Q-learning updates |\n"
-        f"| Discount factor $\\delta$ | {params.delta:.2f} | Value of future profit |\n"
-        f"| Learning rate $\\alpha$ | {params.alpha:.2f} | Q-table update weight |\n"
-        f"| Exploration decay $\\beta$ | {params.beta:.0e} | $\\Pr(\\text{{explore at }}t)=\\exp(-\\beta t)$ |\n\n"
-        "These are replication-style hyperparameters, but the computational "
-        "budget is intentionally compact. The page reports one fixed run rather "
-        "than a multi-seed robustness table."
-    )
-
-    report.add_solution_method(
-        "The algorithm is independent Q-learning. Each firm treats the rival and "
-        "the market state as part of the environment. There is no explicit "
-        "collusion constraint and no direct communication.\n\n"
-        "```text\n"
-        "Algorithm: independent Q-learning in a repeated pricing game\n"
-        "Input: price grid A={0,...,k-1}, profit table pi_i(a_1,a_2),\n"
-        "       alpha, beta, delta, training length T\n"
-        "Output: greedy pricing rules for both firms\n\n"
-        "1. Set the initial state to the lowest price-grid point for both firms.\n"
-        "2. Initialize Q_i(previous prices, own price) with optimistic\n"
-        "   discounted average one-period profits.\n"
-        "3. For t = 0 to T-1:\n"
-        "   3a. Set epsilon_t = exp(-beta t).\n"
-        "   3b. Each firm observes the previous price-index pair s_t.\n"
-        "   3c. For each firm i:\n"
-        "       with probability epsilon_t, draw a_{i,t} = Uniform({0,...,k-1});\n"
-        "       otherwise set a_{i,t} to the first argmax_a Q_i(s_t,a).\n"
-        "   3d. Current prices are the grid values indexed by (a_{1,t}, a_{2,t}).\n"
-        "   3e. Current profits are pi_i(a_{1,t},a_{2,t}).\n"
-        "   3f. Set s_{t+1} = (a_{1,t}, a_{2,t}).\n"
-        "   3g. For each firm i, update\n"
-        "       Q_i(s_t,a_{i,t}) <- (1-alpha) Q_i(s_t,a_{i,t})\n"
-        "       + alpha [ pi_i(a_{1,t},a_{2,t})\n"
-        "       + delta max_a Q_i(s_{t+1},a) ].\n"
-        "4. Freeze Q and roll out greedy play to measure learned prices.\n"
-        "5. For the impulse response, start from the learned greedy state,\n"
-        "   set a_{1,0} to the low-grid action once, let firm 2 choose greedily,\n"
-        "   then roll out greedy actions from s_1 = (a_{1,0}, a_{2,0}).\n"
-        "```\n\n"
-        "The impulse response is intentionally mechanical. It asks what the frozen "
-        "policy does after a single undercut. The figure is a diagnostic for this "
-        "one learned policy, not proof of robust punishment."
-    )
-
-    report.add_results(
-        f"Greedy play after training is above the Bertrand price in the fixed "
-        f"seed {seed} run. The learned path does not reach the monopoly benchmark. "
-        "It sits in the middle of the benchmark interval, which is enough for the "
-        "teaching point: independent profit feedback can support supra-Bertrand "
-        "prices in a repeated pricing environment."
-    )
-    report.add_figure(
-        "figures/price-paths.png",
-        "Learned greedy price paths after Q-learning",
-        plot_price_paths(run, bench, params),
-    )
-
-    report.add_results(
-        format_run_result(run)
-        + " Read this as an impulse response to a price-deviation shock. The "
-        "single run shows how the frozen policy reacts after one forced undercut, "
-        "but it does not establish robust price-war discipline."
-    )
-    report.add_figure(
-        "figures/impulse-response.png",
-        "Impulse response to a one-period price-deviation shock",
-        plot_impulse_response(run, bench),
-    )
-
-    report.add_results(
-        "The diagnostics put the price and profit results on the same scale. "
-        "Zero is the Bertrand benchmark and one is the joint-monopoly benchmark. "
-        "The price index is positive in this run, while the profit ratio is a "
-        "little higher because moderate price increases raise margins in this "
-        "small logit market."
-    )
-    report.add_figure(
-        "figures/learning-diagnostics.png",
-        "Single-run learned price and profit ratios",
-        plot_learning_diagnostics(run, bench),
-    )
-
-    report.add_table(
-        "tables/benchmark-summary.csv",
-        "Static benchmark summary",
-        benchmarks,
-        "The Bertrand and monopoly prices are solved from the continuous-price "
-        "first-order conditions before the finite action grid is built.",
-    )
-
-    report.add_table(
-        "tables/run-summary.csv",
-        "Single-run Q-learning outcomes",
-        run_summary,
-        "A recovery horizon of -1 means the average price did not return to 95 "
-        "percent of the pre-shock price within the plotted impulse-response window.",
-    )
-
-    report.add_takeaway(
-        "The small experiment delivers the main teaching result: Q-learning "
-        "pricing agents can learn prices above the static Bertrand benchmark "
-        "without solving the repeated game. The impulse response is more "
-        "qualified. It shows the reaction of one frozen learned policy to one "
-        "forced undercut. That distinction matters: supra-Bertrand learning "
-        "appears clearly here; robust collusive discipline would require a larger "
-        "and more careful replication."
-    )
-
-    report.add_references([
-        "[Calvano, E., Calzolari, G., Denicolo, V., and Pastorello, S. (2020). Artificial Intelligence, Algorithmic Pricing, and Collusion. *American Economic Review*, 110(10), 3267-3297.](https://www.aeaweb.org/articles?id=10.1257/aer.20190623)",
-        "[Matteo Courthoud. Algorithmic Collusion Replication. GitHub repository.](https://github.com/matteocourthoud/Algorithmic-Collusion-Replication)",
-    ])
-
-    report.write("README.md")
+    save_thumbnail("figures/price-paths.png", "figures/thumb.png")
 
 
 if __name__ == "__main__":

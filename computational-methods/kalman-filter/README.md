@@ -63,8 +63,8 @@ the state-space parameters are unknown.
 | Measurement std | 0.10 |
 | Process std | (0.30, 0.25) |
 | Periods | 50 |
-| Initial state mean $s_{0|0}$ | $(0,0)$ |
-| Initial state covariance $P_{0|0}$ | $0_{2\times 2}$ (zero matrix) |
+| Initial state mean $s_{0 \mid 0}$ | $(0,0)$ |
+| Initial state covariance $P_{0 \mid 0}$ | $0_{2\times 2}$ (zero matrix) |
 
 ## Solution Method
 

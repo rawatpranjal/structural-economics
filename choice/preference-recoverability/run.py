@@ -16,8 +16,7 @@ import pandas as pd
 from scipy.optimize import linprog
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import save_figure, save_thumbnail, setup_style
 
 
 TOL = 1e-10
@@ -236,119 +235,9 @@ def main() -> None:
     max_contour_gap = float(np.max(np.abs(recovered_x2[overlap] - true_x2[overlap])))
 
     # =========================================================================
-    # Generate report
+    # Figures
     # =========================================================================
     setup_style()
-
-    report = ModelReport(
-        "Recovering Preference Bounds from Budget Choices",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "Suppose we observe a consumer choosing bundles from several two-good budgets. "
-        "Prices rotate the budget line, and income shifts it. The analyst sees prices "
-        "and chosen bundles, not the utility function.\n\n"
-        "The object is the preference ordering implied by these finite choices. "
-        "A GARP-consistent sample can be rationalized by many utility functions. "
-        "We recover one upper-contour boundary through a chosen bundle.\n\n"
-        "The computation uses Afriat inequalities. The supporting slopes are fixed "
-        "to one over expenditure before the program runs, so a linear program only "
-        "finds the utility scores. The lower envelope of those supports draws the "
-        "contour."
-    )
-
-    report.add_equations(
-        r"""
-There are two goods and $T$ budget-choice observations. Observation $t$ has
-prices $p_t=(p_{1t},p_{2t})\in\mathbb{R}_{++}^{2}$ and chosen bundle
-$x_t=(x_{1t},x_{2t})\in\mathbb{R}_{+}^{2}$. Expenditure is $m_t=p_t\cdot x_t$.
-
-Afriat recovery asks for ordinal utility scores $u_t$ and positive supporting
-slopes $\lambda_t$ such that
-
-$$
-u_i-u_j \leq \lambda_j p_j\cdot(x_i-x_j)
-\qquad \text{for all } i,j=1,\ldots,T .
-$$
-
-When these inequalities are feasible, one rationalizing utility index is
-
-$$
-\widehat U(y)=\min_{j=1,\ldots,T}
-\left[u_j+\lambda_j p_j\cdot(y-x_j)\right].
-$$
-
-This utility is the lower envelope of affine supporting functions. It is
-concave, monotone when prices and $\lambda_j$ are positive, and satisfies
-$\widehat U(x_t)=u_t$ at the observed choices.
-
-For a target observation $k$, the recovered upper-contour set is
-
-$$
-\widehat U(y)\geq u_k .
-$$
-
-Writing $y=(y_1,y_2)$, its lower boundary can be computed pointwise:
-
-$$
-y_2(y_1) =
-\max_{j=1,\ldots,T}
-\left[
-x_{2j} +
-\frac{
-u_k-u_j-\lambda_j p_{1j}(y_1-x_{1j})
-}{
-\lambda_j p_{2j}
-}
-\right].
-$$
-
-The data-generating benchmark, used only for comparison, is
-
-$$
-U^0(x)=x_1^{\alpha}x_2^{1-\alpha},\qquad \alpha=0.60 .
-$$
-"""
-    )
-
-    report.add_model_setup(
-        f"| Object | Value | Role in the exercise |\n"
-        f"|---|---:|---|\n"
-        f"| Observations $T$ | {n_obs} | Price-bundle pairs observed by the analyst |\n"
-        f"| Goods | 2 | Makes the recovered contour visible |\n"
-        f"| True $\\alpha$ | {alpha_true:.2f} | Cobb-Douglas benchmark, hidden from recovery |\n"
-        f"| Income range | [{income.min():.2f}, {income.max():.2f}] | Moves budget lines outward or inward |\n"
-        f"| Price range | [{prices.min():.2f}, {prices.max():.2f}] | Rotates the observed budgets |\n"
-        f"| GARP violations | {len(violations)} | Screen before utility recovery |\n"
-        f"| Max Afriat residual | {max_afriat_residual:.2e} | Feasibility error from the inequalities |\n"
-        f"| Target observation | {target_obs + 1} | Bundle whose contour is drawn |"
-    )
-
-    report.add_solution_method(
-        "Afriat recovery uses a linear program because the unknown utility scores enter "
-        "only through pairwise inequalities. The GARP screen protects the economic "
-        "interpretation: if a strict revealed-preference cycle exists, no monotone "
-        "concave utility can rationalize all choices. Once the screen passes, the "
-        "linear program chooses one ordinal utility score for each observed bundle. "
-        "The lower envelope then extends those scores to nearby bundles.\n\n"
-        "```text\n"
-        "Algorithm: Afriat contour recovery\n"
-        "Input: budgets (p_t, x_t) for t=1,...,T and target observation k\n"
-        "Output: recovered utility index U_hat and contour through x_k\n"
-        "\n"
-        "1. Mark i R j when bundle x_j was affordable under budget i.\n"
-        "2. Close R transitively and check for a strict revealed-preference reversal.\n"
-        "3. Set lambda_t = 1 / (p_t . x_t) to normalize supporting slopes.\n"
-        "4. Solve for ordinal scores u_t subject to\n"
-        "       u_i - u_j <= lambda_j p_j . (x_i - x_j) for every pair (i,j),\n"
-        "       sum_t u_t = T, and u_t >= 0.\n"
-        "5. Define U_hat(y) = min_j [u_j + lambda_j p_j . (y - x_j)].\n"
-        "6. For a grid of y_1 values, compute the smallest y_2 that satisfies\n"
-        "       U_hat((y_1,y_2)) >= u_k.\n"
-        "```"
-    )
 
     # --- Figure 1: observed budgets and choices ---
     fig1, ax1 = plt.subplots(figsize=(8, 6))
@@ -375,17 +264,7 @@ $$
     ax1.set_xlim(0, max(income / prices[:, 0]) * 1.08)
     ax1.set_ylim(0, max(income / prices[:, 1]) * 1.08)
     ax1.legend(frameon=False, loc="upper right")
-
-    report.add_results(
-        "Each line is an observed budget set. Each dot is the chosen bundle. "
-        "Prices rotate budget lines, and income shifts them. The starred bundle is "
-        "the target contour. The recovery ignores the Cobb-Douglas source."
-    )
-    report.add_figure(
-        "figures/budget-lines.png",
-        "Observed budget lines and chosen bundles with the target observation starred",
-        fig1,
-    )
+    save_figure(fig1, "figures/budget-lines.png", dpi=150)
 
     # --- Figure 2: recovered contour vs true benchmark ---
     fig2, ax2 = plt.subplots(figsize=(8, 6))
@@ -427,20 +306,7 @@ $$
     ax2.set_title("Recovered Upper-Contour Boundary")
     ax2.set_ylim(0, plot_y_max)
     ax2.legend(frameon=False)
-
-    report.add_results(
-        "The blue curve is not a Cobb-Douglas estimate. It is one concave contour "
-        "through the target choice. It also rationalizes every observed bundle. "
-        "The dashed curve is the true simulation contour. It is shown only as a "
-        f"benchmark. On the plotted overlap, the median recovered-to-true $x_2$ "
-        f"ratio is **{median_contour_ratio:.2f}**. The largest absolute contour "
-        f"gap is **{max_contour_gap:.2f}** units of good 2."
-    )
-    report.add_figure(
-        "figures/indifference-curve.png",
-        "Recovered Afriat contour and the held-out Cobb-Douglas contour",
-        fig2,
-    )
+    save_figure(fig2, "figures/indifference-curve.png", dpi=150)
 
     # --- Figure 3: Afriat numbers and true utility diagnostic ---
     fig3, (ax3a, ax3b) = plt.subplots(1, 2, figsize=(12, 5))
@@ -461,18 +327,7 @@ $$
     ax3b.set_ylabel("$\\lambda_t$")
     ax3b.set_title("Expenditure Normalization")
     fig3.tight_layout()
-
-    report.add_results(
-        "Afriat numbers are a finite-data certificate. The scores $u_t$ rank observed "
-        "bundles while respecting budget comparisons. The $\\lambda_t$ values give "
-        "supporting slopes in utility units. The simulated sample lets us compare the "
-        f"recovered ordering with true utility. The correlation is **{utility_corr:.3f}**."
-    )
-    report.add_figure(
-        "figures/afriat-numbers.png",
-        "Afriat utility levels and marginal utility normalizations",
-        fig3,
-    )
+    save_figure(fig3, "figures/afriat-numbers.png", dpi=150)
 
     # --- Table ---
     df = pd.DataFrame({
@@ -483,35 +338,11 @@ $$
         "True U normalized": [f"{value:.4f}" for value in true_utility_scaled],
         "Fit error": [f"{value:.2e}" for value in fit_error],
     })
-    report.add_table(
-        "tables/afriat-numbers.csv",
-        "Afriat numbers and fit diagnostics",
-        df,
-        description=(
-            "The last column checks that recovered utility equals $u_t$ at each "
-            "observed bundle. The true-utility column is a simulation diagnostic, "
-            "not an input."
-        ),
-    )
+    Path("tables/afriat-numbers.csv").parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv("tables/afriat-numbers.csv", index=False)
 
-    report.add_takeaway(
-        "Finite choices can do more than test rationalizability. They still do not "
-        "identify one full utility function. Afriat numbers recover one utility "
-        "index and one local contour. Those objects respect every observed budget "
-        "comparison. Budgets pin down preferences only where prices create support."
-    )
-
-    report.add_references([
-        "Afriat, S. N. (1967). The Construction of Utility Functions from Expenditure Data. "
-        "*International Economic Review*, 8(1), 67-77.",
-        "Varian, H. R. (1982). The Nonparametric Approach to Demand Analysis. "
-        "*Econometrica*, 50(4), 945-973.",
-        "Varian, H. R. (2006). Revealed Preference. In M. Szenberg et al. (Eds.), "
-        "*Samuelsonian Economics and the Twenty-First Century*. Oxford University Press.",
-    ])
-
-    report.write("README.md")
-    print(f"Generated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
+    save_thumbnail("figures/budget-lines.png", "figures/thumb.png")
+    print(f"Done: 3 figures, 1 table")
 
 
 if __name__ == "__main__":

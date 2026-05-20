@@ -19,8 +19,7 @@ from scipy.optimize import fsolve
 from scipy.stats import norm
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import setup_style, save_figure, save_thumbnail
 
 
 # -----------------------------------------------------------------------------
@@ -425,157 +424,8 @@ def main() -> None:
     print(f"  Coarse vs fine-grid consumption gap (a≤{audit_max:g}): {consumption_gap:.2e}")
     print(f"  Coarse vs fine-grid saving gap (a≤{audit_max:g}): {savings_gap:.2e}")
 
-    # ----- Generate report -----
-    setup_style()
-
-    report = ModelReport(
-        "Buffer-Stock Saving with IID Income by Envelope-Equation Iteration",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "A CRRA household faces IID labor income and cannot borrow. Wealth is "
-        "a buffer against low income. The policy says how assets shape "
-        "consumption and saving.\n\n"
-        "The object is the marginal continuation value $W_a(a)$. It measures "
-        "the value of one more dollar before next period's income draw. EEI "
-        "updates this curve directly with the envelope condition.\n\n"
-        "The computational need is to update this curve without solving for "
-        "the whole value function. The Euler equation then recovers "
-        "consumption at each asset-income state."
-    )
-
-    report.add_equations(
-        r"""
-The household enters with assets $a$ and IID income $y_j$.
-Income has probabilities $\pi_j$ over $\{y_1,\dots,y_{n_y}\}$.
-With gross return $R = 1+r$, the Bellman equation is
-
-$$
-V(a,y_j) = \max_{a' \geq \underline a}\,
-\{\,u(R a + y_j - a') + \beta\,W(a')\,\},
-\qquad
-W(a') = \sum_{\ell=1}^{n_y}\pi_\ell\,V(a',y_\ell),
-$$
-
-The policy is $g(a,y_j)$.
-Consumption is $c(a,y_j) = R a + y_j - g(a,y_j)$.
-
-Preferences are CRRA:
-
-$$
-u(c) = \frac{c^{1-\gamma}-1}{1-\gamma},
-\qquad
-u'(c) = c^{-\gamma},
-\qquad
-(u')^{-1}(\mu) = \mu^{-1/\gamma}.
-$$
-
-At an interior optimum, the Euler equation uses only $W_a(a')$:
-
-$$
-u'(c(a,y_j)) = \beta\,W_a(g(a,y_j)).
-$$
-
-The envelope condition updates that object from the policy:
-
-$$
-W_a(a) = \sum_{\ell=1}^{n_y}\pi_\ell\,V_a(a,y_\ell) =
-R\,\sum_{\ell=1}^{n_y}\pi_\ell\,u'(c(a,y_\ell)).
-$$
-
-These two equations close the system without using the value level.
-
-The borrowing limit binds when the household wants $a' < \underline a$.
-Then $g(a,y_j) = \underline a$ and the Euler inequality is
-
-$$
-u'(R a + y_j - \underline a) \geq \beta\,W_a(\underline a),
-$$
-
-This case produces high MPCs near zero assets.
-"""
-    )
-
-    report.add_model_setup(
-        f"| Object | Value | Role |\n"
-        f"|---|---:|---|\n"
-        f"| CRRA $\\gamma$ | {gamma:.1f} | Curvature; sets the precautionary motive and the slope of $W_a$ |\n"
-        f"| Discount factor $\\beta$ | {beta:.2f} | Annual time preference |\n"
-        f"| Net rate $r$ | {r:.2f} | Exogenous risk-free return |\n"
-        f"| Patience-return product $\\beta R$ | {beta_R:.4f} | $<1$ rules out an unbounded asset target |\n"
-        f"| Income mean $\\mu_y$ | {mean_income:.1f} | Normalisation |\n"
-        f"| Income s.d. $\\sigma_y$ | {sd_income:.1f} | Width of the IID labor-income shock |\n"
-        f"| Income states $n_y$ | {n_income} | Width-fitted equal-spaced normal grid |\n"
-        f"| Borrowing limit $\\underline a$ | {a_min:.1f} | Hard zero; binds with positive mass |\n"
-        f"| Upper grid bound $\\bar a$ | {a_max:.1f} | Wide enough to contain the simulated tail |\n"
-        f"| EEI asset grid | {n_asset} pts | Power-spaced; denser at $\\underline a$ |\n"
-        f"| Reference asset grid | {n_asset_ref} pts | Audit grid for the EEI policy |\n"
-        f"| Convergence tolerance | {tol:.0e} | Sup-norm on the consumption iterates |\n"
-        f"| Simulation | {n_agents:,} households, {periods} periods | Forward-iterated cross section |"
-    )
-
-    report.add_solution_method(
-        rf"""
-EEI starts from a consumption policy.
-The envelope step computes $W_a(a_i)$ by averaging marginal utilities across income states.
-The Euler step solves for current consumption at each $(a_i,y_j)$.
-
-The Euler step solves a scalar root at each state.
-It finds $c \in (0,\,Ra + y_j - \underline a)$ such that
-
-$$
-u'(c) = \beta\,W_a(R a + y_j - c).
-$$
-
-The borrowing check comes first.
-If the household wants to borrow, the solver sets $a'=\underline a$.
-Otherwise bisection solves the interior Euler equation.
-
-This update carries only one curve across iterations.
-The policy still depends on assets and income after the Euler step.
-
-```text
-Algorithm: EEI for IID-income buffer-stock saving
-Inputs    asset grid {{a_i}}, income chain ({{y_j}}, {{pi_j}}),
-          primitives (beta, R, gamma), borrowing limit a_min, tolerance eps
-Output    consumption policy c(a, y), saving policy g(a, y),
-          marginal continuation value W_a(a)
-
-Initialise c_0(a_i, y_j) = (R - 1) a_i + y_j        # consume current resources
-repeat n = 0, 1, 2, ...
-    # 1. Envelope step: collapse the policy into W_a on the exogenous grid
-    W_{{a,n}}(a_i) = R * sum_l pi_l * u'(c_n(a_i, y_l))
-
-    # 2. Euler step at each (a_i, y_j)
-    for each i, j:
-        cash = R a_i + y_j
-        if u'(cash - a_min) >= beta * W_{{a,n}}(a_min):
-            g_{{n+1}}(a_i, y_j) = a_min                # constraint binds
-            c_{{n+1}}(a_i, y_j) = cash - a_min
-        else:
-            # Solve u'(c) - beta * W_{{a,n}}(cash - c) = 0 by bisection on c.
-            c_star = bisect(lambda c: u'(c) - beta * W_{{a,n}}(cash - c),
-                            lo=eps, hi=cash - a_min - eps)
-            g_{{n+1}}(a_i, y_j) = cash - c_star
-            c_{{n+1}}(a_i, y_j) = c_star
-
-    err = max_{{i,j}} |c_{{n+1}}(a_i, y_j) - c_n(a_i, y_j)|
-until err < eps
-```
-
-The run keeps a {n_asset}-point EEI grid.
-It also solves EGP and grid VFI on that grid.
-A {n_asset_ref}-point EGP solve checks the policy on $a \leq {audit_max:g}$.
-
-EEI converged in **{eei['iterations']} iterations**.
-The maximum consumption gap against the fine-grid policy is {consumption_gap:.2e}.
-The same gap for next assets is {savings_gap:.2e}.
-"""
-    )
-
     # ---------------- Figures ----------------
+    setup_style()
     plot_max = 20.0
     low, mid, high = 0, n_income // 2, n_income - 1
 
@@ -596,18 +446,7 @@ The same gap for next assets is {savings_gap:.2e}.
     ax1.set_title("Consumption Policy")
     ax1.set_xlim(0.0, plot_max)
     ax1.legend()
-    report.add_figure(
-        "figures/consumption-policy.png",
-        "EEI consumption policy with fine-grid reference",
-        fig1,
-        description=(
-            "The consumption policy is increasing and concave in assets. "
-            "Income shifts it because IID income enters cash on hand. "
-            "Near the borrowing limit, consumption tracks available cash. "
-            f"The fine-grid EGP reference stays within {consumption_gap:.2e} "
-            f"on $a \\leq {audit_max:g}$."
-        ),
-    )
+    save_figure(fig1, "figures/consumption-policy.png", dpi=150)
 
     # Figure 2: Marginal continuation value W_a
     fig2, ax2 = plt.subplots()
@@ -627,17 +466,7 @@ The same gap for next assets is {savings_gap:.2e}.
     ax2.set_xlim(0.0, plot_max)
     ax2.set_ylim(0.0, float(min(eei["marginal_value"][0] * 1.3, eei["marginal_value"].max() * 1.2)))
     ax2.legend()
-    report.add_figure(
-        "figures/value-derivative.png",
-        "Marginal continuation value with state-specific decomposition",
-        fig2,
-        description=(
-            r"$W_a(a)$ is steep near zero assets. "
-            "One more dollar is most valuable when the buffer is empty. "
-            "The curve flattens as wealth rises. "
-            "The envelope condition averages the state-specific marginal utilities."
-        ),
-    )
+    save_figure(fig2, "figures/value-derivative.png", dpi=150)
 
     # Figure 3: Simulated stationary wealth distribution
     fig3, ax3 = plt.subplots()
@@ -653,18 +482,7 @@ The same gap for next assets is {savings_gap:.2e}.
     ax3.set_title("Simulated Stationary Wealth Distribution")
     ax3.set_xlim(0.0, upper_hist)
     ax3.legend()
-    report.add_figure(
-        "figures/wealth-distribution.png",
-        "Simulated terminal wealth distribution under the EEI policy",
-        fig3,
-        description=(
-            "The simulated asset distribution is right-skewed. "
-            f"Mean assets are {mean_assets:.4f}. "
-            f"{frac_constrained:.1f}% of households sit at the borrowing limit. "
-            "IID income keeps the asset scale modest. "
-            f"The borrowing-limit mass raises the average MPC to {mean_mpc:.4f}."
-        ),
-    )
+    save_figure(fig3, "figures/wealth-distribution.png", dpi=150)
 
     # Figure 4: Convergence comparison
     fig4, ax4 = plt.subplots()
@@ -682,22 +500,7 @@ The same gap for next assets is {savings_gap:.2e}.
     ax4.set_title("Convergence: EEI vs EGP vs Grid VFI")
     ax4.set_xlim(0, max(len(eei["errors"]), len(egp["errors"]), min(len(vfi["errors"]), 500)))
     ax4.legend()
-    report.add_figure(
-        "figures/convergence-comparison.png",
-        "Convergence paths for EEI, EGP, and grid VFI on the same asset grid",
-        fig4,
-        description=(
-            "EEI and EGP converge at nearly the same rate. "
-            "Both update policies through the Euler equation and track a "
-            "consumption-level sup-norm error. "
-            "Grid VFI updates the value level and tracks a value-level error, "
-            "which is intrinsically larger-scaled, so VFI needs more iterations "
-            "to cross the same absolute tolerance. "
-            "The iteration counts are read against different error metrics, so "
-            "this is a fixed-point comparison and not a clean iteration race or "
-            "a timing claim."
-        ),
-    )
+    save_figure(fig4, "figures/convergence-comparison.png", dpi=150)
 
     # ---------------- Table ----------------
     table_data = {
@@ -735,51 +538,13 @@ The same gap for next assets is {savings_gap:.2e}.
         ],
     }
     df = pd.DataFrame(table_data)
-    report.add_table(
-        "tables/solution-statistics.csv",
-        "Solution and Simulation Summary",
-        df,
-        description=(
-            "The table reports the main economic moments and policy checks. "
-            "The fine-grid rows show interpolation error, not a new model."
-        ),
-    )
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    df.to_csv("tables/solution-statistics.csv", index=False)
 
-    report.add_takeaway(
-        "EEI is a fixed point for the same buffer-stock household. "
-        "It iterates $W_a(a)$ instead of the value level. "
-        "Low-wealth households consume more of a transfer. "
-        "High-wealth households smooth toward the perfect-foresight MPC "
-        f"$\\kappa^{{\\ast}}\\approx{mpc_lim:.3f}$. "
-        f"Here $\\kappa^{{\\ast}} = R(\\beta R)^{{-1/\\gamma}}-1$ is the MPC "
-        f"in the perfect-foresight limit.\n\n"
-        "The computational lesson is simple. "
-        "The envelope condition can be an update rule. "
-        "EGP replaces the inner bisection with one analytic marginal-utility "
-        "inverse per state, so each iteration does less work than the EEI "
-        "Euler step. "
-        "All three methods agree up to the fine-grid gap."
-    )
-
-    report.add_references([
-        "Arellano, C., Maliar, L., Maliar, S. and Tsyrennikov, V. (2016). Envelope "
-        "Condition Method with an Application to Default Risk Models. *Journal of "
-        "Economic Dynamics and Control*, 69, 436-459.",
-        "Carroll, C. D. (2006). The Method of Endogenous Gridpoints for Solving "
-        "Dynamic Stochastic Optimization Problems. *Economics Letters*, 91(3), "
-        "312-320.",
-        "Deaton, A. (1991). Saving and Liquidity Constraints. *Econometrica*, "
-        "59(5), 1221-1248.",
-        "Carroll, C. D. (1997). Buffer-Stock Saving and the Life Cycle/Permanent "
-        "Income Hypothesis. *Quarterly Journal of Economics*, 112(1), 1-55.",
-        "Ljungqvist, L. and Sargent, T. (2018). *Recursive Macroeconomic Theory*. "
-        "MIT Press, 4th edition, Ch. 18.",
-    ])
-
-    report.write("README.md")
+    save_thumbnail("figures/consumption-policy.png", "figures/thumb.png")
     print(
-        f"\nGenerated: README.md + {len(report._figures)} figures + "
-        f"{len(report._tables)} tables"
+        f"\nDone: 4 figures, 1 table. Mean assets={mean_assets:.4f}, "
+        f"MPC={mean_mpc:.4f}, MPC limit={mpc_lim:.4f}"
     )
 
 

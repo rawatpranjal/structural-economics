@@ -16,8 +16,7 @@ from scipy.optimize import dual_annealing, minimize
 from scipy.special import logsumexp
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import save_figure, save_thumbnail, setup_style
 
 
 MU1 = np.array([1.5, 1.5])
@@ -315,87 +314,6 @@ def main() -> None:
             f"objective={run.objective:.5f} iterations={run.iterations}"
         )
 
-    report = ModelReport(
-        "Latent-Regime Likelihoods and Optimizer Basins",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "An economist may estimate a model with two latent regimes. Each regime can explain "
-        "the same data with a different parameter vector.\n\n"
-        "The object is the parameter vector that minimizes a negative log likelihood. The "
-        "tutorial uses a two-dimensional Gaussian mixture so the full criterion can be drawn.\n\n"
-        "A single local optimizer can report the basin reached from its starting value. Restart "
-        "grids and global search check whether the estimate changes across basins."
-    )
-
-    report.add_equations(
-        r"""
-Let $\theta=(\theta_1,\theta_2)$ denote the structural parameter vector. The
-target density is a stylized latent-regime likelihood. Each regime has its own
-mean, while the researcher observes only the mixture:
-
-$$
-\begin{aligned}
-p(\theta)
-&= \omega \phi(\theta; \mu_1, \Sigma) \\
-&\quad + (1-\omega)\phi(\theta; \mu_2, \Sigma).
-\end{aligned}
-$$
-
-The estimator minimizes the negative log likelihood:
-
-$$
-\min_{\theta \in \mathbb{R}^2} f(\theta),
-\qquad
-f(\theta) = -\log p(\theta).
-$$
-
-Newton's method uses local curvature around the current guess:
-
-$$
-\theta_{n+1} = \theta_n - H_f(\theta_n)^{-1}\nabla f(\theta_n).
-$$
-
-Here $H_f(\theta)$ denotes the Hessian matrix of $f$ at $\theta$.
-
-"""
-    )
-
-    report.add_model_setup(
-        f"| Object | Value |\n"
-        f"|--------|-------|\n"
-        f"| $\\mu_1$ | {format_point(MU1)} |\n"
-        f"| $\\mu_2$ | {format_point(MU2)} |\n"
-        f"| $\\Sigma$ | [[1.0, 0.5], [0.5, 1.0]] |\n"
-        f"| Mixing probability $\\omega$ | {MIXING_PROB:.1f} |\n"
-        f"| Local-method start | {format_point(common_start)} |\n"
-        f"| Global search box | $[-5,5]^2$ |"
-    )
-
-    report.add_solution_method(
-        "All methods minimize the same criterion $f(\\theta)$. The local methods start from "
-        "the same off-diagonal value. Their paths show how different search rules choose a "
-        "basin. Dual annealing searches the full box before local polishing. The BFGS restart "
-        "grid maps the basin reached from each start.\n\n"
-        "```text\n"
-        "Algorithm: optimizer diagnostics for a latent-regime likelihood\n"
-        "Input: objective f(theta), starting value theta_0, search box B\n"
-        "Output: candidate estimates, paths, basin diagnostics\n"
-        "1. Run local optimizers from theta_0:\n"
-        "       Newton: update with a regularized Hessian and backtracking line search\n"
-        "       BFGS: update an inverse-Hessian approximation from gradient changes\n"
-        "       Nelder-Mead: move a simplex using only objective values\n"
-        "2. Run global search over B with stochastic uphill moves and local polishing\n"
-        "3. For each candidate theta_hat, record f(theta_hat) and its nearest regime mean\n"
-        "4. Restart BFGS on a grid of initial values to map basins of attraction\n"
-        "5. Read instability across starts as information about the likelihood surface\n"
-        "```\n\n"
-        "The known component means make basin labels observable in this teaching example. In "
-        "empirical work, the restart grid is the main diagnostic."
-    )
-
     x_grid, y_grid, z_grid = make_objective_grid()
     fig1, ax1 = plt.subplots(figsize=(7.2, 6.2))
     contour = ax1.contour(x_grid, y_grid, z_grid, levels=22, cmap="viridis")
@@ -422,16 +340,7 @@ Here $H_f(\theta)$ denotes the Hessian matrix of $f$ at $\theta$.
     ax1.set_ylabel(r"$\theta_2$")
     ax1.set_title("Optimizer Paths on a Bimodal Objective")
     ax1.legend(loc="upper left")
-    report.add_figure(
-        "figures/optimizer-paths.png",
-        "Optimizer paths over negative log-density contours",
-        fig1,
-        description=(
-            "The contour plot shows two parameter vectors with the same likelihood value. Newton "
-            "and BFGS reach the upper-right basin. Nelder-Mead and dual annealing reach the "
-            "lower-left basin."
-        ),
-    )
+    save_figure(fig1, "figures/optimizer-paths.png", dpi=150)
 
     fig2, ax2 = plt.subplots()
     for run in runs:
@@ -442,15 +351,7 @@ Here $H_f(\theta)$ denotes the Hessian matrix of $f$ at $\theta$.
     ax2.set_ylabel("Objective gap")
     ax2.set_title("Convergence to the Best Found Objective")
     ax2.legend()
-    report.add_figure(
-        "figures/convergence.png",
-        "Objective gaps along recorded optimizer paths",
-        fig2,
-        description=(
-            "Iteration counts measure progress after a basin has been chosen. A zero objective "
-            "gap does not show that the other basin was checked."
-        ),
-    )
+    save_figure(fig2, "figures/convergence.png", dpi=150)
 
     fig3, ax3 = plt.subplots(figsize=(6.2, 5.6))
     mode_colors = basin["mode"].map({1: "tab:blue", -1: "tab:orange"}).to_numpy()
@@ -471,47 +372,12 @@ Here $H_f(\theta)$ denotes the Hessian matrix of $f$ at $\theta$.
     ax3.set_ylabel(r"Initial $\theta_2$")
     ax3.set_title("BFGS Basins of Attraction")
     ax3.legend(loc="upper left")
-    report.add_figure(
-        "figures/basin-map.png",
-        "BFGS solutions from different starting points",
-        fig3,
-        description=(
-            "Each dot is a BFGS starting value. The color records the regime mean reached by "
-            "the optimizer."
-        ),
-    )
+    save_figure(fig3, "figures/basin-map.png", dpi=150)
 
-    report.add_table(
-        "tables/optimizer-summary.csv",
-        "Optimizer outcomes",
-        summary,
-        description=(
-            "The local methods share one starting value. Dual annealing searches the box first."
-        ),
-    )
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    summary.to_csv("tables/optimizer-summary.csv", index=False)
 
-    report.add_results(
-        f"The best objective found is {best_objective:.5f}. The equal mixture weights make both "
-        "regime labels fit equally well. The table therefore does not rank labels. It shows that "
-        "the reported estimate can depend on initialization. The restart grid shows that nearby "
-        "starts can point to different regimes."
-    )
-
-    report.add_takeaway(
-        "A local optimum is not enough in a latent-regime likelihood. Check the criterion around "
-        "the estimate and rerun from many starts. Use a global pass when local starts find "
-        "different basins. Interpret the estimate only after those checks."
-    )
-
-    report.add_references(
-        [
-            "[Nocedal, J., and Wright, S. J. (2006). *Numerical Optimization*, 2nd ed. Springer.](https://doi.org/10.1007/978-0-387-40065-5)",
-            "[Goffe, W. L., Ferrier, G. D., and Rogers, J. (1994). Global Optimization of Statistical Functions with Simulated Annealing. *Journal of Econometrics*, 60(1-2), 65-99.](https://doi.org/10.1016/0304-4076(94)90038-8)",
-            "[Virtanen, P. et al. (2020). SciPy 1.0: Fundamental Algorithms for Scientific Computing in Python. *Nature Methods*, 17, 261-272.](https://doi.org/10.1038/s41592-019-0686-2)",
-        ]
-    )
-
-    report.write("README.md")
+    save_thumbnail("figures/optimizer-paths.png", "figures/thumb.png")
 
 
 if __name__ == "__main__":

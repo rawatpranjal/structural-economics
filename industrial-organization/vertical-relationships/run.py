@@ -8,8 +8,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import setup_style, save_figure, save_thumbnail
 
 
 def demand(price: float, a: float, b: float) -> float:
@@ -89,95 +88,6 @@ def main() -> None:
     print("Vertical relationships tutorial")
     print(df[["Contract", "Retail price", "Quantity", "Channel profit"]].to_string(index=False))
 
-    report = ModelReport(
-        "Double Marginalization in Vertical Supply Chains",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "A manufacturer sells through an independent retailer. The manufacturer sets "
-        "wholesale terms. The retailer sets the shelf price. Consumers buy from the "
-        "retailer.\n\n"
-        "The object is double marginalization. A linear wholesale price makes the "
-        "retailer treat the upstream markup as marginal cost. The retailer then adds "
-        "its own markup, so the channel charges too much and sells too little.\n\n"
-        "The computation solves the integrated channel and the separated game. "
-        "Backward induction gives the wholesale price, retail price, quantity, and "
-        "profits under each contract."
-    )
-
-    report.add_equations(r"""
-Demand follows
-$$q(p)=a-bp,\qquad p\leq \bar p\equiv a/b,$$
-where $p$ is the retail price. The choke price is $\bar p$. Costs are $c_M$
-upstream and $c_R$ downstream.
-
-The integrated channel solves
-$$\Pi^I(p)=(p-c_M-c_R)q(p),$$
-so the joint-profit price is
-$$p^I=\frac{\bar p+c_M+c_R}{2}.$$
-
-Under a linear wholesale price $w$, the retailer solves
-$$\max_p\ (p-w-c_R)q(p).$$
-Its best response is
-$$p_R(w)=\frac{\bar p+w+c_R}{2}.$$
-
-The manufacturer chooses $w$ while anticipating that response:
-$$\max_w\ (w-c_M)q(p_R(w)),$$
-which gives
-$$w^{DM}=\frac{\bar p-c_R+c_M}{2}.$$
-
-Because $w^{DM}>c_M$, the retailer acts as if marginal cost is too high.
-
-A two-part tariff sets
-$$w^{TPT}=c_M$$
-and uses the fixed fee
-$$F=(p^I-c_M-c_R)q(p^I)$$
-to transfer operating profit upstream.
-
-The fee changes the profit split without changing the retailer's margin.
-""")
-
-    report.add_model_setup(
-        "The calibration is small enough to solve analytically. Each number uses the "
-        "same unit. The integrated channel is a benchmark, not an ownership "
-        "assumption.\n\n"
-        "| Parameter | Value | Description |\n"
-        "|-----------|-------|-------------|\n"
-        f"| $a$ | {a:.1f} | Demand intercept |\n"
-        f"| $b$ | {b:.1f} | Demand slope |\n"
-        f"| $\\bar p=a/b$ | {a / b:.1f} | Choke price |\n"
-        f"| $c_M$ | {cm:.1f} | Manufacturer marginal cost |\n"
-        f"| $c_R$ | {cr:.1f} | Retail service cost |\n"
-        "| Contracts | 3 | Integrated benchmark, linear wholesale, two-part tariff |"
-    )
-
-    report.add_solution_method(
-        "The solution follows the order of moves. Each step uses the same demand "
-        "curve, so price and quantity are comparable across contracts.\n\n"
-        "```text\n"
-        "Inputs: demand q(p)=a-bp, costs c_M and c_R\n"
-        "\n"
-        "1. Integrated channel\n"
-        "    p_I = (a/b + c_M + c_R) / 2\n"
-        "    q_I = q(p_I)\n"
-        "\n"
-        "2. Linear wholesale game\n"
-        "    Retailer best response: p_R(w) = (a/b + w + c_R) / 2\n"
-        "    Manufacturer FOC for max (w-c_M) q(p_R(w)) has the closed-form\n"
-        "        solution w_DM = (a/b - c_R + c_M) / 2, evaluated directly\n"
-        "    Evaluate p_R(w_DM), q(p_R(w_DM)), profits, and surplus\n"
-        "\n"
-        "3. Two-part tariff\n"
-        "    Two-part tariff: set w=c_M, p=p_I, and fixed fee F=(p_I-c_M-c_R)q_I\n"
-        "\n"
-        "Outputs: contract outcomes and pass-through curve p_R(w)\n"
-        "```\n\n"
-        "The comparison treats the fixed fee as a transfer. It changes the profit "
-        "split, not the retailer's marginal cost."
-    )
-
     x = np.arange(len(df))
     fig1, axes1 = plt.subplots(1, 2, figsize=(9, 4.4), sharex=True)
     axes1[0].bar(x, df["Retail price"], color="#4C78A8")
@@ -195,16 +105,7 @@ The fee changes the profit split without changing the retailer's margin.
         ax.set_xticklabels(contract_labels, rotation=0)
     fig1.suptitle("Double Marginalization Against the Integrated Benchmark")
     fig1.tight_layout()
-    report.add_figure(
-        "figures/price-quantity.png",
-        "Price and quantity by vertical contract",
-        fig1,
-        description="The integrated channel charges "
-        f"${benchmark['Retail price']:.2f}$ and sells {benchmark['Quantity']:.1f} units. "
-        "Linear wholesale pricing raises the retail price to "
-        f"${linear['Retail price']:.2f}$ and cuts quantity to {linear['Quantity']:.1f}. "
-        "The two-part tariff returns price and quantity to the integrated line.",
-    )
+    save_figure(fig1, "figures/price-quantity.png", dpi=150)
 
     fig3, axes3 = plt.subplots(1, 2, figsize=(9, 4.2), sharex=True)
     axes3[0].plot(pass_df["Wholesale price"], pass_df["Retail price"], label="$p_R(w)$")
@@ -225,14 +126,7 @@ The fee changes the profit split without changing the retailer's margin.
     axes3[1].legend()
     fig3.suptitle("Wholesale Prices Work Through Retail Marginal Cost")
     fig3.tight_layout()
-    report.add_figure(
-        "figures/wholesale-pass-through.png",
-        "Retail pass-through as wholesale price changes",
-        fig3,
-        description="The wholesale-price sweep varies only $w$. The retailer's best "
-        "response price rises with $w$. At $w^{DM}$, quantity falls below the "
-        "integrated benchmark.",
-    )
+    save_figure(fig3, "figures/wholesale-pass-through.png", dpi=150)
 
     table = df[
         [
@@ -251,27 +145,11 @@ The fee changes the profit split without changing the retailer's margin.
     for col in table.columns:
         if col != "Contract":
             table[col] = table[col].map(lambda v: f"{v:.2f}")
-    report.add_table(
-        "tables/vertical-contracts.csv",
-        "Contract outcomes",
-        table,
-        description="The table reports the same comparison in numbers. Channel profit "
-        "and consumer surplus fall only when quantity falls. The fixed fee moves "
-        "operating profit upstream.",
-    )
+    Path("tables/vertical-contracts.csv").parent.mkdir(parents=True, exist_ok=True)
+    table.to_csv("tables/vertical-contracts.csv", index=False)
 
-    report.add_takeaway(
-        "Double marginalization comes from the retailer's perceived marginal cost. "
-        "A high wholesale price raises that cost and lowers quantity. A two-part "
-        "tariff sets $w=c_M$, so the retailer chooses the integrated price. The "
-        "fixed fee then allocates profit."
-    )
-
-    report.add_references([
-        "Tirole, J. (1988). *The Theory of Industrial Organization*. MIT Press.",
-    ])
-    report.write("README.md")
-    print(f"Generated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
+    save_thumbnail("figures/price-quantity.png", "figures/thumb.png")
+    print("Figures and tables written.")
 
 
 if __name__ == "__main__":

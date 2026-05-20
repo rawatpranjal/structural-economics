@@ -14,7 +14,7 @@ import re
 from pathlib import Path
 
 _TUTORIAL = Path(__file__).resolve().parents[1]
-_RUN_PY = (_TUTORIAL / "run.py").read_text()
+_README = (_TUTORIAL / "README.md").read_text()
 
 _SUPERSCRIPTED = re.compile(r"\\sigma\^[{]?[yc]")
 
@@ -24,17 +24,17 @@ def test_violated_invariant_sigma_not_distinguished():
 
     Fails once the honest fix adds a sigma^y / sigma^c superscript.
     """
-    assert _SUPERSCRIPTED.search(_RUN_PY) is None
+    assert _SUPERSCRIPTED.search(_README) is None
 
 
 def test_honest_fix_sigma_distinguished():
     """Honest fix: DGP sigma and cycle sigma get distinct superscripts.
 
-    Fails on the current buggy run.py.
+    Fails on the current buggy README.md.
     """
-    assert _SUPERSCRIPTED.search(_RUN_PY) is not None
+    assert _SUPERSCRIPTED.search(_README) is not None
 
 
 def test_honest_fix_both_variants_present():
     """Honest fix: both the DGP and the cycle superscripted symbols exist."""
-    assert r"\sigma^{y}" in _RUN_PY and r"\sigma^{c}" in _RUN_PY
+    assert r"\sigma^{y}" in _README and r"\sigma^{c}" in _README

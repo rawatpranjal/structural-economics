@@ -16,8 +16,7 @@ from scipy.stats import binom
 
 # Add repo root to path for lib/ imports
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.plotting import setup_style
-from lib.output import ModelReport
+from lib.plotting import save_figure, save_thumbnail, setup_style
 
 
 # =============================================================================
@@ -222,111 +221,9 @@ def main():
     )
 
     # =========================================================================
-    # Generate Report
+    # Figures
     # =========================================================================
     setup_style()
-
-    report = ModelReport(
-        "Sequential Investment Under Bayesian Learning",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "Suppose a firm can invest in a project, but project quality is hidden. "
-        "Each signal is red or blue. A red signal raises the chance that the project is good. "
-        "A blue signal lowers it.\n\n"
-        "The object is the posterior belief $p_t=\\Pr(H \\mid s_1,\\ldots,s_t)$. "
-        "It summarizes the signal history for both learning and investment timing. "
-        "Extreme beliefs lead to investment or rejection. Middle beliefs can justify waiting.\n\n"
-        "The computation updates $p_t$ with Bayes' rule and solves a finite-horizon Bellman problem. "
-        "Backward induction maps each belief into invest, reject, or continue regions."
-    )
-
-    report.add_equations(
-        r"""
-Let $\theta\in\{H,L\}$ denote the unknown state and let $s_t\in\{R,B\}$ denote
-the period-$t$ signal. The maintained signal probabilities are
-
-$$\Pr(R\mid H)=p_H,\qquad \Pr(R\mid L)=p_L,\qquad p_H>p_L.$$
-
-The posterior after observing $s_{t+1}$ is
-
-$$p_{t+1}
-=\frac{f_H(s_{t+1})p_t}
-{f_H(s_{t+1})p_t+f_L(s_{t+1})(1-p_t)},$$
-
-where $f_\theta(s)=\Pr(s\mid \theta)$.
-
-Equivalently, posterior odds evolve additively in log likelihood ratios:
-
-$$\log\frac{p_{t+1}}{1-p_{t+1}}
-=\log\frac{p_t}{1-p_t}
-+\log\frac{f_H(s_{t+1})}{f_L(s_{t+1})}.$$
-
-After $T$ signals, if $k_T$ of them are red, the sufficient statistic is
-
-$$\Lambda_T
-=k_T\log\frac{p_H}{p_L}
-+(T-k_T)\log\frac{1-p_H}{1-p_L}.$$
-
-For the stopping problem, investing gives payoff $\pi_H$ in state $H$ and
-$\pi_L$ in state $L$; rejecting gives zero. At belief $p$, the current action
-value is
-
-$$A(p)=\max[p\pi_H+(1-p)\pi_L,\ 0].$$
-
-With one more signal available, the continuation value is
-
-$$C_t(p)=\Pr(R\mid p)V_{t+1}(p_R')+\Pr(B\mid p)V_{t+1}(p_B'),$$
-
-where $\Pr(R\mid p)=p\,p_H+(1-p)\,p_L$ is the predictive probability of a red signal at belief $p$, $\Pr(B\mid p)=1-\Pr(R\mid p)$, and $p_R'$ and $p_B'$ are the Bayes-updated beliefs after a red or blue signal. The finite-horizon recursion is
-
-$$V_t(p)=\max[A(p),\ C_t(p)].$$
-        """
-    )
-
-    report.add_model_setup(
-        "The signal process is symmetric around an uninformative prior. "
-        "A red signal is evidence for $H$. "
-        "A blue signal is evidence for $L$.\n\n"
-        f"| Object | Value | Role |\n"
-        f"|-----------|-------|-------------|\n"
-        f"| $p_H$ | {p_red_H} | Probability of a red signal in state $H$ |\n"
-        f"| $p_L$ | {p_red_L} | Probability of a red signal in state $L$ |\n"
-        f"| Prior $p_0$ | {prior_H} | Initial belief $\\Pr(H)$ |\n"
-        f"| Signal horizon | {T} | Draws used for belief paths |\n"
-        f"| Stopping horizon | {T_stop} | Periods used for the backward-induction boundary |\n"
-        f"| Simulated paths | {n_paths} per state | Monte Carlo paths shown against exact means |\n"
-        f"| Investment payoff in $H$ | {payoff_invest_H} | Payoff if the project is good |\n"
-        f"| Investment payoff in $L$ | {payoff_invest_L} | Payoff if the project is bad |\n"
-        f"| Reject payoff | {payoff_wait} | Outside option after stopping |"
-    )
-
-    report.add_solution_method(
-        "Bayesian filtering maps the signal history into one posterior belief. "
-        "Backward induction compares immediate action payoffs with the value of one more signal. "
-        "The comparison is made on a grid of beliefs.\n\n"
-        "```text\n"
-        "Algorithm: Bayesian filtering and finite-horizon stopping\n"
-        "Input: prior p_0, likelihoods f_H and f_L, payoffs pi_H and pi_L, horizon T\n"
-        "Output: posterior path p_t and stopping regions over beliefs\n"
-        "\n"
-        "Filtering:\n"
-        "    for each incoming signal s_{t+1}:\n"
-        "        multiply prior odds p_t / (1-p_t) by f_H(s_{t+1}) / f_L(s_{t+1})\n"
-        "        convert odds back to p_{t+1}\n"
-        "\n"
-        "Stopping:\n"
-        "    set terminal value V_T(p) = max[p*pi_H + (1-p)*pi_L, 0]\n"
-        "    for t = T-1, ..., 0:\n"
-        "        for each belief grid point p_i:\n"
-        "            compute posteriors after red and blue signals\n"
-        "            interpolate V_{t+1} at those two posteriors\n"
-        "            compare action value A(p_i) with continuation value C_t(p_i)\n"
-        "        record the reject, continue, and invest regions\n"
-        "```"
-    )
 
     # --- Figure 1: Posterior belief evolution ---
     fig1, (ax1a, ax1b) = plt.subplots(1, 2, figsize=(14, 5))
@@ -362,19 +259,7 @@ $$V_t(p)=\max[A(p),\ C_t(p)].$$
 
     fig1.suptitle("Posterior beliefs under repeated signals", fontsize=14, fontweight="bold")
     fig1.tight_layout()
-    report.add_figure(
-        "figures/belief-evolution.png",
-        "Posterior belief P(H) over time, with exact conditional means overlaid.",
-        fig1,
-        description=(
-            "Light traces are individual histories. "
-            f"The solid curve is the mean across {n_paths} simulated paths. "
-            "The dashed curve integrates the posterior over the exact binomial signal law. "
-            "Good projects push beliefs toward one. "
-            "Bad projects push beliefs toward zero. "
-            "Early dispersion is the information problem."
-        ),
-    )
+    save_figure(fig1, "figures/belief-evolution.png", dpi=150)
 
     # --- Figure 2: Optimal stopping boundary ---
     fig4, ax4 = plt.subplots()
@@ -397,33 +282,10 @@ $$V_t(p)=\max[A(p),\ C_t(p)].$$
     ax4.set_title("Stopping regions over the belief state")
     ax4.set_ylim(-0.05, 1.05)
     ax4.legend(loc="center right")
-    report.add_figure(
-        "figures/stopping-boundary.png",
-        "Invest, reject, and continue regions in the finite-horizon stopping problem.",
-        fig4,
-        description=(
-            "The stopping boundary turns posterior beliefs into actions. "
-            "High beliefs make investment attractive. "
-            "Low beliefs make rejection attractive. "
-            "Middle beliefs preserve the value of another signal. "
-            "The continuation region shrinks as the deadline approaches."
-        ),
-    )
+    save_figure(fig4, "figures/stopping-boundary.png", dpi=150)
 
-    report.add_takeaway(
-        "Bayesian learning reduces a long signal history to the posterior belief relevant for choice. "
-        "That belief sets the stopping boundary and prices the value of one more signal.\n\n"
-        "The investment rule is simple once the belief state is known. "
-        "Act at extreme beliefs, wait in the middle, and stop waiting as the deadline approaches."
-    )
-
-    report.add_references([
-        "DeGroot, M. (1970). *Optimal Statistical Decisions*. McGraw-Hill.",
-        "Chamley, C. (2003). *Rational Herds: Economic Models of Social Learning*. Cambridge University Press.",
-    ])
-
-    report.write("README.md")
-    print(f"\nGenerated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
+    save_thumbnail("figures/belief-evolution.png", "figures/thumb.png")
+    print("\nDone: 2 figures, thumb reproduced.")
 
 
 if __name__ == "__main__":

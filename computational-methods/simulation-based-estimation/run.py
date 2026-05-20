@@ -12,8 +12,7 @@ from scipy.special import expit
 from scipy.stats import gaussian_kde
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import save_figure, save_thumbnail, setup_style
 
 
 def simulate_search_panel(theta: np.ndarray, draws: dict[str, np.ndarray], choice_scale: float) -> dict[str, np.ndarray]:
@@ -461,194 +460,6 @@ def main() -> None:
     print(f"  Wall time (s): MSM {t_msm:.2f}, II {t_ii:.2f}, ABC {t_abc:.2f}")
 
     setup_style()
-    report = ModelReport(
-        "Estimating a Search Acceptance Rule by Simulation",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "A researcher observes wage offers and whether workers accept them. The "
-        "reservation wage is hidden.\n\n"
-        "The object is a rule that maps offers into acceptance probabilities. It "
-        "depends on offer mean, offer dispersion, and reservation log wage.\n\n"
-        "The model is easy to simulate for any parameter vector. Simulation-based "
-        "estimation searches for parameters whose simulated data match observed "
-        "summaries."
-    )
-
-    report.add_equations(
-        r"""
-Worker $i$ receives a log wage offer,
-
-$$
-\log w_i = \mu + \sigma z_i,\qquad z_i \sim N(0,1),
-$$
-
-and accepts with probability
-
-$$
-\Pr(d_i = 1 \mid w_i; \theta) =
-\frac{1}{1 + \exp[-(\log w_i - r)/s]}.
-$$
-
-The structural parameter vector is $\theta = (\mu, \sigma, r)$. Offer mean is $\mu$, offer dispersion is $\sigma$, reservation log wage is $r$. The scale $s$ fixes how sharply acceptance changes near $r$.
-
-All three estimators share the same simulator $S(\theta, \varepsilon)$ driven by a fixed vector of common shocks $\varepsilon_{sim}$. They differ in which summary statistic the simulator must reproduce, and in whether the answer is a point estimate or a distribution over $\theta$.
-
-### Method 1: Method of Simulated Moments
-
-Let $m_{obs} \in \mathbb{R}^{5}$ collect five economic moments computed on the observed sample,
-
-$$
-m_{obs} =
-(
-\underbrace{\Pr(d = 1)}_{\text{acceptance rate}},\
-\underbrace{\mathbb{E}[\log w]}_{\text{offer mean}},\
-\underbrace{\mathrm{SD}[\log w]}_{\text{offer sd}},\
-\underbrace{\mathbb{E}[\log w \mid d = 1]}_{\text{accepted mean}},\
-\underbrace{\mathrm{SD}[\log w \mid d = 1]}_{\text{accepted sd}}
-).
-$$
-
-Write $m_{sim}(\theta) = m(S(\theta, \varepsilon_{sim}))$ for the same moments computed on simulated data. MSM minimizes the scaled quadratic criterion
-
-$$
-\hat\theta_{MSM} = \arg\min_\theta\,
-\underbrace{[m_{sim}(\theta) - m_{obs}]^{\prime}}_{\text{moment gap, simulated vs observed}}\
-\underbrace{W_m}_{\text{scale matrix}}\
-\underbrace{[m_{sim}(\theta) - m_{obs}]}_{\text{moment gap}}
-\equiv Q_{MSM}(\theta),
-$$
-
-with the diagonal weight $W_m = \mathrm{diag}(1 / \max(|m_{obs}|, 0.1))^{2}$.
-The criterion is a weighted sum of squared moment gaps, so $W_m$ is what makes a 1% gap in the acceptance rate comparable to a 0.01 gap in the offer mean.
-Scaling each gap by the magnitude of the observed moment is the simplest such normalization; in production code one would replace it by the inverse of the moment covariance estimated by bootstrap.
-
-### Method 2: Indirect Inference
-
-Let $b(\cdot)$ be a vector of auxiliary statistics: the OLS coefficients of the linear probability regression $d_i = b_0 + b_1 \log w_i$, augmented with offer-distribution moments and the acceptance rate. Write $b_{obs} = b(\text{observed sample})$ and $b_{sim}(\theta) = b(S(\theta, \varepsilon_{sim}))$. Indirect inference minimizes
-
-$$
-\hat\theta_{II} = \arg\min_\theta\,
-\underbrace{
-[b_{sim}(\theta) - b_{obs}]^{\prime}\, W_b\,
-[b_{sim}(\theta) - b_{obs}]
-}_{Q_{II}(\theta)},
-$$
-
-with the same scaling form, $W_b = \mathrm{diag}(1 / \max(|b_{obs}|, 0.1))^{2}$. The auxiliary model is misspecified by design; its coefficients are just summary statistics.
-
-### Method 3: Approximate Bayesian Computation (ABC-SMC)
-
-ABC replaces the likelihood by a tolerance ball around the observed moments. Define the scaled Euclidean distance
-
-$$
-\rho(\theta) = \sqrt{Q_{MSM}(\theta)},
-$$
-
-so the MSM criterion is $\rho^2$. Place a uniform prior on the same rectangle that bounds MSM and II,
-
-$$
-\pi(\theta) = U(2.4, 3.6) \times U(0.2, 0.8) \times U(2.5, 3.8).
-$$
-
-For a tolerance $\varepsilon > 0$ the ABC posterior is
-
-$$
-\pi_\varepsilon(\theta \mid m_{obs}) \propto \underbrace{\pi(\theta)}_{\text{prior}}\, \underbrace{\Pr[\rho(\theta) \le \varepsilon]}_{\text{ABC pseudo-likelihood}}.
-$$
-
-The pseudo-likelihood replaces the unknown true likelihood by the probability that a fresh simulation lands within $\varepsilon$ of the observed moments.
-That trade is the entire point of ABC: any model that can be simulated has a usable Bayesian update, even when its density is not available.
-As $\varepsilon \to 0$ the pseudo-likelihood concentrates on parameters whose simulator matches $m_{obs}$ exactly, so the posterior concentrates on $\arg\min_\theta \rho^2 = \hat\theta_{MSM}$ and ABC and MSM target the same point in the noise-free limit.
-ABC adds the spread around that point that MSM's point estimate alone cannot report.
-
-ABC-SMC approaches $\pi_0$ through a sequence $\varepsilon_0 > \varepsilon_1 > \cdots > \varepsilon_{T-1}$ of shrinking tolerances. Round $t$ maintains $N$ weighted particles $\lbrace (\theta_t^{(i)}, w_t^{(i)}) \rbrace_{i=1}^{N}$ that approximate $\pi_{\varepsilon_t}$. The schedule is adaptive: $\varepsilon_t$ is the $\alpha$-quantile of the distances at round $t-1$, with $\alpha = 0.5$.
-
-Particles in round $t \ge 1$ are drawn by sampling a parent $\theta_{t-1}^{(j)}$ with probability $w_{t-1}^{(j)}$, perturbing it with a Gaussian kernel
-
-$$
-K_t(\theta \mid \theta^{\prime}) = \mathcal{N}(\theta^{\prime},\, 2\, \widehat{\mathrm{Cov}}_{t-1}),
-$$
-
-and keeping the proposal only if $\rho(\theta) \le \varepsilon_t$. The factor two in the covariance is the Beaumont-Cornuet-Marin-Robert (2009) twice-empirical-covariance rule. The importance weight corrects for the proposal,
-
-$$
-w_t^{(i)} \propto \frac{\pi(\theta_t^{(i)})}{\sum_{j=1}^{N} w_{t-1}^{(j)}\, K_t(\theta_t^{(i)} \mid \theta_{t-1}^{(j)})}.
-$$
-
-Under the uniform prior $\pi$ is constant on the support, so the numerator drops out and the weight is just the inverse of the kernel-mixture density evaluated at $\theta_t^{(i)}$.
-"""
-    )
-
-    report.add_model_setup(
-        f"| Object | Value | Role |\n"
-        f"|--------|-------|------|\n"
-        f"| True $\\mu$ | {theta_true[0]:.2f} | Mean of the latent log offer distribution |\n"
-        f"| True $\\sigma$ | {theta_true[1]:.2f} | Dispersion of latent log offers |\n"
-        f"| True $r$ | {theta_true[2]:.2f} | Latent reservation log wage |\n"
-        f"| Choice scale $s$ | {choice_scale:.2f} | Smoothness of acceptance rule |\n"
-        f"| Observed sample | {n_observed:,} | Synthetic data generated once from the model |\n"
-        f"| Simulation draws | {n_simulated:,} | Common random numbers used in all three criteria |\n"
-        f"| MSM targets | {len(target_moments)} | Acceptance rate and offer-wage moments |\n"
-        f"| II targets | {len(target_aux)} | Auxiliary acceptance coefficients and moments |\n"
-        f"| ABC particles $N$ | {n_particles:,} | Particles maintained at each ABC-SMC round |\n"
-        f"| ABC rounds $T$ | {n_rounds} | Number of shrinking-tolerance rounds |\n"
-        f"| ABC quantile $\\alpha$ | {alpha_quantile:.2f} | Adaptive tolerance is the $\\alpha$-quantile of previous distances |\n"
-        f"| ABC prior $\\pi$ | $U(2.4, 3.6) \\times U(0.2, 0.8) \\times U(2.5, 3.8)$ | Uniform on $(\\mu, \\sigma, r)$ |"
-    )
-
-    report.add_solution_method(
-        "The three estimators share the simulator $S(\\theta, \\varepsilon)$ and the same fixed shocks $\\varepsilon_{sim}$. Common random numbers keep the criterion from changing because of fresh Monte Carlo noise. The three differ in what summary the simulator must reproduce and in whether the answer is a point or a distribution.\n\n"
-        "### Method 1: Method of Simulated Moments\n\n"
-        "Pick $\\theta$ so that the simulator reproduces the five economic moments. The criterion scales each residual by the magnitude of the matching observed moment, so each moment contributes on a comparable order. Nelder-Mead minimizes the scaled quadratic distance from a fixed starting point.\n\n"
-        "```text\n"
-        "Algorithm: MSM\n"
-        "Input : observed moments m_obs, simulator S(theta, eps), fixed shocks eps_sim\n"
-        "For each candidate theta:\n"
-        "  m_sim <- moments(S(theta, eps_sim))\n"
-        "  Q     <- sum_k ((m_sim_k - m_obs_k) / scale_k)^2\n"
-        "Return theta minimizing Q via Nelder-Mead.\n"
-        "```\n\n"
-        "Failure mode: identification depends on the moments. If they are not informative about a parameter the criterion has a flat direction and the optimizer wanders.\n\n"
-        "### Method 2: Indirect Inference\n\n"
-        "Pick $\\theta$ so that the simulator reproduces the fitted coefficients of an auxiliary regression of acceptance on log wages. The auxiliary regression is not the structural model; its coefficients are summary statistics. The slope captures threshold variation that pins down the reservation wage.\n\n"
-        "```text\n"
-        "Algorithm: Indirect Inference\n"
-        "Input : observed auxiliary stats b_obs, simulator S, fixed shocks eps_sim\n"
-        "For each candidate theta:\n"
-        "  b_sim <- aux_stats(S(theta, eps_sim))\n"
-        "  Q     <- sum_k ((b_sim_k - b_obs_k) / scale_k)^2\n"
-        "Return theta minimizing Q via Nelder-Mead.\n"
-        "```\n\n"
-        "Failure mode: a weak auxiliary model gives weak identification. Drop the linear-probability slope and the criterion flattens in the same direction MSM does when its moments miss the threshold.\n\n"
-        "### Method 3: Approximate Bayesian Computation (ABC-SMC)\n\n"
-        "Sample $\\theta$ from the prior, keep draws whose simulated moments are close to the observed moments, then iteratively tighten the closeness threshold and reweight the survivors. The output is a posterior over $\\theta$, not a single point. Tolerance shrinks adaptively as the $\\alpha$-quantile of the previous round's distances, with $\\alpha = 0.5$.\n\n"
-        "```text\n"
-        "Algorithm: ABC-SMC (adaptive tolerance schedule)\n"
-        "Input : observed moments m_obs, prior pi, simulator S, eps_sim,\n"
-        "        N particles, T rounds, quantile alpha\n"
-        "Round t = 0:\n"
-        "  Sample ceil(N / alpha) thetas from pi.\n"
-        "  Compute d_i = scaled_euclidean(moments(S(theta_i)), m_obs) for each.\n"
-        "  Keep the N smallest. Set epsilon_0 to the largest kept distance.\n"
-        "  Initialize weights w_0 uniform on the kept particles.\n"
-        "For round t = 1, ..., T - 1:\n"
-        "  Set epsilon_t to the alpha-quantile of distances at round t - 1.\n"
-        "  Compute Cov_t = 2 * weighted_covariance(round t - 1 particles).\n"
-        "  For i = 1, ..., N:\n"
-        "    Repeat:\n"
-        "      Sample parent index j proportional to w_{t-1}.\n"
-        "      Propose theta_i = parent_j + N(0, Cov_t); resample if outside prior box.\n"
-        "      d_i <- scaled_euclidean(moments(S(theta_i)), m_obs).\n"
-        "    Until d_i <= epsilon_t.\n"
-        "  Compute importance weights w_t^(i) (uniform-prior simplification).\n"
-        "  If effective sample size ESS_t < N / 2, multinomial-resample.\n"
-        "Output: weighted particles approximating the ABC posterior.\n"
-        "```\n\n"
-        "Failure mode: the perturbation covariance shrinks faster than the tolerance, so the kernel cannot reach the next level set. Acceptance rates collapse and the posterior degenerates onto a few particles. Diagnose by tracking ESS and per-round acceptance rate."
-    )
 
     fig1, axes = plt.subplots(1, 2, figsize=(11, 4.5), sharex=True, sharey=True)
     extent = [mu_grid.min(), mu_grid.max(), reservation_grid.min(), reservation_grid.max()]
@@ -667,16 +478,7 @@ Under the uniform prior $\pi$ is constant on the support, so the numerator drops
     axes[1].set_xlabel("Offer mean mu")
     axes[1].legend(loc="upper left")
     fig1.colorbar(im1, ax=axes[1], fraction=0.046)
-    report.add_results(
-        "The criterion surfaces show how each estimator trades off offer mean and "
-        "reservation wage. Both plots fix offer dispersion at its true value. The valley "
-        "tilts because a higher mean can offset a higher reservation wage."
-    )
-    report.add_figure(
-        "figures/criterion-surfaces.png",
-        "Criterion surfaces for MSM and indirect inference",
-        fig1,
-    )
+    save_figure(fig1, "figures/criterion-surfaces.png", dpi=150)
 
     observed_accept = observed["accept"]
     fig2, ax2 = plt.subplots(figsize=(7.5, 4.8))
@@ -691,17 +493,7 @@ Under the uniform prior $\pi$ is constant on the support, so the numerator drops
     ax2.set_ylabel("Density")
     ax2.set_title("Observed Search Data")
     ax2.legend()
-    report.add_results(
-        f"The observed acceptance rate is **{observed_accept.mean():.3f}**. Accepted "
-        "wages mostly come from the upper tail of offers. Stochastic choice leaves "
-        "overlap near the reservation wage. That overlap helps locate the latent "
-        "threshold."
-    )
-    report.add_figure(
-        "figures/search-data.png",
-        "Offer and accepted-wage distributions",
-        fig2,
-    )
+    save_figure(fig2, "figures/search-data.png", dpi=150)
 
     fig3, ax3 = plt.subplots(figsize=(7, 4.5))
     wage_grid = np.linspace(1.8, 4.4, 200)
@@ -717,16 +509,7 @@ Under the uniform prior $\pi$ is constant on the support, so the numerator drops
     ax3.set_ylabel("Acceptance probability")
     ax3.set_title("Recovered Acceptance Rule")
     ax3.legend()
-    report.add_results(
-        "All three estimators recover the acceptance curve closely. The small gaps reflect "
-        "the observed sample and finite simulation. They do not come from different "
-        "search models."
-    )
-    report.add_figure(
-        "figures/acceptance-rule.png",
-        "True and estimated acceptance probabilities",
-        fig3,
-    )
+    save_figure(fig3, "figures/acceptance-rule.png", dpi=150)
 
     final_particles = np.asarray(abc["particles"])[-1]
     final_weights = np.asarray(abc["weights"])[-1]
@@ -753,21 +536,7 @@ Under the uniform prior $\pi$ is constant on the support, so the numerator drops
             ax.legend(loc="upper left", fontsize=8)
     fig4.suptitle("ABC-SMC Posterior Marginals")
     fig4.tight_layout()
-    report.add_results(
-        "The ABC-SMC posterior summarizes how the five economic moments restrict each "
-        "parameter. The marginal for the reservation log wage is tightest because "
-        "acceptance variation near the threshold is highly informative. Offer mean is "
-        "next most informed; offer dispersion is least constrained by these moments and "
-        "shows the widest posterior. The MSM and indirect-inference point estimates sit "
-        "near the posterior modes in every panel, which is the visual statement that "
-        "all three methods are minimizing the same scaled distance under different "
-        "aggregation rules."
-    )
-    report.add_figure(
-        "figures/abc-posteriors.png",
-        "ABC-SMC posterior marginals with MSM and II point estimates overlaid",
-        fig4,
-    )
+    save_figure(fig4, "figures/abc-posteriors.png", dpi=150)
 
     abc_tolerances = np.asarray(abc["tolerances"])
     abc_accept = np.asarray(abc["accept_rates"])
@@ -787,74 +556,28 @@ Under the uniform prior $\pi$ is constant on the support, so the numerator drops
     ax5b.set_ylim(0, 1.05)
     ax5.set_title("ABC-SMC Tolerance Schedule")
     fig5.tight_layout()
-    report.add_results(
-        "Each round shrinks the tolerance and accepts a declining fraction of proposals "
-        "as the level sets tighten. The first transition is the cheapest because the "
-        "prior already overlaps the high-density region. Later rounds spend more "
-        "simulator calls per accepted particle because the perturbation kernel keeps "
-        "the same Beaumont 2009 scale while the posterior concentrates. Effective "
-        "sample size stays well above the resampling threshold, so weight degeneracy "
-        "is not the binding cost here."
-    )
-    report.add_figure(
-        "figures/abc-tolerance-schedule.png",
-        "Per-round ABC-SMC tolerance and acceptance rate",
-        fig5,
+    save_figure(fig5, "figures/abc-tolerance-schedule.png", dpi=150)
+
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    parameter_table(theta_true, msm, ii, abc).round(5).to_csv("tables/parameter-recovery.csv", index=False)
+
+    residual_table(
+        ["Acceptance rate", "Mean log wage", "SD log wage", "Mean accepted log wage", "SD accepted log wage"],
+        target_moments,
+        msm,
+        msm,
+    ).query("Estimator == 'MSM'").drop(columns=["Estimator"]).round(5).to_csv("tables/msm-residuals.csv", index=False)
+
+    residual_table(
+        ["LPM intercept", "LPM slope", "Mean log wage", "SD log wage", "Acceptance rate", "Mean accepted log wage"],
+        target_aux,
+        msm,
+        ii,
+    ).query("Estimator == 'Indirect inference'").drop(columns=["Estimator"]).round(5).to_csv(
+        "tables/indirect-inference-residuals.csv", index=False
     )
 
-    report.add_results(
-        "Parameter estimates and residuals give a compact diagnostic. MSM and indirect "
-        "inference return point estimates; ABC-SMC returns a posterior whose mean is "
-        "reported alongside a 90% credible interval. Small scaled residuals show that "
-        "each target vector is matched closely."
-    )
-
-    report.add_table(
-        "tables/parameter-recovery.csv",
-        "Known-truth parameter recovery",
-        parameter_table(theta_true, msm, ii, abc).round(5),
-    )
-
-    report.add_table(
-        "tables/msm-residuals.csv",
-        "MSM moment residuals",
-        residual_table(
-            ["Acceptance rate", "Mean log wage", "SD log wage", "Mean accepted log wage", "SD accepted log wage"],
-            target_moments,
-            msm,
-            msm,
-        ).query("Estimator == 'MSM'").drop(columns=["Estimator"]).round(5),
-    )
-
-    report.add_table(
-        "tables/indirect-inference-residuals.csv",
-        "Indirect-inference auxiliary residuals",
-        residual_table(
-            ["LPM intercept", "LPM slope", "Mean log wage", "SD log wage", "Acceptance rate", "Mean accepted log wage"],
-            target_aux,
-            msm,
-            ii,
-        ).query("Estimator == 'Indirect inference'").drop(columns=["Estimator"]).round(5),
-    )
-
-    report.add_results(
-        "The method-comparison table puts parameter recoveries, loss values, work, and "
-        "wall times on the same row. MSM and indirect inference report Nelder-Mead "
-        "iterations and the criterion value at the argmin. ABC-SMC reports the total "
-        "number of simulator calls across all rounds and the criterion evaluated "
-        "at the posterior mean. "
-        "The MSM and ABC criteria are directly comparable, because both sum squared "
-        "scaled residuals over the same 5 economic moments with the same scale vector. "
-        "The II criterion is not on the same scale: "
-        "II uses a different set of 6 auxiliary statistics with their own scale "
-        "denominators, so its value should not be read as a sharper fit than MSM or ABC."
-    )
-
-    report.add_table(
-        "tables/method-comparison.csv",
-        "Estimates, loss, work, and wall time across the three methods",
-        method_comparison_table(msm, ii, abc, times).round(5),
-    )
+    method_comparison_table(msm, ii, abc, times).round(5).to_csv("tables/method-comparison.csv", index=False)
 
     abc_summary = pd.DataFrame(
         {
@@ -866,42 +589,9 @@ Under the uniform prior $\pi$ is constant on the support, so the numerator drops
             "Mean distance": np.asarray(abc["distances"]).mean(axis=1),
         }
     ).round({"Tolerance": 5, "Acceptance rate": 4, "ESS": 2, "Mean distance": 5})
-    report.add_table(
-        "tables/abc-summary.csv",
-        "Per-round ABC-SMC diagnostics",
-        abc_summary,
-    )
+    abc_summary.to_csv("tables/abc-summary.csv", index=False)
 
-    report.add_takeaway(
-        "Simulation-based estimation is useful when the structural model is easier to "
-        "simulate than to evaluate by likelihood. MSM matches economic moments chosen "
-        "by the researcher. Indirect inference matches fitted statistics from an "
-        "auxiliary acceptance model. Approximate Bayesian computation samples from "
-        "level sets of the same scaled distance and reports the spread of acceptable "
-        "parameters, not just the argmin.\n\n"
-        "The three estimators are one family. All three pick a summary statistic, "
-        "simulate, evaluate the distance between simulated and observed summaries, and "
-        "search over $\\theta$. MSM and indirect inference return the point that "
-        "minimizes the distance. ABC samples from level sets of the same distance with "
-        "a tolerance that shrinks toward zero.\n\n"
-        "The split is not really frequentist versus Bayesian. ABC quantifies the "
-        "curvature of the criterion around its minimum, which is the question classical "
-        "standard errors answer with a Hessian approximation. When the simulator is "
-        "cheap and the prior is honest, ABC gives the most informative answer of the "
-        "three."
-    )
-
-    report.add_references(
-        [
-            "[McFadden, D. (1989). A Method of Simulated Moments for Estimation of Discrete Response Models Without Numerical Integration. *Econometrica*, 57(5), 995-1026.](https://doi.org/10.2307/1913621)",
-            "[Gourieroux, C., Monfort, A., and Renault, E. (1993). Indirect Inference. *Journal of Applied Econometrics*, 8(S1), S85-S118.](https://doi.org/10.1002/jae.3950080507)",
-            "[Sisson, S. A., Fan, Y., and Tanaka, M. M. (2007). Sequential Monte Carlo without likelihoods. *PNAS*, 104(6), 1760-1765.](https://doi.org/10.1073/pnas.0607208104)",
-            "[Beaumont, M. A., Cornuet, J.-M., Marin, J.-M., and Robert, C. P. (2009). Adaptive approximate Bayesian computation. *Biometrika*, 96(4), 983-990.](https://doi.org/10.1093/biomet/asp052)",
-            "[Toni, T., Welch, D., Strelkowa, N., Ipsen, A., and Stumpf, M. P. H. (2009). Approximate Bayesian computation scheme for parameter inference and model selection in dynamical systems. *Journal of the Royal Society Interface*, 6(31), 187-202.](https://doi.org/10.1098/rsif.2008.0172)",
-            "[Drovandi, C. C. and Pettitt, A. N. (2011). Estimation of parameters for macroparasite population evolution using approximate Bayesian computation. *Biometrics*, 67(1), 225-233.](https://doi.org/10.1111/j.1541-0420.2010.01410.x)",
-        ]
-    )
-    report.write("README.md")
+    save_thumbnail("figures/criterion-surfaces.png", "figures/thumb.png")
 
 
 if __name__ == "__main__":

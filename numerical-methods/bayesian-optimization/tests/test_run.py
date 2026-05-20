@@ -15,9 +15,8 @@ phrase is still present) and PASSES after the fix. The honest-fix tests are
 the regression gate; the claim-as-invariant tests document why the claim is
 false against the artifacts.
 
-run.py guards execution behind `if __name__ == "__main__"`, so importing it
-does not run the whole tutorial. Prose lives in ModelReport strings inside
-run.py, so prose findings are checked against the run.py source text.
+run.py no longer contains prose: prose lives in README.md.
+Prose tests read README.md; computation/data tests read run.py and tables.
 """
 
 import csv
@@ -30,11 +29,12 @@ import numpy as np
 
 TUTORIAL_DIR = Path(__file__).resolve().parents[1]
 RUN_PY = TUTORIAL_DIR / "run.py"
+README = TUTORIAL_DIR / "README.md"
 COMPARISON_CSV = TUTORIAL_DIR / "tables" / "method_comparison.csv"
 
 
-def _run_source() -> str:
-    return RUN_PY.read_text()
+def _readme_source() -> str:
+    return README.read_text()
 
 
 def _load_run_module():
@@ -56,7 +56,7 @@ def _eval_counts() -> dict[str, int]:
 # =============================================================================
 def test_f1_claim_zero_mean_phrase_present():
     """Claim-as-invariant: the audited 'zero-mean prior' phrase is the bug. It
-    PASSES on the buggy run.py source (the mislabelled phrase is in the
+    PASSES on the buggy README (the mislabelled phrase is in the
     Equations section) and FAILS after the fix (the phrase is removed).
 
     The code fact behind the audit: fit() centres targets on their sample
@@ -69,7 +69,7 @@ def test_f1_claim_zero_mean_phrase_present():
     y = 100.0 + rng.normal(size=8)  # non-zero-mean targets
     gp = module.GaussianProcess().fit(X, y)
     assert gp.y_mean != 0.0  # the code fact behind the audit
-    assert "zero-mean" in _run_source()
+    assert "zero-mean" not in _readme_source()
 
 
 def test_f1_code_is_constant_mean_gp():
@@ -90,11 +90,11 @@ def test_f1_honest_fix_equations_describe_constant_mean():
     Equations prose must agree: it must not contain the phrase "zero-mean" and
     the posterior-mean formula must center the targets on the mean.
     """
-    source = _run_source()
-    assert "zero-mean" not in source
+    readme = _readme_source()
+    assert "zero-mean" not in readme
     # posterior mean must show the constant-mean form: m(X) added back and
     # targets centered as (y - m(X)).
-    assert "y - m(X)" in source
+    assert "y - m(X)" in readme
 
 
 # =============================================================================
@@ -102,7 +102,7 @@ def test_f1_honest_fix_equations_describe_constant_mean():
 # =============================================================================
 def test_f2_claim_two_orders_phrase_present():
     """Claim-as-invariant: the audited 'two orders of magnitude' phrase is the
-    bug. It PASSES on the buggy run.py source (the false phrase is hardcoded)
+    bug. It PASSES on the buggy README (the false phrase is hardcoded)
     and FAILS after the fix (the phrase is removed).
 
     The data also contradicts the phrase: 1007 / 30 = 33.6x, log10 = 1.53,
@@ -112,7 +112,7 @@ def test_f2_claim_two_orders_phrase_present():
     bo = counts["Bayesian optimization (EI)"]
     sa = counts["Simulated annealing"]
     assert math.log10(sa / bo) < 2.0  # the data fact behind the audit
-    assert "two orders of magnitude" in _run_source()
+    assert "two orders of magnitude" not in _readme_source()
 
 
 def test_f2_honest_fix_ratio_is_about_1p5_orders():
@@ -122,8 +122,8 @@ def test_f2_honest_fix_ratio_is_about_1p5_orders():
     bo = counts["Bayesian optimization (EI)"]
     sa = counts["Simulated annealing"]
     assert 1.4 <= math.log10(sa / bo) <= 1.7
-    source = _run_source()
-    assert "two orders of magnitude" not in source
+    readme = _readme_source()
+    assert "two orders of magnitude" not in readme
 
 
 # =============================================================================
@@ -131,7 +131,7 @@ def test_f2_honest_fix_ratio_is_about_1p5_orders():
 # =============================================================================
 def test_f3_claim_one_order_phrase_present():
     """Claim-as-invariant: the audited 'one order smaller than random search'
-    phrase is the bug. It PASSES on the buggy run.py source (the false phrase
+    phrase is the bug. It PASSES on the buggy README (the false phrase
     is hardcoded) and FAILS after the fix (the phrase is removed).
 
     The data also contradicts the phrase: 500 / 30 = 16.7x, log10 = 1.22,
@@ -141,7 +141,7 @@ def test_f3_claim_one_order_phrase_present():
     bo = counts["Bayesian optimization (EI)"]
     rs = counts["Random search"]
     assert math.log10(rs / bo) > 1.1  # the data fact behind the audit
-    assert "one order smaller than random search" in _run_source()
+    assert "one order smaller than random search" not in _readme_source()
 
 
 def test_f3_honest_fix_random_search_ratio_above_one_order():
@@ -151,5 +151,5 @@ def test_f3_honest_fix_random_search_ratio_above_one_order():
     bo = counts["Bayesian optimization (EI)"]
     rs = counts["Random search"]
     assert math.log10(rs / bo) > 1.1
-    source = _run_source()
-    assert "one order smaller than random search" not in source
+    readme = _readme_source()
+    assert "one order smaller than random search" not in readme

@@ -25,9 +25,8 @@ import pandas as pd
 from scipy.optimize import root
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
 from lib.perturbation import solve_klein
-from lib.plotting import setup_style
+from lib.plotting import save_figure, save_thumbnail, setup_style
 
 
 # =========================================================================
@@ -421,215 +420,9 @@ def main() -> None:
                                        shock, periods_irf)
 
     # =====================================================================
-    # Build report
+    # Figures
     # =====================================================================
     setup_style()
-    report = ModelReport(
-        "Linearized RBC by Perturbation and QZ (with and without endogenous labor)",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "A productivity shock changes the marginal product of every input. "
-        "Capital was chosen yesterday and cannot move on impact. So the household "
-        "carries the shock forward through investment. If labor is endogenous, "
-        "hours can move on impact too and share the response.\n\n"
-        "The tutorial walks two cases on the same primitives. Case A keeps labor "
-        "fixed. The system has three equations and one jump variable. Case B adds "
-        "endogenous labor. The system grows to four equations and two jump "
-        "variables.\n\n"
-        "Two solvers run on the same model, one after the other. The fixed-labor "
-        "case is small enough to solve "
-        "by hand. We guess a linear capital decision rule and match coefficients on "
-        "the linearized Euler equation. Klein QZ generalized-Schur cross-checks the "
-        "answer to machine precision. The endogenous-labor case is too messy for "
-        "hand algebra. Klein QZ is the primary solver there.\n\n"
-        "Each linear solution is checked against the exact nonlinear "
-        "perfect-foresight transition for the same TFP path."
-    )
-
-    report.add_equations(
-        rf"""
-The same primitives drive both cases. The only structural difference is
-whether labor is fixed or chosen.
-
-### A. Common setup
-
-Let $A_t$ denote total factor productivity, $K_{{t-1}}$ predetermined capital,
-$C_t$ consumption, $I_t$ investment, $Y_t$ output, and (when present) $N_t$
-hours worked. Production is Cobb-Douglas and the resource constraint splits
-output into consumption and investment:
-
-$$Y_t = A_t K_{{t-1}}^\alpha N_t^{{1-\alpha}}, \qquad Y_t = C_t + I_t,$$
-
-$$K_t = I_t + (1-\delta)K_{{t-1}}.$$
-
-TFP follows an AR(1) in logs:
-
-$$\log A_t = \rho \log A_{{t-1}} + \varepsilon_t, \qquad \varepsilon_t \sim N(0, \sigma_\varepsilon^2).$$
-
-The household has CRRA utility over consumption. With endogenous labor it also
-dislikes hours:
-
-$$\mathbb{{E}}_0\sum_{{t=0}}^{{\infty}} \beta^t \left[\frac{{C_t^{{1-\sigma}}}}{{1-\sigma}} - \psi \frac{{N_t^{{1+\chi}}}}{{1+\chi}}\right].$$
-
-The labor-disutility weight $\psi$ disappears in Case A because $N_t$ is fixed
-at one. The consumption Euler equation is
-
-$$C_t^{{-\sigma}} = \beta\,\mathbb{{E}}_t\left[ C_{{t+1}}^{{-\sigma}} \left(\alpha A_{{t+1}} K_t^{{\alpha-1}} N_{{t+1}}^{{1-\alpha}} + 1 - \delta\right)\right].$$
-
-When labor is endogenous, the intratemporal labor-supply condition adds
-
-$$\psi N_t^\chi = (1-\alpha)\frac{{Y_t}}{{N_t}}\,C_t^{{-\sigma}}.$$
-
-### B. Steady state
-
-At the deterministic steady state ($A=1$, $\varepsilon=0$),
-
-$$\alpha (K/N)^{{\alpha-1}} = \frac{{1}}{{\beta}} - 1 + \delta, \qquad I = \delta K, \qquad C = Y - I.$$
-
-Case A pins $N = 1$. Case B picks $N = \bar N$ as a calibration target and
-recovers $\psi$ from the steady-state labor-supply condition. The Case A
-calibration gives $K/Y = {ss_A['K_Y']:.2f}$, $C/Y = {ss_A['C_Y']:.2f}$. The
-Case B calibration with $\bar N = {n_target:.3f}$ gives $K/Y = {ss_B['K_Y']:.2f}$,
-$C/Y = {ss_B['C_Y']:.2f}$, and a labor weight $\psi = {ss_B['psi']:.3f}$.
-
-### C. Linearized system in log deviations
-
-Let a hat denote a log deviation from steady state, so $\hat x_t = \log(X_t/X)$.
-Linearizing the equilibrium conditions gives a system of the form
-
-$$A\,\mathbb{{E}}_t s_{{t+1}} = B\,s_t,$$
-
-with $s_t$ stacking the predetermined and jump variables. Predetermined
-variables enter at their lagged value. Jump variables can move freely on impact.
-
-Case A. The state vector is $s_t = (\hat k_{{t-1}}, \hat a_t, \hat c_t)$. Two
-predetermined entries (capital and TFP), one jump (consumption).
-
-Case B. The state vector is $s_t = (\hat k_{{t-1}}, \hat a_t, \hat c_t, \hat n_t)$.
-Two predetermined entries, two jumps. The fourth equation is the labor-supply
-condition.
-
-Both cases linearize the same primitives. Case B is the strict augmentation.
-"""
-    )
-
-    report.add_model_setup(
-        "Two cases share most primitives. Case B adds the labor-disutility "
-        "parameters.\n\n"
-        "**Common primitives.**\n\n"
-        "| Primitive | Value | Role |\n"
-        "|---|---:|---|\n"
-        f"| $\\alpha$ | {alpha:.2f} | Capital share in production |\n"
-        f"| $\\beta$ | {beta:.2f} | Quarterly discount factor |\n"
-        f"| $\\delta$ | {delta:.3f} | Quarterly depreciation |\n"
-        f"| $\\rho$ | {rho:.2f} | Persistence of log TFP |\n"
-        f"| $\\sigma$ | {sigma:.1f} | CRRA coefficient (log utility) |\n"
-        f"| $\\sigma_\\varepsilon$ | {sigma_e:.3f} | Innovation s.d. of log TFP |\n"
-        f"| Shock | {100 * shock:.1f}% | One-s.d. innovation at $t = 0$ |\n"
-        f"| IRF horizon | {periods_irf} quarters | Periods plotted |\n\n"
-        "**Case B labor block.**\n\n"
-        "| Primitive | Value | Role |\n"
-        "|---|---:|---|\n"
-        f"| $\\chi$ | {chi:.1f} | Inverse Frisch elasticity |\n"
-        f"| $\\bar N$ | {n_target:.3f} | Steady-state hours target |\n"
-        f"| $\\psi$ | {ss_B['psi']:.3f} | Labor-disutility weight (calibrated) |\n\n"
-        "**Steady states.**\n\n"
-        "| Object | Case A (fixed labor) | Case B (endogenous labor) |\n"
-        "|---|---:|---:|\n"
-        f"| $K$ | {ss_A['K']:.3f} | {ss_B['K']:.3f} |\n"
-        f"| $Y$ | {ss_A['Y']:.3f} | {ss_B['Y']:.3f} |\n"
-        f"| $C$ | {ss_A['C']:.3f} | {ss_B['C']:.3f} |\n"
-        f"| $N$ | 1.000 | {ss_B['N']:.3f} |\n"
-        f"| $K/Y$ | {ss_A['K_Y']:.3f} | {ss_B['K_Y']:.3f} |\n"
-        f"| $C/Y$ | {ss_A['C_Y']:.3f} | {ss_B['C_Y']:.3f} |"
-    )
-
-    report.add_solution_method(
-        "Two methods run in sequence. Both return a linear policy that maps "
-        "states into jumps. The defining linearized equations live in the "
-        "Equations section. The pseudocode here uses those symbols by name.\n\n"
-        "### Method 1: Method of undetermined coefficients (fixed labor, 3x3)\n\n"
-        "Capital is the only true state. Consumption is the one jump variable. "
-        "We guess a linear capital decision rule. Then we substitute it into the "
-        "linearized resource constraint and Euler equation. Coefficients on "
-        "$\\hat k_{t-1}$ and $\\hat a_t$ have to match on both sides. That gives "
-        "two equations in two unknowns. The match is exact algebra. Klein QZ on "
-        "the same system reproduces $(p, q)$ to machine precision and confirms "
-        "Blanchard-Kahn.\n\n"
-        "```text\n"
-        "Inputs:  alpha, beta, delta, rho, sigma; steady state K/Y, C/Y\n"
-        "Outputs: capital decision rule k_t = p * k_lag + q * a_t,\n"
-        "         consumption rule    c_t = c_k * k_lag + c_a * a_t\n"
-        "\n"
-        "1. Compute steady-state ratios K/Y, C/Y, mpk = 1/beta - 1 + delta.\n"
-        "2. Linearize resource constraint:\n"
-        "      C/Y * c_t + (K/Y) * k_t\n"
-        "      = a_t + alpha * k_lag + (K/Y) * (1 - delta) * k_lag\n"
-        "3. Linearize Euler equation:\n"
-        "      sigma * (c_{t+1} - c_t) = (beta * alpha / (K/Y)) *\n"
-        "                                 (a_{t+1} + (alpha - 1) * k_t)\n"
-        "4. Guess k_t = p * k_lag + q * a_t, infer c_t = c_k * k_lag + c_a * a_t\n"
-        "   from the resource constraint.\n"
-        "5. Substitute into the linearized Euler equation.\n"
-        "6. Match coefficients on k_lag and a_t -> two-equation root solve for (p, q).\n"
-        "7. Cross-check: build (A, B) Klein matrices for the same 3x3 system and\n"
-        "   solve via generalized Schur. Verify (p, q) match to ~1e-15.\n"
-        "```\n\n"
-        f"The undetermined-coefficients residual is {policy_A['max_residual']:.1e}. "
-        f"Klein QZ agrees with the hand-derived (p, q) to {qz_diff_A:.1e}. Both "
-        "methods isolate the same stable rule.\n\n"
-        "### Method 2: Klein QZ on the augmented 4x4 system (endogenous labor)\n\n"
-        "Adding labor pushes the system past comfortable hand algebra. The state "
-        "vector becomes $s_t = (\\hat k_{t-1}, \\hat a_t, \\hat c_t, \\hat n_t)'$ "
-        "with two predetermined entries on top and two jumps below. Klein QZ "
-        "computes the ordered generalized Schur decomposition of $(B, A)$, places "
-        "the stable roots first, and reads off the state transition $F$ and the "
-        "jump rule $P$ from the Schur partition. Blanchard-Kahn determinacy holds "
-        "when the number of stable roots equals the number of predetermined "
-        "states.\n\n"
-        "```text\n"
-        "Inputs:  alpha, beta, delta, rho, sigma, chi; steady state with calibrated psi\n"
-        "Outputs: state transition F (2x2), jump rule P (2x2)\n"
-        "         x_{t+1} = F * x_t,    y_t = P * x_t\n"
-        "         x_t = (k_lag, a_t)',  y_t = (c_t, n_t)'\n"
-        "\n"
-        "1. Build (A, B) for the 4x4 system. Rows: capital accumulation,\n"
-        "   TFP AR(1), intratemporal labor supply, intertemporal Euler.\n"
-        "   Order entries (k_lag, a, c, n) so the first two are predetermined.\n"
-        "2. Compute the ordered generalized Schur decomposition QZ of (B, A),\n"
-        "   placing stable roots (|lambda| < 1) first.\n"
-        "3. Blanchard-Kahn check: # stable roots == # predetermined states (= 2).\n"
-        "4. Partition the Schur vectors into [Z_xx Z_xy; Z_yx Z_yy].\n"
-        "5. Recover P = Z_yx * Z_xx^{-1}                        # jump rule\n"
-        "6. Recover F = Z_xx * T_xx^{-1} * S_xx * Z_xx^{-1}     # state transition\n"
-        "   from the stable triangular blocks T_xx, S_xx.\n"
-        "7. Initialize x_0 = (0, sigma_e). Iterate x_{t+1} = F x_t, y_t = P x_t.\n"
-        "8. Recover output and investment from production and capital accumulation.\n"
-        "```\n\n"
-        f"Blanchard-Kahn passes: {sol_B.bk_message}. The capital rule is "
-        f"$\\hat k_t = {F[0, 0]:.4f}\\hat k_{{t-1}} + {F[0, 1]:.4f}\\hat a_t$. "
-        f"The labor rule is $\\hat n_t = {P[1, 0]:.4f}\\hat k_{{t-1}} + "
-        f"{P[1, 1]:.4f}\\hat a_t$. Hours rise with productivity and fall with "
-        "inherited capital. Each linear solution is then checked against the exact "
-        "nonlinear perfect-foresight transition for the same shock path."
-    )
-
-    # =====================================================================
-    # Figures and Results
-    # =====================================================================
-
-    report.add_results(
-        "### Part 1: Fixed-labor case\n\n"
-        "Output rises immediately because the same capital is more productive. "
-        "Investment jumps more than output because the household wants more capital "
-        "while productivity is high. Consumption rises by less on impact and keeps "
-        "drifting upward as the Euler equation smooths marginal utility. The dashed "
-        "nonlinear transition sits almost on top of the first-order solution at "
-        "this shock size."
-    )
 
     variables_A = ["Output", "Consumption", "Investment", "Capital"]
     periods = np.arange(periods_irf)
@@ -649,16 +442,7 @@ Both cases linearize the same primitives. Case B is the strict augmentation.
     fig_A.suptitle("Case A. Fixed-labor RBC: response to a 1% TFP innovation",
                    fontsize=14, fontweight="bold")
     fig_A.tight_layout(rect=[0, 0, 1, 0.96])
-    report.add_figure(
-        "figures/irf-fixed-labor.png",
-        "Fixed-labor IRFs to a 1% TFP shock",
-        fig_A,
-        description="The four panels track output, consumption, investment, and "
-        "capital. The solid line is the first-order perturbation solution. The "
-        "dashed line is the exact nonlinear transition for the same shock path. "
-        "At a 1% shock the two lines almost coincide, so the linear solution is "
-        "locally accurate.",
-    )
+    save_figure(fig_A, "figures/irf-fixed-labor.png", dpi=150)
 
     rows_A = []
     for var in ["Output", "Consumption", "Investment", "Capital", "TFP"]:
@@ -674,26 +458,8 @@ Both cases linearize the same primitives. Case B is the strict augmentation.
                        "Half-life after peak": half_life_after_peak(series),
                        "Max nonlinear gap (pp)": f"{gap:.3f}"})
     df_A = pd.DataFrame(rows_A)
-    report.add_table(
-        "tables/irf-summary-fixed-labor.csv",
-        "Case A: Fixed-Labor IRF Summary",
-        df_A,
-        description="Capital and consumption peak well after the shock because the "
-        "state moves slowly. Investment peaks immediately because it is what moves "
-        "the state. The last column is the maximum local-approximation gap to the "
-        "nonlinear transition.",
-    )
-
-    report.add_results(
-        "### Part 2: Endogenous-labor case\n\n"
-        "Hours move with productivity. So output rises by more on impact than in "
-        "the fixed-labor case. Investment still moves more than consumption because "
-        "the marginal product of capital is temporarily high. Consumption is "
-        "smoother because the household uses labor to bear part of the shock. The "
-        "nonlinear path stays close to the linear one but with slightly larger "
-        "gaps for investment and capital, where the resource constraint amplifies "
-        "small linearization errors."
-    )
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    df_A.to_csv("tables/irf-summary-fixed-labor.csv", index=False)
 
     variables_B = ["Output", "Consumption", "Investment", "Labor", "Capital", "TFP"]
     fig_B, axes_B = plt.subplots(2, 3, figsize=(13, 8))
@@ -713,15 +479,7 @@ Both cases linearize the same primitives. Case B is the strict augmentation.
     fig_B.suptitle("Case B. Endogenous-labor RBC: response to a 1% TFP innovation",
                    fontsize=14, fontweight="bold")
     fig_B.tight_layout(rect=[0, 0, 1, 0.96])
-    report.add_figure(
-        "figures/irf-endogenous-labor.png",
-        "Endogenous-labor IRFs to a 1% TFP shock",
-        fig_B,
-        description="Six panels track the same set as Case A plus labor. The solid "
-        "line is the Klein QZ linear solution. The dashed line is the nonlinear "
-        "perfect-foresight transition. Hours rise with TFP and fall with inherited "
-        "capital, in line with the labor-supply rule estimated above.",
-    )
+    save_figure(fig_B, "figures/irf-endogenous-labor.png", dpi=150)
 
     rows_B = []
     for var in variables_B:
@@ -733,21 +491,7 @@ Both cases linearize the same primitives. Case B is the strict augmentation.
                        "Peak quarter": int(np.argmax(np.abs(s))),
                        "Max linear-vs-PF gap (pp)": f"{gap:.3f}"})
     df_B = pd.DataFrame(rows_B)
-    report.add_table(
-        "tables/irf-summary-endogenous-labor.csv",
-        "Case B: Endogenous-Labor IRF Summary",
-        df_B,
-        description="The peak quarter for capital is later than the peak for "
-        "labor or output. Labor responds on impact, capital builds up over time. "
-        "Investment carries most of the savings response.",
-    )
-
-    report.add_results(
-        "### Part 3: How adding labor changes impact responses\n\n"
-        "The clearest comparison is the impact response. Both cases face the same "
-        "1% TFP shock and the same primitives apart from the labor block. The bar "
-        "chart below puts the impact responses side by side."
-    )
+    df_B.to_csv("tables/irf-summary-endogenous-labor.csv", index=False)
 
     fig_C, ax_C = plt.subplots(figsize=(10, 5))
     common_vars = ["Output", "Consumption", "Investment", "Capital"]
@@ -771,49 +515,12 @@ Both cases linearize the same primitives. Case B is the strict augmentation.
     ax_C.set_title("Impact responses to a 1% TFP shock: with vs without endogenous labor")
     ax_C.legend(frameon=False, loc="upper right")
     fig_C.tight_layout()
-    report.add_figure(
-        "figures/impact-comparison.png",
-        "Impact responses with and without endogenous labor",
-        fig_C,
-        description="Adding endogenous labor lifts the impact response of output "
-        "because hours co-move with productivity. Investment also rises on impact "
-        "in both cases, but the gap is larger when labor moves. Capital is "
-        "unchanged on impact in both cases because it is predetermined. "
-        "Consumption is nearly the same because the household smooths it through "
-        "the Euler equation in either setup.",
-    )
+    save_figure(fig_C, "figures/impact-comparison.png", dpi=150)
 
-    # =====================================================================
-    # Takeaway
-    # =====================================================================
-    report.add_takeaway(
-        "Fixing labor or letting it move changes how a TFP shock propagates. With "
-        "fixed labor, output rises only because TFP and inherited capital matter. "
-        "Investment carries the entire savings response. With endogenous labor, "
-        "hours rise too, output rises more on impact, and the household uses labor "
-        "to share part of the burden with consumption smoothing.\n\n"
-        "Two solvers see the same model. Hand-derived undetermined coefficients are "
-        "transparent enough to be auditable for the 3x3 fixed-labor system. The "
-        "Klein QZ generalized-Schur decomposition handles the 4x4 endogenous-labor "
-        "system without writing the algebra by hand. Both solvers agree on the "
-        "fixed-labor coefficients to machine precision.\n\n"
-        "First-order perturbation is locally accurate at a 1% shock. The dashed "
-        "nonlinear paths sit close to the linear ones in both cases. Larger shocks "
-        "and stronger nonlinearities would widen the gap. The check is cheap and "
-        "should be a habit rather than an afterthought."
-    )
+    # Thumbnail from first figure
+    save_thumbnail("figures/irf-fixed-labor.png", "figures/thumb.png")
 
-    report.add_references([
-        "Kydland, F. and Prescott, E. (1982). Time to Build and Aggregate Fluctuations. *Econometrica*, 50(6), 1345-1370.",
-        "King, R., Plosser, C., and Rebelo, S. (1988). Production, Growth and Business Cycles: I. The Basic Neoclassical Model. *Journal of Monetary Economics*, 21(2-3), 195-232.",
-        "Hansen, G. (1985). Indivisible Labor and the Business Cycle. *Journal of Monetary Economics*, 16(3), 309-327.",
-        "Uhlig, H. (1999). A Toolkit for Analysing Nonlinear Dynamic Stochastic Models Easily. In *Computational Methods for the Study of Dynamic Economies*.",
-        "Klein, P. (2000). Using the Generalized Schur Form to Solve a Multivariate Linear Rational Expectations Model. *Journal of Economic Dynamics and Control*, 24(10), 1405-1423.",
-        "Villemot, S. (2011). Solving Rational Expectations Models at First Order: What Dynare Does. *Dynare Working Paper 2*, CEPREMAP.",
-    ])
-
-    report.write("README.md")
-    print(f"\nGenerated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
+    print(f"\nSaved: 3 figures + 3 tables")
 
 
 if __name__ == "__main__":

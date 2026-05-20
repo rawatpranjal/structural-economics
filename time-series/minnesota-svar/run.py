@@ -12,8 +12,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import save_figure, save_thumbnail, setup_style
 
 
 VARIABLES = ["Output gap", "Inflation", "Policy rate"]
@@ -490,213 +489,6 @@ def main() -> None:
     irf_table = pd.DataFrame(irf_records)
 
     setup_style()
-    report = ModelReport(
-        "Monetary Policy SVARs with Minnesota Priors",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "A quarterly macro VAR tries to summarize the joint dynamics of output, "
-        "inflation, and the policy rate. The object of interest is a monetary "
-        "policy shock: an unexpected policy tightening after current output and "
-        "inflation have been accounted for.\n\n"
-        "The problem is that even a small VAR can be noisy in a short macro sample. "
-        "Four lags of three variables already give each equation thirteen "
-        "coefficients including the intercept. Unrestricted OLS can fit accidental "
-        "lag patterns and then produce unstable forecasts or impulse responses.\n\n"
-        "The economic object is still a reduced-form forecasting system plus an identifying "
-        "assumption for shocks. Shrinkage regularizes the reduced form; the recursive SVAR "
-        "ordering is a separate step that gives one residual innovation a monetary-policy "
-        "interpretation.\n\n"
-        "The Minnesota prior is ridge-like shrinkage for dynamic systems. It puts "
-        "prior mass on persistent own first lags, pulls most other coefficients "
-        "toward zero, and tightens the prior for cross-variable and distant-lag "
-        "effects. The shrinkage is soft, so the data can still move coefficients "
-        "away from the prior when the sample is informative."
-    )
-
-    report.add_equations(
-        r"""
-Let $y_t=(x_t,\pi_t,i_t)'$ collect the output gap, inflation, and the policy
-rate. The reduced-form VAR is
-
-$$
-y_t = c + A_1 y_{t-1} + A_2 y_{t-2} + \cdots + A_p y_{t-p} + u_t,
-\qquad u_t \sim N(0,\Sigma_u).
-$$
-
-Stack the observations equation by equation. Let $X$ contain an intercept and
-the $p$ lagged values of $y_t$. For equation $i$,
-
-$$
-y_i = X\beta_i + e_i,
-\qquad
-e_i \sim N(0,\sigma_i^2 I_T).
-$$
-
-Conditional on the residual scale $\sigma_i^2$, the Gaussian likelihood is
-
-$$
-p(y_i \mid \beta_i,\sigma_i^2)
-\propto
-\exp\left[-\frac{1}{2\sigma_i^2}(y_i-X\beta_i)'(y_i-X\beta_i)
-\right].
-$$
-
-The Minnesota prior is Gaussian:
-
-$$
-\beta_i \sim N(b_i^0,V_i^0).
-$$
-
-For variable $j$ and lag $\ell$, the prior mean is persistent only for the own
-first lag:
-
-$$
-b_{i,j,\ell}^0 =
-\begin{cases}
-\rho_0, & i=j \ \mathrm{and}\ \ell=1,\\
-0, & \mathrm{otherwise}.
-\end{cases}
-$$
-
-The prior variance is larger for own lags and smaller for cross lags and distant
-lags:
-
-$$
-v_{i,j,\ell} =
-\left(\frac{\lambda}{\ell^d}\right)^2
-\left(\frac{\sigma_i}{\sigma_j}\right)^2
-\theta_{ij}^2,
-\qquad
-\theta_{ij}=1 \ \mathrm{for}\ i=j,\quad
-\theta_{ij}=\theta \ \mathrm{for}\ i\ne j.
-$$
-
-Here $\lambda$ is the overall tightness, $d$ is the lag-decay exponent, and $\theta$ is the base cross-variable tightness.
-
-This tutorial plugs in $\hat\sigma_i^2$ from OLS residuals. Conditional on that
-plug-in scale, conjugacy gives a Gaussian posterior:
-
-$$
-V_i^{-1} =
-\frac{X'X}{\hat\sigma_i^2} + (V_i^0)^{-1}.
-$$
-
-$$
-b_i =
-V_i\left(
-\frac{X'y_i}{\hat\sigma_i^2} + (V_i^0)^{-1}b_i^0
-\right).
-$$
-
-Coefficient uncertainty comes from the posterior covariance:
-
-$$
-\mathrm{sd}(\beta_{im}\mid y_i) =
-\sqrt{(V_i)_{mm}},
-\qquad
-\beta_{im}\approx b_{im}\pm 1.96\sqrt{(V_i)_{mm}}.
-$$
-
-Recursive SVAR identification factors the BVAR reduced-form covariance as
-
-$$
-\Sigma_u = PP',
-\qquad
-u_t=P\varepsilon_t,\qquad
-E[\varepsilon_t\varepsilon_t']=I.
-$$
-
-This factorization is not unique. A recursive SVAR chooses the lower-triangular
-Cholesky factor $P$ after fixing an ordering. With ordering output gap,
-inflation, policy rate,
-
-$$
-\begin{bmatrix}
-u_{y,t}\\
-u_{\pi,t}\\
-u_{i,t}
-\end{bmatrix} =
-\begin{bmatrix}
-p_{11} & 0 & 0\\
-p_{21} & p_{22} & 0\\
-p_{31} & p_{32} & p_{33}
-\end{bmatrix}
-\begin{bmatrix}
-\varepsilon_{y,t}\\
-\varepsilon_{\pi,t}\\
-\varepsilon_{i,t}
-\end{bmatrix}.
-$$
-
-The policy shock is the third structural innovation. It has zero impact effect
-on output and inflation because the third column of $P$ is zero in those rows.
-It can still affect output and inflation after one or more quarters through the
-lag matrices. The policy rate can react on impact to output and inflation shocks
-through $p_{31}$ and $p_{32}$.
-
-The plotted shock is scaled to move the policy rate by $\tau=0.25$ on impact:
-
-$$
-q =
-\tau \frac{P e_3}{e_3'P e_3}.
-$$
-
-Impulse responses then propagate the scaled impact vector through the posterior
-mean VAR dynamics:
-
-$$
-\psi_0=q,
-\qquad
-\psi_h=A_1\psi_{h-1}+A_2\psi_{h-2}+\cdots+A_p\psi_{h-p}.
-$$
-"""
-    )
-
-    report.add_model_setup(
-        "| Object | Value | Role |\n"
-        "|---|---:|---|\n"
-        f"| Variables | {len(VARIABLES)} | Output gap, inflation, and policy rate |\n"
-        f"| Simulated quarters | {periods} | Short macro panel after burn-in |\n"
-        f"| VAR lag order $p$ | {lag_order} | Quarterly dynamics with one year of lags |\n"
-        f"| Training observations | {train_obs} | Sample used to estimate each VAR |\n"
-        f"| Test observations | {len(y_test)} | Held-out quarters for one-step forecasts |\n"
-        f"| Coefficients per equation | {x_train.shape[1]} | Intercept plus lagged variables |\n"
-        f"| Structural ordering | y, pi, i | Policy shock ordered last |\n"
-        f"| Policy shock scale | {target_policy_impact:.2f} | Impact rise in the policy rate |"
-    )
-
-    report.add_solution_method(
-        "The tutorial estimates the same reduced-form VAR in two ways. OLS treats "
-        "all lag coefficients as free. The Minnesota BVAR treats the OLS residual "
-        "scales as fixed, then computes the Gaussian posterior for each equation. "
-        "That makes this an empirical-Bayes shrinkage estimator: posterior means "
-        "and posterior covariance matrices are available without running an MCMC "
-        "sampler.\n\n"
-        "There are two stages. First, estimate stable reduced-form dynamics with the "
-        "Minnesota prior. Second, take the reduced-form residual covariance and impose "
-        "a Cholesky ordering to name the policy shock. The prior controls coefficient "
-        "noise; the ordering controls the shock interpretation.\n\n"
-        "```text\n"
-        "Procedure: Minnesota-prior monetary policy SVAR\n"
-        "Inputs: quarterly series y_t, lag order p, prior hyperparameters\n"
-        "Output: posterior coefficients, forecasts, and policy-shock impulse responses\n\n"
-        "1. Build X from an intercept and p lags of output, inflation, and the rate.\n"
-        "2. Fit the unrestricted OLS VAR and estimate residual scales sigma_i.\n"
-        "3. Construct the Minnesota prior mean b_i^0 and diagonal covariance V_i^0.\n"
-        "4. For each equation i:\n"
-        "   precision_i <- X'X / sigma_i^2 + inv(V_i^0)\n"
-        "   covariance_i <- inv(precision_i)\n"
-        "   mean_i <- covariance_i * (X'y_i / sigma_i^2 + inv(V_i^0) b_i^0)\n"
-        "5. Report selected posterior means and 1.96 posterior-sd intervals.\n"
-        "6. Estimate the BVAR residual covariance and take its Cholesky factor P.\n"
-        "7. Pick the third structural shock because policy is ordered last.\n"
-        "8. Scale that shock to raise the policy rate by 25 bp on impact.\n"
-        "9. Use posterior mean VAR coefficients to propagate the impulse responses.\n"
-        "```"
-    )
 
     quarters = np.arange(periods)
     train_boundary = lag_order + train_obs
@@ -710,16 +502,7 @@ $$
             ax.set_title("Simulated quarterly macro panel")
     axes1[-1].set_xlabel("Quarter")
     fig1.tight_layout()
-    report.add_figure(
-        "figures/simulated-macro-series.png",
-        "Simulated output, inflation, and policy-rate series",
-        fig1,
-        description=(
-            "The shaded region is the held-out forecast block. The data are "
-            "stationary deviations from a macro steady state, so the policy rate "
-            "should be read as a rate gap rather than a literal nominal level."
-        ),
-    )
+    save_figure(fig1, "figures/simulated-macro-series.png", dpi=150)
 
     fig2, axes2 = plt.subplots(3, 1, figsize=(11, 8), sharex=True)
     for idx, ax in enumerate(axes2):
@@ -752,17 +535,7 @@ $$
             ax.legend(loc="upper right", fontsize=8)
     axes2[-1].set_xlabel("Quarter")
     fig2.tight_layout()
-    report.add_figure(
-        "figures/forecast-comparison.png",
-        "OLS VAR and Minnesota BVAR one-step forecasts",
-        fig2,
-        description=(
-            f"The Minnesota BVAR has an overall test RMSE of {overall_bvar_rmse:.3f}, "
-            f"compared with {overall_ols_rmse:.3f} for the unrestricted OLS VAR. "
-            "The gain comes from accepting small bias in exchange for lower "
-            "coefficient variance."
-        ),
-    )
+    save_figure(fig2, "figures/forecast-comparison.png", dpi=150)
 
     horizons = np.arange(horizon + 1)
     fig3, axes3 = plt.subplots(1, 3, figsize=(13, 4), sharex=True)
@@ -790,21 +563,7 @@ $$
             ax.legend(fontsize=8)
     fig3.suptitle("Responses to a 25 bp policy tightening", y=1.03)
     fig3.tight_layout()
-    output_trough = float(np.min(bvar_irf[:, 0]))
-    inflation_trough = float(np.min(bvar_irf[:, 1]))
-    report.add_figure(
-        "figures/policy-shock-irfs.png",
-        "Impulse responses to a recursively identified policy-rate shock",
-        fig3,
-        description=(
-            "The policy shock is ordered last, so output and inflation do not "
-            "jump on impact. That zero-impact pattern is the recursive identifying "
-            "restriction, not a coefficient estimate. The BVAR response is smoother "
-            "than the OLS response. "
-            f"In this run, output reaches {output_trough:.3f} and inflation reaches "
-            f"{inflation_trough:.3f} after the tightening."
-        ),
-    )
+    save_figure(fig3, "figures/policy-shock-irfs.png", dpi=150)
 
     prior_sd, coef_labels = build_prior_heatmap_data(
         bvar["prior_var"],
@@ -821,16 +580,7 @@ $$
     colorbar = fig4.colorbar(image, ax=ax4, fraction=0.035, pad=0.02)
     colorbar.set_label("Prior sd")
     fig4.tight_layout()
-    report.add_figure(
-        "figures/minnesota-prior-heatmap.png",
-        "Prior standard deviations by equation and lagged regressor",
-        fig4,
-        description=(
-            "The heatmap shows the prior before seeing the VAR coefficients. Own "
-            "first lags have the loosest priors. Cross-variable lags and later "
-            "lags are pulled more tightly toward zero."
-        ),
-    )
+    save_figure(fig4, "figures/minnesota-prior-heatmap.png", dpi=150)
 
     coef_positions = np.arange(len(coefficient_plot_data))
     prior_means = coefficient_plot_data["Prior mean"].to_numpy()
@@ -868,103 +618,19 @@ $$
     ax5.set_title("Selected coefficient posteriors")
     ax5.legend(loc="lower right", fontsize=8)
     fig5.tight_layout()
-    report.add_figure(
-        "figures/coefficient-posteriors.png",
-        "Prior means, posterior means, and approximate intervals for selected coefficients",
-        fig5,
-        description=(
-            "The coefficient posterior plot shows where the data move important "
-            "VAR slopes relative to the Minnesota prior. The intervals condition "
-            "on the OLS plug-in residual scales, so they are empirical-Bayes "
-            "coefficient intervals rather than full posterior draws over all "
-            "hyperparameters."
-        ),
-    )
+    save_figure(fig5, "figures/coefficient-posteriors.png", dpi=150)
 
-    report.add_table(
-        "tables/forecast-rmse.csv",
-        "Forecast RMSE comparison",
-        forecast_table,
-        description=(
-            "The RMSE table reports one-step forecast errors on quarters not used "
-            "for estimation. Values below one in the ratio column favor the "
-            "Minnesota BVAR."
-        ),
-    )
-    report.add_table(
-        "tables/stability-metrics.csv",
-        "Companion-matrix stability and shrinkage metrics",
-        stability_table,
-        description=(
-            "The stability radius is the spectral radius of the VAR companion "
-            "matrix; values below one imply a stationary system. The shrinkage "
-            "ratio compares the lag-coefficient norm of the Minnesota BVAR with "
-            "that of the OLS VAR. These are the metrics quoted in the Takeaway."
-        ),
-    )
-    report.add_table(
-        "tables/prior-hyperparameters.csv",
-        "Minnesota prior hyperparameters",
-        hyper_table,
-        description=(
-            "These hyperparameters encode the economic belief that macro variables "
-            "are persistent, but that distant and cross-variable lags should need "
-            "strong evidence before receiving large coefficients."
-        ),
-    )
-    report.add_table(
-        "tables/coefficient-posteriors.csv",
-        "Selected coefficient posterior summaries",
-        coefficient_table,
-        description=(
-            "The posterior table reports the same selected slopes as the interval "
-            "plot. Own first lags measure persistence, while the policy-rate "
-            "slopes in the output and inflation equations summarize the first "
-            "dynamic transmission channel."
-        ),
-    )
-    report.add_table(
-        "tables/shock-identification.csv",
-        "Recursive shock-identification assumptions",
-        identification_table,
-        description=(
-            "The identification table separates estimated VAR objects from the "
-            "extra restrictions used to name a residual innovation as a monetary "
-            "policy shock."
-        ),
-    )
-    report.add_table(
-        "tables/irf-summary.csv",
-        "Selected BVAR policy-shock responses",
-        irf_table,
-        description=(
-            "The impulse-response table summarizes the BVAR response to a policy "
-            "shock scaled to raise the policy rate by 25 basis points on impact."
-        ),
-    )
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    forecast_table.to_csv("tables/forecast-rmse.csv", index=False)
+    stability_table.to_csv("tables/stability-metrics.csv", index=False)
+    hyper_table.to_csv("tables/prior-hyperparameters.csv", index=False)
+    coefficient_table.to_csv("tables/coefficient-posteriors.csv", index=False)
+    identification_table.to_csv("tables/shock-identification.csv", index=False)
+    irf_table.to_csv("tables/irf-summary.csv", index=False)
 
-    report.add_takeaway(
-        "The Minnesota prior does not replace the VAR with a theory model. It "
-        "regularizes the reduced form toward simple own-lag dynamics while still "
-        "letting the data estimate monetary-policy transmission. The posterior "
-        "coefficient intervals show which slopes are pulled close to the prior "
-        "and which remain informed by the sample. The policy-shock responses also "
-        "depend on the recursive ordering, so they should be read as conditional "
-        "responses under that timing assumption. In a short macro sample, the "
-        f"shrinkage lowers the coefficient norm to {shrinkage_ratio:.2f} of the "
-        "OLS norm and gives smoother policy-shock responses. The stability radius "
-        f"falls from {ols_radius:.2f} under OLS to {bvar_radius:.2f} under the "
-        "Minnesota BVAR."
-    )
+    save_thumbnail("figures/simulated-macro-series.png", "figures/thumb.png")
 
-    report.add_references(
-        [
-            'Doan, Thomas, Robert Litterman, and Christopher Sims (1984). "Forecasting and Conditional Projection Using Realistic Prior Distributions." Econometric Reviews, 3(1), 1-100.',
-            'Litterman, Robert B. (1986). "Forecasting with Bayesian Vector Autoregressions: Five Years of Experience." Journal of Business & Economic Statistics, 4(1), 25-38.',
-            'Banbura, Marta, Domenico Giannone, and Lucrezia Reichlin (2010). "Large Bayesian Vector Auto Regressions." Journal of Applied Econometrics, 25(1), 71-92.',
-        ]
-    )
-    report.write()
+    print(f"Generated 5 figures and 6 tables.")
 
 
 if __name__ == "__main__":

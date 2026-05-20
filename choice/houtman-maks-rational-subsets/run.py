@@ -11,8 +11,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import save_figure, save_thumbnail, setup_style
 
 
 TOL = 1e-10
@@ -331,146 +330,17 @@ def main() -> None:
         )
     diagnostics = pd.DataFrame(diagnostic_rows)
 
-    report = ModelReport(
-        "Rationalizable Choice Cores with Houtman-Maks",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "Revealed-preference data can fail GARP even when most observations fit stable "
-        "preferences. The failure says the full dataset is not rationalizable.\n\n"
-        "The Houtman-Maks index is the largest number of observations that can be kept while "
-        "satisfying GARP. It measures the rationalizable core of the dataset.\n\n"
-        "Finding the core requires search over subsets of observations. This tutorial builds "
-        "the revealed-preference graph, checks GARP on candidate subsets, and compares exact "
-        "search with a greedy graph rule."
-    )
-
-    report.add_equations(
-        r"""
-There are $T$ observations. Observation $t$ has prices $p_t \in \mathbb{R}_{+}^{J}$ and chosen bundle $x_t \in \mathbb{R}_{+}^{J}$. Expenditure is $m_t=p_t \cdot x_t$.
-
-Choice $t$ directly weakly reveals $x_t$ preferred to $x_s$ when $x_s$ was affordable at prices $p_t$:
-
-$$x_t R^D x_s \quad \Longleftrightarrow \quad p_t \cdot x_t \geq p_t \cdot x_s.$$
-
-The direct relation is strict when the inequality is strict. Let $R$ be the transitive closure of $R^D$. GARP holds on a subset $S$ if there is no pair $t,s \in S$ such that
-
-$$x_t R x_s \quad \text{and} \quad p_s \cdot x_s > p_s \cdot x_t.$$
-
-Let $\mathrm{GARP}(S)=1$ when these restrictions hold after keeping only observations in $S$. The Houtman-Maks index is
-
-$$HM = \max_{S \subseteq \{1,\ldots,T\}} |S| \quad \text{s.t.} \quad \mathrm{GARP}(S)=1.$$
-
-The minimum number of observations needed to restore GARP is
-
-$$T - HM.$$
-"""
-    )
-
-    report.add_model_setup(
-        "| Object | Value | Interpretation |\n"
-        "|---|---:|---|\n"
-        f"| Observations $T$ | {len(prices)} | Shopping trips with prices and chosen bundles |\n"
-        "| Goods $J$ | 3 | Small multi-good demand environment |\n"
-        "| Data-generating preferences | Cobb-Douglas shares $(0.45,0.35,0.20)$ | Choices before the swap |\n"
-        "| Synthetic corruption | bundles in rows 3 and 4 swapped | Known source of the GARP failure |\n"
-        f"| Full-sample GARP violations | {len(violations)} | Contradictions after taking transitive closure |\n"
-        f"| Exact Houtman-Maks index | {len(exact_keep)} | Largest rationalizable subset size |\n"
-        f"| Greedy deletion | observation {greedy_removed[0] + 1} | Same deletion selected by the heuristic |"
-    )
-
-    solution_method = r"""
-The exact routine treats the dataset as a finite search problem. It builds the revealed-preference graph for each candidate subset. It then checks whether any strict budget cycle remains.
-
-```text
-Algorithm: exact Houtman-Maks core
-Inputs: observations {(p_t, x_t)}_{t=1}^T
-Output: largest subset S* satisfying GARP
-
-for k = T, T-1, ..., 1:
-    for each subset S with |S| = k:
-        build R^D on S using p_t dot x_t >= p_t dot x_s
-        compute the transitive closure R of R^D
-        if no strict budget cycle remains:
-            return S* = S and HM = k
-```
-
-Enumeration is exact, but the number of subsets grows quickly. The greedy rule uses the same graph to choose deletions. It removes observations from violating strongly connected components.
-
-```text
-Algorithm: SCC greedy Houtman-Maks diagnosis
-Inputs: observations {(p_t, x_t)}_{t=1}^T
-Output: a GARP-consistent retained set S
-
-initialize S = {1, ..., T}
-while GARP(S) fails:
-    compute weak arcs, strict arcs, and violating pairs on S
-    find strongly connected components of the weak graph
-    restrict attention to components of more than one observation with a strict internal arc
-    remove the observation with the most violation participation,
-        breaking ties by strict-arc degree, then by lower observation id
-return S
-```
-
-In this run, the greedy rule removes observation """
-    solution_method += (
-        f"{greedy_removed[0] + 1}, the same receipt removed by exact search. The retained set "
-        f"keeps {len(exact_keep)} of {len(prices)} observations."
-    )
-    report.add_solution_method(solution_method)
-
-    report.add_table(
-        "tables/houtman-maks-diagnostics.csv",
-        "Which Receipts Carry the Rejection",
-        diagnostics,
-        description=(
-            "The table reports how each receipt enters the GARP rejection. Observation "
-            f"{exact_removed[0] + 1} has the most conflict participation. Exact search and "
-            "the greedy rule remove the same receipt."
-        ),
-    )
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    diagnostics.to_csv("tables/houtman-maks-diagnostics.csv", index=False)
 
     fig1 = plot_conflict_graph(weak, strict, exact_keep, greedy_keep, synthetic_swapped_rows, violation_counts)
-    report.add_figure(
-        "figures/conflict-graph.png",
-        "Preference conflict graph comparing exact, greedy, and synthetic corruption markers.",
-        fig1,
-        description=(
-            "The conflict graph shows why one deletion restores consistency. Red fill marks "
-            "the exact deletion. The black x marks the greedy deletion. Gold rings mark the "
-            "two swapped receipts."
-        ),
-    )
+    save_figure(fig1, "figures/conflict-graph.png", dpi=150)
 
     fig2 = plot_violation_heatmaps(prices, quantities, exact_keep)
-    report.add_figure(
-        "figures/violations-before-after.png",
-        "GARP violations before and after removing the Houtman-Maks outlier.",
-        fig2,
-        description=(
-            "The heat maps show GARP violations before and after the deletion. The retained "
-            "core has no strict budget-cycle contradictions."
-        ),
-    )
+    save_figure(fig2, "figures/violations-before-after.png", dpi=150)
 
-    report.add_takeaway(
-        "Houtman-Maks turns a GARP rejection into the size of the rationalizable core. "
-        f"In this example, one deletion keeps {len(exact_keep)} of {len(prices)} observations. "
-        "The index locates a minimal repair, not every bad receipt."
-    )
-
-    report.add_references(
-        [
-            "Houtman, M., & Maks, J. A. H. (1985). Determining all maximal data subsets consistent with revealed preference. Kwantitatieve Methoden, 19, 89-104.",
-            "Heufer, J., & Hjertstrand, P. (2015). Consistent subsets: Computationally feasible methods to compute the Houtman-Maks-index. Economics Letters, 128, 87-89.",
-            "Varian, H. R. (1982). The nonparametric approach to demand analysis. Econometrica, 50(4), 945-973.",
-        ]
-    )
-
-    report.write("README.md")
-    print(f"Generated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
+    save_thumbnail("figures/conflict-graph.png", "figures/thumb.png")
+    print(f"Done: 2 figures, 1 table, thumb reproduced.")
 
 
 if __name__ == "__main__":

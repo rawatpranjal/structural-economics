@@ -21,8 +21,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.plotting import setup_style
-from lib.output import ModelReport
+from lib.plotting import setup_style, save_figure, save_thumbnail
 
 
 def main() -> None:
@@ -254,206 +253,9 @@ def main() -> None:
     cournot_dp_hist, cournot_dp_res = cournot_picard(q0, alpha=0.5)
 
     # =========================================================================
-    # Report
+    # Figures and tables
     # =========================================================================
     setup_style()
-
-    report = ModelReport(
-        "Fixed-Point Iteration and Acceleration",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "A fixed-point problem asks for a vector $x$ satisfying $x = T(x)$. "
-        "This is a functional equation. "
-        "The numerical question is how to solve it when $T$ is a contraction.\n\n"
-        "One concrete instance serves as the test bed. "
-        "Observed market shares are inverted to recover the mean utilities that generated them under a plain-logit choice model. "
-        "Plain logit admits a closed-form benchmark, which makes every method's accuracy verifiable. "
-        "Three fixed-point methods are compared: vanilla Picard iteration, a damped variant, and Anderson acceleration with five-step memory.\n\n"
-        "The lesson is about iteration speed and reliability. "
-        "Vanilla iteration always converges under contraction but can be slow. "
-        "Anderson is often dramatically faster. "
-        "It can also extrapolate unstably without a residual safeguard. "
-        "A small Cournot best-response example at the end applies the same methods to a static game, where the fixed point is a Nash equilibrium."
-    )
-
-    report.add_equations(
-        r"""The general problem is to find $x \in \mathbb{R}^d$ satisfying $x = T(x)$ for a given map $T : \mathbb{R}^d \to \mathbb{R}^d$.
-A fixed point exists and is unique whenever $T$ is a contraction in some norm.
-The methods below iteratively construct a sequence $\{x^t\}$ that converges to the fixed point $x^{\ast}$.
-
-### The test instance
-
-The test instance is plain-logit share inversion.
-A representative consumer chooses among $J$ inside products and one outside option indexed by $0$.
-Each inside product $j$ delivers a mean utility $\delta_j$ and an idiosyncratic Type-1 extreme-value taste shock.
-The outside option is normalised to mean utility zero.
-Choice probabilities give predicted market shares as functions of the mean-utility vector $\delta = (\delta_1, \ldots, \delta_J)$.
-
-$$s_j(\delta) = \frac{\exp(\delta_j)}{1 + \sum_{k=1}^{J} \exp(\delta_k)},
-\qquad
-s_0(\delta) = \frac{1}{1 + \sum_{k=1}^{J} \exp(\delta_k)}.$$
-
-Observed shares $s_j^{\mathrm{obs}}$ are given.
-The unknown is the mean-utility vector $\delta^{\ast}$ that generates them.
-For plain logit the inversion has a closed form.
-This closed form is the benchmark for every iterative method below.
-
-$$\delta_j^{\ast} = \log s_j^{\mathrm{obs}} - \log s_0^{\mathrm{obs}}.$$
-
-The fixed-point map for this instance adds the log-share residual to the current guess.
-
-$$T_j(\delta) = \delta_j + \log s_j^{\mathrm{obs}} - \log s_j(\delta),
-\qquad
-\delta^{\ast} \text{ solves } T(\delta^{\ast}) = \delta^{\ast}.$$
-
-A guess that under-predicts the share of product $j$ pushes $\delta_j$ up.
-A guess that over-predicts pushes it down.
-
-The next three subsections describe one method at a time.
-
-### Method 1: Picard iteration
-
-Picard iteration applies the fixed-point map directly at every step.
-
-$$\delta^{t+1} = T(\delta^t).$$
-
-Convergence is linear with rate equal to the contraction modulus of $T$.
-For the test instance this rate is bounded below one and convergence is monotone.
-
-### Method 2: Damped Picard
-
-Damped Picard mixes the current iterate with the Picard image using a damping factor $\alpha \in (0, 1]$.
-
-$$\delta^{t+1} = (1 - \alpha)\, \delta^t + \alpha\, T(\delta^t)
-= \delta^t + \alpha \left[\log s^{\mathrm{obs}} - \log s(\delta^t)\right].$$
-
-A smaller $\alpha$ stabilises iteration when the map oscillates near the boundary of contractiveness.
-The cost is a slower asymptotic rate.
-
-### Method 3: Anderson acceleration
-
-Anderson acceleration with memory $m$ uses the last $m + 1$ iterates and residuals to extrapolate a better step than Picard.
-Define the residual $f_t = g_t - \delta^t$ with $g_t = T(\delta^t)$, the residual differences $\Delta f_t^{(i)} = f_t - f_{t-i}$, and the analogous $\Delta g_t^{(i)}$.
-Stack the differences as columns of $F_t \in \mathbb{R}^{J \times m_t}$ and $G_t \in \mathbb{R}^{J \times m_t}$, where $m_t = \min(m, t)$ is the effective memory at step $t$.
-
-The least-squares step solves for combination weights.
-
-$$\gamma_t = \arg\min_\gamma \lVert f_t - F_t\, \gamma \rVert_2.$$
-
-The next iterate combines the most recent fixed-point image with a residual-history correction.
-
-$$\delta^{t+1} = g_t - G_t\, \gamma_t.$$
-
-Anderson reduces to Picard when $m = 0$.
-For $m \geq 1$ it can be quadratically faster on contractions.
-The cost is one small least-squares solve per step.
-A safeguard monitors the residual after each Anderson step.
-If the residual more than doubles, the algorithm reverts to one damped-Picard step before resuming Anderson.
-
-### A second test instance: Cournot best response
-
-The Cournot mini extension uses the same machinery on a duopoly best-response system.
-Two firms set quantities $q_1, q_2$ to maximise profit on linear inverse demand $P(Q) = a - Q$ with $Q = q_1 + q_2$ and constant marginal cost $c$.
-
-$$\mathrm{BR}_i(q_{-i}) = \frac{a - c - q_{-i}}{2},
-\qquad
-q^{\ast} = \frac{a - c}{3}\, \text{ for both firms.}$$
-
-The fixed-point map is $T(q_1, q_2) = (\mathrm{BR}_1(q_2), \mathrm{BR}_2(q_1))$.
-Vanilla Picard on this map oscillates around $q^{\ast}$ with damping factor $1/2$.
-Damped Picard with $\alpha = 1/2$ removes the oscillation.
-"""
-    )
-
-    report.add_model_setup(
-        f"| Symbol | Value | Role |\n"
-        f"|--------|-------|------|\n"
-        f"| $J$ | {n_prod} | Number of inside products |\n"
-        f"| $\\delta^{{\\ast}}$ | $({delta_star[0]:.1f},\\, {delta_star[1]:.1f},\\, {delta_star[2]:.1f},\\, {delta_star[3]:.1f})$ | True mean utilities used to generate $s^{{\\mathrm{{obs}}}}$ |\n"
-        f"| $s_0^{{\\mathrm{{obs}}}}$ | {s0_obs:.4f} | Outside option share |\n"
-        f"| Inside shares $s^{{\\mathrm{{obs}}}}$ | $({s_obs[0]:.4f},\\, {s_obs[1]:.4f},\\, {s_obs[2]:.4f},\\, {s_obs[3]:.4f})$ | Observed market shares |\n"
-        f"| Damping factor $\\alpha$ | {damping} | Used by damped Picard |\n"
-        f"| Anderson memory $m$ | 5 | Length of residual history |\n"
-        f"| Tolerance $\\eta$ | {tol:.0e} | Sup-norm stopping rule on $T(\\delta) - \\delta$ |\n"
-        f"| Cournot demand intercept $a$ | {a_demand:.1f} | Linear inverse-demand parameter |\n"
-        f"| Cournot marginal cost $c$ | {c_marginal:.1f} | Symmetric across firms |\n"
-        f"| Cournot symmetric Nash $q^{{\\ast}}$ | {q_star:.4f} | Closed-form duopoly equilibrium quantity |"
-    )
-
-    report.add_solution_method(
-        "All three methods solve the same fixed-point equation. "
-        "They differ in how aggressively they extrapolate from past iterates.\n\n"
-
-        "### Method 1: Picard iteration\n\n"
-        "Picard applies the fixed-point map directly at every step. "
-        "The economic intuition is a tatonnement adjustment in log shares. "
-        "Each step pushes $\\delta_j$ up where the model under-predicts share $j$ and down where it over-predicts. "
-        "Convergence is linear with rate equal to the contraction modulus. "
-        "For plain logit the modulus is bounded by one and convergence is monotone. "
-        "Doubling iterations halves the residual once contraction kicks in.\n\n"
-        "```text\n"
-        "Algorithm: Picard iteration\n"
-        "Input : initial delta_0; tolerance eta\n"
-        "Output: delta_T satisfying ||T(delta_T) - delta_T|| < eta\n"
-        "  for t = 0, 1, ... :\n"
-        "      delta_{t+1} <- T(delta_t)\n"
-        "      stop when ||delta_{t+1} - delta_t||_inf < eta\n"
-        "```\n\n"
-        "Picard fails only if the map fails to be a contraction. "
-        "For plain logit it always works. "
-        "When the contraction modulus approaches one, convergence becomes prohibitively slow.\n\n"
-
-        "### Method 2: Damped Picard\n\n"
-        "Damped Picard mixes the current iterate with the Picard image using a damping factor $\\alpha \\in (0, 1]$. "
-        "The economic intuition is partial adjustment. "
-        "The iterate moves only part way toward the contraction step. "
-        "Damping does not change the fixed point. "
-        "It does change the effective contraction modulus, which can stabilise iteration when the map oscillates near the boundary of contractiveness. "
-        "On a smooth contraction, damping slows asymptotic convergence.\n\n"
-        "```text\n"
-        "Algorithm: Damped Picard\n"
-        "Input : initial delta_0; damping alpha; tolerance eta\n"
-        "Output: delta_T\n"
-        "  for t = 0, 1, ... :\n"
-        "      delta_{t+1} <- (1 - alpha) * delta_t + alpha * T(delta_t)\n"
-        "      stop when ||delta_{t+1} - delta_t||_inf < eta\n"
-        "```\n\n"
-        "Damped Picard does not introduce new failure modes. "
-        "Choosing $\\alpha$ too small wastes iterations on a contraction that does not need stabilising.\n\n"
-
-        "### Method 3: Anderson acceleration\n\n"
-        "Anderson acceleration uses the last $m + 1$ residuals to extrapolate a better step than plain Picard. "
-        "Geometrically, the method fits an affine model to the residual history. "
-        "It then chooses the next iterate that would zero out the model's residual. "
-        "On contractions, Anderson is locally faster than linear and often quadratically so. "
-        "The cost per step is one least-squares solve in dimension $m$. "
-        "The benefit is largest when the contraction modulus is close to one.\n\n"
-        "```text\n"
-        "Algorithm: Anderson acceleration with memory m\n"
-        "Input : initial delta_0; memory m; tolerance eta; safeguard factor c\n"
-        "Output: delta_T\n"
-        "  store delta_0 and g_0 = T(delta_0)\n"
-        "  for t = 1, 2, ... :\n"
-        "      m_t <- min(m, t)\n"
-        "      build difference matrices F and G from the last m_t residuals\n"
-        "      solve gamma <- argmin_g ||(g_t - delta_t) - F g||\n"
-        "      delta_candidate <- g_t - G gamma\n"
-        "      if ||T(delta_candidate) - delta_candidate|| > c * ||g_t - delta_t||:\n"
-        "          delta_{t+1} <- 0.5 * delta_t + 0.5 * g_t        # damped fallback\n"
-        "      else:\n"
-        "          delta_{t+1} <- delta_candidate\n"
-        "      g_{t+1} <- T(delta_{t+1})\n"
-        "      stop when ||g_{t+1} - delta_{t+1}||_inf < eta\n"
-        "```\n\n"
-        "Anderson can extrapolate unstably when the residual history is nearly collinear. "
-        "It can also overshoot when the safeguard threshold is too loose. "
-        "The safeguard reverts to damped Picard for one step. "
-        "Anderson then resumes with a refreshed history. "
-        "Without the safeguard, an extrapolated step can grow the residual instead of shrinking it."
-    )
 
     # ------------------------------------------------------------------
     # Figure 1: shares observed vs predicted at start, mid, end
@@ -478,17 +280,7 @@ Damped Picard with $\alpha = 1/2$ removes the oscillation.
     ax1.set_ylabel("Inside-product share")
     ax1.set_title("Observed and predicted shares as Picard iterates approach the fixed point")
     ax1.legend(loc="upper right", fontsize=9)
-    report.add_results(
-        f"At the trivial start $\\delta^0 = 0$, every inside product is predicted to take the same share. "
-        f"The first Picard step closes most of the gap to the observed shares. "
-        f"By iterate {mid_idx} the predictions are visually indistinguishable from the observed bars. "
-        f"At convergence the residual is at machine precision and the recovered $\\delta$ matches the closed form to {pi_errors[-1]:.2e}."
-    )
-    report.add_figure(
-        "figures/share-fit.png",
-        "Observed inside shares and Picard predictions at three iterations",
-        fig1,
-    )
+    save_figure(fig1, "figures/share-fit.png", dpi=150)
 
     # ------------------------------------------------------------------
     # Figure 2: residual and error convergence on log scale
@@ -517,20 +309,7 @@ Damped Picard with $\alpha = 1/2$ removes the oscillation.
     ax2b.set_title("Distance from the closed-form benchmark")
     ax2b.legend(loc="upper right", fontsize=9)
     fig2.tight_layout()
-
-    report.add_results(
-        f"Picard reaches tolerance in **{pi_iter}** iterations on this calibration. "
-        f"Damped Picard at $\\alpha = {damping}$ exhausts the **{dp_iter}**-iteration budget without crossing the tolerance: the damping slows asymptotic convergence enough that its residual is still {dp_residuals[-1]:.2e}, above the {tol:.0e} tolerance, when the loop stops. "
-        f"Anderson at $m = 5$ converges in **{an_iter}** iterations, faster than Picard by roughly a factor of {pi_iter / max(an_iter, 1):.1f}.\n\n"
-        "Both panels show the same story on log scale. "
-        "Anderson sits below Picard for almost every iteration. "
-        "The damped variant is parallel to Picard with a slight vertical offset and has not yet reached tolerance at the iteration cap."
-    )
-    report.add_figure(
-        "figures/convergence.png",
-        "Fixed-point residual (left) and error against closed-form (right) for Picard, damped Picard, and Anderson",
-        fig2,
-    )
+    save_figure(fig2, "figures/convergence.png", dpi=150)
 
     # ------------------------------------------------------------------
     # Figure 3: stress test for shrinking outside share
@@ -547,18 +326,7 @@ Damped Picard with $\alpha = 1/2$ removes the oscillation.
     ax3.set_title("Iteration count vs outside share")
     ax3.invert_xaxis()
     ax3.legend(loc="upper left", fontsize=9)
-    report.add_results(
-        "The stress test sweeps the outside share from 0.1 down to 0.01. "
-        "A small outside share pushes mean utilities out to large values where the contraction modulus approaches one. "
-        "Picard iteration counts grow steeply on the small-$s_0$ end. "
-        "Anderson stays much flatter because the residual history compensates for the slow contraction. "
-        "The safeguard reverts to damped Picard whenever an Anderson step doubles the residual."
-    )
-    report.add_figure(
-        "figures/stress-test.png",
-        "Iteration count vs outside share for Picard and Anderson",
-        fig3,
-    )
+    save_figure(fig3, "figures/stress-test.png", dpi=150)
 
     # ------------------------------------------------------------------
     # Figure 4: Cournot best-response paths
@@ -582,17 +350,7 @@ Damped Picard with $\alpha = 1/2$ removes the oscillation.
     ax4.set_xlim(0, 6)
     ax4.set_ylim(0, 6)
     ax4.set_aspect("equal")
-    report.add_results(
-        f"The Cournot example replaces the Berry contraction with a best-response map. "
-        f"Vanilla Picard from $(0, 0)$ overshoots to $(4.5, 4.5)$ on the first step and oscillates around the symmetric Nash quantity $q^{{\\ast}} = {q_star:.2f}$ with damping factor $1/2$. "
-        f"Damped Picard with $\\alpha = 1/2$ removes the oscillation and converges monotonically. "
-        f"The same fixed-point machinery covers structural demand inversion and static-game best-response dynamics."
-    )
-    report.add_figure(
-        "figures/cournot-best-response.png",
-        "Cournot best-response paths for vanilla and damped Picard, converging to the symmetric Nash quantity",
-        fig4,
-    )
+    save_figure(fig4, "figures/cournot-best-response.png", dpi=150)
 
     # ------------------------------------------------------------------
     # Tables
@@ -633,17 +391,8 @@ Damped Picard with $\alpha = 1/2$ removes the oscillation.
         ],
         "Status": [pi_status, dp_status, an_status],
     })
-    report.add_results(
-        "The table compares the three methods on the same calibration and the same starting point. "
-        "Anderson cuts the iteration count to a small fraction of Picard. "
-        "Picard and Anderson reach the sup-norm tolerance; damped Picard at this damping factor exhausts the iteration budget before the residual crosses the tolerance, so its status reports the max-iteration stop rather than convergence. "
-        "The Status column reports the actual termination condition: a method reads as converged only when its final residual met the tolerance."
-    )
-    report.add_table(
-        "tables/method_comparison.csv",
-        "Method comparison on the baseline four-product calibration",
-        method_table,
-    )
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    method_table.to_csv("tables/method_comparison.csv", index=False)
 
     stress_print = pd.DataFrame({
         "Outside share": [f"{r['s_outside']:.2f}" for r in stress_rows],
@@ -652,18 +401,7 @@ Damped Picard with $\alpha = 1/2$ removes the oscillation.
         "Anderson iterations": [r["anderson_iter"] for r in stress_rows],
         "Anderson residual": [f"{r['anderson_residual']:.2e}" for r in stress_rows],
     })
-    report.add_results(
-        "The stress test makes the contraction harder by shrinking the outside share. "
-        "A small outside share pushes mean utilities out to large values, where the contraction modulus approaches one. "
-        "Picard slows down sharply once the outside share falls below five percent. "
-        "Anderson stays competitive across the range. "
-        "This is the regime where acceleration matters most: an inner contraction solved many times inside an outer search pays the iteration savings many times over."
-    )
-    report.add_table(
-        "tables/stress_test.csv",
-        "Iteration count and final residual as the outside share shrinks",
-        stress_print,
-    )
+    stress_print.to_csv("tables/stress_test.csv", index=False)
 
     # Cournot table
     cournot_pi_iter = len(cournot_pi_res)
@@ -684,42 +422,10 @@ Damped Picard with $\alpha = 1/2$ removes the oscillation.
             f"{cournot_dp_res[-1]:.2e}",
         ],
     })
-    report.add_results(
-        f"On the Cournot game vanilla Picard converges in {cournot_pi_iter} steps despite the oscillation. "
-        f"Damped Picard takes {cournot_dp_iter} steps with monotone improvement. "
-        f"The closed-form symmetric Nash quantity is $q^{{\\ast}} = {q_star:.4f}$ for both firms."
-    )
-    report.add_table(
-        "tables/cournot_summary.csv",
-        "Cournot best-response iteration to the symmetric Nash equilibrium",
-        cournot_table,
-    )
+    cournot_table.to_csv("tables/cournot_summary.csv", index=False)
 
-    report.add_takeaway(
-        "Picard iteration is the simplest reliable fixed-point method. "
-        "On a contraction it converges monotonically and predictably. "
-        "Its weakness is speed when the contraction modulus approaches one.\n\n"
-        "Damped Picard trades asymptotic speed for stability. "
-        "It is the right default when the iterates oscillate or the modulus is uncertain. "
-        "On a smooth contraction like the test instance here, damping is unnecessary and slows things down.\n\n"
-        "Anderson acceleration is dramatically faster than Picard on contractions but needs a safeguard. "
-        "The least-squares step can extrapolate unstably when the residual history is nearly collinear. "
-        "A simple residual-monotonicity check that reverts to damped Picard when an Anderson step doubles the residual recovers stability with very little overhead.\n\n"
-        "The methods are not specific to demand inversion. "
-        "Any problem of the form $x = T(x)$ with a contractive $T$ admits the same three-method ladder: Picard, damped Picard, Anderson. "
-        "What changes between problems is the map, not the iteration."
-    )
-
-    report.add_references([
-        "Berry, S. (1994). *Estimating Discrete-Choice Models of Product Differentiation*. RAND Journal of Economics 25(2), 242-262.",
-        "Berry, S., Levinsohn, J., and Pakes, A. (1995). *Automobile Prices in Market Equilibrium*. Econometrica 63(4), 841-890.",
-        "Anderson, D. G. (1965). *Iterative Procedures for Nonlinear Integral Equations*. Journal of the ACM 12(4), 547-560.",
-        "Walker, H. F. and Ni, P. (2011). *Anderson Acceleration for Fixed-Point Iterations*. SIAM Journal on Numerical Analysis 49(4), 1715-1735.",
-        "Reynaerts, J., Varadhan, R., and Nash, J. C. (2012). *Enhancing the Convergence Properties of the BLP Estimator*. (working paper).",
-    ])
-
-    report.write("README.md")
-    print(f"\nGenerated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
+    save_thumbnail("figures/share-fit.png", "figures/thumb.png")
+    print(f"Generated: figures/ (4 figures + thumb) + tables/ (3 tables)")
 
 
 if __name__ == "__main__":

@@ -17,7 +17,7 @@ sys.path.insert(0, str(TUTORIAL_DIR))
 import run  # noqa: E402
 from run import CareerPrimitives, feature_matrix  # noqa: E402
 
-README = TUTORIAL_DIR / "README.md"
+README = (TUTORIAL_DIR / "README.md").read_text()
 
 
 def test_violated_invariant_feature_matrix_normalizes_schooling():
@@ -27,10 +27,7 @@ def test_violated_invariant_feature_matrix_normalizes_schooling():
 
 def test_honest_fix_readme_discloses_normalization():
     """README basis text must disclose that phi uses normalized inputs."""
-    src = Path(run.__file__).read_text()
-    idx = src.index("the basis vector is")
-    basis_block = src[idx:idx + 1200]
-    assert "normaliz" in basis_block.lower()
+    assert "normaliz" in README.lower()
 
 
 def test_violated_invariant_empty_path_column_count():

@@ -22,8 +22,7 @@ import pandas as pd
 from scipy.interpolate import CubicSpline, PchipInterpolator
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.plotting import setup_style
-from lib.output import ModelReport
+from lib.plotting import setup_style, save_figure, save_thumbnail
 from lib.interpolate import linear_interp
 
 
@@ -138,137 +137,6 @@ def main() -> None:
 
     setup_style()
 
-    report = ModelReport(
-        "Off-Grid Function Approximation by Interpolation",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "Value function iteration stores $V$ at a finite grid and reads "
-        "it off-grid every step. "
-        "Three classical interpolators are the workhorses: piecewise "
-        "linear, natural cubic spline, and PCHIP (piecewise cubic Hermite "
-        "interpolating polynomial).\n\n"
-        "This tutorial fits each one to two targets. "
-        "The first target is the closed-form cake-eating value function "
-        "$V(W)$, which is smooth and monotone. "
-        "The second is a stylized consumption policy with a borrowing-constraint kink. "
-        "The level is continuous but the slope drops sharply at $a_{\\text{kink}}$.\n\n"
-        "Cubic splines shine on the smooth target. "
-        "They ring on the kinked one. "
-        "Linear interpolation and PCHIP do not."
-    )
-
-    report.add_equations(
-        r"""The general problem is to recover an unknown function $f : [x_0, x_N] \to \mathbb{R}$ from values $\{(x_i, y_i)\}_{i=0}^{N}$ at a finite set of nodes.
-An interpolant $\hat f$ matches the data ($\hat f(x_i) = y_i$ for every $i$) and provides a rule for evaluating $\hat f(x)$ at any $x$ between nodes.
-
-### The test instances
-
-Two targets stress different smoothness regimes.
-The first target is the closed-form log-utility cake-eating value function on a smooth interior.
-
-$$V(W) = \frac{\log((1-\beta) W)}{1-\beta} + \frac{\beta \log \beta}{(1-\beta)^2}.$$
-
-The second target is a stylised consumption policy with a borrowing constraint at $a_{\text{kink}}$.
-
-$$c(a) =
-\begin{cases}
-(1 + r)\, a + y, & a \leq a_{\text{kink}} \\
-c(a_{\text{kink}}) + (1 + r)\, \mathrm{MPC}\, (a - a_{\text{kink}}), & a > a_{\text{kink}}.
-\end{cases}$$
-
-Below the kink the agent is constrained and consumes everything.
-Above the kink they save with marginal propensity to consume $\mathrm{MPC} < 1$.
-The function is continuous in level.
-The slope drops from $(1 + r)$ to $(1 + r)\,\mathrm{MPC}$ at $a_{\text{kink}}$.
-
-The next three subsections describe one method at a time.
-
-### Method 1: Piecewise linear
-
-Piecewise linear interpolation connects adjacent nodes with straight segments.
-For a query $x$ in $[x_i, x_{i+1}]$ the interpolant is the convex combination of the bracketing values.
-
-$$\hat{f}(x) = \frac{x_{i+1} - x}{x_{i+1} - x_i}\, f(x_i) + \frac{x - x_i}{x_{i+1} - x_i}\, f(x_{i+1}).$$
-
-The interpolant is $C^0$ but generally not differentiable at the nodes.
-
-### Method 2: Natural cubic spline
-
-The natural cubic spline fits a piecewise cubic with $\hat{f}, \hat{f}', \hat{f}''$ continuous everywhere and $\hat{f}''(x_0) = \hat{f}''(x_N) = 0$.
-The coefficients solve a tridiagonal linear system for the second derivatives at interior nodes.
-The result is $C^2$ and is the smoothest interpolant in the integrated-squared-second-derivative sense.
-
-### Method 3: PCHIP
-
-PCHIP fits a piecewise cubic Hermite polynomial whose endpoint slopes are chosen by a monotonicity-preserving rule (Fritsch-Carlson 1980).
-The result is $C^1$ and never overshoots a monotone target.
-The trade against the cubic spline is between curvature and shape preservation.
-Cubic splines bend smoothly but can ring near a kink.
-PCHIP holds the shape but drops one order of smoothness.
-"""
-    )
-
-    report.add_model_setup(
-        f"| Symbol | Value | Role |\n"
-        f"|--------|-------|------|\n"
-        f"| $\\beta$ | {beta} | Discount factor in the cake-eating target |\n"
-        f"| Smooth domain $[W_{{\\min}}, W_{{\\max}}]$ | $[{smooth_domain[0]},\\, {smooth_domain[1]}]$ | Wealth range for the smooth target |\n"
-        f"| Kinked domain $[a_{{\\min}}, a_{{\\max}}]$ | $[{kinked_domain[0]},\\, {kinked_domain[1]}]$ | Asset range for the kinked target |\n"
-        f"| $a_{{\\text{{kink}}}}$ | {a_kink} | Borrowing-constraint kink in the policy |\n"
-        f"| $r$ | 0.04 | Interest rate in the consumption policy |\n"
-        f"| $y$ | 0.5 | Endowment (income) in the consumption policy |\n"
-        f"| $\\mathrm{{MPC}}$ | {mpc} | Marginal propensity to consume above the kink |\n"
-        f"| Display node count $N$ | {n_show} | Nodes per fit in the target-vs-fit figure |\n"
-        f"| Convergence sweep | {list(node_counts)} | Node counts for the smooth-target sup-norm sweep |"
-    )
-
-    report.add_solution_method(
-        "Each method takes nodes $(x_i, y_i)$ and returns a function on "
-        "$[x_0, x_N]$.\n\n"
-        "**Piecewise linear.** Connect adjacent nodes with straight "
-        "segments. The convex-combination formula evaluates the segment "
-        "containing the query point.\n\n"
-        "```text\n"
-        "Algorithm: Piecewise linear\n"
-        "Input : nodes (x_i, y_i); query x in [x_i, x_{i+1}]\n"
-        "Output: y_hat\n"
-        "  h_i   <- x_{i+1} - x_i\n"
-        "  w     <- (x - x_i) / h_i\n"
-        "  y_hat <- (1 - w) y_i + w y_{i+1}\n"
-        "```\n\n"
-        "**Natural cubic spline.** Fit a piecewise cubic with $C^2$ "
-        "continuity and zero second derivatives at the endpoints.\n\n"
-        "```text\n"
-        "Algorithm: Natural cubic spline\n"
-        "Input : nodes (x_i, y_i)\n"
-        "Output: spline S(x)\n"
-        "  build tridiagonal system in y''_1, ..., y''_{N-1}\n"
-        "  with natural BC y''_0 = y''_N = 0\n"
-        "  solve once for the second-derivative values\n"
-        "  on [x_i, x_{i+1}], evaluate the cubic from\n"
-        "    y_i, y_{i+1}, y''_i, y''_{i+1}\n"
-        "```\n\n"
-        "**PCHIP (shape-preserving).** Fit a piecewise cubic Hermite "
-        "polynomial whose endpoint slopes are chosen by the Fritsch-"
-        "Carlson rule so the result preserves monotonicity.\n\n"
-        "```text\n"
-        "Algorithm: PCHIP\n"
-        "Input : nodes (x_i, y_i)\n"
-        "Output: H(x)\n"
-        "  m_i <- (y_{i+1} - y_i) / (x_{i+1} - x_i)   # secant slopes\n"
-        "  pick endpoint slopes d_i by Fritsch-Carlson rule\n"
-        "    so that monotonicity of {y_i} is preserved\n"
-        "  on [x_i, x_{i+1}], evaluate Hermite cubic from\n"
-        "    y_i, y_{i+1}, d_i, d_{i+1}\n"
-        "```\n\n"
-        "The linear branch reuses `lib.interpolate.linear_interp`. The "
-        "cubic and PCHIP branches use `scipy.interpolate.CubicSpline` "
-        "(`bc_type='natural'`) and `scipy.interpolate.PchipInterpolator`."
-    )
-
     fig1, (axS, axK) = plt.subplots(1, 2, figsize=(12, 5))
     sm = fits["smooth"]["Piecewise linear"]
     axS.plot(sm["x_query"], sm["y_true"], color="black", linewidth=1.5, label="True $V(W)$")
@@ -296,20 +164,7 @@ PCHIP holds the shape but drops one order of smoothness.
     axK.set_title(f"Kinked target ({n_show} nodes)")
     axK.legend(fontsize=8, loc="lower right")
     fig1.tight_layout()
-    report.add_results(
-        f"At {n_show} nodes the three methods agree closely on the smooth "
-        "value function.\n\n"
-        "On the kinked policy the cubic spline rings near "
-        "$a_{\\text{kink}}$: $C^2$ smoothness forces it to oscillate "
-        "around the slope discontinuity.\n\n"
-        "Piecewise linear and PCHIP track the kink without overshoot, at "
-        "the cost of a corner where the slope changes."
-    )
-    report.add_figure(
-        "figures/target-vs-fit.png",
-        "Three approximations against the smooth (left) and kinked (right) targets at the same node count",
-        fig1,
-    )
+    save_figure(fig1, "figures/target-vs-fit.png", dpi=150)
 
     fig2, (axES, axEK) = plt.subplots(1, 2, figsize=(12, 5))
     for method_name, _, color, ls in METHODS:
@@ -333,26 +188,7 @@ PCHIP holds the shape but drops one order of smoothness.
     axEK.set_title("Kinked target: pointwise error")
     axEK.legend(fontsize=8)
     fig2.tight_layout()
-    sup_lin = fits["kinked"]["Piecewise linear"]["sup_err"]
-    sup_cub = fits["kinked"]["Cubic spline (natural)"]["sup_err"]
-    sup_pch = fits["kinked"]["PCHIP (shape-preserving)"]["sup_err"]
-    report.add_results(
-        "On the smooth target all three errors concentrate near $W = 0$, "
-        "where curvature is largest. PCHIP is uniformly smallest, ahead of "
-        "the cubic spline at this node count.\n\n"
-        "On the kinked target the cubic-spline error oscillates above "
-        f"and below zero around $a_{{\\text{{kink}}}}$ (sup-error "
-        f"**{sup_cub:.2e}**).\n\n"
-        f"PCHIP eliminates the ringing at the same node count (sup-error "
-        f"**{sup_pch:.2e}**).\n\n"
-        f"Piecewise linear under-shoots in the same interval (sup-error "
-        f"**{sup_lin:.2e}**) but stays monotone."
-    )
-    report.add_figure(
-        "figures/error-curves.png",
-        "Pointwise error of each method on the smooth and kinked targets at $N=10$ nodes",
-        fig2,
-    )
+    save_figure(fig2, "figures/error-curves.png", dpi=150)
 
     fig3, ax3 = plt.subplots()
     method_styles = {name: (c, ls) for name, _, c, ls in METHODS}
@@ -367,33 +203,7 @@ PCHIP holds the shape but drops one order of smoothness.
     ax3.set_ylabel("Sup-norm error on smooth target")
     ax3.set_title("Convergence vs node count, smooth target")
     ax3.legend()
-    log_n = np.log(node_counts)
-    slopes = {
-        name: float(np.polyfit(log_n, np.log(convergence[name]), 1)[0])
-        for name in convergence
-    }
-    slope_lin = slopes["Piecewise linear"]
-    slope_cub = slopes["Cubic spline (natural)"]
-    slope_pch = slopes["PCHIP (shape-preserving)"]
-    report.add_results(
-        "The log-log sup-norm slopes on the smooth target are "
-        f"**{slope_lin:.1f}** for piecewise linear, **{slope_cub:.1f}** for "
-        f"the cubic spline, and **{slope_pch:.1f}** for PCHIP.\n\n"
-        "All three fall short of their textbook asymptotic rates. "
-        "The cake-eating value function $V(W)$ has a logarithmic "
-        "singularity as $W \\to 0$, so curvature blows up near the left "
-        "edge of the domain. That near-singular region keeps every method "
-        "below its smooth-function rate at these node counts; the cubic "
-        "spline does not reach the $-4$ slope a fully smooth target would "
-        "give.\n\n"
-        "On a kinked target the smoothness advantage disappears entirely, "
-        "and PCHIP becomes the right default because it preserves shape."
-    )
-    report.add_figure(
-        "figures/convergence-vs-nodes.png",
-        "Sup-norm error vs node count on the smooth cake-eating target, log-log axes",
-        fig3,
-    )
+    save_figure(fig3, "figures/convergence-vs-nodes.png", dpi=150)
 
     rows = []
     for method_name, *_ in METHODS:
@@ -405,49 +215,11 @@ PCHIP holds the shape but drops one order of smoothness.
             "Kinked L2 error": f"{fits['kinked'][method_name]['l2_err']:.2e}",
         })
     df = pd.DataFrame(rows)
-    smooth_winner = min(
-        fits["smooth"], key=lambda m: fits["smooth"][m]["sup_err"]
-    )
-    kinked_winner = min(
-        fits["kinked"], key=lambda m: fits["kinked"][m]["sup_err"]
-    )
-    report.add_results(
-        f"At a fixed budget of {n_show} nodes the table summarises sup-norm "
-        f"and L2 errors for each method on both targets. {smooth_winner} is "
-        f"the lowest-error choice on the smooth target; {kinked_winner} is "
-        f"the lowest-error choice on the kinked one."
-    )
-    report.add_table(
-        "tables/comparison.csv",
-        f"Sup-norm and L2 errors at $N = {n_show}$ nodes for each method on the smooth and kinked targets",
-        df,
-    )
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    df.to_csv("tables/comparison.csv", index=False)
 
-    report.add_takeaway(
-        "Piecewise linear is the safe default for value functions with "
-        "borrowing constraints. It preserves shape, never overshoots, and "
-        "requires no setup. "
-        "Natural cubic spline is accurate on smooth functions but rings "
-        "near kinks and can violate monotonicity. "
-        "PCHIP gives the steepest log-log convergence slope on the smooth "
-        "target here, ahead of the cubic spline, and is the right default "
-        "for monotone-but-non-smooth policies. It beats linear on accuracy "
-        "and cubic on shape preservation at the same node count.\n\n"
-        "`lib.interpolate.linear_interp` is what the existing tutorials "
-        "use today. Promoting cubic and PCHIP wrappers to "
-        "`lib/interpolate.py` is worth doing once a second tutorial needs "
-        "them."
-    )
-
-    report.add_references([
-        "Mukoyama, T. (2021). *Basic Numerical Methods*. ECON 606 lecture slides, Georgetown University.",
-        "Fritsch, F. N. and Carlson, R. E. (1980). *Monotone Piecewise Cubic Interpolation*. SIAM Journal on Numerical Analysis 17(2), 238-246.",
-        "Press, W. H., Teukolsky, S. A., Vetterling, W. T., and Flannery, B. P. (2007). *Numerical Recipes*. Cambridge University Press, 3rd edition, Ch. 3.",
-        "Judd, K. L. (1998). *Numerical Methods in Economics*. MIT Press, Ch. 6.",
-    ])
-
-    report.write("README.md")
-    print(f"\nGenerated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
+    save_thumbnail("figures/target-vs-fit.png", "figures/thumb.png")
+    print(f"Generated: figures/ (3 figures + thumb) + tables/ (1 table)")
 
 
 if __name__ == "__main__":

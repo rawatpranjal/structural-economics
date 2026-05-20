@@ -16,8 +16,7 @@ import pandas as pd
 from matplotlib.patches import Rectangle
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import setup_style, save_figure, save_thumbnail
 
 
 def find_pure_nash(row_payoffs: np.ndarray, col_payoffs: np.ndarray) -> list[tuple[int, int]]:
@@ -139,114 +138,6 @@ def main() -> None:
         })
 
     setup_style()
-    report = ModelReport(
-        "Finite Strategic Games and Nash Equilibrium Checks",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "Strategic settings often turn on unilateral incentives. An outcome is stable "
-        "only when each player is content with its own action.\n\n"
-        "A normal-form game stores those incentives in a payoff table. Each cell lists "
-        "the row and column payoffs for one action profile.\n\n"
-        "The computation asks two questions. Which cells have zero profitable "
-        "one-player deviations? In 2x2 games, which probabilities make both players "
-        "indifferent over the actions they use?"
-    )
-
-    report.add_equations(r"""
-A finite two-player game has a row player with actions $i \in I$ and a column
-player with actions $j \in J$. The matrices $A$ and $B$ record row and column
-payoffs. At pure profile $(i,j)$, the players receive $(A_{ij},B_{ij})$.
-
-The row player's one-step deviation gain at $(i,j)$ is
-
-$$
-d_1(i,j)=\max_{i' \in I} A_{i'j}-A_{ij},
-$$
-
-and the column player's gain is
-
-$$
-d_2(i,j)=\max_{j' \in J} B_{ij'}-B_{ij}.
-$$
-
-The combined deviation gain at $(i,j)$ is the larger of the two,
-
-$$
-d(i,j)=\max\lbrace d_1(i,j), d_2(i,j) \rbrace.
-$$
-
-The heat maps color each cell by $d(i,j)$, and the pseudocode tests
-$d(i,j)=0$.
-
-A pure Nash equilibrium is a profile $(i^{*}, j^{*})$ with
-
-$$
-d_1(i^{*},j^{*})=d_2(i^{*},j^{*})=0,
-$$
-
-Equivalently, the two best-response inequalities are
-
-$$
-A_{i^{*}j^{*}} \geq A_{ij^{*}} \quad \forall i \in I,
-\qquad
-B_{i^{*}j^{*}} \geq B_{i^{*}j} \quad \forall j \in J.
-$$
-
-For a 2x2 game, let the row player use mixed strategy $x=(p,1-p)$ and the
-column player use $y=(q,1-q)$. An interior mixed equilibrium requires both
-players to be indifferent across the actions used with positive probability:
-
-$$
-A_{11}q + A_{12}(1-q) = A_{21}q + A_{22}(1-q),
-\qquad
-B_{11}p + B_{21}(1-p) = B_{12}p + B_{22}(1-p).
-$$
-
-The candidate is an equilibrium only if $p,q \in [0,1]$. The reported mixed
-residual is the maximum absolute gap left in these two indifference equations.
-""")
-
-    report.add_model_setup(
-        "Four 2x2 games make the checks concrete. Prisoner's Dilemma isolates private "
-        "incentives against joint surplus. Matching Pennies has no pure equilibrium. "
-        "Battle of the Sexes has two conventions and conflicting preferences. Stag Hunt "
-        "has a safe action and a payoff-dominant convention.\n\n"
-        "| Game | Actions | What the payoffs isolate |\n"
-        "|---|---|---|\n"
-        "| Prisoner's Dilemma | Cooperate/Defect | Individual incentives overturn the efficient profile. |\n"
-        "| Matching Pennies | Heads/Tails | No pure action can be predictable in equilibrium. |\n"
-        "| Battle of the Sexes | Opera/Football | Coordination is valuable, but players prefer different conventions. |\n"
-        "| Stag Hunt | Stag/Hare | Safe and payoff-dominant coordination profiles coexist. |"
-    )
-
-    report.add_solution_method(
-        "Equilibrium is a finite set of inequalities. The code computes deviation gains "
-        "at every pure profile. For each 2x2 game, it also solves the two linear "
-        "indifference equations for p and q.\n\n"
-        "```text\n"
-        "Algorithm: Nash checks for a two-player finite game\n"
-        "Inputs: payoff matrices A, B and action labels I, J\n"
-        "Outputs: pure Nash set E and, for 2x2 games, an interior mixed candidate\n\n"
-        "1. For each pure profile (i,j), compute d1(i,j) and d2(i,j).\n"
-        "2. Add (i,j) to E when max{d1(i,j), d2(i,j)} = 0.\n"
-        "3. For each 2x2 game, solve the two indifference equations for p and q.\n"
-        "4. Keep the mixed candidate only when p and q lie in [0,1].\n"
-        "5. Recompute both expected-payoff gaps and report the largest absolute residual.\n"
-        "```\n\n"
-        "The residual checks the mixed calculation. Pure profiles pass when both "
-        "deviation gains equal zero. Mixed profiles pass when both actions used in the "
-        "mixture have equal expected payoffs."
-    )
-
-    report.add_results(
-        "The heat maps color each payoff table by the largest one-player deviation "
-        "gain. Warmer cells have larger gains from switching action. A black outline "
-        "marks a zero-deviation cell. In Prisoner's Dilemma, mutual defection is stable "
-        "even though mutual cooperation gives more total payoff."
-    )
 
     max_gain = max(
         float(np.max(unilateral_deviation_gains(game["row"], game["col"])))
@@ -282,20 +173,7 @@ residual is the maximum absolute gap left in these two indifference equations.
         shrink=0.78,
         label="Largest profitable unilateral deviation",
     )
-    report.add_figure(
-        "figures/pure-deviation-gains.png",
-        "Payoff tables colored by profitable deviation gains",
-        fig,
-    )
-
-    report.add_results(
-        "The mixed-strategy panels show the payoff differences behind randomization. "
-        "Each curve subtracts the second-action payoff from the first-action payoff. A "
-        "root gives the opponent probability that makes the player willing to mix. "
-        "Matching Pennies lands at half-half. Battle of the Sexes gives asymmetric "
-        "probabilities. Stag Hunt gives a threshold between safe and payoff-dominant "
-        "coordination."
-    )
+    save_figure(fig, "figures/pure-deviation-gains.png", dpi=150)
 
     p_grid = np.linspace(0, 1, 200)
     q_grid = np.linspace(0, 1, 200)
@@ -333,38 +211,14 @@ residual is the maximum absolute gap left in these two indifference equations.
         if k == 0:
             ax.set_ylabel("Expected payoff difference")
         ax.legend(fontsize=7)
-    report.add_figure(
-        "figures/mixed-indifference.png",
-        "Mixed-strategy indifference roots in 2x2 games",
-        fig2,
-    )
+    save_figure(fig2, "figures/mixed-indifference.png", dpi=150)
 
     df_games = pd.DataFrame(rows)
-    report.add_table(
-        "tables/equilibrium-summary.csv",
-        "Equilibrium Summary by Game",
-        df_games,
-        description=(
-            "The summary table lists the equilibria from the same checks. Pure entries "
-            "are zero-deviation cells. Mixed entries give the interior probability pair "
-            "and the largest indifference residual."
-        ),
-    )
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    df_games.to_csv("tables/equilibrium-summary.csv", index=False)
 
-    report.add_takeaway(
-        "Finite normal-form games make Nash equilibrium directly checkable. Enumeration "
-        "finds pure equilibria by testing profitable one-player deviations. The 2x2 "
-        "mixed check chooses probabilities that erase payoff gaps within each player's "
-        "support."
-    )
-
-    report.add_references([
-        "[Nash, J. (1950). Equilibrium Points in N-Person Games. *Proceedings of the National Academy of Sciences*, 36(1), 48-49.](https://doi.org/10.1073/pnas.36.1.48)",
-        "[Osborne, M. and Rubinstein, A. (1994). *A Course in Game Theory*. MIT Press.](https://mitpress.mit.edu/9780262650403/a-course-in-game-theory)",
-    ])
-
-    report.write("README.md")
-    print(f"Generated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
+    save_thumbnail("figures/pure-deviation-gains.png", "figures/thumb.png")
+    print(f"Done: 2 figures + 1 table")
 
 
 if __name__ == "__main__":

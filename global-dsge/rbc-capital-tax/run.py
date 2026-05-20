@@ -20,8 +20,7 @@ from scipy.interpolate import RegularGridInterpolator
 
 # Add repo root to path for lib/ imports
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.plotting import setup_style, save_figure
-from lib.output import ModelReport
+from lib.plotting import setup_style, save_figure, save_thumbnail
 
 
 def solve_rbc_tax(tau_k, beta=0.99, alpha=0.36, sigma=2.0, delta=0.025,
@@ -265,117 +264,9 @@ def main():
         })
 
     # =========================================================================
-    # Generate Report
+    # Figures
     # =========================================================================
     setup_style()
-
-    report = ModelReport(
-        "Capital Taxes and Saving in a Global RBC Model",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "A government taxes capital income and rebates the revenue to the "
-        "household. Current goods are unchanged at the aggregate level.\n\n"
-        "The object is the household saving rule. The tax matters because one more "
-        "unit of capital earns only the after-tax marginal product.\n\n"
-        "The steady state gives the long-run benchmark. A global RBC grid traces "
-        "the saving rule after productivity shocks. The simulation compares every "
-        "tax rate on the same productivity path."
-    )
-
-    report.add_equations(
-        r"""
-Let $K_t$ be aggregate capital at the start of period $t$, $z_t$ aggregate
-TFP, $c_t$ consumption, and $K_{t+1}$ next-period capital. Preferences are
-
-$$\mathbb{E}_0 \sum_{t=0}^{\infty} \beta^t
-\frac{c_t^{1-\sigma}}{1-\sigma}, \qquad \sigma>0,$$
-
-with Cobb-Douglas output $Y_t=z_t K_t^\alpha$. Productivity follows
-
-$$\log z_{t+1}=\rho \log z_t+\varepsilon_{t+1},
-\qquad \varepsilon_{t+1}\sim N(0,\sigma_\varepsilon^2).$$
-
-The government rebate means aggregate feasibility is the usual RBC resource
-constraint,
-
-$$c_t + K_{t+1} = z_t K_t^\alpha + (1-\delta)K_t.$$
-
-The tax appears in the household Euler equation:
-
-$$c_t^{-\sigma} =
-\beta \mathbb{E}_t\left[
-c_{t+1}^{-\sigma}
-\left((1-\tau_k)\alpha z_{t+1}K_{t+1}^{\alpha-1}+1-\delta\right)
-\right].$$
-
-Thus the wedge changes the return to saving but not the goods available to the
-economy in a given period.
-
-At $z=1$, the exact deterministic steady state is
-
-$$K_{ss}(\tau_k)=
-\left(\frac{(1-\tau_k)\alpha}{1/\beta-1+\delta}\right)^{1/(1-\alpha)},$$
-
-with $Y_{ss}=K_{ss}^{\alpha}$, $C_{ss}=Y_{ss}-\delta K_{ss}$, and
-tax revenue $T_{ss}=\tau_k \alpha Y_{ss}$.
-"""
-    )
-
-    report.add_model_setup(
-        f"| Parameter | Value | Description |\n"
-        f"|-----------|-------|-------------|\n"
-        f"| $\\beta$  | {beta} | Discount factor |\n"
-        f"| $\\alpha$ | {alpha} | Capital share |\n"
-        f"| $\\sigma$ | {sigma} | CRRA coefficient |\n"
-        f"| $\\delta$ | {delta} | Depreciation rate |\n"
-        f"| $\\rho$   | {rho} | TFP persistence |\n"
-        f"| $\\sigma_\\varepsilon$ | {sigma_e} | TFP innovation standard deviation |\n"
-        f"| $\\tau_k$ | {tau_values} | Permanent tax rates compared |\n"
-        f"| Capital grid | {40} points around each $K_{{ss}}(\\tau_k)$ | State and $K'$ choice grid |\n"
-        f"| TFP grid | {5} Tauchen states | Approximation to log productivity |\n"
-        f"| Simulation periods | {T_sim} | Same shock seed for every tax regime, with {burn} burn-in periods |"
-    )
-
-    report.add_solution_method(
-        "Given a tax rate, the solver recovers a saving rule on the $(z,K)$ grid. "
-        "A Bellman pass gives a feasible global policy. Euler refinement then "
-        "applies the after-tax return $(1-\\tau_k)MPK$ to consumption and saving.\n\n"
-        "```text\n"
-        "Algorithm: global saving rule with a capital-tax wedge\n"
-        "Input: tax rate tau_k, grids K and Z, transition matrix P, primitives beta, alpha, sigma, delta\n"
-        "Output: value V(z,K), saving rule g_K(z,K), consumption rule g_c(z,K)\n"
-        "Compute the exact deterministic K_ss(tau_k) and build a capital grid around it\n"
-        "Discretize log productivity with Tauchen to obtain Z and P\n"
-        "Precompute feasible consumption c = z K^alpha + (1-delta)K - K' for every (z,K,K')\n"
-        "Initialize V_0(z,K)\n"
-        "repeat:\n"
-        "    for each state (z_i,K_m):\n"
-        "        choose K' on the grid to maximize u(c) + beta * sum_j P_ij V_n(z_j,K')\n"
-        "        record V_{n+1}, g_K, and g_c\n"
-        "until the sup-norm value update is below epsilon\n"
-        "repeat Euler refinement:\n"
-        "    for each state (z_i,K_m):\n"
-        "        K_plus = g_K(z_i,K_m)\n"
-        "        M = sum_j P_ij g_c(z_j,K_plus)^(-sigma)\n"
-        "            * ((1-tau_k) alpha z_j K_plus^(alpha-1) + 1-delta)\n"
-        "        g_c_new(z_i,K_m) = (beta * M)^(-1/sigma)\n"
-        "        g_K_new(z_i,K_m) = z_i K_m^alpha + (1-delta)K_m - g_c_new(z_i,K_m)\n"
-        "until the consumption policy update is below epsilon\n"
-        "Simulate all tax regimes on the same productivity path\n"
-        "```"
-    )
-
-    report.add_results(
-        f"At $\\tau_k=30\\%$, deterministic capital is "
-        f"{(1 - solutions[0.30]['Kss']/Kss_notax)*100:.1f}% below the no-tax value. "
-        f"Output is {(1 - solutions[0.30]['Yss']/Yss_notax)*100:.1f}% lower, and "
-        f"consumption is {(1 - solutions[0.30]['Css']/Css_notax)*100:.1f}% lower. "
-        f"Consumption falls less because lower capital also reduces replacement "
-        f"investment. The simulations use one productivity path for all tax rates."
-    )
 
     # --- Figure 1: Steady state capital vs tax rate ---
     fig1, (ax1a, ax1b) = plt.subplots(1, 2, figsize=(13, 5))
@@ -397,7 +288,6 @@ tax revenue $T_{ss}=\tau_k \alpha Y_{ss}$.
     ax1a.set_title("Exact steady states")
     ax1a.legend()
 
-    # Percentage loss relative to zero tax
     ax1b.plot(tau_plot * 100, (Kss_plot / Kss_notax - 1) * 100, "b-", linewidth=2, label="$K_{ss}$")
     ax1b.plot(tau_plot * 100, (Yss_plot / Yss_notax - 1) * 100, "r-", linewidth=2, label="$Y_{ss}$")
     ax1b.plot(tau_plot * 100, (Css_plot / Css_notax - 1) * 100, "g-", linewidth=2, label="$C_{ss}$")
@@ -407,10 +297,7 @@ tax revenue $T_{ss}=\tau_k \alpha Y_{ss}$.
     ax1b.set_title("Exact steady-state losses")
     ax1b.legend()
     fig1.tight_layout()
-    report.add_figure("figures/steady-state-tax.png", "Exact steady-state levels and losses by capital tax rate", fig1,
-        description="The first comparison uses the exact steady-state formula. Capital falls with "
-        "$(1-\\tau_k)^{1/(1-\\alpha)}$, so the tax rate is magnified by the capital share. Output and "
-        "consumption move less than capital, but the economy operates from a lower productive base.")
+    save_figure(fig1, "figures/steady-state-tax.png", dpi=150)
 
     # --- Figure 2: Policy functions across tax rates ---
     fig2, (ax2a, ax2b) = plt.subplots(1, 2, figsize=(13, 5))
@@ -434,10 +321,7 @@ tax revenue $T_{ss}=\tau_k \alpha Y_{ss}$.
     ax2b.set_title("Consumption Policy (median TFP)")
     ax2b.legend(fontsize=8)
     fig2.tight_layout()
-    report.add_figure("figures/policy-by-tax.png", "Capital and consumption policies at median TFP by capital tax rate", fig2,
-        description="At the median productivity state, the policy functions show the tax wedge. "
-        "Higher taxes move the capital policy down. They move the consumption policy up because "
-        "tomorrow's marginal product is partly taxed away.")
+    save_figure(fig2, "figures/policy-by-tax.png", dpi=150)
 
     # --- Figure 3: Simulated capital paths ---
     fig3, (ax3a, ax3b) = plt.subplots(1, 2, figsize=(13, 5))
@@ -459,9 +343,7 @@ tax revenue $T_{ss}=\tau_k \alpha Y_{ss}$.
     ax3b.set_title("Simulated Output Paths")
     ax3b.legend(fontsize=7)
     fig3.tight_layout()
-    report.add_figure("figures/simulation-paths.png", "Simulated capital and output paths by capital tax rate", fig3,
-        description="The simulated paths keep the productivity sequence fixed across regimes. The higher-tax economies "
-        "therefore track the same booms and recessions from permanently lower capital and output levels.")
+    save_figure(fig3, "figures/simulation-paths.png", dpi=150)
 
     # --- Figure 4: Investment response to TFP shock ---
     fig4, (ax4a, ax4b) = plt.subplots(1, 2, figsize=(13, 5))
@@ -471,7 +353,6 @@ tax revenue $T_{ss}=\tau_k \alpha Y_{ss}$.
         I_data = sim["I"][burn:]
         Y_data = sim["Y"][burn:]
 
-        # Distribution of investment rates
         inv_rate = I_data / Y_data
         ax4a.hist(inv_rate, bins=40, alpha=0.4, color=colors_tax[i], density=True,
                   label=f"$\\tau_k$={tau_k:.0%}")
@@ -481,7 +362,6 @@ tax revenue $T_{ss}=\tau_k \alpha Y_{ss}$.
     ax4a.set_title("Distribution of Investment Rate")
     ax4a.legend(fontsize=7)
 
-    # Capital-output ratio
     for i, tau_k in enumerate(tau_values):
         sol = solutions[tau_k]
         sim = simulations[tau_k]
@@ -493,33 +373,15 @@ tax revenue $T_{ss}=\tau_k \alpha Y_{ss}$.
     ax4b.set_title("Distribution of Capital-Output Ratio")
     ax4b.legend(fontsize=7)
     fig4.tight_layout()
-    report.add_figure("figures/investment-distributions.png", "Investment-rate and capital-output distributions by tax regime", fig4,
-        description="Higher taxes shift both distributions left. The economy spends more time "
-        "with a smaller productive base.")
+    save_figure(fig4, "figures/investment-distributions.png", dpi=150)
 
     # --- Table ---
     df_ss = pd.DataFrame(ss_data)
-    report.add_table("tables/steady-state.csv", "Exact Steady States and Simulated Moments by Tax Rate", df_ss,
-        description="The table separates the closed-form steady state from the simulated mean. "
-        "Simulated mean capital is slightly above the deterministic value. Productivity risk and "
-        "the nonlinear policy shift the invariant distribution. The ranking across tax regimes is unchanged.")
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    df_ss.to_csv("tables/steady-state.csv", index=False)
 
-    report.add_takeaway(
-        "The rebate balances the government budget while the intertemporal wedge remains. "
-        "Once the household prices saving with $(1-\\tau_k)MPK$, the economy carries less "
-        "capital into every productivity state. The steady state gives the clean "
-        "long-run comparison. The global policy functions show the same force away "
-        "from steady state."
-    )
-
-    report.add_references([
-        "Chamley, C. (1986). *Optimal Taxation of Capital Income in General Equilibrium with Infinite Lives*. Econometrica.",
-        "Judd, K. (1985). *Redistributive Taxation in a Simple Perfect Foresight Model*. Journal of Public Economics.",
-        "Cao, D., Luo, W., and Nie, G. (2023). *Global GDSGE Models*. Review of Economic Dynamics.",
-    ])
-
-    report.write("README.md")
-    print(f"\nGenerated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
+    save_thumbnail("figures/steady-state-tax.png", "figures/thumb.png")
+    print(f"\nDone: 4 figures + tables/steady-state.csv")
 
 
 if __name__ == "__main__":

@@ -21,11 +21,6 @@ README = (HERE.parent / "README.md").read_text()
 
 def test_f2_violated_invariant_chains_run_in_sequential_loop():
     # run_nuts dispatches chains with a Python for-loop; no vmap/pmap/lax.map.
-    import importlib.util
-
-    spec = importlib.util.spec_from_file_location("dsge_run", HERE.parent / "run.py")
-    mod = importlib.util.module_from_spec(spec)
-    # Only need the source of run_nuts; load module body without main().
     src = RUN_PY
     assert "for c in range(num_chains):" in src
     assert "jax.vmap" not in src.split("def run_nuts")[1].split("\ndef ")[0]

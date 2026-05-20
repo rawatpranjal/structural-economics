@@ -25,8 +25,7 @@ import matplotlib.pyplot as plt
 
 # Add repo root to path for lib/ imports
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.plotting import setup_style, save_figure
-from lib.output import ModelReport
+from lib.plotting import setup_style, save_figure, save_thumbnail
 
 # =============================================================================
 # TRUE PARAMETERS (what we are trying to recover)
@@ -382,94 +381,9 @@ def main():
     print(f"  Mean |est MC - true MC| = ${np.abs(est_mc - true_mc).mean():.3f}")
 
     # =========================================================================
-    # Generate Report
+    # Generate figures and tables
     # =========================================================================
     setup_style()
-
-    report = ModelReport(
-        "Cereal Demand and Markup Recovery from Prices",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "A cereal market has differentiated products, observed shares, observed prices, "
-        "and multi-product owners.\n\n"
-        "The target object is the marginal cost vector behind those prices. Markups are "
-        "the wedge between observed prices and recovered costs.\n\n"
-        "Accounting costs are missing, so the model infers costs from demand and firm "
-        "optimality. Berry inversion turns shares into mean utilities. IV/2SLS estimates "
-        "the price slope using excluded cost variation. Bertrand-Nash FOCs then map "
-        "demand derivatives and ownership into markups."
-    )
-
-    report.add_equations(r"""
-Markets are indexed by $t$. Products are indexed by $j$.
-Mean utility collects characteristics, price, and unobserved quality:
-$$\delta_{jt} =\beta_0+\beta_{\text{sugar}}x^{\text{sugar}}_{jt} +\beta_{\text{fiber}}x^{\text{fiber}}_{jt} -\alpha p_{jt}+\xi_{jt}.$$
-
-Simple logit shares satisfy
-$$s_{jt}=\frac{\exp(\delta_{jt})}{1+\sum_k \exp(\delta_{kt})}, \qquad s_{0t}=\frac{1}{1+\sum_k \exp(\delta_{kt})}.$$
-Berry's inversion turns observed shares into a linear estimating equation:
-$$\log s_{jt}-\log s_{0t} =\beta_0+\beta_{\text{sugar}}x^{\text{sugar}}_{jt} +\beta_{\text{fiber}}x^{\text{fiber}}_{jt} -\alpha p_{jt}+\xi_{jt}.$$
-Identification needs price variation excluded from $\xi_{jt}$. The cost shifter
-plays that role in the simulation.
-
-The supply inversion uses the logit derivative matrix:
-$$\frac{\partial s_k}{\partial p_j} =\begin{cases} {}-\alpha s_j(1-s_j), & k=j,\\ \alpha s_k s_j, & k\neq j. \end{cases}$$
-
-In the supply equations, $p$ and $s$ are vectors collecting prices and shares across all products in a market.
-Firm $f$ chooses prices for its products. Product $j$'s FOC is
-$$0=s_j(p)+\sum_k \mathbf 1[f(j)=f(k)](p_k-c_k)\frac{\partial s_k(p)}{\partial p_j}.$$
-Here $c_k$ denotes the marginal cost of product $k$.
-Let $O_{jk}=1$ when products $j$ and $k$ share an owner. Define the pricing
-matrix
-$$\Omega_{jk}=-O_{jk}\frac{\partial s_k}{\partial p_j}.$$
-The markup vector $m=p-c$ solves
-$$\Omega m=s.$$
-The recovered cost vector is then $c=p-m$. Ownership matters because a firm
-internalizes lost sales across its own products.
-""")
-
-    report.add_model_setup(
-        "The simulation fixes true demand parameters and marginal costs. This makes "
-        "demand bias and cost-recovery error observable.\n\n"
-        f"| Parameter | Value | Description |\n"
-        f"|-----------|-------|-------------|\n"
-        f"| $\\alpha$ | {TRUE_ALPHA} | Price sensitivity |\n"
-        f"| $\\beta_{{\\text{{sugar}}}}$ | {TRUE_BETA_SUGAR} | Sugar taste |\n"
-        f"| $\\beta_{{\\text{{fiber}}}}$ | {TRUE_BETA_FIBER} | Fiber taste |\n"
-        f"| $\\beta_0$ | {TRUE_BETA_CONST} | Base utility |\n"
-        f"| Products | {N_PRODUCTS} | Choco-Bombs, Fiber-Bran, Store-Frosted, Honey-Os, Nutri-Crunch |\n"
-        f"| Markets | {N_MARKETS} | Cross-sectional variation in costs |\n"
-        f"| Firms | 3 | Firms 1 and 2 own 2 products each (multi-product) |"
-    )
-
-    report.add_solution_method(
-        "The calculation has two stages. Demand estimation recovers the price slope that "
-        "drives substitution. The supply inversion asks which costs make observed prices "
-        "optimal.\n\n"
-        "```text\n"
-        "Inputs: product characteristics, prices, shares, instruments, firm labels\n"
-        "Outputs: demand estimates, elasticities, markups, recovered marginal costs\n\n"
-        "1. Convert shares to mean utilities: delta_jt = log(s_jt) - log(s_0t).\n"
-        "2. Estimate linear logit demand by OLS as a biased benchmark.\n"
-        "3. Re-estimate by IV/2SLS using excluded cost shifters for price.\n"
-        "4. For one market, compute the logit derivative matrix Delta.\n"
-        "5. Combine Delta with firm ownership to form Omega.\n"
-        "6. Solve Omega m = s for markups, then set c = p - m.\n"
-        "7. Compare recovered costs with the simulated marginal costs.\n"
-        "```"
-    )
-
-    report.add_results(
-        f"OLS estimates alpha at {ols_alpha:.3f}, below the true value {TRUE_ALPHA:.3f}. "
-        "Unobserved quality raises both demand and price. IV/2SLS estimates alpha at "
-        f"{iv['alpha']:.3f}.\n\n"
-        "In market 0, recovered marginal costs have mean absolute "
-        f"error {np.abs(est_mc - true_mc).mean():.3f} dollars. These outputs show how "
-        "demand bias moves recovered costs."
-    )
 
     # Figure 1: OLS vs IV parameter estimates
     fig1, ax1 = plt.subplots(figsize=(9, 6))
@@ -495,14 +409,7 @@ internalizes lost sales across its own products.
     ax1.set_title("OLS vs IV/2SLS Estimates\n(OLS biased by price endogeneity)")
     ax1.legend()
     ax1.axhline(0, color="black", linewidth=0.5)
-    report.add_figure(
-        "figures/estimation-comparison.png",
-        "Parameter estimates: true, OLS, and IV/2SLS. "
-        "OLS attenuates price sensitivity because high-xi products command higher prices.",
-        fig1,
-        description="OLS misses alpha because unobserved quality raises demand and price "
-        "together. IV uses cost-driven price variation and moves toward the truth.",
-    )
+    save_figure(fig1, "figures/estimation-comparison.png", dpi=150)
 
     # Figure 2: Elasticity heatmap
     fig2, ax2 = plt.subplots(figsize=(8, 7))
@@ -522,13 +429,7 @@ internalizes lost sales across its own products.
     ax2.set_xlabel("Price of product (column)")
     ax2.set_ylabel("Quantity of product (row)")
     ax2.set_title("Price Elasticity Matrix (Logit)\nOff-diagonal columns are identical (IIA)")
-    report.add_figure(
-        "figures/elasticity-heatmap.png",
-        "Elasticity matrix from the estimated logit demand system.",
-        fig2,
-        description="The heatmap shows the demand curvature used by the FOC. Logit "
-        "cross-elasticities depend on rival shares, not product similarity.",
-    )
+    save_figure(fig2, "figures/elasticity-heatmap.png", dpi=150)
 
     # Figure 3: Price decomposition (stacked bar: MC + markup)
     fig3, ax3 = plt.subplots(figsize=(10, 6))
@@ -556,15 +457,7 @@ internalizes lost sales across its own products.
         ax3.text(i - bar_w / 2, est_mc[i] + markups[i] / 2,
                  f"${markups[i]:.2f}", ha="center", va="center", fontsize=8,
                  color="white", fontweight="bold")
-    report.add_figure(
-        "figures/price-decomposition.png",
-        "Price = marginal cost + markup. Estimated MC (green, from Bertrand-Nash FOC) "
-        "compared with true MC (blue).",
-        fig3,
-        description="Demand estimates and ownership turn prices into costs plus markups. "
-        "Product-level errors remain because the estimated price slope is not exact. "
-        "Multi-product firms internalize cannibalization across their own products.",
-    )
+    save_figure(fig3, "figures/price-decomposition.png", dpi=150)
 
     # Table: Estimation results
     table_data = {
@@ -575,13 +468,8 @@ internalizes lost sales across its own products.
         "IV s.e.": [f"{v:.3f}" for v in iv_se],
     }
     df_table = pd.DataFrame(table_data)
-    report.add_table(
-        "tables/estimation-results.csv",
-        "Estimation Results: True vs OLS vs IV/2SLS",
-        df_table,
-        description="The main demand error is alpha, the endogenous price coefficient. "
-        "That error carries into the supply inversion.",
-    )
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    df_table.to_csv("tables/estimation-results.csv", index=False)
 
     # Table: Market-0 cost recovery (makes the MAE figure verifiable from a CSV)
     cost_recovery = {
@@ -596,35 +484,10 @@ internalizes lost sales across its own products.
     df_cost_recovery.loc[len(df_cost_recovery)] = [
         "Mean", "", "", "", "", f"{np.abs(est_mc - true_mc).mean():.3f}",
     ]
-    report.add_table(
-        "tables/cost-recovery-market0.csv",
-        "Market-0 Cost Recovery: Estimated vs True Marginal Cost",
-        df_cost_recovery,
-        description="Each row decomposes a market-0 price into a recovered marginal cost "
-        "and a markup. The final row records the mean absolute error against the "
-        "simulated marginal costs.",
-    )
+    df_cost_recovery.to_csv("tables/cost-recovery-market0.csv", index=False)
 
-    report.add_takeaway(
-        "Markup recovery is only as credible as the estimated demand slope. Berry "
-        "inversion and IV/2SLS estimate that slope from shares, prices, and instruments. "
-        "The Bertrand-Nash FOC then converts demand derivatives and ownership into "
-        "marginal costs. Simple logit makes the inversion clear but imposes rigid "
-        "substitution."
-    )
-
-    report.add_references([
-        "Berry, S. (1994). \"Estimating Discrete-Choice Models of Product "
-        "Differentiation.\" *RAND Journal of Economics* 25(2), 242-262.",
-        "Nevo, A. (2001). \"Measuring Market Power in the Ready-to-Eat Cereal "
-        "Industry.\" *Econometrica* 69(2), 307-342.",
-        "Train, K. (2009). *Discrete Choice Methods with Simulation*. Cambridge "
-        "University Press, 2nd edition, Ch. 3.",
-    ])
-
-    report.write("README.md")
-    print(f"\nGenerated: README.md + {len(report._figures)} figures "
-          f"+ {len(report._tables)} tables")
+    save_thumbnail("figures/estimation-comparison.png", "figures/thumb.png")
+    print(f"\nFigures and tables written.")
 
 
 if __name__ == "__main__":

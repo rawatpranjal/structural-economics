@@ -10,8 +10,7 @@ import pandas as pd
 from scipy.special import expit, logsumexp
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import setup_style, save_figure, save_thumbnail
 
 
 @dataclass(frozen=True)
@@ -199,100 +198,6 @@ def main() -> None:
     print(f"  Weight L1 error: {weight_l1:.3f}")
 
     setup_style()
-    report = ModelReport(
-        "Are People Bayesian? Decision-Rule Mixtures via EM",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "In an urn experiment, a subject sees a small sample from one of two urns. "
-        "The choice is whether the hidden state is high red.\n\n"
-        "The object is a decision rule. It maps red counts and sample sizes into "
-        "a high-urn choice.\n\n"
-        "Bayes' rule gives a benchmark for each task. Repeated choices need EM "
-        "because the researcher observes choices, not each subject's rule."
-    )
-
-    report.add_equations(
-        r"""
-Let $H$ denote the high-red urn and $L$ the low-red urn. A task draws $n$ balls
-and observes $k$ red balls. Let $p_H$ and $p_L$ denote the red-ball probability
-under urns $H$ and $L$. The likelihood-ratio statistic is
-
-$$
-\Lambda(k,n) =
-\log \frac{\Pr(k\mid H,n)}{\Pr(k\mid L,n)} =
-k\log\frac{p_H}{p_L} + (n-k)\log\frac{1-p_H}{1-p_L}.
-$$
-
-With prior $\pi_0=\Pr(H)$, Bayes' rule is
-
-$$
-\Pr(H\mid k,n) =
-\frac{1}{1+\exp[-\{\log(\pi_0/(1-\pi_0))+\Lambda(k,n)\}]}.
-$$
-
-Rule $m$ maps the sufficient statistic and counts into a choice probability
-$q_m(k,n)$. With subject $i$'s choices $d_{it}\in\{0,1\}$ (where $t$ indexes tasks), the panel likelihood
-under rule $m$ is
-
-$$
-L_{im} =
-\prod_t q_m(k_t,n_t)^{d_{it}}
-[1-q_m(k_t,n_t)]^{1-d_{it}}.
-$$
-
-The finite-mixture likelihood is
-
-$$
-\ell(w)=\sum_i \log\left[\sum_m w_m L_{im}\right],
-\qquad \sum_m w_m=1,\quad w_m\geq 0.
-$$
-
-The posterior probability that subject $i$ follows rule $m$ is
-
-$$
-\tau_{im} =
-\frac{w_m L_{im}}{\sum_h w_h L_{ih}}.
-$$
-
-Here $h$ is a summation index ranging over the same rule set as $m$.
-"""
-    )
-
-    report.add_model_setup(
-        f"| Object | Value | Role |\n"
-        f"|--------|-------|------|\n"
-        f"| Subjects | {n_subjects} | Repeated-choice panel units |\n"
-        f"| Tasks per subject | {n_tasks} | Variation used to classify latent rules |\n"
-        f"| Prior high urn | {prior_h:.2f} | Baseline probability of state $H$ |\n"
-        f"| Red probability under $H$ | {p_red_h:.2f} | Signal distribution for high urn |\n"
-        f"| Red probability under $L$ | {p_red_l:.2f} | Signal distribution for low urn |\n"
-        f"| Draw counts | {', '.join(str(x) for x in draw_counts)} | Signal-size variation separates Bayes and cutoff rules |\n"
-        f"| Bayes-conservative separating tasks | {bayes_conservative_split} | Tasks with posterior between the two decision cutoffs |\n"
-        f"| Tremble rate | {tremble:.2f} | Symmetric error around each deterministic rule |\n"
-        f"| Latent rules | {len(RULES)} | Bayesian and cutoff decision types |"
-    )
-
-    report.add_solution_method(
-        "Each task is first reduced to the log likelihood ratio. This statistic is "
-        "enough for the Bayesian posterior.\n\n"
-        "EM then estimates the shares of fixed "
-        "candidate rules.\n\n"
-        "```text\n"
-        "Algorithm: EM for latent decision rules\n"
-        "Input: repeated choices d_it, task counts (k_t, n_t), candidate rules m=1,...,M\n"
-        "1. For each task, compute Lambda(k_t,n_t)\n"
-        "2. For each rule, compute q_m(k_t,n_t), the probability of choosing high\n"
-        "3. Initialize weights w_m = 1/M\n"
-        "4. Repeat until the log likelihood changes by less than the tolerance:\n"
-        "   E step: tau_im = w_m L_im / sum_h w_h L_ih\n"
-        "   M step: w_m = mean_i tau_im\n"
-        "5. Assign each subject to argmax_m tau_im\n"
-        "Output: mixture shares, posterior responsibilities, allocation accuracy\n"
-        "```"
-    )
 
     display_draws = 5
     k_grid = np.arange(0, display_draws + 1)
@@ -310,18 +215,7 @@ Here $h$ is a summation index ranging over the same rule set as $m$.
     ax1.set_ylabel("Posterior probability of high urn")
     ax1.set_title("Bayesian State Variable")
     ax1.legend()
-    report.add_results(
-        "The likelihood ratio orders tasks by evidence for the high-red urn. "
-        f"With {display_draws} draws, a count of three red balls crosses the Bayes threshold. "
-        "It does not cross the conservative cutoff. Such tasks separate exact "
-        "Bayesian updating from stricter rules."
-    )
-    report.add_figure(
-        "figures/bayes-likelihood-ratio.png",
-        "Bayesian posterior as a function of the likelihood ratio",
-        fig1,
-        description="Signal counts become posterior beliefs before classification.",
-    )
+    save_figure(fig1, "figures/bayes-likelihood-ratio.png", dpi=150)
 
     x_pos = np.arange(len(RULES))
     fig2, ax2 = plt.subplots(figsize=(8, 4.5))
@@ -333,37 +227,14 @@ Here $h$ is a summation index ranging over the same rule set as $m$.
     ax2.set_ylabel("Mixture weight")
     ax2.set_title("Latent Rule Shares")
     ax2.legend()
-    report.add_results(
-        "EM estimates the population share of each fixed rule. "
-        f"The L1 distance between estimated and true weights is **{weight_l1:.3f}**. "
-        "The estimate answers one heterogeneity question: how many subjects behave "
-        "like each rule?"
-    )
-    report.add_figure(
-        "figures/mixture-weights.png",
-        "True and estimated latent rule shares",
-        fig2,
-        description="Repeated choices identify shares without observing rule labels.",
-    )
+    save_figure(fig2, "figures/mixture-weights.png", dpi=150)
 
     fig3, ax3 = plt.subplots(figsize=(7, 4.5))
     ax3.hist(max_posterior, bins=np.linspace(0, 1, 21), color="tab:green", alpha=0.85)
     ax3.set_xlabel("Largest posterior responsibility")
     ax3.set_ylabel("Subjects")
     ax3.set_title("Classification Confidence")
-    report.add_results(
-        "Responsibilities give subject-level rule probabilities. Diffuse responsibilities "
-        "mark choice histories that several rules can explain. Hard allocation accuracy "
-        f"is **{type_accuracy:.3f}**. Bayes differs from the conservative rule on "
-        f"{bayes_conservative_split} tasks. It differs from the red-share rule on "
-        f"{bayes_share_split} tasks and the raw-count rule on {bayes_count_split} tasks."
-    )
-    report.add_figure(
-        "figures/classification-confidence.png",
-        "Posterior confidence in assigned latent rule",
-        fig3,
-        description="Max responsibilities show how confident the type assignment is.",
-    )
+    save_figure(fig3, "figures/classification-confidence.png", dpi=150)
 
     weights_table = pd.DataFrame(
         {
@@ -374,24 +245,10 @@ Here $h$ is a summation index ranging over the same rule set as $m$.
             "Error": weights_hat - true_weights,
         }
     )
-    report.add_table(
-        "tables/mixture-weights.csv",
-        "Latent rule weight recovery",
-        weights_table.round({"True weight": 4, "Estimated weight": 4, "Error": 4}),
-        description=(
-            f"EM converges in {estimates['iterations']} iterations; log likelihood is "
-            f"{float(estimates['log_likelihood']):.2f}."
-        ),
-    )
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    weights_table.round({"True weight": 4, "Estimated weight": 4, "Error": 4}).to_csv("tables/mixture-weights.csv", index=False)
 
-    report.add_table(
-        "tables/type-allocation.csv",
-        "True versus assigned latent rule counts",
-        allocation_table(panel["type_id"], assigned),
-        description=(
-            "Rows are true simulated rules. Columns are posterior-modal assignments."
-        ),
-    )
+    allocation_table(panel["type_id"], assigned).to_csv("tables/type-allocation.csv", index=False)
 
     diagnostics = pd.DataFrame(
         {
@@ -402,30 +259,9 @@ Here $h$ is a summation index ranging over the same rule set as $m$.
             "bayes_count_split": [bayes_count_split],
         }
     )
-    report.add_table(
-        "tables/diagnostics.csv",
-        "EM and rule-separation diagnostics",
-        diagnostics.round({"log_likelihood": 2}),
-        description=(
-            "Persists the runtime scalars quoted in the prose: the EM iteration "
-            "count and log likelihood, and the number of tasks on which the Bayes "
-            "rule differs from each alternative rule."
-        ),
-    )
+    diagnostics.round({"log_likelihood": 2}).to_csv("tables/diagnostics.csv", index=False)
 
-    report.add_takeaway(
-        "The likelihood ratio gives a task-level belief benchmark. EM uses repeated "
-        "choices to estimate shares of latent decision rules. The method is useful "
-        "when simple rules are meaningful but rule labels are unobserved."
-    )
-
-    report.add_references(
-        [
-            "[El-Gamal, M. A. and Grether, D. M. (1995). Are People Bayesian? Uncovering Behavioral Strategies. *Journal of the American Statistical Association*, 90(432), 1137-1145.](https://doi.org/10.1080/01621459.1995.10476622)",
-            "[McLachlan, G. and Peel, D. (2000). *Finite Mixture Models*. Wiley.](https://doi.org/10.1002/0471721182)",
-        ]
-    )
-    report.write("README.md")
+    save_thumbnail("figures/bayes-likelihood-ratio.png", "figures/thumb.png")
 
 
 if __name__ == "__main__":

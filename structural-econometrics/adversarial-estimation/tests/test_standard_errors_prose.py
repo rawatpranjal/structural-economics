@@ -41,10 +41,10 @@ def test_neural_mc_sd_exceeds_asymptotic():
 def test_prose_does_not_claim_all_mc_below_asymptotic():
     """Honest-fix pass condition.
 
-    The run.py Results prose must not assert that all Monte Carlo numbers
+    The README Results prose must not assert that all Monte Carlo numbers
     are below the asymptotic prediction, because the neural-net row breaks
     that direction. FAILS on the buggy prose, PASSES once the prose is
     corrected to acknowledge the neural-net exception.
     """
-    src = RUN_PY.read_text()
-    assert "All Monte Carlo numbers are slightly below the asymptotic" not in src
+    readme = (TUTORIAL_DIR / "README.md").read_text()
+    assert "All Monte Carlo numbers are slightly below the asymptotic" not in readme

@@ -18,8 +18,7 @@ from scipy.stats import binom
 
 # Add repo root to path for lib/ imports
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.plotting import setup_style, save_figure
-from lib.output import ModelReport
+from lib.plotting import setup_style, save_figure, save_thumbnail
 
 
 # =============================================================================
@@ -343,133 +342,7 @@ def main():
 
     print(f"\n  E[N] = {expected_N:.2f}, mode = {mode_N}, zero-profit N = {N_zero_profit:.1f}")
 
-    # =========================================================================
-    # Generate Report
-    # =========================================================================
     setup_style()
-
-    report = ModelReport(
-        "Entry, Exit, and Market Structure in Oligopoly",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "Consider a local market with eight active firms. Some firms may be close to leaving. "
-        "Potential entrants wait outside because entry requires a sunk cost. The firm count is "
-        "therefore a state variable.\n\n"
-        "The model uses a symmetric Cournot market. The state is the active firm count $N_t$. "
-        "Incumbents pay fixed cost $f$ to operate. Entrants pay sunk cost $K$ before earning "
-        "future profits.\n\n"
-        "Exit and entry rules depend on future market sizes. We solve a finite-state Bellman "
-        "fixed point for incumbent values. The implied Markov chain gives persistence and the "
-        "long-run firm-count distribution."
-    )
-
-    report.add_equations(
-        r"""
-Let $N_t\in\{1,\ldots,N_{\max}\}$ denote the number of active firms at the start
-of period $t$. With inverse demand $P=a-bQ$ and constant marginal cost $c$, the
-symmetric Cournot flow profit before fixed cost is
-
-$$
-\pi(N)=\frac{(a-c)^2}{b(N+1)^2}.
-$$
-
-An incumbent's exit value is normalized to zero. If it stays, its deterministic
-surplus is
-
-$$
-\Delta(N)=\pi(N)-f+\beta \mathbb{E}\left[V(N_{t+1})\mid N_t=N,\text{ stay}\right].
-$$
-
-The idiosyncratic stay shock has logistic scale $\sigma_\varepsilon$. The
-pre-shock value is the log-sum inclusive value
-
-$$
-V(N)=\sigma_\varepsilon
-\log\left[1+\exp\left(\frac{\Delta(N)}{\sigma_\varepsilon}\right)\right],
-$$
-
-The incumbent exit probability is
-
-$$
-p_{\mathrm{exit}}(N)=
-\frac{1}{1+\exp\{\Delta(N)/\sigma_\varepsilon\}}.
-$$
-
-Entry is decided at the current market state, before the realized exit draws.
-Potential entrants use the expected survivor count
-$\bar S(N_t)=\mathrm{round}\{N_t[1-p_{\mathrm{exit}}(N_t)]\}$ and enter until
-the next entrant would not cover the sunk cost. Entrant $m$ enters only if its
-post-entry value $V(\bar S(N_t)+m)$ is at least $K$. Thus
-
-$$
-e(N_t)=\max\{e\geq 0: \bar S(N_t)+e\leq N_{\max}
-\ \text{and}\ V(\bar S(N_t)+m)\geq K\ \text{for all}\ m=1,\ldots,e\},
-$$
-
-with $e(N_t)=0$ when the first entrant does not cover $K$.
-
-Survival and entry define the transition law.
-
-$$
-S_t\sim \mathrm{Binomial}\left(N_t,1-p_{\mathrm{exit}}(N_t)\right),
-\qquad
-N_{t+1}=\max\{1,\min(S_t+e(N_t),N_{\max})\}.
-$$
-"""
-    )
-
-    report.add_model_setup(
-        f"| Parameter | Value | Description |\n"
-        f"|-----------|-------|-------------|\n"
-        f"| $a$       | {a}  | Demand intercept |\n"
-        f"| $b$       | {b}  | Demand slope |\n"
-        f"| $c$       | {c}  | Marginal cost |\n"
-        f"| $f$       | {f}  | Fixed operating cost (per period) |\n"
-        f"| $K$       | {K}  | Sunk entry cost |\n"
-        f"| $\\beta$  | {beta} | Discount factor |\n"
-        f"| $\\sigma_\\varepsilon$ | {sigma_eps} | Logistic shock scale |\n"
-        f"| $N_{{\\max}}$ | {N_max} | Maximum number of firms |\n"
-        f"| State space | $1,\\ldots,{N_max}$ | Operating markets; zero-firm market entry is not modeled |\n"
-        f"| Simulation periods | {T_sim} | Market path shown in the results |"
-    )
-
-    report.add_solution_method(
-        "The numerical object is a fixed point in incumbent continuation values. Given $V(N)$, "
-        "the exit rule, entry cutoff, and transition matrix follow. The fixed point prices "
-        "incumbency as an option.\n\n"
-        "The algorithm iterates on $V(N)$. Each pass computes exit probabilities and the "
-        "free-entry cutoff. It then integrates over survivor counts and updates the log-sum "
-        "value. The final policies define a Markov chain over firm counts.\n\n"
-        "```text\n"
-        "Algorithm: symmetric entry-exit fixed point\n"
-        "Input: state grid {1,...,N_max}, primitives (a,b,c,f,K,beta,sigma), tolerance epsilon\n"
-        "Output: V(N), p_exit(N), expected entry, transition matrix T, stationary distribution mu\n"
-        "Initialize V_0(N) from myopic operating values\n"
-        "repeat for n = 0, 1, 2, ...:\n"
-        "    for each market size N:\n"
-        "        compute current Cournot profit pi(N)\n"
-        "        compute p_exit(N) from the logit stay/exit rule using V_n\n"
-        "        compute expected survivor count S_bar(N)\n"
-        "        choose entrants e(N) by the cutoff V_n(S_bar(N)+e) >= K\n"
-        "        for s = 0,...,N-1 surviving rivals (the focal firm always stays):\n"
-        "            weight = Binomial(s; N-1 rivals, 1 - p_exit(N))\n"
-        "            add weight * V_n(min{s + 1 + e(N), N_max}) to E[V(N') | stay]\n"
-        "        update V_{n+1}(N) with the log-sum inclusive value of E[V(N') | stay]\n"
-        "    replace V_n by a damped average of V_n and V_{n+1}\n"
-        "until max_N |V_{n+1}(N)-V_n(N)| < epsilon\n"
-        "Construct T(N'|N): survivors ~ Binomial(N firms, 1 - p_exit(N)),\n"
-        "  plus the same state-level entry rule. The VFI step above conditions on\n"
-        "  the focal firm staying, so it draws from the N-1 rivals; the transition\n"
-        "  matrix is unconditional, so it draws from all N firms.\n"
-        "Iterate mu_{m+1}=mu_m T until mu is invariant\n"
-        "```\n\n"
-        f"The value iteration converged in **{info['iterations']} iterations** with "
-        f"sup-norm error **{info['error']:.2e}**. The invariant distribution solves "
-        "$\\mu=\\mu T$ for the policy-induced Markov chain, where $T$ is the transition matrix."
-    )
 
     # --- Figure 1: Value Function ---
     fig1, ax1 = plt.subplots()
@@ -482,17 +355,7 @@ $$
     ax1.set_ylabel("Value $V(N)$")
     ax1.set_title("Incumbent Value Function")
     ax1.legend()
-    report.add_figure(
-        "figures/value-function.png",
-        "Incumbent value function by number of active firms",
-        fig1,
-        description=(
-            "Incumbency value falls as more firms divide Cournot rents. The dashed line is the "
-            "sunk entry cost. Below it, a new firm would not enter. An incumbent may still stay "
-            "because it already paid the cost. The vertical line marks the static "
-            "zero-flow-profit benchmark."
-        ),
-    )
+    save_figure(fig1, "figures/value-function.png", dpi=150)
 
     # --- Figure 2: Entry and Exit Probabilities ---
     fig2, ax2a = plt.subplots()
@@ -514,16 +377,7 @@ $$
     lines1, labels1 = ax2a.get_legend_handles_labels()
     lines2, labels2 = ax2b.get_legend_handles_labels()
     ax2a.legend(lines1 + lines2, labels1 + labels2, loc="center right")
-    report.add_figure(
-        "figures/entry-exit-probabilities.png",
-        "Exit probability and expected entry by market size",
-        fig2,
-        description=(
-            "Exit risk rises with crowding because profits and continuation values fall. Expected "
-            "entry is high when the market is thin. It falls once post-entry value drops below "
-            "$K$. The gap between thresholds is the hysteresis region created by sunk entry."
-        ),
-    )
+    save_figure(fig2, "figures/entry-exit-probabilities.png", dpi=150)
 
     # --- Figure 3: Stationary Distribution ---
     fig3, ax3 = plt.subplots()
@@ -535,16 +389,7 @@ $$
     ax3.set_ylabel("Probability")
     ax3.set_title("Stationary Distribution of Market Structure")
     ax3.legend()
-    report.add_figure(
-        "figures/stationary-distribution.png",
-        "Stationary distribution of active firms",
-        fig3,
-        description=(
-            "The invariant distribution is tightly centered because free entry offsets exits "
-            "near the profitable range. The black markers show a long simulation from the same "
-            f"Markov chain. The maximum simulation gap is **{max_dist_gap:.2e}** after burn-in."
-        ),
-    )
+    save_figure(fig3, "figures/stationary-distribution.png", dpi=150)
 
     # --- Figure 4: Simulated Market Evolution ---
     fig4, (ax4a, ax4b) = plt.subplots(2, 1, figsize=(10, 8), sharex=True)
@@ -565,16 +410,7 @@ $$
     ax4b.set_title("Entry and Exit Over Time")
     ax4b.legend()
     fig4.tight_layout()
-    report.add_figure(
-        "figures/simulated-market.png",
-        "Simulated market structure and turnover flows",
-        fig4,
-        description=(
-            "The simulated path shows the same object over time. The firm count stays near the "
-            "invariant mean. The lower panel shows the turnover events that prevent absorption. "
-            "With this calibration, turnover is modest."
-        ),
-    )
+    save_figure(fig4, "figures/simulated-market.png", dpi=150)
 
     # --- Table 1: Equilibrium Statistics ---
     stats_data = {
@@ -606,12 +442,8 @@ $$
         ],
     }
     df_stats = pd.DataFrame(stats_data)
-    report.add_table("tables/equilibrium-statistics.csv", "Equilibrium Statistics", df_stats,
-        description=(
-            "Expected market size lies below the static zero-profit count. Entrants must "
-            "recover sunk cost $K$ plus the operating cost. Incumbents still have continuation "
-            "value, so exit remains smooth."
-        ))
+    Path("tables/equilibrium-statistics.csv").parent.mkdir(parents=True, exist_ok=True)
+    df_stats.to_csv("tables/equilibrium-statistics.csv", index=False)
 
     # --- Table 2: Value and Policies by N ---
     sample_N = np.array([1, 2, 3, 5, 7, 10, 15, 20, 25, 30])
@@ -625,31 +457,11 @@ $$
         "Expected entry": [f"{entry_count[n - 1]:.2f}" for n in sample_N],
     }
     df_detail = pd.DataFrame(detail_data)
-    report.add_table(
-        "tables/value-by-N.csv",
-        "Value Function and Policies at Selected Market Structures",
-        df_detail,
-        description=(
-            "Thin markets have high incumbent value and attract entrants. Crowded markets have "
-            "lower profits and higher exit risk. Entry shuts down before incumbents are certain "
-            "to leave."
-        ),
-    )
+    Path("tables/value-by-N.csv").parent.mkdir(parents=True, exist_ok=True)
+    df_detail.to_csv("tables/value-by-N.csv", index=False)
 
-    report.add_takeaway(
-        "The entry and exit conditions separate. Static profits show whether a firm covers the "
-        "operating cost. Dynamic values show whether keeping the incumbency option is "
-        "worthwhile. A sunk entry cost creates a band where incumbents stay and entrants wait. "
-        "That band makes firm counts persistent in Ericson-Pakes style IO models."
-    )
-
-    report.add_references([
-        "Ericson, R. and Pakes, A. (1995). Markov-perfect industry dynamics: A framework for empirical work. *Review of Economic Studies*, 62(1):53-82.",
-        "Hopenhayn, H. (1992). Entry, exit, and firm dynamics in long run equilibrium. *Econometrica*, 60(5):1127-1150.",
-    ])
-
-    report.write("README.md")
-    print(f"\nGenerated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
+    save_thumbnail("figures/value-function.png", "figures/thumb.png")
+    print("\nFigures and tables written.")
 
 
 if __name__ == "__main__":

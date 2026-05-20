@@ -11,8 +11,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import save_figure, save_thumbnail, setup_style
 
 
 CONCEPTS = ["inflation", "labor", "credit", "output", "stress"]
@@ -453,92 +452,6 @@ def main() -> None:
     selection_table = round_selection(results["selection_summary"])
 
     setup_style()
-    report = ModelReport(
-        "Policy Forecasting with Ridge, Lasso, and Sparsity",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "A central bank moves the policy rate after reading a large flow of economic text. "
-        "Inflation, labor, credit, output, and financial-stress language all contain signals. "
-        "Each individual indicator is noisy.\n\n"
-        "The economic object is the policy shock: the part of the rate change not predicted "
-        "by the information set available at the meeting. A better forecast changes the "
-        "measured shock series.\n\n"
-        "The example simulates many correlated policy-concept indicators. A few signals are "
-        "strong, but many weak signals also matter. That distinction is useful because a "
-        "sparse selected model is not the same statement as a sparse economy."
-    )
-
-    report.add_equations(
-        r"""
-Let $r_t$ be the policy-rate level and let $\Delta r_t$ be the rate change at
-meeting $t$. The information set contains a lagged policy rate and a vector
-$x_t$ of standardized policy-concept indicators.
-
-$$\Delta r_t = \phi r_{t-1} + x_t'\beta + u_t.$$
-
-Here $\phi$ is the autoregressive coefficient on the lagged policy rate.
-
-The systematic policy component is
-
-$$m_t = \phi r_{t-1} + x_t'\beta,$$
-
-and the policy shock is the residual
-
-$$u_t = \Delta r_t - m_t.$$
-
-The forecast uses a linear rule $f_t=b_0+z_t'b$, where
-$z_t=(r_{t-1},x_t')'$. Ridge estimates the coefficients by
-
-$$\hat b_{\mathrm{ridge}} = \arg\min_b \frac{1}{n}\sum_{t=1}^n (\Delta r_t-b_0-z_t'b)^2 +\lambda\sum_{j=1}^p b_j^2.$$
-
-Lasso replaces the quadratic penalty with an absolute-value penalty.
-
-$$\hat b_{\mathrm{lasso}} = \arg\min_b \frac{1}{n}\sum_{t=1}^n (\Delta r_t-b_0-z_t'b)^2 +\lambda\sum_{j=1}^p |b_j|.$$
-
-The tuning parameter $\lambda$ is chosen on a blocked validation sample. Ridge
-keeps many small correlated signals. Lasso can set coefficients exactly to
-zero, so it produces a compressed selected set.
-"""
-    )
-
-    report.add_model_setup(
-        "| Object | Value | Role |\n"
-        "|---|---:|---|\n"
-        f"| Policy meetings | {meetings} | Synthetic rate-setting observations |\n"
-        f"| Policy-concept groups | {len(CONCEPTS)} | Inflation, labor, credit, output, and financial stress |\n"
-        f"| Indicators per group | {indicators_per_concept} | Noisy text-like signals per concept |\n"
-        f"| Total indicators | {n_indicators} | Wide predictor block used by ridge and lasso |\n"
-        f"| Training meetings | {split['train_end']} | First block used to tune penalties |\n"
-        f"| Validation meetings | {split['valid_end'] - split['train_end']} | Middle block used to choose $\\lambda$ |\n"
-        f"| Test meetings | {split['n_obs'] - split['valid_end']} | Final block used for reported forecast losses |\n"
-        f"| True shock sd | 0.20 | Innovation in the policy rule |\n"
-        f"| Ridge $\\lambda$ | {results['ridge_penalty']:.4f} | Validation-selected shrinkage |\n"
-        f"| Lasso $\\lambda$ | {results['lasso_penalty']:.4f} | Validation-selected sparsity |"
-    )
-
-    report.add_solution_method(
-        "The forecast exercise uses time blocks rather than random folds. The validation block "
-        "comes after the training block, and the test block comes last. This keeps the tuning "
-        "exercise close to a real policy-forecasting problem.\n\n"
-        "Ridge has a closed-form penalized least-squares solution after centering and scaling "
-        "the regressors. Lasso uses cyclic coordinate descent. The intercept is never penalized.\n\n"
-        "```text\n"
-        "Procedure: policy-shock measurement with shrinkage forecasts\n"
-        "Inputs: rate changes Delta r_t, lagged rate r_{t-1}, indicators x_t\n"
-        "Output: forecasts f_t and measured shocks e_t = Delta r_t - f_t\n\n"
-        "1. Split meetings into training, validation, and test blocks.\n"
-        "2. Fit the lag-only benchmark on the training-plus-validation block.\n"
-        "3. For each ridge penalty lambda:\n"
-        "       fit ridge on the training block and record validation RMSE.\n"
-        "4. For each lasso penalty lambda:\n"
-        "       fit lasso on the training block and record validation RMSE.\n"
-        "5. Refit ridge and lasso on training-plus-validation data using selected lambdas.\n"
-        "6. On the test block, compare forecast RMSE and residual-shock correlation.\n"
-        "```"
-    )
 
     y_test = results["y_test"]
     predictions = results["predictions"]
@@ -571,18 +484,7 @@ zero, so it produces a compressed selected set.
     ax1b.set_title("Forecast loss over the test block")
     ax1b.legend(fontsize=8)
     fig1.tight_layout()
-    ridge_rmse = float(metrics_table.loc[metrics_table["Model"] == "Ridge", "Test RMSE"].iloc[0])
-    lag_rmse = float(metrics_table.loc[metrics_table["Model"] == "Lag-only", "Test RMSE"].iloc[0])
-    report.add_figure(
-        "figures/forecast-comparison.png",
-        "Test-set policy-rate forecasts and cumulative squared errors",
-        fig1,
-        description=(
-            "The forecast plot compares measured policy movements on the held-out meetings. "
-            f"Ridge lowers RMSE from {lag_rmse:.3f} for the lag-only benchmark to {ridge_rmse:.3f}. "
-            "Wide OLS has more freedom but pays for estimating many noisy coefficients."
-        ),
-    )
+    save_figure(fig1, "figures/forecast-comparison.png", dpi=150)
 
     coef = results["coef"]
     true_beta = coef["true"][1:]
@@ -602,17 +504,7 @@ zero, so it produces a compressed selected set.
     ax2.set_title("Shrinkage on the strongest policy indicators")
     ax2.legend()
     fig2.tight_layout()
-    lasso_selected = int(metrics_table.loc[metrics_table["Model"] == "Lasso", "Selected indicators"].iloc[0])
-    report.add_figure(
-        "figures/coefficient-shrinkage.png",
-        "True, ridge, and lasso coefficients for the largest true signals",
-        fig2,
-        description=(
-            "The coefficient plot sorts indicators by the true signal size. Ridge shrinks many "
-            "correlated predictors toward zero without selecting a small subset. "
-            f"Lasso selects {lasso_selected} indicators, so it compresses the rule more aggressively."
-        ),
-    )
+    save_figure(fig2, "figures/coefficient-shrinkage.png", dpi=150)
 
     fig3, (ax3a, ax3b) = plt.subplots(1, 2, figsize=(13, 5))
     ax3a.plot(test_axis, shock_test, color="black", linewidth=1.6, label="True shock")
@@ -637,17 +529,7 @@ zero, so it produces a compressed selected set.
     ax3b.set_title("Shock measurement")
     ax3b.legend(fontsize=8)
     fig3.tight_layout()
-    ridge_shock_corr = float(metrics_table.loc[metrics_table["Model"] == "Ridge", "Shock correlation"].iloc[0])
-    report.add_figure(
-        "figures/shock-recovery.png",
-        "Recovered policy shocks against the true residual shocks",
-        fig3,
-        description=(
-            "Policy shocks are residuals from the forecast rule. When the systematic component "
-            f"is forecast better, the residual series lines up more closely with the true shock. "
-            f"The ridge residual-shock correlation is {ridge_shock_corr:.3f}."
-        ),
-    )
+    save_figure(fig3, "figures/shock-recovery.png", dpi=150)
 
     ridge_curve = results["ridge_curve"]
     lasso_curve = results["lasso_curve"]
@@ -669,56 +551,15 @@ zero, so it produces a compressed selected set.
     ax4b_twin.set_ylabel("Selected indicators")
     ax4b.set_title("Lasso validation and selected-set size")
     fig4.tight_layout()
-    report.add_figure(
-        "figures/validation-curves.png",
-        "Blocked-validation curves over ridge and lasso penalty strengths",
-        fig4,
-        description=(
-            "The validation curves show the tuning tradeoff. Low penalties fit many noisy "
-            "coefficients. High penalties can underfit. For lasso, the selected-set size falls "
-            "as the penalty rises."
-        ),
-    )
+    save_figure(fig4, "figures/validation-curves.png", dpi=150)
 
-    report.add_table(
-        "tables/forecast_metrics.csv",
-        "Forecast and shock-measurement comparison",
-        metrics_table,
-        description=(
-            "The forecast table reports test-block loss and residual-shock recovery. "
-            "Relative RMSE divides each model's RMSE by the lag-only benchmark."
-        ),
-    )
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    metrics_table.to_csv("tables/forecast_metrics.csv", index=False)
+    selection_table.to_csv("tables/selection_summary.csv", index=False)
 
-    report.add_table(
-        "tables/selection_summary.csv",
-        "Coefficient and selection summary",
-        selection_table,
-        description=(
-            "The selection table separates statistical selection from economic sparsity. "
-            "The true rule contains many small nonzero indicators, so missed dense signal "
-            "matters even when the selected model forecasts well. Note that the "
-            "false-inclusion count is always zero by DGP construction: every one of "
-            "the 120 indicators has a nonzero true coefficient, so any indicator lasso "
-            "selects is true by construction. The zero reflects the DGP, not lasso "
-            "precision, and should not be read as a measurement of lasso selectivity."
-        ),
-    )
+    save_thumbnail("figures/forecast-comparison.png", "figures/thumb.png")
 
-    dense_share_value = float(results["selection_summary"].loc[
-        selection_table["Statistic"] == "Dense-signal share missed by lasso",
-        "Value",
-    ].iloc[0])
-    report.add_takeaway(
-        "Ridge is useful when many weak correlated predictors contain real information. "
-        "Lasso is useful when the researcher wants selection and compression. In this run, "
-        f"lasso misses about {100.0 * dense_share_value:.1f}% of the weak dense signal while still producing a "
-        "compact forecasting rule. Sparsity is therefore a modeling restriction, not an "
-        "economic conclusion by itself."
-    )
-
-    report.write("README.md")
-    print(f"Generated README.md with {len(report._figures)} figures and {len(report._tables)} tables.")
+    print(f"Generated 4 figures and 2 tables.")
 
 
 if __name__ == "__main__":

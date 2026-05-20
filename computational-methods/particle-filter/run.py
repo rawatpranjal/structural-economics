@@ -15,8 +15,7 @@ import pandas as pd
 from scipy.special import logsumexp
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import save_figure, save_thumbnail, setup_style
 
 
 PSI = np.array([[1.0, 0.9]])
@@ -289,160 +288,6 @@ def main() -> None:
     print(f"  bootstrap RMSE vs Kalman={np.sqrt(np.mean(mse_boot)):.4f}")
     print(f"  optimal RMSE vs Kalman={np.sqrt(np.mean(mse_opt)):.4f}")
 
-    report = ModelReport(
-        "Nowcasting Hidden Economic States by Particle Filtering",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "A policy analyst observes a noisy activity indicator and wants a current estimate of "
-        "the hidden state. The state may combine persistent demand pressure and real activity.\n\n"
-        "The object is the filtered distribution $p(s_t \\mid y_{1:t})$. Its mean is the nowcast "
-        "used in later likelihood or policy calculations. The whole distribution matters because "
-        "uncertainty, not only the point estimate, determines how much the next signal should move "
-        "the state.\n\n"
-        "Filtering is a predict-update problem. The transition equation carries yesterday's "
-        "distribution forward. The likelihood of the new signal then reweights that prediction. "
-        "A Kalman filter does this exactly in the linear Gaussian case. A particle filter does the "
-        "same Bayesian recursion with simulated states, so it also applies when analytic filtering "
-        "is unavailable."
-    )
-
-    report.add_equations(
-        r"""
-Let $s_t$ collect two latent economic states, and let $y_t$ be the observed
-signal. The state-space model is:
-
-$$
-y_t = \Psi s_t + u_t, \qquad s_t = \Phi s_{t-1} + \epsilon_t.
-$$
-
-Here $u_t$ is measurement noise and $\epsilon_t$ is process noise.
-
-Particles approximate the filtered distribution with weighted simulated states.
-The filtering recursion has two steps. Prediction integrates over yesterday's
-filtered distribution:
-
-$$
-p(s_t \mid y_{1:t-1}) =
-\int p(s_t \mid s_{t-1})p(s_{t-1} \mid y_{1:t-1})ds_{t-1}.
-$$
-
-Updating multiplies that prior by the likelihood of the new signal:
-
-$$
-p(s_t \mid y_{1:t}) =
-\frac{p(y_t \mid s_t)p(s_t \mid y_{1:t-1})}
-{p(y_t \mid y_{1:t-1})}.
-$$
-
-The denominator is also the likelihood increment:
-
-$$
-p(y_t \mid y_{1:t-1}) =
-\int p(y_t \mid s_t)p(s_t \mid y_{1:t-1})ds_t.
-$$
-
-Particles replace those integrals with simulated draws and importance weights.
-For a proposal density $q$, a proposed particle receives unnormalized weight:
-
-$$
-\widetilde w_t^{(i)} =
-\frac{p(y_t \mid s_t^{(i)})p(s_t^{(i)} \mid s_{t-1}^{(i)})}
-{q(s_t^{(i)} \mid s_{t-1}^{(i)}, y_t)}.
-$$
-
-Normalized weights approximate the posterior:
-
-$$
-\widehat p(s_t \mid y_{1:t}) =
-\sum_{i=1}^{N} w_t^{(i)} \delta_{s_t^{(i)}}.
-$$
-
-The bootstrap particle filter propagates particles from:
-
-$$
-q_B(s_t \mid s_{t-1}^{(i)},y_t) =
-p(s_t \mid s_{t-1}^{(i)})
-$$
-
-so its weights are just the observation likelihood:
-
-$$
-w_t^{(i)} \propto p(y_t \mid s_t^{(i)}).
-$$
-
-The conditionally optimal proposal uses the current observation:
-
-$$
-q_O(s_t \mid s_{t-1}^{(i)},y_t) =
-p(s_t \mid s_{t-1}^{(i)}, y_t).
-$$
-
-In this linear Gaussian example, the optimal proposal is available in closed
-form. It draws particles from states that are already plausible after seeing
-$y_t$, then weights the ancestor by the predictive likelihood of the signal.
-
-Effective sample size summarizes weight concentration:
-
-$$
-ESS_t = \frac{1}{\sum_i (w_t^{(i)})^2}.
-$$
-
-When signals are sharp, most bootstrap particles land far from the observed
-$y_t$. Their likelihood weights are nearly zero, ESS collapses, and resampling
-copies a small number of particles many times. The optimal proposal reduces
-that problem by using the signal before drawing the new state.
-"""
-    )
-
-    report.add_model_setup(
-        "| Object | Value |\n"
-        "|--------|-------|\n"
-        "| Hidden state $s_t$ | Two persistent economic components |\n"
-        "| Observed signal $y_t$ | Noisy linear indicator of the state |\n"
-        "| Observation matrix $\\Psi$ | [1.0, 0.9] |\n"
-        "| Transition matrix $\\Phi$ | diag(0.4, 0.5) |\n"
-        f"| Measurement std | {measurement_std:.2f} |\n"
-        f"| Process std | ({PROCESS_STD[0]:.2f}, {PROCESS_STD[1]:.2f}) |\n"
-        f"| Baseline particles | {n_particles:,} |\n"
-        f"| Repeated runs | {n_runs} |\n"
-        "| Benchmark | Kalman filtered mean |"
-    )
-
-    report.add_solution_method(
-        "Read the algorithm as the same Bayesian update that the Kalman filter performs, "
-        "but represented by points and weights. At the start of a period, yesterday's "
-        "resampled particles represent $p(s_{t-1} \\mid y_{1:t-1})$. The proposal moves "
-        "them into candidate states for period $t$. The weights then turn those candidates "
-        "into an approximation to $p(s_t \\mid y_{1:t})$.\n\n"
-        "The bootstrap proposal is simple because it only uses the transition law. It is "
-        "also fragile when the signal is precise: many simulated states receive tiny "
-        "likelihood weights. The optimal proposal is more work per particle, but it uses "
-        "$y_t$ before drawing the state. That timing keeps proposed states close to the "
-        "part of the state space the signal supports.\n\n"
-        "```text\n"
-        "Algorithm: particle filtering with resampling\n"
-        "Input: observations y_t, particles s_0^(i), proposal q, particle count N\n"
-        "Output: filtered state means, ESS, likelihood estimate\n"
-        "for t = 1, ..., T:\n"
-        "    for each particle i:\n"
-        "        draw proposed state s_t^(i) from q(s_t | s_{t-1}^(i), y_t)\n"
-        "        compute importance weight w_t^{(i)} from target / proposal density\n"
-        "    normalize weights and estimate E[s_t | y_{1:t}]\n"
-        "    compute ESS_t = 1 / sum_i (w_t^{(i)})^2\n"
-        "    resample particles according to normalized weights\n"
-        "    accumulate the likelihood increment\n"
-        "```\n\n"
-        "Resampling is not a statistical afterthought. It prevents the next period from "
-        "spending computation on particles with negligible posterior weight. The cost is "
-        "that duplicated particles reduce diversity, so ESS is the diagnostic to watch.\n\n"
-        "We repeat each filter and compare its mean with the Kalman mean. The repeated-run "
-        "error measures Monte Carlo accuracy, while the likelihood increments show how noisy "
-        "the particle likelihood would be inside an estimator."
-    )
-
     fig1, axes1 = plt.subplots(2, 1, figsize=(9, 6.4), sharex=True)
     for dim, ax in enumerate(axes1):
         ax.plot(time, kalman["filtered_mean"][:, dim], color="black", label="Kalman")
@@ -452,15 +297,7 @@ that problem by using the signal before drawing the new state.
         ax.legend(loc="upper right")
     axes1[0].set_title("Hidden-State Estimates Against Kalman Benchmark")
     axes1[-1].set_xlabel("Period")
-    report.add_figure(
-        "figures/filter-comparison.png",
-        "Particle filter state estimates compared with the Kalman filter",
-        fig1,
-        description=(
-            "Both filters track the Kalman mean in the baseline run. The visible paths look "
-            "similar, so repeated-run diagnostics are needed."
-        ),
-    )
+    save_figure(fig1, "figures/filter-comparison.png", dpi=150)
 
     fig2, axes2 = plt.subplots(1, 2, figsize=(11, 4.6))
     axes2[0].plot(time, mse_boot.mean(axis=0), label="bootstrap PF")
@@ -477,15 +314,7 @@ that problem by using the signal before drawing the new state.
     axes2[1].set_title("Effective Sample Size by Period")
     axes2[1].legend()
     fig2.tight_layout()
-    report.add_figure(
-        "figures/mse-and-ess.png",
-        "Repeated-run Monte Carlo error and effective sample size",
-        fig2,
-        description=(
-            "ESS falls when weights concentrate on a few particles. The optimal proposal keeps "
-            "ESS close to the particle count."
-        ),
-    )
+    save_figure(fig2, "figures/mse-and-ess.png", dpi=150)
 
     fig3, axes3 = plt.subplots(1, 2, figsize=(11, 4.6))
     for method, group in measurement_table.groupby("Method"):
@@ -506,15 +335,7 @@ that problem by using the signal before drawing the new state.
     axes3[1].set_title("Informative Signals Lower ESS")
     axes3[1].legend()
     fig3.tight_layout()
-    report.add_figure(
-        "figures/measurement-noise.png",
-        "Particle accuracy as measurement noise falls",
-        fig3,
-        description=(
-            "Sharper signals reduce bootstrap ESS and raise error. The optimal proposal is less "
-            "sensitive because it conditions on the signal."
-        ),
-    )
+    save_figure(fig3, "figures/measurement-noise.png", dpi=150)
 
     summary_rows = [
         {
@@ -532,49 +353,11 @@ that problem by using the signal before drawing the new state.
             "Loglike sd": np.std(log_opt),
         },
     ]
-    report.add_table(
-        "tables/filter-summary.csv",
-        "Baseline repeated-run comparison",
-        format_table(pd.DataFrame(summary_rows)),
-        description=(
-            "The baseline repeats each filter 50 times with 500 particles. It compares each "
-            "particle mean with the Kalman mean."
-        ),
-    )
-    report.add_table(
-        "tables/measurement-noise-sweep.csv",
-        "Measurement-noise sensitivity",
-        format_table(measurement_table),
-        description=(
-            "Lower measurement noise makes the signal more informative. That setting reveals "
-            "weight collapse in the bootstrap filter."
-        ),
-    )
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    format_table(pd.DataFrame(summary_rows)).to_csv("tables/filter-summary.csv", index=False)
+    format_table(measurement_table).to_csv("tables/measurement-noise-sweep.csv", index=False)
 
-    report.add_results(
-        f"With {n_particles} particles, bootstrap RMSE is {np.sqrt(np.mean(mse_boot)):.4f}. "
-        f"The optimal proposal lowers RMSE to {np.sqrt(np.mean(mse_opt)):.4f}. The tables show "
-        "the reason. Bootstrap ESS falls when the signal is sharp because most predicted "
-        "particles do not explain the observation."
-    )
-
-    report.add_takeaway(
-        "Particle filters nowcast hidden economic states with weighted simulations. The main "
-        "diagnostic is whether the weights collapse. Bootstrap filtering is easy to implement, "
-        "but precise signals can leave it with only a few effective particles. A proposal that "
-        "conditions on the signal buys accuracy by moving simulation effort toward plausible "
-        "states. Use ESS and repeated-run error before treating filtered states as inputs to "
-        "estimation."
-    )
-
-    report.add_references(
-        [
-            "[Gordon, N. J., Salmond, D. J., and Smith, A. F. M. (1993). Novel Approach to Nonlinear/non-Gaussian Bayesian State Estimation. *IEE Proceedings F*, 140(2), 107-113.](https://doi.org/10.1049/ip-f-2.1993.0015)",
-            "[Doucet, A., de Freitas, N., and Gordon, N. (eds.) (2001). *Sequential Monte Carlo Methods in Practice*. Springer.](https://doi.org/10.1007/978-1-4757-3437-9)",
-        ]
-    )
-
-    report.write("README.md")
+    save_thumbnail("figures/filter-comparison.png", "figures/thumb.png")
 
 
 if __name__ == "__main__":

@@ -24,8 +24,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from lib.discretize import rouwenhorst
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import setup_style, save_figure, save_thumbnail
 
 
 @dataclass(frozen=True)
@@ -848,7 +847,6 @@ def paper_benchmark_table(
 
 
 def add_figures_and_tables(
-    report: ModelReport,
     theta: np.ndarray,
     grids: Grids,
     cal: Calibration,
@@ -860,7 +858,7 @@ def add_figures_and_tables(
     diagnostics_df: pd.DataFrame,
     paper_benchmark_df: pd.DataFrame,
 ) -> None:
-    """Create tutorial figures and register tables with the report."""
+    """Create tutorial figures and save tables."""
     z_mid = profile.aggregate_states // 2
     r_mid = profile.rate_points // 2
     assets = grids.assets
@@ -874,11 +872,7 @@ def add_figures_and_tables(
     ax1.set_xlabel("Bond holdings $b$")
     ax1.set_ylabel("Consumption $c(a,e,z,r)$")
     ax1.legend()
-    report.add_figure(
-        "figures/policy-consumption.png",
-        "Consumption policies by idiosyncratic income state",
-        fig1,
-    )
+    save_figure(fig1, "figures/policy-consumption.png", dpi=150)
 
     periods = np.arange(len(hard_sim["rates"]))
     fig2, ax2 = plt.subplots(figsize=(8, 4.2))
@@ -887,11 +881,7 @@ def add_figures_and_tables(
     ax2.set_title("Endogenous Market-Clearing Interest Rate")
     ax2.set_xlabel("Simulation period")
     ax2.set_ylabel("Net interest rate")
-    report.add_figure(
-        "figures/interest-rate-path.png",
-        "Hard-clearing interest-rate path",
-        fig2,
-    )
+    save_figure(fig2, "figures/interest-rate-path.png", dpi=150)
 
     fig3, ax3 = plt.subplots(figsize=(8, 4.2))
     income = np.exp(hard_sim["aggregate_log_income"])
@@ -906,11 +896,7 @@ def add_figures_and_tables(
     ax3.set_xlabel("Simulation period")
     ax3.set_ylabel("Normalized level")
     ax3.legend()
-    report.add_figure(
-        "figures/aggregate-consumption-path.png",
-        "Aggregate consumption path",
-        fig3,
-    )
+    save_figure(fig3, "figures/aggregate-consumption-path.png", dpi=150)
 
     fig4, ax4 = plt.subplots(figsize=(7.5, 4.8))
     for e_idx, idio_level in enumerate(grids.idio_income):
@@ -920,11 +906,7 @@ def add_figures_and_tables(
     ax4.set_xlabel("Bond holdings $b$")
     ax4.set_ylabel("Next assets minus current assets")
     ax4.legend()
-    report.add_figure(
-        "figures/saving-schedule.png",
-        "Saving schedules at the median aggregate state",
-        fig4,
-    )
+    save_figure(fig4, "figures/saving-schedule.png", dpi=150)
 
     final_dist = hard_sim["final_distribution"]
     final_schedule = rate_schedule_for_state(
@@ -938,11 +920,7 @@ def add_figures_and_tables(
     ax5.set_title("Aggregate Bond-Demand Schedule")
     ax5.set_xlabel("Interest rate grid")
     ax5.set_ylabel("Aggregate desired next assets")
-    report.add_figure(
-        "figures/bond-demand-schedule.png",
-        "Bond demand across candidate interest rates",
-        fig5,
-    )
+    save_figure(fig5, "figures/bond-demand-schedule.png", dpi=150)
 
     fig6, ax6 = plt.subplots(figsize=(8, 4.2))
     ax6.plot(periods, hard_sim["residuals"], color="tab:red")
@@ -950,11 +928,7 @@ def add_figures_and_tables(
     ax6.set_title("Market-Clearing Residual")
     ax6.set_xlabel("Simulation period")
     ax6.set_ylabel("Interpolated residual")
-    report.add_figure(
-        "figures/aggregate-saving-residual.png",
-        "Hard-clearing aggregate saving residual",
-        fig6,
-    )
+    save_figure(fig6, "figures/aggregate-saving-residual.png", dpi=150)
 
     fig7, (ax7a, ax7b) = plt.subplots(1, 2, figsize=(10, 4.2))
     if not train_log.empty:
@@ -974,11 +948,7 @@ def add_figures_and_tables(
     ax7b.set_xlabel("Epoch")
     ax7b.set_ylabel("Max parameter update")
     fig7.tight_layout()
-    report.add_figure(
-        "figures/training-curves.png",
-        "Training objective and policy movement",
-        fig7,
-    )
+    save_figure(fig7, "figures/training-curves.png", dpi=150)
 
     fig8, axes = plt.subplots(1, 3, figsize=(12, 3.8))
     for e_idx, income_level in enumerate(grids.idio_income):
@@ -1006,56 +976,13 @@ def add_figures_and_tables(
     axes[2].set_xlabel("Interest rate")
     axes[2].set_ylabel("Aggregate saving")
     fig8.tight_layout()
-    report.add_figure(
-        "figures/paper-benchmark-panel.png",
-        "Published SRL benchmark checks for the Huggett economy",
-        fig8,
-    )
+    save_figure(fig8, "figures/paper-benchmark-panel.png", dpi=150)
 
-    report.add_results(
-        "Here is how prices clear the market. For each candidate interest rate, "
-        "the current distribution and the price-conditioned saving rule imply "
-        "aggregate desired bond holdings. The equilibrium rate is the point where "
-        "that schedule crosses zero. The diagnostic simulation uses linear "
-        "interpolation across adjacent rate-grid points, matching the published "
-        "SRL benchmark's market-clearing logic."
-    )
-
-    report.add_table(
-        "tables/calibration.csv",
-        "Huggett calibration",
-        calibration_df,
-        description="The economic calibration follows the SRL Huggett experiment.",
-    )
-    report.add_table(
-        "tables/hyperparameters.csv",
-        "Published SRL grid and training settings",
-        hyper_df,
-        description=(
-            "These are the Huggett settings reported in the published SRL "
-            "appendix and used by this tutorial run."
-        ),
-    )
-    report.add_table(
-        "tables/diagnostics.csv",
-        "Training and market-clearing diagnostics",
-        diagnostics_df,
-        description=(
-            "Soft residuals are the differentiable training residuals. Hard "
-            "residuals come from the post-training grid-clearing simulation."
-        ),
-    )
-    report.add_table(
-        "tables/paper_benchmark.csv",
-        "Published SRL benchmark comparison",
-        paper_benchmark_df,
-        description=(
-            "The benchmark is the paper's Huggett aggregate-risk experiment, not "
-            "an exact master-equation solution. The checks compare calibration, "
-            "grid settings, convergence, market clearing, and the qualitative "
-            "objects shown in the paper figures."
-        ),
-    )
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    calibration_df.to_csv("tables/calibration.csv", index=False)
+    hyper_df.to_csv("tables/hyperparameters.csv", index=False)
+    diagnostics_df.to_csv("tables/diagnostics.csv", index=False)
+    paper_benchmark_df.to_csv("tables/paper_benchmark.csv", index=False)
 
 
 def build_report(
@@ -1069,133 +996,8 @@ def build_report(
     profile_label: str,
     selection_reason: str,
 ) -> None:
-    """Generate README, figures, thumbnails, and tables."""
+    """Generate figures and tables."""
     setup_style()
-    report = ModelReport(
-        "Structural Reinforcement Learning for Huggett with Aggregate Risk",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "Households live in a one-bond incomplete-markets economy. Each household "
-        "has bond holdings, faces persistent idiosyncratic income risk, and also "
-        "lives through aggregate income shocks. Bonds are in zero net supply. In "
-        "each simulated period the interest rate moves until desired aggregate "
-        "saving is zero.\n\n"
-        "Structural Reinforcement Learning (SRL) uses reinforcement learning ideas "
-        "to solve this equilibrium without putting the full cross-sectional "
-        "distribution into the household state. Here is what the household knows: "
-        "its own bond holdings, its own income state, the aggregate income state, "
-        "and the current interest rate. Here is what it does not observe: the "
-        "entire distribution of wealth and income across households.\n\n"
-        "That restriction is the computational trick. The algorithm learns a "
-        "price-conditioned saving rule from simulated equilibrium paths. It is a "
-        "restricted-perceptions equilibrium, not a full rational-expectations "
-        "master-equation solution. The point of the tutorial is to show how the "
-        "price-conditioned policy and market-clearing step make the aggregate-risk "
-        "Huggett problem tractable.\n\n"
-        f"This artifact was generated with the `{profile_label}` profile. "
-        f"Selection reason: {selection_reason}."
-    )
-
-    report.add_equations(
-        r"""
-	The household enters period $t$ with bond holdings $b_t \ge \underline b$,
-	idiosyncratic income state $y_t$, aggregate income state $z_t$, and net
-	interest rate $r_t$. Current resources are
-
-	$$x_t = \exp(z_t)y_t + (1+r_t)b_t.$$
-
-	The tabular policy is a feasible next-asset rule:
-
-	$$b_{t+1} = g_\theta(b_t,y_t,z_t,r_t) \in [\underline b, x_t - c_{\min}].$$
-
-	Consumption and period utility are
-
-	$$c_t = x_t - g_\theta(b_t,y_t,z_t,r_t), \qquad u(c_t) = \frac{c_t^{1-\sigma}-1}{1-\sigma}.$$
-
-	The Structural Reinforcement Learning objective is a Monte Carlo estimate of
-	expected lifetime utility, with a small ridge penalty on the policy
-	parameters to keep the tabular logits bounded:
-
-	$$J(\theta) = \mathbb{E}\left[\sum_{t=0}^{T-1}\beta^t u(c_t)\right] - \kappa\,\overline{\theta^2}, \qquad \kappa = 10^{-5}.$$
-
-	The penalty coefficient $\kappa$ is small relative to per-period utility, so
-	it regularizes the parameters without materially distorting the policy.
-
-	For a candidate interest-rate grid point $r^\ell$, the current distribution
-	$\mu_t(b,y)$ implies aggregate desired bond holdings
-
-	$$B_t(r^\ell;\theta) = \sum_{b,y}\mu_t(b,y)g_\theta(b,y,z_t,r^\ell).$$
-
-	Zero net bond supply means $B_t(r_t;\theta)=0$. During training the
-	implementation uses a differentiable weighted root over the rate grid:
-
-	$$\omega_t^\ell = \frac{\exp[-(B_t(r^\ell;\theta)/\tau)^2]}{\sum_m \exp[-(B_t(r^m;\theta)/\tau)^2]}, \qquad r_t^{\mathrm{soft}} = \sum_\ell \omega_t^\ell r^\ell.$$
-
-	For the reported equilibrium path, the tutorial uses the paper-style
-	interpolated market-clearing rate. If two adjacent grid points bracket zero,
-	the rate is
-
-	$$r_t = (1-\lambda_t)r^\ell + \lambda_t r^{\ell+1}, \qquad
-	\lambda_t = \frac{-B_t(r^\ell;\theta)}{B_t(r^{\ell+1};\theta)-B_t(r^\ell;\theta)}.$$
-
-	Given a policy and a realized aggregate state, the cross-sectional distribution
-is advanced by a non-stochastic histogram update. Each mass point is split
-linearly between the two nearest asset-grid points after applying
-$g_\theta$, then multiplied by the idiosyncratic transition matrix.
-	"""
-    )
-
-    report.add_model_setup(
-        "The calibration follows the published SRL Huggett experiment. The "
-        "period is a year, $\\beta=0.96$, and CRRA curvature is $\\sigma=2$. "
-        "Idiosyncratic log income has persistence 0.6 and innovation volatility "
-        "0.2. Aggregate log income has persistence 0.9 and volatility 0.02. "
-        "The borrowing limit is $\\underline b=-1$, and net bond supply is zero. "
-        "Both income processes are discretized by Rouwenhorst, which preserves "
-        "persistence accurately at the small state counts used here.\n\n"
-        "The published benchmark uses 200 bond points up to $b=50$, 3 "
-        "idiosyncratic income states, 30 aggregate states, and 20 interest-rate "
-        "points on $[0.01,0.06]$. The lifetime objective is truncated at 170 "
-        "periods. The structural policy-gradient step uses 512 simulated "
-        "aggregate paths per update, 50 warm-up epochs, an initial learning "
-        "rate of $10^{-3}$, exponential learning-rate decay of 0.5, and a "
-        "convergence threshold of $3\\times 10^{-4}$. The hyperparameter table "
-        "in the Results section lists the active-run values alongside this "
-        "benchmark."
-    )
-
-    report.add_solution_method(
-        "The algorithm trains a tabular structural policy rather than solving a "
-        "Bellman equation with the distribution as a state variable. Here is what "
-        "the algorithm learns: a saving rule indexed by household states, the "
-        "aggregate shock, and the current interest rate. Here is how prices clear "
-        "the market: after the policy is evaluated on every rate-grid point, the "
-        "aggregate saving schedule is interpolated to find the rate that sets "
-        "bond demand to zero.\n\n"
-        "```text\n"
-        "Algorithm: Structural Reinforcement Learning Huggett solve\n"
-        "Input: calibration, bond grid, income grid, aggregate grid, rate grid\n"
-        "Initialize theta so aggregate saving is responsive to the interest rate\n"
-        "for epoch = 1,...,N:\n"
-        "    draw mini-batch of aggregate-income paths\n"
-        "    for each path and period:\n"
-        "        evaluate household next-bond policy on every rate-grid point\n"
-        "        aggregate household choices into a bond-demand schedule\n"
-        "        find the market-clearing interest rate from that schedule\n"
-        "        compute utility and update the distribution by histogram transport\n"
-        "    differentiate the truncated utility objective with respect to theta\n"
-        "    update theta by Adam ascent with exponential learning-rate decay\n"
-        "After training, simulate one path using interpolated market clearing\n"
-        "```\n\n"
-        "The warm-up phase holds the initial cross section fixed. The adaptive "
-        "phase updates the distribution implied by the current policy. This "
-        "separation is the useful SRL decomposition: household dynamics and "
-        "payoffs are structural, while equilibrium prices are learned from the "
-        "simulated economy generated by the current policy."
-    )
 
     calibration_df = calibration_table(cal)
     hyper_df = hyperparameter_table(profile)
@@ -1214,16 +1016,7 @@ $g_\theta$, then multiplied by the idiosyncratic transition matrix.
         profile,
     )
 
-    report.add_results(
-        "The figures below follow the objects emphasized in the published SRL "
-        "Huggett exercise. The consumption policy should rise with bond holdings "
-        "and flatten out for wealthier households. Aggregate consumption should "
-        "move with aggregate income but be smoother. The interest rate is "
-        "endogenous, and the saving schedule should cross zero where the bond "
-        "market clears."
-    )
     add_figures_and_tables(
-        report,
         theta,
         grids,
         cal,
@@ -1236,47 +1029,10 @@ $g_\theta$, then multiplied by the idiosyncratic transition matrix.
         paper_benchmark_df,
     )
 
-    max_hard_resid = float(np.max(np.abs(hard_sim["residuals"])))
-    income_levels = np.exp(hard_sim["aggregate_log_income"])
-    volatility_ratio = float(
-        np.std(hard_sim["aggregate_consumption"]) / max(np.std(income_levels), 1.0e-12)
-    )
-    grid_clause = (
-        "reproduces the paper benchmark's calibration and grid settings"
-        if profile == FULL_PROFILE
-        else "uses the paper benchmark's calibration with a reduced quick grid"
-    )
-    # Only claim smoothing when the ratio is materially below one. A ratio
-    # that rounds to 1.000 is not smoother in any meaningful sense.
-    if round(volatility_ratio, 3) < 1.0:
-        smoothing_clause = (
-            "aggregate consumption smoother than income "
-            f"(volatility ratio {volatility_ratio:.3f})"
-        )
-    else:
-        smoothing_clause = (
-            "an aggregate consumption volatility ratio of "
-            f"{volatility_ratio:.3f}, so this short run does not yet reproduce "
-            "the consumption-smoothing result"
-        )
-    report.add_takeaway(
-        "Structural Reinforcement Learning turns the aggregate-risk Huggett "
-        "problem into a simulation-based policy optimization problem with prices "
-        f"as low-dimensional state variables. The tutorial {grid_clause}, then "
-        "checks the same economic objects: concave consumption, endogenous "
-        f"prices, {smoothing_clause}, and a market-clearing residual. In this "
-        f"run, the maximum interpolated bond-market residual is "
-        f"{max_hard_resid:.3e}."
-    )
-
-    report.add_references([
-        "[Yang, Y., Wang, C., Schaab, A., and Moll, B. (2025). Structural Reinforcement Learning for Heterogeneous Agent Macroeconomics. arXiv:2512.18892.](https://arxiv.org/html/2512.18892v1)",
-        "[Huggett, M. (1993). The risk-free rate in heterogeneous-agent incomplete-insurance economies. *Journal of Economic Dynamics and Control*, 17(5-6), 953-969.](https://doi.org/10.1016/0165-1889%2893%2990024-M)",
-    ])
+    save_thumbnail("figures/policy-consumption.png", "figures/thumb.png")
     stale_run_profile = Path("tables/run_profile.csv")
     if stale_run_profile.exists():
         stale_run_profile.unlink()
-    report.write()
 
 
 def main() -> None:

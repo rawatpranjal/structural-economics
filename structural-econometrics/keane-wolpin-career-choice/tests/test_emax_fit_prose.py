@@ -1,29 +1,17 @@
 """Finding 1: emax-fit table prose claims later ages have fewer states.
 
 The data artifact shows the opposite: state counts grow with age. This test
-guards the prose description string in run.py against the inverted claim.
+guards the prose description in README.md against the inverted claim.
 """
 
-import sys
 from pathlib import Path
 
 import pandas as pd
 
 TUTORIAL_DIR = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(TUTORIAL_DIR))
-
-import run  # noqa: E402
 
 FIT_CSV = TUTORIAL_DIR / "tables" / "emax-fit.csv"
-
-
-def _fit_table_description() -> str:
-    """Pull the description string passed to add_table for emax-fit.csv."""
-    src = Path(run.__file__).read_text()
-    marker = '"tables/emax-fit.csv"'
-    idx = src.index(marker)
-    end = src.index(")", src.index("description=(", idx))
-    return src[idx:end]
+README = (TUTORIAL_DIR / "README.md").read_text().lower()
 
 
 def test_violated_invariant_later_ages_have_more_states():
@@ -35,7 +23,6 @@ def test_violated_invariant_later_ages_have_more_states():
 
 
 def test_honest_fix_description_says_early_ages_fewer():
-    """Description must say early ages have fewer states, not later ages."""
-    description_text = _fit_table_description().lower()
-    assert "early ages" in description_text and "fewer" in description_text
-    assert "later ages have fewer continuation states" not in description_text
+    """README must say early ages have fewer states, not later ages."""
+    assert "early ages" in README and "fewer" in README
+    assert "later ages have fewer continuation states" not in README

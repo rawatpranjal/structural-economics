@@ -15,8 +15,7 @@ import pandas as pd
 from scipy.optimize import least_squares
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import save_figure, save_thumbnail, setup_style
 
 
 BETA = 0.95
@@ -200,96 +199,6 @@ def main() -> None:
     print(f"  basis terms={N_BASIS_MAIN}")
     print(f"  max Euler error={np.max(main_euler_error):.2e}")
 
-    report = ModelReport(
-        "Growth-Model Capital Policy by Chebyshev Projection",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "A planner starts each period with capital. Output can be consumed today or saved "
-        "as next-period capital.\n\n"
-        "The object is the policy $g(k)$ from current capital to capital tomorrow. Here the "
-        "exact policy is known.\n\n"
-        "Chebyshev collocation approximates that policy with a few coefficients. Euler "
-        "residuals check whether the fitted rule respects the marginal tradeoff."
-    )
-
-    report.add_equations(
-        r"""
-Capital evolves through a full-depreciation Cobb-Douglas technology. The planner
-chooses next-period capital, so consumption is the part of output not saved:
-
-$$
-V(k) = \max_{k'} [\log(c) + \beta V(k')],
-\qquad
-c = A k^\alpha - k'.
-$$
-
-The Euler equation equates marginal utility today with discounted marginal
-product tomorrow:
-
-$$
-\frac{1}{c_t} =
-\beta \frac{\alpha A k_{t+1}^{\alpha-1}}{c_{t+1}}.
-$$
-
-Projection approximates the saving rule with Chebyshev basis functions:
-
-$$
-\log g(k;\theta) =
-\sum_{j=0}^{n-1} \theta_j T_j(x(k)),
-\qquad
-x(k) \in [-1,1].
-$$
-
-The collocation equations set the log Euler residual to zero at selected
-capital nodes $k_i$:
-
-$$
-R_i(\theta) =
-\log\left[
-\beta \alpha A g(k_i;\theta)^{\alpha-1}
-\frac{c(k_i;\theta)}{c(g(k_i;\theta);\theta)}
-\right] = 0.
-$$
-
-Here $c(k;\theta) \equiv Ak^\alpha - g(k;\theta)$ is the consumption implied by the projected saving rule.
-
-For this calibration, the exact policy is $g^{*}(k)=\alpha\beta A k^\alpha$.
-"""
-    )
-
-    report.add_model_setup(
-        "| Object | Value |\n"
-        "|--------|-------|\n"
-        f"| Discount factor $\\beta$ | {BETA:.2f} |\n"
-        f"| Capital share $\\alpha$ | {ALPHA:.2f} |\n"
-        f"| Productivity $A$ | {PRODUCTIVITY:.1f} |\n"
-        f"| Steady-state capital | {k_ss:.4f} |\n"
-        f"| Approximation interval | [{lower:.4f}, {upper:.4f}] |\n"
-        f"| Main basis terms | {N_BASIS_MAIN} |"
-    )
-
-    report.add_solution_method(
-        "Scale capital from [k_min, k_max] to [-1, 1]. The policy is log-linear in "
-        "Chebyshev terms, then exponentiated so $g(k;\\theta)>0$.\n\n"
-        "Choose coefficients so Euler residuals are zero at Chebyshev nodes. The nodes "
-        "cluster near the boundaries of the capital interval.\n\n"
-        "```text\n"
-        "Algorithm: Chebyshev collocation for the growth policy\n"
-        "Input: interval [k_min, k_max], basis size n, beta, alpha, A\n"
-        "Output: projected policy g(k; theta) and Euler-error diagnostics\n"
-        "1. Map k in [k_min, k_max] to x(k) in [-1, 1]\n"
-        "2. Choose n Chebyshev collocation nodes k_i\n"
-        "3. Parameterize log g(k; theta) = sum_j theta_j T_j(x(k))\n"
-        "4. At each node, compute c_i = A k_i^alpha - g(k_i; theta)\n"
-        "5. Compute next-period consumption using g(g(k_i; theta); theta)\n"
-        "6. Choose theta so the Euler residuals R_i(theta) are near zero\n"
-        "7. Evaluate policy errors and Euler errors on a dense grid\n"
-        "```"
-    )
-
     x_plot = np.linspace(-1.0, 1.0, 300)
     basis = np.polynomial.chebyshev.chebvander(x_plot, N_BASIS_MAIN - 1)
     fig1, ax1 = plt.subplots(figsize=(8.0, 5.2))
@@ -299,15 +208,7 @@ For this calibration, the exact policy is $g^{*}(k)=\alpha\beta A k^\alpha$.
     ax1.set_ylabel("Basis value")
     ax1.set_title("First Eight Chebyshev Basis Functions")
     ax1.legend(ncol=4, fontsize=8)
-    report.add_figure(
-        "figures/chebyshev-basis.png",
-        "Chebyshev basis functions on [-1,1]",
-        fig1,
-        description=(
-            "The Chebyshev terms provide smooth shapes over the capital interval. A few "
-            "terms can fit a smooth saving rule."
-        ),
-    )
+    save_figure(fig1, "figures/chebyshev-basis.png", dpi=150)
 
     fig2, ax2 = plt.subplots()
     ax2.plot(eval_grid, true_policy(eval_grid), color="black", linestyle="--", label="closed form")
@@ -329,15 +230,7 @@ For this calibration, the exact policy is $g^{*}(k)=\alpha\beta A k^\alpha$.
     ax2.set_ylabel("Capital tomorrow")
     ax2.set_title("Projected Capital Policy")
     ax2.legend()
-    report.add_figure(
-        "figures/policy-functions.png",
-        "Projected policy functions against the closed-form policy",
-        fig2,
-        description=(
-            "The projected policy follows the closed-form saving rule across low and high "
-            "capital states."
-        ),
-    )
+    save_figure(fig2, "figures/policy-functions.png", dpi=150)
 
     fig3, ax3 = plt.subplots()
     for n_basis in basis_counts:
@@ -349,15 +242,7 @@ For this calibration, the exact policy is $g^{*}(k)=\alpha\beta A k^\alpha$.
     ax3.set_ylabel("log10 absolute Euler error")
     ax3.set_title("Euler Equation Errors")
     ax3.legend()
-    report.add_figure(
-        "figures/euler-errors.png",
-        "Euler equation errors by approximation order",
-        fig3,
-        description=(
-            "Euler errors show whether the fitted rule preserves the planner's marginal "
-            "tradeoff away from collocation nodes."
-        ),
-    )
+    save_figure(fig3, "figures/euler-errors.png", dpi=150)
 
     fig4, ax4 = plt.subplots()
     for initial in [0.4 * k_ss, 1.6 * k_ss]:
@@ -373,45 +258,12 @@ For this calibration, the exact policy is $g^{*}(k)=\alpha\beta A k^\alpha$.
     ax4.set_ylabel("Capital")
     ax4.set_title("Simulation Under the Projected Policy")
     ax4.legend()
-    report.add_figure(
-        "figures/simulated-paths.png",
-        "Capital paths generated by the projected policy",
-        fig4,
-        description=(
-            "The projected rule sends low and high initial capital toward the steady state."
-        ),
-    )
+    save_figure(fig4, "figures/simulated-paths.png", dpi=150)
 
-    report.add_table(
-        "tables/projection-accuracy.csv",
-        "Projection accuracy by basis size",
-        format_table(table),
-        description=(
-            "The table evaluates errors on a dense grid over the full approximation interval."
-        ),
-    )
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    format_table(table).to_csv("tables/projection-accuracy.csv", index=False)
 
-    report.add_results(
-        f"With {N_BASIS_MAIN} Chebyshev terms, the maximum Euler error on the dense grid is "
-        f"{np.max(main_euler_error):.2e}. The policy is stored in eight coefficients and "
-        "evaluated smoothly off grid."
-    )
-
-    report.add_takeaway(
-        "Chebyshev projection works here because the saving rule is smooth. The economic "
-        "check is still the Euler equation. Small off-node residuals mean the fitted policy "
-        "preserves the planner's saving tradeoff."
-    )
-
-    report.add_references(
-        [
-            "[Judd, K. L. (1992). Projection Methods for Solving Aggregate Growth Models. *Journal of Economic Theory*, 58(2), 410-452.](https://doi.org/10.1016/0022-0531(92)90061-L)",
-            "[Judd, K. L. (1998). *Numerical Methods in Economics*. MIT Press.](https://mitpress.mit.edu/9780262100717/numerical-methods-in-economics/)",
-            "[Miranda, M. J. and Fackler, P. L. (2002). *Applied Computational Economics and Finance*. MIT Press.](https://mitpress.mit.edu/9780262633093/applied-computational-economics-and-finance/)",
-        ]
-    )
-
-    report.write("README.md")
+    save_thumbnail("figures/chebyshev-basis.png", "figures/thumb.png")
 
 
 if __name__ == "__main__":

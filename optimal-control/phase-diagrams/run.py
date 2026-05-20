@@ -16,8 +16,7 @@ from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.plotting import setup_style
-from lib.output import ModelReport
+from lib.plotting import setup_style, save_figure, save_thumbnail
 
 
 def main():
@@ -172,120 +171,6 @@ def main():
 
     setup_style()
 
-    report = ModelReport(
-        "Ramsey Consumption Choice and Saddle Paths",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "An economy begins with inherited capital. A Ramsey planner chooses consumption "
-        "today and lets investment carry capital forward. The wrong choice either runs "
-        "capital down or delays consumption too long.\n\n"
-        "The object is the phase diagram in $(k,c)$. Capital is the state. Consumption "
-        "is the control. Nullclines show where each variable stops moving. The stable arm "
-        "is the curve of choices that converges to the saddle steady state.\n\n"
-        "The computation traces that arm. The code linearizes the ODE at the steady state, "
-        "uses the stable eigenvector, and integrates backward. Forward paths then show "
-        "which initial consumption choices miss the boundary condition."
-    )
-
-    report.add_equations(r"""
-The planner solves
-
-$$
-\max_{\{c(t)\}_{t \geq 0}}
-\int_0^\infty e^{-\rho t}\frac{c(t)^{1-\sigma}}{1-\sigma}\,dt
-\quad\text{s.t.}\quad
-\dot{k}(t)=Ak(t)^\alpha-\delta k(t)-c(t).
-$$
-
-The Euler equation and the resource law form the two-dimensional system
-
-$$
-\dot{k}=f(k)-\delta k-c,
-\qquad
-\frac{\dot{c}}{c}=\frac{f'(k)-\delta-\rho}{\sigma},
-\qquad
-f(k)=Ak^\alpha .
-$$
-
-The capital nullcline is
-
-$$
-\dot{k}=0
-\quad\Longleftrightarrow\quad
-c=f(k)-\delta k .
-$$
-
-The consumption nullcline is
-
-$$
-\dot{c}=0
-\quad\Longleftrightarrow\quad
-f'(k)=\rho+\delta
-\quad\Longleftrightarrow\quad
-k=k^{*}
-=\left(\frac{\alpha A}{\rho+\delta}\right)^{1/(1-\alpha)} .
-$$
-
-Steady-state consumption is $c^{*}=f(k^{*})-\delta k^{*}$. The boundary
-condition selecting the planner's path is transversality:
-
-$$
-\lim_{t\to\infty} e^{-\rho t}u'(c(t))k(t)=0 .
-$$
-
-Here $u(c)=\frac{c^{1-\sigma}}{1-\sigma}$ is the CRRA utility function, so $u'(c(t))=c(t)^{-\sigma}$.
-""")
-
-    report.add_model_setup(
-        "The calibration keeps the mechanics visible. Output is Cobb-Douglas. "
-        "Preferences are CRRA. There are no shocks, so each arrow shows the same law "
-        "of motion.\n\n"
-        "| Parameter | Value | Description |\n"
-        "|-----------|-------|-------------|\n"
-        f"| $\\alpha$ | {alpha:.2f} | Capital share |\n"
-        f"| $\\delta$ | {delta:.2f} | Depreciation rate |\n"
-        f"| $\\rho$ | {rho:.2f} | Continuous-time discount rate |\n"
-        f"| $\\sigma$ | {sigma:.1f} | CRRA coefficient and inverse EIS |\n"
-        f"| $A$ | {A:.1f} | Total factor productivity |\n"
-        f"| $k^{{*}}$ | {k_ss:.4f} | Ramsey steady-state capital |\n"
-        f"| $c^{{*}}$ | {c_ss:.4f} | Ramsey steady-state consumption |"
-    )
-
-    report.add_solution_method(
-        "The steady state anchors the stable-arm calculation. "
-        "The Jacobian of $(\\dot{k},\\dot{c})$ at $(k^{*},c^{*})$ is\n\n"
-        "$$\n"
-        "J=\n"
-        "\\begin{bmatrix}\n"
-        "f'(k^{*})-\\delta & -1 \\\\\n"
-        "c^{*}f''(k^{*})/\\sigma & 0\n"
-        "\\end{bmatrix}.\n"
-        "$$\n\n"
-        f"The eigenvalues are $\\lambda_s={lambda_stable:.4f}$ and "
-        f"$\\lambda_u={lambda_unstable:.4f}$. One is negative and one is positive. "
-        "Nearby paths split into stable and unstable directions. "
-        f"The stable eigenvector has local slope $dc/dk={slope:.4f}$. "
-        "That line is only local. To draw the nonlinear arm, the code starts near "
-        "the steady state and integrates backward.\n\n"
-        "```text\n"
-        "Algorithm: trace the Ramsey stable arm\n"
-        "Inputs: primitives (alpha, delta, rho, sigma, A), bounds for plotted k and c\n"
-        "1. Compute (k*, c*) from f'(k*) = rho + delta and c* = f(k*) - delta k*.\n"
-        "2. Form the Jacobian J of F(k,c) = (dot{k}, dot{c}) at (k*, c*).\n"
-        "3. Let lambda_s < 0 and v_s = (1, m_s) be the stable eigenpair.\n"
-        "4. Start just below and just above (k*, c*) along v_s.\n"
-        "5. Integrate d(k,c)/d tau = -F(k,c) away from the steady state.\n"
-        "6. Stop when a branch leaves the plotted economic region.\n"
-        "7. Sort the branches by k and read c(k) as the selected initial consumption rule.\n"
-        "Output: nullclines, local linear arm, nonlinear stable arm, and sample forward paths.\n"
-        "```\n\n"
-        "Backward integration is a plotting device. In economic time, points on the arm "
-        "converge to the steady state. Points above or below it miss transversality."
-    )
-
     fig1, ax1 = plt.subplots(figsize=(9, 7))
     ax1.quiver(
         K,
@@ -318,18 +203,7 @@ Here $u(c)=\frac{c^{1-\sigma}}{1-\sigma}$ is the CRRA utility function, so $u'(c
     ax1.set_ylim(0, c_max)
     ax1.legend(loc="upper right")
     fig1.tight_layout()
-    report.add_figure(
-        "figures/phase-diagram.png",
-        "Ramsey phase plane with nullclines, local linear arm, and nonlinear stable arm",
-        fig1,
-        description=(
-            "The blue curve is the capital nullcline. The red line is the consumption "
-            "nullcline. Below the blue curve, capital rises. Left of $k^{*}$, consumption "
-            "rises because the marginal product is high. The black curve is the stable "
-            "arm. For each capital stock shown, it gives the initial consumption that "
-            "reaches the steady state. The dashed line is the local linear approximation."
-        ),
-    )
+    save_figure(fig1, "figures/phase-diagram.png", dpi=150)
 
     fig3, ax3 = plt.subplots(figsize=(9, 6.5))
     ax3.quiver(
@@ -359,35 +233,10 @@ Here $u(c)=\frac{c^{1-\sigma}}{1-\sigma}$ is the CRRA utility function, so $u'(c
     ax3.set_ylim(0, c_max)
     ax3.legend(loc="upper right")
     fig3.tight_layout()
-    report.add_figure(
-        "figures/path-selection.png",
-        "Forward trajectories from the same initial capital but different initial consumption",
-        fig3,
-        description=(
-            "Holding initial capital fixed shows the selection problem. A higher "
-            "consumption choice starts above the stable arm and runs capital down. "
-            "A lower choice starts below it and builds too much capital. Arrows explain "
-            "motion, but the stable arm selects the path."
-        ),
-    )
+    save_figure(fig3, "figures/path-selection.png", dpi=150)
 
-    report.add_takeaway(
-        "The phase diagram shows direction. It does not choose initial consumption. "
-        "The transversality condition selects the stable arm. Local linearization gives "
-        "the slope near the steady state. Backward integration draws the nonlinear path "
-        "away from it."
-    )
-
-    report.add_references([
-        "Ramsey, F. (1928). \"A Mathematical Theory of Saving.\" *Economic Journal*, 38(152).",
-        "Barro, R. and Sala-i-Martin, X. (2004). *Economic Growth*. MIT Press, 2nd edition, Ch. 2.",
-        "**See also.** The same Ramsey model is solved by upwind HJB "
-        "finite differences in [`optimal-control/hjb-growth/`](../../optimal-control/hjb-growth/) and by "
-        "saddle-path forward shooting in [`optimal-control/ramsey-growth/`](../../optimal-control/ramsey-growth/).",
-    ])
-
-    report.write("README.md")
-    print(f"\nGenerated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
+    save_thumbnail("figures/phase-diagram.png", "figures/thumb.png")
+    print("Done: 2 figures")
 
 
 if __name__ == "__main__":

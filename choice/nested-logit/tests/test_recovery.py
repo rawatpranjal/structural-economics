@@ -18,10 +18,11 @@ _RUN_PY = _TUT_DIR / "run.py"
 def test_finding4_violated_invariant_no_bias_warning_in_run_py():
     """Bug: the ModelReport source in run.py never warns about finite-sample bias.
 
-    PASSES on buggy run.py (no warning string); FAILS after the honest fix
-    adds an honest recovery description.
+    Retargeted to README.md: prose now lives in README, not run.py.
+    PASSES when README does NOT contain the phrase (original buggy state);
+    FAILS after the honest fix adds an honest recovery description to README.
     """
-    src = _RUN_PY.read_text().lower()
+    src = _README.read_text().lower()
     assert "finite-sample" not in src and "finite sample" not in src
 
 

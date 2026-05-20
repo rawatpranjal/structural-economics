@@ -20,8 +20,7 @@ import pandas as pd
 jax.config.update("jax_platform_name", "cpu")
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import setup_style, save_figure, save_thumbnail
 
 
 N_BIDDERS = 2
@@ -331,190 +330,6 @@ def main() -> None:
     max_regret = float(np.max(max_regrets))
 
     setup_style()
-    report = ModelReport(
-        "Deep Learning for Optimal Auction Design",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "A seller knows the distribution of bidder values but not the realized values. "
-        "The design problem is to choose an auction that earns revenue while still making "
-        "truthful bidding optimal.\n\n"
-        "For one item and IID uniform values, Myerson's reserve-price auction is the exact "
-        "answer. Duetting et al. study the harder case where the auction itself is a neural "
-        "network. The network maps reported values into allocations and payments, then "
-        "training penalizes profitable misreports.\n\n"
-        "This tutorial keeps the environment small enough to run locally. The computation "
-        "trains a two-bidder neural auction and audits it against the Myerson benchmark."
-    )
-
-    report.add_equations(r"""
-There are two risk-neutral bidders and one item. Bidder $i$ has value
-$v_i \sim U[0,1]$. A direct mechanism asks each bidder to report a value
-$b_i$. Given the report vector $b=(b_1,b_2)$, the mechanism returns allocation
-probabilities $x_i(b)$ and payments $p_i(b)$.
-
-Feasibility means the item is not allocated more than once:
-
-$$
-0 \leq x_i(b) \leq 1,
-\qquad
-x_1(b)+x_2(b) \leq 1.
-$$
-
-The neural network enforces this by applying a softmax to three outcomes:
-bidder 1 wins, bidder 2 wins, or no sale. Payments are also bounded by the
-allocated report in this tutorial, so truthful individual rationality is built
-into the parameterization.
-
-If bidder $i$ has true value $v_i$ but the report profile is $b$, utility is
-
-$$
-u_i(v_i,b;\theta)=v_i x_i(b;\theta)-p_i(b;\theta).
-$$
-
-Here $\theta$ denotes the neural network parameter vector.
-
-The seller wants revenue, but the mechanism is useful only if bidders want to
-tell the truth. Dominant-strategy incentive compatibility says that truthful
-reporting must weakly dominate every one-player misreport:
-
-$$
-u_i(v_i,(v_i,b_{-i});\theta) \geq
-u_i(v_i,(b_i',b_{-i});\theta)
-\quad \forall i,v_i,b_i',b_{-i}.
-$$
-
-Regret turns that many-inequality condition into one diagnostic number. At a
-value profile $v$, bidder $i$'s ex post regret is the best gain from lying:
-
-$$
-R_i(v;\theta) =
-\max_{b_i' \in [0,1]}
-\{u_i(v_i,(b_i',v_{-i});\theta)
-{}- u_i(v_i,v;\theta)\}.
-$$
-
-If $R_i(v;\theta)=0$, the bidder cannot improve at that profile. Duetting et
-al. train on a sample of value profiles $v^1,\ldots,v^L$, so the constraint is
-the empirical average regret:
-
-$$
-\mathrm{rgt}_i(\theta) =
-\frac{1}{L}\sum_{\ell=1}^{L} R_i(v^{\ell};\theta).
-$$
-
-Revenue on the same sample is
-
-$$
-\widehat{\mathrm{Rev}}(\theta) =
-\frac{1}{L}\sum_{\ell=1}^{L}\sum_{i=1}^{2}
-p_i(v^{\ell};\theta).
-$$
-
-The ideal learning problem is therefore revenue maximization subject to
-truthfulness constraints:
-
-$$
-\max_{\theta} \widehat{\mathrm{Rev}}(\theta)
-\quad \mathrm{subject\ to}\quad
-\mathrm{rgt}_i(\theta)=0,\ i=1,2.
-$$
-
-This is why the loss is not just negative revenue. Pure revenue maximization
-would let the network exploit bidders by making truthful reporting unattractive.
-The constraint must push the network toward mechanisms that are hard to
-manipulate.
-
-The code uses an augmented Lagrangian:
-
-$$
-\mathcal{L}(\theta,\lambda,\rho) =
-{}-\widehat{\mathrm{Rev}}(\theta)
-{}+ \sum_{i=1}^{2} \lambda_i \mathrm{rgt}_i(\theta)
-{}+ \frac{\rho}{2}\sum_{i=1}^{2}\mathrm{rgt}_i(\theta)^2.
-$$
-
-Here $\lambda_i$ is the Lagrange multiplier for bidder $i$'s regret constraint and $\rho$ is the penalty weight.
-
-The first term rewards revenue. The multiplier term prices each bidder's
-regret violation. The quadratic term makes large violations increasingly
-expensive. As training proceeds, the multipliers and penalty weight rise when
-regret remains positive.
-
-The one-item uniform benchmark gives a clean audit. Myerson's virtual value is
-
-$$
-\phi(v)=v-\frac{1-F(v)}{f(v)}=2v-1,
-$$
-
-so the optimal reserve is $r^{\ast}=1/2$. The exact auction sells to the
-highest bidder only when the highest value exceeds this reserve.
-""")
-
-    report.add_model_setup(
-        "The paper studies flexible multi-bidder, multi-item settings. This tutorial uses "
-        "the smallest benchmark where the answer is known.\n\n"
-        "| Object | Value | Role |\n"
-        "|---|---:|---|\n"
-        "| Bidders | 2 | Strategic agents |\n"
-        "| Items | 1 | Single allocation probability plus no-sale option |\n"
-        "| Values | IID $U[0,1]$ | Private values known only to bidders |\n"
-        f"| Myerson reserve $r^{{\\ast}}$ | {RESERVE_PRICE:.2f} | Exact optimal reserve for uniform values |\n"
-        f"| Myerson revenue | {myerson_exact:.4f} | Analytical benchmark |\n"
-        f"| Plain second-price revenue | {second_price_exact:.4f} | No-reserve benchmark |\n"
-        f"| Neural net | 2-{HIDDEN_UNITS}-{HIDDEN_UNITS}-5 tanh MLP | Allocation logits and payment fractions |\n"
-        f"| Training steps | {TRAIN_STEPS:,} | Adam updates with JAX autodiff |\n"
-        f"| Misreport grid | {MISREPORT_POINTS} points | Inner regret search during training |"
-    )
-
-    report.add_solution_method(
-        "The neural mechanism is a differentiable direct mechanism. The allocation head "
-        "chooses among bidder 1, bidder 2, and no sale. The payment head chooses how much "
-        "of each allocated report to charge. This keeps the object close to auction theory: "
-        "the network is not predicting labels; it is choosing an allocation rule and a "
-        "payment rule.\n\n"
-        "The hard part is incentive compatibility. The algorithm approximates each bidder's "
-        "best lie by a grid search. That makes regret differentiable through the neural "
-        "mechanism except at grid argmax switches, which is enough for this small tutorial.\n\n"
-        "```text\n"
-        "Algorithm: local RegretNet-style auction training\n"
-        "Inputs:\n"
-        "    value distribution F on [0,1]^2\n"
-        "    neural mechanism m_theta(b) = (x_theta(b), p_theta(b))\n"
-        "    misreport grid B = {0, 1/(K-1), ..., 1}\n"
-        "    batch size L, steps T, initial rho, multipliers lambda_i = 0\n"
-        "Outputs:\n"
-        "    trained theta, revenue audit, regret audit\n\n"
-        "For t = 1,...,T:\n"
-        "1. Draw v^1,...,v^L iid from F.\n\n"
-        "2. Truthful pass. For each sample ell, evaluate\n"
-        "       (x^ell, p^ell) = m_theta(v^ell)\n"
-        "       u_i^ell = v_i^ell x_i^ell - p_i^ell\n"
-        "       Rev_hat(theta) = (1/L) sum_ell sum_i p_i^ell\n\n"
-        "3. Misreport pass. For each bidder i, sample ell, and b in B, form\n"
-        "       report profile (b, v_-i^ell)\n"
-        "       u_i^ell(b) = v_i^ell x_i(b, v_-i^ell; theta)\n"
-        "                    - p_i(b, v_-i^ell; theta)\n\n"
-        "4. Grid regret. Collapse the misreport utilities to\n"
-        "       R_i^ell(theta) = max_b in B {u_i^ell(b) - u_i^ell}\n"
-        "       rgt_i(theta) = (1/L) sum_ell max{R_i^ell(theta), 0}\n\n"
-        "5. Training objective. Minimize\n"
-        "       L(theta; lambda, rho) = -Rev_hat(theta)\n"
-        "                              + sum_i lambda_i rgt_i(theta)\n"
-        "                              + (rho/2) sum_i rgt_i(theta)^2\n\n"
-        "6. Gradient step. Update theta with Adam using grad_theta L(theta; lambda, rho).\n\n"
-        "7. Constraint update every M steps:\n"
-        "       lambda_i <- max{0, lambda_i + rho rgt_i(theta)}\n"
-        "       rho <- min{rho_growth rho, rho_max}\n\n"
-        "8. Final audit. Draw fresh values and recompute Rev_hat, rgt_i, and max regret\n"
-        "   with a finer grid B_audit.\n"
-        "```\n\n"
-        "The audit is the important part. A neural auction can earn more than Myerson on "
-        "a finite regret grid if it leaves small profitable deviations. The revenue number "
-        "and the regret number have to be read together."
-    )
 
     fig1, axes = plt.subplots(1, 2, figsize=(10.5, 4.2), constrained_layout=True)
     extent = [0.0, 1.0, 0.0, 1.0]
@@ -551,16 +366,7 @@ highest bidder only when the highest value exceeds this reserve.
     axes[1].set_title("Learned Total Payment")
     fig1.colorbar(pay_image, ax=axes[1], fraction=0.046, pad=0.04)
 
-    report.add_results(
-        "The learned allocation is close to reserve-price logic. Bidder 1 wins mostly "
-        "when its value is above both the rival value and the reserve. The dashed diagonal "
-        "marks equal values. The dotted reserve lines show where Myerson starts selling."
-    )
-    report.add_figure(
-        "figures/learned-mechanism.png",
-        "Learned allocation and payment surfaces for the neural auction",
-        fig1,
-    )
+    save_figure(fig1, "figures/learned-mechanism.png", dpi=150)
 
     fig2, axes2 = plt.subplots(1, 2, figsize=(10.5, 4.0), constrained_layout=True)
     axes2[0].plot(history["step"], history["revenue"], linewidth=2.0, label="Neural auction")
@@ -587,49 +393,14 @@ highest bidder only when the highest value exceeds this reserve.
     axes2[1].set_ylabel("Largest mean bidder regret")
     axes2[1].set_title("Regret Constraint During Training")
 
-    report.add_results(
-        "Training pushes revenue up first and then spends penalty weight reducing regret. "
-        f"On the final audit sample, revenue is {neural_revenue:.4f}. The exact Myerson "
-        f"benchmark is {myerson_exact:.4f}. The learned auction is not certified optimal; "
-        f"its largest mean regret on the audit grid is {max_mean_regret:.4f}."
-    )
-    report.add_figure(
-        "figures/training-diagnostics.png",
-        "Revenue and regret diagnostics during augmented-Lagrangian training",
-        fig2,
-    )
+    save_figure(fig2, "figures/training-diagnostics.png", dpi=150)
 
-    report.add_table(
-        "tables/revenue-regret-audit.csv",
-        "Revenue and Regret Audit",
-        audit_table(audit),
-        description=(
-            "The neural auction is evaluated on fresh value draws and a finer misreport "
-            "grid than the one used during training. The two benchmark auctions are DSIC, "
-            "so their regret entries are zero by construction."
-        ),
-    )
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    audit_table(audit).to_csv("tables/revenue-regret-audit.csv", index=False)
 
-    report.add_takeaway(
-        "The Duetting et al. idea is to learn an auction as a constrained prediction "
-        "problem. Revenue is the objective. Regret is the incentive-compatibility check.\n\n"
-        "In the single-item uniform benchmark, Myerson gives the exact answer: sell to the "
-        "highest value above reserve $r^{\\ast}=1/2$ and charge the larger of the reserve "
-        "and the second value. The neural auction recovers the same broad shape, but the "
-        f"audit still reports nonzero grid regret. That is the main lesson: learned "
-        "mechanisms need incentive audits, not only revenue comparisons."
-    )
-
-    report.add_references([
-        "[Duetting, P., Feng, Z., Narasimhan, H., Parkes, D., and Ravindranath, S. S. (2019). Optimal Auctions through Deep Learning. *Proceedings of Machine Learning Research*, 97, 1706-1715.](https://proceedings.mlr.press/v97/duetting19a.html)",
-        "[Myerson, R. B. (1981). Optimal Auction Design. *Mathematics of Operations Research*, 6(1), 58-73.](https://doi.org/10.1287/moor.6.1.58)",
-        "[Krishna, V. (2009). *Auction Theory*, 2nd ed. Academic Press.](https://shop.elsevier.com/books/auction-theory/krishna/978-0-12-374507-1)",
-    ])
-
-    report.write("README.md")
+    save_thumbnail("figures/learned-mechanism.png", "figures/thumb.png")
     print(
-        "Generated: README.md + "
-        f"{len(report._figures)} figures + {len(report._tables)} tables "
+        "Done: 2 figures + 1 table "
         f"(audit revenue={neural_revenue:.4f}, mean regret={max_mean_regret:.4f}, "
         f"max regret={max_regret:.4f}, Myerson sample revenue={myerson_sample:.4f})"
     )

@@ -8,8 +8,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import setup_style, save_figure, save_thumbnail
 
 
 def flow_profit(q_i: int, q_j: int, market_size: float = 14.0) -> float:
@@ -162,96 +161,6 @@ def main() -> None:
     print(f"Converged in {sol['iterations']} iterations with error {sol['error']:.2e}")
     print(f"Largest one-step deviation gain: {np.max(deviation_gains):.2e}")
 
-    report = ModelReport(
-        "Quality-Ladder Dynamic Game: Solving the Markov-Perfect Equilibrium",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "Two firms sell differentiated products whose quality carries over. "
-        "A firm can invest today to raise tomorrow's quality, while its rival "
-        "moves too.\n\n"
-        "The model is a two-firm Ericson-Pakes quality ladder. The state is the "
-        "pair of quality levels. The policy maps each state into wait or invest.\n\n"
-        "The policy needs a fixed point. Today's best response uses tomorrow's "
-        "value, and tomorrow's value depends on today's equilibrium actions."
-    )
-
-    report.add_equations(r"""
-Let the industry state be the quality pair
-$\omega_t=(q_{1t},q_{2t})$, with $q_{it}\in\{0,\ldots,Q\}$.
-Each firm chooses $a_{it}\in\{0,1\}$, where $a_{it}=1$ means invest.
-Flow profit uses a logit-share reduced form:
-
-$$\pi_i(q_i,q_j) = M\frac{\exp(\eta q_i)} {1+\exp(\eta q_i)+\exp(\eta q_j)} +\lambda q_i .$$
-
-Investment raises the chance of moving one rung up the ladder. Waiting avoids
-the investment cost but leaves a small depreciation risk:
-
-$$\Pr(q_i'=\min\{q_i+1,Q\}\mid q_i,a_i=1)=0.62, \qquad \Pr(q_i'=\max\{q_i-1,0\}\mid q_i,a_i=0)=0.12 .$$
-
-Given candidate continuation values $V_i$, each state contains a simultaneous
-two-action game. Firm $i$'s payoff from action profile $(a_1,a_2)$ is
-
-$$G_i(a_i,a_j;\omega,V) = \pi_i(\omega)-\kappa a_i +\beta\sum_{\omega'} P(\omega'\mid \omega,a_i,a_j)V_i(\omega').$$
-
-A pure-strategy Markov-perfect equilibrium is a policy
-$a^{*}(\omega)=(a_1^{*}(\omega),a_2^{*}(\omega))$ and values satisfying
-
-$$G_i(a_i^{*},a_j^{*};\omega,V)\geq G_i(a_i,a_j^{*};\omega,V) \quad\text{for all }a_i\in\{0,1\},$$
-
-with $V_i(\omega)=G_i(a_i^{*},a_j^{*};\omega,V)$ at every state.
-""")
-
-    report.add_model_setup(
-        "| Primitive | Value | Role |\n"
-        "|-----------|-------|------|\n"
-        "| Firms | 2 | Symmetric oligopolists |\n"
-        "| Quality ladder | $q_i=0,\ldots,4$ | Payoff-relevant industry state |\n"
-        "| Actions | $a_i\\in\\{0,1\\}$ | Wait or invest |\n"
-        "| Discount factor | $\\beta=0.90$ | Continuation-value weight |\n"
-        "| Investment cost | $\\kappa=2.20$ | Current cost of attempting to improve quality |\n"
-        "| Market size | $M=14$ | Scale of current profits |\n"
-        "| Quality in demand | $\\eta=0.75$ | How quality shifts product share |\n"
-        "| Direct quality payoff | $\\lambda=0.35$ | Extra payoff from own quality |\n"
-        "| Iteration damping weight | $\\alpha=0.35$ | Step size in the value update |\n"
-        "| Equilibrium concept | Pure-strategy MPE | Nash equilibrium in each state game |"
-    )
-
-    report.add_solution_method(
-        "The fixed point is over Markov strategies. Start with values for each "
-        "firm at each quality pair. At one state, those values define a "
-        "two-by-two game. Payoffs combine current profit, investment cost, and "
-        "expected continuation value. Solve that state game, update values, and "
-        "repeat.\n\n"
-        "```text\n"
-        "Inputs: quality cap Q, discount factor beta, investment cost kappa,\n"
-        "        transition kernel P(q' | q, a), tolerance epsilon\n"
-        "Initialize V_i^0(q_1,q_2)=0 for both firms and all quality pairs.\n"
-        "For n = 0,1,2,...:\n"
-        "  For each state omega=(q_1,q_2):\n"
-        "    Build G_i^n(a_1,a_2; omega) from profit, cost, and continuation value.\n"
-        "    Find pure Nash equilibria of the 2-by-2 state game.\n"
-        "    Select the equilibrium with the largest joint payoff if there is a tie.\n"
-        "    If no pure NE exists (fallback), take the joint-payoff-maximising profile.\n"
-        "    Set T_i V^n(omega) equal to the selected equilibrium payoff.\n"
-        "  Update V_i^{n+1} = alpha T_i V^n + (1-alpha) V_i^n.  (alpha=0.35: damping weight)\n"
-        "  Stop when max_{i,omega} |T_i V^n(omega)-V_i^n(omega)| < epsilon.\n"
-        "Output: MPE policy a_i^{*}(omega), values V_i(omega), and deviation gains.\n"
-        "```\n\n"
-        "A 2-by-2 simultaneous game need not have a pure-strategy Nash "
-        "equilibrium. While value iteration is still moving, an intermediate "
-        "continuation-value guess can produce such a state game, so the inner "
-        "step uses a fallback: when no pure NE exists it takes the "
-        "joint-payoff-maximising profile. At the converged values every state "
-        "game has a pure NE and the fallback no longer fires, which the solver "
-        "checks before returning. The reported policy is therefore a genuine "
-        "pure-strategy Markov-perfect equilibrium at every state.\n\n"
-        "After convergence, compute one-step deviation gains. At the reported "
-        "policy, every gain should be zero."
-    )
-
     fig1, ax1 = plt.subplots(figsize=(7, 6))
     im = ax1.imshow(policy[:, :, 0], origin="lower", cmap="Blues", vmin=0, vmax=1)
     ax1.set_xlabel("Firm 2 quality")
@@ -261,13 +170,7 @@ with $V_i(\omega)=G_i(a_i^{*},a_j^{*};\omega,V)$ at every state.
         for q2 in range(policy.shape[1]):
             ax1.text(q2, q1, "Invest" if policy[q1, q2, 0] else "Wait", ha="center", va="center")
     fig1.colorbar(im, ax=ax1, ticks=[0, 1], label="Invest")
-    report.add_figure(
-        "figures/investment-policy.png",
-        "Firm 1 investment policy over the quality state space",
-        fig1,
-        description="Firm 1 invests at every interior quality state. It waits at "
-        "the top rung because the ladder cap binds.",
-    )
+    save_figure(fig1, "figures/investment-policy.png", dpi=150)
 
     fig2, ax2 = plt.subplots(figsize=(7, 6))
     advantage = V[:, :, 0] - V[:, :, 1]
@@ -276,13 +179,7 @@ with $V_i(\omega)=G_i(a_i^{*},a_j^{*};\omega,V)$ at every state.
     ax2.set_ylabel("Firm 1 quality")
     ax2.set_title("Value Advantage: Firm 1 Minus Firm 2")
     fig2.colorbar(im2, ax=ax2, label="Value difference")
-    report.add_figure(
-        "figures/value-advantage.png",
-        "Value advantage across states",
-        fig2,
-        description="The diagonal is symmetric. Off-diagonal states show the value "
-        "of a quality lead. The lead affects current share and continuation value.",
-    )
+    save_figure(fig2, "figures/value-advantage.png", dpi=150)
 
     fig3, ax3 = plt.subplots(figsize=(8, 5))
     ax3.step(sim["Period"], sim["Firm 1 quality"], where="post", label="Firm 1 quality")
@@ -294,14 +191,7 @@ with $V_i(\omega)=G_i(a_i^{*},a_j^{*};\omega,V)$ at every state.
     ax3.set_ylabel("Quality")
     ax3.set_title("Simulated Quality Paths")
     ax3.legend()
-    report.add_figure(
-        "figures/simulated-quality-path.png",
-        "Simulated quality paths under Markov-perfect policies",
-        fig3,
-        description="The simulation turns the policy into a stochastic industry "
-        "path. Light vertical lines mark investment periods. Quality leadership "
-        "persists, but depreciation and catch-up investment create turnover.",
-    )
+    save_figure(fig3, "figures/simulated-quality-path.png", dpi=150)
 
     rows = []
     for state in [(0, 0), (1, 2), (2, 1), (4, 0), (4, 1), (4, 2), (4, 3), (4, 4)]:
@@ -315,31 +205,11 @@ with $V_i(\omega)=G_i(a_i^{*},a_j^{*};\omega,V)$ at every state.
             "Value advantage": f"{V[q1, q2, 0] - V[q1, q2, 1]:.2f}",
             "Max deviation gain": f"{np.max(deviation_gains[q1, q2]):.2e}",
         })
-    report.add_table(
-        "tables/policy-by-state.csv",
-        "Selected state policies, values, and deviation checks",
-        pd.DataFrame(rows),
-        description="Symmetric states have symmetric values. States with a quality "
-        "lead show a value advantage. Deviation gains are zero at the reported "
-        "actions.",
-    )
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(rows).to_csv("tables/policy-by-state.csv", index=False)
 
-    report.add_takeaway(
-        "The quality-ladder game makes investment rivalry a state-transition "
-        "problem. The computed policy maps quality states into actions and "
-        "continuation values. In this calibration, firms invest until the cap "
-        "binds. Off-diagonal states show why a quality lead is valuable."
-    )
-
-    report.add_references([
-        "Ericson, R., and Pakes, A. (1995). Markov-Perfect Industry Dynamics. "
-        "*Review of Economic Studies*, 62(1), 53-82.",
-        "Pakes, A., and McGuire, P. (1994). Computing Markov-Perfect Nash Equilibria. "
-        "*RAND Journal of Economics*, 25(4), 555-589.",
-        "Lecture 17 Slides 2023: Dynamic games and the Ericson-Pakes framework.",
-    ])
-    report.write("README.md")
-    print(f"Generated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
+    save_thumbnail("figures/investment-policy.png", "figures/thumb.png")
+    print(f"Figures and tables written.")
 
 
 if __name__ == "__main__":

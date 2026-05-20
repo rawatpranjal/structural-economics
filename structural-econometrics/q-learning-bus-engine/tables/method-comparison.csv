@@ -1,4 +1,4 @@
 method,transition matrix,hazard MAE,P=0.5 mileage,samples,runtime sec
-NFXP (model-based),yes,0.0,6.0,228,0.0165
-soft Q-learning (4 seeds avg.),no,0.0105,6.0,6120000,347.523
-soft DQN,no,0.0046,6.0,4080000,13.796
+NFXP (model-based),yes,0.0,6.0,228,0.0151
+soft Q-learning (4 seeds avg.),no,0.0105,6.0,6120000,227.283
+soft DQN,no,0.0046,6.0,4080000,18.178

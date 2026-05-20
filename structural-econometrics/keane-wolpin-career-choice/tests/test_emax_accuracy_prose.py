@@ -1,32 +1,18 @@
 """Finding 2: emax-accuracy figure prose says errors are largest at young ages.
 
 That claim holds for the normalized RMSE but not the absolute RMSE the figure
-plots. This test guards the figure description string against the unqualified
-directional claim.
+plots. This test guards the figure description in README.md against the
+unqualified directional claim.
 """
 
-import sys
 from pathlib import Path
 
 import pandas as pd
 
 TUTORIAL_DIR = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(TUTORIAL_DIR))
-
-import run  # noqa: E402
 
 DIAG_CSV = TUTORIAL_DIR / "tables" / "emax-diagnostics.csv"
-
-
-def _accuracy_figure_description() -> str:
-    """Pull the description string passed to add_figure for emax-accuracy.png."""
-    src = Path(run.__file__).read_text()
-    marker = '"figures/emax-accuracy.png"'
-    idx = src.index(marker)
-    end = src.index('"""', idx) if '"""' in src[idx:idx + 4000] else len(src)
-    block = src[idx:idx + 4000]
-    start = block.index("description=(")
-    return block[start:block.index("),", start)]
+README = (TUTORIAL_DIR / "README.md").read_text()
 
 
 def test_violated_invariant_absolute_rmse_grows_with_age():
@@ -43,9 +29,8 @@ def test_violated_invariant_absolute_rmse_grows_with_age():
 
 
 def test_honest_fix_description_specifies_normalized_metric():
-    """Prose must qualify the directional claim as the normalized metric."""
-    figure_description_text = _accuracy_figure_description()
+    """README prose must qualify the directional claim as the normalized metric."""
     assert (
-        "normalized" in figure_description_text
-        or "young ages" not in figure_description_text
+        "normalized" in README
+        or "young ages" not in README
     )

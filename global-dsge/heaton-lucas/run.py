@@ -22,8 +22,7 @@ from scipy.optimize import root
 jax.config.update("jax_platform_name", "cpu")
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.plotting import setup_style, save_figure
-from lib.output import ModelReport
+from lib.plotting import setup_style, save_figure, save_thumbnail
 from lib.stpfi import solve_stpfi
 from lib.simulate import simulate_markov, compute_ergodic_histogram
 
@@ -322,7 +321,7 @@ def main():
     ee_b = np.array(ee_b) if ee_b else np.array([0.])
 
     # =========================================================================
-    # Report
+    # Figures and tables
     # =========================================================================
     setup_style()
     interior_mask = (w_grid_np >= 0.0) & (w_grid_np <= 1.0)
@@ -333,7 +332,6 @@ def main():
     borrow_share = float(np.mean(mb1_sol[:, interior_mask] > 1e-5) * 100.0)
     omega_mean = float(np.mean(omega_all))
     omega_p10, omega_p90 = np.percentile(omega_all, [10, 90])
-    status_phrase = "converged" if info["converged"] else "stopped at the iteration cap"
 
     # Archive every runtime scalar that appears in the README so the page is
     # verifiable against a committed artifact without a re-run.
@@ -357,120 +355,10 @@ def main():
         index=False,
     )
 
-    report = ModelReport(
-        "Heaton-Lucas Risk Sharing and Equity Premia",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "Households face different endowment shocks and cannot fully insure "
-        "each other. In Heaton and Lucas (1996), two CRRA agents trade equity "
-        "and a one-period bond. Short-sale and borrowing limits make marginal "
-        "utilities depend on who holds wealth after each shock.\n\n"
-        "The state is agent 1's wealth share, $\\omega_1$. When constraints "
-        "bind, this share changes how aggregate dividends are priced. Equity "
-        "premia therefore vary across the wealth distribution.\n\n"
-        "The transition for $\\omega_1$ is implicit. Tomorrow's share depends "
-        "on tomorrow's equity price, which also depends on tomorrow's share. "
-        "STPFI solves prices, portfolios, multipliers, and shock-contingent "
-        "next wealth shares in one global system."
-    )
-
-    report.add_equations(r"""
-Let $z_t\in\{1,\ldots,8\}$ be the Markov shock. In state $z$, aggregate growth
-is $g_z$, the equity dividend is $d_z$, and agent 1 receives endowment share
-$\eta_{1z}$ with $\eta_{2z}=1-\eta_{1z}$. Agent $i$ has CRRA utility with
-risk aversion $\gamma$ and chooses consumption $c_i$, next-period equity
-holdings $s_i'$, and next-period bond holdings $b_i'$. The equity and bond
-prices are $p_s$ and $p_b$.
-
-For $i=1,2$, the budget constraint is
-
-$$c_i+p_s s_i' + p_b b_i'
-=\omega_i(p_s+d_z)+\eta_{iz},\qquad \omega_2=1-\omega_1.$$
-
-Asset markets clear through
-
-$$s_1'+s_2'=1,\qquad b_1'+b_2'=0,$$
-
-with constraints
-
-$$s_i'\geq 0,\qquad b_i'\geq \bar K^b.$$
-
-The Kuhn-Tucker conditions for equity and bond positions are, where $E_z[\cdot]$
-denotes the expectation over next-period shocks $z'$ conditional on current shock $z$,
-
-$$1=\beta E_z\left[
-g_{z'}^{1-\gamma}\left(\frac{c_i'}{c_i}\right)^{-\gamma}
-\frac{p_s(z',\omega_1')+d_{z'}}{p_s}\right]+\mu_i^s,$$
-
-$$1=\beta E_z\left[
-g_{z'}^{-\gamma}\left(\frac{c_i'}{c_i}\right)^{-\gamma}
-\frac{1}{p_b}\right]+\mu_i^b,$$
-
-$$\mu_i^s\geq0,\quad \mu_i^s s_i'=0,\qquad
-\mu_i^b\geq0,\quad \mu_i^b(b_i'-\bar K^b)=0.$$
-
-The future wealth share is not an exogenous Markov transition. It must be
-consistent with today's portfolio choice and tomorrow's asset prices:
-
-$$\omega_1'(z')=
-\frac{s_1'[p_s(z',\omega_1'(z'))+d_{z'}]+b_1'/g_{z'}}
-{p_s(z',\omega_1'(z'))+d_{z'}}.$$
-""")
-
-    report.add_model_setup(
-        f"| Object | Value | Why it matters |\n"
-        f"|---|---:|---|\n"
-        f"| $\\beta$ | {beta} | Discount factor |\n"
-        f"| $\\gamma$ | {gamma} | CRRA risk aversion |\n"
-        f"| $\\bar{{K}}^b$ | {Kb} | Lower bound on each agent's bond position |\n"
-        f"| Shock states | {shock_num} | Joint Markov chain for growth, dividends, and endowment shares |\n"
-        f"| Wealth-share grid | {n_w} points on $[-0.05,1.05]$ | "
-        f"Collocation grid for $\\omega_1$, with a small buffer around $[0,1]$ |\n"
-        f"| Unknowns per collocation point | {n_eq} | "
-        f"Consumption, portfolios, prices, multipliers, and eight shock-contingent wealth shares |\n"
-        f"| Simulation | 24 paths x 10,000 periods | Used to approximate the ergodic wealth-share distribution |"
-    )
-
-    report.add_solution_method(
-        "STPFI treats the policy rules and transition rule as one fixed point. "
-        "At each current shock and wealth share, the system solves consumption, "
-        "portfolios, prices, multipliers, and eight possible next wealth "
-        "shares. It updates both objects together, then damps the change.\n\n"
-        "```text\n"
-        "Algorithm: STPFI for the Heaton-Lucas wealth-share economy\n"
-        "Input: grid Omega, shock transition P, primitives beta, gamma, Kb\n"
-        "Output: policies c_i(z,omega), s_i'(z,omega), b_i'(z,omega), prices p_s, p_b, and transition omega'(z')\n"
-        "Initialize c_1^0 and c_2^0 from endowment resources, and set p_s^0=1\n"
-        "repeat:\n"
-        "    for each current shock z and wealth grid point omega:\n"
-        "        evaluate current guesses for future c_i^n(z',omega') and p_s^n(z',omega')\n"
-        "        solve for y=(c_1,c_2,s_1',b_1',b_2',mu^s,mu^b,p_s,p_b,{omega'(z')})\n"
-        "        impose Euler equations, complementary slackness, market clearing, budgets, and consistency\n"
-        "    damp the policy and transition updates\n"
-        "until the sup-norm policy change is below epsilon or the iteration cap is reached\n"
-        "simulate the Markov chain and the implied omega transition to read the ergodic distribution\n"
-        "```\n\n"
-        f"This run {status_phrase} after **{info['iterations']}** STPFI "
-        f"iterations. The final policy change was {info['error']:.2e}, and "
-        f"the maximum pointwise residual was {info['residual']:.2e}. The "
-        "nonlinear systems use `scipy.optimize.root`. JAX supplies the "
-        "19-by-19 Jacobian."
-    )
-
-    report.add_results(
-        f"The computed equity premium ranges from {eq_min:.2f}% to "
-        f"{eq_max:.2f}% on the interior grid. It moves because constraints "
-        "change whose marginal utility prices dividends. The variation is the "
-        "asset-pricing effect of incomplete risk sharing."
-    )
-
-    # Figures
-    fig1, (a1, a2) = plt.subplots(1, 2, figsize=(13, 5))
-    cols = plt.cm.viridis(np.linspace(.15, .95, shock_num))
     m = (w_grid_np >= 0) & (w_grid_np <= 1)
+    cols = plt.cm.viridis(np.linspace(.15, .95, shock_num))
+
+    fig1, (a1, a2) = plt.subplots(1, 2, figsize=(13, 5))
     for iz in range(shock_num):
         a1.plot(w_grid_np[m], eq_prem[iz, m]*100, color=cols[iz], lw=1.2, alpha=.8)
     a1.set_xlabel("$\\omega_1$"); a1.set_ylabel("%"); a1.set_title("Equity Premium")
@@ -481,17 +369,7 @@ $$\omega_1'(z')=
     a2.set_xlabel("$\\omega_1$"); a2.set_ylabel("Density")
     a2.set_title("Ergodic Distribution")
     fig1.tight_layout()
-    report.add_figure(
-        "figures/equity-premium-and-distribution.png",
-        "Equity premium and ergodic distribution of wealth share.",
-        fig1,
-        description=(
-            "Panel one plots equity premia against the wealth-share state. "
-            "Panel two shows the simulated ergodic distribution. The mean "
-            f"wealth share is {omega_mean:.3f}, with 10th and 90th percentiles "
-            f"at {omega_p10:.3f} and {omega_p90:.3f}."
-        ),
-    )
+    save_figure(fig1, "figures/equity-premium-and-distribution.png", dpi=150)
 
     fig2, ax2 = plt.subplots(1, 3, figsize=(15, 4))
     for iz in [0, 3, 4, 7]:
@@ -502,17 +380,7 @@ $$\omega_1'(z')=
     ax2[2].set_title("Equity Premium (%)")
     for a in ax2: a.set_xlabel("$\\omega_1$")
     fig2.tight_layout()
-    report.add_figure(
-        "figures/policy-functions.png",
-        "Multipliers and equity premium where constraints bind.",
-        fig2,
-        description=(
-            "Agent 1's no-short-sale multiplier is positive at "
-            f"{no_short_share:.1f}% of interior collocation points. The "
-            f"borrowing multiplier is positive at {borrow_share:.1f}%. The "
-            "right panel keeps the equity premium on the same state grid."
-        ),
-    )
+    save_figure(fig2, "figures/policy-functions.png", dpi=150)
 
     df = pd.DataFrame({
         "Metric": [
@@ -536,37 +404,11 @@ $$\omega_1'(z')=
             "Worst simulated miss in this coarse Python run",
         ],
     })
-    report.add_table(
-        "tables/euler-errors.csv",
-        "Euler Residuals",
-        df,
-        description=(
-            "The table reports simulated Euler-equation residuals. They show "
-            "that this pedagogical run is numerically coarse."
-        ),
-    )
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    df.to_csv("tables/euler-errors.csv", index=False)
 
-    report.add_results(
-        "The Euler residuals are larger than a production asset-pricing run "
-        "would allow. The figures still show the state dependence created by "
-        "constraints. Treat the numbers as a teaching calculation, not final "
-        "quantitative evidence."
-    )
-
-    report.add_takeaway(
-        "Limited asset trade turns the wealth distribution into an asset-pricing "
-        "state. Risk premia move because constrained households cannot freely "
-        "trade away high marginal-utility states. STPFI fits the model because "
-        "it solves the transition and portfolio constraints inside one fixed "
-        "point."
-    )
-
-    report.add_references([
-        "Heaton, J. & Lucas, D. (1996). *JPE* 104(3), 443-487.",
-        "Cao, D., Luo, W. & Nie, G. (2023). *RED* 51, 199-225."])
-
-    report.write("README.md")
-    print(f"\nDone: README.md + {len(report._figures)} figs + {len(report._tables)} tables")
+    save_thumbnail("figures/equity-premium-and-distribution.png", "figures/thumb.png")
+    print(f"\nDone: 2 figures + tables/euler-errors.csv + tables/scalars.csv")
 
 
 if __name__ == "__main__":

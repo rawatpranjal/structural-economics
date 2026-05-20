@@ -19,8 +19,7 @@ from numpy.linalg import eigh
 
 # Add repo root to path for lib/ imports
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.plotting import setup_style
-from lib.output import ModelReport
+from lib.plotting import save_figure, save_thumbnail, setup_style
 
 
 def generate_factor_panel(N=100, T=200, n_factors=1, seed=42):
@@ -281,99 +280,12 @@ def main():
     exposure_corr = np.corrcoef(true_exposure, estimated_exposure)[0, 1]
 
     # =========================================================================
-    # Generate Report
+    # Figures and tables
     # =========================================================================
     setup_style()
 
-    report = ModelReport(
-        "Macro Forecasting with Stock-Watson Diffusion Indexes",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "A forecaster wants next month's industrial production. The data are monthly indicators "
-        "such as employment and prices. Each series is noisy, but they move together over the "
-        "business cycle.\n\n"
-        "The object is a common macro factor. It is the shared state behind many observed "
-        "indicators.\n\n"
-        "The panel has 100 series and 200 months. A forecast regression cannot use every "
-        "series directly. PCA estimates the factor, then a small AR forecast adds it to own "
-        "lags."
-    )
-
-    report.add_equations(
-        r"""
-Let $X_t=(X_{1t},\ldots,X_{Nt})'$ collect the macro panel at date $t$. The
-static factor model writes each indicator as common movement plus series noise:
-
-$$X_{it}=\lambda_i'F_t+e_{it}, \qquad i=1,\ldots,N,\quad t=1,\ldots,T.$$
-
-Here $F_t\in\mathbb{R}^r$ is the common macro factor. The loading
-$\lambda_i\in\mathbb{R}^r$ measures exposure. The error $e_{it}$ is
-series-specific noise. In this simulated panel, $r=1$ and
-
-$$F_t=\rho_F F_{t-1}+\eta_t,\qquad \eta_t\sim N(0,1), \qquad \lambda_i\sim N(1,0.5^2), \qquad e_{it}\sim N(0,\sigma_{e,i}^2).$$
-
-Each series is standardized before PCA:
-
-$$Z_{it}=\frac{X_{it}-\bar X_i}{s_i}.$$
-
-Here $\bar X_i$ and $s_i$ are the sample mean and standard deviation of series $i$. PCA uses the eigenvectors with the largest eigenvalues of $T^{-1}Z'Z$. The
-estimated factor projects each date's standardized panel onto those directions:
-
-$$\hat F_t=(Z_t'v_1,\ldots,Z_t'v_r)'.$$
-
-Here $Z_t=(Z_{1t},\ldots,Z_{Nt})'$ is the standardized panel vector at date $t$. Factors are identified only up to scale, sign, and rotation. The plots align
-signs and compare standardized factors. The forecast regression adds the
-estimated factor to own lags of a target series:
-
-$$y_{t+h} =\alpha+\sum_{\ell=1}^{p}\beta_\ell y_{t-\ell+1} +\gamma'\hat F_t+\varepsilon_{t+h}.$$
-
-The AR benchmark sets $\gamma=0$. A true-factor benchmark replaces $\hat F_t$
-with the simulated $F_t$.
-"""
-    )
-
-    report.add_model_setup(
-        f"| Parameter | Value | Description |\n"
-        f"|-----------|-------|-------------|\n"
-        f"| $N$ | {N} | Number of series (cross-section) |\n"
-        f"| $T$ | {T} | Number of time periods |\n"
-        f"| $r$ | {n_factors} | True number of factors |\n"
-        f"| $\\rho_F$ | 0.8 | Factor AR(1) persistence |\n"
-        f"| $\\lambda_i$ | $\\sim N(1, 0.25)$ | Factor loadings |\n"
-        f"| $\\sigma_{{e,i}}$ | $\\sim U(0.5, 1.5)$ | Idiosyncratic std. deviations |\n"
-        f"| AR lags ($p$) | {p_ar} | Lags in forecasting equation |\n"
-        f"| Horizon ($h$) | {h} | Forecast horizon |\n"
-        f"| Initial training share | 60% of the usable evaluation window | Expanding-window forecast start |\n"
-        f"| Target series | $X_{{1t}}$ | Representative observed macro variable |"
-    )
-
-    report.add_solution_method(
-        "The computation has two steps. First, PCA estimates one common state from the "
-        "standardized panel. Second, expanding-window regressions compare forecasts with and "
-        "without that state.\n\n"
-        "The wide panel supplies repeated signals about the same business-cycle movement. The "
-        "leading component averages through series-specific noise.\n\n"
-        "```text\n"
-        "Algorithm: Stock-Watson diffusion-index forecast\n"
-        "Inputs: panel X_it, target y_t, number of factors r, AR lag order p,\n"
-        "        forecast horizon h, initial training share q\n"
-        "Outputs: estimated factors Fhat_t, AR RMSE, PCA-factor RMSE, true-factor RMSE\n"
-        "\n"
-        "1. Standardize each series: Z_it = (X_it - mean_i) / sd_i.\n"
-        "2. Form the cross-sectional covariance matrix S = T^{-1} Z'Z.\n"
-        "3. Extract the r largest eigenvectors v_1,...,v_r of S.\n"
-        "4. Set Fhat_t = (Z_t'v_1,...,Z_t'v_r) for each date t.\n"
-        "5. For each expanding-window forecast origin tau:\n"
-        "      fit AR(p): y_{t+h} on 1, y_t,...,y_{t-p+1}\n"
-        "      fit factor AR(p): add Fhat_t to the same regression\n"
-        "      fit true-factor AR(p): replace Fhat_t with the simulated F_t\n"
-        "      record each h-step forecast error\n"
-        "6. Compare RMSEs and cumulative squared errors over the evaluation window.\n"
-        "```\n"
-    )
+    Path("figures").mkdir(parents=True, exist_ok=True)
+    Path("tables").mkdir(parents=True, exist_ok=True)
 
     # --- Figure 1: True factor vs estimated factor ---
     fig1, ax1 = plt.subplots(figsize=(10, 5))
@@ -387,13 +299,7 @@ with the simulated $F_t$.
     ax1.set_ylabel("Factor value")
     ax1.set_title("Common macro state: true factor and PCA estimate")
     ax1.legend()
-    report.add_figure("figures/factor-comparison.png",
-                       f"True common factor vs PCA estimate (correlation = {factor_corr:.4f}). "
-                       "PCA recovers the latent factor up to a scale normalization.", fig1,
-                       description="The first plot checks whether PCA measured the simulated state. "
-                       "Sign and scale are arbitrary, so the series are aligned before plotting. "
-                       "The estimate tracks the latent AR(1) factor closely. "
-                       f"The sample correlation is {factor_corr:.4f}.")
+    save_figure(fig1, "figures/factor-comparison.png", dpi=150)
 
     # --- Figure 2: Scree plot ---
     fig2, (ax2a, ax2b) = plt.subplots(1, 2, figsize=(12, 5))
@@ -414,12 +320,7 @@ with the simulated $F_t$.
     ax2b.set_title("Cumulative panel variance")
     ax2b.legend()
     fig2.tight_layout()
-    report.add_figure("figures/scree-plot.png",
-                       "Scree plot and cumulative variance explained. The sharp drop after the "
-                       "first eigenvalue indicates one dominant factor.", fig2,
-                       description="The scree plot checks factor count. "
-                       f"PC1 explains {explained_var[0]:.1%} of standardized variance. "
-                       "Later components look small in this controlled one-factor panel.")
+    save_figure(fig2, "figures/scree-plot.png", dpi=150)
 
     # --- Figure 3: Factor loadings ---
     fig3, ax3 = plt.subplots(figsize=(10, 5))
@@ -433,12 +334,7 @@ with the simulated $F_t$.
     ax3.set_ylabel("Standardized exposure")
     ax3.set_title("Which series load on the common state?")
     ax3.legend()
-    report.add_figure("figures/factor-loadings.png",
-                       "Standardized series-factor exposures sorted by the true exposure.",
-                       fig3,
-                       description="The exposure plot shows which indicators carry the common state. "
-                       "The PCA exposure ranking almost matches the true ranking. "
-                       f"The correlation is {exposure_corr:.4f}.")
+    save_figure(fig3, "figures/factor-loadings.png", dpi=150)
 
     # --- Figure 4: Forecast comparison ---
     fig4, (ax4a, ax4b) = plt.subplots(1, 2, figsize=(14, 5))
@@ -471,30 +367,17 @@ with the simulated $F_t$.
     ax4b.set_title("Cumulative forecast loss")
     ax4b.legend()
     fig4.tight_layout()
-    report.add_figure("figures/forecast-comparison.png",
-                       f"Forecast comparison: the PCA factor forecast reduces RMSE by {improvement:.1f}% "
-                       f"relative to AR({p_ar}). Right panel shows cumulative squared errors.", fig4,
-                       description="The forecast plot compares one-step predictions. "
-                       f"AR({p_ar}) uses only the target's own lags. "
-                       "The Stock-Watson regression adds the estimated factor. "
-                       f"RMSE falls from {forecast_results['rmse_ar']:.3f} to {forecast_results['rmse_faar']:.3f}. "
-                       f"The true-factor forecast has RMSE {true_factor_results['rmse_faar']:.3f}.")
+    save_figure(fig4, "figures/forecast-comparison.png", dpi=150)
 
     # --- Tables ---
-    # Eigenvalue table
     eig_table = pd.DataFrame({
         "Component": [f"PC{i+1}" for i in range(5)],
         "Eigenvalue": eigenvalues[:5].round(3),
         "Var. Explained (%)": (eigenvalues[:5] / eigenvalues.sum() * 100).round(2),
         "Cumulative (%)": (np.cumsum(eigenvalues[:5]) / eigenvalues.sum() * 100).round(2),
     })
-    report.add_table("tables/eigenvalues.csv",
-                      "Top five eigenvalues and variance explained", eig_table,
-                      description="The eigenvalue table repeats the scree evidence. "
-                      "The large first eigenvalue is the simulated common factor. "
-                      "The remaining entries mostly reflect series-specific variation.")
+    eig_table.to_csv("tables/eigenvalues.csv", index=False)
 
-    # Forecast comparison table
     forecast_table = pd.DataFrame({
         "Model": [f"AR({p_ar})", f"PCA factor AR({p_ar})", f"True factor AR({p_ar})"],
         "RMSE": [
@@ -508,26 +391,10 @@ with the simulated $F_t$.
             true_factor_results["rmse_faar"] / forecast_results["rmse_ar"],
         ],
     }).round(4)
-    report.add_table("tables/forecast-comparison.csv",
-                      "Out-of-sample forecast comparison", forecast_table,
-                      description="The forecast table reports the same loss comparison. "
-                      f"The estimated factor and true factor both beat AR({p_ar}). "
-                      "The close ordering should not be overinterpreted.")
+    forecast_table.to_csv("tables/forecast-comparison.csv", index=False)
 
-    report.add_takeaway(
-        "Stock-Watson diffusion indexes let a forecaster use many macro indicators without "
-        "estimating one coefficient per series. In this run, PCA recovers the common state "
-        f"almost exactly. The factor forecast lowers one-step RMSE by {improvement:.1f}% "
-        f"relative to AR({p_ar}). The practical lesson is simple: estimate the shared state "
-        "first, then forecast with a small regression."
-    )
-
-    report.add_references([
-        "Stock, J. and Watson, M. (2002). \"Forecasting Using Principal Components from a Large Number of Predictors.\" *Journal of the American Statistical Association*, 97(460), 1167-1179.",
-    ])
-
-    report.write("README.md")
-    print(f"\nGenerated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
+    save_thumbnail("figures/factor-comparison.png", "figures/thumb.png")
+    print(f"\nGenerated: 4 figures + 2 tables")
 
 
 if __name__ == "__main__":

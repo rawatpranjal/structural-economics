@@ -26,8 +26,7 @@ import pandas as pd
 from scipy.optimize import minimize, dual_annealing
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.plotting import setup_style
-from lib.output import ModelReport
+from lib.plotting import setup_style, save_figure, save_thumbnail
 
 
 def main() -> None:
@@ -192,224 +191,9 @@ def main() -> None:
         })
 
     # =========================================================================
-    # Report
+    # Figures and tables
     # =========================================================================
     setup_style()
-
-    report = ModelReport(
-        "Global Search and Multi-Start Diagnostics",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "A monopolist sells to two consumer segments with very different demand schedules. "
-        "The low-valuation segment is large but quits the market at a low price. "
-        "The high-valuation segment is small but willing to pay much more. "
-        "Profit is the share-weighted sum of revenue from both segments minus marginal cost.\n\n"
-        "The mixture profit function has two local maxima. "
-        "A low-price peak serves both segments. "
-        "A higher-price peak serves only the high-valuation segment and earns more in this calibration. "
-        "Different optimization methods land in different peaks depending on where they start.\n\n"
-        "The lesson is reporting discipline. "
-        "An optimizer that converges has answered a local question, not a global one. "
-        "Multi-start, random search, and global search are diagnostics that bound the gap between local and global optimality. "
-        "The same habit transfers to structural likelihoods, simulated moments, mixture models, and dynamic games."
-    )
-
-    report.add_equations(
-        r"""A monopolist faces a population of consumers split between two segments.
-Segment $L$ has linear demand with intercept $A_L$ and slope $b_L$.
-Segment $H$ has linear demand with intercept $A_H$ and slope $b_H$.
-
-$$D_L(p) = \max\lbrace 0,\, A_L - b_L\, p \rbrace,
-\qquad
-D_H(p) = \max\lbrace 0,\, A_H - b_H\, p \rbrace.$$
-
-Each segment quits the market at its own choke price.
-The low-valuation segment exits at $p_L^{\max} = A_L / b_L$.
-The high-valuation segment exits at the larger price $p_H^{\max} = A_H / b_H$.
-
-The population mixture weight $\lambda \in (0, 1)$ records the share of low-valuation consumers.
-Profit is the weighted sum of segment revenues minus the marginal-cost wedge.
-
-$$\pi(p) = (p - c) \left[\lambda\, D_L(p) + (1 - \lambda)\, D_H(p)\right].$$
-
-The objective is piecewise quadratic in $p$.
-On $[c,\, p_L^{\max}]$ both segments are active.
-On $(p_L^{\max},\, p_H^{\max}]$ only the high-valuation segment is active.
-The two regimes are smoothly stitched at the kink $p_L^{\max}$.
-
-In the both-segments regime the first-order condition is linear in $p$.
-
-$$\pi'(p) = \lambda (A_L - 2 b_L\, p) + (1 - \lambda)(A_H - 2 b_H\, p) + (\lambda b_L + (1 - \lambda) b_H)\, c.$$
-
-In the high-only regime profit is the standard quadratic with a single interior maximizer.
-
-$$p_H^{\ast} = \frac{A_H + b_H\, c}{2 b_H}.$$
-
-At the calibration $A_L = 10$, $b_L = 5$, $A_H = 8$, $b_H = 1$, $c = 0.5$, $\lambda = 0.6$, both regimes have an interior maximizer.
-
-$$p_L^{\ast} \approx 1.603,
-\qquad
-\pi(p_L^{\ast}) \approx 4.14.$$
-
-$$p_H^{\ast} = 4.25,
-\qquad
-\pi(p_H^{\ast}) \approx 5.625.$$
-
-The high-price peak is global on this calibration.
-The low-price peak is a strict local maximum.
-The two basins of attraction do not split at the kink.
-A quasi-Newton step from a low starting price has a strongly positive gradient and overshoots the low peak, so only starts in a narrow window just below the kink actually converge to the low peak; lower starts reach the high peak.
-This makes the low peak the harder one to discover and is exactly why a single start is unreliable.
-
-The next four subsections describe one method at a time.
-
-### Multi-start L-BFGS-B
-
-Multi-start L-BFGS-B draws $N$ initial prices uniformly on the bracket and runs the local optimiser from each.
-
-$$\hat p_{\mathrm{multi}}^{(N)} = \arg\max_{k \in \lbrace 1, \ldots, N\rbrace} \pi\left(\mathrm{LBFGSB}(p_0^{(k)})\right),
-\qquad p_0^{(k)} \sim \mathrm{Uniform}[p_{\mathrm{lo}}, p_{\mathrm{hi}}].$$
-
-The probability of finding the global optimum is one minus the probability that all $N$ starts land in the low basin.
-Reporting that probability is the diagnostic for whether the start budget is large enough.
-
-### Random search
-
-Random search drops the local optimiser entirely and uses a single sample of $N$ uniform draws.
-
-$$\hat p_{\mathrm{rand}}^{(N)} = \arg\max_{k \in \lbrace 1, \ldots, N\rbrace} \pi(p^{(k)}),
-\qquad p^{(k)} \sim \mathrm{Uniform}[p_{\mathrm{lo}}, p_{\mathrm{hi}}].$$
-
-Random search is cheaper per evaluation than multi-start L-BFGS-B but converges only at rate $1/\sqrt{N}$.
-
-### Nelder-Mead
-
-Nelder-Mead is a derivative-free local search.
-It maintains a simplex of candidate points and reflects, expands, contracts, or shrinks it based on the ranks of the function values at the vertices.
-Convergence is local; basin dependence is the same as L-BFGS-B, so a single Nelder-Mead start with a poor initial point misses the global maximum on this problem.
-
-### Simulated annealing
-
-Simulated annealing samples a Markov chain that proposes random moves and accepts them with a probability that depends on the change in objective and a slowly decreasing temperature.
-SciPy's `dual_annealing` combines a generalised-simulated-annealing global search with local refinement at each accepted move.
-The result is a stochastic global search that does not need a starting point inside the global basin.
-"""
-    )
-
-    report.add_model_setup(
-        f"| Symbol | Value | Role |\n"
-        f"|--------|-------|------|\n"
-        f"| $A_L$, $b_L$ | {A_L:.1f}, {b_L:.1f} | Low-valuation linear demand |\n"
-        f"| $A_H$, $b_H$ | {A_H:.1f}, {b_H:.1f} | High-valuation linear demand |\n"
-        f"| $c$ | {c:.1f} | Marginal cost |\n"
-        f"| $\\lambda$ | {lam:.1f} | Share of low-valuation consumers |\n"
-        f"| Search bracket | $[{p_lo:.3f},\\, {p_hi:.1f}]$ | Outer bounds for every method |\n"
-        f"| Low choke price | $p_L^{{\\max}} = {p_kink:.2f}$ | Low-valuation segment quits |\n"
-        f"| Low peak | $p_L^{{\\ast}} = {p_low_peak:.4f}$, $\\pi = {profit_low_peak:.4f}$ | Local maximum |\n"
-        f"| High peak | $p_H^{{\\ast}} = {p_high_peak:.4f}$, $\\pi = {profit_high_peak:.4f}$ | Global maximum |\n"
-        f"| Multi-start budget $N$ | {n_starts_main} | Number of L-BFGS-B starts |\n"
-        f"| Random-search budget $N$ | {n_random} | Uniform draws |\n"
-        f"| Random seed | {seed_main} | For reproducibility |\n"
-        f"| Single-start $p_0$ | {p0_single} | Used by methods 1 and 4 |"
-    )
-
-    report.add_solution_method(
-        "All five methods explore the same one-dimensional bracket. "
-        "They differ in how they balance local refinement against global exploration.\n\n"
-
-        "### Method 1: Single-start L-BFGS-B\n\n"
-        "L-BFGS-B is the practical Newton-style local optimizer for bound-constrained smooth problems. "
-        "It builds a low-memory BFGS approximation of the Hessian using gradient differences and uses it to take quasi-Newton steps. "
-        "Convergence is locally superlinear in the basin of attraction. "
-        "On a single start the answer depends entirely on which basin contains the initial price.\n\n"
-        "```text\n"
-        "Algorithm: Single-start L-BFGS-B\n"
-        "Input : objective f, gradient g (or numerical), bounds, x_0\n"
-        "Output: x_hat reported as the optimum\n"
-        "  scipy.optimize.minimize(f, x_0, method='L-BFGS-B', bounds=...)\n"
-        "  the routine maintains a small set of (s_k, y_k) pairs for the BFGS update\n"
-        "  it projects each step onto the feasible box\n"
-        "```\n\n"
-        "Single-start L-BFGS-B has no global guarantee. "
-        "On a nonconcave objective it converges to the closest local maximum, which can be very far from the global. "
-        "There is no way to know from the converged output that a better basin exists.\n\n"
-
-        "### Method 2: Multi-start L-BFGS-B\n\n"
-        "Multi-start runs the local optimizer from many initial points and keeps the best result. "
-        "The economic intuition is a survey of basins: each start lands somewhere, and many starts together map out which basins exist. "
-        "The probability of missing the global is exponentially small in $N$ when basin-of-attraction probabilities are non-degenerate. "
-        "The cost is linear in $N$ with the same per-run cost as a single start.\n\n"
-        "```text\n"
-        "Algorithm: Multi-start L-BFGS-B\n"
-        "Input : objective, bounds, sample size N, seed s\n"
-        "Output: best x across N local runs\n"
-        "  draw N uniform starts from the bracket\n"
-        "  for each start: run L-BFGS-B and record the converged x and f\n"
-        "  return the start whose converged f is largest\n"
-        "  optionally label each result by basin and report basin counts\n"
-        "```\n\n"
-        "Multi-start can still miss the global if every start happens to land in the same basin. "
-        "The diagnostic is to report how many starts landed in each basin and the gap between the best basin and the runner-up. "
-        "A single basin discovery is a warning that the bracket is too narrow or that one basin dominates the volume of starts.\n\n"
-
-        "### Method 3: Random search\n\n"
-        "Random search drops the local optimizer entirely. "
-        "It evaluates the objective at $N$ uniform draws and returns the argmax of the sample. "
-        "The expected error scales as $1/\\sqrt{N}$ on a unimodal problem. "
-        "On a nonconcave problem the rate degrades in proportion to the volume share of the global basin. "
-        "Random search is the cheapest exploratory tool. "
-        "It is also the most bluntly empirical: nothing in its output certifies optimality.\n\n"
-        "```text\n"
-        "Algorithm: Random search\n"
-        "Input : objective, bounds, sample size N, seed s\n"
-        "Output: x_hat\n"
-        "  draw N uniform points from the bracket\n"
-        "  evaluate the objective at each\n"
-        "  return the point with the largest value\n"
-        "```\n\n"
-        "Random search misses the peak with non-zero probability. "
-        "Increasing $N$ shrinks the miss probability but at $1/\\sqrt{N}$ in distance terms. "
-        "Random search is a useful sanity check on the answer of a more expensive method, not a substitute for it.\n\n"
-
-        "### Method 4: Nelder-Mead\n\n"
-        "Nelder-Mead is a derivative-free local optimizer. "
-        "It maintains a simplex of candidate points and reflects, expands, contracts, or shrinks the simplex according to the ranks of the function values at the vertices. "
-        "Convergence is local with no formal rate on non-smooth problems. "
-        "It is the right tool when the objective is rough or the gradient is unavailable.\n\n"
-        "```text\n"
-        "Algorithm: Nelder-Mead via scipy.optimize.minimize\n"
-        "Input : objective, x_0, simplex tolerances\n"
-        "Output: x_hat\n"
-        "  scipy.optimize.minimize(f, x_0, method='Nelder-Mead')\n"
-        "  the routine builds an initial simplex around x_0\n"
-        "  it iterates reflect, expand, contract, shrink moves\n"
-        "  it stops on a simplex-size tolerance\n"
-        "```\n\n"
-        "Nelder-Mead has the same basin-dependence as L-BFGS-B. "
-        "On the present calibration it converges to whichever local peak is reached first by simplex reflection.\n\n"
-
-        "### Method 5: Simulated annealing via `dual_annealing`\n\n"
-        "Simulated annealing is the canonical stochastic global search. "
-        "It samples a Markov chain that proposes random moves. "
-        "Each move is accepted with a probability that depends on the change in objective and a slowly decreasing temperature. "
-        "SciPy's `dual_annealing` combines a generalised-simulated-annealing global search with local refinement at each accepted move. "
-        "The method has provable convergence to the global optimum under a logarithmic cooling schedule. "
-        "The implied constant is impractical and the practical schedule is heuristic.\n\n"
-        "```text\n"
-        "Algorithm: Dual annealing via scipy.optimize.dual_annealing\n"
-        "Input : objective, bounds, seed, max iterations\n"
-        "Output: x_hat\n"
-        "  the routine runs a generalised-simulated-annealing chain on the bracket\n"
-        "  it triggers local minimisation around accepted moves\n"
-        "  the temperature schedule controls exploration versus exploitation\n"
-        "```\n\n"
-        "Simulated annealing is expensive and stochastic. "
-        "Different seeds can return different answers when the cooling schedule is too short. "
-        "The reporting discipline is the same as for multi-start: run several seeds and report the worst, not just the best."
-    )
 
     # ------------------------------------------------------------------
     # Figure 1: profit surface with both peaks
@@ -427,17 +211,7 @@ The result is a stochastic global search that does not need a starting point ins
     ax1.set_ylabel(r"Profit $\pi(p)$")
     ax1.set_title("Two-segment monopoly profit and its two local peaks")
     ax1.legend(loc="upper right", fontsize=9)
-    report.add_results(
-        f"The profit surface has a local peak at $p_L^{{\\ast}} = {p_low_peak:.3f}$ where both segments are active. "
-        f"Above the kink at $p_L^{{\\max}} = {p_kink:.2f}$ only the high-valuation segment is active. "
-        f"The high-only regime has its own peak at $p_H^{{\\ast}} = {p_high_peak:.2f}$, which is the global maximum on this calibration. "
-        f"The gap between the two peaks is ${profit_high_peak - profit_low_peak:.3f}$ in profit, which is large enough to matter for any policy that depends on it."
-    )
-    report.add_figure(
-        "figures/profit-surface.png",
-        "Two-segment monopoly profit with low-price and high-price peaks marked",
-        fig1,
-    )
+    save_figure(fig1, "figures/profit-surface.png", dpi=150)
 
     # ------------------------------------------------------------------
     # Figure 2: optimizer paths from many starts (basin map)
@@ -469,19 +243,7 @@ The result is a stochastic global search that does not need a starting point ins
     low_mask = basin_color == "tab:orange"
     boundary_lo = float(starts_dense[low_mask].min()) if low_mask.any() else float("nan")
     boundary_hi = float(starts_dense[low_mask].max()) if low_mask.any() else float("nan")
-    report.add_results(
-        f"The basin map sweeps 200 evenly spaced starting prices and records where each L-BFGS-B run lands. "
-        f"Only starts in the narrow window $[{boundary_lo:.2f},\\, {boundary_hi:.2f}]$ converge to the low peak. "
-        f"Every start below that window also converges to the high peak: the gradient at a low price is strongly positive, so the quasi-Newton step overshoots the low peak and descends into the global basin. "
-        f"The L-BFGS-B basin boundary near $p \\approx {boundary_lo:.2f}$ is an artifact of the solver dynamics and sits below the economic kink $p_L^{{\\max}} = {p_kink:.2f}$, not at it. "
-        f"The basin volumes are {pct_low:.1f} percent low and {pct_high:.1f} percent high on this bracket. "
-        f"A single start drawn uniformly from the bracket has roughly {pct_high:.0f} percent chance of landing in the global basin, so the low peak is the harder one to discover by chance."
-    )
-    report.add_figure(
-        "figures/basin-map.png",
-        "L-BFGS-B converged price vs starting price; only a narrow window of low starts reaches the low peak, the rest overshoot into the global basin",
-        fig2,
-    )
+    save_figure(fig2, "figures/basin-map.png", dpi=150)
 
     # ------------------------------------------------------------------
     # Figure 3: best-of-N curve for multi-start
@@ -516,18 +278,7 @@ The result is a stochastic global search that does not need a starting point ins
     ax3b.axhline(1.0, color="tab:gray", linestyle=":", linewidth=0.8)
     ax3b.legend(loc="lower right", fontsize=9)
     fig3.tight_layout()
-    report.add_results(
-        f"The left panel plots the best profit across $N$ multi-start runs, averaged over {n_replications} seeds. "
-        f"With one start the mean best profit is between the local and global peaks, reflecting that some seeds find the wrong basin. "
-        f"As $N$ grows the mean best converges to the global peak and the percentile band collapses. "
-        f"The right panel records the empirical probability that at least one of the $N$ starts lands in the global basin. "
-        f"At $N = {n_arr[-1]}$ that probability is essentially one and the diagnostic is trustworthy."
-    )
-    report.add_figure(
-        "figures/best-objective-by-starts.png",
-        "Best profit and probability of finding the global peak as the number of multi-start runs grows",
-        fig3,
-    )
+    save_figure(fig3, "figures/best-objective-by-starts.png", dpi=150)
 
     # ------------------------------------------------------------------
     # Figure 4: optimizer paths for the four methods on the profit curve
@@ -550,20 +301,7 @@ The result is a stochastic global search that does not need a starting point ins
     ax4.set_ylabel(r"Profit $\pi(p)$")
     ax4.set_title("Final answer of each method on the same profit surface")
     ax4.legend(loc="lower right", fontsize=9)
-    gap_abs = profit_global - profit_single
-    gap_pct = gap_abs / profit_single * 100.0
-    report.add_results(
-        f"All four method outputs are plotted on the same profit surface. "
-        f"Both single-start methods land at the low-price local peak from $p_0 = {p0_single}$. "
-        f"Their reported profits are $\\pi = {profit_single:.3f}$ for L-BFGS-B and $\\pi = {profit_nm:.3f}$ for Nelder-Mead. "
-        f"Multi-start L-BFGS-B and simulated annealing both find the global peak at $p_H^{{\\ast}} = {p_high_peak:.3f}$ with profit $\\pi = {profit_global:.3f}$. "
-        f"The gap between local and global on this calibration is ${gap_abs:.3f}$, a {gap_pct:.0f} percent profit improvement that single-start methods miss silently."
-    )
-    report.add_figure(
-        "figures/optimizer-paths.png",
-        "Final answer of each of the five methods overlaid on the profit surface",
-        fig4,
-    )
+    save_figure(fig4, "figures/optimizer-paths.png", dpi=150)
 
     # ------------------------------------------------------------------
     # Tables
@@ -612,17 +350,8 @@ The result is a stochastic global search that does not need a starting point ins
             "yes" if profit_sa >= profit_global - 1e-3 else "no",
         ],
     })
-    report.add_results(
-        "The table compares the five methods on the same calibration. "
-        f"Single-start L-BFGS-B and Nelder-Mead converge to the local peak at $p \\approx {p_low_peak:.3f}$ from $p_0 = {p0_single}$ and miss the global. "
-        "Multi-start L-BFGS-B, random search, and simulated annealing all return the global peak. "
-        "Function evaluations differ by orders of magnitude: simulated annealing is the most expensive, multi-start scales linearly with the number of starts, and a single L-BFGS-B run is by far the cheapest, but cheapest is not the same as right."
-    )
-    report.add_table(
-        "tables/method_comparison.csv",
-        f"Method comparison at $\\lambda = {lam}$, $c = {c}$, segment intercepts $({A_L:.0f}, {A_H:.0f})$",
-        method_table,
-    )
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    method_table.to_csv("tables/method_comparison.csv", index=False)
 
     multi_print = multi_df.copy()
     multi_print["p_start"] = multi_print["p_start"].map(lambda x: f"{x:.4f}")
@@ -636,17 +365,7 @@ The result is a stochastic global search that does not need a starting point ins
         "nfev": "Function evaluations",
         "basin": "Basin",
     })
-    report.add_results(
-        f"The multi-start log records every L-BFGS-B run individually. "
-        f"It is the bookkeeping a reproducible structural estimation should publish: "
-        f"every start, every converged value, and the basin label. "
-        f"On this calibration {int((multi_df['basin'] == 'low-price').sum())} of {n_starts_main} starts landed in the low basin and the rest in the high basin."
-    )
-    report.add_table(
-        "tables/multistart_results.csv",
-        "Per-start log of multi-start L-BFGS-B runs",
-        multi_print,
-    )
+    multi_print.to_csv("tables/multistart_results.csv", index=False)
 
     basin_summary = multi_df.groupby("basin").agg(
         count=("start_id", "size"),
@@ -665,49 +384,10 @@ The result is a stochastic global search that does not need a starting point ins
         "mean_profit": "Mean profit",
         "representative_p": "Representative price",
     })
-    report.add_results(
-        "The basin summary aggregates the per-start log into the diagnostic that belongs in a paper. "
-        "Two basins are discovered. "
-        "The high-price basin is the global. "
-        "The low-price basin is a strict local. "
-        "Reporting the basin counts forces a reader to confront the gap between optimization convergence and global optimality."
-    )
-    report.add_table(
-        "tables/basin_summary.csv",
-        "Basin summary across multi-start runs",
-        basin_print,
-    )
+    basin_print.to_csv("tables/basin_summary.csv", index=False)
 
-    report.add_takeaway(
-        "Optimizer convergence is not the same as global optimality. "
-        "On a nonconcave profit surface a single-start local optimizer answers a local question. "
-        "It cannot certify a global one. "
-        "Reading off the converged value as if it were a global maximum is the easiest way to publish a wrong answer.\n\n"
-        "Multi-start L-BFGS-B is the practical default for nonconcave problems with smooth interiors. "
-        "Drawing fifty starts uniformly across the search bracket maps out the basins of attraction. "
-        "The basin counts and the gap between the best basin and the runner-up are the diagnostic.\n\n"
-        "Random search is the cheapest sanity check. "
-        "It cannot certify a global optimum either, but it bounds it from below at $1/\\sqrt{N}$ in distance. "
-        "When random search and multi-start agree, the answer is more credible.\n\n"
-        "Simulated annealing trades cost for global guarantees. "
-        "It is the right tool when the objective is rough or has many basins. "
-        "Different seeds can disagree, and the discipline is to report the worst seed alongside the best.\n\n"
-        "The reporting habit transfers directly to structural estimation. "
-        "Latent-regime likelihoods, simulated moments, and dynamic-game equilibria all live on nonconcave surfaces. "
-        "Showing how many starts were attempted and how many basins were discovered is the difference between an opinion and a result."
-    )
-
-    report.add_references([
-        "Nocedal, J. and Wright, S. J. (2006). *Numerical Optimization*. Springer, 2nd edition, Ch. 6 and 9.",
-        "Press, W. H., Teukolsky, S. A., Vetterling, W. T., and Flannery, B. P. (2007). *Numerical Recipes*. Cambridge University Press, 3rd edition, Ch. 10.",
-        "Tirole, J. (1988). *The Theory of Industrial Organization*. MIT Press, Ch. 3 on segmented markets.",
-        "Xiang, Y., Sun, D. Y., Fan, W., and Gong, X. G. (1997). *Generalized simulated annealing algorithm and its application to the Thomson model*. Physics Letters A 233, 216-220.",
-        "Bergstra, J. and Bengio, Y. (2012). *Random Search for Hyper-Parameter Optimization*. Journal of Machine Learning Research, 13, 281-305.",
-        "**See also.** The same two-segment monopoly profit is optimized by Bayesian optimization with a Gaussian-process surrogate in [`numerical-methods/bayesian-optimization/`](../../numerical-methods/bayesian-optimization/). Thirty evaluations there recover the global peak that multi-start and simulated annealing here spend hundreds to thousands of evaluations to certify, which is the sample-efficient alternative for expensive structural likelihoods.",
-    ])
-
-    report.write("README.md")
-    print(f"\nGenerated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
+    save_thumbnail("figures/profit-surface.png", "figures/thumb.png")
+    print(f"Generated: figures/ (4 figures + thumb) + tables/ (3 tables)")
 
 
 if __name__ == "__main__":

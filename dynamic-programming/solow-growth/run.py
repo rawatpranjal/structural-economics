@@ -13,8 +13,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import setup_style, save_figure, save_thumbnail
 
 
 def output_per_effective_worker(k: np.ndarray | float, alpha: float) -> np.ndarray | float:
@@ -144,113 +143,6 @@ def main() -> None:
 
     setup_style()
 
-    report = ModelReport(
-        "Solow Growth and Conditional Convergence",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "A Solow economy saves a fixed share of output each period. Capital grows "
-        "through investment and shrinks through depreciation. Labor and technology "
-        "growth make each unit of capital serve more effective workers.\n\n"
-        "The state is $k_t = K_t/(A_t L_t)$, capital per unit of effective labor. "
-        "If investment exceeds break-even investment, $k_t$ rises. If investment "
-        "falls short, $k_t$ falls. Concavity gives one positive steady state.\n\n"
-        "The computation iterates the law of motion from an initial $k_0$. A "
-        "closed-form steady state checks the path and makes convergence visible."
-    )
-
-    report.add_equations(
-        r"""
-Let $K_t$ denote aggregate capital, $A_t$ labor-augmenting technology, and
-$L_t$ raw labor. Output is Cobb-Douglas:
-
-$$Y_t = K_t^\alpha (A_t L_t)^{1-\alpha}, \qquad \alpha\in(0,1).$$
-
-Capital, technology, and labor evolve as
-
-$$K_{t+1}=(1-\delta)K_t + sY_t, \qquad
-A_{t+1}=(1+g)A_t, \qquad L_{t+1}=(1+n)L_t,$$
-
-Here $s$ is the saving rate, $\delta$ is depreciation, $g$ is technology
-growth, and $n$ is labor-force growth.
-
-Divide by $A_tL_t$ to work in effective-labor units:
-
-$$k_t = \frac{K_t}{A_t L_t}, \qquad
-y_t = \frac{Y_t}{A_t L_t} = k_t^\alpha,$$
-
-with consumption per effective worker $c_t = (1-s)\,y_t$.
-
-In these units, the law of motion is one scalar equation:
-
-$$k_{t+1} = \phi(k_t) := \frac{(1-\delta)\,k_t + s\,k_t^\alpha}{(1+g)(1+n)}.$$
-
-Define break-even investment as
-
-$$\Delta := (1+g)(1+n) - 1 + \delta$$
-
-The steady state $k^{\ast}$ solves $\phi(k^{\ast})=k^{\ast}$. This is
-equivalent to $s(k^{\ast})^\alpha = \Delta k^{\ast}$.
-
-The closed-form values are
-
-$$k^{\ast}=\left(\frac{s}{\Delta}\right)^{1/(1-\alpha)}, \qquad
-y^{\ast}=(k^{\ast})^\alpha, \qquad c^{\ast}=(1-s)\,y^{\ast}.$$
-
-"""
-    )
-
-    report.add_model_setup(
-        "| Symbol | Value | Role |\n"
-        "|--------|------:|------|\n"
-        f"| $\\alpha$ | {alpha:.2f} | Capital share in $K^\\alpha(AL)^{{1-\\alpha}}$ |\n"
-        f"| $s$ | {savings_rate:.2f} | Exogenous saving rate |\n"
-        f"| $\\delta$ | {depreciation:.2f} | Capital depreciation |\n"
-        f"| $n$ | {population_growth:.2f} | Labor-force growth |\n"
-        f"| $g$ | {technology_growth:.2f} | Labor-augmenting productivity growth |\n"
-        f"| $K_0,A_0,L_0$ | {K0:.1f}, {A0:.1f}, {L0:.1f} | Initial stocks; implies $k_0={k0:.1f}$ |\n"
-        f"| Horizon $T$ | {periods} | Long enough to make the terminal gap small |\n"
-        f"| $\\Delta$ | {effective_depreciation:.4f} | Break-even investment per unit of $k$ |\n"
-        f"| $k^{{\\ast}}$ | {k_star:.4f} | Closed-form steady-state capital per effective worker |"
-    )
-
-    report.add_solution_method(
-        "There is no Bellman equation here. Once $s$ is fixed, the model is the "
-        "scalar map $\\phi$. The simulation applies $\\phi$ from $k_0$ until the "
-        "path is close to $k^{\\ast}$.\n\n"
-        "A local linearization gives the convergence rate near the steady state:\n\n"
-        "$$k_{t+1} - k^{\\ast} \\approx \\lambda\\,(k_t - k^{\\ast}), "
-        "\\qquad \\lambda \\equiv \\phi'(k^{\\ast}) "
-        "= \\frac{(1-\\delta) + s\\alpha\\,(k^{\\ast})^{\\alpha-1}}"
-        "{(1+g)(1+n)}.$$\n\n"
-        "When $\\lambda \\in (0,1)$, deviations shrink at a geometric rate. The "
-        "half-life is $H := \\ln(0.5)/\\ln(\\lambda)$.\n\n"
-        "```text\n"
-        "Algorithm: Solow transition in effective-labor units\n"
-        "Input : primitives (alpha, s, delta, n, g), initial k0, horizon T\n"
-        "Output: paths {k_t, y_t, c_t}; closed-form k_star, lambda, half-life H\n"
-        "\n"
-        "Delta   <- (1 + g)(1 + n) - 1 + delta              # break-even per unit k\n"
-        "k_star  <- (s / Delta)^(1 / (1 - alpha))           # closed-form fixed point\n"
-        "lambda  <- ((1 - delta) + s * alpha * k_star^(alpha - 1)) / ((1 + g)(1 + n))\n"
-        "H       <- ln(0.5) / ln(lambda)                    # local half-life\n"
-        "\n"
-        "set k <- k0\n"
-        "for t = 0, 1, ..., T - 1:\n"
-        "    y_t       <- k^alpha\n"
-        "    c_t       <- (1 - s) * y_t\n"
-        "    invest_t  <- s * y_t\n"
-        "    k         <- ((1 - delta) * k + s * y_t) / ((1 + g)(1 + n))\n"
-        "\n"
-        "audit         : |k_T - k_star|, |y_T - y_star|, |c_T - c_star|\n"
-        "linearization : compare k_t to k_star + (k_0 - k_star) * lambda^t\n"
-        "```\n\n"
-        f"For this calibration, $\\lambda \\approx {local_lambda:.3f}$ and the "
-        f"local half-life is roughly {half_life:.1f} periods."
-    )
-
     # ------------------------------------------------------------------
     # Figure 1 - Solow diagram in effective-labor units
     # ------------------------------------------------------------------
@@ -269,17 +161,7 @@ y^{\ast}=(k^{\ast})^\alpha, \qquad c^{\ast}=(1-s)\,y^{\ast}.$$
     ax1.set_ylabel("Investment per effective worker")
     ax1.set_title("Solow diagram in effective-labor units")
     ax1.legend()
-    report.add_results(
-        f"At $k_0={k0:.2f}$ the curved schedule $s k^\\alpha$ sits above the linear "
-        f"break-even line $\\Delta k$. Capital deepens from the start. The curves "
-        f"cross at $k^{{\\ast}}={k_star:.3f}$, the unique positive steady state. "
-        "Above $k^{\\ast}$, break-even investment exceeds saving."
-    )
-    report.add_figure(
-        "figures/solow-diagram.png",
-        "Solow diagram with investment and break-even investment in effective-labor units",
-        fig1,
-    )
+    save_figure(fig1, "figures/solow-diagram.png", dpi=150)
 
     # ------------------------------------------------------------------
     # Figure 2 - transition with linearization overlay (ground-truth check)
@@ -298,19 +180,7 @@ y^{\ast}=(k^{\ast})^\alpha, \qquad c^{\ast}=(1-s)\,y^{\ast}.$$
     ax2.set_ylabel(r"Ratio to steady-state value")
     ax2.set_title("Transition toward the balanced-growth path")
     ax2.legend()
-    report.add_results(
-        "The transition plot normalizes each series by its steady-state value. "
-        "Output and consumption move together because $c_t=(1-s)y_t$. Capital "
-        "moves more slowly because it inherits the past stock.\n\n"
-        "The dotted line is $k^{\\ast}+(k_0-k^{\\ast})\\lambda^t$. It tracks the "
-        f"path well near $k^{{\\ast}}$. By period {periods - 1}, simulated $k$ is "
-        f"within {abs(terminal['k']-k_star):.2e} of $k^{{\\ast}}$."
-    )
-    report.add_figure(
-        "figures/transition-effective-units.png",
-        "Capital, output, and consumption converging to steady state, with the linear approximation overlaid",
-        fig2,
-    )
+    save_figure(fig2, "figures/transition-effective-units.png", dpi=150)
 
     # ------------------------------------------------------------------
     # Figure 3 - conditional convergence (multi-start) and comparative statics on s
@@ -368,19 +238,7 @@ y^{\ast}=(k^{\ast})^\alpha, \qquad c^{\ast}=(1-s)\,y^{\ast}.$$
     ax4b.set_title(r"Comparative statics: shifting $s$ shifts $k^{\ast}$")
     ax4b.legend()
     fig4.tight_layout()
-    report.add_results(
-        "The left panel starts three economies from different capital stocks. "
-        "They share the same primitives, so they converge to the same normalized "
-        "$k^{\\ast}$. Conditional convergence means convergence to that own steady state.\n\n"
-        "The right panel changes the saving rate. Higher $s$ shifts investment up "
-        f"and gives $k^{{\\ast}}\\in\\{{{ks_alt[0]:.2f},\\,{ks_alt[1]:.2f},\\,{ks_alt[2]:.2f}\\}}$. "
-        "It raises the level of output per worker, not the long-run growth rate."
-    )
-    report.add_figure(
-        "figures/convergence-and-comparative-statics.png",
-        "Conditional convergence from three starting points and the comparative statics of the saving rate",
-        fig4,
-    )
+    save_figure(fig4, "figures/convergence-and-comparative-statics.png", dpi=150)
 
     # ------------------------------------------------------------------
     # Audit table - closed form vs terminal simulated values
@@ -409,44 +267,11 @@ y^{\ast}=(k^{\ast})^\alpha, \qquad c^{\ast}=(1-s)\,y^{\ast}.$$
             ],
         }
     )
-    report.add_results(
-        "The table compares the closed form with the terminal simulation. The gap "
-        "comes from finite horizon truncation. The linear approximation predicts "
-        f"a remaining gap of about {abs(k0 - k_star) * local_lambda ** (periods - 1):.2e}; "
-        f"the actual gap is {abs(terminal['k'] - k_star):.2e}, larger because "
-        f"$k_0={k0:.1f}$ starts far from $k^{{\\ast}}$ in the nonlinear region "
-        "where the linearization underestimates the true distance."
-    )
-    report.add_table(
-        "tables/steady-state-comparison.csv",
-        "Closed-form steady state versus terminal simulation",
-        table,
-    )
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    table.to_csv("tables/steady-state-comparison.csv", index=False)
 
-    report.add_takeaway(
-        "Solow disciplines what saving can and cannot do. A higher $s$ raises the "
-        "level of $k^{\\ast}$ but leaves the long-run growth rate of output per "
-        "worker equal to $g$.\n\n"
-        "Conditional convergence follows from the same steady-state logic. "
-        "Economies with the same primitives approach the same balanced-growth path. "
-        "Different primitives imply different paths."
-    )
-
-    report.add_references(
-        [
-            'Solow, R. M. (1956). "A Contribution to the Theory of Economic Growth." '
-            "*Quarterly Journal of Economics*, 70(1), 65-94.",
-            'Mankiw, N. G., Romer, D., and Weil, D. N. (1992). "A Contribution to '
-            'the Empirics of Economic Growth." *Quarterly Journal of Economics*, '
-            "107(2), 407-437.",
-            "Romer, D. (2019). *Advanced Macroeconomics*. McGraw-Hill, 5th edition, Ch. 1.",
-            "Barro, R. and Sala-i-Martin, X. (2004). *Economic Growth*. MIT Press, 2nd edition, Ch. 1.",
-            "Acemoglu, D. (2009). *Introduction to Modern Economic Growth*. Princeton University Press, Ch. 2.",
-        ]
-    )
-
-    report.write("README.md")
-    print(f"\nGenerated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
+    save_thumbnail("figures/solow-diagram.png", "figures/thumb.png")
+    print(f"\nDone: 3 figures + 1 table")
 
 
 if __name__ == "__main__":

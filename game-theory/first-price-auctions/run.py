@@ -13,8 +13,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import setup_style, save_figure, save_thumbnail
 
 
 def equilibrium_bid(value: np.ndarray | float, n_bidders: int) -> np.ndarray | float:
@@ -71,84 +70,6 @@ def main() -> None:
         })
 
     setup_style()
-    report = ModelReport(
-        "First-Price Auctions, Bid Shading, and Deviation Checks",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "In a first-price sealed-bid auction, each bidder pays its own bid if it wins. "
-        "Bidding value helps win, but it leaves no surplus.\n\n"
-        "The object is a symmetric bid rule for independent private values. With uniform "
-        "values and risk-neutral bidders, equilibrium bids are a constant fraction of "
-        "value.\n\n"
-        "The computation checks whether that rule is optimal type by type. Given rival "
-        "strategies, a bid grid should recover the analytic bid as the best response."
-    )
-
-    report.add_equations(r"""
-An auction has $n$ risk-neutral bidders. Bidder $i$ observes a private value
-$v_i \sim U[0,1]$, independently across bidders, and submits one sealed bid.
-The highest bid wins, and the winner pays its own bid. A symmetric Bayesian
-Nash strategy is an increasing bid function $b(v)$, where $v \in [0,1]$ is a bidder's type.
-
-Under uniform values, the equilibrium bid is
-
-$$
-b^{*}(v)=\frac{n-1}{n}v.
-$$
-
-The rule shades value by $v/n$.
-
-To check optimality, fix a type $v$. Let that bidder choose a dollar bid
-$\hat b$ while opponents use $b^{*}$. The rival value threshold beaten by
-$\hat b$ is
-
-$$
-x(\hat b)=\min\left(\frac{n}{n-1}\hat b,\ 1\right).
-$$
-
-The probability of winning is
-
-$$
-\Pr(\text{win}\mid \hat b)=x(\hat b)^{n-1},
-$$
-
-Expected payoff is
-
-$$
-\pi(v,\hat b)=(v-\hat b)x(\hat b)^{n-1}.
-$$
-""")
-
-    report.add_model_setup(
-        "| Object | Value | Role |\n"
-        "|---|---:|---|\n"
-        "| Value distribution | $U[0,1]$ | Independent private values |\n"
-        "| Risk preferences | Risk neutral | Payoff is value minus payment when winning |\n"
-        "| Bidder counts | 2, 3, 5, 10 | More or fewer rivals |\n"
-        f"| Deviation grid | 2,001 bids per value | Best-response check for each $v$ |\n"
-        f"| Check values | {len(check_values)} values in [0.05, 0.95] | Types used for residuals |\n"
-        f"| Focal deviation plot | $n={focal_n}$, $v={focal_value:.1f}$ | Payoff shape for one bidder type |"
-    )
-
-    report.add_solution_method(
-        "The code treats the formula as a candidate equilibrium. It holds opponent "
-        "behavior fixed and computes a grid best response for each checked type.\n\n"
-        "```text\n"
-        "Algorithm: bid shading and unilateral-deviation check\n"
-        "Inputs: bidder count n, type grid V, bid grid B(v) on [0,v]\n"
-        "Outputs: exact bid rule b*(v) and max best-response residual Delta_n\n\n"
-        "1. For each type v in V, set the exact bid b*(v) = ((n-1)/n) v.\n"
-        "2. For each candidate bid bhat in B(v), compute x(bhat)=min{n bhat/(n-1), 1}.\n"
-        "3. Evaluate pi(v,bhat) = (v-bhat) x(bhat)^(n-1).\n"
-        "4. Let BR(v) be the bid on the grid with the highest pi(v,bhat).\n"
-        "5. Report Delta_n = max_v |BR(v)-b*(v)|.\n"
-        "```\n\n"
-        "Each residual is the distance between the grid best response and the analytic "
-        "bid. Small residuals mean the candidate passes the no-deviation check."
-    )
 
     fig, ax = plt.subplots()
     for n_bidders in bidder_counts:
@@ -158,16 +79,7 @@ $$
     ax.set_ylabel("Bid $b(v)$")
     ax.set_title("Equilibrium Bidding Under Uniform Private Values")
     ax.legend()
-    report.add_results(
-        "The bid functions show less shading when more bidders compete. With two bidders, "
-        "a bidder bids one half of value. With ten bidders, the bid is close to value. "
-        "Extra rivals make low bids more costly because they reduce win probability."
-    )
-    report.add_figure(
-        "figures/bid-functions.png",
-        "Equilibrium first-price bid functions by bidder count",
-        fig,
-    )
+    save_figure(fig, "figures/bid-functions.png", dpi=150)
 
     bids = np.linspace(0.0, focal_value, 300)
     payoffs = expected_payoff(focal_value, bids, focal_n)
@@ -182,48 +94,14 @@ $$
     ax2.set_ylabel("Expected payoff")
     ax2.set_title("Unilateral-Deviation Payoff Against Equilibrium Rivals")
     ax2.legend()
-    report.add_results(
-        f"For value {focal_value:.1f} with {focal_n - 1} rivals, the payoff curve peaks "
-        "at the analytic bid. Lower bids raise margin only when they still win. Higher "
-        "bids buy win probability at a higher payment. The grid best response lands "
-        "within one grid spacing of the analytic bid."
-    )
-    report.add_figure(
-        "figures/best-response-check.png",
-        "Grid best response compared with the exact equilibrium bid",
-        fig2,
-    )
+    save_figure(fig2, "figures/best-response-check.png", dpi=150)
 
-    report.add_table(
-        "tables/auction-summary.csv",
-        "Auction Summary",
-        pd.DataFrame(rows),
-    )
-    report.add_table(
-        "tables/best-response-residuals.csv",
-        "Best-Response Check",
-        pd.DataFrame(residual_rows),
-        description=(
-            "Residuals measure grid error. Some exact bids lie between grid points."
-        ),
-    )
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(rows).to_csv("tables/auction-summary.csv", index=False)
+    pd.DataFrame(residual_rows).to_csv("tables/best-response-residuals.csv", index=False)
 
-    report.add_takeaway(
-        "First-price auctions reward bid shading. In the uniform symmetric benchmark, "
-        "the equilibrium bid is $((n-1)/n)v$.\n\n"
-        "The useful computational check is type by type. Hold rival strategies fixed "
-        "and verify that no bid on the grid improves payoff."
-    )
-
-    report.add_references([
-        "[Vickrey, W. (1961). Counterspeculation, Auctions, and Competitive Sealed Tenders. *Journal of Finance*, 16(1), 8-37.](https://doi.org/10.1111/j.1540-6261.1961.tb02789.x)",
-        "[Riley, J. G. and Samuelson, W. F. (1981). Optimal Auctions. *American Economic Review*, 71(3), 381-392.](https://www.jstor.org/stable/1802786)",
-        "[Krishna, V. (2009). *Auction Theory*, 2nd ed. Academic Press.](https://shop.elsevier.com/books/auction-theory/krishna/978-0-12-374507-1)",
-        "**See also.** The asymmetric two-bidder auction is solved by counterfactual regret minimisation in [`game-theory/cfr-asymmetric-auction/`](../../game-theory/cfr-asymmetric-auction/), which uses the symmetric closed form developed here as its ground-truth anchor.",
-    ])
-
-    report.write("README.md")
-    print(f"Generated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
+    save_thumbnail("figures/bid-functions.png", "figures/thumb.png")
+    print(f"Done: 2 figures + 2 tables")
 
 
 if __name__ == "__main__":

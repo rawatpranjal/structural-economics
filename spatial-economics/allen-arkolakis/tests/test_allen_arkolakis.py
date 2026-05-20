@@ -21,21 +21,11 @@ TUTORIAL_DIR = Path(__file__).resolve().parents[1]
 REPO_ROOT = TUTORIAL_DIR.parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
-RUN_SRC = (TUTORIAL_DIR / "run.py").read_text()
 README = (TUTORIAL_DIR / "README.md").read_text()
 PATH_GAP_CSV = TUTORIAL_DIR / "tables" / "convergence-path-dependence.csv"
 
 
 # --- Finding 1: path_gap not archived ---------------------------------------
-
-def test_path_gap_csv_absent_violated_invariant():
-    """Violated invariant: no durable CSV archives path_gap.
-
-    Passed on the pre-fix code (the number was only string-formatted into
-    the README). FAILS after the fix, which writes the CSV.
-    """
-    assert not PATH_GAP_CSV.exists()
-
 
 def test_path_gap_archived_to_csv_honest_fix():
     """Honest fix: path_gap is archived to a durable CSV with a path_gap column."""
@@ -48,23 +38,12 @@ def test_path_gap_archived_to_csv_honest_fix():
 
 # --- Finding 2: "center share" label vs labor.max() code --------------------
 
-def test_results_prose_says_center_share_violated_invariant():
-    """Violated invariant: the dispersion Results sentence calls labor.max()
-    a "center share".
-
-    Passed on the pre-fix code (the add_results string read
-    "dispersion-dominant center share is {disp_eq.labor.max()...}"). FAILS
-    after the fix, which relabels that sentence to "largest labor share".
-    """
-    assert "dispersion-dominant center share" in RUN_SRC
-
-
 def test_results_prose_label_matches_labor_max_honest_fix():
-    """Honest fix: the dispersion-scenario share is labelled "largest labor share".
+    """Honest fix: the dispersion-scenario share is labelled "largest labor share"
+    in the README (prose lives in README.md after migration from run.py).
 
     The code computes disp_eq.labor.max(), the largest share, not a position-
     indexed center share. The prose must name what the code computes.
     """
-    assert "largest labor share" in RUN_SRC
     assert "dispersion-dominant center share" not in README
     assert "dispersion-dominant largest labor share" in README

@@ -17,8 +17,7 @@ from scipy.optimize import minimize
 from scipy.special import expit, logsumexp
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
-from lib.plotting import save_thumbnail, setup_style
+from lib.plotting import save_figure, save_thumbnail, setup_style
 
 
 EULER_GAMMA = 0.5772156649015329
@@ -320,186 +319,6 @@ def main() -> None:
     print(f"  MPEC Bellman residual: {mpec_est['constraint_max']:.2e}")
 
     setup_style()
-    report = ModelReport(
-        "Bus Engine Replacement: NFXP, CCP, MPEC, and the MCE-IRL Interpretation",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "A transit agency observes each bus before deciding whether to replace its engine. "
-        "Keeping the old engine saves money today. It also lets mileage rise and makes "
-        "future operation worse.\n\n"
-        "The object is the mileage-specific replacement hazard. It depends on current "
-        "keep payoffs and the continuation value from resetting the engine.\n\n"
-        "That continuation value is the reason the model is dynamic. A bus with low "
-        "current operating cost may still be close to replacement if keeping it pushes "
-        "the next-period mileage distribution into costly states.\n\n"
-        "Computation is needed because each trial parameter vector implies a dynamic "
-        "program. The likelihood uses the replacement policy produced by that fixed point. "
-        "The tutorial compares NFXP, CCP, and MPEC estimates for the same hazard."
-    )
-
-    report.add_equations(
-        r"""
-Let $x_t \in X$ denote mileage at the start of period $t$. The action
-$a_t=1$ replaces the engine and $a_t=0$ keeps it. Replacement flow utility is
-normalized to zero:
-
-$$u(x,1) = 0,$$
-
-and the keep payoff is
-
-$$u(x,0) = \theta_0 + \theta_1 x, \qquad \theta_1 < 0.$$
-
-The transition matrix $F_a(x' \mid x)$ gives next period's mileage. Replacement
-uses $F_1$ and is close to the transition from a new engine. Keeping uses $F_0$
-and lets mileage drift upward.
-
-With additive Type-I extreme value shocks, the conditional value functions
-satisfy
-
-$$v_a(x) = u(x,a) + \beta \sum_{x'} F_a(x' \mid x)
-\left[\log\left(\exp(v_1(x')) + \exp(v_0(x'))\right) + \gamma\right],$$
-
-where $\gamma$ is Euler's constant. The replacement probability is
-
-$$P_\theta(1 \mid x) =
-\frac{\exp(v_1(x))}{\exp(v_1(x))+\exp(v_0(x))}.$$
-
-For panel observations $(x_{it}, d_{it})$, where $d_{it}=1$ means replacement,
-the full-solution likelihood is
-
-$$\ell(\theta)=\sum_{i,t}
-d_{it}\log P_\theta(1 \mid x_{it})
-+ (1-d_{it})\log[1-P_\theta(1 \mid x_{it})].$$
-
-The CCP estimator starts from a first-stage estimate $\hat p(x)$ of
-$\Pr(a=1 \mid x)$. Given $\hat p$, form the policy transition
-
-$$\hat F(x' \mid x)=\hat p(x)F_1(x' \mid x)+[1-\hat p(x)]F_0(x' \mid x).$$
-
-For any candidate $\theta$, the Hotz-Miller ex ante value solves the linear
-system
-
-$$W_\theta =
-\bar u_\theta(\hat p)+\beta \hat F W_\theta,$$
-
-where $\bar u_\theta(\hat p)$ includes the keep payoff and the logit entropy
-terms implied by $\hat p$.
-
-The model-implied replacement probability is then
-
-$$P_\theta^{HM}(1 \mid x)
-=\Lambda\left(\beta F_1 W_\theta
--\theta_0-\theta_1 x-\beta F_0 W_\theta\right),$$
-
-with $\Lambda(z)=1/(1+\exp(-z))$.
-
-The MPEC estimator chooses $\theta$ and the conditional values $v$ jointly:
-
-$$
-\max_{\theta,v}\ \ell(\theta,v)
-\quad\text{subject to}\quad
-v_a(x) = u(x,a;\theta) + \beta \sum_{x'} F_a(x' \mid x)
-\left[\log\sum_{j\in\{0,1\}}\exp(v_j(x'))+\gamma\right]
-$$
-
-for every action and mileage state. The likelihood still uses the logit choice
-formula.
-
-The fixed point appears as equality constraints rather than an inner loop inside
-the objective.
-"""
-    )
-
-    report.add_model_setup(
-        f"| Parameter | Value | Description |\n"
-        f"|-----------|-------|-------------|\n"
-        f"| $\\beta$ | {beta} | Discount factor |\n"
-        f"| $\\theta_0$ | {theta_true[0]:.2f} | Keep-engine payoff intercept |\n"
-        f"| $\\theta_1$ | {theta_true[1]:.2f} | Mileage cost slope |\n"
-        f"| Mileage states | {len(x)} | Grid for $x \\in [{x_min:g},{x_max:g}]$ |\n"
-        f"| Transition law | Exponential increments | Replacement resets to the low-mileage transition |\n"
-        f"| Buses | {n_buses} | Simulated panel units |\n"
-        f"| Periods | {n_periods} | Observations per bus |\n"
-        f"| Ground truth | Known | Data are simulated from $\\theta=({theta_true[0]:.2f},{theta_true[1]:.2f})$ |"
-    )
-
-    report.add_solution_method(
-        "The three estimators organize the same economic restrictions differently. NFXP "
-        "solves the Bellman fixed point inside every likelihood evaluation. CCP estimation "
-        "uses a first-stage replacement hazard to turn continuation values into a linear "
-        "policy-evaluation problem. MPEC gives the optimizer the values directly and enforces "
-        "the Bellman equations as constraints.\n\n"
-        "The nested fixed-point estimator treats the dynamic program as part of the "
-        "likelihood. Every candidate $\\theta$ implies a replacement hazard only after the "
-        "conditional value functions have been solved.\n\n"
-        "```text\n"
-        "Algorithm: nested fixed-point likelihood for replacement\n"
-        "Input: grid X, transitions F_0 and F_1, discount beta, panel choices (x_it, d_it)\n"
-        "Output: structural estimate theta and implied policy P_theta(1 | x)\n"
-        "for each candidate theta proposed by the outer optimizer:\n"
-        "    initialize conditional values v_0(x), v_1(x)\n"
-        "    repeat:\n"
-        "        inclusive(x) = log(exp(v_1(x)) + exp(v_0(x))) + gamma\n"
-        "        update v_1(x) = beta * sum_x' F_1(x' | x) inclusive(x')\n"
-        "        update v_0(x) = theta_0 + theta_1 x + beta * sum_x' F_0(x' | x) inclusive(x')\n"
-        "        error = sup_x,a |v_a^{new}(x) - v_a^{old}(x)|\n"
-        "    until error < epsilon\n"
-        "    compute P_theta(1 | x) from the logit choice formula\n"
-        "    evaluate the panel choice likelihood\n"
-        "choose theta that maximizes the likelihood\n"
-        "```\n\n"
-        "The Hotz-Miller estimator moves the dynamic program into a first-stage policy "
-        "estimate. The first stage is a logit in mileage and mileage squared.\n\n"
-        "```text\n"
-        "Algorithm: Hotz-Miller CCP estimator\n"
-        "Input: same grid, transitions, beta, and panel choices\n"
-        "Output: structural estimate theta_CCP and implied policy P_theta^HM(1 | x)\n"
-        "Estimate first-stage CCPs p_hat(x) = Pr(d=1 | x)\n"
-        "Build the policy transition F_hat = p_hat F_1 + (1 - p_hat) F_0\n"
-        "for each candidate theta:\n"
-        "    construct expected flow payoffs under p_hat, including logit entropy terms\n"
-        "    solve (I - beta F_hat) W_theta = expected_flow_theta\n"
-        "    recover P_theta^HM(1 | x) from replacement and keep continuation values\n"
-        "    evaluate the panel choice likelihood\n"
-        "choose theta that maximizes the likelihood\n"
-        "```\n\n"
-        "The MPEC estimator puts the Bellman equations into the optimizer itself.\n\n"
-        "```text\n"
-        "Algorithm: MPEC for dynamic discrete choice\n"
-        "Input: grid, transitions, beta, panel choices, starting theta and values\n"
-        "Decision variables: theta, v_1(x), v_0(x) for every mileage state\n"
-        "Objective: maximize the panel choice likelihood implied by v\n"
-        "Constraints: Bellman residuals equal zero for both actions and all states\n"
-        "Use a constrained nonlinear optimizer to move theta and v jointly\n"
-        "Report theta, likelihood, optimizer status, and the max Bellman residual\n"
-        "```\n\n"
-        "Maximum-causal-entropy inverse reinforcement learning (MCE-IRL) describes the "
-        "same recovery problem in a different vocabulary. Under known transitions and "
-        "Type-I extreme value shocks, the soft-Bellman equations and the MCE-IRL "
-        "objective coincide algebraically with NFXP, term by term. The two literatures "
-        "rename the same fixed point: payoffs become rewards, conditional value "
-        "functions become soft-Q functions, and the replacement hazard becomes the soft "
-        "policy. This tutorial does not run a separate MCE-IRL estimator, because at "
-        "this setup it would be the NFXP code with relabelled variables.\n\n"
-        "```text\n"
-        "MCE-IRL on Rust's bus engine, written in NFXP terms (no separate run here)\n"
-        "Input: same grid X, transitions F_0 and F_1, discount beta, panel choices\n"
-        "for each candidate theta:\n"
-        "    solve the soft-Bellman equations                # = NFXP inner fixed point\n"
-        "    compute the soft policy from the logit formula  # = replacement hazard\n"
-        "    evaluate the maximum-causal-entropy log-likelihood\n"
-        "    (= NFXP panel-choice log-likelihood, term by term)\n"
-        "choose theta that maximizes the likelihood\n"
-        "```\n\n"
-        "MCE-IRL appears here as an interpretation, not as a new estimator. The point "
-        "is that the structural-econometrics and inverse-RL literatures use different "
-        "names for the same recovery problem. At this finite-state, known-transition, "
-        "logit-shock setup the MCE-IRL likelihood is the NFXP likelihood, so the NFXP "
-        "estimates already report the MCE-IRL answer."
-    )
 
     values = np.asarray(solution_true["values"])
     p_true = np.asarray(solution_true["p_replace"])
@@ -522,16 +341,7 @@ the objective.
     ax1b.set_title("Replacement Hazard")
     ax1b.legend()
     fig1.tight_layout()
-    report.add_results(
-        "The keep value starts high because a low-mileage engine is still useful. "
-        "As mileage rises, replacement buys a better future state. "
-        "The first-stage logit tracks the true hazard where the panel has observations."
-    )
-    report.add_figure(
-        "figures/value-and-ccp.png",
-        "Value functions and replacement probabilities",
-        fig1,
-    )
+    save_figure(fig1, "figures/value-and-ccp.png", dpi=150)
 
     fig2, ax2 = plt.subplots(figsize=(9, 4.5))
     periods = np.arange(1, n_periods + 1)
@@ -542,16 +352,7 @@ the objective.
     ax2.set_xlabel("Period")
     ax2.set_ylabel("Mileage")
     ax2.set_title("Simulated Bus Histories")
-    report.add_results(
-        "The panel shows where the likelihood has data. Low and medium mileage states "
-        "are common after replacement. Very high mileage states are scarce: only "
-        f"**{high_mileage_share:.2%}** of bus-periods have mileage at least 10."
-    )
-    report.add_figure(
-        "figures/simulated-histories.png",
-        "Mileage histories for six simulated buses",
-        fig2,
-    )
+    save_figure(fig2, "figures/simulated-histories.png", dpi=150)
 
     fig3, ax3 = plt.subplots()
     ax3.plot(x, p_true, label="True")
@@ -562,17 +363,7 @@ the objective.
     ax3.set_ylabel("Replacement probability")
     ax3.set_title("Estimated Replacement Policies")
     ax3.legend()
-    report.add_results(
-        "The true policy stays on the graph because the data are simulated. "
-        "All three estimators recover the same shape. "
-        "Replacement is rare for fresh engines and rises when keeping becomes costly. "
-        "Remaining gaps are largest in sparsely visited states."
-    )
-    report.add_figure(
-        "figures/estimated-policies.png",
-        "Policy rules implied by the true and estimated parameters",
-        fig3,
-    )
+    save_figure(fig3, "figures/estimated-policies.png", dpi=150)
 
     theta_full = np.asarray(full_est["theta"])
     theta_ccp = np.asarray(ccp_est["theta"])
@@ -587,15 +378,8 @@ the objective.
         "MPEC": theta_mpec,
         "MPEC error": theta_mpec - theta_true,
     })
-    report.add_table(
-        "tables/parameter-estimates.csv",
-        "Structural parameter estimates",
-        estimate_table.round(5),
-        description=(
-            "All three estimates are close to the data-generating parameters. "
-            "They differ in how they represent the Bellman fixed point."
-        ),
-    )
+    Path("tables/parameter-estimates.csv").parent.mkdir(parents=True, exist_ok=True)
+    estimate_table.round(5).to_csv("tables/parameter-estimates.csv", index=False)
 
     moments = pd.DataFrame({
         "Moment": [
@@ -621,40 +405,11 @@ the objective.
             float(mpec_est["constraint_max"]),
         ],
     })
-    report.add_table(
-        "tables/simulation-moments.csv",
-        "Simulation and solver diagnostics",
-        moments,
-        description=(
-            "The diagnostics check sample support and numerical feasibility. "
-            "The MPEC residual confirms the constrained solve."
-        ),
-    )
+    Path("tables/simulation-moments.csv").parent.mkdir(parents=True, exist_ok=True)
+    moments.to_csv("tables/simulation-moments.csv", index=False)
 
-    report.add_takeaway(
-        "Dynamic discrete choice turns observed hazards into statements about current "
-        "payoffs and continuation values. In this replacement problem, mileage matters "
-        "today and tomorrow. NFXP solves the Bellman fixed point inside the likelihood. "
-        "CCP estimation uses a first-stage hazard before the structural step. MPEC "
-        "estimates parameters and values jointly while enforcing the Bellman equations as "
-        "constraints.\n\n"
-        "Maximum-causal-entropy IRL is the same algorithm as NFXP under this setup. The "
-        "structural-econometrics and inverse-RL literatures rename payoffs as rewards "
-        "and value functions as soft-Q functions, but the soft-Bellman fixed point and "
-        "the panel-choice likelihood are identical. Knowing both vocabularies makes the "
-        "structural and reinforcement-learning literatures easier to read."
-    )
-
-    report.add_references([
-        "[Rust, J. (1987). Optimal Replacement of GMC Bus Engines: An Empirical Model of Harold Zurcher. *Econometrica*, 55(5), 999-1033.](https://doi.org/10.2307/1911259)",
-        "[Hotz, V. J. and Miller, R. A. (1993). Conditional Choice Probabilities and the Estimation of Dynamic Models. *Review of Economic Studies*, 60(3), 497-529.](https://doi.org/10.2307/2298122)",
-        "**See also.** The same Rust replacement model is estimated by "
-        "soft Q-learning and a Deep Q-Network in "
-        "[`structural-econometrics/q-learning-bus-engine/`](../../structural-econometrics/q-learning-bus-engine/), recovering the "
-        "identical fixed point without an explicit transition matrix.",
-    ])
-    report.write()
     save_thumbnail("figures/estimated-policies.png", "figures/thumb.png")
+    print("\nFigures and tables written.")
 
 
 if __name__ == "__main__":

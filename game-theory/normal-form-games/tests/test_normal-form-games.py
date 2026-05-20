@@ -5,14 +5,14 @@ use the combined quantity max{d1, d2}, but the Equations section never defines
 it. After the honest fix, the Equations section names the combined deviation
 quantity.
 
-The README is generated from run.py; both files are checked as source text.
+The README is the hand-maintained canonical prose file. Both the combined-
+deviation definition and the pseudocode live in README.md.
 """
 
 from pathlib import Path
 
 _TUTORIAL = Path(__file__).resolve().parents[1]
 _README = (_TUTORIAL / "README.md").read_text()
-_RUN_PY = (_TUTORIAL / "run.py").read_text()
 
 
 def test_violated_invariant_combined_quantity_undefined():
@@ -40,5 +40,5 @@ def test_honest_fix_combined_quantity_defined():
 
 
 def test_pseudocode_still_uses_combined_quantity():
-    """The pseudocode step that needs the definition stays present."""
-    assert "max{d1(i,j), d2(i,j)}" in _RUN_PY
+    """The pseudocode step that needs the definition stays present in README."""
+    assert "max{d1(i,j), d2(i,j)}" in _README

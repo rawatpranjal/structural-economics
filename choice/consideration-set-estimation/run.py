@@ -39,8 +39,7 @@ import pandas as pd
 from scipy.optimize import minimize
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.plotting import setup_style
-from lib.output import ModelReport
+from lib.plotting import save_figure, save_thumbnail, setup_style
 
 
 # ---------------------------------------------------------------------------
@@ -365,174 +364,9 @@ def main() -> None:
     p_ac = {"a": probs_ex[i_ac, 0], "c": probs_ex[i_ac, 2]}
 
     # =====================================================================
-    # Report
+    # Figures and tables
     # =====================================================================
     setup_style()
-    report = ModelReport(
-        "Stochastic Choice and Random Consideration Sets",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "A consumer faces a menu of products and picks one (or walks away). "
-        "If the consumer paid attention to every product on the shelf, the "
-        "best-ranked product would always win. "
-        "In practice the consumer pays attention to each product only with "
-        "some probability and picks the best of those that crossed her "
-        "attention threshold.\n\n"
-        "Manzini and Mariotti (2014) show that this two-stage random "
-        "consideration set rule has a closed-form choice probability and "
-        "that both the underlying preference ranking and the per-alternative "
-        "attention probabilities are uniquely identified from how choice "
-        "frequencies vary across menus. "
-        "The empirical signature is asymmetric: removing a product the "
-        "consumer ranks above the chosen one raises the chosen one's "
-        "probability, while removing a product ranked below has no effect.\n\n"
-        "The tutorial reconstructs both estimation strategies the paper "
-        "implies. "
-        "Method 1 is joint maximum likelihood with brute-force enumeration "
-        "of the $J!$ candidate rankings; the attention MLE has a closed "
-        "form given the ranking, so the inner step is one division per "
-        "alternative. "
-        "Method 2 is a two-step revealed-preference procedure: attention "
-        "is recovered from singleton menus that include the default, and "
-        "the ranking is recovered from the asymmetric impact pattern. "
-        "A Luce / multinomial-logit benchmark on the same data shows where "
-        "IIA-respecting models break."
-    )
-
-    report.add_equations(
-        r"""The general problem is to recover a strict preference ranking and a vector of attention probabilities from stochastic choice data on multiple menus.
-
-### The random consideration set rule
-
-Let $X = \lbrace 1, \ldots, J\rbrace$ be a finite set of alternatives and let $a^{\ast}$ be a default option (walking away, abstaining).
-The agent has a strict total order $\succ$ on $X$ and an attention map $\gamma : X \to (0, 1)$.
-Faced with a menu $A \subseteq X$, each alternative $b \in A$ enters the random consideration set $C(A) \subseteq A$ independently with probability $\gamma(b)$.
-The agent picks the $\succ$-best alternative in $C(A)$; if $C(A) = \varnothing$ she picks $a^{\ast}$.
-
-The induced choice probability (Manzini-Mariotti Definition 2) is closed form:
-
-$$p_{\succ, \gamma}(a, A) = \gamma(a) \prod_{b \in A : b \succ a} (1 - \gamma(b)),
-\qquad
-p_{\succ, \gamma}(a^{\ast}, A) = \prod_{b \in A} (1 - \gamma(b)).$$
-
-The product is over alternatives in $A$ ranked strictly above $a$.
-There is no explicit sum over $2^{|A|}$ consideration sets; the independence of attention draws collapses the sum analytically.
-
-### Identification
-
-Two facts pin down the primitives from observed choice frequencies (Manzini-Mariotti Section 3 and Theorem 1).
-
-The attention probability is recovered from singleton menus that include the default.
-
-$$\gamma(a) = 1 - p(a^{\ast}, \lbrace a\rbrace).$$
-
-The preference ranking is recovered from the asymmetric impact of menu removals.
-Removing an alternative ranked above the chosen one raises the chosen one's probability; removing an alternative ranked below has no effect.
-
-$$a \succ b \iff p(a, A) = p(a, A \setminus \lbrace b\rbrace) \text{ for every } A \ni a, b.$$
-
-Equivalently, $a \succ b$ iff $p(b, A) > p(b, A \setminus \lbrace a\rbrace)$ for some menu $A$ containing both.
-
-### Method 1: Joint maximum likelihood with brute-force ranking enumeration
-
-The likelihood factorises across alternatives once the ranking is fixed.
-Let $N_c(j)$ count observations in which alternative $j$ was chosen, and let $N_b(j; \succ)$ count observations in which $j$ was in the menu and was ranked above the chosen alternative or above the default.
-The conditional MLE of $\gamma(j)$ is then a single ratio:
-
-$$\hat\gamma(j) \mid \succ = \frac{N_c(j)}{N_c(j) + N_b(j; \succ)}.$$
-
-The outer step enumerates the $J!$ candidate rankings and evaluates the resulting log-likelihood; the inner step is closed form.
-
-### Method 2: Two-step revealed-preference identification
-
-Method 2 inverts the identification result directly.
-Step 1 estimates attention from singleton menus: $\hat\gamma(a) = 1 - \hat p(a^{\ast}, \lbrace a\rbrace)$, where $\hat p$ is the empirical frequency.
-Step 2 estimates the ranking by scoring each alternative on the asymmetric impact pattern.
-For each ordered pair $(i, j)$, compute the average change $\hat p(j, A \setminus \lbrace i\rbrace) - \hat p(j, A)$ over menus $A$ containing both.
-A higher score for "removing $i$ raises $j$" than for "removing $j$ raises $i$" reveals $i \succ j$.
-
-### Benchmark: Luce / multinomial logit on the same data
-
-A Luce model assigns each alternative a positive utility and predicts
-
-$$p_L(a, A) = \frac{u(a)}{u(a^{\ast}) + \sum_{b \in A} u(b)}.$$
-
-Luce satisfies IIA: removing any alternative raises every other alternative's probability by the same proportional factor.
-The Manzini-Mariotti rule predicts a strictly asymmetric pattern and therefore lies outside the Luce class whenever the attention parameters do not co-move with the ranking.
-"""
-    )
-
-    report.add_model_setup(
-        f"The simulation uses $J = {J}$ alternatives plus a default option, with all "
-        f"$2^{{{J}}} - 1 = {len(menus)}$ non-empty menus presented to each "
-        f"of $N = {n_subjects}$ subjects. "
-        "Attention is deliberately not co-monotone with the ranking so the "
-        "preference order cannot be read off from raw aggregate choice "
-        "frequencies.\n\n"
-        "| Symbol | Value | Role |\n"
-        "|--------|-------|------|\n"
-        f"| Alternatives | {J} | Plus default $a^{{\\ast}}$ |\n"
-        f"| Menus | {len(menus)} | Every non-empty subset |\n"
-        f"| Subjects | {n_subjects} | Independent draws per menu |\n"
-        f"| True ranking | $a_1 \\succ a_2 \\succ a_3 \\succ a_4 \\succ a_5$ | Strict total order |\n"
-        f"| True attention $\\gamma$ | $({gamma_true[0]:.2f},\\, {gamma_true[1]:.2f},\\, "
-        f"{gamma_true[2]:.2f},\\, {gamma_true[3]:.2f},\\, {gamma_true[4]:.2f})$ | "
-        "Per-alternative attention probabilities |\n"
-        f"| Bootstrap reps | {n_boot} | Subject-cluster bootstrap for SE |\n"
-        f"| Method-1 ranking space | {math.factorial(J)} | $J!$ candidate orderings |"
-    )
-
-    report.add_solution_method(
-        "Two estimators recover the same primitives from the same simulated data. "
-        "They differ in which moment of the data they treat as fundamental.\n\n"
-
-        "### Method 1: Joint MLE with brute-force ranking\n\n"
-        "Method 1 evaluates the closed-form log-likelihood at every one of the $J!$ rankings. "
-        "For a fixed ranking the attention MLE is a closed-form ratio per alternative because the log-likelihood factorises. "
-        "The brute-force outer loop is $J!$ evaluations; for $J = 5$ that is $120$ rankings, which finishes in milliseconds. "
-        "For $J \\le 7$ the search is still feasible at $7! = 5040$ rankings; beyond that one needs a heuristic over rankings.\n\n"
-        "```text\n"
-        "Algorithm: Joint MLE with brute-force ranking\n"
-        "Input : choice counts c[m, j] per (menu, alternative-or-default)\n"
-        "Output: ranking_hat, gamma_hat\n"
-        "  best_ll <- -infinity\n"
-        "  for each permutation rho of (1, ..., J):\n"
-        "    for each j in 1..J:\n"
-        "      N_c[j]      <- sum_m c[m, j]\n"
-        "      N_b[j; rho] <- sum_{m, k != j with j in menu and rho(j) above k} c[m, k]\n"
-        "                   + sum_{m with j in menu} c[m, default]\n"
-        "      gamma[j]    <- N_c[j] / (N_c[j] + N_b[j; rho])\n"
-        "    ll <- sum over (m, j) of c[m, j] * log p_{rho, gamma}(j, A_m)\n"
-        "    if ll > best_ll:\n"
-        "      best_ll <- ll; ranking_hat <- rho; gamma_hat <- gamma\n"
-        "```\n\n"
-        "Method 1 fails when the dataset has no informative menu variation, for example when only singleton menus are observed. "
-        "It also fails when two distinct rankings produce essentially indistinguishable likelihoods because the data are too sparse to separate them; this happens at very small $N$ or when one alternative receives zero attention.\n\n"
-
-        "### Method 2: Two-step revealed-preference identification\n\n"
-        "Method 2 inverts the identification result directly without ever evaluating a likelihood. "
-        "Step 1 reads attention off singleton menus: $\\hat\\gamma(j) = 1 - \\hat p(a^{\\ast}, \\lbrace j\\rbrace)$. "
-        "Step 2 ranks alternatives by their asymmetric menu-removal score: for each pair $(i, j)$, the empirical change $\\hat p(j, A \\setminus \\lbrace i\\rbrace) - \\hat p(j, A)$ is averaged over menus containing both, and the alternative whose removal raises others by more is ranked higher. "
-        "The output is identification at population truth in finite samples up to noise in the empirical frequencies.\n\n"
-        "```text\n"
-        "Algorithm: Revealed-preference identification\n"
-        "Input : choice frequencies p_hat[m, j]\n"
-        "Output: ranking_hat, gamma_hat\n"
-        "  for each j in 1..J:\n"
-        "    gamma_hat[j] <- 1 - p_hat(default, {j})\n"
-        "  for each ordered pair (i, j) with i != j:\n"
-        "    impact[i, j] <- mean over menus A containing both of\n"
-        "                    p_hat(j, A \\ {i}) - p_hat(j, A)\n"
-        "  for each j:\n"
-        "    score[j] <- sum_i impact[j, i] - sum_i impact[i, j]\n"
-        "  ranking_hat <- argsort(-score)   # high score first = best to worst\n"
-        "```\n\n"
-        "Method 2 needs both singleton menus (or binary menus with default) and at least pairs of menus that differ by one alternative. "
-        "On dense menu coverage it is robust; on sparse coverage the impact averages are noisy and the ranking score can flip adjacent pairs."
-    )
 
     # ------------------------------------------------------------------
     # Figure 1: observed vs predicted choice frequency for every (menu, alt) cell
@@ -572,17 +406,7 @@ The Manzini-Mariotti rule predicts a strictly asymmetric pattern and therefore l
             f"standard error of the truth on {n_within_se} of {J} "
             "alternatives."
         )
-    report.add_results(
-        f"The Method-1 maximum-likelihood fit aligns observed frequencies with predicted probabilities across all {len(menus)} menus. "
-        f"Inside-alternative cells (blue) and default-option cells (red) both lie close to the 45-degree line. "
-        f"The recovered ranking matches the true ranking in {ranking_acc_m1:.0%} of bootstrap replications at $N = {n_subjects}$ subjects per menu, "
-        + attention_sentence
-    )
-    report.add_figure(
-        "figures/menu-fit.png",
-        "Observed vs Method-1 predicted choice frequencies across all menus",
-        fig1,
-    )
+    save_figure(fig1, "figures/menu-fit.png", dpi=150)
 
     # ------------------------------------------------------------------
     # Figure 2: menu-removal asymmetry heat-map
@@ -630,18 +454,7 @@ The Manzini-Mariotti rule predicts a strictly asymmetric pattern and therefore l
                 color = "white" if abs(impact_matrix[i, j] - 1) > 0.4 else "black"
                 ax2.text(j, i, f"{impact_matrix[i, j]:.2f}",
                           ha="center", va="center", color=color, fontsize=9)
-    report.add_results(
-        "The menu-removal heat map is the empirical signature of the random consideration set rule. "
-        "Cell $(i, j)$ is the average ratio of $j$'s choice probability after removing $i$ to its probability when $i$ is present. "
-        "Below the diagonal (where $a_i$ is ranked above $a_j$) the ratio is strictly above one: removing a higher-ranked alternative releases attention probability mass and raises the chosen one. "
-        "Above the diagonal (where $a_i$ is ranked below $a_j$) the ratio is essentially one: removing a lower-ranked alternative does nothing because the higher-ranked alternative would have won the consideration set anyway. "
-        "Luce / multinomial logit cannot generate this asymmetry; under IIA every off-diagonal cell would equal a single common factor."
-    )
-    report.add_figure(
-        "figures/menu-removal-asymmetry.png",
-        "Menu-removal impact ratios",
-        fig2,
-    )
+    save_figure(fig2, "figures/menu-removal-asymmetry.png", dpi=150)
 
     # ------------------------------------------------------------------
     # Figure 3: replication of Manzini-Mariotti Example 2 (intransitivity)
@@ -665,18 +478,7 @@ The Manzini-Mariotti rule predicts a strictly asymmetric pattern and therefore l
     ax3.set_title(r"Example 2: $\gamma(a) = 4/9$, $\gamma(b) = 1/2$, $\gamma(c) = 9/10$, $a \succ b \succ c$")
     ax3.set_ylim(0, 0.7)
     ax3.legend(loc="upper right", fontsize=9)
-    report.add_results(
-        "The intransitivity replication reproduces Example 2 of Manzini and Mariotti exactly. "
-        f"At the calibration $\\gamma(a) = 4/9$, $\\gamma(b) = 1/2$, $\\gamma(c) = 9/10$ with $a \\succ b \\succ c$, the closed-form probabilities are $p(a, \\{{a, b\\}}) = {p_ab['a']:.3f}$, $p(b, \\{{b, c\\}}) = {p_bc['b']:.3f}$, and $p(a, \\{{a, c\\}}) = {p_ac['a']:.3f}$. "
-        "Both $p(a, \\{a, b\\})$ and $p(a, \\{a, c\\})$ fall below the weak-stochastic-transitivity threshold of $0.5$, while $p(b, \\{b, c\\})$ meets it. "
-        "The Luce rule must satisfy weak stochastic transitivity (since it satisfies the much stronger condition of strong stochastic transitivity) and so cannot rationalise this pattern. "
-        "The random consideration set rule does, with $a$ as the strictly preferred alternative throughout."
-    )
-    report.add_figure(
-        "figures/intransitivity-replication.png",
-        "Replication of Manzini-Mariotti Example 2 (weak stochastic transitivity violation)",
-        fig3,
-    )
+    save_figure(fig3, "figures/intransitivity-replication.png", dpi=150)
 
     # ------------------------------------------------------------------
     # Figure 4: parameter recovery
@@ -696,19 +498,7 @@ The Manzini-Mariotti rule predicts a strictly asymmetric pattern and therefore l
     ax4.set_title("Attention recovery: true vs Method 1 MLE vs Method 2 moments")
     ax4.set_ylim(0, 1)
     ax4.legend(loc="upper left", fontsize=9)
-    report.add_results(
-        "Both methods recover the attention parameters across all five alternatives. "
-        "Method 1 attention bars carry bootstrap standard errors that bracket the true values. "
-        "Method 2 attention is read directly off singleton-with-default frequencies and matches Method 1 within sampling noise. "
-        "The headline performance metric is ranking accuracy: "
-        f"Method 1 recovers the true ranking exactly in {ranking_acc_m1:.0%} of bootstrap replications, "
-        f"while Method 2 recovers it in {ranking_acc_m2:.0%}."
-    )
-    report.add_figure(
-        "figures/parameter-recovery.png",
-        "Attention probability recovery, true vs Method 1 vs Method 2",
-        fig4,
-    )
+    save_figure(fig4, "figures/parameter-recovery.png", dpi=150)
 
     # ------------------------------------------------------------------
     # Tables
@@ -751,16 +541,8 @@ The Manzini-Mariotti rule predicts a strictly asymmetric pattern and therefore l
             f"Method 2 gets {rank_correct_m2} of {n_pairs} on the point "
             "estimate. "
         )
-    report.add_results(
-        f"The ranking-recovery table summarises the J(J-1)/2 = {n_pairs} pairwise rankings each method gets right on the point estimate, plus the bootstrap exact-ranking accuracy across $N = {n_subjects}$ subjects per menu. "
-        + point_estimate_sentence +
-        "Method 1 is more robust to bootstrap noise because it integrates the entire menu structure into the likelihood; Method 2 trades robustness for speed and avoids the $J!$ enumeration."
-    )
-    report.add_table(
-        "tables/ranking-recovery.csv",
-        "Pairwise ranking recovery on the point estimate and across bootstrap replications",
-        rank_table,
-    )
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    rank_table.to_csv("tables/ranking-recovery.csv", index=False)
 
     pred_m2 = all_menu_probs(ranking_m2, gamma_m2, menus)
     eps = 1e-12
@@ -780,56 +562,10 @@ The Manzini-Mariotti rule predicts a strictly asymmetric pattern and therefore l
                                   f"{kl_true(luce_pred):.4f}"],
         "Captures asymmetric impact": ["yes", "yes", "yes", "no"],
     })
-    kl_m1 = kl_true(pred_m1)
-    kl_m2 = kl_true(pred_m2)
-    report.add_results(
-        "The method-comparison table puts the two random-consideration-set fits next to a Luce / multinomial-logit benchmark, alongside the log-likelihood evaluated at the true primitives. "
-        f"Method 1 lands within {abs(ll_m1 - ll_true):.0f} log-likelihood units of the true-DGP value (slightly above it, since the maximum-likelihood fit tracks sampling noise in this particular draw) and reaches a Kullback-Leibler divergence of {kl_m1:.4f}, close to zero. "
-        f"Method 2 trails further: its log-likelihood is {ll_true - ll_m2:.0f} units below the true-DGP value and its KL divergence is {kl_m2:.4f}, about {kl_m2 / kl_m1:.0f} times Method 1's. "
-        "The moment estimator loses information relative to the full likelihood, and the gap shows it. "
-        "Luce sits below both on log-likelihood and well above both on KL because IIA cannot match the asymmetric menu-removal pattern. "
-        "The size of the Luce log-likelihood gap rises with $J$ and with the spread of the attention vector; on data with attention probabilities close to 1 across the board the gap shrinks because the model collapses onto something close to deterministic best choice."
-    )
-    report.add_table(
-        "tables/method-comparison.csv",
-        "Log-likelihood and Kullback-Leibler divergence on the simulated data",
-        method_table,
-    )
+    method_table.to_csv("tables/method-comparison.csv", index=False)
 
-    report.add_takeaway(
-        "The Manzini-Mariotti random consideration set rule is the cleanest "
-        "structural model of consideration in the stochastic-choice literature. "
-        "Both the preference ranking and the attention probabilities are uniquely "
-        "identified from menu-varying choice frequencies, the choice probability "
-        "is closed form, and the empirical signature is a strictly asymmetric "
-        "menu-removal pattern.\n\n"
-        "Two estimators are useful in different regimes. "
-        "Method 1 is the right default when $J$ is small enough to enumerate "
-        "rankings (up to $J = 7$ comfortably) and when interior-MLE robustness "
-        "matters. "
-        "Method 2 is the right default when $J$ is large or when only summary "
-        "statistics are available; the cost is a moment-based estimator that "
-        "wastes information relative to the full likelihood.\n\n"
-        "The model is strictly more permissive than any model satisfying weak "
-        "stochastic transitivity, which is why it can rationalise the Example 2 "
-        "intransitivity pattern that defeats Luce. "
-        "When the data exhibit large asymmetric menu effects or stochastic "
-        "intransitivities, the random consideration set rule should be the "
-        "first model an analyst tries before reaching for richer extensions "
-        "such as menu-dependent attention (which Manzini and Mariotti show is "
-        "vacuous without further structure) or random-coefficient logit."
-    )
-
-    report.add_references([
-        "Manzini, P., & Mariotti, M. (2014). *Stochastic Choice and Consideration Sets*. Econometrica 82(3), 1153-1176. DOI 10.3982/ECTA10575.",
-        "Masatlioglu, Y., Nakajima, D., & Ozbay, E. Y. (2012). *Revealed Attention*. American Economic Review 102(5), 2183-2205.",
-        "Goeree, M. S. (2008). *Limited Information and Advertising in the U.S. Personal Computer Industry*. Econometrica 76(5), 1017-1074.",
-        "Abaluck, J., & Adams-Prassl, A. (2021). *What Do Consumers Consider Before They Choose? Identification from Asymmetric Demand Responses*. Quarterly Journal of Economics 136(3), 1611-1663.",
-        "Crawford, G. S., Griffith, R., & Iaria, A. (2021). *A Survey of Preference Estimation with Unobserved Choice Set Heterogeneity*. Journal of Econometrics 222(1), 4-43.",
-    ])
-
-    report.write("README.md")
-    print(f"\nGenerated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
+    save_thumbnail("figures/menu-fit.png", "figures/thumb.png")
+    print("\nDone: 4 figures, 2 tables, thumb reproduced.")
 
 
 if __name__ == "__main__":

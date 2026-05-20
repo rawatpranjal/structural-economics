@@ -28,8 +28,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.plotting import setup_style, save_figure
-from lib.output import ModelReport
+from lib.plotting import setup_style, save_figure, save_thumbnail
 
 
 # =========================================================================
@@ -582,297 +581,10 @@ def main():
     print()
 
     # =====================================================================
-    # Build the report
+    # FIGURES
     # =====================================================================
 
-    report = ModelReport(
-        "Merger Pricing: Concentration Screens, Diversion, and Bertrand-Nash Equilibrium",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "A horizontal merger between close substitutes raises three questions in order. "
-        "How concentrated is the market already? What happens to prices once two products "
-        "share an owner? Does the price answer survive a different assumption about how "
-        "customers substitute?\n\n"
-        "The first question is fast. HHI and delta-HHI come straight off the sales table. "
-        "They use ownership shares and nothing else.\n\n"
-        "The second question needs structure. We calibrate logit demand from one observed "
-        "margin. Then we change the ownership matrix and resolve the Bertrand-Nash pricing "
-        "FOC for new prices.\n\n"
-        "The third question is harder. Different demand systems can match the same observed "
-        "market and still disagree about counterfactual prices. We calibrate three of them. "
-        "We compute UPP, GUPPI, and CMCR screens at observed prices, solve full post-merger "
-        "equilibria, and ask how much marginal-cost reduction would offset the price effect.\n\n"
-        "The same logic threads the three layers. Two competitors come under one owner. "
-        "The owner now internalizes diversion between them. Whether prices rise, and by how "
-        "much, depends on substitution to rivals, the outside option, and any cost savings "
-        "the merger brings."
-    )
-
-    report.add_equations(r"""
-The three layers stack on the same observed market.
-
-### A. Concentration screens
-
-Let firms be indexed by $f=1,\ldots,F$ with market shares $s_f$ summing to one.
-The Herfindahl-Hirschman Index is
-
-$$\text{HHI}=10{,}000\sum_{f=1}^{F}s_f^2.$$
-
-The associated effective number of equal-sized firms is
-
-$$N_{\text{eff}}=\frac{1}{\sum_f s_f^2}=\frac{10{,}000}{\text{HHI}}.$$
-
-If firms $a$ and $b$ merge while quantities are held fixed,
-
-$$\Delta\text{HHI}=10{,}000\left[(s_a+s_b)^2-s_a^2-s_b^2\right]=20{,}000\,s_a s_b.$$
-
-Worked example. Take three firms with shares $(0.5, 0.3, 0.2)$. The HHI is
-$10{,}000(0.25+0.09+0.04)=3{,}800$. The effective firm count is
-$10{,}000/3{,}800\approx 2.63$, well under the three nominal firms. A merger of
-firms 1 and 2 raises HHI by $20{,}000\cdot 0.5\cdot 0.3=3{,}000$ to $6{,}800$.
-That moves the market well into the highly-concentrated band.
-
-The 2023 DOJ/FTC Merger Guidelines treat HHI above 1,800 as highly concentrated.
-A delta-HHI above 100 is significant for the structural presumption.
-
-### B. Bertrand-Nash pricing with multi-product firms
-
-There are $J$ inside products. Product $j$ has price $p_j$, marginal cost $c_j$,
-quantity or share $q_j(p)$, and owner $f(j)$. The ownership matrix records
-which products belong to the same firm:
-
-$$\Omega_{jk}=\mathbf 1\{f(j)=f(k)\}.$$
-
-Worked example. Take $J=4$ products with pre-merger owners $f^{\text{pre}}=(1,2,3,4)$,
-so each product is its own single-product firm:
-
-$$\Omega^{\text{pre}}=\begin{pmatrix}1&0&0&0\\0&1&0&0\\0&0&1&0\\0&0&0&1\end{pmatrix}.$$
-
-Now firm 1 buys firm 2. The post-merger owners are $f^{\text{post}}=(1,1,3,4)$.
-Products 1 and 2 share an owner. The off-diagonal entries that link them switch
-on:
-
-$$\Omega^{\text{post}}=\begin{pmatrix}1&1&0&0\\1&1&0&0\\0&0&1&0\\0&0&0&1\end{pmatrix}.$$
-
-Those two new ones in the upper-left block are the entire merger as the model
-sees it. Every price effect that follows is the consequence of switching them
-on.
-
-A multi-product Bertrand firm chooses each price to satisfy
-
-$$0=q_j(p)+\sum_{k=1}^J \Omega_{jk}(p_k-c_k)\frac{\partial q_k(p)}{\partial p_j}, \qquad j=1,\ldots,J.$$
-
-With $\Delta_{kj}(p)=\partial q_k(p)/\partial p_j$, the vector form is
-
-$$q(p)+\underbrace{(\Omega\circ \Delta(p)^\top)}_{\text{within-firm price externality}}(p-c)=0.$$
-
-Here $\circ$ is the element-wise (Hadamard) product. Multiplying by $\Omega$
-knocks out cross-firm price externalities. Only co-owned products show up in
-any one firm's markup equation. The merger flips entries of $\Omega$ from zero
-to one. The FOCs then solve for new prices.
-
-### C. Three demand systems
-
-The same observed market can give very different counterfactual prices once we
-change the demand curvature. We calibrate three demand systems. Each one matches
-the observed shares and prices by construction. Linear and log-linear demand
-carry a full $J\times J$ slope matrix, so they also reproduce the entire
-observed margin vector exactly. Logit demand has a single price coefficient
-$\alpha$. We pin it down from the average single-product margin condition and
-recover marginal costs from the pre-merger FOC, so the logit FOC residual is
-zero at calibration while its implied margins track the observed margins only
-as closely as one coefficient allows.
-
-Logit shares are
-
-$$s_j^{L}(p)=\frac{\exp(\xi_j+\alpha p_j)}{1+\sum_{\ell=1}^J \exp(\xi_\ell+\alpha p_\ell)}, \qquad \alpha<0,$$
-
-where $\xi_j$ is the mean indirect utility of product $j$ from non-price
-characteristics. The closed-form Jacobian is
-
-$$\Delta^{L}_{jk}=\alpha\,s_j(\mathbf 1\{j=k\}-s_k).$$
-
-Opened element by element for $J=4$ this reads
-
-$$\Delta^{L}=\alpha\begin{pmatrix}s_1(1-s_1)&-s_1 s_2&-s_1 s_3&-s_1 s_4\\-s_1 s_2&s_2(1-s_2)&-s_2 s_3&-s_2 s_4\\-s_1 s_3&-s_2 s_3&s_3(1-s_3)&-s_3 s_4\\-s_1 s_4&-s_2 s_4&-s_3 s_4&s_4(1-s_4)\end{pmatrix}.$$
-
-The diagonal carries the own-price effect. Off-diagonals carry cross-price
-effects. The whole matrix scales with $\alpha$.
-
-Linear demand is
-
-$$q_j^{A}(p)=a_j-\sum_{k=1}^J B_{jk}p_k, \qquad \Delta^{A}=-B,$$
-
-so $\Delta^{A}$ does not depend on $p$. Here $a_j$ is the demand intercept and
-$B_{jk}$ is the price-response matrix.
-
-Log-linear demand is
-
-$$\log q_j^{E}(p)=a_j^E+\sum_{k=1}^J E_{jk}\log p_k, \qquad \Delta^{E}_{jk}=q_j\,E_{jk}/p_k,$$
-
-so the elasticities $E_{jk}$ are constant and the slopes scale with quantities
-and inverse prices.
-
-### D. Diversion ratios and screening metrics
-
-The local diversion ratio from product $j$ to product $k$ is
-
-$$D_{j\to k}=-\frac{\partial q_k(p)/\partial p_j}{\partial q_j(p)/\partial p_j}, \qquad j\neq k.$$
-
-Under simple logit it collapses to $D_{j\to k}=s_k/(1-s_j)$ and depends only on
-shares and the outside option.
-
-For products that become newly co-owned after the merger,
-
-$$\text{UPP}_j=\sum_{k:\Omega^{\text{post}}_{jk}=1,\ \Omega^{\text{pre}}_{jk}=0} D_{j\to k}(p_k-c_k),$$
-
-with
-
-$$\text{GUPPI}_j=\frac{\text{UPP}_j}{p_j}, \qquad \text{CMCR}_j=\frac{\text{UPP}_j}{c_j}.$$
-
-GUPPI is a first-order screen evaluated at observed prices. It says how much
-upward pricing pressure the merger generates locally. CMCR reports the
-marginal-cost reduction that would offset that pressure at those same prices.
-Neither metric clears the market. The simulation in Method 3 does. It solves
-the full pricing system under post-merger ownership.
-""")
-
-    report.add_model_setup(
-        "Two market setups run in sequence. The first is a small four-product market. We "
-        "calibrate logit demand from one observed margin. The second is a six-product "
-        "market. We calibrate three demand systems against the full margin vector.\n\n"
-        "**Four-product baseline (Part B).**\n\n"
-        "| Object | Value | Role |\n"
-        "|--------|-------|------|\n"
-        f"| Inside products | {n4} | Four single-product firms before the merger |\n"
-        f"| Inside shares | {fmt_vector(s4)} | Observed product shares |\n"
-        f"| Outside share | {1.0 - np.sum(s4):.2f} | No-purchase option |\n"
-        f"| Prices | {fmt_vector(p4)} | Pre-merger prices |\n"
-        f"| Margin (product 1) | {margin4:.2f} | Pins down the logit price coefficient |\n"
-        f"| $\\alpha$ | {alpha4:.4f} | Calibrated price sensitivity |\n"
-        f"| Marginal costs | {fmt_vector(mc4)} | Recovered from the pre-merger FOCs |\n"
-        "| Scenarios | merger 1+2; merger 1+2 with 10% cost reduction | Ownership and cost experiments |\n\n"
-        "**Six-product extended (Part C).**\n\n"
-        "| Parameter | Value | Description |\n"
-        "|-----------|-------|-------------|\n"
-        f"| Products $J$ | {J} | 3 firms, 2 products each |\n"
-        f"| Shares | {fmt_vector(shares_obs)} | Pre-merger inside shares |\n"
-        f"| Prices | {fmt_vector(prices_obs)} | Pre-merger prices |\n"
-        f"| Margins | {fmt_vector(margins_obs)} | Price-cost margins by product |\n"
-        f"| Outside share | {1 - np.sum(shares_obs):.2f} | Outside option in the logit demand system |\n"
-        f"| $\\alpha$ (logit) | {cal_logit['alpha']:.4f} | Calibrated price coefficient |\n"
-        "| Linear cross-slope ratio | 0.10 | Cross-slope relative to geometric mean own-slope |\n"
-        "| Log-linear cross elasticity | 0.15 | Maintained symmetric cross-price elasticity |\n"
-        "| Merger | Firm 1 buys Firm 2 | Products 1-4 move under common ownership |\n"
-        "| Benchmark | Post-merger Bertrand-Nash FOC | Equilibrium used to judge first-order screens |"
-    )
-
-    report.add_solution_method(
-        "Three methods run in sequence. Each one answers a question the previous method "
-        "cannot reach. The defining formulas all live in the Equations section. Here we "
-        "reuse the same symbols inside the pseudocode.\n\n"
-        "### Method 1: HHI concentration screens\n\n"
-        "HHI squares the ownership shares. The largest firm dominates the index. Two small "
-        "firms barely move it. So the merger increment cares only about the two merging "
-        "shares, not about anyone else. There is nothing to iterate. The cost is linear in "
-        "the firm count and the answer is exact.\n\n"
-        "```text\n"
-        "Inputs:  firm shares s = (s_1, ..., s_F), candidate merger pair (a, b)\n"
-        "Outputs: HHI, N_eff, delta-HHI, structural classification\n"
-        "\n"
-        "1. HHI       = 10000 * sum_{f=1..F} s_f^2\n"
-        "2. N_eff     = 10000 / HHI\n"
-        "3. delta-HHI = 20000 * s_a * s_b\n"
-        "4. classify HHI:  < 1000        -> Unconcentrated\n"
-        "                  1000 to 1800  -> Moderate\n"
-        "                  > 1800        -> Highly Concentrated\n"
-        "```\n\n"
-        "The screen says nothing about prices. Two products that share an owner but do not "
-        "substitute can move HHI without moving prices at all. Method 2 closes that gap.\n\n"
-        "### Method 2: Four-product Bertrand-Nash baseline (logit, single margin)\n\n"
-        "One product's margin is the whole calibration. The single-product FOC for product 1 "
-        "pins down the price coefficient. The other marginal costs come from inverting the "
-        "multi-product FOC at observed prices. Post-merger prices come from a Newton-type "
-        "root finder on the FOC under the new ownership matrix. Convergence is locally "
-        "quadratic when the warm-start sits close to the solution.\n\n"
-        "```text\n"
-        "Inputs:  shares s, prices p, margin m_1 on product 1, owners f^pre, f^post\n"
-        "Outputs: alpha, xi, mc, post-merger prices p^post and shares s^post\n"
-        "\n"
-        "1. c_1   = p_1 * (1 - m_1)\n"
-        "2. alpha = -1 / [(1 - s_1) * (p_1 - c_1)]                  # single-product FOC\n"
-        "3. xi_j  = log(s_j / s_0) - alpha * p_j,    s_0 = 1 - sum_j s_j\n"
-        "4. mc    = p + (Omega^pre .* Delta(p)^T)^{-1} s            # multi-product FOC inversion\n"
-        "5. build Omega^post from f^post\n"
-        "6. solve  s(p) + (Omega^post .* Delta(p)^T) (p - mc) = 0   # fsolve, warm-start p^0 = 1.1 * p\n"
-        "7. (optional)  mc' = mc with merging-product entries scaled by (1 - eps); resolve\n"
-        "```\n\n"
-        "The root finder can fail when the warm-start is too far from the equilibrium or "
-        "when the Jacobian is ill-conditioned. The implementation reports the FOC residual "
-        "after each solve. A residual near machine precision confirms that the reported "
-        "prices clear the system.\n\n"
-        "### Method 3: Six-product extension with three demand systems\n\n"
-        "Now we run the same pricing FOC across three demand systems. Each one matches the "
-        "same observed shares and prices by construction; linear and log-linear demand also "
-        "match the full observed margin vector, while logit matches margins only as closely "
-        "as one price coefficient allows. Any disagreement on counterfactual "
-        "prices is therefore curvature, not data. UPP, GUPPI, and CMCR are local screens "
-        "evaluated at observed prices. The post-merger FOC adds rival reactions and "
-        "pass-through. The efficiency frontier sweeps a cost-reduction grid and re-solves "
-        "at each step, warm-starting each solve from the previous one. That keeps the path "
-        "monotone and the iteration count low.\n\n"
-        "```text\n"
-        "Inputs:  shares s, prices p, margins m, owners f^pre, f^post\n"
-        "Outputs: per-system screens, post-merger prices, welfare, efficiency frontier\n"
-        "\n"
-        "1. for each demand system d in {L (logit), A (linear), E (log-linear)}:\n"
-        "     a. fit theta_d so that q_d(p; theta_d) = s\n"
-        "     b. mc_d   = p + (Omega^pre .* Delta_d(p)^T)^{-1} q_d(p)         # FOC inversion\n"
-        "     c. D_d[j, k] = -Delta_d[k, j] / Delta_d[j, j],   j != k         # diversion\n"
-        "     d. for each j newly co-owned:\n"
-        "          UPP_j   = sum_{k newly co-owned} D_d[j, k] * (p_k - mc_d,k)\n"
-        "          GUPPI_j = UPP_j / p_j,    CMCR_j = UPP_j / mc_d,j\n"
-        "     e. solve  q_d(p^post) + (Omega^post .* Delta_d(p^post)^T)\n"
-        "                              * (p^post - mc_d) = 0                 # fsolve\n"
-        "     f. dCS_d = CS_d(p^post) - CS_d(p),    dPS_d = PS_d(p^post) - PS_d(p)\n"
-        "\n"
-        "2. for eps in {0, 0.005, ..., 0.6}:\n"
-        "     mc_eff      = mc_d with merging-product entries scaled by (1 - eps)\n"
-        "     p^post(eps) = solve post-merger FOC with mc_d replaced by mc_eff\n"
-        "                   (warm-start from previous eps)\n"
-        "     record  avg_dp(eps) = mean over j in {1..4} of (p^post_j(eps) - p_j) / p_j\n"
-        "\n"
-        "3. eps* = first zero of avg_dp(eps)         # break-even cost reduction\n"
-        "```\n\n"
-        "Log-linear demand can drive prices negative during root-finder iterations. We solve "
-        "in log-price space to keep prices positive at every step. Linear demand can return "
-        "negative quantities at extreme prices, so we clip at a small positive value. Both "
-        "safeguards leave the equilibrium unchanged where the unmodified solver also "
-        "converges.\n\n"
-        f"FOC residuals after calibration: four-product baseline "
-        f"{np.max(np.abs(foc4_check)):.1e}; six-product extended "
-        f"(logit {np.max(np.abs(foc_check_logit)):.1e}, "
-        f"linear {np.max(np.abs(foc_check_linear)):.1e}, "
-        f"log-linear {np.max(np.abs(foc_check_loglinear)):.1e}). "
-        "All calibrations reproduce the observed pricing conditions to numerical precision."
-    )
-
-    # =====================================================================
-    # FIGURES AND RESULTS
-    # =====================================================================
-
-    # ---------- Part 1 results: concentration screens ----------
-    report.add_results(
-        "### Part 1: Concentration screens\n\n"
-        "A sales table tells us how concentrated ownership already is. It also tells us "
-        "how much a candidate merger would shift the index. The HHI-vs-firms curve below "
-        "puts symmetric and asymmetric markets on the same scale. The delta-HHI bars show "
-        "how merger arithmetic depends on the absolute size of the merging shares."
-    )
-
+    # ---------- Part 1 figures ----------
     fig_hhi, ax_hhi = plt.subplots(figsize=(9, 5))
     ax_hhi.plot(n_firms_range, hhi_equal, "b-", linewidth=2)
     ax_hhi.axhspan(0, 1000, alpha=0.10, color="green", label="Unconcentrated (< 1000)")
@@ -893,14 +605,7 @@ the full pricing system under post-merger ownership.
             fontsize=8,
             arrowprops=dict(arrowstyle="->", color="black", lw=0.8),
         )
-    report.add_figure(
-        "figures/hhi-vs-nfirms.png",
-        "HHI as a function of the number of equal-sized firms",
-        fig_hhi,
-        description="For symmetric firms, HHI is exactly $10{,}000/N$. Most of the index "
-        "movement happens between monopoly and five equal firms. The highly-concentrated "
-        "threshold of 1,800 lines up with about 5.6 equal-sized firms.",
-    )
+    save_figure(fig_hhi, "figures/hhi-vs-nfirms.png", dpi=150)
 
     fig_dhhi, ax_dhhi = plt.subplots(figsize=(10, 5))
     x_dh = np.arange(len(merger_results))
@@ -937,32 +642,9 @@ the full pricing system under post-merger ownership.
     ax_dhhi.set_title("HHI Before and After Merger of the Two Largest Firms")
     ax_dhhi.legend()
     fig_dhhi.tight_layout()
-    report.add_figure(
-        "figures/delta-hhi.png",
-        "HHI before and after merging the two largest firms",
-        fig_dhhi,
-        description="The merger bars are pure index arithmetic. The same formula, "
-        "$20{,}000\\,s_a s_b$, makes a 40-30 merger far larger than a merger of two small "
-        "firms. That scale is why agencies reach for HHI before estimating demand.",
-    )
+    save_figure(fig_dhhi, "figures/delta-hhi.png", dpi=150)
 
-    report.add_table(
-        "tables/market-hhi.csv",
-        "HHI for example market structures",
-        df_markets,
-        description="The effective firm count exposes asymmetry. A 70-10-10-10 market has "
-        "four firms. Its HHI of 5,200 is equivalent to fewer than two equal-sized firms.",
-    )
-
-    # ---------- Part 2 results: four-product baseline ----------
-    report.add_results(
-        "### Part 2: Four-product baseline\n\n"
-        "Concentration says nothing about prices. We need a calibrated demand system to "
-        "talk about counterfactual prices. The simplest useful case is logit demand on a "
-        "four-product market with one observed margin. The merger puts products 1 and 2 "
-        "under one owner. Products 3 and 4 stay outside the deal."
-    )
-
+    # ---------- Part 2 figures ----------
     fig_p4, ax_p4 = plt.subplots(figsize=(9, 5))
     x4 = np.arange(n4)
     scenario_names = list(scenarios4.keys())
@@ -981,15 +663,7 @@ the full pricing system under post-merger ownership.
     ymax = max(np.max(v["prices"]) for v in scenarios4.values()) * 1.12
     ax_p4.set_ylim(0, ymax)
     ax_p4.legend(frameon=False, ncol=2, fontsize=9)
-    report.add_figure(
-        "figures/four-product-prices.png",
-        "Equilibrium prices in the four-product baseline under alternative ownership",
-        fig_p4,
-        description="Once products 1 and 2 share an owner, that owner raises both prices. "
-        "A lost sale to the partner product is no longer fully lost. The 10% cost cut "
-        "mutes the price increase but does not erase it. Products 3 and 4 also rise as "
-        "rivals best-respond.",
-    )
+    save_figure(fig_p4, "figures/four-product-prices.png", dpi=150)
 
     fig_d4, ax_d4 = plt.subplots(figsize=(6, 5))
     div4_plot = div4.copy()
@@ -1010,56 +684,9 @@ the full pricing system under post-merger ownership.
             ax_d4.text(j, i, label, ha="center", va="center", fontsize=10)
     cbar = plt.colorbar(im, ax=ax_d4)
     cbar.set_label("Diversion share")
-    report.add_figure(
-        "figures/four-product-diversion.png",
-        "Diversion ratios between the four baseline products",
-        fig_d4,
-        description="Each row is the product losing a marginal sale. Each column is the "
-        "product that absorbs it. Under logit, larger-share products absorb more diverted "
-        "sales from every other product. The merger changes pricing through this matrix.",
-    )
+    save_figure(fig_d4, "figures/four-product-diversion.png", dpi=150)
 
-    table4 = {
-        "Scenario": [],
-        "Avg Price": [],
-        "Price Change (%)": [],
-        "Inside Share": [],
-        "Outside Share": [],
-        "FOC Residual": [],
-    }
-    for name, outcome in scenarios4.items():
-        ps = outcome["prices"]
-        ss = outcome["shares"]
-        omegas = ownership_matrix(outcome["owners"])
-        residual = np.max(np.abs(foc_logit(ps, outcome["mc"], alpha4, xi4, omegas)))
-        table4["Scenario"].append(name)
-        table4["Avg Price"].append(f"{np.mean(ps):.4f}")
-        table4["Price Change (%)"].append(f"{100 * (np.mean(ps) / np.mean(p4) - 1):.2f}")
-        table4["Inside Share"].append(f"{np.sum(ss):.4f}")
-        table4["Outside Share"].append(f"{1.0 - np.sum(ss):.4f}")
-        table4["FOC Residual"].append(f"{residual:.1e}")
-    df_baseline = pd.DataFrame(table4)
-    report.add_table(
-        "tables/four-product-results.csv",
-        "Four-product baseline scenarios",
-        df_baseline,
-        description="Average prices and inside share by scenario. The FOC residual "
-        "confirms the reported prices solve the post-merger pricing equations. The 10% "
-        "cost cut pulls prices below the unconstrained merger but leaves them above the "
-        "pre-merger level.",
-    )
-
-    # ---------- Part 3 results: six-product extension ----------
-    report.add_results(
-        "### Part 3: Six-product extension\n\n"
-        "Now we run the same merger logic on a market with six products and three demand "
-        "systems. Each system matches the same observed shares and prices; linear and "
-        "log-linear also match the full margin vector, and logit matches margins as closely "
-        "as one price coefficient allows. So any "
-        "differences below come from demand curvature, not from data. Firm 1 buys Firm 2. "
-        "Products 1 through 4 move under common ownership."
-    )
-
+    # ---------- Part 3 figures ----------
     demand_labels = ["Logit", "Linear", "Log-linear"]
     post_prices_all = [p_post_logit, p_post_linear, p_post_loglinear]
     fig_p6, axes_p6 = plt.subplots(1, 3, figsize=(15, 5), sharey=True)
@@ -1082,15 +709,7 @@ the full pricing system under post-merger ownership.
     fig_p6.suptitle("Six-Product Extension: Pre- and Post-Merger Prices by Demand System",
                     fontsize=14, y=1.02)
     fig_p6.tight_layout()
-    report.add_figure(
-        "figures/price-comparison.png",
-        "Pre- and post-merger prices for three demand systems (six products)",
-        fig_p6,
-        description="Logit and log-linear demand give double-digit average price increases "
-        "on the merging products. Linear demand is much more muted under this cross-slope "
-        "calibration. The same calibration anchors each system. The gap between them is "
-        "curvature, not data.",
-    )
+    save_figure(fig_p6, "figures/price-comparison.png", dpi=150)
 
     fig_w, ax_w = plt.subplots(figsize=(9, 5))
     x_w = np.arange(len(demand_labels))
@@ -1108,14 +727,7 @@ the full pricing system under post-merger ownership.
     ax_w.set_xticks(x_w)
     ax_w.set_xticklabels(demand_labels)
     ax_w.legend()
-    report.add_figure(
-        "figures/welfare-decomposition.png",
-        "Welfare changes for consumers, producers, and total surplus",
-        fig_w,
-        description="The welfare bars separate consumer surplus, producer surplus, and "
-        "their sum. Consumers lose under every demand system. Producer gains do not offset "
-        "consumer losses here. The total welfare effect is negative across the board.",
-    )
+    save_figure(fig_w, "figures/welfare-decomposition.png", dpi=150)
 
     fig_g, (ax_g_a, ax_g_b) = plt.subplots(1, 2, figsize=(14, 5))
     model_colors = ["steelblue", "coral", "seagreen"]
@@ -1153,15 +765,7 @@ the full pricing system under post-merger ownership.
     ax_g_b.legend(fontsize=9)
     ax_g_b.axhline(0, color="black", linewidth=0.8)
     fig_g.tight_layout()
-    report.add_figure(
-        "figures/upp-guppi.png",
-        "GUPPI screens, solved price effects, and product-level UPP",
-        fig_g,
-        description="GUPPI uses observed margins and diversion. It is computed before any "
-        "counterfactual is solved. The left panel treats the solved price increase as the "
-        "benchmark. The gap between the screen and the equilibrium reflects pass-through, "
-        "demand curvature, and rival price responses.",
-    )
+    save_figure(fig_g, "figures/upp-guppi.png", dpi=150)
 
     fig_e, ax_e = plt.subplots(figsize=(9, 6))
     efficiency_levels = np.linspace(0.0, 0.60, 121)
@@ -1213,15 +817,34 @@ the full pricing system under post-merger ownership.
                   ha="left", va="bottom")
     ax_e.annotate("Consumer-beneficial\nmerger", xy=(20, -2), fontsize=9, color="green",
                   ha="right", va="top")
-    report.add_figure(
-        "figures/efficiency-frontier.png",
-        "Cost reductions needed to offset merger price increases",
-        fig_e,
-        description="The efficiency curve lowers marginal costs on products 1-4. Each "
-        "point re-solves the post-merger pricing problem. The marker on the zero line is "
-        "the break-even cost cut. Below the line, efficiencies reverse the average price "
-        "increase. Above the line, the merger still raises prices.",
-    )
+    save_figure(fig_e, "figures/efficiency-frontier.png", dpi=150)
+
+    # =====================================================================
+    # TABLES
+    # =====================================================================
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    df_markets.to_csv("tables/market-hhi.csv", index=False)
+
+    table4 = {
+        "Scenario": [],
+        "Avg Price": [],
+        "Price Change (%)": [],
+        "Inside Share": [],
+        "Outside Share": [],
+        "FOC Residual": [],
+    }
+    for name, outcome in scenarios4.items():
+        ps = outcome["prices"]
+        ss = outcome["shares"]
+        omegas = ownership_matrix(outcome["owners"])
+        residual = np.max(np.abs(foc_logit(ps, outcome["mc"], alpha4, xi4, omegas)))
+        table4["Scenario"].append(name)
+        table4["Avg Price"].append(f"{np.mean(ps):.4f}")
+        table4["Price Change (%)"].append(f"{100 * (np.mean(ps) / np.mean(p4) - 1):.2f}")
+        table4["Inside Share"].append(f"{np.sum(ss):.4f}")
+        table4["Outside Share"].append(f"{1.0 - np.sum(ss):.4f}")
+        table4["FOC Residual"].append(f"{residual:.1e}")
+    pd.DataFrame(table4).to_csv("tables/four-product-results.csv", index=False)
 
     table_extended = {
         "Demand Model": [],
@@ -1255,51 +878,10 @@ the full pricing system under post-merger ownership.
         table_extended["Delta PS"].append(round(dPS[label], 4))
         table_extended["Delta W"].append(round(dW[label], 4))
         table_extended["Post FOC Residual"].append(f"{post_residuals[label]:.1e}")
-    df_extended = pd.DataFrame(table_extended)
-    report.add_table(
-        "tables/merger-effects.csv",
-        "Six-product merger price effects and screens",
-        df_extended,
-        description="The table puts local screens and solved counterfactuals side by side. "
-        "Average price increases come from the post-merger FOC solution. GUPPI and CMCR "
-        "are local screens at observed prices. Break-even efficiencies come from repeated "
-        "FOC solves over a cost-reduction grid.",
-    )
+    pd.DataFrame(table_extended).to_csv("tables/merger-effects.csv", index=False)
 
-    # =====================================================================
-    # Takeaway
-    # =====================================================================
-    report.add_takeaway(
-        "Three tools answer three different questions about the same merger. "
-        "Concentration screens are arithmetic. They triage candidate mergers straight from "
-        "a sales table. A calibrated four-product Bertrand model turns one observed margin "
-        "into a post-merger price prediction. The six-product extension shows that the "
-        "same observed market admits different counterfactuals once you change the demand "
-        "system.\n\n"
-        "UPP, GUPPI, and CMCR are local screens at observed prices. They correlate with "
-        "the solved equilibrium but do not match it. The gap comes from pass-through, "
-        "rival reactions, and demand curvature. The efficiency frontier traces the "
-        "marginal-cost cut that would offset the price effect under each demand system. "
-        "The cut is large under logit and log-linear demand. It is small under linear "
-        "demand in this calibration.\n\n"
-        "An antitrust review that uses all three layers stays honest. A high delta-HHI "
-        "does not pin down a price effect. A single demand system does not pin down "
-        "robustness. Stacking the layers makes both the screen and its limits visible."
-    )
-
-    report.add_references([
-        "Werden, G. and Froeb, L. (1994). \"The Effects of Mergers in Differentiated Products "
-        "Industries: Logit Demand and Merger Policy.\" *Journal of Law, Economics, & Organization*, 10(2).",
-        "Farrell, J. and Shapiro, C. (2010). \"Antitrust Evaluation of Horizontal Mergers: "
-        "An Economic Alternative to Market Definition.\" *The B.E. Journal of Theoretical Economics*, 10(1).",
-        "Berry, S. (1994). \"Estimating Discrete-Choice Models of Product Differentiation.\" "
-        "*RAND Journal of Economics*, 25(2).",
-        "U.S. Department of Justice and Federal Trade Commission (2023). *Merger Guidelines*.",
-        "Tirole, J. (1988). *The Theory of Industrial Organization*. MIT Press, Ch. 5.",
-    ])
-
-    report.write("README.md")
-    print(f"\nGenerated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
+    save_thumbnail("figures/hhi-vs-nfirms.png", "figures/thumb.png")
+    print(f"\nFigures and tables written.")
 
 
 if __name__ == "__main__":

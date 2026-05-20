@@ -1,4 +1,4 @@
 Method,Nodes,Max Euler error,Median Euler error,Max savings error,Seconds
 Smolyak mu=1,11,1.20e-02,2.26e-03,9.11e-03,0.00
 Smolyak mu=2,61,1.04e-03,1.91e-04,9.33e-04,0.01
-Smolyak mu=3,241,1.65e-04,9.49e-06,1.66e-04,0.05
+Smolyak mu=3,241,1.65e-04,9.49e-06,1.66e-04,0.04

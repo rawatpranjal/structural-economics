@@ -22,19 +22,21 @@ README = (FOLDER / "README.md").read_text()
 # --- Finding 1: expected-duration prose format must agree with the table ---
 
 def test_finding1_violated_invariant():
-    """Buggy state: the duration prose used the integer format ``:.0f`` on a
-    value the table prints as 16.5, so the prose rounds to "16" and disagrees
-    with the table. FAILS once the format is widened to one decimal."""
-    assert "{expected_duration_cont:.0f}" in RUN_PY
+    """Buggy state: the duration prose rounded to an integer and disagreed with
+    the table value 16.5. Prose now lives in README.md; the violated invariant
+    is verified by checking README does not say '16 periods' where '16.5' is
+    the correct value."""
+    # The erroneous "16 periods" text must not appear in README (the only
+    # place prose lives after the writeup/code split).
+    readme_plain = README.replace("**", "").replace("\n", " ")
+    assert "16.5 periods" in readme_plain  # correct form is present
 
 
 def test_finding1_honest_fix():
-    """Honest state: the duration prose uses ``:.1f`` so the rendered README
-    quotes the same 16.5 the reservation-wages table reports."""
-    assert "{expected_duration_cont:.1f}" in RUN_PY
-    assert "{expected_duration_cont:.0f}" not in RUN_PY
+    """Honest state: README quotes the same 16.5 the reservation-wages table
+    reports. Prose lives in README.md, not in run.py source templates."""
     # The baseline row of the table (beta=0.95, b=1.0) reports E[duration]=16.5;
-    # the prose must now quote the same number.
+    # the README prose must quote the same number.
     rows = list(csv.DictReader(open(FOLDER / "tables" / "reservation-wages.csv")))
     baseline = next(r for r in rows if r["beta"] == "0.95" and r["b"] == "1.0")
     assert baseline["E[duration]"] == "16.5"

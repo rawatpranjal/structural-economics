@@ -10,8 +10,7 @@ from scipy.optimize import minimize
 from scipy.special import expit, logsumexp
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import setup_style, save_figure, save_thumbnail
 
 
 EULER_GAMMA = 0.5772156649015329
@@ -304,101 +303,6 @@ def main() -> None:
     print(f"  Forward simulation value RMSE: {forward_rmse:.4f}")
 
     setup_style()
-    report = ModelReport(
-        "Quality-Ladder Dynamic Game: Estimating with CCPs",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "Two firms invest to climb a product-quality ladder. A laggard may spend to catch up. "
-        "A leader may save the investment cost.\n\n"
-        "The object is the payoff vector: the value of quality, the cost of investment, and "
-        "the catch-up incentive. The data contain firm qualities and investment choices.\n\n"
-        "The hard part is strategic dynamics. A firm's current investment changes its own "
-        "future quality, but the payoff from that investment also depends on how the rival "
-        "is expected to move.\n\n"
-        "A likelihood needs continuation values because today's investment changes tomorrow's "
-        "state. The CCP estimator first estimates investment rates by state. It then evaluates "
-        "values under those policies, instead of solving a new MPE at each trial parameter."
-    )
-
-    report.add_equations(
-        r"""
-The firm-view state is $\omega=(q_i,q_j)$, where $q_i$ is own quality and
-$q_j$ is rival quality. Both qualities lie on the four-rung ladder
-$\{0,1,2,3\}$. Firm $i$ chooses $a_i\in\{0,1\}$, where one means invest.
-Flow payoff is
-
-$$\pi_i(\omega,a_i;\theta) = \theta_q q_i - \theta_c a_i + \theta_g \max\{q_j-q_i,0\} a_i .$$
-
-The gap term raises the investment payoff when the rival leads.
-
-First-stage CCPs estimate the state-specific investment rate
-$p(\omega)=\Pr(a_i=1\mid \omega)$. Holding CCPs fixed gives a policy transition
-$\hat P$ and an expected flow payoff $\bar\pi_\theta(\omega;\hat p)$. Integrating
-out the logit action shock adds the expected shock value to the policy-weighted
-payoff, so $\bar\pi_\theta$ is
-
-$$\bar\pi_\theta(\omega;\hat p) = (1-\hat p)\,\pi_i(\omega,0;\theta) + \hat p\,\pi_i(\omega,1;\theta) + H(\hat p) + \gamma,$$
-
-where $H(\hat p) = -\hat p\log\hat p-(1-\hat p)\log(1-\hat p)$ is the Bernoulli
-entropy of the investment rate and $\gamma$ is the Euler-Mascheroni constant.
-The $H(\hat p)+\gamma$ term is the expected value of the Type-I extreme value
-shock under the first-stage policy. The value under that policy is
-
-$$W_\theta = \bar\pi_\theta(\hat p) + \beta \hat P W_\theta.$$
-
-Choice-specific values use the rival's first-stage CCP and $W_\theta$:
-
-$$v_\theta(a_i,\omega) = \pi_i(\omega,a_i;\theta) + \beta E_{\hat p_j}\left[W_\theta(\omega')\mid \omega,a_i\right].$$
-
-The second-stage pseudo likelihood scores observed investment choices, where
-$d_{it}\in\{0,1\}$ is the observed investment indicator for firm $i$ at period
-$t$ and $\Lambda(\cdot)$ is the logistic CDF:
-
-$$\ell(\theta)=\sum_{i,t} d_{it}\log \Lambda[v_\theta(1,\omega_{it})-v_\theta(0,\omega_{it})] +(1-d_{it})\log\{1-\Lambda[v_\theta(1,\omega_{it})-v_\theta(0,\omega_{it})]\}.$$
-"""
-    )
-
-    report.add_model_setup(
-        f"| Object | Value | Role |\n"
-        f"|--------|-------|------|\n"
-        f"| Firms | 2 | Symmetric competitors observed as own-rival state pairs |\n"
-        f"| Quality rungs | 0 to {q_max} | Product-quality ladder used as the dynamic state |\n"
-        f"| Discount factor | {beta:.2f} | Weight on future market position |\n"
-        f"| True $\\theta_q$ | {theta_true[0]:.2f} | Value of own quality |\n"
-        f"| True $\\theta_g$ | {theta_true[1]:.2f} | Catch-up incentive when the rival leads |\n"
-        f"| True $\\theta_c$ | {theta_true[2]:.2f} | Investment cost |\n"
-        f"| Markets | 1,000 | Independent simulated two-firm markets |\n"
-        f"| Periods | 30 | Panel length used for first-stage CCPs |"
-    )
-
-    report.add_solution_method(
-        "The code solves the soft MPE once to create data with known truth.\n\n"
-        "For estimation, the first-stage CCPs play the role of a measured strategy profile. "
-        "Once that profile is fixed, the dynamic game becomes a policy-evaluation problem: "
-        "compute the value of being in each quality state when both firms keep following the "
-        "estimated investment rules.\n\n"
-        "Estimation then treats the first-stage CCPs as future play. For each candidate payoff vector, it "
-        "evaluates the value of following those policies. The resulting invest and no-invest "
-        "values enter a logit likelihood.\n\n"
-        "```text\n"
-        "Algorithm: CCP forward-value estimation for the quality ladder game\n"
-        "Input: panel of qualities and investment choices, transition law, beta\n"
-        "First stage:\n"
-        "  Estimate p_hat(omega)=Pr(invest | omega) from state frequencies with smoothing\n"
-        "Second stage for each candidate theta:\n"
-        "  Build the transition matrix induced by p_hat for the two firms\n"
-        "  Solve W_theta = expected_flow_theta(p_hat) + beta P_hat W_theta\n"
-        "  Compute invest and no-invest values using W_theta and rival p_hat\n"
-        "  Score the observed investment choices with the logit likelihood\n"
-        "Output: payoff estimates and policy fit\n"
-        "```\n\n"
-        "The first-stage CCPs describe how rivals move. The second stage changes payoffs "
-        "while holding those policies fixed. Each likelihood evaluation is a linear "
-        "policy-evaluation solve, not a new equilibrium solve."
-    )
 
     states = state_space(q_max)
     own_grid = np.array([s[0] for s in states]).reshape(q_max + 1, q_max + 1)
@@ -420,17 +324,7 @@ $$\ell(\theta)=\sum_{i,t} d_{it}\log \Lambda[v_\theta(1,\omega_{it})-v_\theta(0,
             for rival in range(q_max + 1):
                 ax.text(rival, own, f"{image[own, rival]:.2f}", ha="center", va="center", color="white", fontsize=8)
     fig1.colorbar(im, ax=axes, fraction=0.025)
-    report.add_results(
-        "The heatmaps show the investment pattern. Firms invest more when the rival is ahead. "
-        "Top-quality firms invest less because current quality already pays. The model-implied "
-        "CCPs smooth empirical frequencies through the payoff vector."
-    )
-    report.add_figure(
-        "figures/ccp-heatmaps.png",
-        "True, first-stage, and model-implied investment CCPs",
-        fig1,
-        description="Rows are own quality and columns are rival quality.",
-    )
+    save_figure(fig1, "figures/ccp-heatmaps.png", dpi=150)
 
     fig2, ax2 = plt.subplots(figsize=(7, 4.5))
     ax2.scatter(true_policy, np.asarray(first_stage["ccp"]), label=f"First stage, RMSE {first_stage_rmse:.3f}")
@@ -440,17 +334,7 @@ $$\ell(\theta)=\sum_{i,t} d_{it}\log \Lambda[v_\theta(1,\omega_{it})-v_\theta(0,
     ax2.set_ylabel("Estimated or implied CCP")
     ax2.set_title("Policy Fit by State")
     ax2.legend()
-    report.add_results(
-        "Policy fit matters because the likelihood uses state-level investment probabilities. "
-        f"The model-implied RMSE against truth is **{policy_rmse:.5f}**. The first-stage "
-        f"empirical RMSE is **{first_stage_rmse:.3f}**."
-    )
-    report.add_figure(
-        "figures/policy-fit.png",
-        "State-level policy fit against true CCPs",
-        fig2,
-        description="Known truth makes it possible to separate first-stage sampling error from second-stage structural fit.",
-    )
+    save_figure(fig2, "figures/policy-fit.png", dpi=150)
 
     fig3, ax3 = plt.subplots(figsize=(7, 4.5))
     ax3.scatter(exact_values, simulated_values)
@@ -460,18 +344,7 @@ $$\ell(\theta)=\sum_{i,t} d_{it}\log \Lambda[v_\theta(1,\omega_{it})-v_\theta(0,
     ax3.set_xlabel("Exact CCP value")
     ax3.set_ylabel("Forward-simulated value")
     ax3.set_title("Forward Simulation Check")
-    report.add_results(
-        "Forward values connect observed policies to dynamic payoffs. Exact policy evaluation "
-        "and Monte Carlo forward simulation target the same values. The simulation RMSE is "
-        f"**{forward_rmse:.3f}** "
-        "with 1,000 paths per state and a 70-period horizon."
-    )
-    report.add_figure(
-        "figures/forward-values.png",
-        "Exact versus simulated forward values",
-        fig3,
-        description="The check compares matrix policy evaluation with simulated paths under the same CCPs.",
-    )
+    save_figure(fig3, "figures/forward-values.png", dpi=150)
 
     parameter_df = pd.DataFrame(
         {
@@ -481,12 +354,8 @@ $$\ell(\theta)=\sum_{i,t} d_{it}\log \Lambda[v_\theta(1,\omega_{it})-v_\theta(0,
             "Error": np.asarray(estimate["theta"]) - theta_true,
         }
     )
-    report.add_table(
-        "tables/parameter-recovery.csv",
-        "Known-truth parameter recovery",
-        parameter_df.round(5),
-        description="The estimates match the data-generating payoffs.",
-    )
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    parameter_df.round(5).to_csv("tables/parameter-recovery.csv", index=False)
 
     diagnostics = pd.DataFrame(
         {
@@ -514,27 +383,9 @@ $$\ell(\theta)=\sum_{i,t} d_{it}\log \Lambda[v_\theta(1,\omega_{it})-v_\theta(0,
             ],
         }
     )
-    report.add_table(
-        "tables/estimator-diagnostics.csv",
-        "Computation and estimator diagnostics",
-        diagnostics,
-        description="The synthetic panel comes from one equilibrium solve. Estimation then uses CCPs and forward values.",
-    )
+    diagnostics.to_csv("tables/estimator-diagnostics.csv", index=False)
 
-    report.add_takeaway(
-        "In this quality game, empirical investment rates show where firms try to catch up.\n\n"
-        "CCP estimation turns those rates into continuation values and a choice likelihood. "
-        "The second stage recovers payoffs without solving a new MPE for every parameter guess."
-    )
-
-    report.add_references(
-        [
-            "[Aguirregabiria, V. and Mira, P. (2007). Sequential Estimation of Dynamic Discrete Games. *Econometrica*, 75(1), 1-53.](https://doi.org/10.1111/j.1468-0262.2007.00731.x)",
-            "[Bajari, P., Benkard, C. L., and Levin, J. (2007). Estimating Dynamic Models of Imperfect Competition. *Econometrica*, 75(5), 1331-1370.](https://doi.org/10.1111/j.1468-0262.2007.00796.x)",
-            "[Pesendorfer, M. and Schmidt-Dengler, P. (2008). Asymptotic Least Squares Estimators for Dynamic Games. *Review of Economic Studies*, 75(3), 901-928.](https://doi.org/10.1111/j.1467-937X.2008.00496.x)",
-        ]
-    )
-    report.write("README.md")
+    save_thumbnail("figures/ccp-heatmaps.png", "figures/thumb.png")
 
 
 if __name__ == "__main__":

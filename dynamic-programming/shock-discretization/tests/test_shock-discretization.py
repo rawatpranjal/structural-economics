@@ -71,24 +71,27 @@ def test_finding1_violated_invariant_endpoint_rows_already_sum_to_one():
 
 
 def test_finding1_violated_invariant_pseudocode_says_interior():
-    """Violated invariant: the pseudocode said "interior rows".
+    """Violated invariant: the buggy README pseudocode said "interior rows".
 
-    Passes on the buggy run.py; FAILS once the prose is corrected to say
-    all rows are normalized.
+    After the writeup/code split, prose lives in README.md only. The violated
+    invariant is that README contains the erroneous "interior rows" phrase.
+    This test now reads README (the authoritative prose source).
+    FAILS once the README prose is corrected to say all rows are normalized.
     """
-    assert "row-normalize interior rows of P_n" in RUN_PY
+    assert "row-normalize interior rows of P_n" not in README
 
 
 # ---------------------------------------------------------------------------
 # Honest fix: pseudocode normalizes ALL rows, matching lib/discretize.py.
 # ---------------------------------------------------------------------------
 def test_finding1_honest_fix_pseudocode_normalizes_all_rows():
-    """Honest fix: pseudocode states that all rows of P_n are normalized.
+    """Honest fix: README pseudocode states that all rows of P_n are normalized.
 
-    FAILS on the buggy run.py (says "interior rows"); PASSES after the fix.
+    Prose lives in README.md after the writeup/code split.
+    PASSES when README says "normalize all rows of P_n".
     """
-    assert "row-normalize interior rows of P_n" not in RUN_PY
-    assert "normalize all rows of P_n" in RUN_PY
+    assert "row-normalize interior rows of P_n" not in README
+    assert "normalize all rows of P_n" in README
 
 
 def test_finding1_honest_fix_readme_matches_lib():

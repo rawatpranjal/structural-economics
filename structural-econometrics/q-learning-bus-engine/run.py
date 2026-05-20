@@ -19,8 +19,7 @@ import pandas as pd
 from scipy.special import logsumexp
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import save_figure, save_thumbnail, setup_style
 
 
 EULER_GAMMA = 0.5772156649015329
@@ -539,123 +538,8 @@ def main() -> None:
         })
     comparison_df = pd.DataFrame(rows)
 
-    print("Building report ...")
-    report = ModelReport(
-        "Rust Bus Replacement by Soft Q-Learning and DQN",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "A bus depot decides each period whether to keep a high-mileage engine "
-        "or pay a lump-sum replacement cost. Higher mileage raises operating "
-        "costs. The trade-off tilts toward replacement.\n\n"
-        r"The target object is the replacement hazard $P(\mathrm{replace} \mid x)$ "
-        "at each mileage level. Rust's nested fixed-point estimator computes it "
-        "by iterating the structural Bellman equation. NFXP needs the mileage "
-        "transition matrix as an input.\n\n"
-        "The bridge to reinforcement learning is direct. Rust's conditional value "
-        "for a state and action is a soft action-value function. The Type-I extreme "
-        "value shocks turn the continuation value into a log-sum-exp, which is the "
-        "same soft Bellman operator used in entropy-regularized Q-learning.\n\n"
-        "Soft Q-learning replaces the matrix with the simulated bus panel. "
-        "The agent sees only the data the econometrician uses for estimation. "
-        "The same hazard emerges from sampled transitions and flow payoffs."
-    )
-
-    report.add_equations(
-        r"Let $x_t$ be mileage and $a_t \in \{\mathrm{replace}, \mathrm{keep}\}$. "
-        r"Flow payoffs are $u(x, \mathrm{replace}) = 0$ and "
-        r"$u(x, \mathrm{keep}) = \theta_0 + \theta_1 x$, with Type-I extreme "
-        r"value choice shocks $\varepsilon_t$." + "\n\n"
-        "The conditional value functions solve" + "\n\n"
-        "$$"
-        r"v(x, a) = u(x, a) + \beta\, \mathbb{E}[\, \gamma + \log \textstyle\sum_{a'} \exp v(x', a') \mid x, a \,],"
-        "$$" + "\n\n"
-        r"Here $\gamma \approx 0.5772$ is the Euler-Mascheroni constant, equal to the expected value of a Type-I extreme value draw." + "\n\n"
-        r"and the structural CCP is the softmax of conditional values:" + "\n\n"
-        "$$"
-        r"P(\mathrm{replace} \mid x) = \frac{\exp v(x, \mathrm{replace})}{\exp v(x, \mathrm{replace}) + \exp v(x, \mathrm{keep})}."
-        "$$" + "\n\n"
-        r"This is already a soft-Q system. If $Q(x,a)$ denotes the same object as "
-        r"$v(x,a)$, the NFXP fixed point applies the expectation under the known "
-        r"transition matrix. The matrix version is" + "\n\n"
-        "$$"
-        r"Q(x,a)=u(x,a)+\beta\sum_{x'}F_a(x'\mid x)[\gamma+\log\textstyle\sum_{a'}\exp Q(x',a')]."
-        "$$" + "\n\n"
-        r"Soft Q-learning treats $v$ as an action-value $Q(x, a)$ and updates "
-        r"it from observed $(x_t, a_t, x_{t+1})$ triples:" + "\n\n"
-        "$$"
-        r"Q(x_t, a_t) \leftarrow Q(x_t, a_t) + \alpha_t [\, u(x_t, a_t) + \beta(\gamma + \log \textstyle\sum_{a'} \exp Q(x_{t+1}, a')) - Q(x_t, a_t) \,]."
-        "$$" + "\n\n"
-        r"The sampled next state $x_{t+1}$ is a noisy draw from the same transition "
-        r"distribution that NFXP averages over exactly. Repeated visits make the "
-        r"stochastic update approximate the transition-matrix expectation. Here "
-        r"$\alpha_t$ is a step-size sequence that shrinks with the per-state visit "
-        r"count (Robbins-Monro schedule)."
-    )
-
+    print("Saving figures and tables ...")
     n_samples = len(transitions["s"])
-    setup_md = (
-        "| Object | Value |\n"
-        "|--------|-------|\n"
-        f"| Mileage state $x$ | {len(x_grid)} grid points on $[{X_MIN:.0f}, {X_MAX:.0f}]$ in steps of {DELTA_X} |\n"
-        r"| Action $a$ | $\{\mathrm{replace}, \mathrm{keep}\}$ |"
-        + "\n"
-        f"| Discount $\\beta$ | {BETA} |\n"
-        f"| Replacement-payoff intercept $\\theta_0$ | {THETA_TRUE[0]:.2f} |\n"
-        f"| Mileage-cost slope $\\theta_1$ | {THETA_TRUE[1]:.2f} |\n"
-        f"| Buses | {N_BUSES} |\n"
-        f"| Periods per bus | {N_PERIODS} |\n"
-        f"| Observed transitions | {n_samples:,} |\n"
-        f"| Q-learning epochs per seed | {QL_EPOCHS} |\n"
-        f"| Q-learning seeds (averaged) | {QL_SEEDS} |\n"
-        f"| DQN epochs | {DQN_EPOCHS} |\n"
-        "| Benchmark | NFXP fixed point under known $F_{\\mathrm{replace}}$, $F_{\\mathrm{keep}}$ |"
-    )
-    report.add_model_setup(setup_md)
-
-    solution_md = (
-        "NFXP and soft Q-learning differ in how they evaluate the same continuation "
-        "value. NFXP has the full mileage transition matrices. For each state-action "
-        "pair, it averages the log-sum-exp continuation over every possible next "
-        "mileage state. The replacement hazard is the softmax of the converged "
-        "conditional values.\n\n"
-        "Soft Q-learning sees one realized next mileage at a time. Each panel row "
-        "$(x_t,a_t,x_{t+1})$ gives a sampled Bellman target. Averaging happens through "
-        "repeated stochastic updates rather than through a matrix multiplication. "
-        "The table version used here keeps one number $Q(x,a)$ for every mileage "
-        "grid point and action, so it is closest to Rust's finite-state calculation.\n\n"
-        "```text\n"
-        "Algorithm: soft Q-learning from observed bus transitions\n"
-        "Input: panel (x_t, a_t, x_{t+1}), flow payoffs u(x, a), epoch budget E\n"
-        "Output: action-value Q(x, a) and replacement hazard P(replace | x)\n"
-        "Initialize Q(x, a) <- 0 for all (x, a)\n"
-        "for epoch = 1, ..., E:\n"
-        "    for each transition (x_t, a_t, x_{t+1}) in random order:\n"
-        "        target <- u(x_t, a_t) + beta * (gamma + log-sum-exp Q(x_{t+1}, .))\n"
-        "        Q(x_t, a_t) += alpha_t * (target - Q(x_t, a_t))\n"
-        "P(replace | x) <- exp Q(x, replace) / [exp Q(x, replace) + exp Q(x, keep)]\n"
-        "```\n\n"
-        "The deep-RL appendix changes only the function approximation. Instead of a "
-        "table with one entry per mileage grid point, it fits a small two-hidden-layer MLP "
-        r"$Q_\theta(x, \cdot)$ that maps mileage to the two action values. DQN can "
-        "smooth and extrapolate across states, but it also introduces optimizer, "
-        "target-network, and tuning choices that the table does not need. The target "
-        "still uses the same soft-Bellman log-sum-exp.\n\n"
-        "```text\n"
-        "Algorithm: soft DQN on the same observed panel\n"
-        "Input: panel transitions, flow payoffs, minibatch size, epoch budget\n"
-        "Output: parameters theta of Q_theta(x, .)\n"
-        "Initialize online and target networks with the same weights\n"
-        "for epoch = 1, ..., E_dqn:\n"
-        "    for each minibatch (x, a, x') sampled without replacement:\n"
-        "        target <- u(x, a) + beta * (gamma + log-sum-exp Q_target(x', .))\n"
-        "        take a gradient step on Huber(Q_theta(x, a) - target)\n"
-        "        every K steps copy the online weights into the target network\n"
-        "```"
-    )
-    report.add_solution_method(solution_md)
 
     visit_threshold = 5
     fig_hazard = hazard_figure(
@@ -672,95 +556,20 @@ def main() -> None:
     bus0_replace = data["replace"][0]
     fig_traj = trajectory_figure(bus0_mileage, bus0_replace)
 
-    report.add_figure(
-        "figures/replacement-hazard.png",
-        "Replacement hazard recovered by soft Q-learning compared with NFXP",
-        fig_hazard,
-        description=(
-            "The replacement hazard rises smoothly with mileage. Low-mileage "
-            "buses keep their engines. High-mileage buses replace. Soft "
-            "Q-learning recovers the same curve over the mileage range the "
-            "panel actually visits. Past that range the table has no data "
-            "to update. The DQN appendix extrapolates with the network."
-        ),
-    )
-    report.add_figure(
-        "figures/value-comparison.png",
-        "Conditional value functions from NFXP and soft Q-learning",
-        fig_values,
-        description=(
-            "The conditional values for replace and keep cross at the mileage "
-            "where replacement becomes attractive. Q-learning's values overlay "
-            "the NFXP values on both branches."
-        ),
-    )
-    report.add_figure(
-        "figures/sample-efficiency.png",
-        "Hazard MAE versus the number of simulated buses",
-        fig_eff,
-        description=(
-            "Hazard recovery improves as more buses enter the panel. The "
-            "log-log slope is roughly square-root. That rate matches the "
-            "standard sample-complexity scaling of off-policy evaluation."
-        ),
-    )
-    report.add_figure(
-        "figures/trajectory.png",
-        "Mileage path of one simulated bus with replacement events",
-        fig_traj,
-        description=(
-            "A representative bus accumulates mileage between replacements. "
-            "Each red marker is a replacement period. Replacement resets "
-            "mileage to the low-mileage transition."
-        ),
-    )
+    (folder / "figures").mkdir(parents=True, exist_ok=True)
+    save_figure(fig_hazard, str(folder / "figures" / "replacement-hazard.png"), dpi=150)
+    save_figure(fig_values, str(folder / "figures" / "value-comparison.png"), dpi=150)
+    save_figure(fig_eff, str(folder / "figures" / "sample-efficiency.png"), dpi=150)
+    save_figure(fig_traj, str(folder / "figures" / "trajectory.png"), dpi=150)
 
-    report.add_table(
-        "tables/method-comparison.csv",
-        "Method comparison",
-        comparison_df,
-        description=(
-            "The table compares the three methods on the same calibration. "
-            "Q-learning and DQN see only the simulated panel. Both recover "
-            "the same replacement threshold as NFXP."
-        ),
-    )
-    closing = (
-        f"NFXP converges in {nfxp['iterations']} Bellman iterations. "
-        f"Soft Q-learning hits a hazard MAE of {hazard_mae_ql:.4f} after "
-        f"{QL_EPOCHS} passes through {n_samples:,} observed transitions. "
-        "That MAE is measured over the visited mileage states only; the table "
-        "leaves high-mileage states the panel never reaches at their "
-        "uninformative initial value"
-    )
-    if dqn_result is not None:
-        closing += f". Soft DQN reaches {hazard_mae_dqn:.4f} on the same panel"
-    report.add_results(closing + ".")
+    Path(folder / "tables").mkdir(parents=True, exist_ok=True)
+    comparison_df.to_csv(folder / "tables" / "method-comparison.csv", index=False)
 
-    report.add_takeaway(
-        "The Rust conditional value function is a soft action-value function. NFXP "
-        "computes its expectation with the known transition matrix; soft Q-learning "
-        "estimates the same expectation from realized transitions.\n\n"
-        "Soft Q-learning recovers the same hazard from observed buses and the "
-        "model's flow payoffs. Table Q-learning is the finite-state counterpart of "
-        "NFXP, while DQN replaces that table with a neural approximation."
+    save_thumbnail(
+        str(folder / "figures" / "replacement-hazard.png"),
+        str(folder / "figures" / "thumb.png"),
     )
-
-    report.add_references([
-        "[Rust, J. (1987). Optimal Replacement of GMC Bus Engines: An Empirical Model of Harold Zurcher. *Econometrica*, 55(5), 999-1033.](https://doi.org/10.2307/1911259)",
-        "[Hotz, V. J. and Miller, R. A. (1993). Conditional Choice Probabilities and the Estimation of Dynamic Models. *Review of Economic Studies*, 60(3), 497-529.](https://doi.org/10.2307/2298122)",
-        "[Watkins, C. J. C. H. and Dayan, P. (1992). Q-Learning. *Machine Learning*, 8(3), 279-292.](https://doi.org/10.1007/BF00992698)",
-        "[Haarnoja, T., Tang, H., Abbeel, P., and Levine, S. (2017). Reinforcement Learning with Deep Energy-Based Policies. *ICML*.](https://proceedings.mlr.press/v70/haarnoja17a.html)",
-        "[Mnih, V., Kavukcuoglu, K., Silver, D., et al. (2015). Human-Level Control through Deep Reinforcement Learning. *Nature*, 518, 529-533.](https://doi.org/10.1038/nature14236)",
-        "**See also.** The same Rust replacement model is estimated by "
-        "NFXP, CCP, MPEC, and a maximum-causal-entropy IRL benchmark in "
-        "[`industrial-organization/dynamic-discrete-choice/`](../../industrial-organization/dynamic-discrete-choice/). The four "
-        "estimators recover the identical hazard the soft Q-learning here "
-        "reproduces.",
-    ])
-
-    report.write(str(folder / "README.md"))
-    print("Wrote README.md")
+    print("Done.")
 
 
 if __name__ == "__main__":

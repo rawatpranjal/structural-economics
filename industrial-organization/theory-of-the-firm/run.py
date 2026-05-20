@@ -8,8 +8,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import setup_style, save_figure, save_thumbnail
 
 
 REGIME_ORDER = ["Spot contract", "Long-term contract", "Vertical integration"]
@@ -90,104 +89,6 @@ def main() -> None:
     print("Theory of the firm tutorial")
     print(best.groupby("Regime").size().to_string())
 
-    report = ModelReport(
-        "Firm Boundaries, Hold-Up, and Vertical Integration",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "A supplier may invest in tooling useful only for one buyer. The asset raises "
-        "joint surplus. After the asset is sunk, bargaining may leave the supplier "
-        "with too little of the return. The supplier then invests for private surplus.\n\n"
-        "The object is a governance choice. Asset specificity $s\\in[0,1]$ measures "
-        "how hard the asset is to redeploy. The choices are spot exchange, a long-term "
-        "contract, and vertical integration. Each form changes investment incentives "
-        "and governance cost.\n\n"
-        "For each $s$, the code computes investment and surplus under each form. A grid "
-        "search then selects the surplus-maximizing boundary choice. The output is a "
-        "set of specificity thresholds."
-    )
-
-    report.add_equations(r"""
-Let $s$ denote asset specificity.
-Let $g\in\mathcal G$ index spot exchange, a long-term contract, and vertical
-integration.
-Relationship-specific investment $x$ creates gross value
-$$V(x) = \theta x - \frac{1}{2}x^2$$
-
-First-best investment solves $V'(x)=0$, so
-$$x^{*} = \theta$$
-
-Regime $g$ lets the investor capture share $b_g(s)$ of revenue $\theta x$.
-The private first-order condition is
-$$b_g(s)\theta - x = 0,$$
-which gives
-$$x_g(s) = b_g(s)\theta$$
-
-Total surplus subtracts governance cost $F_g(s)$:
-$$W_g(s) = \theta x_g(s) - \frac{1}{2}x_g(s)^2 - F_g(s)$$
-
-The incentive schedules are
-$$b_{\text{spot}}(s)=0.72-0.55s,\quad
-b_{\text{contract}}(s)=0.72-0.25s,\quad
-b_{\text{integration}}(s)=0.74-0.03s.$$
-
-Governance costs are
-$$F_{\text{spot}}(s)=0.02+0.04s,\quad
-F_{\text{contract}}(s)=0.38+0.03s,\quad
-F_{\text{integration}}(s)=1.05-0.35s.$$
-
-The selected governance form is
-$$g^{*}(s)=\arg\max_{g\in\mathcal G} W_g(s).$$
-
-The first-best surplus benchmark is
-$$W^{*}=\frac{1}{2}\theta^2$$
-""")
-
-    report.add_model_setup(
-        "The calibration is illustrative. Higher specificity weakens market incentives. "
-        "Contracts protect some returns at a cost. Integration gives control rights but "
-        "carries hierarchy cost.\n\n"
-        "| Object | Interpretation |\n"
-        "|--------|----------------|\n"
-        "| $s\\in[0,1]$ | Asset specificity, with higher $s$ meaning weaker redeployability outside the relationship |\n"
-        "| $\\theta=4$ | Marginal productivity scale, so the first-best investment is $x^{*}=4$ |\n"
-        "| $b_g(s)$ | Share of revenue $\\theta x$ captured by the investor under governance $g$ |\n"
-        "| $F_g(s)$ | Drafting, monitoring, bureaucracy, and adaptation cost under governance $g$ |\n"
-        "| Spot contract | Low fixed governance cost, but incentives fall sharply as specificity rises |\n"
-        "| Long-term contract | More protection against hold-up, with moderate contracting cost |\n"
-        "| Vertical integration | Stronger residual control rights, with higher internal governance cost |"
-    )
-
-    report.add_solution_method(
-        "Given $b_g(s)$, private investment has the closed form $x_g(s)=b_g(s)\\theta$. "
-        "The only numerical step is a grid comparison over $s$. At each point, the "
-        "code evaluates $W_g(s)$ for the three governance forms. It keeps the form with "
-        "the largest surplus.\n\n"
-        "```text\n"
-        "Inputs: specificity grid S, regimes G, productivity theta,\n"
-        "        incentive schedules b_g(s), governance costs F_g(s)\n"
-        "\n"
-        "First-best benchmark:\n"
-        "    x_star = theta\n"
-        "    W_star = 0.5 * theta^2\n"
-        "\n"
-        "For each s in S:\n"
-        "    For each governance regime g in G:\n"
-        "        x_g(s) = b_g(s) * theta\n"
-        "        W_g(s) = theta * x_g(s) - 0.5 * x_g(s)^2 - F_g(s)\n"
-        "    Choose g_star(s) = argmax_g W_g(s)\n"
-        "\n"
-        "Outputs: investment schedules, surplus schedules, and governance regions\n"
-        "```\n\n"
-        f"In this calibration, spot exchange wins for $s\\lesssim {regions[0][1]:.2f}$. "
-        f"Long-term contracts win for ${regions[1][0]:.2f}\\lesssim s\\lesssim "
-        f"{regions[1][1]:.2f}$. "
-        f"Vertical integration wins for $s\\gtrsim {regions[2][0]:.2f}$. "
-        "These thresholds come from surplus comparisons."
-    )
-
     fig1, ax1 = plt.subplots(figsize=(8, 5))
     for regime in REGIME_ORDER:
         gdf = df[df["Regime"] == regime]
@@ -197,14 +98,7 @@ $$W^{*}=\frac{1}{2}\theta^2$$
     ax1.set_ylabel("Investment $x_g(s)$")
     ax1.set_title("Investment Incentives and the First Best")
     ax1.legend()
-    report.add_figure(
-        "figures/investment-incentives.png",
-        "Relationship-specific investment by governance regime",
-        fig1,
-        description="The dashed line is the first-best investment. Spot exchange falls "
-        "quickly as specificity rises. Integration stays close to first best. Surplus "
-        "decides whether higher investment is worth hierarchy cost.",
-    )
+    save_figure(fig1, "figures/investment-incentives.png", dpi=150)
 
     fig2, ax2 = plt.subplots(figsize=(8, 5))
     for regime in REGIME_ORDER:
@@ -215,14 +109,7 @@ $$W^{*}=\frac{1}{2}\theta^2$$
     ax2.set_ylabel("Surplus $W_g(s)$")
     ax2.set_title("Surplus Net of Governance Costs")
     ax2.legend()
-    report.add_figure(
-        "figures/surplus-by-regime.png",
-        "Surplus by governance regime",
-        fig2,
-        description="Surplus changes with incentives and governance cost. Spot contracts "
-        "win when redeployment is easy. Vertical integration wins when hold-up losses "
-        "exceed hierarchy cost.",
-    )
+    save_figure(fig2, "figures/surplus-by-regime.png", dpi=150)
 
     regime_codes = {"Spot contract": 0, "Long-term contract": 1, "Vertical integration": 2}
     fig3, ax3 = plt.subplots(figsize=(8, 2.4))
@@ -241,14 +128,7 @@ $$W^{*}=\frac{1}{2}\theta^2$$
         for k, v in regime_codes.items()
     ]
     ax3.legend(handles=handles, loc="upper center", ncol=3, bbox_to_anchor=(0.5, -0.25))
-    report.add_figure(
-        "figures/governance-regions.png",
-        "Governance regions over asset specificity",
-        fig3,
-        description="These regions plot the surplus winner for each specificity value. "
-        "Long-term contracts occupy the middle. They protect investment at lower cost "
-        "than integration.",
-    )
+    save_figure(fig3, "figures/governance-regions.png", dpi=150)
 
     selected = df[df["Specificity"].isin([0.0, 0.3, 0.5, 1.0])].copy()
     best_lookup = best.set_index("Specificity")["Regime"]
@@ -263,29 +143,11 @@ $$W^{*}=\frac{1}{2}\theta^2$$
     selected["Investment"] = selected["Investment"].map(lambda x: f"{x:.2f}")
     selected["Surplus"] = selected["Surplus"].map(lambda x: f"{x:.2f}")
     selected["Efficiency ratio"] = selected["Efficiency ratio"].map(lambda x: f"{100*x:.1f}%")
-    report.add_table(
-        "tables/governance-comparison.csv",
-        "Governance comparison at selected levels of asset specificity",
-        selected,
-        description="The table shows the accounting at four specificity values. Low "
-        "specificity favors market exchange. Middle values favor a contract. High "
-        "specificity favors integration.",
-    )
+    Path("tables/governance-comparison.csv").parent.mkdir(parents=True, exist_ok=True)
+    selected.to_csv("tables/governance-comparison.csv", index=False)
 
-    report.add_takeaway(
-        "Firm boundaries follow the hold-up tradeoff. Market exchange works when assets "
-        "are easy to redeploy. Integration pays when stronger control rights offset "
-        "hierarchy cost. Long-term contracts fill the middle range."
-    )
-
-    report.add_references([
-        "Williamson, O. (1975). *Markets and Hierarchies*. Free Press.",
-        "Grossman, S., and Hart, O. (1986). The Costs and Benefits of Ownership. *Journal of Political Economy*, 94(4), 691-719.",
-        "Hart, O., and Moore, J. (1990). Property Rights and the Nature of the Firm. *Journal of Political Economy*, 98(6), 1119-1158.",
-        "Lecture 6 Slides 2023: Theory of the Firm and incomplete contracts.",
-    ])
-    report.write("README.md")
-    print(f"Generated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
+    save_thumbnail("figures/investment-incentives.png", "figures/thumb.png")
+    print(f"Figures and tables written. Regions: {regions}")
 
 
 if __name__ == "__main__":

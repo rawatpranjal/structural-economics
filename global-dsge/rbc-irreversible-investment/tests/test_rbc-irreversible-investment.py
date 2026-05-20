@@ -10,11 +10,11 @@ solution is more accurate, not corrupted.
 
 The honest fix corrects the prose: the code behaviour is economically right,
 so the pseudocode is updated to describe what actually runs (the boundary
-is evaluated for both models). The pseudocode lives inside the
-add_solution_method string in run.py; README.md is generated from it.
+is evaluated for both models). The pseudocode now lives in README.md;
+run.py contains only computation.
 
 run.py only runs main() under `__main__`, so importing it is safe and these
-tests inspect solve_rbc source plus the run.py pseudocode text.
+tests inspect solve_rbc source plus the README.md pseudocode text.
 """
 
 import inspect
@@ -26,8 +26,8 @@ sys.path.insert(0, str(HERE.parent))
 
 from run import solve_rbc  # noqa: E402
 
-RUN_PY = HERE.parent / "run.py"
-SRC = RUN_PY.read_text()
+README = HERE.parent / "README.md"
+README_TEXT = README.read_text()
 SOLVE_SRC = inspect.getsource(solve_rbc)
 
 
@@ -46,7 +46,7 @@ def test_violated_invariant_boundary_unguarded_and_pseudocode_says_irr_only():
     so this test FAILS.
     """
     boundary_unguarded = "if constrained" not in _boundary_block()
-    pseudocode_says_irr_only = "boundary K'=(1-delta)K_m to A_irr" in SRC
+    pseudocode_says_irr_only = "boundary K'=(1-delta)K_m to A_irr" in README_TEXT
     assert boundary_unguarded and pseudocode_says_irr_only
 
 
@@ -60,7 +60,7 @@ def test_honest_fix_pseudocode_matches_both_models():
     # The boundary code stays unconditional (it is economically correct).
     boundary_unguarded = "if constrained" not in _boundary_block()
     # The pseudocode no longer claims the boundary belongs only to A_irr.
-    no_irr_only_claim = "boundary K'=(1-delta)K_m to A_irr" not in SRC
+    no_irr_only_claim = "boundary K'=(1-delta)K_m to A_irr" not in README_TEXT
     # The corrected pseudocode names both candidate sets.
-    names_both = "to both A_std and A_irr" in SRC
+    names_both = "to both A_std and A_irr" in README_TEXT
     assert boundary_unguarded and no_irr_only_claim and names_both

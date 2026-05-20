@@ -17,8 +17,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import save_figure, save_thumbnail, setup_style
 
 
 @dataclass(frozen=True)
@@ -728,268 +727,29 @@ def main() -> None:
     Path("figures").mkdir(exist_ok=True)
     Path("tables").mkdir(exist_ok=True)
 
-    report = ModelReport(
-        "Zero-Intelligence Traders in a Double Auction",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
+    fig_ds = make_demand_supply_figure(values, costs, benchmark)
+    save_figure(fig_ds, "figures/demand-supply-schedule.png", dpi=150)
 
-    report.add_overview(
-        "A double auction lets buyers and sellers post prices while the market is "
-        "open. Buyers know private values. Sellers know private costs. A trade "
-        "clears when the best bid is at least as high as the best ask.\n\n"
-        "The Gode-Sunder result is that the institution can do much of the work. "
-        "Here, zero-intelligence constrained traders draw random quotes, but "
-        "buyers never bid above value and sellers never ask below cost. That "
-        "simple budget discipline is enough to recover most of the competitive "
-        "surplus.\n\n"
-        "The tutorial then adds a small ZIP-style adaptive rule. Adaptation pulls "
-        "quotes toward recent transaction prices while preserving the same no-loss "
-        "constraints. The comparison shows the margin on which intelligence helps: "
-        "prices become less dispersed, while efficiency rises only a little because "
-        "ZIC already allocates well."
-    )
+    fig_ts = make_transaction_schedule_figure(values, costs, trades, benchmark)
+    save_figure(fig_ts, "figures/transaction-schedule.png", dpi=150)
 
-    report.add_equations(
-        r"""
-Buyer $i$ has value $v_i$ for one unit. Seller $j$ has cost $c_j$ for one unit.
-At event $t$, the active bid book and ask book are
+    transaction_table.to_csv("tables/transaction-log.csv", index=False)
 
-$$
-B_t=\lbrace b_i(t): i\in \mathcal B_t\rbrace
-\qquad\text{and}\qquad
-A_t=\lbrace a_j(t): j\in \mathcal A_t\rbrace.
-$$
+    fig_mt = make_market_type_figure(market_summary_numeric)
+    save_figure(fig_mt, "figures/market-type-comparison.png", dpi=150)
 
-ZIC buyers and sellers draw feasible quotes:
+    market_summary.to_csv("tables/market-type-summary.csv", index=False)
 
-$$
-b_i(t)\sim U[0,v_i],
-\qquad
-a_j(t)\sim U[c_j,\bar p].
-$$
+    fig_am = make_agent_mix_figure(agent_mix_numeric, benchmark)
+    save_figure(fig_am, "figures/agent-mix-comparison.png", dpi=150)
 
-A trade clears when the best bid crosses the best ask:
+    agent_mix_summary.to_csv("tables/agent-mix-summary.csv", index=False)
 
-$$
-\max B_t \geq \min A_t.
-$$
+    save_thumbnail("figures/demand-supply-schedule.png", "figures/thumb.png")
 
-The transaction price splits the spread:
-
-$$
-p_t=\frac{1}{2}\left(\max B_t+\min A_t\right).
-$$
-
-The surplus from matching buyer $i$ with seller $j$ is
-
-$$
-\Delta S_t=v_i-c_j.
-$$
-
-Sort values from high to low and costs from low to high. The efficient quantity
-and maximum surplus are
-
-$$
-Q^{\ast}=\sum_q \mathbf{1}[v_{(q)}-c_{(q)}>0],
-\qquad
-S^{\ast}=\sum_{q=1}^{Q^{\ast}}\left(v_{(q)}-c_{(q)}\right).
-$$
-
-The competitive price band is
-
-$$
-P^{\ast}=
-\left[
-\max\lbrace c_{(Q^{\ast})},v_{(Q^{\ast}+1)}\rbrace,
-\min\lbrace v_{(Q^{\ast})},c_{(Q^{\ast}+1)}\rbrace
-\right],
-$$
-
-with the next-unit term omitted when that side has no next unit. Allocative
-efficiency and price dispersion are
-
-$$
-\mathrm{AE}=\frac{\sum_t \Delta S_t}{S^{\ast}},
-\qquad
-\sigma_p=\sqrt{\frac{1}{T_p}\sum_{t:p_t\ \mathrm{exists}}(p_t-\bar p_T)^2}.
-$$
-
-Here $T_p$ is the number of realized transactions and $\bar p_T$ is the mean transaction price (distinct from $\bar p$, the maximum ask support defined above).
-
-ZIP-style buyers and sellers maintain feasible quote targets $z_i^B(t)$ and
-$z_j^S(t)$. After an accepted price $p_t$, active adaptive agents update by
-
-$$
-z_i^B(t+1)=(1-\lambda)z_i^B(t)+\lambda \min\lbrace v_i,p_t+\kappa\rbrace,
-$$
-
-and
-
-$$
-z_j^S(t+1)=(1-\lambda)z_j^S(t)+\lambda \max\lbrace c_j,p_t-\kappa\rbrace.
-$$
-
-Quotes are noisy draws around these targets, clipped so buyers still satisfy
-$b_i(t)\leq v_i$ and sellers still satisfy $a_j(t)\geq c_j$.
-"""
-    )
-
-    report.add_model_setup(
-        "| Symbol | Value | Role |\n"
-        "|---|---:|---|\n"
-        f"| $N_B$ | {baseline.n_buyers} | Baseline buyers |\n"
-        f"| $N_S$ | {baseline.n_sellers} | Baseline sellers |\n"
-        "| $v_i$ | 105, 100, ..., 60 | Stepped buyer values |\n"
-        "| $c_j$ | 30, 36, ..., 84 | Stepped seller costs |\n"
-        "| $b_i(t)$ | $[0,v_i]$ | Feasible buyer bid |\n"
-        f"| $a_j(t)$ | $[c_j,{baseline.max_price:.0f}]$ | Feasible seller ask |\n"
-        f"| $\\bar p$ | {baseline.max_price:.0f} | Maximum ask support |\n"
-        f"| $Q^{{\\ast}}$ | {int(benchmark['efficient_quantity'])} | Efficient quantity |\n"
-        f"| $S^{{\\ast}}$ | {float(benchmark['max_surplus']):.2f} | Maximum competitive surplus |\n"
-        f"| $P^{{\\ast}}$ | [{float(benchmark['price_low']):.2f}, {float(benchmark['price_high']):.2f}] | Competitive price band |\n"
-        f"| $\\mathrm{{AE}}$ | {format_percent(float(baseline_metrics['Allocative efficiency']))} | Realized surplus share in the baseline ZIC run |\n"
-        f"| $\\sigma_p$ | {format_money(float(baseline_metrics['Price SD']))} | Baseline transaction-price dispersion |\n"
-        "| $\\lambda$ | 0.35 | ZIP target learning rate |\n"
-        "| $\\kappa$ | 1.25 | ZIP target spread around the last accepted price |\n"
-        "| ZIP quote noise | 0.90 | Small feasible perturbation around the adaptive target |"
-    )
-
-    report.add_solution_method(
-        "The computation is a direct simulation plus an analytical benchmark. "
-        "The benchmark sorts values and costs; the market simulation only sees "
-        "quotes and the no-loss constraints.\n\n"
-        "```text\n"
-        "Algorithm 1: ZIC continuous double auction\n"
-        "Inputs: values v_i, costs c_j, price cap pbar, event limit T\n"
-        "Outputs: transaction log, realized surplus, price path\n\n"
-        "Initialize active buyers B_0 and active sellers A_0.\n"
-        "For event t = 1, 2, ..., T:\n"
-        "  1. Stop if B_{t-1} or A_{t-1} is empty.\n"
-        "  2. Draw one active side with probability proportional to active traders.\n"
-        "  3. If buyer i arrives, draw b_i(t) from U[0, v_i].\n"
-        "  4. If seller j arrives, draw a_j(t) from U[c_j, pbar].\n"
-        "  5. Keep the highest live bid and lowest live ask in the books.\n"
-        "  6. If max B_t >= min A_t, trade at their midpoint.\n"
-        "  7. Record v_i - c_j, remove the matched buyer and seller,\n"
-        "     and delete their stale quotes.\n\n"
-        "Algorithm 2: competitive benchmark\n"
-        "Inputs: values v_i, costs c_j\n"
-        "Outputs: Q*, S*, P*, AE denominator\n\n"
-        "Sort v_i from high to low and c_j from low to high.\n"
-        "Set Q* to the number of positive sorted gaps v_(q) - c_(q).\n"
-        "Set S* to the sum of those positive gaps.\n"
-        "Set P* from the last included unit and the first excluded unit.\n\n"
-        "Algorithm 3: market-type sweep\n"
-        "For each market m in {10 x 10, 15 x 10, 10 x 15, 5 x 5}:\n"
-        "  1. Use deterministic stepped values and costs for m.\n"
-        "  2. Run Algorithm 1 with ZIC traders.\n"
-        "  3. Report trades, mean price, sigma_p, P*, and AE.\n\n"
-        "Algorithm 4: ZIP-style adaptive comparison\n"
-        "For each mix in {all ZIC, one ZIP pair, all ZIP}:\n"
-        "  1. Initialize adaptive targets near the competitive band.\n"
-        "  2. Draw ZIP quotes around z_i^B(t) or z_j^S(t), clipped to be feasible.\n"
-        "  3. After each trade, update active ZIP targets toward p_t +/- kappa.\n"
-        "  4. Report mean price, sigma_p, AE, and the share of prices inside P*.\n"
-        "```"
-    )
-
-    report.add_results(
-        f"The baseline induced-value schedule has "
-        f"$Q^{{\\ast}}={int(benchmark['efficient_quantity'])}$ and "
-        f"$S^{{\\ast}}={float(benchmark['max_surplus']):.2f}$. The competitive "
-        f"price band is [{float(benchmark['price_low']):.2f}, "
-        f"{float(benchmark['price_high']):.2f}]. This is the object the random "
-        "market is trying to approximate without optimization or forecasting."
-    )
-    report.add_figure(
-        "figures/demand-supply-schedule.png",
-        "Stepped buyer values, seller costs, efficient quantity, and competitive price band.",
-        make_demand_supply_figure(values, costs, benchmark),
-    )
-
-    report.add_results(
-        f"In the baseline ZIC run, random constrained orders clear "
-        f"{int(baseline_metrics['Trades'])} trades. Realized allocative "
-        f"efficiency is {format_percent(float(baseline_metrics['Allocative efficiency']))}, "
-        f"with mean price {format_money(float(baseline_metrics['Mean price']))} "
-        f"and price dispersion {format_money(float(baseline_metrics['Price SD']))}. "
-        "The transaction overlay shows how random constrained trades land near "
-        "the surplus-relevant region even without strategy."
-    )
-    report.add_figure(
-        "figures/transaction-schedule.png",
-        "Accepted prices and matched surplus on the stepped demand and supply schedule.",
-        make_transaction_schedule_figure(values, costs, trades, benchmark),
-    )
-    report.add_table(
-        "tables/transaction-log.csv",
-        "Baseline Transaction Log",
-        transaction_table,
-    )
-
-    report.add_results(
-        "Changing market thickness and imbalance mostly changes price paths, not "
-        "the basic surplus result. The thin market has fewer opportunities and "
-        "more volatile prices. Buyer-heavy and seller-heavy markets move the "
-        "price level because one side has more quoting pressure. Allocative "
-        "efficiency remains high because every accepted trade still obeys the "
-        "buyer value and seller cost constraints."
-    )
-    report.add_figure(
-        "figures/market-type-comparison.png",
-        "Allocative efficiency and price dispersion across market types.",
-        make_market_type_figure(market_summary_numeric),
-    )
-    report.add_table(
-        "tables/market-type-summary.csv",
-        "Market-Type Summary",
-        market_summary,
-    )
-
-    report.add_results(
-        "The ZIP-style comparison changes the quote rule, not the budget rule. "
-        "With one adaptive buyer and one adaptive seller, most of the market is "
-        "still random. With all ZIP-style traders, quotes are pulled toward recent "
-        "accepted prices. The visible effect is tighter prices and more mass "
-        "inside the competitive band. The efficiency gain is small because the "
-        "all-ZIC market already captures almost all available surplus."
-    )
-    report.add_figure(
-        "figures/agent-mix-comparison.png",
-        "Price stability and allocative efficiency by strategy mix.",
-        make_agent_mix_figure(agent_mix_numeric, benchmark),
-    )
-    report.add_table(
-        "tables/agent-mix-summary.csv",
-        "Agent-Mix Summary",
-        agent_mix_summary,
-    )
-
-    report.add_takeaway(
-        "The market institution does most of the allocative work. ZIC traders are "
-        "not smart, but they are budget disciplined: buyers never overbid value "
-        "and sellers never undercut cost. That is enough for the double auction "
-        "to recover high surplus in this stepped induced-value market.\n\n"
-        "Adaptivity helps on a different margin. ZIP-style quote targets reduce "
-        "price dispersion and pull transaction prices toward the competitive "
-        "band. They do not transform the allocation, because constrained random "
-        "trading was already close to efficient."
-    )
-
-    report.add_references([
-        "[Gode, D. K. and Sunder, S. (1993). Allocative Efficiency of Markets with Zero-Intelligence Traders: Market as a Partial Substitute for Individual Rationality. *Journal of Political Economy*, 101(1), 119-137.](https://doi.org/10.1086/261868)",
-        "[Smith, V. L. (1962). An Experimental Study of Competitive Market Behavior. *Journal of Political Economy*, 70(2), 111-137.](https://doi.org/10.1086/258609)",
-        "[Cliff, D. and Bruten, J. (1997). Minimal-intelligence agents for bargaining behaviors in market-based environments. Technical report, Hewlett-Packard Laboratories.](https://www.hpl.hp.com/techreports/97/HPL-97-91.html)",
-    ])
-
-    report.write("README.md")
     print(
-        "Generated README.md, "
-        f"{len(report._figures)} figures and {len(report._tables)} tables."
-    )
-    print(
-        "Baseline allocative efficiency: "
+        f"Figures and tables written. "
+        f"Baseline allocative efficiency: "
         f"{format_percent(float(baseline_metrics['Allocative efficiency']))}"
     )
 

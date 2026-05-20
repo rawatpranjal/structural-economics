@@ -6,7 +6,6 @@ Covers bullshit-detector findings 1 and 2 (2026-05-20 audit):
   - Finding 2 (MISLABELED): the Overview said two solvers "run in parallel"
     while the code runs them sequentially in one thread.
 """
-import inspect
 import sys
 from pathlib import Path
 
@@ -18,13 +17,19 @@ RUN_SRC = (TUTORIAL_DIR / "run.py").read_text()
 README = (TUTORIAL_DIR / "README.md").read_text()
 
 
-def test_run_py_formats_c_over_y_two_decimals():
-    """Violated invariant: run.py renders C/Y with {:.2f} in Equations.
+def test_readme_c_over_y_two_decimal_display():
+    """Retargeted from run.py source to README.md prose.
 
-    The Equations prose uses {:.2f}; the Model Setup table uses {:.3f}.
-    Passes regardless of fix; documents the format contract.
+    The Equations section in README.md must render C/Y to two decimal places
+    (format contract previously enforced via the {:.2f} f-string in run.py).
     """
-    assert "$C/Y = {ss_A['C_Y']:.2f}$" in RUN_SRC
+    alpha, beta, delta = 0.33, 0.99, 0.025
+    mpk = 1.0 / beta - 1.0 + delta
+    k = (alpha / mpk) ** (1.0 / (1.0 - alpha))
+    y = k ** alpha
+    c_over_y = (y - delta * k) / y
+    two = f"{c_over_y:.2f}"
+    assert f"$C/Y = {two}$" in README
 
 
 def test_readme_c_over_y_displays_are_consistent_roundings():

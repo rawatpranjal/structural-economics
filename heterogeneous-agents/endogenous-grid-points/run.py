@@ -17,8 +17,7 @@ from scipy.stats import norm
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from lib.grids import exponential_grid
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import setup_style, save_figure, save_thumbnail
 
 
 def marginal_utility(consumption: np.ndarray, gamma: float) -> np.ndarray:
@@ -332,6 +331,10 @@ def main() -> None:
     mean_mpc_small = float(np.mean(mpc_small))
     mean_mpc_large = float(np.mean(mpc_large))
     frac_constrained = float(np.mean(final_assets <= borrowing_limit + 1e-8) * 100.0)
+    # Carroll (1997) perfect-foresight MPC limit: kappa* = 1 - (beta*R)^(1/gamma) / R
+    # where G_c = (beta*R)^(1/gamma) is the consumption growth factor.
+    # The growth-impatience condition G_c < R (i.e. beta*R < 1) ensures a finite
+    # buffer-stock target.
     mpclim = 1.0 - (beta_r ** (1.0 / gamma)) / gross_return
 
     print("\nStationary cross section from simulation:")
@@ -340,143 +343,11 @@ def main() -> None:
     print(f"  Gini (wealth):            {gini_wealth:.3f}")
     print(f"  Average MPC, large shock: {mean_mpc_large:.3f}")
     print(f"  Fraction constrained:     {frac_constrained:.1f}%")
-    print(f"  Theoretical MPC limit:    {mpclim:.4f}")
+    print(f"  Perfect-foresight MPC limit (Carroll): {mpclim:.4f}")
     print(f"  Consumption gap vs fine grid on a <= {accuracy_asset_max:g}: {consumption_gap:.2e}")
     print(f"  Savings gap vs fine grid on a <= {accuracy_asset_max:g}: {savings_gap:.2e}")
 
     setup_style()
-
-    report = ModelReport(
-        "Buffer-Stock Saving with IID Income by Endogenous Grid Points",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "An impatient household faces IID labor-income risk and cannot borrow "
-        "below zero. Bad income draws make the household hold assets as a "
-        "buffer.\n\n"
-        "The object is the consumption and saving policy over assets and current "
-        "income. The same policy also implies a stationary wealth distribution "
-        "and MPCs.\n\n"
-        "Grid search over next assets is slow inside household blocks. EGP avoids "
-        "that search by inverting the Euler equation on a next-asset grid."
-    )
-
-    report.add_equations(
-        r"""
-The household enters the period with assets $a$ and income $y_j$. Income is IID
-on $\{y_1,\dots,y_{n_y}\}$ with probabilities $\pi_j$. With gross return
-$R=1+r$, the household chooses next-period assets $a'=g(a,y_j)$. Consumption is
-the residual, and the borrowing limit is $\underline a$:
-
-$$
-V(a,y_j) = \max_{a'\geq \underline a}
-  [\,u(R a + y_j - a') + \beta\,\sum_{\ell=1}^{n_y}\pi_\ell\, V(a',y_\ell)\,],
-\qquad c(a,y_j) = R a + y_j - g(a,y_j).
-$$
-
-Because income is IID, the continuation $\mathbb{E}V(a',y')$ depends only on
-$a'$. Preferences are CRRA, so marginal utility has an analytic inverse:
-
-$$
-u'(c) = c^{-\gamma}, \qquad (u')^{-1}(\mu) = \mu^{-1/\gamma}.
-$$
-
-At an interior optimum the Euler equation equates today's marginal utility
-with the discounted marginal benefit of saving,
-
-$$
-\underbrace{u'(c(a,y_j))}_{\text{cost of saving today}} =
-\beta R\,
-\underbrace{\sum_{\ell=1}^{n_y}\pi_\ell\,u'(c(g(a,y_j),y_\ell))}_{\text{expected marginal utility tomorrow}}.
-$$
-
-When the borrowing limit binds, $g(a,y_j)=\underline a$. The Euler condition
-holds as an inequality:
-
-$$
-u'(c(a,y_j)) \geq \beta R \sum_\ell \pi_\ell u'(c(\underline a,y_\ell)).
-$$
-
-This constraint margin creates high MPCs at low wealth. A small transfer relaxes
-the constraint before it mainly raises saving.
-"""
-    )
-
-    report.add_model_setup(
-        f"| Object | Value | Role |\n"
-        f"|---|---:|---|\n"
-        f"| CRRA $\\gamma$ | {gamma:.1f} | Curvature; sets the strength of precautionary motive and shapes MPCs |\n"
-        f"| Discount factor $\\beta$ | {beta:.2f} | Annual time preference |\n"
-        f"| Net rate $r$ | {r:.2f} | Exogenous risk-free return |\n"
-        f"| Patience-return product $\\beta R$ | {beta_r:.4f} | Carroll (1997) needs growth impatience $G_c < R$, i.e. $(\\beta R)^{{1/\\gamma}} < R$; here $\\beta R<1$ makes that hold, giving a finite target |\n"
-        f"| Income mean $\\mu_y$ | {mean_income:.1f} | Normalization |\n"
-        f"| Income s.d. $\\sigma_y$ | {sd_income:.1f} | Width of the IID labor-income shock |\n"
-        f"| Income states $n_y$ | {n_income} | Width-fitted equal-spaced normal grid |\n"
-        f"| Borrowing limit $\\underline a$ | {borrowing_limit:.1f} | Hard zero; binds with positive mass |\n"
-        f"| Upper grid bound $\\bar a$ | {asset_max:.1f} | Set wide enough to contain the simulated tail |\n"
-        f"| EGP asset grid | {n_asset} pts | Exponential, denser at $\\underline a$ |\n"
-        f"| Audit grid | {n_asset_refined} pts | Fine-grid reference for the discretization check |\n"
-        f"| Convergence tolerance | {tol:.0e} | Sup-norm on consumption iterates |\n"
-        f"| Simulation | {n_agents:,} households, {periods} periods | Forward-iterated cross section under $g(a,y_j)$ |"
-    )
-
-    report.add_solution_method(
-        rf"""
-EGP places the grid on candidate next assets. For each $a_i'$, the current
-policy guess gives expected marginal utility tomorrow. Euler inversion turns
-that expectation into current consumption $c_i$. The budget identity then gives
-the current asset that would choose $a_i'$:
-
-$$
-c_i = (u')^{{-1}}(\beta R \sum_{{\ell}} \pi_\ell\, u'(c_n(a_i', y_\ell))),
-\qquad
-a^{{\text{{endo}}}}_{{ij}} = \frac{{c_i + a_i' - y_j}}{{R}}.
-$$
-
-Each income state produces a monotone endogenous grid. Linear interpolation maps
-it back to the exogenous current-asset grid. Points below the first endogenous
-asset use the borrowing limit.
-
-```text
-Algorithm: EGP for IID-income buffer-stock saving
-Inputs    grid {{a_i'}} (also the exogenous current-asset grid),
-          income chain ({{y_j}}, {{pi_j}}), primitives (beta, R, gamma),
-          borrowing limit a_min, tolerance eps
-Output    consumption policy c(a, y), saving policy g(a, y)
-
-Initialise c_0(a_i, y_j) = (R-1) a_i + y_j        # consume current resources
-repeat n = 0, 1, 2, ...
-    # 1. Euler inversion at each candidate next asset a_i'
-    M_i  = sum_l pi_l * u'(c_n(a_i', y_l))         # expected MU tomorrow
-    c_i  = (u')^{{-1}}(beta R M_i)                  # consumption today
-
-    for each income state y_j:
-        # 2. Endogenous current asset
-        a^endo_{{i,j}} = (c_i + a_i' - y_j) / R
-
-        # 3. Invert by interpolation onto the exogenous grid A = {{a_i}}
-        g_{{n+1}}(a_i, y_j) = interp(a_i; a^endo_{{:,j}}, a'_:)
-
-        # 4. Constrained branch
-        for each a_i <= a^endo_{{1,j}}:
-            g_{{n+1}}(a_i, y_j) = a_min
-
-        c_{{n+1}}(a_i, y_j) = R a_i + y_j - g_{{n+1}}(a_i, y_j)
-
-    err = max_{{i,j}} |c_{{n+1}}(a_i, y_j) - c_n(a_i, y_j)|
-until err < eps
-```
-
-**Convergence and accuracy.** The {n_asset}-point grid converged in
-**{int(solution["iterations"])} EGP iterations**. The final consumption
-sup-norm residual is {float(solution["error"]):.2e}. A {n_asset_refined}-point
-grid gives a reference policy on the same calibration. On
-$a \leq {accuracy_asset_max:g}$, the consumption and saving gaps are both
-{consumption_gap:.2e}. The fine grid is only an accuracy check.
-"""
-    )
 
     plot_max = 8.0
     low = 0
@@ -508,19 +379,7 @@ $a \leq {accuracy_asset_max:g}$, the consumption and saving gaps are both
     ax1.set_title("Consumption Policy")
     ax1.set_xlim(0, plot_max)
     ax1.legend()
-
-    report.add_figure(
-        "figures/consumption-policy.png",
-        "Consumption policy with fine-grid EGP reference",
-        fig1,
-        description=(
-            "The consumption policy is increasing and concave in assets. Higher "
-            "income shifts consumption up because IID income enters cash on hand. "
-            "Slopes are steep near the borrowing limit, where households consume "
-            "most extra resources. The dashed fine-grid policy overlaps the main "
-            "grid on the plotted range."
-        ),
-    )
+    save_figure(fig1, "figures/consumption-policy.png", dpi=150)
 
     # Savings policy
     fig2, ax2 = plt.subplots()
@@ -565,19 +424,7 @@ $a \leq {accuracy_asset_max:g}$, the consumption and saving gaps are both
     ax2.set_title("Net Saving Policy")
     ax2.set_xlim(0, plot_max)
     ax2.legend()
-
-    report.add_figure(
-        "figures/savings-policy.png",
-        "Net saving policy with fine-grid EGP reference",
-        fig2,
-        description=(
-            "Net saving separates low and high income states. Low-income "
-            "households draw down assets and hit the borrowing limit near zero "
-            "wealth. High-income households rebuild the buffer. The zero "
-            "crossings are not steady states because IID income keeps households "
-            "moving across asset states."
-        ),
-    )
+    save_figure(fig2, "figures/savings-policy.png", dpi=150)
 
     # Endogenous grid map for the low income state
     fig3, ax3 = plt.subplots()
@@ -596,20 +443,7 @@ $a \leq {accuracy_asset_max:g}$, the consumption and saving gaps are both
     ax3.set_xlim(0, plot_max)
     ax3.set_ylim(-0.5, plot_max)
     ax3.legend()
-
-    report.add_figure(
-        "figures/endogenous-grid.png",
-        "Endogenous current asset grid for the low income state",
-        fig3,
-        description=(
-            "The endogenous grid shows the asset level that makes each candidate "
-            "$a_i'$ optimal after the lowest income draw. The curve lies above "
-            "the 45-degree line because low-income households want to draw down "
-            "assets. The first endogenous point, "
-            f"$a^{{\\mathrm{{endo}}}}_{{1,1}}={endogenous_assets[0, low]:.3f}$, "
-            "marks the constraint threshold."
-        ),
-    )
+    save_figure(fig3, "figures/endogenous-grid.png", dpi=150)
 
     # Wealth distribution
     fig4, ax4 = plt.subplots()
@@ -630,19 +464,7 @@ $a \leq {accuracy_asset_max:g}$, the consumption and saving gaps are both
     ax4.set_title("Simulated Stationary Wealth Distribution")
     ax4.set_xlim(0, upper_hist)
     ax4.legend()
-
-    report.add_figure(
-        "figures/wealth-distribution.png",
-        "Simulated terminal wealth distribution",
-        fig4,
-        description=(
-            "Forward simulation gives a right-skewed wealth distribution. Mean "
-            f"assets are {mean_assets:.2f}, and "
-            f"{frac_constrained:.1f}\\% of households are at the borrowing "
-            "limit. The scale is modest because income is IID and "
-            "$\\beta R<1$."
-        ),
-    )
+    save_figure(fig4, "figures/wealth-distribution.png", dpi=150)
 
     # MPC distribution
     fig5, ax5 = plt.subplots()
@@ -656,7 +478,7 @@ $a \leq {accuracy_asset_max:g}$, the consumption and saving gaps are both
         alpha=0.85,
     )
     ax5.axvline(mpclim, color="darkred", linestyle=":", linewidth=1.5,
-                label=f"Perfect-foresight limit = {mpclim:.3f}")
+                label=f"Perfect-foresight limit = {mpclim:.4f}")
     ax5.axvline(mean_mpc_large, color="darkorange", linestyle="--", linewidth=1.5,
                 label=f"Mean = {mean_mpc_large:.3f}")
     ax5.set_xlabel("MPC out of a 0.10 transfer")
@@ -664,22 +486,7 @@ $a \leq {accuracy_asset_max:g}$, the consumption and saving gaps are both
     ax5.set_title("Marginal Propensity to Consume")
     ax5.set_xlim(0, 1.05)
     ax5.legend()
-
-    report.add_figure(
-        "figures/mpc-distribution.png",
-        "Distribution of marginal propensities to consume",
-        fig5,
-        description=(
-            "The MPC distribution is high near the constraint and low for "
-            "wealthy households. The average MPC out of a 0.10 transfer is "
-            f"{mean_mpc_large:.3f}. The dotted line marks the perfect-foresight "
-            f"limit, $\\kappa^{{\\ast}}\\approx{mpclim:.3f}$."
-            " Here $\\kappa^{\\ast}=1-(\\beta R)^{1/\\gamma}/R$"
-            " is the perfect-foresight MPC limit for CRRA utility, where"
-            " $(\\beta R)^{1/\\gamma}$ is the perfect-foresight consumption"
-            " growth factor $G_c$."
-        ),
-    )
+    save_figure(fig5, "figures/mpc-distribution.png", dpi=150)
 
     table_data = {
         "Statistic": [
@@ -706,44 +513,13 @@ $a \leq {accuracy_asset_max:g}$, the consumption and saving gaps are both
         ],
     }
     df = pd.DataFrame(table_data)
-    report.add_table(
-        "tables/summary-statistics.csv",
-        "Simulation and Accuracy Summary",
-        df,
-        description=(
-            "The table reports cross-section statistics and the fine-grid policy "
-            "gaps. Wealth inequality and MPCs are economic outputs. The last two "
-            "gap rows are numerical accuracy checks."
-        ),
-    )
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    df.to_csv("tables/summary-statistics.csv", index=False)
 
-    report.add_takeaway(
-        "EGP solves the same buffer-stock household problem while avoiding an "
-        "inner search over next assets.\n\n"
-        "At this calibration, the policy converges "
-        f"in {int(solution['iterations'])} iterations and matches the fine-grid "
-        f"reference within {consumption_gap:.0e}.\n\n"
-        f"The simulated cross section has a {gini_wealth:.3f} asset Gini and "
-        "high MPCs near the borrowing limit. Those outcomes come from income "
-        "risk, impatience, and the constraint, not from the grid reversal itself."
-    )
-
-    report.add_references(
-        [
-            "Carroll, C. D. (2006). The Method of Endogenous Gridpoints for Solving "
-            "Dynamic Stochastic Optimization Problems. *Economics Letters*, 91(3), 312-320.",
-            "Deaton, A. (1991). Saving and Liquidity Constraints. *Econometrica*, 59(5), 1221-1248.",
-            "Carroll, C. D. (1997). Buffer-Stock Saving and the Life Cycle/Permanent Income "
-            "Hypothesis. *Quarterly Journal of Economics*, 112(1), 1-55.",
-            "Kaplan, G. and Violante, G. L. (2022). The Marginal Propensity to Consume in "
-            "Heterogeneous Agent Models. *Annual Review of Economics*, 14, 747-775.",
-        ]
-    )
-
-    report.write("README.md")
+    save_thumbnail("figures/consumption-policy.png", "figures/thumb.png")
     print(
-        f"\nGenerated: README.md + {len(report._figures)} figures + "
-        f"{len(report._tables)} tables"
+        f"\nDone: 5 figures, 1 table. Mean assets={mean_assets:.3f}, "
+        f"MPC={mean_mpc_large:.3f}, MPC limit={mpclim:.4f}"
     )
 
 

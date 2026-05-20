@@ -46,7 +46,7 @@ def _profile_block() -> str:
     src = RUN_PATH.read_text()
     assert "neg_ll_concentrated" in src, "profile block not found in run.py"
     start = src.index("# Identification figure")
-    end = src.index("# Report")
+    end = src.index("# Figures and tables")
     return src[start:end]
 
 
@@ -129,6 +129,6 @@ def test_finding2_honest_fix():
     assert "Gaussian" in readme.split("identification-profile.png")[0].rsplit(
         "## ", 1
     )[1] or "without the Tobit censoring" in readme
-    # The disclosure is generated from run.py, so it must live in the source.
-    assert ("Gaussian sum-of-squares" in run_src
-            or "without the Tobit censoring" in run_src)
+    # The disclosure lives in README.md (prose was split from run.py).
+    assert ("Gaussian sum-of-squares" in readme
+            or "without the Tobit censoring" in readme)

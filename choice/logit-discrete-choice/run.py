@@ -18,8 +18,7 @@ from scipy.stats import norm
 
 # Add repo root to path for lib/ imports
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.plotting import setup_style
-from lib.output import ModelReport
+from lib.plotting import setup_style, save_figure, save_thumbnail
 
 
 def logit_probabilities(V: np.ndarray) -> np.ndarray:
@@ -215,88 +214,9 @@ def main() -> None:
     restricted_ratios_03 = restricted_shares[0] / restricted_shares[2]  # index 2 maps to product 4 (orig index 3)
 
     # =========================================================================
-    # Generate Report
+    # Figures and tables
     # =========================================================================
     setup_style()
-
-    report = ModelReport(
-        "Product Demand with Plain Logit and IIA",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "Five products sit on one shelf. Each product has a price and a quality "
-        "level, and each buyer chooses one product.\n\n"
-        "The object is product demand in this market. We want price and quality "
-        "tastes, fitted shares, and buyer reallocation after removal.\n\n"
-        "The computational task is maximum likelihood. Each trial coefficient "
-        "vector gives logit probabilities, and the observed choices select the "
-        "best-fitting vector."
-    )
-
-    report.add_equations(
-        r"""
-Consumers $i=1,\ldots,N$ choose one product $j\in\{1,\ldots,J\}$.
-Product $j$ has price $p_j$ and quality $q_j$. The deterministic part of
-utility is common across consumers in this simple market.
-
-**Utility:**
-$$U_{ij}=V_j+\varepsilon_{ij}, \qquad
-V_j=\beta_p p_j+\beta_q q_j,$$
-
-with $\varepsilon_{ij}$ i.i.d. Type I extreme value. The expected sign is
-$\beta_p<0$ and $\beta_q>0$.
-
-**Choice probability:**
-$$P_j(\beta)=\Pr(y_i=j\mid p,q;\beta)
-=\frac{\exp(V_j)}{\sum_{k=1}^J \exp(V_k)}.$$
-
-If $d_{ij}=1\{y_i=j\}$ records the observed purchase, the sample
-log-likelihood is
-$$\ell(\beta)=\sum_{i=1}^N\sum_{j=1}^J d_{ij}\log P_j(\beta).$$
-
-Because this one-market example has no individual covariates, fitted market
-shares are $s_j=P_j(\hat\beta)$, where $\hat\beta$ denotes the MLE of $\beta$. The implied price elasticities are
-$$\eta_{jj}=\beta_p p_j(1-s_j), \qquad
-\eta_{jk}=-\beta_p p_k s_k \quad (j\neq k).$$
-
-IIA follows from the odds ratio
-$$\frac{P_j}{P_k}=\exp(V_j-V_k),$$
-which does not depend on any third product in the choice set.
-"""
-    )
-
-    report.add_model_setup(
-        "The market is small enough to see each estimate. Five products trade off "
-        "price against quality. The sample is synthetic, so true coefficients and "
-        "population shares are available after estimation.\n\n"
-        f"| Object | Value | Role |\n"
-        f"|-----------|-------|-------------|\n"
-        f"| Consumers | {N} | Independent choice draws |\n"
-        f"| Products | {J} | Fixed alternatives in one market |\n"
-        f"| Prices | {', '.join(f'{p:.1f}' for p in X_price)} | Utility shifter with negative coefficient |\n"
-        f"| Quality | {', '.join(f'{q:.1f}' for q in X_quality)} | Utility shifter with positive coefficient |\n"
-        f"| True $\\beta_p$ | {beta_price_true} | Price coefficient used to simulate choices |\n"
-        f"| True $\\beta_q$ | {beta_quality_true} | Quality coefficient used to simulate choices |"
-    )
-
-    report.add_solution_method(
-        "The likelihood turns the demand model into a two-parameter optimization "
-        "problem. Each candidate $\\beta=(\\beta_p,\\beta_q)$ implies utilities. "
-        "Those utilities imply probabilities, and the observed choices score the "
-        "candidate through the log-likelihood:\n\n"
-        "$$\\hat\\beta=\\arg\\max_\\beta \\ell(\\beta).$$\n\n"
-        "```text\n"
-        "Inputs: prices p_j, qualities q_j, choices y_i, starting value beta^(0)\n"
-        "For each trial beta proposed by the optimizer:\n"
-        "    1. Form V_j(beta) = beta_p p_j + beta_q q_j for every product j.\n"
-        "    2. Convert V into logit probabilities P_j(beta).\n"
-        "    3. Evaluate ell(beta) = sum_i log P_{y_i}(beta).\n"
-        "Choose beta_hat that maximizes ell(beta).\n"
-        "At beta_hat: compute fitted shares, elasticities, and IIA share ratios.\n"
-        "```"
-    )
 
     # --- Figure 1: Log-Likelihood Surface (Contour Plot) ---
     n_grid = 80
@@ -324,11 +244,7 @@ which does not depend on any third product in the choice set.
     ax1.set_ylabel(r"$\beta_{\mathrm{quality}}$")
     ax1.set_title("Likelihood over price and quality tastes")
     ax1.legend(loc="lower left")
-    report.add_figure("figures/log-likelihood-surface.png",
-                       "Log-likelihood surface with true and estimated coefficients marked",
-                       fig1,
-                       description="The contour plot shows the two-parameter likelihood. "
-                       "The MLE sits near the true coefficients used to generate the choices.")
+    save_figure(fig1, "figures/log-likelihood-surface.png", dpi=150)
 
     # --- Figure 2: Predicted vs Actual Market Shares ---
     fig2, ax2 = plt.subplots(figsize=(8, 5))
@@ -343,11 +259,7 @@ which does not depend on any third product in the choice set.
     ax2.set_xticks(x_pos)
     ax2.set_xticklabels(product_names, rotation=15)
     ax2.legend()
-    report.add_figure("figures/market-shares.png",
-                       "Observed, fitted, and true logit market shares",
-                       fig2,
-                       description="Observed shares are sample purchase frequencies. "
-                       "Fitted shares are close to both the sample and population shares.")
+    save_figure(fig2, "figures/market-shares.png", dpi=150)
 
     # --- Figure 3: Own-Price Elasticities ---
     fig3, ax3 = plt.subplots(figsize=(8, 5))
@@ -364,11 +276,7 @@ which does not depend on any third product in the choice set.
     for bar_item, val in zip(bars, own_elasticities):
         ax3.text(bar_item.get_x() + bar_item.get_width() / 2, val - 0.15,
                  f"{val:.2f}", ha="center", va="top", fontsize=9, fontweight="bold")
-    report.add_figure("figures/own-price-elasticities.png",
-                       "Own-price elasticities implied by the estimated logit",
-                       fig3,
-                       description="The own-price elasticities combine the estimated price coefficient with each product's price and fitted share. "
-                       "Higher prices make demand more elastic in absolute value here.")
+    save_figure(fig3, "figures/own-price-elasticities.png", dpi=150)
 
     # --- Figure 4: IIA Illustration ---
     fig4, (ax4a, ax4b) = plt.subplots(1, 2, figsize=(13, 5))
@@ -406,11 +314,7 @@ which does not depend on any third product in the choice set.
     ax4b.set_xticklabels(pair_labels)
     ax4b.legend()
     fig4.tight_layout()
-    report.add_figure("figures/iia-illustration.png",
-                       "IIA reallocation after removing one alternative",
-                       fig4,
-                       description="Removing Product 3 raises every remaining share. "
-                       "The pairwise odds ratios stay fixed, which is the IIA restriction.")
+    save_figure(fig4, "figures/iia-illustration.png", dpi=150)
 
     # --- Table: Estimation Results ---
     table_data = {
@@ -422,37 +326,19 @@ which does not depend on any third product in the choice set.
         "p-value": [p_value_label(t_price), p_value_label(t_quality)],
     }
     df_results = pd.DataFrame(table_data)
-    report.add_table("tables/estimation-results.csv",
-                      "MLE estimates and true coefficients",
-                      df_results,
-                      description="The estimated signs match the simulation: consumers dislike price and value quality. "
-                      "The estimates are close to the true coefficients.")
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    df_results.to_csv("tables/estimation-results.csv", index=False)
 
     # --- Table: Elasticity Matrix ---
     elas_data = {"Product": product_names}
     for k in range(J):
         elas_data[product_names[k]] = [f"{cross_elasticity_matrix[j, k]:.3f}" for j in range(J)]
     df_elas = pd.DataFrame(elas_data)
-    report.add_table("tables/elasticity-matrix.csv",
-                      "Price elasticity matrix",
-                      df_elas,
-                      description="Rows are products whose shares change. Columns are products whose prices change. "
-                      "Off-diagonal entries repeat within each column because substitution is proportional to rival shares.")
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    df_elas.to_csv("tables/elasticity-matrix.csv", index=False)
 
-    report.add_takeaway(
-        "Plain logit turns utility coefficients into shares, elasticities, and "
-        "removal counterfactuals. That simplicity imposes IIA. After one product "
-        "disappears, remaining buyers are reassigned by existing shares, not "
-        "measured product closeness."
-    )
-
-    report.add_references([
-        "McFadden, D. (1974). Conditional Logit Analysis of Qualitative Choice Behavior. In P. Zarembka (Ed.), *Frontiers in Econometrics*. Academic Press.",
-        "Train, K. (2009). *Discrete Choice Methods with Simulation*. Cambridge University Press, 2nd edition.",
-    ])
-
-    report.write("README.md")
-    print(f"\nGenerated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
+    save_thumbnail("figures/log-likelihood-surface.png", "figures/thumb.png")
+    print(f"\nDone: figures/ + tables/")
 
 
 if __name__ == "__main__":

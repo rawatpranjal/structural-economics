@@ -15,8 +15,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import setup_style, save_figure, save_thumbnail
 
 
 TOL = 1e-10
@@ -314,125 +313,17 @@ def main() -> None:
         )
     summary = pd.DataFrame(rows)
 
-    report = ModelReport(
-        "Revealed-Preference Cycles and the Money Pump Index",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "A consumer buys bundle A at one price vector, bundle B at another, and bundle C "
-        "at a third. These choices can violate GARP because each chosen bundle makes "
-        "another affordable bundle look strictly better.\n\n"
-        "The Money Pump Index prices the violation. It measures the average budget slack "
-        "along the worst revealed-preference cycle.\n\n"
-        "The task becomes a finite graph problem. Nodes are observations, edges carry "
-        "budget slack, and Karp's dynamic program finds the maximum mean cycle."
-    )
-
-    report.add_equations(
-        r"""
-There are $T$ observations. Observation $i$ records a price vector
-$p_i \in \mathbb{R}^G_+$ and chosen bundle $x_i \in \mathbb{R}^G_+$.
-Let
-
-$$E_{ij}=p_i \cdot x_j$$
-
-be the cost of bundle $j$ at observation $i$ prices. Choosing $x_i$ when
-$x_j$ was affordable, $E_{ii} \ge E_{ij}$, directly reveals
-$x_i \succeq^D x_j$. For strict comparisons, define the relative budget slack
-on a direct revealed-preference edge as
-
-$$w_{ij} = \frac{E_{ii} - E_{ij}}{E_{ii}}.$$
-
-The graph keeps edges with $w_{ij}>0$. For a directed cycle
-$C=(i_1,\ldots,i_m,i_1)$, average slack is
-
-$$\bar w(C)=\frac{1}{m}\sum_{\ell=1}^{m} w_{i_\ell,i_{\ell+1}}.$$
-
-The Money Pump Index is the largest average slack over all directed cycles in
-the revealed-preference graph:
-
-$$\mathrm{MPI} = \max_C \bar w(C).$$
-"""
-    )
-
-    report.add_model_setup(
-        "| Object | Value | Interpretation |\n"
-        "|---|---:|---|\n"
-        "| Observations | 3 | One price vector and one chosen bundle in each row |\n"
-        "| Bundles | 3 | A, B, and C are the only candidate bundles |\n"
-        "| Own expenditure | 1.00 | Each chosen bundle costs one at its own prices |\n"
-        "| Severe-cycle slack | 18%, 24%, 8% | Slack on A over B, B over C, and C over A |\n"
-        f"| Severe MPI | {float(severe['mpi']):.3f} | Average extractable slack per trade |"
-    )
-
-    report.add_solution_method(
-        "After the budget comparisons, the data are a directed graph. Each observation "
-        "is a node. An edge $i \\to j$ exists when bundle $j$ was strictly cheaper at "
-        "prices $i$. The edge weight is the saved budget share. Karp's dynamic program "
-        "computes the maximum mean weight cycle.\n\n"
-        "```text\n"
-        "Inputs: prices p_i, bundles x_i, tolerance eps\n"
-        "1. Form E_ij = p_i . x_j for all observations i,j.\n"
-        "2. Add arc i -> j when (E_ii - E_ij) / E_ii > eps.\n"
-        "3. Attach weight w_ij = (E_ii - E_ij) / E_ii to each arc.\n"
-        "4. Let D_k(v) be the largest total weight of a k-arc path ending at v.\n"
-        "5. Update D_k(v) = max_{u -> v} D_{k-1}(u) + w_uv for k = 1,...,T.\n"
-        "6. Return max_v min_{0 <= k < T} [D_T(v) - D_k(v)] / (T - k).\n"
-        "Output: MPI, the maximum average budget slack in a cycle.\n"
-        "```"
-    )
-
-    report.add_table(
-        "tables/mpi-summary.csv",
-        "GARP Rejection and Money Pump Severity",
-        summary,
-        description=(
-            "The table separates a logical rejection from expenditure at stake. All "
-            "three inconsistent datasets reject GARP. Their MPI values range from "
-            "0.030 to 0.167."
-        ),
-    )
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    summary.to_csv("tables/mpi-summary.csv", index=False)
 
     fig1 = plot_money_pump_graph(severe)
-    report.add_figure(
-        "figures/money-pump-cycle.png",
-        "The severe revealed-preference cycle and its edge-level budget slack.",
-        fig1,
-        description=(
-            "Each arrow points from an observed choice to a cheaper bundle at the same "
-            "prices. The red cycle exposes 16.7 percent average budget slack."
-        ),
-    )
+    save_figure(fig1, "figures/money-pump-cycle.png", dpi=150)
 
     fig2 = plot_severity_comparison(cases)
-    report.add_figure(
-        "figures/mpi-severity-comparison.png",
-        "GARP is binary, while the Money Pump Index ranks the severity of failures.",
-        fig2,
-        description=(
-            "The left panel records pass/fail GARP. The right panel keeps the "
-            "expenditure scale across small, medium, and severe cycles."
-        ),
-    )
+    save_figure(fig2, "figures/mpi-severity-comparison.png", dpi=150)
 
-    report.add_takeaway(
-        "Binary GARP tests say whether choices pass the axioms. The Money Pump Index "
-        "says how much expenditure the worst cycle exposes. That scale separates small "
-        "inconsistencies from large money-pump opportunities."
-    )
-
-    report.add_references(
-        [
-            "Echenique, F., Lee, S., & Shum, M. (2011). The money pump as a measure of revealed preference violations. Journal of Political Economy, 119(6), 1201-1223.",
-            "Karp, R. M. (1978). A characterization of the minimum cycle mean in a digraph. Discrete Mathematics, 23(3), 309-311.",
-            "Varian, H. R. (1982). The nonparametric approach to demand analysis. Econometrica, 50(4), 945-973.",
-        ]
-    )
-
-    report.write("README.md")
-    print(f"Generated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
+    save_thumbnail("figures/money-pump-cycle.png", "figures/thumb.png")
+    print(f"Done: figures/ + tables/")
 
 
 if __name__ == "__main__":

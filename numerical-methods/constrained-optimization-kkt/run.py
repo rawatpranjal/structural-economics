@@ -25,8 +25,7 @@ import pandas as pd
 from scipy.optimize import brentq, minimize
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.plotting import setup_style
-from lib.output import ModelReport
+from lib.plotting import setup_style, save_figure, save_thumbnail
 
 
 def main() -> None:
@@ -182,298 +181,9 @@ def main() -> None:
     slsqp_utility = utility(x_slsqp)
 
     # =========================================================================
-    # Report
+    # Figures and tables
     # =========================================================================
     setup_style()
-
-    report = ModelReport(
-        "Constrained Optimization and KKT Conditions",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "A planner has a fixed budget and three projects to fund. "
-        "Each project has diminishing returns. "
-        "Allocations cannot be negative. "
-        "The question is how the planner should split the budget when one of the projects is too weak to fund at all.\n\n"
-        "This tutorial compares three methods that solve the constrained problem. "
-        "Before the methods we show a baseline that ignores the non-negativity bounds. "
-        "The baseline returns a negative allocation, which is the failure mode that motivates the rest of the tutorial.\n\n"
-        "The three methods are projected gradient, an interior-point log barrier, and SLSQP. "
-        "All three return the correct allocation. "
-        "They differ in how they keep iterates feasible and in how they recover the Lagrange multipliers.\n\n"
-        "The main lesson is that the value of the objective is not enough to judge a constrained answer. "
-        "What matters is the set of Karush-Kuhn-Tucker conditions: stationarity, primal feasibility, dual feasibility, and complementary slackness. "
-        "The Lagrange multipliers on binding constraints are the shadow prices that the economist actually wants to read."
-    )
-
-    report.add_equations(
-        r"""The planner picks an allocation vector $x \in \mathbb{R}^3$.
-Each entry $x_j$ is the budget share assigned to project $j$.
-Utility is quadratic in $x$.
-
-$$u(x) = a^\top x - \tfrac{1}{2}\, x^\top B x.$$
-
-$a \in \mathbb{R}^3$ is the vector of marginal returns at zero allocation.
-$B$ is a symmetric positive-definite matrix.
-A positive-definite $B$ makes $u$ strictly concave, so the constrained maximum is unique.
-The diagonal entries of $B$ measure each project's curvature.
-
-Two constraints bind the choice.
-The first is a budget cap on total spending.
-The second is a separate non-negativity bound on each project.
-
-$$\sum_{j=1}^{3} x_j \leq I,
-\qquad x_j \geq 0,\quad j = 1, 2, 3.$$
-
-The Lagrangian builds in both constraints.
-$\lambda$ is the multiplier on the budget cap.
-$\mu = (\mu_1, \mu_2, \mu_3)$ are the multipliers on the three non-negativity bounds.
-
-$$\mathcal{L}(x, \lambda, \mu) = a^\top x - \tfrac{1}{2}\, x^\top B x - \lambda \left(\sum_j x_j - I \right) + \mu^\top x.$$
-
-A Karush-Kuhn-Tucker (KKT) point is the constrained optimum.
-The KKT conditions split into four blocks.
-Each block has a clean economic reading.
-
-The first block is stationarity.
-It equates the gradient of utility with the shadow-price vector.
-
-$$a - B x - \lambda\, \mathbf{1} + \mu = 0.$$
-
-The second block is primal feasibility.
-It is just the constraint set written out again.
-
-$$\sum_j x_j \leq I,
-\qquad x_j \geq 0.$$
-
-The third block is dual feasibility.
-It says every shadow price is non-negative.
-
-$$\lambda \geq 0,
-\qquad \mu_j \geq 0.$$
-
-The fourth block is complementary slackness.
-It says either a constraint binds or its multiplier is zero, never both.
-
-$$\lambda \left(I - \sum_j x_j \right) = 0,
-\qquad \mu_j\, x_j = 0.$$
-
-The baseline calibration is $a = (4, 3, 0.5)$, $B = I_3$, and $I = 3$.
-The unconstrained maximum is $a$ itself.
-Its sum is $7.5$, which exceeds the budget of $3$.
-The budget therefore binds at the constrained optimum.
-A second active-set check shows that project 3 also hits its non-negativity bound.
-With those two constraints active, the closed form is direct.
-
-$$x^{\ast} = (2,\, 1,\, 0),
-\qquad
-\lambda^{\ast} = 2,
-\qquad
-\mu^{\ast} = (0,\, 0,\, 1.5).$$
-
-The non-zero multiplier $\mu_3^{\ast} = 1.5$ is the shadow price of the non-negativity bound on project 3.
-It is the utility a vanishingly small relaxation of $x_3 \geq 0$ would buy.
-
-The next four subsections describe a baseline and three methods.
-
-### Baseline failure: drop the non-negativity bounds
-
-A common shortcut keeps only the budget equality and drops the non-negativity bounds.
-The Lagrangian is then linear in $x$ and $\lambda$.
-
-$$x = a - \lambda\, \mathbf{1},
-\qquad
-\lambda = \frac{\sum_j a_j - I}{n}.$$
-
-At the calibration this gives $\lambda = 1.5$ and $x = (2.5, 1.5, -1)$.
-Project 3 receives a negative allocation, which has no economic meaning.
-The three methods below all enforce the non-negativity bounds and recover the correct optimum.
-
-### Method 1: Projected gradient
-
-Projected gradient takes a gradient step on $u$ and then projects the result onto the simplex $\Delta_I = \lbrace x : x \geq 0,\, \sum_j x_j = I \rbrace$.
-
-$$x_{k+1} = \Pi_{\Delta_I}\left(x_k + \alpha\, (a - B x_k)\right).$$
-
-Here $\alpha$ is the step size and $\Pi_{\Delta_I}$ is Euclidean projection onto the simplex.
-The step size must satisfy $\alpha \leq 1/L$ where $L$ is the operator norm of $B$; with $B = I_3$ the bound is $\alpha \leq 1$.
-
-### Method 2: Log barrier
-
-Log barrier replaces the non-negativity inequalities with a smooth penalty controlled by a parameter $t > 0$.
-
-$$\min_x\, -u(x) - t \sum_j \log x_j
-\qquad \text{subject to} \quad \sum_j x_j = I.$$
-
-The barrier penalises iterates that approach the boundary $x_j = 0$.
-As $t$ shrinks the optimum of the smoothed problem traces a central path that converges to the true optimum $x^{\ast}$ in the limit $t \to 0$.
-
-The first-order condition for the barrier subproblem is one equation per project plus the budget equality.
-
-$$a_j - x_j - \lambda + \frac{t}{x_j} = 0,
-\qquad \sum_j x_j = I.$$
-
-For diagonal $B = I_3$ each project's component solves a quadratic in $x_j$.
-
-$$x_j(\lambda;\, t) = \frac{(a_j - \lambda) + \sqrt{(a_j - \lambda)^2 + 4 t}}{2}.$$
-
-The budget multiplier $\lambda$ is the unique scalar that makes $\sum_j x_j(\lambda;\, t)$ equal $I$, and a single one-dimensional root finder solves for it.
-The duality gap of the barrier problem is exactly $n \cdot t$, which is the per-project complementarity slack along the central path.
-
-### Method 3: SLSQP
-
-SLSQP calls `scipy.optimize.minimize` and treats the problem as sequential quadratic programming.
-Each step linearises the constraints around the current iterate and solves a small quadratic-programming (QP) subproblem.
-The QP uses a BFGS approximation of the Hessian of the Lagrangian; the QP solution becomes the search direction; a line search along that direction picks the next iterate.
-Multipliers are recovered after the fact from the stationarity equation by averaging $a_j - (B x)_j$ over the active set and solving for the bound multipliers on the inactive set.
-"""
-    )
-
-    report.add_model_setup(
-        f"| Symbol | Value | Role |\n"
-        f"|--------|-------|------|\n"
-        f"| $a$ | $({a[0]:.1f},\\, {a[1]:.1f},\\, {a[2]:.1f})$ | Marginal returns at zero allocation |\n"
-        f"| $B$ | $I_3$ | Curvature of utility, diagonal positive definite |\n"
-        f"| $I$ | {I_total:.1f} | Total budget |\n"
-        f"| $n$ | {n_proj} | Number of projects |\n"
-        f"| $x^{{\\ast}}$ | $({x_star[0]:.1f},\\, {x_star[1]:.1f},\\, {x_star[2]:.1f})$ | Closed-form optimal allocation |\n"
-        f"| $\\lambda^{{\\ast}}$ | {lambda_star:.1f} | Closed-form budget shadow price |\n"
-        f"| $\\mu^{{\\ast}}$ | $({mu_star[0]:.1f},\\, {mu_star[1]:.1f},\\, {mu_star[2]:.1f})$ | Closed-form bound multipliers |\n"
-        f"| $u^{{\\ast}}$ | {u_star:.4f} | Utility at the closed-form optimum |\n"
-        f"| Step $\\alpha$ | {step:.2f} | Projected gradient step size |\n"
-        f"| Barrier sequence | $10$ down to $10^{{-8}}$ | Decreasing log-barrier parameters |\n"
-        f"| Tolerance $\\eta$ | {pg_tol:.0e} | Stopping rule on iterate change |"
-    )
-
-    report.add_solution_method(
-        "Three methods solve the constrained allocation problem. "
-        "Before them comes a baseline that ignores the non-negativity bounds. "
-        "The baseline returns the wrong answer and shows why the bounds matter.\n\n"
-
-        "### Baseline failure: Lagrangian on the budget alone\n\n"
-        "An analyst could write the Lagrangian for the budget only and solve it. "
-        "This is fast and gives a closed form. "
-        "It is also wrong whenever a non-negativity bound binds at the true optimum. "
-        "Dropping a binding constraint drops a piece of complementary slackness. "
-        "A wrong-sign allocation then becomes possible. "
-        "The baseline is included here only to make the failure mode concrete.\n\n"
-        "```text\n"
-        "Algorithm: Lagrangian on the budget alone (baseline failure)\n"
-        "Input : a, B, I, project count n\n"
-        "Output: x_hat, lambda_hat\n"
-        "  lambda_hat <- (sum(a) - I) / n           # closed form, only valid when B = I\n"
-        "  x_hat      <- a - lambda_hat * ones(n)   # negative entries possible\n"
-        "```\n\n"
-        "At the baseline calibration the answer is $x = (2.5, 1.5, -1)$. "
-        "Project 3 receives a negative allocation. "
-        "Stationarity is satisfied for the smaller problem the analyst wrote down. "
-        "Primal feasibility is the part that breaks. "
-        "Reading off the utility value of this answer gives a number that exceeds the true optimum, which is the easiest way to publish a wrong result.\n\n"
-
-        "### Method 1: Projected gradient on the simplex\n\n"
-        "Projected gradient walks the iterate uphill in utility, then snaps it back to the feasible simplex. "
-        "Each step has two pieces. "
-        "The gradient piece is $y = x_k + \\alpha\\, (a - B x_k)$, which moves in the direction of steepest utility increase. "
-        "The projection piece is $\\Pi_{\\Delta_I}(y)$, which finds the closest point in the budget simplex to $y$ in Euclidean distance. "
-        "The composition keeps every iterate feasible, including non-negativity.\n\n"
-        "The simplex projection is closed form. "
-        "Sort the components of $y$ in descending order. "
-        "Find the largest index $\\rho$ for which a running average is positive. "
-        "Subtract a single scalar shift from $y$ and clip negatives to zero. "
-        "The whole projection costs one sort plus a linear scan over $\\rho$.\n\n"
-        "Convergence is linear in the gap to the optimum. "
-        "The contraction rate is roughly $1 - \\alpha\\, \\mu / L$, with $\\mu$ the smallest eigenvalue of $B$ and $L$ the largest. "
-        "On the calibration $B = I_3$ the eigenvalues coincide and the rate is $1 - \\alpha$. "
-        "The method needs only a gradient and the projection routine, which makes it the easiest constrained method to implement from scratch.\n\n"
-        "```text\n"
-        "Algorithm: Projected gradient on the budget simplex\n"
-        "Input : a, B, I, step alpha, tolerance eta, interior start x_0\n"
-        "Output: x_k\n"
-        "  for k = 0, 1, ... :\n"
-        "      grad     <- a - B x_k\n"
-        "      y        <- x_k + alpha * grad\n"
-        "      x_{k+1}  <- project_simplex(y, I)\n"
-        "      stop when ||x_{k+1} - x_k|| < eta\n"
-        "\n"
-        "  project_simplex(y, I):\n"
-        "      sort y in descending order to get u_1 >= u_2 >= ... >= u_n\n"
-        "      cumsum_i <- u_1 + u_2 + ... + u_i\n"
-        "      rho      <- largest i with u_i - (cumsum_i - I) / i > 0\n"
-        "      theta    <- (cumsum_rho - I) / rho\n"
-        "      return max(y - theta, 0) componentwise\n"
-        "```\n\n"
-        "Projected gradient does not fail on this calibration. "
-        "Its weak spot is the step size. "
-        "A step larger than $1/L$ pushes the iterate so far that the projection wastes the work. "
-        "A step well below $1/L$ slows convergence with no benefit. "
-        "When the gradient is unavailable a finite-difference approximation works but adds noise that the linear convergence rate does not absorb well.\n\n"
-
-        "### Method 2: Interior-point log barrier\n\n"
-        "The log barrier replaces each hard non-negativity bound with a smooth penalty. "
-        "The penalised objective is $-u(x) - t \\sum_j \\log x_j$, minimised subject to the budget equality. "
-        "The penalty pushes iterates away from the boundary $x_j = 0$ because $\\log x_j$ heads to $-\\infty$ there. "
-        "As the barrier parameter $t$ shrinks the penalty weakens and the optimum approaches the boundary.\n\n"
-        "Geometrically the optima of the smoothed problems trace a curve called the central path. "
-        "The path starts deep in the interior at large $t$ and ends at $x^{\\ast}$ as $t \\to 0$. "
-        "The duality gap along the path is exactly $n \\cdot t$, which is the per-project complementarity slack. "
-        "Choosing a geometrically decreasing schedule for $t$ gives geometric convergence to the constrained optimum.\n\n"
-        "Each subproblem in $t$ has a closed form when $B$ is diagonal. "
-        "The first-order condition for project $j$ is a quadratic in $x_j$ given the budget multiplier $\\lambda$. "
-        "Solving it gives $x_j(\\lambda; t)$ as an explicit function. "
-        "The budget multiplier itself is then a single scalar root of $\\sum_j x_j(\\lambda; t) = I$, found by Brent's method on a wide bracket.\n\n"
-        "```text\n"
-        "Algorithm: Interior-point log barrier\n"
-        "Input : a, B, I, decreasing barrier sequence t_1 > t_2 > ... > t_K\n"
-        "Output: x_K close to the constrained optimum\n"
-        "  x_0 <- strictly interior feasible point\n"
-        "  for k = 1, ..., K :\n"
-        "      define x_j(lambda; t_k) = ((a_j - lambda) + sqrt((a_j - lambda)^2 + 4 t_k)) / 2\n"
-        "      solve sum_j x_j(lambda; t_k) = I for lambda using brentq\n"
-        "      x_k <- (x_1(lambda; t_k), ..., x_n(lambda; t_k))\n"
-        "```\n\n"
-        "The barrier needs a strictly interior starting point. "
-        "A start with any $x_j = 0$ makes the log infinite, so it cannot be evaluated. "
-        "The barrier schedule itself matters too. "
-        "Shrinking $t$ too fast makes the budget multiplier jump and the root finder fails. "
-        "A common choice is $t_{k+1} = t_k / 10$ once a few steps have stabilised the multiplier.\n\n"
-
-        "### Method 3: SLSQP via scipy.optimize.minimize\n\n"
-        "SLSQP stands for Sequential Least-SQuares Programming. "
-        "It is a quasi-Newton method designed for constrained problems with smooth equalities and inequalities. "
-        "At each iterate it linearises the constraints and forms a small quadratic-programming subproblem. "
-        "The QP uses a BFGS approximation of the Hessian of the Lagrangian. "
-        "Solving the QP gives a search direction. "
-        "A line search along the direction picks the next iterate.\n\n"
-        "The QP at iterate $x_k$ has the form: minimise a quadratic in the step $d$ subject to linear constraints in $d$. "
-        "The quadratic coefficients come from the BFGS approximation of the Lagrangian Hessian, which is updated from gradient differences across iterations. "
-        "The constraints are linearisations of the original equality and inequality constraints. "
-        "An active-set routine inside the QP solver decides which inequalities bind. "
-        "Convergence near a non-degenerate optimum is locally quadratic.\n\n"
-        "SLSQP is the practical default for small problems that mix equality and inequality constraints. "
-        "It accepts analytical or finite-difference Jacobians, returns an iteration count, and converges in just a handful of QP solves on a problem this size.\n\n"
-        "```text\n"
-        "Algorithm: SLSQP via scipy.optimize.minimize\n"
-        "Input : objective f, gradient grad_f, equality g, bounds, x_0\n"
-        "Output: x_hat, iteration count, convergence flag\n"
-        "  scipy hands the problem to a Fortran SLSQP routine\n"
-        "  for each iterate x_k :\n"
-        "      build a QP in the step d:\n"
-        "          minimise (1/2) d^T H_k d + grad_f(x_k)^T d\n"
-        "          subject to grad_g(x_k)^T d + g(x_k) = 0\n"
-        "                     bounds on x_k + d\n"
-        "      solve the QP by an active-set method to get d_k\n"
-        "      do a line search along d_k to pick the next x_k\n"
-        "      update H_k by BFGS using the gradient difference\n"
-        "  recover lambda from the active-set stationarity equation\n"
-        "  recover mu for binding bounds from stationarity: mu_j = lambda - (a_j - (B x)_j)\n"
-        "```\n\n"
-        "SLSQP is sensitive to the analytical Jacobian of the constraints. "
-        "A wrong Jacobian silently mis-converges with no diagnostic. "
-        "The default scaling can also struggle on problems where some constraints have much larger residuals than others. "
-        "The remedy is either to rescale the constraints by hand or to switch to a method that does it internally, such as `scipy.optimize.minimize` with `method='trust-constr'`."
-    )
 
     # ------------------------------------------------------------------
     # Figure 1: projected-gradient path on the budget simplex
@@ -503,20 +213,7 @@ Multipliers are recovered after the fact from the stationarity equation by avera
     ax1.set_ylim(-0.2, I_total + 0.5)
     ax1.set_aspect("equal")
     ax1.legend(loc="upper right", fontsize=9)
-
-    report.add_results(
-        f"The feasible region is the budget triangle. "
-        f"Each vertex puts the entire budget on one project. "
-        f"The closed-form optimum sits on the hypotenuse where the project-3 bound is active. "
-        f"Projected gradient starts at $x_0 = (0.5,\\, 0.5,\\, 2.0)$, where project 3 is heavily over-funded. "
-        f"The first projection lands on the budget hyperplane and subsequent steps slide along it toward $x^{{\\ast}}$. "
-        f"The run converges in **{pg_iter}** iterations and every iterate is feasible."
-    )
-    report.add_figure(
-        "figures/simplex-paths.png",
-        "Projected gradient path on the budget simplex; project 3 is implicit",
-        fig1,
-    )
+    save_figure(fig1, "figures/simplex-paths.png", dpi=150)
 
     # ------------------------------------------------------------------
     # Figure 2: barrier path approaching the boundary
@@ -554,18 +251,7 @@ Multipliers are recovered after the fact from the stationarity equation by avera
     ax2.set_ylim(-0.2, I_total + 0.5)
     ax2.set_aspect("equal")
     ax2.legend(loc="upper right", fontsize=9)
-
-    report.add_results(
-        f"The barrier path enters the feasible region from the centre and bends toward $x^{{\\ast}}$ as $t$ decreases. "
-        f"Each diamond is the optimum of the barrier subproblem at one $t$. "
-        f"The path stays strictly interior at every $t > 0$ and reaches the boundary only in the limit. "
-        f"After {barrier_iter} barrier values the iterate lies within {barrier_residuals[-1]:.2e} of the closed form in Euclidean distance."
-    )
-    report.add_figure(
-        "figures/barrier-path.png",
-        "Interior-point central path traced by the barrier subproblem optima as t shrinks",
-        fig2,
-    )
+    save_figure(fig2, "figures/barrier-path.png", dpi=150)
 
     # ------------------------------------------------------------------
     # Figure 3: KKT residuals over iterations
@@ -600,22 +286,7 @@ Multipliers are recovered after the fact from the stationarity equation by avera
     ax3b.set_title("Interior point: KKT residuals along the central path")
     ax3b.legend(loc="upper right", fontsize=9)
     fig3.tight_layout()
-
-    report.add_results(
-        "Each method drives different KKT residuals to zero in different orders. "
-        "Projected gradient has primal feasibility at machine precision from the first iterate because the projection enforces it. "
-        "Stationarity falls steadily as the iterate approaches the active-set boundary. "
-        "Complementarity tracks the gap on the bound that should bind.\n\n"
-        "The interior-point method reduces all three residuals together as the barrier shrinks. "
-        "The complementarity curve here uses the exact barrier multipliers $\\mu_t = t / x_t$, so it equals exactly $n\\, t$ at every point on the central path. "
-        f"The KKT table below instead reports the barrier row through the same heuristic multiplier recovery used for the other methods, so its complementarity entry differs from $n\\, t$ by the factor $n$. "
-        f"Reaching machine-precision feasibility takes {barrier_iter} barrier values."
-    )
-    report.add_figure(
-        "figures/kkt-residuals.png",
-        "KKT residuals across iterations for projected gradient (left) and along the central path for the interior-point method (right)",
-        fig3,
-    )
+    save_figure(fig3, "figures/kkt-residuals.png", dpi=150)
 
     # ------------------------------------------------------------------
     # Figure 4: shadow prices at the SLSQP optimum
@@ -643,18 +314,7 @@ Multipliers are recovered after the fact from the stationarity equation by avera
         if abs(cf) > 1e-8 or abs(sl) > 1e-8:
             ax4.text(i, max(cf, sl) + 0.05, fr"$\lambda^{{\ast}} = {cf:.2f}$" if i == 0 else fr"${cf:.2f}$",
                      ha="center", fontsize=8)
-
-    report.add_results(
-        "The budget multiplier is positive because the budget binds. "
-        "The bound multipliers on projects 1 and 2 are zero because those projects receive strictly positive allocation. "
-        "The bound multiplier on project 3 is positive because the non-negativity constraint binds. "
-        "SLSQP recovers the same multipliers as the closed form to several digits."
-    )
-    report.add_figure(
-        "figures/shadow-prices.png",
-        "Closed-form Lagrange multipliers compared to SLSQP-recovered multipliers",
-        fig4,
-    )
+    save_figure(fig4, "figures/shadow-prices.png", dpi=150)
 
     # ------------------------------------------------------------------
     # Tables
@@ -717,17 +377,8 @@ Multipliers are recovered after the fact from the stationarity equation by avera
             "yes",
         ],
     })
-    report.add_results(
-        "The table collects the baseline failure and the three constrained methods alongside the closed form. "
-        "The budget-only baseline maximises utility while ignoring the bound and reports a higher number than the feasible optimum. "
-        "All three real methods reach the closed-form allocation. "
-        "The infeasible baseline shows in one row that an objective value alone is not a verdict."
-    )
-    report.add_table(
-        "tables/solution_comparison.csv",
-        f"Solution comparison at $a = (4, 3, 0.5)$, $B = I_3$, $I = {I_total:.0f}$",
-        solution_table,
-    )
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    solution_table.to_csv("tables/solution_comparison.csv", index=False)
 
     kkt_table = pd.DataFrame({
         "Method": [
@@ -767,17 +418,7 @@ Multipliers are recovered after the fact from the stationarity equation by avera
             "budget; project 3 bound",
         ],
     })
-    report.add_results(
-        "The KKT diagnostic table separates four kinds of error. "
-        "Stationarity is small for every method including the baseline because each method satisfies the first-order conditions of the problem it actually solved. "
-        "Primal feasibility flags the baseline immediately. "
-        "Complementarity hits machine precision once the active set is recovered correctly."
-    )
-    report.add_table(
-        "tables/kkt_check.csv",
-        "KKT residuals and active set recovered by each method",
-        kkt_table,
-    )
+    kkt_table.to_csv("tables/kkt_check.csv", index=False)
 
     shadow_table = pd.DataFrame({
         "Constraint": [
@@ -805,49 +446,10 @@ Multipliers are recovered after the fact from the stationarity equation by avera
             "Utility loss avoided by holding project 3 at zero",
         ],
     })
-    report.add_results(
-        "The shadow-price table lists the binding and slack constraints with their multipliers and economic meaning. "
-        "Two constraints bind at the optimum. "
-        "The budget multiplier $\\lambda^{\\ast} = 2$ is the marginal utility of an extra unit of budget. "
-        "The project-3 bound multiplier $\\mu_3^{\\ast} = 1.5$ is the utility cost of zero allocation, equal to the gap between the unconstrained marginal return $a_3 = 0.5$ and the budget shadow price."
-    )
-    report.add_table(
-        "tables/shadow_prices.csv",
-        "Closed-form shadow prices and constraint status at the optimum",
-        shadow_table,
-    )
+    shadow_table.to_csv("tables/shadow_prices.csv", index=False)
 
-    report.add_takeaway(
-        "A high objective value is not enough to declare a constrained problem solved. "
-        "The budget-only Lagrangian beats the true optimum on utility but assigns a negative allocation to one project. "
-        "Primal feasibility catches the failure. "
-        "Stationarity does not.\n\n"
-        "Projected gradient is the simplest method that always returns a feasible answer. "
-        "Each iterate is a budget-respecting allocation with non-negative entries. "
-        "Convergence is linear and depends on the conditioning of $B$ and on the step size. "
-        "The simplex projection is closed form and cheap.\n\n"
-        "The interior-point log barrier replaces the bounds with a smooth penalty. "
-        "Iterates trace a central path that stays strictly interior until the barrier parameter shrinks to zero. "
-        "The duality gap along the path is exactly $n \\cdot t$, which makes the convergence diagnostic obvious. "
-        "The method extends cleanly to many-project problems with many bounds.\n\n"
-        "SLSQP is the practical default for small problems that mix equalities and inequalities. "
-        "It builds a quadratic-programming subproblem at each iterate and refines a BFGS Hessian as it goes. "
-        "Convergence is locally quadratic and Lagrange multipliers can be recovered from stationarity afterwards.\n\n"
-        "Shadow prices are the economic part of the answer. "
-        "The binding budget multiplier $\\lambda^{\\ast}$ is the marginal utility of one extra unit of budget. "
-        "The binding bound multiplier $\\mu_3^{\\ast}$ is the utility loss avoided by holding project 3 at zero. "
-        "It equals the wedge between project 3's return $a_3$ and the budget shadow price $\\lambda^{\\ast}$."
-    )
-
-    report.add_references([
-        "Boyd, S. and Vandenberghe, L. (2004). *Convex Optimization*. Cambridge University Press, Ch. 5 and 11.",
-        "Nocedal, J. and Wright, S. J. (2006). *Numerical Optimization*. Springer, 2nd edition, Ch. 12, 17, 19.",
-        "Bertsekas, D. P. (1999). *Nonlinear Programming*. Athena Scientific, 2nd edition, Ch. 2-3.",
-        "Wang, W. and Carreira-Perpinan, M. A. (2013). *Projection onto the probability simplex: An efficient algorithm with a simple proof, and an application*. arXiv:1309.1541.",
-    ])
-
-    report.write("README.md")
-    print(f"\nGenerated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
+    save_thumbnail("figures/simplex-paths.png", "figures/thumb.png")
+    print(f"Generated: figures/ (4 figures + thumb) + tables/ (3 tables)")
 
 
 if __name__ == "__main__":

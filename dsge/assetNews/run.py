@@ -22,9 +22,8 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
 from lib.perturbation import solve_klein
-from lib.plotting import setup_style
+from lib.plotting import save_figure, save_thumbnail, setup_style
 
 
 @dataclass(frozen=True)
@@ -234,112 +233,6 @@ def main() -> None:
     sim = simulate_paths(params)
 
     setup_style()
-    report = ModelReport(
-        "Lucas Tree II: Dividend News by Linearized Pricing",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "An investor owns a claim to a dividend tree. Today she learns that next "
-        "period's dividend will be higher. Today's dividend has not moved.\n\n"
-        "The object is a representative-agent Lucas tree. A surprise shock $z_t$ "
-        "moves today's dividend. A news shock $n_t$ is observed today and moves "
-        "tomorrow's dividend.\n\n"
-        "The computational task is a first-order pricing rule. It maps the dividend "
-        "state and the news signal into today's asset price."
-    )
-
-    report.add_equations(
-        rf"""
-Let $d_t$ be the tree dividend and the representative household's consumption,
-and define $x_t=\log d_t$.
-
-The accompanying `model.mod` spec writes the dividend process as
-
-```text
-d = exp(rho*log(d(-1)) + sigma1*n(-1) + sigma2*z)
-```
-
-or, in log deviations,
-
-$$x_t = \rho x_{{t-1}} + \sigma_1 n_{{t-1}} + \sigma_2 z_t.$$
-
-The surprise innovation $z_t$ is contemporaneous. The news innovation $n_t$ is
-known at date $t$ but enters dividends at date $t+1$.
-
-The asset-pricing equation is
-
-$$p_t d_t^{{-\gamma}} = \beta \mathbb{{E}}_t\left[ d_{{t+1}}^{{-\gamma}}(p_{{t+1}}+d_{{t+1}}) \right],$$
-
-which is equivalently
-
-$$p_t = \mathbb{{E}}_t\left[ M_{{t+1}}(p_{{t+1}}+d_{{t+1}}) \right], \qquad M_{{t+1}}=\beta\left(\frac{{d_{{t+1}}}}{{d_t}}\right)^{{-\gamma}}.$$
-
-At the deterministic steady state $d=1$,
-
-$$p = \beta(p+1), \qquad p=\frac{{\beta}}{{1-\beta}}={ss["p"]:.2f}.$$
-
-Write $q_t=\log(p_t/p)$. A first-order expansion of the Euler equation gives
-
-$$q_t = \gamma x_t + \beta\mathbb{{E}}_t q_{{t+1}} +(1-\beta-\gamma)\mathbb{{E}}_t x_{{t+1}}.$$
-
-Since $\mathbb{{E}}_t x_{{t+1}}=\rho x_t+\sigma_1 n_t$, the linear solution has
-the form
-
-$$q_t = A x_t + B n_t,$$
-
-with
-
-$$A=\frac{{\gamma+\rho(1-\beta-\gamma)}}{{1-\beta\rho}}, \qquad B=\sigma_1\left(\beta A+1-\beta-\gamma\right).$$
-
-For this calibration, $A={coeffs["A"]:.3f}$ and $B={coeffs["B"]:.3f}$.
-"""
-    )
-
-    report.add_model_setup(
-        "| Primitive | Value | Role |\n"
-        "|---|---:|---|\n"
-        f"| $\\beta$ | {params.beta:.2f} | Quarterly discount factor |\n"
-        f"| $\\gamma$ | {params.gamma:.1f} | CRRA coefficient in marginal utility |\n"
-        f"| $\\rho$ | {params.rho:.1f} | Persistence of log dividends |\n"
-        f"| $\\sigma_1$ | {params.sigma1:.1f} | Effect of a unit news innovation on next period's log dividend |\n"
-        f"| $\\sigma_2$ | {params.sigma2:.1f} | Effect of a unit surprise innovation on today's log dividend |\n"
-        f"| IRF horizon | {horizon} quarters | Periods shown in the impulse-response figures |\n\n"
-        "| Steady-state object | Value |\n"
-        "|---|---:|\n"
-        f"| Dividend $d$ | {ss['d']:.3f} |\n"
-        f"| Asset price $p$ | {ss['p']:.3f} |\n"
-        f"| Price-dividend ratio $p/d$ | {ss['pd_ratio']:.3f} |\n"
-        f"| Gross return $1/\\beta$ | {ss['gross_return']:.4f} |"
-    )
-
-    report.add_solution_method(
-        "First-order perturbation turns the Euler equation into coefficient matching. "
-        "The state is $(x_t,n_t)$. The solution is $q_t=A x_t+B n_t$. "
-        "The coefficient $B$ is the impact price of news.\n\n"
-        "A Klein QZ check solves the same system. It matches the hand-derived "
-        "coefficients.\n\n"
-        "A nonlinear perfect-foresight path gives a scale check.\n\n"
-        "```text\n"
-        "Algorithm: Lucas-tree news and surprise IRFs\n"
-        "Inputs: beta, gamma, rho, sigma1, sigma2, shock type, horizon T\n"
-        "Outputs: x_t, q_t, p_t, and the price-dividend ratio\n\n"
-        "1. Compute the steady state d=1 and p=beta/(1-beta).\n"
-        "2. Linearize the Euler equation in x_t=log d_t and q_t=log(p_t/p).\n"
-        "3. Use E_t x_{t+1}=rho x_t + sigma1 n_t to solve q_t=A x_t+B n_t.\n"
-        "4. For a surprise shock, set x_0=sigma2 and n_t=0 for all t.\n"
-        "5. For a news shock, set n_0=1, x_0=0, and let x_1=sigma1.\n"
-        "6. Iterate x_t=rho x_{t-1} after the shock has entered dividends.\n"
-        "7. Recover the first-order price response q_t=A x_t+B n_t.\n"
-        "8. For the nonlinear benchmark, extend the same x_t path far into the\n"
-        "   future and solve p_t=beta(d_{t+1}/d_t)^(-gamma)(p_{t+1}+d_{t+1})\n"
-        "   backward from the terminal steady-state price.\n"
-        "```\n\n"
-        "Here $B<0$. Good dividend news slightly lowers today's price. The payoff "
-        "arrives in a high-consumption state, where marginal utility is lower."
-    )
-
     periods = np.arange(horizon)
 
     fig1, axes = plt.subplots(2, 2, figsize=(12, 8), sharex=True)
@@ -381,20 +274,7 @@ For this calibration, $A={coeffs["A"]:.3f}$ and $B={coeffs["B"]:.3f}$.
     axes[1, 0].legend(frameon=False, loc="upper right")
     fig1.suptitle("Dividend Timing and Asset Prices", fontsize=14, fontweight="bold")
     fig1.tight_layout(rect=[0, 0, 1, 0.96])
-
-    report.add_results(
-        "A surprise shock moves dividends immediately. The price response mainly "
-        "reflects the current dividend state. The nonlinear path is close to the "
-        "first-order rule.\n\n"
-        "A news shock has different timing. The dividend is still at steady state on "
-        "impact. The price moves because agents know $x_1$ will be higher."
-    )
-    report.add_figure(
-        "figures/irf-surprise-vs-news.png",
-        "Dividend and asset-price impulse responses under surprise and news shocks",
-        fig1,
-    )
-    plt.close(fig1)
+    save_figure(fig1, "figures/irf-surprise-vs-news.png", dpi=150)
 
     component_values = pd.DataFrame(
         {
@@ -425,20 +305,7 @@ For this calibration, $A={coeffs["A"]:.3f}$ and $B={coeffs["B"]:.3f}$.
         offset = 0.35 if value >= 0 else -0.35
         ax2.text(idx, value + offset, f"{value:.2f}", ha="center", va=va, fontsize=9)
     fig2.tight_layout()
-
-    report.add_results(
-        "The date-0 news response separates three terms. Expected resale value raises "
-        "today's price. The next dividend payoff adds a small positive term.\n\n"
-        "The stochastic discount factor moves the other way. Future dividends are paid "
-        "in a high-consumption state. With $\\gamma=2$, this term makes the net "
-        "impact negative."
-    )
-    report.add_figure(
-        "figures/price-dynamics.png",
-        "Decomposition of the date-0 price response to a positive news shock",
-        fig2,
-    )
-    plt.close(fig2)
+    save_figure(fig2, "figures/price-dynamics.png", dpi=150)
 
     fig3, axes3 = plt.subplots(2, 1, figsize=(12, 7), sharex=True)
     t_sim = np.arange(len(sim["x"]))
@@ -483,18 +350,7 @@ For this calibration, $A={coeffs["A"]:.3f}$ and $B={coeffs["B"]:.3f}$.
     axes3[1].set_title("Innovations Feeding the Dividend Process")
     axes3[1].legend(frameon=False, loc="upper right")
     fig3.tight_layout()
-
-    report.add_results(
-        "In the simulated path, prices track persistent dividends closely. News matters "
-        "at signal dates. It enters the price rule through $B n_t$. One period later, "
-        "it enters dividends through $\\sigma_1 n_t$."
-    )
-    report.add_figure(
-        "figures/simulated-paths.png",
-        "Simulated first-order dividend and asset-price paths with surprise and news innovations",
-        fig3,
-    )
-    plt.close(fig3)
+    save_figure(fig3, "figures/simulated-paths.png", dpi=150)
 
     impact_table = pd.DataFrame(
         [
@@ -525,36 +381,13 @@ For this calibration, $A={coeffs["A"]:.3f}$ and $B={coeffs["B"]:.3f}$.
         ]
     )
 
-    report.add_results(
-        "The impact table reports percent log deviations. The news experiment has zero "
-        "dividend movement at date 0. The price-dividend ratio already moves.\n\n"
-        "The date-1 column shows the delayed cash-flow realization. The nonlinear "
-        "path is close to the first-order solution."
-    )
-    report.add_table(
-        "tables/impact-responses.csv",
-        "Impact and Realization Responses",
-        impact_table,
-    )
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    impact_table.to_csv("tables/impact-responses.csv", index=False)
 
-    report.add_takeaway(
-        "News shocks change prices before cash flows arrive. The Lucas-tree Euler "
-        "equation prices a future dividend with future marginal utility. Here positive "
-        "dividend news moves the price on impact, and the sign is slightly negative."
-    )
+    # Thumbnail from first figure
+    save_thumbnail("figures/irf-surprise-vs-news.png", "figures/thumb.png")
 
-    report.add_references(
-        [
-            "Lucas, R. (1978). Asset Prices in an Exchange Economy. *Econometrica*, 46(6), 1429-1445.",
-            "Cochrane, J. (2005). *Asset Pricing*. Princeton University Press.",
-            "Beaudry, P. and Portier, F. (2006). Stock Prices, News, and Economic Fluctuations. *American Economic Review*, 96(4), 1293-1307.",
-            "Schmitt-Grohé, S. and Uribe, M. (2012). What's News in Business Cycles. *Econometrica*, 80(6), 2733-2764.",
-            "Klein, P. (2000). Using the Generalized Schur Form to Solve a Multivariate Linear Rational Expectations Model. *Journal of Economic Dynamics and Control*, 24(10), 1405-1423.",
-        ]
-    )
-
-    report.write("README.md")
-    print(f"Generated README.md, {len(report._figures)} figures, and {len(report._tables)} table.")
+    print(f"Saved 3 figures and 1 table.")
 
 
 if __name__ == "__main__":

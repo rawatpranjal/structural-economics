@@ -15,8 +15,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from lib.discretize import rouwenhorst
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import setup_style, save_figure, save_thumbnail
 
 
 def calibrate_vacancy_cost(
@@ -364,160 +363,6 @@ def main() -> None:
 
     setup_style()
 
-    report = ModelReport(
-        "DMP Search, Vacancies, and Unemployment",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "Unemployed workers and posted vacancies meet through a matching "
-        "technology. A formed match produces surplus $z_t-b$, and Nash "
-        "bargaining splits it.\n\n"
-        "The equilibrium object is labor-market tightness "
-        "$\\theta_t=v_t/u_t$. Free entry pins down tightness because firms post "
-        "vacancies until expected job value covers vacancy cost.\n\n"
-        "The code compares a log-linear rule with a finite-state free-entry "
-        "fixed point. This asks whether the Shimer amplification puzzle comes "
-        "from the solver or from surplus calibration."
-    )
-
-    report.add_equations(
-        rf"""
-**Matching technology.** Let $u_t$ be unemployment, $v_t$ vacancies, and
-$\theta_t=v_t/u_t$ tightness. Constant-returns matching gives
-
-$$m(u_t,v_t)=\chi u_t^{{1-\eta}}v_t^\eta,\qquad
-f(\theta_t)=\chi\theta_t^{{\eta}},\qquad
-q(\theta_t)=\chi\theta_t^{{\eta-1}},$$
-
-Here $f$ is the worker job-finding rate. The term $q$ is the firm
-vacancy-filling rate.
-
-**Productivity.** Aggregate productivity is a stationary AR(1) in logs,
-
-$$\hat z_{{t+1}}=\rho\hat z_t+\epsilon_{{t+1}},\quad
-\epsilon_{{t+1}}\sim\mathcal{{N}}(0,\sigma_\epsilon^2),\quad
-z_t=\bar z\exp(\hat z_t).$$
-
-**Wage rule.** Nash bargaining with worker weight $\gamma$ splits joint
-surplus and yields the equilibrium wage
-
-$$w_t=\gamma(z_t+k\theta_t)+(1-\gamma)b,$$
-
-Here $b$ is the flow value of unemployment. The parameter $k$ is the
-per-period cost of an open vacancy.
-
-**Job value and free entry.** A filled job has value
-
-$$J_t=z_t-w_t+\beta(1-\sigma)\,\mathbb{{E}}_t[J_{{t+1}}],$$
-
-where $\sigma$ is the exogenous separation rate. Free entry equates expected
-discounted job value with vacancy cost:
-
-$$k=\beta\,q(\theta_t)\,\mathbb{{E}}_t[J_{{t+1}}].$$
-
-This condition pins down $\theta_t$.
-
-**Stock dynamics.** Once $\theta_t$ is known, unemployment follows
-
-$$u_{{t+1}}=\sigma(1-u_t)+(1-f(\theta_t))u_t,\qquad
-v_t=\theta_t u_t.$$
-
-The deterministic steady state has $u_{{ss}}=\sigma/(\sigma+f(\theta_{{ss}}))$.
-
-**Local linearization.** Write
-$\hat\theta_t=\log\theta_t-\log\theta_{{ss}}$. Linearizing free entry at
-$\theta_{{ss}}=1$ gives $\hat\theta_t=C\hat z_t$, with
-
-$$C=\frac{{\rho}}{{A-B\rho}},\qquad
-A=\frac{{\eta k}}{{(1-\gamma)\beta\chi}},\qquad
-B=\beta A(1-\sigma)-\frac{{\gamma k}}{{1-\gamma}}.$$
-
-At baseline, $A={a_coeff:.4f}$ and $B={b_coeff:.4f}$. A one-percent productivity
-innovation raises tightness by $C={elasticity:.2f}$ percent.
-"""
-    )
-
-    report.add_model_setup(
-        f"| Object | Value | Role |\n"
-        f"|---|---:|---|\n"
-        f"| Discount factor $\\beta$ | {beta:.3f} | Monthly time preference |\n"
-        f"| Productivity persistence $\\rho$ | {rho:.3f} | AR(1) coefficient on $\\hat z_t$ |\n"
-        f"| Innovation s.d. $\\sigma_\\epsilon$ | {shock_sigma:.4f} | Monthly productivity shock |\n"
-        f"| Mean productivity $\\bar z$ | {z_bar:.2f} | Normalization |\n"
-        f"| Separation rate $\\sigma$ | {separation_rate:.3f} | Exogenous job destruction |\n"
-        f"| Matching efficiency $\\chi$ | {matching_efficiency:.2f} | Level of $m(u,v)$ |\n"
-        f"| Matching elasticity $\\eta$ | {matching_elasticity:.2f} | Vacancy elasticity in $m$ |\n"
-        f"| Worker bargaining weight $\\gamma$ | {bargaining_power:.2f} | Nash share |\n"
-        f"| Flow value of unemployment $b$ | {benefit:.2f} | Outside option |\n"
-        f"| Vacancy cost $k$ | {vacancy_cost:.4f} | Calibrated for $\\theta_{{ss}}=1$ |\n"
-        f"| Steady-state unemployment $u_{{ss}}$ | {u_ss:.4f} | $\\sigma/(\\sigma+f(\\theta_{{ss}}))$ |\n"
-        f"| Steady-state wage $w_{{ss}}$ | {wage_ss:.4f} | Nash wage at $z=\\bar z$ |\n"
-        f"| Surplus $\\bar z-b$ | {surplus_ss:.2f} | Match surplus before vacancy costs |\n"
-        f"| Coarse grid $N_z$ | {n_z_coarse} | Rouwenhorst nodes (tutorial run) |\n"
-        f"| Fine-grid benchmark $N_z$ | {n_z_fine} | Discretization audit |\n"
-        f"| Simulation length | {periods - burn} months | Post-burn-in moments |"
-    )
-
-    report.add_solution_method(
-        "Two solvers compute the same tightness rule.\n\n"
-        "**Log-linear local rule.** The local rule linearizes free entry and "
-        "the AR(1) around the deterministic steady state. It gives "
-        "$C=\\rho/(A-B\\rho)$ and sets $\\theta_t=\\exp(C\\hat z_t)$.\n\n"
-        "**Nonlinear free-entry fixed point.** The nonlinear solver "
-        f"discretizes $\\hat z_t$ on a Rouwenhorst grid with $N_z={n_z_coarse}$ "
-        "nodes. It substitutes free entry inside the job-value Bellman:\n\n"
-        "$$J_i=(1-\\gamma)(z_i-b)-\\gamma k\\theta_i+\\beta(1-\\sigma)\\sum_j P_{ij}J_j,\\qquad "
-        "\\theta_i=(\\frac{\\beta\\chi}{k}\\sum_j P_{ij}J_j)^{1/(1-\\eta)}.$$\n\n"
-        "The operator is a contraction. Its linear term $\\beta(1-\\sigma)"
-        f"E[J']$ alone has modulus $\\beta(1-\\sigma)={linear_term_modulus:.4f}$, "
-        "but the substituted free-entry term $\\theta(E[J'])$ inside the "
-        "Bellman adds a negative correction. The total derivative of the "
-        "update with respect to $E[J']$ at the steady state gives an effective "
-        f"modulus of about ${effective_modulus:.3f}$, well below the linear-term "
-        "bound. The tight effective modulus is why the fixed point converges in "
-        "a few dozen iterations rather than the several hundred the linear-term "
-        "modulus would imply.\n\n"
-        "```text\n"
-        "Algorithm 1: Log-linear local rule\n"
-        "Inputs    primitives (β, σ, χ, η, γ, b, z̄, ρ); shock series {ẑ_t}\n"
-        "Outputs   elasticity C; tightness {θ_t}; unemployment {u_t}, vacancies {v_t}\n"
-        "\n"
-        "1. Calibrate k from θ_ss = 1 at z = z̄\n"
-        "2. Compute  A = η k / [(1−γ) β χ],  B = β A (1−σ) − γ k / (1−γ)\n"
-        "3. Set C = ρ / (A − B ρ)\n"
-        "4. For each ẑ_t in the simulation:\n"
-        "       θ_t  ← exp(C · ẑ_t)\n"
-        "       f_t  ← χ θ_t^η\n"
-        "       u_{t+1} ← σ (1 − u_t) + (1 − f_t) u_t\n"
-        "       v_t  ← θ_t · u_t\n"
-        "```\n\n"
-        "```text\n"
-        "Algorithm 2: Nonlinear finite-state free-entry fixed point\n"
-        "Inputs    primitives; Rouwenhorst grid {ẑ_i}_{i=1..N_z};\n"
-        "          transition matrix P; calibrated k; tolerance ε\n"
-        "Outputs   job value J_i and tightness θ_i at each productivity state z_i\n"
-        "\n"
-        "Initialise   J_i ← k / (β χ)               # value if free entry binds today\n"
-        "repeat n = 0, 1, 2, ...:\n"
-        "    EJ_i  ← Σ_j P_{ij} J_j                 # one mat-vec multiply\n"
-        "    θ_i   ← (β χ EJ_i / k)^{1/(1−η)}       # invert free entry\n"
-        "    J_i^new ← (1−γ)(z_i − b) − γ k θ_i + β(1−σ) EJ_i\n"
-        "    err   ← max_i |J_i^new − J_i|\n"
-        "    J_i   ← J_i^new\n"
-        "until err < ε\n"
-        "```\n\n"
-        "**Discretization audit.** The same nonlinear solver is rerun with "
-        f"$N_z={n_z_fine}$ nodes. The interpolated gap in $\\theta(z)$ is "
-        f"**{100.0 * max_grid_gap:.2e}%**.\n\n"
-        f"At baseline, the log-linear elasticity is $C={elasticity:.3f}$. The "
-        f"$N_z={n_z_coarse}$ fixed point converges in "
-        f"**{nonlinear['iterations']} iterations**. The maximum policy gap "
-        f"between the nonlinear and log-linear rules is "
-        f"**{100.0 * max_policy_gap:.2f}%**."
-    )
-
     fig1, ax1 = plt.subplots()
     ax1.plot(
         z_grid,
@@ -556,18 +401,7 @@ innovation raises tightness by $C={elasticity:.2f}$ percent.
     ax1.set_ylabel("Labor-market tightness $\\theta_t$")
     ax1.set_title("Productivity Determines Vacancy Creation")
     ax1.legend(loc="upper left")
-    report.add_figure(
-        "figures/productivity-tightness.png",
-        "Tightness as a function of productivity: log-linear, nonlinear coarse, and nonlinear fine-grid benchmark, with simulated months overlaid.",
-        fig1,
-        description=(
-            "The nonlinear rule, fine-grid rule, and local rule are close over "
-            "the simulated productivity range. Tightness moves about "
-            f"{df_stats.loc[3, 'Std./Std. z']} times as much as productivity, "
-            "far below Shimer's value near 19. The mismatch remains after "
-            "switching solvers."
-        ),
-    )
+    save_figure(fig1, "figures/productivity-tightness.png", dpi=150)
 
     fig2, (ax2a, ax2b) = plt.subplots(2, 1, figsize=(10, 8), sharex=True)
     ax2a.plot(t_axis[:1_000], u_plot[:1_000], color="tab:blue", linewidth=1.2)
@@ -580,16 +414,7 @@ innovation raises tightness by $C={elasticity:.2f}$ percent.
     ax2b.set_xlabel("Month")
     ax2b.set_title("Vacancies Rise With Firm Entry")
     fig2.tight_layout()
-    report.add_figure(
-        "figures/unemployment-vacancies.png",
-        "Simulated unemployment and vacancy paths under the nonlinear tightness rule.",
-        fig2,
-        description=(
-            "Given tightness, unemployment follows the stock law and vacancies "
-            "equal $\\theta_t u_t$. Vacancies jump with entry. Unemployment "
-            "falls more slowly because hires reduce tomorrow's search pool."
-        ),
-    )
+    save_figure(fig2, "figures/unemployment-vacancies.png", dpi=150)
 
     fig3, ax3 = plt.subplots()
     ax3.scatter(u_plot, v_plot, s=3, alpha=0.25, color="steelblue", edgecolors="none")
@@ -598,38 +423,18 @@ innovation raises tightness by $C={elasticity:.2f}$ percent.
     ax3.set_ylabel("Vacancy rate $v_t$")
     ax3.set_title("A Beveridge Curve From Matching Frictions")
     ax3.legend()
-    report.add_figure(
-        "figures/beveridge-curve.png",
-        "Simulated unemployment and vacancy pairs trace a downward-sloping Beveridge curve around the steady state.",
-        fig3,
-        description=(
-            "The simulated pairs trace a Beveridge curve. Productivity shocks "
-            "move the economy along that curve because separations and "
-            "matching efficiency stay fixed."
-        ),
-    )
+    save_figure(fig3, "figures/beveridge-curve.png", dpi=150)
 
-    report.add_table(
-        "tables/business-cycle-stats.csv",
-        "Simulated business-cycle moments",
-        df_stats,
-        description=(
-            "The signs match the model logic. Tightness and vacancies are "
-            "procyclical, unemployment is countercyclical, and both solvers "
-            "give similar volatility."
-        ),
-    )
+    # Thumbnail
+    save_thumbnail("figures/productivity-tightness.png", "figures/thumb.png")
 
-    report.add_table(
-        "tables/amplification-by-surplus.csv",
-        "Tightness elasticity by flow value of unemployment",
-        df_amp,
-        description=(
-            "Raising $b$ shrinks surplus and raises elasticity $C$. Moving "
-            "from $b=0.40$ to $b=0.95$ takes $C$ from 1.55 to 18.65. The "
-            "surplus calibration drives amplification."
-        ),
-    )
+    # =========================================================================
+    # Tables
+    # =========================================================================
+    Path("tables").mkdir(parents=True, exist_ok=True)
+
+    df_stats.to_csv("tables/business-cycle-stats.csv", index=False)
+    df_amp.to_csv("tables/amplification-by-surplus.csv", index=False)
 
     df_diagnostics = pd.DataFrame(
         {
@@ -659,43 +464,10 @@ innovation raises tightness by $C={elasticity:.2f}$ percent.
             ],
         }
     )
-    report.add_table(
-        "tables/solver-diagnostics.csv",
-        "Nonlinear fixed-point solver diagnostics",
-        df_diagnostics,
-        description=(
-            "The policy gap, interpolation gap, and iteration counts are "
-            "persisted here so the convergence claims in the Solution Method "
-            "section can be cross-checked against a committed artifact."
-        ),
-    )
+    df_diagnostics.to_csv("tables/solver-diagnostics.csv", index=False)
 
-    report.add_takeaway(
-        "DMP links productivity to vacancies and unemployment through free "
-        "entry. The local rule and nonlinear fixed point give almost the same "
-        "volatility. The Shimer puzzle therefore comes from the large baseline "
-        "surplus, not from the numerical method. The sensitivity table shows "
-        "how a smaller surplus raises tightness amplification."
-    )
-
-    report.add_references(
-        [
-            "Diamond, P. (1982). \"Aggregate Demand Management in Search Equilibrium.\" "
-            "*Journal of Political Economy*, 90(5), 881-894.",
-            "Mortensen, D. and Pissarides, C. (1994). \"Job Creation and Job Destruction "
-            "in the Theory of Unemployment.\" *Review of Economic Studies*, 61(3), 397-415.",
-            "Pissarides, C.A. (2000). *Equilibrium Unemployment Theory*. MIT Press, 2nd edition.",
-            "Shimer, R. (2005). \"The Cyclical Behavior of Equilibrium Unemployment and "
-            "Vacancies.\" *American Economic Review*, 95(1), 25-49.",
-            "Hagedorn, M. and Manovskii, I. (2008). \"The Cyclical Behavior of Equilibrium "
-            "Unemployment and Vacancies Revisited.\" *American Economic Review*, 98(4), 1692-1706.",
-        ]
-    )
-
-    report.write("README.md")
     print(
-        f"Generated README.md, {len(report._figures)} figures, "
-        f"and {len(report._tables)} tables."
+        f"Generated figures and tables."
     )
 
 

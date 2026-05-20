@@ -8,8 +8,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import setup_style, save_figure, save_thumbnail
 
 
 TRUE_BETA = {"Labor": 0.32, "Capital": 0.24, "Materials": 0.44}
@@ -135,105 +134,6 @@ def main() -> None:
     print(f"Mean OLS-implied markup: {markups['ols_markup'].mean():.3f}")
     print(f"Mean proxy markup:       {markups['proxy_markup'].mean():.3f}")
 
-    report = ModelReport(
-        "Production Elasticities and Firm Markups",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "Plant panels often record output, labor, capital, materials, and input spending. "
-        "They usually do not record marginal cost.\n\n"
-        "The object is the firm-year markup. This tutorial recovers it from a materials "
-        "output elasticity and a materials revenue share.\n\n"
-        "Inputs respond to productivity before output is observed. The computation uses "
-        "an investment proxy to correct the materials elasticity before forming markups."
-    )
-
-    report.add_equations(r"""
-Let $i$ index firms and $t$ index years. Output, labor, capital, and materials
-are logs. They are denoted by $y_{it}$, $l_{it}$, $k_{it}$, and $m_{it}$. The
-plant technology is Cobb-Douglas:
-
-$$y_{it} = \beta_l l_{it}+\beta_k k_{it}+\beta_m m_{it} +\omega_{it}+\varepsilon_{it}.$$
-
-The firm observes productivity $\omega_{it}$ before choosing flexible inputs.
-This timing makes $l_{it}$ and $m_{it}$ correlated with $\omega_{it}$. Naive
-OLS therefore has a nonzero input-error covariance.
-
-The proxy variable is investment $I_{it}$. Investment follows a policy that is
-monotone in productivity given capital:
-
-$$I_{it}=h(k_{it},\omega_{it})+\nu_{it}, \qquad \frac{\partial h(k,\omega)}{\partial \omega}>0.$$
-
-The estimator builds a productivity control from this monotonicity. A polynomial
-in capital is fit to investment, and the residual is the part of investment
-that moves with productivity:
-
-$$\tilde \omega_{it}=I_{it}-\widehat{\mathrm{poly}}(k_{it}).$$
-
-The residual is monotone in $\omega_{it}$ given capital, so it controls for the
-productivity component that is correlated with the flexible inputs. The
-regression is
-
-$$y_{it} = \beta_l l_{it}+\beta_k k_{it}+\beta_m m_{it} +\rho \tilde\omega_{it}+u_{it}.$$
-
-Here $\rho$ is the coefficient on the productivity control $\tilde\omega_{it}$.
-Because $\tilde\omega_{it}$ holds productivity orthogonal to capital, the
-control identifies the flexible-input elasticities $\beta_l$ and $\beta_m$. It
-does not separately identify the capital elasticity $\beta_k$: capital is a
-predetermined state, and its productivity-correlated variation is absorbed by
-the control. Recovering $\beta_k$ cleanly needs the Olley-Pakes second stage,
-which this tutorial does not run.
-
-Markup recovery uses materials as the variable input. For Cobb-Douglas
-production, the materials elasticity is $\theta^m=\beta_m$. Let
-
-$$\alpha^m_{it} = \frac{\text{materials expenditure}_{it}}{\text{revenue}_{it}}$$
-
-be the materials revenue share. Cost minimization implies the gross markup
-
-$$\mu_{it}=\frac{\theta^m}{\alpha^m_{it}}.$$
-""")
-
-    report.add_model_setup(
-        "| Object | Value | Role in the exercise |\n"
-        "|--------|-------|----------------------|\n"
-        f"| Firm-year panel | {df['Firm'].nunique()} firms, {df['Year'].nunique()} years | Lets input choices respond to persistent productivity |\n"
-        "| Technology | Cobb-Douglas in labor, capital, materials | Gives known output elasticities for the benchmark |\n"
-        "| True elasticities | $\\beta_l=0.32$, $\\beta_k=0.24$, $\\beta_m=0.44$ | Ground truth for the coefficient comparison |\n"
-        "| Productivity | Persistent AR(1), observed by firms | Source of simultaneity in flexible inputs |\n"
-        "| Proxy variable | Investment, monotone in productivity conditional on capital | Control for the unobserved productivity state |\n"
-        "| Markup measure | $\\theta^m / \\alpha^m_{it}$ | Maps the materials elasticity into firm-year markups |"
-    )
-
-    report.add_solution_method(
-        "The calculation first estimates the materials elasticity while controlling for "
-        "productivity. It then divides that elasticity by each firm-year materials share. "
-        "The productivity control is built nonparametrically: a polynomial in capital is "
-        "fit to investment, and the residual is the part of investment that moves with "
-        "productivity. No true investment-schedule coefficient is used.\n\n"
-        "```text\n"
-        "Algorithm: proxy-control markup measurement\n"
-        "Input: panel {y_it, l_it, k_it, m_it, I_it, alpha^m_it}, true benchmark mu_it\n"
-        "Output: production elasticities and firm-year markup estimates\n"
-        "1. Estimate the naive production regression:\n"
-        "       y_it = b_l l_it + b_k k_it + b_m m_it + residual_it\n"
-        "   and record the OLS materials elasticity b_m^OLS.\n"
-        "2. Fit a polynomial in capital to investment and take the residual as the\n"
-        "   productivity control: omega_tilde_it = I_it - poly(k_it).\n"
-        "3. Re-estimate production with the control included:\n"
-        "       y_it = b_l l_it + b_k k_it + b_m m_it + rho omega_tilde_it + u_it.\n"
-        "   The controlled b_m is the markup-relevant elasticity theta_hat^m.\n"
-        "4. For every firm-year, compute\n"
-        "       mu_hat_it = theta_hat^m / alpha^m_it.\n"
-        "5. Compare theta_hat^m and mu_hat_it with the simulated truth, and aggregate\n"
-        "   markups by productivity quintile to inspect heterogeneity.\n"
-        "```\n\n"
-        "The polynomial fit that builds the productivity control is the numerical step. "
-        "The final markup calculation is a firm-year division."
-    )
-
     fig1, ax1 = plt.subplots(figsize=(8, 5))
     x = np.arange(len(estimates))
     width = 0.25
@@ -245,17 +145,7 @@ $$\mu_{it}=\frac{\theta^m}{\alpha^m_{it}}.$$
     ax1.set_ylabel("Output elasticity")
     ax1.set_title("Production elasticities: truth and estimators")
     ax1.legend()
-    report.add_figure(
-        "figures/production-estimates.png",
-        "True and estimated output elasticities",
-        fig1,
-        description="The production-function step drives the markup calculation. OLS badly "
-        "overstates the materials elasticity, the markup-relevant one, because high-productivity "
-        "firms choose more materials. The proxy control corrects the materials and labor "
-        "elasticities by absorbing the productivity state. It does not correct the capital "
-        "elasticity: capital is predetermined, and the single-stage control absorbs its "
-        "productivity-correlated variation rather than identifying it.",
-    )
+    save_figure(fig1, "figures/production-estimates.png", dpi=150)
 
     fig2, ax2 = plt.subplots(figsize=(8, 5))
     ax2.hist(markups["true_markup"], bins=35, alpha=0.50, label="True", color="#54A24B")
@@ -265,14 +155,7 @@ $$\mu_{it}=\frac{\theta^m}{\alpha^m_{it}}.$$
     ax2.set_ylabel("Firm-year count")
     ax2.set_title("Markup distribution: true and recovered")
     ax2.legend()
-    report.add_figure(
-        "figures/markup-distribution.png",
-        "True and estimated markup distributions",
-        fig2,
-        description="The coefficient bias passes through the markup formula. The OLS-implied "
-        "distribution sits too far to the right because the materials elasticity is inflated. "
-        "The proxy-control markups stay much closer to the truth.",
-    )
+    save_figure(fig2, "figures/markup-distribution.png", dpi=150)
 
     fig3, ax3 = plt.subplots(figsize=(8, 5))
     sample = markups.sample(700, random_state=3)
@@ -284,27 +167,15 @@ $$\mu_{it}=\frac{\theta^m}{\alpha^m_{it}}.$$
     ax3.set_ylabel("Markup")
     ax3.set_title("Productivity and markup heterogeneity")
     ax3.legend()
-    report.add_figure(
-        "figures/productivity-markups.png",
-        "Estimated markups rise with productivity in the simulated panel",
-        fig3,
-        description="The simulated truth lets us check the markup gradient. More productive "
-        "firms have lower materials shares in this design. True markups rise with productivity. "
-        "The recovered quintile means trace that gradient.",
-    )
+    save_figure(fig3, "figures/productivity-markups.png", dpi=150)
 
     table = estimates.copy()
     table["OLS bias"] = table["OLS"] - table["True elasticity"]
     table["Proxy bias"] = table["Proxy-control"] - table["True elasticity"]
     for col in ["True elasticity", "OLS", "Proxy-control", "OLS bias", "Proxy bias"]:
         table[col] = table[col].map(lambda x: f"{x:.3f}")
-    report.add_table(
-        "tables/production-estimates.csv",
-        "Production function estimates",
-        table,
-        description="The coefficient table is read through the markup formula. Materials is the "
-        "main row because $\\theta^m$ is divided by the materials revenue share.",
-    )
+    Path("tables/production-estimates.csv").parent.mkdir(parents=True, exist_ok=True)
+    table.to_csv("tables/production-estimates.csv", index=False)
 
     markup_table = markups.groupby("productivity_bin", observed=False).agg(
         mean_productivity=("productivity", "mean"),
@@ -318,29 +189,11 @@ $$\mu_{it}=\frac{\theta^m}{\alpha^m_{it}}.$$
     })
     for col in ["mean_productivity", "true_markup", "ols_markup", "proxy_markup", "proxy_bias"]:
         markup_table[col] = markup_table[col].map(lambda x: f"{x:.3f}")
-    report.add_table(
-        "tables/markup-by-productivity.csv",
-        "Markup moments by productivity quintile",
-        markup_table,
-        description="The quintile table makes the ground-truth comparison explicit. OLS-based "
-        "markups are too high in every productivity cell. The proxy-control markups keep the "
-        "right ordering and a much smaller level error.",
-    )
+    Path("tables/markup-by-productivity.csv").parent.mkdir(parents=True, exist_ok=True)
+    markup_table.to_csv("tables/markup-by-productivity.csv", index=False)
 
-    report.add_takeaway(
-        "The markup estimate is only as credible as the production elasticity and the "
-        "materials share behind it. In this controlled panel, correcting for productivity "
-        "greatly reduces markup error."
-    )
-
-    report.add_references([
-        "Olley, S., and Pakes, A. (1996). The Dynamics of Productivity in the Telecommunications Equipment Industry. *Econometrica*, 64(6), 1263-1297.",
-        "Levinsohn, J., and Petrin, A. (2003). Estimating Production Functions Using Inputs to Control for Unobservables. *Review of Economic Studies*, 70(2), 317-341.",
-        "De Loecker, J., and Warzynski, F. (2012). Markups and Firm-Level Export Status. *American Economic Review*, 102(6), 2437-2471.",
-        "Lectures 10-12 Slides 2023: Production functions, proxy methods, and markups.",
-    ])
-    report.write("README.md")
-    print(f"Generated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
+    save_thumbnail("figures/production-estimates.png", "figures/thumb.png")
+    print("Figures and tables written.")
 
 
 if __name__ == "__main__":

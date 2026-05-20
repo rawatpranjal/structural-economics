@@ -19,8 +19,7 @@ import pandas as pd
 from scipy.optimize import brentq
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.plotting import setup_style
-from lib.output import ModelReport
+from lib.plotting import setup_style, save_figure, save_thumbnail
 
 
 # =============================================================================
@@ -211,167 +210,10 @@ def main() -> None:
     n_diverged = sum(1 for s in new_status_list if s == "diverged")
 
     # =========================================================================
-    # Report
+    # Figures and tables
     # =========================================================================
     setup_style()
 
-    report = ModelReport(
-        "Scalar Root Finding for Equilibrium Rates",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "A representative-firm economy with Cobb-Douglas production has a "
-        "closed-form clearing rate $r^{\\ast} = 1/\\beta - 1$. "
-        "The market-clearing condition is one scalar equation in $r$.\n\n"
-        "Bisection halves a sign-change bracket. "
-        "Secant fits a chord through the last two iterates. "
-        "Brent combines bisection's bracket with inverse quadratic "
-        "interpolation when the fast step stays inside. "
-        "Newton-Raphson uses the analytic derivative.\n\n"
-        "These are the four solvers behind $\\mathrm{scipy.optimize.brentq}$ "
-        "and the equilibrium clearings in Aiyagari and Huggett."
-    )
-
-    report.add_equations(
-        r"""The general problem is to find $r$ satisfying $Z(r) = 0$ for a scalar function $Z : \mathbb{R} \to \mathbb{R}$.
-The methods below produce a sequence $\{r_n\}$ that converges to a root $r^{\ast}$.
-
-### The test instance
-
-The test instance is the equilibrium real interest rate in a stylised one-good production economy.
-Aggregate capital demand from the firm-side first-order condition is
-
-$$K_d(r) = \left( \frac{\alpha}{r + \delta} \right)^{\frac{1}{1 - \alpha}}.$$
-
-Target supply is $K^{\ast} \equiv K_d(r^{\ast})$ at $r^{\ast} = 1/\beta - 1$.
-Excess demand is then
-
-$$Z(r) = K_d(r) - K^{\ast}, \qquad Z(r^{\ast}) = 0.$$
-
-The derivative used by Newton is
-
-$$Z'(r) = -\frac{1}{1 - \alpha} \frac{K_d(r)}{r + \delta} < 0.$$
-
-The next four subsections describe one method at a time.
-
-### Method 1: Bisection
-
-Bisection halves a sign-change bracket at every iteration.
-
-$$m_n = \frac{a_n + b_n}{2}, \qquad b_{n+1} - a_{n+1} = \frac{1}{2}(b_n - a_n).$$
-
-The sub-bracket containing the sign change is kept and the rest is discarded.
-Convergence is linear with rate one half, regardless of curvature.
-
-### Method 2: Secant
-
-Secant fits a chord through the last two iterates and steps to the chord's zero.
-
-$$x_{n+1} = x_n - Z(x_n) \frac{x_n - x_{n-1}}{Z(x_n) - Z(x_{n-1})}.$$
-
-The method needs two starting points but no derivative.
-Local convergence is superlinear with order $(1 + \sqrt{5}) / 2 \approx 1.618$.
-
-### Method 3: Brent
-
-Brent's method tries inverse quadratic interpolation through the last three ordinates.
-It falls back to secant when ordinates coincide.
-It falls back to bisection when the proposed step would leave the bracket or fails to halve the previous step.
-The bracket invariant is maintained at every iteration.
-Brent therefore inherits the global guarantee of bisection together with the asymptotic speed of secant or interpolation when the local problem is well behaved.
-
-### Method 4: Newton-Raphson
-
-Newton-Raphson follows the tangent of $Z$ at the current iterate.
-
-$$x_{n+1} = x_n - \frac{Z(x_n)}{Z'(x_n)}.$$
-
-The method needs a derivative but only one starting point.
-Local convergence is quadratic when $Z'(r^{\ast}) \neq 0$.
-"""
-    )
-
-    report.add_model_setup(
-        f"| Symbol | Value | Role |\n"
-        f"|--------|-------|------|\n"
-        f"| $\\alpha$ | {alpha} | Capital share in Cobb-Douglas production |\n"
-        f"| $\\beta$ | {beta} | Discount factor |\n"
-        f"| $\\delta$ | {delta} | Depreciation rate |\n"
-        f"| $r^{{\\ast}}$ | {r_star:.6f} | Closed-form clearing rate $1/\\beta - 1$ |\n"
-        f"| $K^{{\\ast}}$ | {K_target:.4f} | Target aggregate capital at $r^{{\\ast}}$ |\n"
-        f"| Bracket $[a_0, b_0]$ | $[{a0:.0e},\\, {b0}]$ | Sign-change bracket for bisection and Brent |\n"
-        f"| Secant seeds | $[{a0:.0e},\\, {b0}]$ | Two starting points for secant |\n"
-        f"| Newton start $x_0$ | {newton_x0} | Starting iterate for Newton-Raphson |\n"
-        f"| Tolerance $\\varepsilon$ | {tol:.0e} | Stopping rule on residual and bracket width |"
-    )
-
-    report.add_solution_method(
-        "All four methods solve the same scalar equation $Z(r) = 0$. They "
-        "differ in what they need (bracket, two seeds, derivative) and how "
-        "fast they converge.\n\n"
-        "**Bisection.** Halve a sign-change bracket until its width is below "
-        "tolerance.\n\n"
-        "```text\n"
-        "Algorithm: Bisection\n"
-        "Input : a, b with Z(a) Z(b) < 0; tolerance eps\n"
-        "Output: r_n\n"
-        "  fa <- Z(a)\n"
-        "  for n = 1, 2, ... :\n"
-        "      m  <- (a + b) / 2\n"
-        "      fm <- Z(m)\n"
-        "      if fa * fm < 0: b <- m\n"
-        "      else          : a <- m; fa <- fm\n"
-        "      stop when |fm| < eps or (b - a) / 2 < eps\n"
-        "```\n\n"
-        "**Secant.** Step along the chord through the last two iterates.\n\n"
-        "```text\n"
-        "Algorithm: Secant\n"
-        "Input : x_0, x_1; tolerance eps\n"
-        "Output: x_n\n"
-        "  f0 <- Z(x_0); f1 <- Z(x_1)\n"
-        "  for n = 2, 3, ... :\n"
-        "      x_n  <- x_1 - f1 (x_1 - x_0) / (f1 - f0)\n"
-        "      fn   <- Z(x_n)\n"
-        "      stop when |fn| < eps\n"
-        "      shift: x_0 <- x_1, f0 <- f1; x_1 <- x_n, f1 <- fn\n"
-        "```\n\n"
-        "**Brent.** Try inverse quadratic interpolation through the last "
-        "three iterates. Fall back to secant when ordinates coincide, and "
-        "to bisection when the proposed step would leave the bracket.\n\n"
-        "```text\n"
-        "Algorithm: Brent-Dekker\n"
-        "Input : a, b with Z(a) Z(b) < 0; tolerance eps\n"
-        "Output: r_n\n"
-        "  for n = 1, 2, ... :\n"
-        "      try inverse quadratic interpolation -> candidate s\n"
-        "      if s leaves [a, b] or fails half-step rule:\n"
-        "          s <- (a + b) / 2     # bisect\n"
-        "      fs <- Z(s)\n"
-        "      update bracket so it still contains the root\n"
-        "      stop when |fs| < eps or (b - a) < eps\n"
-        "```\n\n"
-        "**Newton-Raphson.** Step along the tangent at the current iterate.\n\n"
-        "```text\n"
-        "Algorithm: Newton-Raphson\n"
-        "Input : x_0; tolerance eps; Z, Z'\n"
-        "Output: x_n\n"
-        "  for n = 0, 1, ... :\n"
-        "      x_{n+1} <- x_n - Z(x_n) / Z'(x_n)\n"
-        "      stop when |Z(x_n)| < eps\n"
-        "```\n\n"
-        f"On the same calibration, bisection takes **{int(bis_hist[-1][0])} "
-        f"iterations**, secant takes **{int(sec_hist[-1][0])}**, Brent takes "
-        f"**{int(bre_hist[-1][0])}**, and Newton from $x_0 = {newton_x0}$ "
-        f"takes **{int(new_hist[-1][0])}**. The hand-coded Brent root "
-        f"matches $\\mathrm{{scipy.optimize.brentq}}$ to "
-        f"**{abs(bre_root - scipy_root):.2e}**."
-    )
-
-    # =========================================================================
-    # Figures: trajectories (2x2 grid) + convergence-and-sensitivity (stacked)
-    # =========================================================================
     method_colors = {
         "Bisection": "tab:orange",
         "Secant": "tab:green",
@@ -407,23 +249,7 @@ Local convergence is quadratic when $Z'(r^{\ast}) \neq 0$.
         ax.set_ylabel(r"$Z(r)$")
         ax.legend(loc="upper right", fontsize=9)
     fig_traj.tight_layout()
-
-    report.add_results(
-        "Each trajectory subplot plots $Z(r)$ with the first four iterates "
-        "of one method on top.\n\n"
-        "Bisection moves to the midpoint, then halves the bracket each step.\n\n"
-        "Secant draws chords through the last two iterates and accelerates "
-        "near the root.\n\n"
-        "Brent looks like secant but cuts to a bisection step whenever the "
-        "fast extrapolation would leave the bracket.\n\n"
-        "Newton uses the tangent slope, so its iterates can leap further "
-        "than the bracketed methods can."
-    )
-    report.add_figure(
-        "figures/trajectories.png",
-        "First iterates of each method overlaid on $Z(r)$",
-        fig_traj,
-    )
+    save_figure(fig_traj, "figures/trajectories.png", dpi=150)
 
     # ---- Figure 2: convergence (top) + sensitivity (bottom) ----
     fig_diag, (ax_conv, ax_sens) = plt.subplots(2, 1, figsize=(11, 9))
@@ -461,25 +287,7 @@ Local convergence is quadratic when $Z'(r^{\ast}) \neq 0$.
     ax_sens.set_title(r"Iteration count vs starting point (tolerance $10^{-10}$)")
     ax_sens.legend(fontsize=9)
     fig_diag.tight_layout()
-
-    report.add_results(
-        "On a log axis the convergence rates are easy to read. Bisection "
-        "halves its error each step. Secant accelerates once the iterates "
-        f"settle near the root. Newton drops off a cliff after the first "
-        "quadratic step. Brent matches the late-stage speed of secant or "
-        "inverse quadratic interpolation.\n\n"
-        "The sensitivity panel changes the starting point or bracket "
-        "centre. Bisection and Brent stay flat: bracket halving is "
-        "independent of where the bracket sits. Secant and Newton counts "
-        f"depend on the start. **{n_diverged} of {len(starts)}** Newton "
-        "starts step outside the feasible range and diverge (hatched bars "
-        "marked DNC)."
-    )
-    report.add_figure(
-        "figures/convergence-and-sensitivity.png",
-        "Log-axis convergence (top) and iteration-count sensitivity to the starting point (bottom)",
-        fig_diag,
-    )
+    save_figure(fig_diag, "figures/convergence-and-sensitivity.png", dpi=150)
 
     # =========================================================================
     # Comparison table
@@ -504,47 +312,13 @@ Local convergence is quadratic when $Z'(r^{\ast}) \neq 0$.
         Path(__file__).resolve().parent / "tables" / "scipy_match.csv",
         index=False,
     )
-
-    bis_iters = int(histories["Bisection"][-1, 0])
-    bre_iters = int(histories["Brent"][-1, 0])
-    new_iters = int(histories["Newton-Raphson"][-1, 0])
-    report.add_results(
-        "All four methods reach the closed-form root within tolerance. "
-        f"Brent ({bre_iters} iterations) and Newton ({new_iters}) finish in "
-        f"about 4-6x fewer iterations than bisection ({bis_iters}): "
-        f"{bis_iters}/{bre_iters} = {bis_iters / bre_iters:.1f}x for Brent "
-        f"and {bis_iters}/{new_iters} = {bis_iters / new_iters:.1f}x for "
-        "Newton, well under one order of magnitude."
-    )
-    report.add_table(
-        "tables/comparison.csv",
-        "Bisection, secant, Brent, and Newton-Raphson on the stylized bond market",
-        df,
+    df.to_csv(
+        Path(__file__).resolve().parent / "tables" / "comparison.csv",
+        index=False,
     )
 
-    report.add_takeaway(
-        "Brent's method is the right default for production equilibrium "
-        "solves. It inherits bisection's bracket invariant and adds "
-        "superlinear speed via inverse quadratic interpolation when the "
-        "bracket is preserved.\n\n"
-        "Bisection is the safe fallback when no derivative is available. "
-        "Secant is a no-derivative alternative to Newton with similar "
-        "fragility from far-off seeds. "
-        "Newton is fastest near a simple root but needs a derivative and a "
-        "starting point inside the basin of attraction.\n\n"
-        "$\\mathrm{scipy.optimize.brentq}$ is the production default for "
-        "exactly these reasons."
-    )
-
-    report.add_references([
-        "Mukoyama, T. (2021). *Basic Numerical Methods*. ECON 606 lecture slides, Georgetown University.",
-        "Brent, R. P. (1973). *Algorithms for Minimization without Derivatives*. Prentice-Hall, Ch. 4.",
-        "Press, W. H., Teukolsky, S. A., Vetterling, W. T., and Flannery, B. P. (2007). *Numerical Recipes*. Cambridge University Press, 3rd edition, Ch. 9.",
-        "Judd, K. L. (1998). *Numerical Methods in Economics*. MIT Press, Ch. 5.",
-    ])
-
-    report.write("README.md")
-    print(f"\nGenerated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
+    save_thumbnail("figures/trajectories.png", "figures/thumb.png")
+    print(f"Generated: figures/ (2 figures + thumb) + tables/ (2 tables)")
     print(f"Brent (hand) - scipy.brentq: {abs(bre_root - scipy_root):.2e}")
 
 

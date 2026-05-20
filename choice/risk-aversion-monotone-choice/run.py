@@ -10,8 +10,7 @@ from scipy.optimize import minimize, minimize_scalar
 from scipy.special import expit, logit
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import save_figure, save_thumbnail, setup_style
 
 
 # Shared sign threshold for counting monotonicity violations. One constant
@@ -192,101 +191,6 @@ def main() -> None:
     print(f"  Monotone optimizer success: {monotone['success']}")
 
     setup_style()
-    report = ModelReport(
-        "Lottery Risk Aversion with Monotone Choice",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "A Holt-Laury ladder gives subjects repeated choices between a safer lottery and a "
-        "riskier lottery.\n\n"
-        "Each row changes only the probability of the high payoff. The object is the "
-        "risky choice curve across rows.\n\n"
-        "Finite samples can make that curve fall in one row. We estimate CRRA risk aversion "
-        "and enforce monotone row probabilities."
-    )
-
-    report.add_equations(
-        r"""
-At row $j$, the high payoff probability is $p_j$. The subject chooses between a
-safer lottery $A$ and a riskier lottery $B$:
-
-$$
-A(p)=(2.00 \text{ with } p,\ 1.60 \text{ otherwise}),\qquad
-B(p)=(3.85 \text{ with } p,\ 0.10 \text{ otherwise}).
-$$
-
-For CRRA utility,
-
-$$
-u(c;\rho)=\frac{c^{1-\rho}-1}{1-\rho},
-\qquad \rho\neq 1.
-$$
-
-The expected utility index for choosing the risky lottery is
-
-$$
-\Delta EU(p;\rho)=E[u(B(p);\rho)]-E[u(A(p);\rho)].
-$$
-
-The fixed scale choice model is
-
-$$
-\Pr(d=1\mid p;\rho) =
-\lambda + (1-2\lambda)\frac{1}{1+\exp[-s\,\Delta EU(p;\rho)]}.
-$$
-
-The monotone row logit estimates one logit $\alpha_j$ per row from binomial
-counts $y_j$ out of $N_j$ choices:
-
-$$
-\ell(\alpha)=\sum_j y_j\log\Lambda(\alpha_j) + (N_j-y_j)\log[1-\Lambda(\alpha_j)].
-$$
-
-Here $\Lambda(\alpha_j)=1/(1+\exp(-\alpha_j))$ is the logistic function.
-
-The shape restriction is
-
-$$
-\alpha_{j+1}\geq \alpha_j
-\quad \text{for all adjacent rows }j.
-$$
-
-Since $\Lambda$ is monotone, probability ordering follows from logit ordering.
-This gives
-$\Pr(d=1\mid p_{j+1})\geq \Pr(d=1\mid p_j)$.
-"""
-    )
-
-    report.add_model_setup(
-        f"| Primitive | Value | Economic role |\n"
-        f"|--------|-------|------|\n"
-        f"| Lottery rows | {len(prob_high)} | Probability ladder from 0.10 to 1.00 |\n"
-        f"| Choices per row | {trials_per_task} | Binomial observations for each lottery pair |\n"
-        f"| True risk aversion | {rho_true:.2f} | Data-generating CRRA curvature |\n"
-        f"| True scale | {scale_true:.2f} | Maps utility differences into stochastic choice |\n"
-        f"| Lapse rate | {lapse:.2f} | Symmetric lower and upper error floor |\n"
-        f"| Fixed scale estimator | scale = {fixed_scale:.2f} | Recovers $\\rho$ from the payoff index |\n"
-        f"| Shape restriction | nondecreasing | Risky-choice probability cannot fall as $p$ rises |"
-    )
-
-    report.add_solution_method(
-        "The CRRA logit is the structural fit. It searches over $\\rho$ after the stochastic "
-        "scale is fixed.\n\n"
-        "The monotone logit is the flexible fit. It maximizes the binomial likelihood "
-        "subject to ordered row logits.\n\n"
-        "```text\n"
-        "Algorithm: monotone lottery-choice estimation\n"
-        "Input: rows (p_j, y_j, N_j), fixed scale s, lapse rate lambda\n"
-        "1. Simulate risky choice counts from CRRA probabilities.\n"
-        "2. Estimate saturated logits for each row.\n"
-        "3. Search over rho for the fixed scale CRRA likelihood.\n"
-        "4. Estimate row logits subject to alpha_{j+1} >= alpha_j.\n"
-        "5. Compare fitted curves and likelihood loss.\n"
-        "Output: fitted risky choice curves and model comparisons\n"
-        "```"
-    )
 
     fig1, ax1 = plt.subplots(figsize=(7.5, 4.8))
     ax1.plot(prob_high, true_prob, marker="o", label="True")
@@ -298,18 +202,7 @@ $\Pr(d=1\mid p_{j+1})\geq \Pr(d=1\mid p_j)$.
     ax1.set_ylabel("Probability of choosing risky lottery")
     ax1.set_title("Risky Choice Along the Lottery Ladder")
     ax1.legend()
-    report.add_results(
-        "At low high payoff probabilities, few subjects choose the risky lottery. "
-        "The observed share falls from $p=0.20$ to $p=0.30$. "
-        "The unconstrained fit repeats that step. "
-        "The monotone fit pools the two rows."
-    )
-    report.add_figure(
-        "figures/risky-choice-fits.png",
-        "Observed and fitted risky choice probabilities",
-        fig1,
-        description="The constrained curve removes the sample reversal.",
-    )
+    save_figure(fig1, "figures/risky-choice-fits.png", dpi=150)
 
     rho_grid = np.linspace(-0.25, 1.25, 220)
     ll_grid = np.array([
@@ -324,18 +217,7 @@ $\Pr(d=1\mid p_{j+1})\geq \Pr(d=1\mid p_j)$.
     ax2.set_ylabel("Log likelihood")
     ax2.set_title("Fixed Scale Structural Likelihood")
     ax2.legend()
-    report.add_results(
-        "The CRRA likelihood uses payoffs rather than row labels. "
-        f"With scale fixed at {fixed_scale:.1f}, the estimate is "
-        f"**{float(fixed['rho']):.3f}**. "
-        f"The true value is **{rho_true:.3f}**."
-    )
-    report.add_figure(
-        "figures/rho-likelihood.png",
-        "Likelihood over CRRA risk aversion",
-        fig2,
-        description="The fixed scale turns the ladder into a likelihood for rho.",
-    )
+    save_figure(fig2, "figures/rho-likelihood.png", dpi=150)
 
     fig3, ax3 = plt.subplots(figsize=(7, 4.5))
     eu_true = lottery_eu_difference(prob_high, rho_true)
@@ -344,18 +226,7 @@ $\Pr(d=1\mid p_{j+1})\geq \Pr(d=1\mid p_j)$.
     ax3.set_xlabel("Probability of high payoff")
     ax3.set_ylabel("EU(B) minus EU(A)")
     ax3.set_title("Expected-Utility Index")
-    report.add_results(
-        "For the true $\\rho$, the expected utility difference rises with the high payoff "
-        "probability. "
-        "It crosses zero where the risky lottery first gives higher expected utility. "
-        "The monotone fit uses only this ordering implication."
-    )
-    report.add_figure(
-        "figures/eu-index.png",
-        "Expected-utility difference for the true CRRA parameter",
-        fig3,
-        description="The risky lottery becomes more attractive as the high payoff probability rises.",
-    )
+    save_figure(fig3, "figures/eu-index.png", dpi=150)
 
     rows = pd.DataFrame(
         {
@@ -370,38 +241,13 @@ $\Pr(d=1\mid p_{j+1})\geq \Pr(d=1\mid p_j)$.
             "Monotone fit": np.asarray(monotone["probabilities"]),
         }
     )
-    report.add_table(
-        "tables/row-fits.csv",
-        "Row fit diagnostics",
-        rows.round(4),
-        description="Equal adjacent monotone fits show where the inequality constraint binds.",
-    )
+    Path("tables/row-fits.csv").parent.mkdir(parents=True, exist_ok=True)
+    rows.round(4).to_csv("tables/row-fits.csv", index=False)
 
-    report.add_table(
-        "tables/model-comparison.csv",
-        "Estimator comparison",
-        summary.round(5),
-        description=(
-            f"The monotone model gives up {summary.loc[summary['Model'] == 'Monotone row logit', 'LL loss vs saturated'].iloc[0]:.2f} "
-            "likelihood points relative to the saturated fit. The CRRA model gives up "
-            "more fit because one curve must explain all rows."
-        ),
-    )
+    Path("tables/model-comparison.csv").parent.mkdir(parents=True, exist_ok=True)
+    summary.round(5).to_csv("tables/model-comparison.csv", index=False)
 
-    report.add_takeaway(
-        "Risk aversion estimates need preference structure and noise control. "
-        "The CRRA likelihood gives a single curvature estimate. "
-        "The monotone logit keeps row flexibility while removing sample reversals. "
-        "This helps when the ordering is credible but the CRRA curve is too tight."
-    )
-
-    report.add_references(
-        [
-            "[Holt, C. A. and Laury, S. K. (2002). Risk Aversion and Incentive Effects. *American Economic Review*, 92(5), 1644-1655.](https://doi.org/10.1257/000282802762024700)",
-            "[Apesteguia, J. and Ballester, M. A. (2018). Monotone Stochastic Choice Models: The Case of Risk and Time Preferences. *Journal of Political Economy*, 126(1), 74-106.](https://doi.org/10.1086/695504)",
-        ]
-    )
-    report.write("README.md")
+    save_thumbnail("figures/risky-choice-fits.png", "figures/thumb.png")
 
 
 if __name__ == "__main__":

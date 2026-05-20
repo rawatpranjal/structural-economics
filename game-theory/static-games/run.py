@@ -10,8 +10,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import setup_style, save_figure, save_thumbnail
 
 
 def cournot_best_response(
@@ -93,85 +92,6 @@ def main() -> None:
     }
 
     setup_style()
-    report = ModelReport(
-        "Cournot Quantity Competition and Best-Response Iteration",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "Two firms sell a homogeneous good in one market. Each firm chooses output "
-        "before the market price clears. Extra output raises own sales and lowers "
-        "the price on every unit.\n\n"
-        "Cournot equilibrium is a quantity pair. Each firm must maximize profit "
-        "given the rival's output.\n\n"
-        "The linear game has a closed-form Nash quantity. Best-response iteration "
-        "treats the same condition as a fixed point. The residual checks whether a "
-        "firm still wants to change output."
-    )
-
-    report.add_equations(
-        r"""
-Two firms choose quantities $q_1$ and $q_2$ simultaneously. Total output is
-$Q=q_1+q_2$, inverse demand is
-
-$$
-P(Q)=a-bQ,
-$$
-
-and firm $i$ has constant marginal cost $c$. Given $q_j$, firm $i$ solves
-
-$$
-\max_{q_i \geq 0}\ (a-b(q_i+q_j)-c)q_i.
-$$
-
-The interior first-order condition gives $(a-c-bq_j)/(2b)$, and clipping at
-the non-negativity constraint $q_i \geq 0$ gives the best response
-
-$$
-BR_i(q_j)=\max\lbrace 0,\ \tfrac{a-c-bq_j}{2b} \rbrace.
-$$
-
-A symmetric Nash equilibrium satisfies $q_i=q_j=q^{*}$ and
-$q^{*}=BR_i(q^{*})$, so
-
-$$
-q^{*}=\frac{a-c}{3b},\qquad
-P^{*}=a-2bq^{*}.
-$$
-"""
-    )
-
-    report.add_model_setup(
-        "| Object | Value | Meaning |\n"
-        "|---|---:|---|\n"
-        f"| $a$ | {a:.1f} | Demand intercept |\n"
-        f"| $b$ | {b:.1f} | Demand slope |\n"
-        f"| $c$ | {c:.1f} | Marginal cost |\n"
-        f"| $q^{{*}}$ | {q_star:.3f} | Nash output per firm |\n"
-        f"| $P^{{*}}$ | {p_star:.3f} | Nash price |\n"
-        f"| $\\pi^{{*}}$ | {pi_star:.3f} | Nash profit per firm |\n"
-        f"| Damping $\\lambda$ | {damping:.2f} | Weight on each new best response |"
-    )
-
-    report.add_solution_method(
-        "The first-order conditions solve the linear game directly. The numerical "
-        "check keeps the same economic object. It searches for a fixed point of "
-        "the map $BR(q_1,q_2)=(BR_1(q_2),BR_2(q_1))$.\n\n"
-        "```text\n"
-        "Algorithm: damped Cournot best-response iteration\n"
-        "Inputs: demand parameters a, b, marginal cost c, start q_0, damping lambda\n"
-        "Output: quantity path q_t and fixed-point residuals\n\n"
-        "1. Start from a candidate pair q_t = (q_{1t}, q_{2t}).\n"
-        "2. Compute each firm's best response to the other firm's current output.\n"
-        "3. Update q_{t+1} = (1-lambda) q_t + lambda BR(q_t).\n"
-        "4. Repeat until max_i |q_{it} - BR_i(q_{-i,t})| is near zero.\n"
-        "5. Compare the numerical fixed point with q* = (a-c)/(3b).\n"
-        "```\n\n"
-        "The residual links the iteration back to game theory. A path can look stable "
-        "while still leaving a profitable output change. A small residual checks "
-        "the no-deviation condition directly."
-    )
 
     q_grid = np.linspace(0.0, 8.0, 240)
     br = cournot_best_response(q_grid, a, b, c)
@@ -188,17 +108,7 @@ $$
     ax1.set_xlim(0.0, 8.0)
     ax1.set_ylim(0.0, 8.0)
     ax1.legend(fontsize=8)
-
-    report.add_results(
-        "The best-response curves cross at the Nash quantity. Each damped path "
-        "moves toward that crossing. Different starting quantities produce the "
-        "same Nash condition."
-    )
-    report.add_figure(
-        "figures/cournot-best-response.png",
-        "Cournot best-response curves and damped iteration paths",
-        fig1,
-    )
+    save_figure(fig1, "figures/cournot-best-response.png", dpi=150)
 
     fig2, ax2 = plt.subplots(figsize=(7, 4.5))
     for q0, path in paths.items():
@@ -208,17 +118,7 @@ $$
     ax2.set_ylabel("Fixed-point residual")
     ax2.set_title("Best-Response Residual")
     ax2.legend()
-
-    report.add_results(
-        "The residual falls quickly because damping stabilizes this linear "
-        "best-response map. The final residual measures the largest remaining "
-        "unilateral output adjustment."
-    )
-    report.add_figure(
-        "figures/residuals.png",
-        "Fixed-point residuals for damped best-response iteration",
-        fig2,
-    )
+    save_figure(fig2, "figures/residuals.png", dpi=150)
 
     rows = []
     for q0, path in paths.items():
@@ -240,30 +140,11 @@ $$
         }
     )
 
-    report.add_table(
-        "tables/convergence-summary.csv",
-        "Best-Response Convergence",
-        pd.DataFrame(rows),
-    )
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(rows).to_csv("tables/convergence-summary.csv", index=False)
 
-    report.add_takeaway(
-        "Cournot equilibrium is a best-response fixed point. Each firm already "
-        "chooses its profit-maximizing quantity given the rival's output.\n\n"
-        "The closed form makes this condition transparent. Best-response iteration "
-        "provides a numerical check. The residual tests Nash incentives."
-    )
-
-    report.add_references(
-        [
-            "Cournot, A. A. (1838/1897). *Researches into the Mathematical Principles of the Theory of Wealth*. English translation.",
-            "Fudenberg, D. and Tirole, J. (1991). *Game Theory*. MIT Press.",
-            "Tirole, J. (1988). *The Theory of Industrial Organization*. MIT Press, Ch. 5.",
-            "Vives, X. (1999). *Oligopoly Pricing: Old Ideas and New Tools*. MIT Press.",
-        ]
-    )
-
-    report.write("README.md")
-    print(f"Generated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
+    save_thumbnail("figures/cournot-best-response.png", "figures/thumb.png")
+    print("Done: figures/cournot-best-response.png, figures/residuals.png, tables/convergence-summary.csv")
 
 
 if __name__ == "__main__":

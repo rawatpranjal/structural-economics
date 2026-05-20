@@ -19,8 +19,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from lib.discretize import rouwenhorst
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import save_figure, save_thumbnail, setup_style
 
 
 ALPHA = 0.36
@@ -510,196 +509,20 @@ def main() -> None:
         })
     comparison_df = pd.DataFrame(rows)
 
-    print("Building report ...")
-    report = ModelReport(
-        "Stochastic Optimal Growth by Q-Learning",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "A planner allocates output between consumption and productive capital. "
-        "Productivity moves stochastically each period. The saving choice "
-        "carries today's shock into tomorrow's capital stock.\n\n"
-        "The target object is the optimal saving rule $k'(k, z)$. Log utility, "
-        "Cobb-Douglas production, and full depreciation pin down a closed "
-        r"form, $k'(k, z) = \alpha\beta z A k^{\alpha}$. The closed form audits "
-        "any numerical solver.\n\n"
-        "Value iteration solves the Bellman equation through the productivity "
-        "transition matrix. Q-learning replaces the matrix with sampled "
-        "transitions. The same saving rule emerges from interaction alone."
-    )
-
-    report.add_equations(
-        r"Let $k_t$ be capital and $z_t$ a productivity shock. Output is "
-        r"$y_t = z_t A k_t^{\alpha}$, the resource constraint is "
-        r"$c_t + k_{t+1} = y_t$, and productivity follows "
-        r"$\log z_{t+1} = \rho \log z_t + \sigma \varepsilon_{t+1}$ with "
-        r"$\varepsilon_{t+1} \sim N(0, 1)$." + "\n\n"
-        "The planner's value function solves the Bellman equation:" + "\n\n"
-        "$$"
-        r"V(k, z) = \max_{k' \in [0, y]} \{\, \log(z A k^{\alpha} - k') + \beta\, \mathbb{E}[V(k', z') \mid z] \,\}."
-        "$$" + "\n\n"
-        "Tabular Q-learning stores an action-value $Q(s, a)$ for each state-action "
-        "pair and updates it from observed transitions:" + "\n\n"
-        "$$"
-        r"Q(s, a) \leftarrow Q(s, a) + \alpha_t [\, r + \beta \max_{a'} Q(s', a') - Q(s, a) \,]."
-        "$$" + "\n\n"
-        r"Here $\alpha_t$ is the step size (learning rate) for update $t$." + "\n\n"
-        "Exploration draws each transition uniformly over feasible "
-        r"state-action pairs $(s, a)$, so every region of the grid receives "
-        "updates regardless of the on-policy distribution. The greedy policy "
-        r"is read off the table as $a^{\ast}(s) = \arg\max_a Q(s, a)$."
-    )
-
-    kss = deterministic_steady_state()
-    setup_md = (
-        "| Object | Value |\n"
-        "|--------|-------|\n"
-        f"| Capital state $k$ | {N_K} grid points on $[{K_LOWER_FRAC:.2f}, {K_UPPER_FRAC:.2f}] \\cdot k_{{ss}}$ |\n"
-        f"| Action $k'$ | {N_A} grid points on the same capital range |\n"
-        f"| Productivity $z$ | {N_Z}-state Rouwenhorst chain |\n"
-        f"| Capital share $\\alpha$ | {ALPHA:.2f} |\n"
-        f"| Discount $\\beta$ | {BETA:.2f} |\n"
-        f"| Productivity persistence $\\rho$ | {RHO_Z:.2f} |\n"
-        f"| Innovation std $\\sigma$ | {SIGMA_Z:.2f} |\n"
-        f"| TFP parameter $A$ | {A_TFP:.1f} |\n"
-        f"| Q-learning steps per seed | {QL_STEPS:,} |\n"
-        f"| Q-learning seeds (averaged) | {N_QL_SEEDS} |\n"
-        f"| DQN training steps | {DQN_STEPS:,} |\n"
-        f"| Benchmark | $k'(k, z) = \\alpha\\beta z A k^{{\\alpha}}$ |\n"
-        f"| Steady-state capital $k_{{ss}}$ | {kss:.3f} |"
-    )
-    report.add_model_setup(setup_md)
-
-    solution_md = (
-        "Value iteration sweeps the discrete Bellman operator until the value "
-        "function stops moving. Each sweep evaluates expected continuation "
-        "values through the productivity transition matrix.\n\n"
-        "Tabular Q-learning sees one transition at a time. Each step samples "
-        "a state and a feasible action uniformly at random. The productivity "
-        "Markov chain delivers the next state. The Bellman temporal-difference "
-        "error corrects the action-value estimate.\n\n"
-        "Uniform sampling makes coverage of the grid independent of the "
-        "steady-state distribution. A Robbins-Monro step size "
-        r"$1 / n_{s,a}^{0.6}$ decays with visit counts. Independent runs are "
-        "averaged to dampen the action-argmax variance left on individual "
-        "seeds.\n\n"
-        "```text\n"
-        "Algorithm: tabular Q-learning with uniform exploration\n"
-        "Input: feasible reward r(s, a), productivity transition, step budget\n"
-        "Output: action-value Q(s, a) and greedy policy a*(s)\n"
-        "Initialize Q(s, a) <- pessimistic constant for all feasible (s, a)\n"
-        "for t = 1, ..., T:\n"
-        "    sample state s_t = (i_k, i_z) uniformly over the grid\n"
-        "    sample action a_t uniformly over feasible actions at s_t\n"
-        "    receive reward r_t = log(z A k^alpha - k'(a_t))\n"
-        "    sample next productivity from the transition row\n"
-        "    Q(s_t, a_t) += alpha_t * (r_t + beta * max_a Q(s_{t+1}, a) - Q(s_t, a_t))\n"
-        "```\n\n"
-        "The deep-RL appendix replaces the table with a small two-layer MLP "
-        r"$Q_\theta(k, z, \cdot)$. A replay buffer stores recent transitions. "
-        "The loss is a Huber penalty against a slow-moving target network.\n\n"
-        "```text\n"
-        "Algorithm: deep Q-network on continuous (k, z)\n"
-        "Input: discrete next-capital actions, replay buffer, minibatch size\n"
-        "Output: parameters theta of Q_theta(k, z, .)\n"
-        "Initialize online and target networks with the same weights\n"
-        "for t = 1, ..., T_dqn:\n"
-        "    select a_t with epsilon-greedy on Q_theta(s_t, .)\n"
-        "    step the environment, store (s_t, a_t, r_t, s_{t+1}) in the buffer\n"
-        "    sample a minibatch and form targets y = r + beta * max_a Q_target(s', a)\n"
-        "    take a gradient step on Huber(Q_theta(s, a) - y)\n"
-        "    every K steps copy the online weights into the target network\n"
-        "```"
-    )
-    report.add_solution_method(solution_md)
-
+    print("Building figures ...")
     fig_policy = policy_comparison_figure(k_grid, z_grid, policy_kp_vfi, policy_kp_ql, dqn_kp)
     fig_curve = learning_curve_figure(ql_info["log_steps"], ql_info["log_policy_rmse"])
     fig_value = value_surface_figure(k_grid, z_grid, v_ql)
 
-    report.add_figure(
-        "figures/policy-comparison.png",
-        "Q-learning saving policy compared with VFI and the closed-form rule",
-        fig_policy,
-        description=(
-            "The greedy policy out of the Q-table tracks the closed-form saving "
-            "rule across capital and productivity states. Both numerical methods "
-            "reproduce the same proportional response to a productivity shock."
-        ),
-    )
-    report.add_figure(
-        "figures/learning-curve.png",
-        "Policy RMSE versus number of Q-learning steps",
-        fig_curve,
-        description=(
-            "Policy error against the closed form falls as the agent visits "
-            "more states. The curve flattens once each region of the grid has "
-            "enough samples to anchor the maximizer."
-        ),
-    )
-    report.add_figure(
-        "figures/value-surface.png",
-        "Q-learning value surface with closed-form policy contours",
-        fig_value,
-        description=(
-            "The learned value surface is monotone in capital and increasing in "
-            "productivity. White contours mark the closed-form saving rule. "
-            "The iso-policy curves rise with $z$."
-        ),
-    )
-    report.add_table(
-        "tables/algorithm-comparison.csv",
-        "Algorithm comparison",
-        comparison_df,
-        description=(
-            "The table compares the solvers on the same calibration. "
-            "Q-learning uses no transition matrix. It matches the VFI policy "
-            "and value to a few hundredths in capital units. "
-            "The policy MAE column is computed on interior capital states "
-            "only: the three lowest and three highest capital grid rows are "
-            "excluded, since the closed-form rule can push next-period "
-            "capital outside the discrete action grid at the boundary. "
-            "All three solvers use the identical mask, so the comparison "
-            "stays apples-to-apples; a full-grid MAE would be somewhat "
-            "larger for every solver. The evaluation-count column counts "
-            "deterministic sweep evaluations for value iteration and "
-            "stochastic sampled transitions for Q-learning and DQN."
-        ),
-    )
-    closing = (
-        f"VFI converges in {vfi_info['iterations']} sweeps. "
-        f"Q-learning hits an interior-grid policy MAE of {ql_mae:.4f} after "
-        f"{ql_info['steps'] * N_QL_SEEDS:,} sampled transitions across "
-        f"{N_QL_SEEDS} seeds"
-    )
-    if dqn_result is not None:
-        closing += f". DQN reaches {dqn_mae:.4f} after {DQN_STEPS:,} steps"
-    closing += (
-        ". The MAE figures exclude the three lowest and three highest "
-        "capital grid rows, where the closed-form rule can leave the "
-        "discrete action grid; the same boundary mask is applied to every "
-        "solver"
-    )
-    report.add_results(closing + ".")
+    save_figure(fig_policy, "figures/policy-comparison.png", dpi=150)
+    save_figure(fig_curve, "figures/learning-curve.png", dpi=150)
+    save_figure(fig_value, "figures/value-surface.png", dpi=150)
 
-    report.add_takeaway(
-        "When the transition is unknown, the planner can still recover the "
-        "saving rule. Sampled transitions are enough.\n\n"
-        "Q-learning trades a model for data. The closed-form Brock-Mirman "
-        "policy keeps both the model-based and the model-free solvers honest."
-    )
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    comparison_df.to_csv("tables/algorithm-comparison.csv", index=False)
 
-    report.add_references([
-        "[Brock, W. A. and Mirman, L. J. (1972). Optimal Economic Growth and Uncertainty: The Discounted Case. *Journal of Economic Theory*, 4(3), 479-513.](https://doi.org/10.1016/0022-0531(72)90135-4)",
-        "[Watkins, C. J. C. H. and Dayan, P. (1992). Q-Learning. *Machine Learning*, 8(3), 279-292.](https://doi.org/10.1007/BF00992698)",
-        "[Sutton, R. S. and Barto, A. G. (2018). *Reinforcement Learning: An Introduction*, 2nd ed. MIT Press.](http://incompleteideas.net/book/the-book-2nd.html)",
-        "[Mnih, V., Kavukcuoglu, K., Silver, D., et al. (2015). Human-Level Control through Deep Reinforcement Learning. *Nature*, 518, 529-533.](https://doi.org/10.1038/nature14236)",
-    ])
-
-    report.write(str(folder / "README.md"))
-    print("Wrote README.md")
+    save_thumbnail("figures/policy-comparison.png", "figures/thumb.png")
+    print("Generated figures and tables.")
 
 
 if __name__ == "__main__":

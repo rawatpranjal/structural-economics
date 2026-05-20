@@ -23,12 +23,14 @@ pure-computation `run.py`.
       shortlist; sonnet checks re-audited all 19 to <=25% (top was 75%->10%).
 - [x] **Stage 3 - Mop up.** Opus subagents cleared findings in the other
       70 tutorials; sonnet checks re-audited all to <=25% (most to 0%).
-- [ ] **Stage 4 - Split writeup from code.** Rewrite the `CLAUDE.md`
-      Tutorial Contract; sonnet subagents convert all 97 tutorials to a
-      hand-written `README.md` + pure-computation `run.py`; retire
-      `lib/output.py`.
+- [x] **Stage 4 - Split writeup from code.** `CLAUDE.md` Tutorial
+      Contract rewritten; all 97 tutorials converted to hand-written
+      `README.md` + pure-computation `run.py` by sonnet subagents;
+      `lib/output.py` moved to `_legacy/`; `scripts/validate_catalog.py`
+      passes for all 97 tutorials.
 
 ## Status
 
-Stages 0-3 done (all 97 tutorials audited, fixed, re-checked <=25%).
-Stage 4 (README/code split) pending.
+All stages complete. 97 tutorials audited, fixed, re-checked <=25%, and
+split into hand-maintained `README.md` + pure-computation `run.py`.
+`validate_catalog.py` passes.

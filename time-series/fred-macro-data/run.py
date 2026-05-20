@@ -19,8 +19,7 @@ from scipy.sparse import eye, spdiags
 from scipy.sparse.linalg import spsolve
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import save_figure, save_thumbnail, setup_style
 
 
 SERIES = ["GDP_growth", "CPI_inflation", "Unemployment", "FedFunds"]
@@ -213,124 +212,6 @@ def main() -> None:
     )
 
     setup_style()
-    report = ModelReport(
-        "Business-Cycle Moments from a FRED-Style Macro Panel",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "Macroeconomic models are often judged by business-cycle moments. The "
-        "researcher starts with quarterly output growth, inflation, unemployment, "
-        "and a policy rate.\n\n"
-        "The object here is a small FRED-style panel. It is simulated so the page "
-        "can run without an API key or a changing data release.\n\n"
-        "The computational need is detrending. HP filtering puts each series into "
-        "a cycle. Sample moments then summarize volatility, comovement, persistence, "
-        "and an Okun slope."
-    )
-
-    report.add_equations(
-        r"""
-Let
-
-$$
-y_t = (g_t,\pi_t,u_t,i_t)'
-$$
-
-collect GDP growth, CPI inflation, unemployment, and the federal funds rate,
-all measured in percentage points. The synthetic data are generated from a
-stationary vector process
-
-$$
-s_t = \rho \odot s_{t-1} + \sqrt{1-\rho^2}\odot \varepsilon_t,
-\qquad
-\varepsilon_t \sim N(0,C),
-\qquad
-y_t=\mu+\sigma^{y}\odot s_t.
-$$
-
-The vector $s_t$ is a standardized latent state and $\sigma^{y}$ is the 4-vector of series standard deviations (3.0, 1.5, 1.5, 3.0). It is a separate quantity from the HP-cycle standard deviation $\sigma^{c}_j = \mathrm{sd}(c_{j,t})$ defined below; the superscripts $y$ and $c$ keep the DGP scaling and the cycle moment distinct.
-Here $\odot$ is element-by-element multiplication. The correlation matrix $C$
-sets the contemporaneous macro relationships in the example. The parameter
-$\rho_j$ controls how slowly each series adjusts after an innovation.
-
-For each observed series $y_{j,t}$, the HP filter chooses a trend $\tau_{j,t}$
-by solving
-
-$$
-\min_{\tau_j}
-\sum_{t=1}^{T} (y_{j,t}-\tau_{j,t})^2 + \lambda\sum_{t=2}^{T-1}
-[(\tau_{j,t+1}-\tau_{j,t})-(\tau_{j,t}-\tau_{j,t-1})]^2.
-$$
-
-The cycle is $c_{j,t}=y_{j,t}-\tau_{j,t}$. The reported moments are
-
-$$
-\sigma^{c}_j=\mathrm{sd}(c_{j,t}),\qquad
-r_{j,g}=\mathrm{corr}(c_{j,t},c_{g,t}),\qquad
-a_j=\mathrm{corr}(c_{j,t},c_{j,t-1}).
-$$
-
-The Okun diagnostic is the finite-sample regression
-
-$$
-c_{u,t}=\alpha_O+\beta_O c_{g,t}+e_t,
-$$
-
-where $c_{g,t}$ is the GDP-growth cycle and $c_{u,t}$ is the unemployment
-cycle.
-"""
-    )
-
-    report.add_model_setup(
-        "**Quarterly sample**\n\n"
-        "| Object | Value | Role |\n"
-        "|---|---:|---|\n"
-        f"| $T$ | {T} | Main sample, 50 years of quarters |\n"
-        f"| $T_B$ | {T_benchmark} | Long simulation used only as a benchmark |\n"
-        f"| $\\lambda$ | {lamb_hp:.0f} | HP smoothing parameter for quarterly data |\n\n"
-        "**Series-level primitives**\n\n"
-        "| Series | Mean | Std. dev. | Persistence | Economic role |\n"
-        "|---|---:|---:|---:|---|\n"
-        "| GDP growth | 2.5 | 3.0 | 0.30 | Output-growth cycle |\n"
-        "| CPI inflation | 2.0 | 1.5 | 0.70 | Price-pressure cycle |\n"
-        "| Unemployment | 5.5 | 1.5 | 0.85 | Labor-market slack |\n"
-        "| Fed funds | 4.0 | 3.0 | 0.80 | Short-rate policy indicator |\n\n"
-        "**Innovation correlation matrix $C$**\n\n"
-        "| | GDP | CPI | Unemployment | Fed funds |\n"
-        "|---|---:|---:|---:|---:|\n"
-        "| GDP | 1.00 | 0.20 | -0.60 | 0.30 |\n"
-        "| CPI | 0.20 | 1.00 | -0.30 | 0.50 |\n"
-        "| Unemployment | -0.60 | -0.30 | 1.00 | -0.20 |\n"
-        "| Fed funds | 0.30 | 0.50 | -0.20 | 1.00 |"
-    )
-
-    report.add_solution_method(
-        "The HP filter solves one sparse linear system for each series. It chooses "
-        "a trend that tracks the data and smooths trend growth.\n\n"
-        "The residual from that trend is the cycle. The moment table then reports "
-        "standard deviations, GDP correlations, autocorrelations, and the Okun "
-        "slope.\n\n"
-        "The long simulation repeats the same calculation on many quarters. It gives "
-        "a benchmark for sampling variation in the 50-year panel.\n\n"
-        "```text\n"
-        "Algorithm: HP-filtered business-cycle moments\n"
-        "Inputs: quarterly panel y_t, HP parameter lambda, benchmark horizon T_B\n"
-        "Outputs: cycles c_t, moment table M, Okun slope beta_O\n\n"
-        "1. Simulate the four-variable macro vector y_t from the calibrated process.\n"
-        "2. For each series j:\n"
-        "      solve (I + lambda K'K) tau_j = y_j\n"
-        "      set c_j = y_j - tau_j\n"
-        "3. Compute volatility, relative volatility, GDP correlation, and lag-1\n"
-        "   autocorrelation from the cycles c_j.\n"
-        "4. Regress the unemployment cycle on the GDP-growth cycle to estimate beta_O.\n"
-        "5. Repeat steps 1-4 with T_B quarters and use those moments only as a\n"
-        "   long-sample benchmark for the finite 50-year run.\n"
-        "```\n\n"
-        "Signs matter by series. A positive GDP-growth cycle means output growth is "
-        "above trend. A positive unemployment cycle means slack is above trend."
-    )
 
     # --- Figure 1: raw macro panel ---
     fig1, axes1 = plt.subplots(2, 2, figsize=(14, 8))
@@ -341,17 +222,7 @@ cycle.
         ax.set_ylabel("Percent")
     fig1.suptitle("Quarterly macro series before detrending", fontsize=14, y=1.01)
     fig1.tight_layout()
-
-    report.add_results(
-        "The raw panel is the starting object: rates and growth rates in observed "
-        "units. GDP growth moves quickly, while unemployment and the policy rate "
-        "move slowly."
-    )
-    report.add_figure(
-        "figures/time-series.png",
-        "Quarterly FRED-style macro series before detrending.",
-        fig1,
-    )
+    save_figure(fig1, "figures/time-series.png", dpi=150)
 
     # --- Figure 2: HP-filtered cyclical components ---
     fig2, axes2 = plt.subplots(2, 2, figsize=(14, 8))
@@ -362,16 +233,7 @@ cycle.
         ax.set_ylabel("Deviation from trend")
     fig2.suptitle("HP-filtered cycles with quarterly smoothing", fontsize=14, y=1.01)
     fig2.tight_layout()
-
-    report.add_results(
-        "The HP cycles put each series on its own detrended scale. These cycles are "
-        "the inputs for the moment table."
-    )
-    report.add_figure(
-        "figures/hp-cycles.png",
-        "HP-filtered cyclical components for the four macro series.",
-        fig2,
-    )
+    save_figure(fig2, "figures/hp-cycles.png", dpi=150)
 
     # --- Figure 3: Okun relationship with long-sample benchmark ---
     fig3, ax3 = plt.subplots(figsize=(7.5, 5.3))
@@ -414,18 +276,7 @@ cycle.
     )
     ax3.legend(frameon=False)
     fig3.tight_layout()
-
-    report.add_results(
-        "Output above trend is associated with unemployment below trend. The dashed "
-        "line shows the long simulation benchmark, not a historical U.S. estimate. "
-        f"The 50-year sample correlation is {sample_okun_corr:.3f}; the "
-        f"long-sample benchmark is {benchmark_okun_corr:.3f}."
-    )
-    report.add_figure(
-        "figures/okuns-law.png",
-        "Okun relationship with finite-sample and long-sample regression lines.",
-        fig3,
-    )
+    save_figure(fig3, "figures/okuns-law.png", dpi=150)
 
     # --- Figure 4: Cross-correlation heatmap ---
     fig4, ax4 = plt.subplots(figsize=(7.2, 6.0))
@@ -454,49 +305,14 @@ cycle.
     fig4.colorbar(im, ax=ax4, shrink=0.82, label="Correlation")
     ax4.set_title("Cross-correlation of HP-filtered cycles")
     fig4.tight_layout()
+    save_figure(fig4, "figures/cross-correlation.png", dpi=150)
 
-    report.add_results(
-        "The correlation matrix checks the full cycle panel. The signs match the "
-        "calibration. Unemployment is countercyclical. Inflation and the policy "
-        "rate are procyclical."
-    )
-    report.add_figure(
-        "figures/cross-correlation.png",
-        "Cross-correlation matrix of HP-filtered cyclical components.",
-        fig4,
-    )
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    display_stats.to_csv("tables/business-cycle-stats.csv", index=False)
 
-    report.add_table(
-        "tables/business-cycle-stats.csv",
-        "Business-cycle moments from HP-filtered quarterly cycles",
-        display_stats,
-        description=(
-            "The table reports the finite sample and benchmark moments. Benchmark "
-            "columns use the same process, so they show sampling variation rather "
-            "than validation with real data."
-        ),
-    )
+    save_thumbnail("figures/time-series.png", "figures/thumb.png")
 
-    report.add_takeaway(
-        "Business-cycle moments are constructed before they are matched.\n\n"
-        "In this run, GDP growth and unemployment move against each other. The Okun "
-        f"slope is {sample_okun_slope:.3f}. Unemployment is the most persistent "
-        "cycle.\n\n"
-        "Sampling and filtering keep the 50-year sample from matching the long "
-        "simulation exactly."
-    )
-
-    report.add_references(
-        [
-            "Federal Reserve Bank of St. Louis. FRED, Federal Reserve Economic Data.",
-            "Hodrick, R. and Prescott, E. (1997). \"Postwar U.S. Business Cycles: An Empirical Investigation.\" *Journal of Money, Credit and Banking*, 29(1), 1-16.",
-            "Stock, J. and Watson, M. (1999). \"Business Cycle Fluctuations in U.S. Macroeconomic Time Series.\" *Handbook of Macroeconomics*, Vol. 1A, Ch. 1.",
-            "Okun, A. (1962). \"Potential GNP: Its Measurement and Significance.\" *Proceedings of the Business and Economic Statistics Section*, ASA.",
-        ]
-    )
-
-    report.write("README.md")
-    print(f"\nGenerated: README.md + {len(report._figures)} figures + {len(report._tables)} table")
+    print(f"\nGenerated: 4 figures + 1 table")
 
 
 if __name__ == "__main__":

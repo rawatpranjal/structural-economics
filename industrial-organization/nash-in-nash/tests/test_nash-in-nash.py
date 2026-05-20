@@ -13,15 +13,14 @@ Violated-invariant test: passed on the buggy prose. Honest-fix test: failed on
 the buggy prose. After the fix the violated invariant fails and the honest fix
 passes.
 
-run.py runs its pipeline only under `if __name__ == "__main__"`; the tests
-inspect the run.py source text rather than executing it.
+Prose now lives in README.md; run.py contains only computation and figure code.
 """
-import inspect
 import re
 from pathlib import Path
 
 TUTORIAL_DIR = Path(__file__).resolve().parents[1]
 RUN_SRC = (TUTORIAL_DIR / "run.py").read_text()
+README_SRC = (TUTORIAL_DIR / "README.md").read_text()
 
 
 def test_code_does_recompute_demand_inside_the_tau_sweep():
@@ -47,8 +46,9 @@ def test_finding1_violated_invariant_prose_claims_no_recompute():
     contradicts the code.
 
     PASSED on the buggy prose; FAILS after the fix.
+    Prose now lives in README.md.
     """
-    assert "does not " in RUN_SRC and "recompute demand for each" in RUN_SRC
+    assert "does not " in README_SRC and "recompute demand for each" in README_SRC
 
 
 def test_finding1_honest_fix_prose_says_demand_held_fixed():
@@ -57,6 +57,7 @@ def test_finding1_honest_fix_prose_says_demand_held_fixed():
     surplus split moves -- without the contradicted "does not recompute" claim.
 
     FAILED on the buggy prose; PASSES after the fix.
+    Prose now lives in README.md.
     """
-    assert "recompute demand for each" not in RUN_SRC
-    assert "networks are the same" in RUN_SRC and "surplus split changes" in RUN_SRC
+    assert "recompute demand for each" not in README_SRC
+    assert "networks are the same" in README_SRC and "surplus split changes" in README_SRC

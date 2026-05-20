@@ -13,8 +13,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.plotting import setup_style
-from lib.output import ModelReport
+from lib.plotting import save_figure, save_thumbnail, setup_style
 
 
 def hp_filter(y, lam=1600):
@@ -243,139 +242,11 @@ def main():
     print(f"  std(K) = {std_k:.2f}% (rel {rel_k:.2f}), corr(K,Y) = {corr_ky:.2f}")
 
     # =========================================================================
-    # Report
+    # Figures
     # =========================================================================
     setup_style()
 
-    report = ModelReport(
-        "RBC Capital, Labor, and Business-Cycle Moments",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "Aggregate productivity changes over time. A representative household owns "
-        "capital, supplies labor, and chooses investment after observing productivity. "
-        "The shock moves output directly and also changes work and saving.\n\n"
-        "The object is a stochastic RBC allocation. The state is capital and a "
-        "two-state TFP process. The policies choose next-period capital and current "
-        "labor.\n\n"
-        "The Bellman equation has no closed-form stochastic policy. We solve it on "
-        "a global grid, simulate the economy, and compare simulated cycles with "
-        "standard RBC moments."
-    )
-
-    report.add_equations(
-        r"""
-**Technology and resources.** Capital $k_t$, labor $l_t\in(0,1)$, and TFP $z_t$
-produce output through Cobb-Douglas technology:
-
-$$y_t = z_t\,k_t^{\alpha}\,l_t^{1-\alpha},\qquad \alpha\in(0,1),$$
-
-The resource constraint is
-
-$$c_t + k_{t+1} = z_t\,k_t^{\alpha}\,l_t^{1-\alpha} + (1-\delta)\,k_t,$$
-
-with $c_t>0$ and $k_{t+1}\geq 0$. Investment is $i_t = k_{t+1} - (1-\delta)\,k_t$.
-
-**Preferences.** Period utility uses log consumption and log leisure:
-
-$$u(c,l)=\log c+\phi\log(1-l),\qquad \phi>0,$$
-
-The household maximizes
-$\mathbb{E}_0\sum_{t=0}^{\infty}\beta^t u(c_t,l_t)$.
-
-**TFP process.** Productivity takes two values $z_t\in\{z_L,z_H\}=\{0.95,1.05\}$
-with persistent symmetric transitions:
-
-$$P_{ij}=\Pr(z_{t+1}=z_j\mid z_t=z_i),\qquad
-P=\begin{pmatrix}0.95 & 0.05\\ 0.05 & 0.95\end{pmatrix}.$$
-
-**Bellman equation.** Conditioning on the current state $(k,z_i)$, the household
-solves:
-
-$$V(k,z_i)=\max_{k',\,l\in(0,1)}[\log c+\phi\log(1-l)+\beta\sum_{j}P_{ij}\,V(k',z_j)],$$
-
-subject to $c=z_i k^{\alpha} l^{1-\alpha}+(1-\delta)k-k'>0$. The policy
-functions are $g_k(k,z)=k'$ and $g_l(k,z)=l$.
-
-**Deterministic $z=1$ benchmark.** Setting $z\equiv 1$ in the stochastic
-Bellman, the Euler condition for capital pins down the steady-state
-capital-labor ratio,
-
-$$\frac{k_{ss}}{l_{ss}}=(\frac{1/\beta-1+\delta}{\alpha})^{1/(\alpha-1)},$$
-
-and the labor first-order condition pins down hours
-
-$$l_{ss}=\frac{w_{ss}}{w_{ss}+\phi\,(c_{ss}/l_{ss})},\qquad
-w_{ss}=(1-\alpha)(k_{ss}/l_{ss})^{\alpha}.$$
-
-The stochastic policy fluctuates around this benchmark.
-"""
-    )
-
-    report.add_model_setup(
-        f"| Object | Value | Role |\n"
-        f"|---|---:|---|\n"
-        f"| $\\beta$ | {beta} | Discount factor (quarterly) |\n"
-        f"| $\\delta$ | {delta} | Depreciation rate |\n"
-        f"| $\\alpha$ | {alpha:.4f} | Capital share in Cobb-Douglas |\n"
-        f"| $\\phi$ | {phi} | Leisure weight in utility |\n"
-        f"| $z\\in\\{{z_L,z_H\\}}$ | $\\{{{z_vals[0]},{z_vals[1]}\\}}$ | Two-state aggregate TFP |\n"
-        f"| $P_{{ii}}$ | {P[0, 0]:.2f} | Probability of staying in the same TFP state |\n"
-        f"| $k_{{ss}}$ | {k_ss:.4f} | Deterministic steady-state capital at $z=1$ |\n"
-        f"| $l_{{ss}}$ | {l_ss:.4f} | Deterministic steady-state hours |\n"
-        f"| $c_{{ss}}$ | {c_ss:.4f} | Deterministic steady-state consumption |\n"
-        f"| $i_{{ss}}$ | {i_ss:.4f} | Deterministic steady-state investment |\n"
-        f"| Capital grid | $[{k_min},{k_max}]$, {n_k} pts | State and $k'$ choice grid |\n"
-        f"| Labor grid | $[{l_min},{l_max}]$, {n_l} pts | $l$ candidates |\n"
-        f"| Fine benchmark | {n_k_fine} capital, {n_l_fine} labor pts | Audit only |\n"
-        f"| Tolerance | {tol:.0e} | Sup-norm stopping rule for VFI |\n"
-        f"| Simulation | {T_sim} periods after {T_burn} burn-in | Stationary moments |"
-    )
-
-    report.add_solution_method(
-        "**Bellman update.** The Bellman operator\n\n"
-        "$$(TV)(k,z_i)=\\max_{(l,k')}[\\log c(k,z_i,l,k')+\\phi\\log(1-l)"
-        "+\\beta\\sum_{j}P_{ij}V(k',z_j)]$$\n\n"
-        "is a $\\beta$-contraction. VFI applies it until the value function "
-        "changes by less than the tolerance. For each state, the code evaluates "
-        "every labor and next-capital pair. It masks negative consumption and "
-        "takes a joint argmax. The selected indices define the two policy rules.\n\n"
-        "**Pseudocode.**\n\n"
-        "```text\n"
-        "Algorithm  Global VFI for the two-state RBC model\n"
-        "Inputs   capital grid K = {k_i}, labor grid L = {l_m}, TFP states {z_1,z_2},\n"
-        "           transition matrix P, primitives (beta, delta, alpha, phi),\n"
-        "           tolerance epsilon\n"
-        "Outputs  V(k_i, z_s), capital policy g_k(k_i, z_s), labor policy g_l(k_i, z_s)\n\n"
-        "Precompute  u_{i,s,m,j} <- log c + phi log(1 - l_m)\n"
-        "            with c = z_s k_i^alpha l_m^(1-alpha) + (1-delta) k_i - k_j,\n"
-        "            and u_{i,s,m,j} <- -infinity if c <= 0\n"
-        "Initialize  V_{i,s} <- (log c_guess + phi log(1 - l_guess)) / (1 - beta)\n"
-        "repeat n = 0, 1, 2, ...:\n"
-        "    EV_{j,s} <- sum_t P_{s,t} V_{j,t}                  # 1 mat-mat\n"
-        "    M_{i,s,m,j} <- u_{i,s,m,j} + beta * EV_{j,s}        # broadcast add\n"
-        "    (m*, j*)_{i,s} <- argmax over (m, j) of M_{i,s,m,j} # joint argmax\n"
-        "    V^new_{i,s}    <- max over (m, j) of M_{i,s,m,j}\n"
-        "    err            <- max_{i,s} | V^new_{i,s} - V_{i,s} |\n"
-        "    V              <- V^new\n"
-        "stop when err < epsilon\n"
-        "g_k(k_i, z_s) <- k_{j*_{i,s}};   g_l(k_i, z_s) <- l_{m*_{i,s}}\n"
-        "```\n\n"
-        f"**Fine-grid audit.** The fine grid uses {n_k_fine} capital nodes and "
-        f"{n_l_fine} labor nodes on the same domain. It is an audit, not the "
-        "policy used for simulation. The max relative value error is "
-        f"**{bench_V_rel:.1e}**. The max capital-policy gap is "
-        f"**{bench_k_max_abs:.4f}**. The max hours gap is "
-        f"**{bench_l_max_abs:.4f}**.\n\n"
-        f"The coarse VFI converged in **{info['iterations']} iterations** with "
-        f"sup-norm error **{info['error']:.2e}**. The fine-grid VFI converged in "
-        f"**{info_fine['iterations']} iterations** with error "
-        f"**{info_fine['error']:.2e}**."
-    )
-
-    # --- Figure 1: Value function with fine-grid benchmark ---
+    # Figure 1: Value function with fine-grid benchmark
     fig1, ax1 = plt.subplots()
     ax1.plot(k_grid, V[:, 0], "b-", linewidth=2, label=f"$z_L = {z_vals[0]:.2f}$ (low)")
     ax1.plot(k_grid, V[:, 1], "r-", linewidth=2, label=f"$z_H = {z_vals[1]:.2f}$ (high)")
@@ -388,16 +259,9 @@ The stochastic policy fluctuates around this benchmark.
     ax1.set_ylabel("$V(k, z)$")
     ax1.set_title("Value Function")
     ax1.legend(loc="lower right", fontsize=9)
-    report.add_figure(
-        "figures/value-function.png", "Value function by capital and TFP state",
-        fig1,
-        description="The value function rises with capital. High TFP shifts the curve up "
-        "because installed capital is more productive. The dotted fine-grid lines sit on the "
-        "coarse-grid curves. The deterministic steady state sits between the two stochastic "
-        "centers.",
-    )
+    save_figure(fig1, "figures/value-function.png", dpi=150)
 
-    # --- Figure 2: Capital and labor policies (two subplots) with benchmarks ---
+    # Figure 2: Capital and labor policies (two subplots) with benchmarks
     fig2, (ax2a, ax2b) = plt.subplots(1, 2, figsize=(12, 5))
 
     ax2a.plot(k_grid, k_policy[:, 0], "b-", linewidth=2, label=f"$z_L = {z_vals[0]:.2f}$")
@@ -425,16 +289,9 @@ The stochastic policy fluctuates around this benchmark.
     ax2b.set_title("Labor Policy $g_l(k,z)$")
     ax2b.legend(loc="upper right", fontsize=9)
     fig2.tight_layout()
-    report.add_figure(
-        "figures/policy-functions.png", "Capital and labor policy functions",
-        fig2,
-        description="The capital policy stays near the 45-degree line, so capital moves "
-        "slowly. High TFP raises next-period capital at each current capital level. Hours rise "
-        "in high TFP states and fall slightly with capital. The fine grid shows the same "
-        "policies with smoother steps.",
-    )
+    save_figure(fig2, "figures/policy-functions.png", dpi=150)
 
-    # --- Figure 3: Simulated path ---
+    # Figure 3: Simulated path
     fig3, axes3 = plt.subplots(2, 1, figsize=(10, 7), sharex=True)
     T_plot = 200
     periods = np.arange(T_plot)
@@ -453,15 +310,9 @@ The stochastic policy fluctuates around this benchmark.
     axes3[1].set_ylabel("TFP $z_t$")
     axes3[1].set_title("Productivity")
     fig3.tight_layout()
-    report.add_figure(
-        "figures/simulation.png", "Simulated output, consumption, investment, and TFP",
-        fig3,
-        description="Output jumps when TFP changes. Consumption moves less because capital "
-        "buffers resources. Investment absorbs most of the gap between output and consumption. "
-        "Capital then adjusts slowly after each regime switch.",
-    )
+    save_figure(fig3, "figures/simulation.png", dpi=150)
 
-    # --- Figure 4: HP-filtered comovements ---
+    # Figure 4: HP-filtered comovements
     fig4, axes4 = plt.subplots(2, 2, figsize=(12, 8))
     T_cyc = 200
 
@@ -499,15 +350,11 @@ The stochastic policy fluctuates around this benchmark.
     axes4[1, 1].set_ylabel("% deviation from HP trend")
     axes4[1, 1].legend(fontsize=9)
     fig4.tight_layout()
-    report.add_figure(
-        "figures/comovements.png", "HP-filtered cyclical comovements",
-        fig4,
-        description="Consumption is smoother than output. Investment moves with output and is "
-        "about four times as volatile. Hours are strongly procyclical. Capital is persistent "
-        "because it accumulates past investment.",
-    )
+    save_figure(fig4, "figures/comovements.png", dpi=150)
 
-    # --- Table: Business-cycle statistics ---
+    # =========================================================================
+    # Tables
+    # =========================================================================
     bc_data = {
         "Variable": ["Output (Y)", "Consumption (C)", "Investment (I)", "Hours (L)", "Capital (K)"],
         "Std Dev (%)": [f"{std_y:.2f}", f"{std_c:.2f}", f"{std_i:.2f}", f"{std_l:.2f}", f"{std_k:.2f}"],
@@ -516,29 +363,8 @@ The stochastic policy fluctuates around this benchmark.
         "Autocorr(1)": [f"{ac_y:.2f}", f"{ac_c:.2f}", f"{ac_i:.2f}", f"{ac_l:.2f}", f"{ac_k:.2f}"],
     }
     df = pd.DataFrame(bc_data)
-    report.add_table(
-        "tables/business-cycle-stats.csv",
-        f"Business-cycle moments, HP-filtered (lambda=1600), {T_sim}-quarter simulation",
-        df,
-        description="The table gives standard HP-filtered moments from the simulated economy. "
-        "Investment is the most volatile flow. Consumption is smoother than output. Hours are "
-        "strongly procyclical. Capital has high autocorrelation because it is a stock.",
-    )
-
-    report.add_takeaway(
-        "The global-grid RBC model turns a two-state productivity shock into familiar "
-        "business-cycle comovements. Investment is volatile, consumption is smooth, and hours "
-        "are procyclical. Capital is the persistent state that carries shocks forward. The "
-        "fine-grid audit shows the moments are not driven by coarse discretization."
-    )
-
-    report.add_references([
-        "Kydland, F. and Prescott, E. (1982). \"Time to Build and Aggregate Fluctuations.\" *Econometrica*, 50(6), 1345-1370.",
-        "King, R., Plosser, C., and Rebelo, S. (1988). \"Production, Growth and Business Cycles: I. The Basic Neoclassical Model.\" *Journal of Monetary Economics*, 21(2-3), 195-232.",
-        "Cooley, T. and Prescott, E. (1995). \"Economic Growth and Business Cycles.\" In Cooley (ed.), *Frontiers of Business Cycle Research*, Princeton University Press.",
-        "Hansen, G. (1985). \"Indivisible Labor and the Business Cycle.\" *Journal of Monetary Economics*, 16(3), 309-327.",
-        "Ljungqvist, L. and Sargent, T. (2018). *Recursive Macroeconomic Theory*. MIT Press, 4th edition, Ch. 12.",
-    ])
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    df.to_csv("tables/business-cycle-stats.csv", index=False)
 
     # Commit the fine-grid audit diagnostics so the convergence and
     # coarse-vs-fine gap numbers quoted in Solution Method are grounded in an
@@ -569,8 +395,8 @@ The stochastic policy fluctuates around this benchmark.
         Path(__file__).resolve().parent / "tables" / "fine-grid-audit.csv", index=False
     )
 
-    report.write("README.md")
-    print(f"\nGenerated: README.md + {len(report._figures)} figures + {len(report._tables)} tables")
+    save_thumbnail("figures/value-function.png", "figures/thumb.png")
+    print(f"\nGenerated figures and tables.")
 
 
 if __name__ == "__main__":

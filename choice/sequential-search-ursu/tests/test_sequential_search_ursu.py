@@ -23,7 +23,6 @@ import pandas as pd
 
 HERE = Path(__file__).resolve().parent
 TUTORIAL = HERE.parent
-RUN_PY = (TUTORIAL / "run.py").read_text()
 README = (TUTORIAL / "README.md").read_text()
 CF = pd.read_csv(TUTORIAL / "tables" / "search-cost-counterfactual.csv")
 
@@ -46,14 +45,14 @@ def test_average_searches_does_fall():
 
 def test_f1_violated_invariant_prose_claims_inside_share_falls():
     """Violated invariant: passes while the buggy Results prose claims the
-    inside purchase share falls; must FAIL after the prose is corrected."""
-    assert "The inside purchase share falls" in RUN_PY
+    inside purchase share falls; must FAIL after the prose is corrected.
+    Prose now lives in README.md (run.py is computation-only)."""
+    assert "The inside purchase share falls" in README
 
 
 def test_f1_honest_fix_prose_matches_flat_inside_share():
     """Honest fix: the Results prose no longer claims a falling inside share
     and instead states it stays near one while search depth falls."""
-    assert "The inside purchase share falls" not in RUN_PY
     assert "The inside purchase share falls" not in README
     # The corrected prose describes the real effect.
     lowered = README.lower()

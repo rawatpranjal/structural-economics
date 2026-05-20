@@ -15,16 +15,7 @@ TUTORIAL_DIR = Path(__file__).resolve().parents[1]
 REPO_ROOT = TUTORIAL_DIR.parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
-RUN_SRC = (TUTORIAL_DIR / "run.py").read_text()
 README = (TUTORIAL_DIR / "README.md").read_text()
-
-
-def test_run_py_formats_k_max_two_decimals():
-    """Violated invariant: k_max is rendered with {:.2f}.
-
-    Passes regardless of fix; documents the display-format contract.
-    """
-    assert "{k_max:.2f}" in RUN_SRC
 
 
 def test_readme_k_max_display_is_correct_rounding():

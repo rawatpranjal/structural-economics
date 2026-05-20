@@ -19,8 +19,7 @@ import pandas as pd
 from scipy.optimize import root
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import setup_style, save_figure, save_thumbnail
 
 
 @dataclass(frozen=True)
@@ -509,136 +508,6 @@ def main() -> None:
     }
 
     setup_style()
-    report = ModelReport(
-        "Allen-Arkolakis Spatial Equilibrium on a Grid",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "Spatial equilibrium models ask where workers live and what workers earn. "
-        "They also ask how geography changes those outcomes. "
-        "Allen and Arkolakis start from gravity trade, then add labor mobility.\n\n"
-        "This tutorial puts 15 locations on a line. "
-        "The center has a small productivity advantage. "
-        "Distance raises shipping costs. "
-        "Workers move until real utility is equalized. "
-        "Real utility here means the wage multiplied by local amenities and divided by the local price index. "
-        "Mobility does not equalize nominal wages across locations, only this real utility level.\n\n"
-        "The tutorial compares a dispersed regime with an agglomerated regime. "
-        "The comparison shows how spillovers change the spatial allocation."
-    )
-
-    report.add_equations(
-        r"""
-The model has a finite set of locations. I write this set as $i \in \lbrace 1,\ldots,N\rbrace$. I use $j$ when the same set is viewed as destinations.
-
-At location $i$, $L_i$ is labor, $w_i$ is the wage, $A_i$ is productivity, and $u_i$ is the amenity. Trade costs are iceberg costs. Delivering one unit from $i$ to $j$ requires shipping $T_{ij}$ units from origin $i$. By convention $T_{ii} = 1$ within a location and $T_{ij} \geq 1$ otherwise. The same $T_{ij}$ both raises the destination price index and shrinks the revenue origin $i$ collects from $j$.
-
-The paper uses a continuum of locations. This tutorial uses a finite grid. That change turns integrals into sums over $i \in \lbrace 1,\ldots,N\rbrace$.
-
-Productivity and amenities both start from fundamentals. They also respond to local labor:
-
-$$
-A_i = \bar A_i L_i^\alpha
-$$
-
-$$
-u_i = \bar u_i L_i^\beta
-$$
-
-$\alpha$ is the productivity spillover. It is positive here. A larger $L_i$ raises $A_i$.
-
-$\beta$ is the congestion parameter. It is negative here. A larger $L_i$ lowers $u_i$.
-
-The two spillovers pull in opposite directions. Their relative strength decides whether the model concentrates labor or spreads it out.
-
-Consumers have Dixit-Stiglitz CES preferences over varieties from every origin. The elasticity of substitution across varieties is $\sigma > 1$. The CES price index at destination $j$ is
-
-$$
-P_j^{1-\sigma} =
-\sum_i T_{ij}^{1-\sigma} A_i^{\sigma-1} w_i^{1-\sigma}.
-$$
-
-The spending share $\pi_{ij}$ is destination $j$'s spending on goods from origin $i$:
-
-$$
-\pi_{ij} =
-\frac{T_{ij}^{1-\sigma} A_i^{\sigma-1} w_i^{1-\sigma}}
-{\sum_k T_{kj}^{1-\sigma} A_k^{\sigma-1} w_k^{1-\sigma}}.
-$$
-
-This is the standard Krugman gravity share. CES demand against producers priced at $w_i / A_i$ and shipped at $T_{ij}$ implies destinations spend a larger share on origins that are cheaper or closer.
-
-Each destination $j$ spends its labor income $w_j L_j$ across origins in shares $\pi_{ij}$. Origin $i$'s total revenue is the sum $\sum_j \pi_{ij} w_j L_j$. With labor as the only factor and zero profits under free entry, that revenue equals the local wage bill at $i$:
-
-$$
-w_i L_i =
-\sum_j \pi_{ij} w_j L_j.
-$$
-
-Mobility says workers are indifferent across inhabited locations:
-
-$$
-\frac{w_i u_i}{P_i} = V.
-$$
-
-Workers compare $w_i u_i / P_i$ across locations and move toward higher values. The common level $V$ is pinned down residually by the labor adding-up constraint below.
-
-$$
-\sum_i L_i = 1
-$$
-
-$$
-N^{-1}\sum_i \log w_i = 0.
-$$
-
-The first normalization sets total labor to one. The second normalization sets the geometric mean wage to one, fixing units.
-
-The tutorial solves balanced trade and mobility directly. This matches the finite-location version of equations (11) and (12) in Allen and Arkolakis. On a continuum where iceberg costs depend only on distance, symmetry lets the paper eliminate wages and reduce the two equations to a single nonlinear integral equation in labor density. Allen and Arkolakis call this the Hammerstein reduction. The grid version here keeps the same equilibrium content without the continuum machinery.
-"""
-    )
-
-    report.add_model_setup(
-        "| Symbol | Value | Role |\n"
-        "|--------|-------|------|\n"
-        f"| $N$ | {len(geo.x)} | Location count |\n"
-        f"| $x_i$ | equally spaced in $[-1,1]$ | Grid position |\n"
-        f"| $\\sigma$ | {geo.sigma:.1f} | Substitution elasticity |\n"
-        f"| $T_{{ij}}$ | $\\exp({geo.kappa:.1f}\\lvert x_i-x_j\\rvert)$ | Iceberg trade cost |\n"
-        "| $\\bar A_i$ | central bump | Productivity fundamental |\n"
-        "| $\\bar u_i$ | 1 | Amenity fundamental |\n"
-        f"| $\\alpha,\\beta$ baseline | {dispersion.alpha:.2f}, {dispersion.beta:.2f} | Dispersion regime |\n"
-        f"| $\\alpha,\\beta$ strong agglomeration | {agglomeration.alpha:.2f}, {agglomeration.beta:.2f} | Agglomeration regime |\n"
-        "| Total labor | 1 | Labor normalization |\n"
-        "| Wage normalization | geometric mean wage one | Wage units |"
-    )
-
-    report.add_solution_method(
-        "The solver works with log wages and labor logits. "
-        "A softmax maps logits into labor shares. "
-        "This keeps wages positive, labor positive, and total labor equal to one.\n\n"
-        "```text\n"
-        "Algorithm: finite-grid spatial equilibrium\n"
-        "Input : T_ij, Abar_i, ubar_i, alpha, beta\n"
-        "Output: w_i, L_i\n"
-        "  choose log wage unknowns omega_i\n"
-        "  choose labor logits z_i\n"
-        "  map z into L by softmax\n"
-        "  compute A_i = Abar_i L_i^alpha\n"
-        "  compute u_i = ubar_i L_i^beta\n"
-        "  compute CES price indexes P_j\n"
-        "  compute trade shares pi_ij\n"
-        "  residual 1: log(w_i L_i) - log(sum_j pi_ij w_j L_j)\n"
-        "  residual 2: log(w_i u_i / P_i) - log(w_1 u_1 / P_1)\n"
-        "  residual 3: mean_i log w_i = 0\n"
-        "  solve residuals = 0\n"
-        "```\n\n"
-        "The high-agglomeration case uses continuation. "
-        "Continuation starts at the dispersion root and changes spillover parameters in two steps. "
-        "This helps the root search. "
-        "It is not an economic assumption."
-    )
 
     # Figure 1: geography and fundamentals.
     fig1, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4.6))
@@ -669,18 +538,7 @@ The tutorial solves balanced trade and mobility directly. This matches the finit
     ax2.set_title("Shipping from the center")
     ax2.legend()
     fig1.tight_layout()
-
-    report.add_results(
-        "The grid is deliberately small. "
-        "The center has the only built-in location advantage. "
-        "Trade costs rise with distance. "
-        "Distant destinations therefore receive lower weight in price indexes and sales."
-    )
-    report.add_figure(
-        "figures/fundamentals.png",
-        "Fundamentals plus trade costs",
-        fig1,
-    )
+    save_figure(fig1, "figures/fundamentals.png", dpi=150)
 
     # Figure 2: equilibrium wages and labor.
     fig2, (ax3, ax4) = plt.subplots(1, 2, figsize=(12, 4.6))
@@ -701,20 +559,7 @@ The tutorial solves balanced trade and mobility directly. This matches the finit
     ax4.set_title("Equilibrium population")
     ax4.legend()
     fig2.tight_layout()
-
-    disp_eq = equilibria[dispersion.name]
-    agg_eq = equilibria[agglomeration.name]
-    report.add_results(
-        f"The dispersion-dominant largest labor share is {disp_eq.labor.max():.1%}. "
-        f"The strong-agglomeration largest share is {agg_eq.labor.max():.1%}. "
-        "Nominal wages, price indexes, and amenities differ across space. "
-        "Real utility is still equalized."
-    )
-    report.add_figure(
-        "figures/equilibrium-wages-population.png",
-        "Wages plus population shares",
-        fig2,
-    )
+    save_figure(fig2, "figures/equilibrium-wages-population.png", dpi=150)
 
     # Figure 3: trade-cost heatmap and market access.
     fig3, (ax5, ax6) = plt.subplots(1, 2, figsize=(12, 4.8))
@@ -737,18 +582,7 @@ The tutorial solves balanced trade and mobility directly. This matches the finit
     ax6.set_title("Demand access")
     ax6.legend()
     fig3.tight_layout()
-
-    report.add_results(
-        "The heatmap fixes geography. "
-        "Purchasing power moves across locations. "
-        "Central concentration raises demand access for nearby origins. "
-        "Those origins serve more workers at lower shipping costs."
-    )
-    report.add_figure(
-        "figures/access-surface.png",
-        "Trade costs plus market access",
-        fig3,
-    )
+    save_figure(fig3, "figures/access-surface.png", dpi=150)
 
     # Figure 4: convergence and path dependence diagnostic.
     fig4, (ax7, ax8) = plt.subplots(1, 2, figsize=(12, 4.8))
@@ -805,33 +639,14 @@ The tutorial solves balanced trade and mobility directly. This matches the finit
     ax8.set_title("Agglomeration paths")
     ax8.legend(fontsize=8)
     fig4.tight_layout()
+    save_figure(fig4, "figures/convergence-path-dependence.png", dpi=150)
 
     left_final = migration["agglomeration_left"]["final_labor"]
     right_final = migration["agglomeration_right"]["final_labor"]
     path_gap = float(np.max(np.abs(left_final - right_final)))
+    Path("tables").mkdir(parents=True, exist_ok=True)
     pd.DataFrame({"path_gap": [path_gap]}).to_csv(
         "tables/convergence-path-dependence.csv", index=False
-    )
-    report.add_results(
-        "Allen and Arkolakis define two composite parameters that decide which regime the model lives in. "
-        "$\\gamma_1 = 1 - (\\sigma-1)\\alpha - \\sigma\\beta$ collects the dispersion forces. "
-        "$\\gamma_2 = 1 + \\sigma\\alpha + (\\sigma-1)\\beta$ collects the agglomeration forces. "
-        "Equilibrium is unique when $\\gamma_2/\\gamma_1 < 1$ and can have multiple equilibria when $\\gamma_2/\\gamma_1 > 1$. "
-        "The diagnostic table further down prints this ratio for both scenarios. "
-        "The figure just below shows the multiple-equilibrium case directly.\n\n"
-        "The relocation iteration is diagnostic only. "
-        "It solves wages for a provisional population and computes real utility gaps. "
-        "It then shifts workers toward high-utility locations.\n\n"
-        "Under dispersion dominance, both starts converge quickly. "
-        "Under strong agglomeration, left and right starts remain different. "
-        f"Their final labor profiles differ by as much as {path_gap:.3f}. "
-        "This illustrates non-uniqueness. "
-        "Stronger spillovers can remove global uniqueness."
-    )
-    report.add_figure(
-        "figures/convergence-path-dependence.png",
-        "Relocation diagnostic",
-        fig4,
     )
 
     params = parameter_table(geo, [dispersion, agglomeration])
@@ -842,59 +657,12 @@ The tutorial solves balanced trade and mobility directly. This matches the finit
         geo,
         low_trade_geo,
     )
-    report.add_results(
-        "The parameter table records the normalizations and spillover regimes. "
-        "The diagnostic table reports the two residual blocks and concentration."
-    )
-    report.add_table(
-        "tables/parameters.csv",
-        "Parameter table",
-        params,
-    )
-    report.add_table(
-        "tables/scenario-diagnostics.csv",
-        "Equilibrium diagnostics by scenario",
-        diagnostics,
-    )
-    report.add_results(
-        f"The policy experiment lowers the trade-cost slope from {geo.kappa:.2f} to "
-        f"{low_trade_geo.kappa:.2f}. "
-        "This represents lower transport costs. "
-        "Lower transport costs raise welfare in both regimes through better access. "
-        "Population also moves, and the direction depends on the spillover regime."
-    )
-    report.add_table(
-        "tables/trade-cost-counterfactual.csv",
-        "Lower trade-cost counterfactual",
-        counterfactuals,
-    )
+    params.to_csv("tables/parameters.csv", index=False)
+    diagnostics.to_csv("tables/scenario-diagnostics.csv", index=False)
+    counterfactuals.to_csv("tables/trade-cost-counterfactual.csv", index=False)
 
-    report.add_takeaway(
-        "For policy, the model tracks welfare, concentration, and geographic redistribution. "
-        "Lower trade costs improve access and raise real utility. "
-        "They can also move activity across space.\n\n"
-        "Agglomeration can raise productivity, but it can also create congestion and concentration risk. "
-        "Strong dispersion makes outcomes more predictable. "
-        "Strong agglomeration makes history and initial conditions more important.\n\n"
-        "Transport policy should be judged by welfare, concentration, and redistribution together. "
-        "A higher common utility number is not the whole policy answer. "
-        "It does not say which locations gain population. "
-        "It does not measure concentration risk."
-    )
-
-    report.add_references(
-        [
-            "Allen, T. and Arkolakis, C. (2014). *Trade and the Topography of the Spatial Economy*. Quarterly Journal of Economics 129(3), 1085-1140. https://doi.org/10.1093/qje/qju016.",
-            "Allen, T. and Arkolakis, C. (2013). *Trade and the Topography of the Spatial Economy*. NBER Working Paper 19181. https://www.nber.org/papers/w19181.",
-            "Redding, S. J. and Rossi-Hansberg, E. (2017). *Quantitative Spatial Economics*. Annual Review of Economics 9, 21-58.",
-        ]
-    )
-
-    report.write("README.md")
-    print(
-        f"Generated: README.md + {len(report._figures)} figures + "
-        f"{len(report._tables)} tables"
-    )
+    save_thumbnail("figures/fundamentals.png", "figures/thumb.png")
+    print(f"Done: 4 figures, 4 tables")
 
 
 if __name__ == "__main__":

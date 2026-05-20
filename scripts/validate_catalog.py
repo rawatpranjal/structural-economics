@@ -91,6 +91,10 @@ def active_text_files() -> list[Path]:
             rel = path.relative_to(ROOT)
             if ".git" in rel.parts or "_legacy" in rel.parts:
                 continue
+            # Skip bullshit-detector audit reports: they quote broken
+            # claim-source math by design and are not catalog content.
+            if path.name.startswith("bullshit-detector_"):
+                continue
             files.append(path)
     return sorted(files)
 

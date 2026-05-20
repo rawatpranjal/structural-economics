@@ -10,8 +10,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import save_figure, save_thumbnail, setup_style
 
 
 def simulate_ar1(
@@ -175,103 +174,6 @@ def main() -> None:
     ma_root_modulus = np.max(np.abs(ma_roots))
 
     setup_style()
-    report = ModelReport(
-        "Fiscal-Shock Persistence and Income Dynamics",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "Suppose a fiscal authority raises spending during a downturn. The "
-        "economic question is how long that impulse moves income.\n\n"
-        "The object is a spending innovation with AR(1) persistence. It enters "
-        "Samuelson's multiplier-accelerator model. Consumption depends on lagged "
-        "income. Investment responds to consumption growth.\n\n"
-        "The computation propagates one innovation and simulated shocks. Impulse "
-        "responses, autocorrelations, and a spectrum show how persistence changes "
-        "timing."
-    )
-
-    report.add_equations(
-        r"""
-Let $x_t$ denote the fiscal shock state. The shock follows an AR(1) law.
-
-$$
-x_t = \rho x_{t-1} + \varepsilon_t, \qquad
-\varepsilon_t \sim N(0,\sigma^2), \qquad |\rho|<1.
-$$
-
-The coefficient $\rho$ tells us how much of today's state becomes tomorrow's
-state. A high value makes the shock persist.
-
-In the multiplier-accelerator economy, income is the sum of three components.
-
-$$
-C_t = \beta Y_{t-1},
-\qquad
-G_t = \rho_g G_{t-1} + (1-\rho_g)\bar G + \eta_t,
-$$
-
-The spending innovation $\eta_t \sim N(0,\sigma^2)$ is drawn independently of $\varepsilon_t$.
-
-$$
-I_t = \alpha(C_t-C_{t-1}),
-\qquad
-Y_t = C_t + I_t + G_t.
-$$
-
-The steady state is $\bar Y=\bar G/(1-\beta)$, $\bar C=\beta \bar Y$, and
-$\bar I=0$. Lowercase variables are deviations from that steady state. The
-impulse response uses the recursion below.
-
-$$
-y_t = \beta(1+\alpha)y_{t-1}-\alpha\beta y_{t-2}+g_t,
-\qquad
-g_t=\rho_g g_{t-1}+\eta_t.
-$$
-"""
-    )
-
-    report.add_model_setup(
-        "**AR(1) shock process**\n\n"
-        "| Parameter | Value | Role |\n"
-        "|---|---:|---|\n"
-        f"| $\\rho$ | {rho_ar1:.2f} | Share of the shock state carried into the next period |\n"
-        f"| $\\sigma$ | {sigma_ar1:.2f} | Standard deviation of new innovations |\n"
-        f"| $T_{{sim}}$ | {periods_sim} | Simulated periods after burn-in |\n\n"
-        "**Multiplier-accelerator economy**\n\n"
-        "| Parameter | Value | Role |\n"
-        "|---|---:|---|\n"
-        f"| $\\alpha$ | {alpha_ma:.2f} | Accelerator response of investment to consumption growth |\n"
-        f"| $\\beta$ | {beta_ma:.2f} | Marginal propensity to consume out of lagged income |\n"
-        f"| $\\rho_g$ | {rho_g:.2f} | Carryover of government-spending deviations |\n"
-        f"| $\\bar G$ | {g_bar:.2f} | Steady-state government spending |\n"
-        f"| $\\bar Y$ | {y_bar:.2f} | Implied steady-state income |\n"
-        f"| $\\bar C$ | {c_bar:.2f} | Implied steady-state consumption |"
-    )
-
-    report.add_solution_method(
-        "A shock path determines every variable because the model is "
-        "backward-looking. No expectations fixed point is solved here.\n\n"
-        "The AR(1) population objects are closed form.\n\n"
-        f"$$E[x_t]=0, \\qquad "
-        f"\\mathrm{{Var}}(x_t)=\\frac{{\\sigma^2}}{{1-\\rho^2}}={ar1_variance:.6f}, "
-        f"\\qquad \\mathrm{{Corr}}(x_t,x_{{t-k}})=\\rho^k.$$"
-        "\n\n"
-        f"The AR(1) half-life is $\\log(0.5)/\\log(\\rho)={ar1_half_life:.1f}$ periods. "
-        f"The income roots are {ma_root_text}. The largest modulus is "
-        f"{ma_root_modulus:.3f}, so internal propagation is stable.\n\n"
-        "```text\n"
-        "Procedure: propagate a fiscal innovation through an AR(1) state\n"
-        "Inputs: rho, sigma, alpha, beta, rho_g, horizon T, shock sequences eps_t, eta_t\n"
-        "Outputs: AR path x_t and multiplier-accelerator paths y_t, c_t, i_t, g_t\n\n"
-        "1. Set eps_0 = 1 (or eta_0 = 1) for an impulse response.\n"
-        "2. For a simulation, draw eps_t and eta_t independently from N(0, sigma^2) after burn-in.\n"
-        "3. Update x_t = rho x_{t-1} + eps_t and g_t = rho_g g_{t-1} + eta_t.\n"
-        "4. Set c_t = beta y_{t-1}, i_t = alpha(c_t - c_{t-1}), and y_t = c_t + i_t + g_t.\n"
-        "5. Record impulse responses, autocorrelations, and the AR(1) spectrum.\n"
-        "```"
-    )
 
     periods = np.arange(periods_irf)
 
@@ -285,15 +187,7 @@ $$
     ax1.set_ylabel("Response of $x_t$")
     ax1.set_title("Persistence Sets the Horizon of a Unit Innovation")
     ax1.legend(fontsize=10)
-    report.add_figure(
-        "figures/ar1-irfs.png",
-        "Exact AR(1) impulse responses by persistence",
-        fig1,
-        description=(
-            "A unit shock follows the exact path $\\rho^h$ ($h$ = periods after the shock). Raising $\\rho$ from "
-            "0.5 to 0.9 lengthens the half-life from 1.0 to 6.6 periods."
-        ),
-    )
+    save_figure(fig1, "figures/ar1-irfs.png", dpi=150)
 
     fig2, axes2 = plt.subplots(2, 2, figsize=(12, 8))
     ma_series = [
@@ -310,15 +204,7 @@ $$
         ax.set_title(title)
     fig2.suptitle("Multiplier-Accelerator Response to Government Spending", fontsize=14)
     fig2.tight_layout(rect=[0, 0, 1, 0.96])
-    report.add_figure(
-        "figures/multiplier-accelerator-irfs.png",
-        "Multiplier-accelerator impulse responses to a government spending shock",
-        fig2,
-        description=(
-            "Government spending decays after the innovation. Income adds lagged "
-            "consumption and accelerator investment to that path."
-        ),
-    )
+    save_figure(fig2, "figures/multiplier-accelerator-irfs.png", dpi=150)
 
     fig3, (ax3a, ax3b) = plt.subplots(2, 1, figsize=(12, 8), sharex=True)
     sim_periods = np.arange(periods_sim)
@@ -345,15 +231,7 @@ $$
     ax3b.set_title("Simulated Multiplier-Accelerator Economy")
     ax3b.legend(loc="upper right", fontsize=9)
     fig3.tight_layout()
-    report.add_figure(
-        "figures/simulated-paths.png",
-        "Simulated AR(1) and multiplier-accelerator paths",
-        fig3,
-        description=(
-            "The simulated AR(1) path stays near its analytic two-standard-"
-            "deviation band. Income and consumption move together with a lag."
-        ),
-    )
+    save_figure(fig3, "figures/simulated-paths.png", dpi=150)
 
     fig4, (ax4a, ax4b) = plt.subplots(1, 2, figsize=(12, 5))
     lags = np.arange(max_lag + 1)
@@ -372,16 +250,7 @@ $$
     ax4b.set_ylabel("Autocorrelation")
     ax4b.set_title("Multiplier-Accelerator Output ACF")
     fig4.tight_layout()
-    report.add_figure(
-        "figures/autocorrelation.png",
-        "Autocorrelation functions for the AR(1) and multiplier-accelerator output",
-        fig4,
-        description=(
-            "The AR(1) autocorrelation matches $\\rho^k$ apart from simulation "
-            "noise. Income inherits serial correlation from spending and lagged "
-            "consumption."
-        ),
-    )
+    save_figure(fig4, "figures/autocorrelation.png", dpi=150)
 
     fig5, ax5 = plt.subplots(figsize=(10, 6))
     for rho, color in zip([0.5, 0.9, 0.99], ["#7fcdbb", "#2c7fb8", "#253494"]):
@@ -392,15 +261,7 @@ $$
     ax5.set_title("Persistent Shocks Put More Power at Low Frequencies")
     ax5.set_yscale("log")
     ax5.legend(fontsize=10)
-    report.add_figure(
-        "figures/spectral-density.png",
-        "Exact AR(1) spectral density by persistence",
-        fig5,
-        description=(
-            "High persistence loads variance at low frequencies. A larger $\\rho$ "
-            "therefore changes timing and volatility."
-        ),
-    )
+    save_figure(fig5, "figures/spectral-density.png", dpi=150)
 
     ar_summary = pd.DataFrame(
         {
@@ -434,36 +295,14 @@ $$
             ],
         }
     )
-    report.add_table(
-        "tables/ar-properties.csv",
-        "AR(1) Analytical Benchmarks",
-        ar_summary,
-        description=(
-            "Holding $\\sigma$ fixed, a higher $\\rho$ raises variance and extends "
-            "the half-life."
-        ),
-    )
+    Path("tables").mkdir(parents=True, exist_ok=True)
+    ar_summary.to_csv("tables/ar-properties.csv", index=False)
 
-    report.add_takeaway(
-        "An AR(1) coefficient is an economic timing assumption. With $\\rho=0.9$, "
-        f"a shock has half of its initial effect after {ar1_half_life:.1f} periods. "
-        f"With $\\rho=0.99$, the half-life is {np.log(0.5) / np.log(0.99):.1f} "
-        "periods.\n\n"
-        "The multiplier-accelerator model maps that state into income. Government "
-        "spending supplies the disturbance. Lagged consumption and accelerator "
-        "investment shape the income path."
-    )
+    save_thumbnail("figures/ar1-irfs.png", "figures/thumb.png")
 
-    report.add_references(
-        [
-            "Hamilton, J. (1994). *Time Series Analysis*. Princeton University Press.",
-            "Samuelson, P. (1939). Interactions between the Multiplier Analysis and the Principle of Acceleration. *Review of Economics and Statistics*, 21(2), 75-78.",
-            "Ljungqvist, L. and Sargent, T. (2018). *Recursive Macroeconomic Theory*. MIT Press, 4th edition, Ch. 2.",
-        ]
-    )
-
-    report.write("README.md")
-    print(f"Generated README.md, {len(report._figures)} figures, and {len(report._tables)} table.")
+    print(f"Generated 5 figures and 1 table.")
+    print(f"  AR(1) half-life at rho=0.9: {ar1_half_life:.1f} periods")
+    print(f"  MA roots: {ma_root_text}, modulus={ma_root_modulus:.3f}")
 
 
 if __name__ == "__main__":

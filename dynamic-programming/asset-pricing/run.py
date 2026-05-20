@@ -11,8 +11,7 @@ import pandas as pd
 from numpy.polynomial.hermite import hermgauss
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from lib.output import ModelReport
-from lib.plotting import setup_style
+from lib.plotting import setup_style, save_figure, save_thumbnail
 
 
 @dataclass(frozen=True)
@@ -215,136 +214,6 @@ def main() -> None:
 
     setup_style()
 
-    report = ModelReport(
-        "Lucas Tree I: SDF Baseline by Scaled-Price Iteration",
-        include_reproduce=False,
-        show_figure_captions=False,
-    )
-
-    report.add_overview(
-        "A Lucas tree pays a stochastic dividend $y_t$ each period. "
-        "A representative household owns the tree and consumes the dividend. "
-        "Market clearing sets $c_t=y_t$, so there is no savings choice.\n\n"
-        "The equilibrium object is the price function $p(y)$. "
-        "It makes the household willing to hold the tree after seeing today's "
-        "dividend. The stochastic discount factor prices the next dividend and "
-        "resale value.\n\n"
-        "The price satisfies an Euler equation with a conditional expectation. "
-        "We solve a one-dimensional fixed point after scaling price by marginal "
-        "utility. Gauss-Hermite quadrature evaluates the expectation at off-grid "
-        "dividend states."
-    )
-
-    report.add_equations(
-        r"""
-**Endowment process.** Let $x_t=\log y_t$ follow
-
-$$x_{t+1}=\rho x_t+\varepsilon_{t+1}, \qquad
-\varepsilon_{t+1}\sim \mathcal{N}(0,\sigma^2),\qquad |\rho|<1.$$
-
-The process is stationary with variance $\sigma^2/(1-\rho^2)$.
-Persistence $\rho$ controls how fast dividends move back toward the mean.
-
-**Preferences.** The representative household has CRRA utility
-
-$$u(c)=\frac{c^{1-\gamma}}{1-\gamma}, \qquad u'(c)=c^{-\gamma},\qquad \gamma>0,$$
-
-The log case is $u(c)=\log c$ as $\gamma\to 1$.
-
-**Pricing equation.** Market clearing imposes $c_t=y_t$.
-A claim pays $y_{t+1}$ plus resale value $p(y_{t+1})$.
-Its price satisfies
-
-$$p(y_t)=\mathbb{E}_t\left[M_{t+1}(y_{t+1}+p(y_{t+1}))\right],
-\qquad M_{t+1}=\beta\left(\frac{y_{t+1}}{y_t}\right)^{-\gamma}.$$
-
-Equivalently,
-
-$$p(y_t)=\beta\,\mathbb{E}_t\left[
-\frac{u'(y_{t+1})}{u'(y_t)}(p(y_{t+1})+y_{t+1})\right].$$
-
-**Scaled price.** Define the marginal-utility-scaled price
-
-$$f(y)\equiv u'(y)\,p(y).$$
-
-Multiplying the Euler equation by $u'(y_t)$ gives
-
-$$f(y)=\beta\,\mathbb{E}\left[f(y')+u'(y')\,y'\,\big|\,y\right].$$
-
-Here $y'$ denotes next-period endowment ($y_{t+1}$); primes denote next-period values throughout.
-
-This is a linear fixed point in $f$.
-The price and price-dividend ratio recover from
-
-$$p(y)=\frac{f(y)}{u'(y)},\qquad \frac{p(y)}{y}=\frac{f(y)}{y\,u'(y)}.$$
-
-**Log-utility benchmark.** When $\gamma=1$, $u'(y)y=1$.
-The recursion is $f=\beta(f+1)$ at every $y$.
-It implies the constant ratio
-
-$$\frac{p(y)}{y}=\frac{\beta}{1-\beta}.$$
-
-The flat ratio gives a direct check on the numerical solution.
-"""
-    )
-
-    report.add_model_setup(
-        f"| Primitive | Value | Role |\n"
-        f"|---|---:|---|\n"
-        f"| $\\beta$ | {beta:.2f} | Discount factor |\n"
-        f"| $\\rho$ | {rho:.2f} | Persistence of log dividends |\n"
-        f"| $\\sigma$ | {sigma:.2f} | Innovation standard deviation in log dividends |\n"
-        f"| Stationary $\\mathrm{{sd}}(\\log y)$ | {stat_std:.4f} | $\\sigma/\\sqrt{{1-\\rho^2}}$ |\n"
-        f"| $\\gamma$ | {gamma:.1f} | Baseline CRRA risk aversion |\n"
-        f"| Coarse grid | {n_grid} log-endowment nodes on $[\\pm 5\\,\\mathrm{{sd}}(\\log y)]$ | Tutorial solution |\n"
-        f"| Quadrature | {n_quad} Gauss-Hermite nodes for $\\varepsilon$ | Conditional expectation |\n"
-        f"| Benchmark | {benchmark_grid} grid nodes, {benchmark_quad} quadrature nodes | Fine-grid check |\n"
-        f"| Stopping rule | $\\|f_{{n+1}}-f_n\\|_\\infty < {tol_label}$ | Fixed-point tolerance |"
-    )
-
-    report.add_solution_method(
-        "**Scaled-price iteration.** The iteration works with "
-        "$f(y)=u'(y)p(y)$. This scaling removes current marginal utility from "
-        "the denominator. The update maps a guessed scaled price into a new "
-        "scaled price.\n\n"
-        "The update operator is\n\n"
-        "$$(Tf)(y)=\\beta\\,\\mathbb{E}\\\left[f(y')+u'(y')y'\\,\\big|\\,y\\right]$$\n\n"
-        "This operator is a $\\beta$-contraction. The run stops when sup-norm "
-        f"changes fall below ${tol_label}$.\n\n"
-        "**Conditional expectation.** The state $x=\\log y$ uses a uniform grid. "
-        "At each grid point, the code forms quadrature nodes "
-        "$x'=\\rho x+\\varepsilon_j$. It interpolates old $f$ at those nodes. "
-        "It then averages continuation value plus $u'(y')y'$ with "
-        "Gauss-Hermite weights.\n\n"
-        "```text\n"
-        "Algorithm  Lucas-tree fixed-point iteration on f = u'(y) p\n"
-        "Inputs   beta, rho, sigma, gamma; log-endowment grid X = {x_i};\n"
-        "           Gauss-Hermite nodes {eps_j}, weights {w_j};\n"
-        "           tolerance epsilon\n"
-        "Outputs  scaled price f(x_i), price p(y_i), price-dividend ratio p/y\n"
-        "\n"
-        "Precompute   x'_{ij} <- rho * x_i + eps_j                  # next-state nodes\n"
-        "             y'_{ij} <- exp(x'_{ij})\n"
-        "             d_{ij}  <- (y'_{ij})^{1 - gamma}              # forcing term u'(y') y'\n"
-        "Initialise   f_0(x_i) <- 0\n"
-        "for n = 0, 1, 2, ...:\n"
-        "    for each x_i:\n"
-        "        f_hat_{ij}  <- interp(f_n, X, x'_{ij})              # off-grid continuation\n"
-        "        f_{n+1}(x_i) <- beta * sum_j w_j * (f_hat_{ij} + d_{ij})\n"
-        "    err <- max_i | f_{n+1}(x_i) - f_n(x_i) |\n"
-        "stop when err < epsilon\n"
-        "p(y_i)     <- f(x_i) * (y_i)^{gamma}\n"
-        "p(y_i)/y_i <- p(y_i) / y_i\n"
-        "```\n\n"
-        f"A fine grid with {benchmark_grid} state nodes and {benchmark_quad} "
-        "quadrature nodes checks interpolation and quadrature error. "
-        f"The baseline $\\gamma={gamma}$ solution converges in "
-        f"**{solution.iterations} iterations** to sup-norm residual "
-        f"**{solution.error:.2e}**. On the central "
-        f"$\\pm 3\\,\\mathrm{{sd}}(\\log y)$ region, the maximum relative error is "
-        f"**{max_relative_error_pct:.3f}%**."
-    )
-
     fig1, (ax1, ax1_err) = plt.subplots(
         2,
         1,
@@ -377,21 +246,7 @@ The flat ratio gives a direct check on the numerical solution.
     ax1_err.set_ylabel("Error (%)")
     ax1_err.set_title("Coarse-grid error vs. benchmark")
     fig1.tight_layout()
-    report.add_figure(
-        "figures/asset-price-function.png",
-        "Lucas tree price function compared with a fine-grid benchmark",
-        fig1,
-        description=(
-            "The price rises with the dividend state. "
-            "Persistence makes a high current dividend predict higher future "
-            "dividends. Convexity reflects future cash flows and "
-            "state-dependent discounting.\n\n"
-            "The lower panel compares the coarse grid with the fine-grid "
-            f"benchmark. The maximum central relative error is "
-            f"{max_relative_error_pct:.3f}%, so visible curvature is not a grid "
-            "artifact."
-        ),
-    )
+    save_figure(fig1, "figures/asset-price-function.png", dpi=150)
 
     fig2, (ax2_top, ax2_bot) = plt.subplots(
         2,
@@ -438,18 +293,7 @@ The flat ratio gives a direct check on the numerical solution.
     ax2_bot.set_ylabel("$p(y_t)/y_t$")
     ax2_bot.legend(loc="upper left")
     fig2.tight_layout()
-    report.add_figure(
-        "figures/simulation-paths.png",
-        "Simulated dividend, tree price, and price-dividend ratio",
-        fig2,
-        description=(
-            "In simulation, prices move closely with dividends. "
-            "The price index is more volatile because it capitalizes the "
-            "continuation stream.\n\n"
-            "The lower panel plots $p(y_t)/y_t$. "
-            "Under $\\gamma=2$, the ratio moves with the dividend state."
-        ),
-    )
+    save_figure(fig2, "figures/simulation-paths.png", dpi=150)
 
     fig3, ax3 = plt.subplots(figsize=(7.2, 4.8))
     colors = ["#2ca02c", "#111111", "#1f77b4", "#9467bd"]
@@ -485,20 +329,15 @@ The flat ratio gives a direct check on the numerical solution.
     ax3.set_title("Risk aversion and state-contingent valuation")
     ax3.legend(loc="upper left")
     fig3.tight_layout()
-    report.add_figure(
-        "figures/comparative-statics-gamma.png",
-        "Price-dividend ratios under alternative CRRA risk aversion values",
-        fig3,
-        description=(
-            "Risk aversion changes the slope of the price-dividend ratio. "
-            "Log utility gives the flat benchmark $\\beta/(1-\\beta)\\approx "
-            f"{pd_log_utility:.1f}$. The $\\gamma=1$ curve overlaps the dashed "
-            "line.\n\n"
-            "When $\\gamma<1$, the ratio falls with current dividends. "
-            "When $\\gamma>1$, it rises. "
-            "Dotted lines are fine-grid benchmarks."
-        ),
-    )
+    save_figure(fig3, "figures/comparative-statics-gamma.png", dpi=150)
+
+    # Thumbnail
+    save_thumbnail("figures/asset-price-function.png", "figures/thumb.png")
+
+    # =========================================================================
+    # Tables
+    # =========================================================================
+    Path("tables").mkdir(parents=True, exist_ok=True)
 
     sample_positions = np.linspace(0, len(y_central) - 1, 7, dtype=int)
     sample_indices = np.flatnonzero(central)[sample_positions]
@@ -513,18 +352,7 @@ The flat ratio gives a direct check on the numerical solution.
         ]
 
     df = pd.DataFrame(table_data)
-    report.add_table(
-        "tables/price-dividend-ratio.csv",
-        "Price-dividend ratios at selected dividend states",
-        df,
-        description=(
-            "Rows compare dividend states. "
-            "Near $y\\approx 1$, all ratios are close to the log-utility "
-            f"benchmark $\\beta/(1-\\beta)={pd_log_utility:.1f}$. "
-            "Away from the mean, risk aversion changes how the SDF prices mean "
-            "reversion."
-        ),
-    )
+    df.to_csv("tables/price-dividend-ratio.csv", index=False)
 
     convergence_df = pd.DataFrame(
         {
@@ -540,39 +368,10 @@ The flat ratio gives a direct check on the numerical solution.
             ],
         }
     )
-    report.add_table(
-        "tables/convergence.csv",
-        "Solver convergence diagnostics for the baseline solution",
-        convergence_df,
-        description=(
-            "The iteration count, sup-norm residual, and central relative "
-            "error are persisted here so the convergence claims in the "
-            "Solution Method section can be cross-checked against a committed "
-            "artifact."
-        ),
-    )
+    convergence_df.to_csv("tables/convergence.csv", index=False)
 
-    report.add_takeaway(
-        "The Lucas tree has no household policy once market clearing sets $c=y$. "
-        "The Euler equation is therefore a valuation equation for $p(y)$. "
-        "Scaling by $u'(y)$ gives a linear fixed point. "
-        "The price-dividend ratio shows how risk aversion prices dividend mean "
-        "reversion."
-    )
-
-    report.add_references(
-        [
-            'Lucas, R. (1978). "Asset Prices in an Exchange Economy." *Econometrica*, 46(6), 1429-1445.',
-            "Mehra, R. and Prescott, E. (1985). \"The Equity Premium: A Puzzle.\" *Journal of Monetary Economics*, 15(2), 145-161.",
-            "Ljungqvist, L. and Sargent, T. (2018). *Recursive Macroeconomic Theory*. MIT Press, 4th edition, Ch. 13.",
-            "Stokey, N., Lucas, R., and Prescott, E. (1989). *Recursive Methods in Economic Dynamics*. Harvard University Press.",
-        ]
-    )
-
-    report.write("README.md")
     print(
-        f"\nGenerated: README.md + {len(report._figures)} figures + "
-        f"{len(report._tables)} tables"
+        f"\nGenerated: figures + tables"
     )
 
 
