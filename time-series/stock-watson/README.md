@@ -51,7 +51,7 @@ with the simulated $F_t$.
 | $\sigma_{e,i}$ | $\sim U(0.5, 1.5)$ | Idiosyncratic std. deviations |
 | AR lags ($p$) | 2 | Lags in forecasting equation |
 | Horizon ($h$) | 1 | Forecast horizon |
-| Initial training share | 60% | Expanding-window forecast start |
+| Initial training share | 60% of the usable evaluation window | Expanding-window forecast start |
 | Target series | $X_{1t}$ | Representative observed macro variable |
 
 ## Solution Method
@@ -92,9 +92,9 @@ The exposure plot shows which indicators carry the common state. The PCA exposur
 
 <img src="figures/factor-loadings.png" alt="Standardized series-factor exposures sorted by the true exposure." width="80%">
 
-The forecast plot compares one-step predictions. AR(2) uses only the target's own lags. The Stock-Watson regression adds the estimated factor. RMSE falls from 1.753 to 1.262. The true-factor forecast has RMSE 1.273.
+The forecast plot compares one-step predictions. AR(2) uses only the target's own lags. The Stock-Watson regression adds the estimated factor. RMSE falls from 1.419 to 1.257. The true-factor forecast has RMSE 1.265.
 
-<img src="figures/forecast-comparison.png" alt="Forecast comparison: the PCA factor forecast reduces RMSE by 28.0% relative to AR(2). Right panel shows cumulative squared errors." width="80%">
+<img src="figures/forecast-comparison.png" alt="Forecast comparison: the PCA factor forecast reduces RMSE by 11.4% relative to AR(2). Right panel shows cumulative squared errors." width="80%">
 
 The eigenvalue table repeats the scree evidence. The large first eigenvalue is the simulated common factor. The remaining entries mostly reflect series-specific variation.
 
@@ -114,13 +114,13 @@ The forecast table reports the same loss comparison. The estimated factor and tr
 
 | Model             |   RMSE |   Relative RMSE |
 |:------------------|-------:|----------------:|
-| AR(2)             | 1.753  |          1      |
-| PCA factor AR(2)  | 1.2621 |          0.72   |
-| True factor AR(2) | 1.2732 |          0.7263 |
+| AR(2)             | 1.4186 |          1      |
+| PCA factor AR(2)  | 1.2572 |          0.8862 |
+| True factor AR(2) | 1.2649 |          0.8917 |
 
 ## Takeaway
 
-Stock-Watson diffusion indexes let a forecaster use many macro indicators without estimating one coefficient per series. In this run, PCA recovers the common state almost exactly. The factor forecast lowers one-step RMSE by 28.0% relative to AR(2). The practical lesson is simple: estimate the shared state first, then forecast with a small regression.
+Stock-Watson diffusion indexes let a forecaster use many macro indicators without estimating one coefficient per series. In this run, PCA recovers the common state almost exactly. The factor forecast lowers one-step RMSE by 11.4% relative to AR(2). The practical lesson is simple: estimate the shared state first, then forecast with a small regression.
 
 ## References
 

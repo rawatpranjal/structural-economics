@@ -549,7 +549,7 @@ $\hat\alpha = 1 + 1 / \hat c$, $\hat\delta = \exp(\hat b / \hat c)$, $\hat\beta 
     ax2.axhline(-1.92, color="gray", linewidth=0.8, alpha=0.6,
                 label="95% confidence level (chi-square 1 df)")
     ax2.set_xlabel(r"$\beta$")
-    ax2.set_ylabel(r"Profile log-likelihood (max-relative)")
+    ax2.set_ylabel(r"Profiled Gaussian criterion (max-relative)")
     ax2.set_title("Identification of present bias under the two designs")
     ax2.legend(loc="lower center", fontsize=9)
     ax2.set_ylim(-30, 1)
@@ -557,11 +557,13 @@ $\hat\alpha = 1 + 1 / \hat c$, $\hat\delta = \exp(\hat b / \hat c)$, $\hat\beta 
         "The profile log-likelihood for $\\beta$ is sharp under the strong design that includes $t > 0$ cells. "
         "It is nearly flat under the weak design that uses only $t = 0$ cells. "
         "Without front-end delay variation the data cannot distinguish present bias from a more patient discount factor. "
-        f"At true $\\beta = {beta_true}$ the strong-design 95 percent confidence region is bounded; the weak-design region extends across most of the plotted $\\beta$ range."
+        f"At true $\\beta = {beta_true}$ the strong-design 95 percent confidence region is bounded; the weak-design region extends across most of the plotted $\\beta$ range. "
+        "This identification figure profiles a Gaussian sum-of-squares criterion over $\\beta$, without the Tobit censoring terms used by the Method 2 point estimator. "
+        "The censoring share is modest at this noise level, so the criterion is a faithful identification diagnostic; the sharp-versus-flat contrast is the lesson, not the absolute likelihood level."
     )
     report.add_figure(
         "figures/identification-profile.png",
-        "Profile log-likelihood of beta under weak vs strong design",
+        "Profile of the Gaussian criterion for beta under weak vs strong design",
         fig2,
     )
 
@@ -664,12 +666,17 @@ $\hat\alpha = 1 + 1 / \hat c$, $\hat\delta = \exp(\hat b / \hat c)$, $\hat\beta 
         "Adding even a single $t > 0$ cell sharpens the profile likelihood "
         "for $\\beta$ dramatically.\n\n"
         "The two estimation methods are complements rather than substitutes. "
-        "NLS on the demand function works at corners and lets the Stone-Geary "
-        "minima be jointly estimated. "
+        "NLS on the demand function works directly on the dollar-value "
+        "allocation, so corner choices contribute a residual rather than "
+        "breaking the criterion. "
         "Tobit on the log tangency is the right choice when corner choices "
-        "are common and the analyst is willing to fix the Stone-Geary "
-        "minima a priori. "
-        "Andreoni and Sprenger report both methods in their Table 2 for "
+        "are common, because it scores those cells with a censoring term "
+        "instead of an interior residual. "
+        "Both methods here fix the Stone-Geary minima at zero, matching "
+        "column 3 of Andreoni and Sprenger Table 2; the column-1 "
+        "specification that estimates those minima jointly is a natural "
+        "extension this tutorial does not run. "
+        "Andreoni and Sprenger report both estimators in their Table 2 for "
         "exactly this reason.\n\n"
         "The empirical headline of the original paper is that "
         "$\\hat\\beta \\approx 1$ in their UCSD sample, contradicting the "

@@ -128,11 +128,15 @@ def newton_with_backtracking(
             step = grad
 
         current = objective(x)
+        # Armijo sufficient-decrease constant: accept a step only when it
+        # reduces the objective by at least c1 * alpha * (grad . step).
+        c1 = 1e-4
+        directional_decrease = float(np.dot(grad, step))
         alpha = 1.0
         accepted = False
         while alpha > 1e-5:
             candidate = x - alpha * step
-            if objective(candidate) < current:
+            if objective(candidate) <= current - c1 * alpha * directional_decrease:
                 x = candidate
                 accepted = True
                 break
@@ -202,13 +206,29 @@ def run_dual_annealing(seed: int = 123) -> OptimizationRun:
     if not path or not np.allclose(path[-1], result.x):
         path.append(np.asarray(result.x, dtype=float).copy())
 
+    # scipy's dual_annealing always runs its fixed annealing schedule to the
+    # end, so result.nit == maxiter and result.message == "Maximum number of
+    # iteration reached" on every run; result.success only reports that the
+    # run finished without error. It is not a true convergence certificate.
+    # Report success only when the polished solution actually reached a
+    # posterior mode, which is what the Success column in the report claims.
+    distance_to_mode = min(
+        float(np.linalg.norm(result.x - mode)) for mode in (MU1, MU2)
+    )
+    reached_mode = distance_to_mode < 0.1
+    assert reached_mode, (
+        f"dual_annealing finished at {np.round(result.x, 3)} with distance "
+        f"{distance_to_mode:.4f} to the nearest mode; it did not reach a "
+        f"basin, so Success=True would be a stale flag."
+    )
+
     return OptimizationRun(
         method="Dual annealing",
         start="box [-5,5]^2",
         solution=np.asarray(result.x, dtype=float),
         objective=float(result.fun),
         iterations=int(result.nit),
-        success=bool(result.success),
+        success=bool(result.success) and reached_mode,
         path=np.asarray(path),
     )
 

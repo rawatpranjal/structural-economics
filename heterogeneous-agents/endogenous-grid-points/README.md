@@ -54,7 +54,7 @@ the constraint before it mainly raises saving.
 | CRRA $\gamma$ | 2.0 | Curvature; sets the strength of precautionary motive and shapes MPCs |
 | Discount factor $\beta$ | 0.95 | Annual time preference |
 | Net rate $r$ | 0.03 | Exogenous risk-free return |
-| Patience-return product $\beta R$ | 0.9785 | $<1$ rules out the unbounded-saving target of Carroll (1997) |
+| Patience-return product $\beta R$ | 0.9785 | Carroll (1997) needs growth impatience $G_c < R$, i.e. $(\beta R)^{1/\gamma} < R$; here $\beta R<1$ makes that hold, giving a finite target |
 | Income mean $\mu_y$ | 1.0 | Normalization |
 | Income s.d. $\sigma_y$ | 0.2 | Width of the IID labor-income shock |
 | Income states $n_y$ | 5 | Width-fitted equal-spaced normal grid |
@@ -137,7 +137,7 @@ Forward simulation gives a right-skewed wealth distribution. Mean assets are 0.3
 
 <img src="figures/wealth-distribution.png" alt="Simulated terminal wealth distribution" width="80%">
 
-The MPC distribution is high near the constraint and low for wealthy households. The average MPC out of a 0.10 transfer is 0.228. The dotted line marks the perfect-foresight limit, $\kappa^{\ast}\approx0.041$. Here $\kappa^{\ast}=R(\beta R)^{-1/\gamma}-1$ is the perfect-foresight MPC limit for CRRA utility.
+The MPC distribution is high near the constraint and low for wealthy households. The average MPC out of a 0.10 transfer is 0.228. The dotted line marks the perfect-foresight limit, $\kappa^{\ast}\approx0.040$. Here $\kappa^{\ast}=1-(\beta R)^{1/\gamma}/R$ is the perfect-foresight MPC limit for CRRA utility, where $(\beta R)^{1/\gamma}$ is the perfect-foresight consumption growth factor $G_c$.
 
 <img src="figures/mpc-distribution.png" alt="Distribution of marginal propensities to consume" width="80%">
 
@@ -145,17 +145,17 @@ The table reports cross-section statistics and the fine-grid policy gaps. Wealth
 
 **Simulation and Accuracy Summary**
 
-| Statistic                            | Value    |
-|:-------------------------------------|:---------|
-| Mean assets                          | 0.388    |
-| Mean consumption                     | 1.012    |
-| Wealth Gini                          | 0.389    |
-| Average MPC, 0.10 transfer           | 0.228    |
-| Average local MPC                    | 0.252    |
-| Fraction at borrowing limit          | 5.1%     |
-| Consumption gap vs fine grid, a <= 5 | 4.26e-04 |
-| Savings gap vs fine grid, a <= 5     | 4.26e-04 |
-| Perfect-foresight MPC limit          | 0.0413   |
+| Statistic                                                               | Value    |
+|:------------------------------------------------------------------------|:---------|
+| Mean assets                                                             | 0.388    |
+| Mean consumption                                                        | 1.012    |
+| Wealth Gini                                                             | 0.389    |
+| Average MPC, 0.10 transfer                                              | 0.228    |
+| Average local consumption slope dc/da (numerical derivative, 1e-6 step) | 0.252    |
+| Fraction at borrowing limit                                             | 5.1%     |
+| Consumption gap vs fine grid, a <= 5                                    | 4.26e-04 |
+| Savings gap vs fine grid, a <= 5                                        | 4.26e-04 |
+| Perfect-foresight MPC limit                                             | 0.0396   |
 
 ## Takeaway
 

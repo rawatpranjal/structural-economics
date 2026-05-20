@@ -65,9 +65,9 @@ Inputs: demand q(p)=a-bp, costs c_M and c_R
     q_I = q(p_I)
 
 2. Linear wholesale game
-    For a candidate wholesale price w:
-        retailer sets p_R(w) = (a/b + w + c_R) / 2
-    Manufacturer chooses w_DM to maximize (w-c_M) q(p_R(w))
+    Retailer best response: p_R(w) = (a/b + w + c_R) / 2
+    Manufacturer FOC for max (w-c_M) q(p_R(w)) has the closed-form
+        solution w_DM = (a/b - c_R + c_M) / 2, evaluated directly
     Evaluate p_R(w_DM), q(p_R(w_DM)), profits, and surplus
 
 3. Two-part tariff

@@ -1,0 +1,5 @@
+Quantity,policy_gap_pct,grid_gap_pct,iterations
+Coarse-grid policy gap vs. log-linear,3.2287,,
+Coarse-grid interpolation gap vs. fine grid,,0.000397,
+Coarse-grid fixed-point iterations,,,26
+Fine-grid fixed-point iterations,,,31

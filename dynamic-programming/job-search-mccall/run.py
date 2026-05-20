@@ -333,7 +333,7 @@ The right tail of $F$ matters through the expectation.
             "at the cutoff. The shaded region marks acceptable offers. The grid "
             "and continuous cutoffs nearly coincide. At baseline, continuous "
             f"acceptance probability is **{100.0 * accept_frac_cont:.1f}%**. "
-            f"Expected unemployment duration is about **{expected_duration_cont:.0f} "
+            f"Expected unemployment duration is about **{expected_duration_cont:.1f} "
             "periods**."
         ),
     )
@@ -473,6 +473,34 @@ The right tail of $F$ matters through the expectation.
             "Economic Dynamics*. Harvard University Press.",
             "Pissarides, C.A. (2000). *Equilibrium Unemployment Theory*. MIT Press, 2nd edition.",
         ]
+    )
+
+    # Commit baseline VFI diagnostics so the sup-norm error quoted in the
+    # Solution Method section is grounded in an artifact, not only the README.
+    baseline_stats = pd.DataFrame(
+        {
+            "metric": [
+                "vfi_iterations",
+                "vfi_sup_norm_error",
+                "w_star_grid",
+                "w_star_cont",
+                "abs_grid_error",
+                "accept_frac_cont",
+                "expected_duration_cont",
+            ],
+            "value": [
+                info["iterations"],
+                info["error"],
+                w_star,
+                w_star_cont,
+                abs(grid_gap),
+                accept_frac_cont,
+                expected_duration_cont,
+            ],
+        }
+    )
+    baseline_stats.to_csv(
+        Path(__file__).resolve().parent / "tables" / "baseline-stats.csv", index=False
     )
 
     report.write("README.md")

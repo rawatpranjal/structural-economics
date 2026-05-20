@@ -1,0 +1,8 @@
+metric,value
+vfi_iterations,178.0
+vfi_sup_norm_error,9.838188930189062e-09
+w_star_grid,4.705405200920167
+w_star_cont,4.705496521043523
+abs_grid_error,9.132012335655304e-05
+accept_frac_cont,0.06072316342563788
+expected_duration_cont,16.46818023940088

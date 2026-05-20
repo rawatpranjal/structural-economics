@@ -244,15 +244,15 @@ Parameter estimates and residuals give a compact diagnostic. MSM and indirect in
 | Acceptance rate        |           0.4012  |                 0.40303 |           0.00457 |
 | Mean accepted log wage |           3.36538 |                 3.36797 |           0.00077 |
 
-The method-comparison table puts parameter recoveries, loss values, work, and wall times on the same row. MSM and indirect inference report Nelder-Mead iterations and the criterion value at the argmin. ABC-SMC reports the total number of simulator calls across all rounds and the same criterion evaluated at the posterior mean, which is on the same scale as the MSM and II numbers.
+The method-comparison table puts parameter recoveries, loss values, work, and wall times on the same row. MSM and indirect inference report Nelder-Mead iterations and the criterion value at the argmin. ABC-SMC reports the total number of simulator calls across all rounds and the criterion evaluated at the posterior mean. The MSM and ABC criteria are directly comparable, because both sum squared scaled residuals over the same 5 economic moments with the same scale vector. The II criterion is not on the same scale: II uses a different set of 6 auxiliary statistics with their own scale denominators, so its value should not be read as a sharper fit than MSM or ABC.
 
 **Estimates, loss, work, and wall time across the three methods**
 
 | Method             |   Offer mean mu |   Offer sd sigma |   Reservation log wage |   Criterion at point estimate or posterior mean |   Iterations or proposals |   Wall time (s) |
 |:-------------------|----------------:|-----------------:|-----------------------:|------------------------------------------------:|--------------------------:|----------------:|
-| MSM                |         3.00719 |          0.44364 |                3.14907 |                                         0.00062 |                        64 |         0.04304 |
-| Indirect inference |         3.01486 |          0.44714 |                3.15368 |                                         0.00017 |                        84 |         0.11836 |
-| ABC-SMC            |         3.00758 |          0.44533 |                3.14843 |                                         0.00065 |                     19845 |         8.1701  |
+| MSM                |         3.00719 |          0.44364 |                3.14907 |                                         0.00062 |                        64 |         0.08758 |
+| Indirect inference |         3.01486 |          0.44714 |                3.15368 |                                         0.00017 |                        84 |         0.52482 |
+| ABC-SMC            |         3.00758 |          0.44533 |                3.14843 |                                         0.00065 |                     19845 |        21.1188  |
 
 **Per-round ABC-SMC diagnostics**
 

@@ -1,4 +1,4 @@
 Demand Model,Avg Actual Price Inc. (%),Max Price Change (%),Avg GUPPI Screen (%),Screen Gap (pp),Avg CMCR Screen (%),Break-even Eff. (%),Delta CS,Delta PS,Delta W,Post FOC Residual
-Logit,11.15,13.34,11.59,-0.44,19.76,34.38,-0.0537,0.0204,-0.0333,2.4e-10
+Logit,12.79,15.31,13.29,-0.51,25.37,43.96,-0.0616,0.0234,-0.0382,3.4e-10
 Linear,5.13,5.59,7.27,-2.15,12.15,16.66,-0.0272,0.0078,-0.0193,5.6e-17
 Log-linear,10.27,13.57,4.56,5.7,7.61,9.29,-0.0489,0.0065,-0.0425,3.0e-12

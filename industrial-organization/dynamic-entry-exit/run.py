@@ -59,52 +59,38 @@ def solve_model(N_max, a, b, c, f, K, beta, sigma_eps=1.0, tol=1e-8, max_iter=50
     # Initialize value function: myopic value
     V = np.maximum(profits - f, 0.0) / (1.0 - beta)
 
+    # Exit probability carried as a state variable alongside V. Each VFI sweep
+    # uses the PREVIOUS sweep's exit_prob for the rivals' stay probability; V
+    # and exit_prob then converge jointly to the same fixed point, so the
+    # converged p_exit(N) and V(N) share the identical Delta(N).
+    exit_prob = np.zeros(n_states)
+    entry_count = np.zeros(n_states)
+
     # Dampening factor for stability
     dampen = 0.3
 
     for iteration in range(1, max_iter + 1):
         V_new = np.zeros(n_states)
+        exit_prob_new = np.zeros(n_states)
+        entry_count_new = np.zeros(n_states)
 
         for i in range(n_states):
             N = N_grid[i]
             pi_N = profits[i]
 
-            # --- Compute exit probability from current V ---
-            # Continuation utility (net of shock) for an incumbent:
-            #   u_stay(N) = pi(N) - f + beta * EV(N)
-            # Exit probability (logistic shock):
-            #   p_exit(N) = 1 / (1 + exp(u_stay / sigma_eps))
-            # But EV(N) itself depends on the transition, which depends on p_exit.
-            # We use the PREVIOUS iteration's V to compute EV, breaking the circularity.
-
-            # For EV(N): integrate over survivors. Each of the other N-1 incumbents
-            # stays with probability p_stay (from previous iteration). Then free
-            # entry adds entrants. We condition on this firm staying.
-            p_exit_i = _exit_prob(N, profits, f, beta, V, sigma_eps)
-            p_stay_others = 1.0 - p_exit_i
-
-            # Entry is chosen at the market-state level before the realized exit
-            # draws are known. Entrants respond to expected survival, while the
-            # realized transition still integrates over binomial incumbent exits.
-            expected_surv_all = max(0, int(np.round(N * (1.0 - p_exit_i))))
-            n_enter_current = _free_entry_count(
-                expected_surv_all, profits, f, beta, V, K, N_max, sigma_eps
+            # Delta(N) = pi(N) - f + beta * E[V(N') | N, stay], where E[V(N')]
+            # integrates over the Binomial(N-1, 1 - p_exit) survivor count of
+            # the OTHER N-1 rivals. The rivals' stay probability is taken from
+            # the previous sweep's exit_prob, breaking the within-sweep
+            # circularity. _exit_prob returns the SAME Delta(N) it used (via
+            # EV), so V_new and exit_prob are computed from the identical
+            # Delta(N).
+            p_exit_i, n_enter_current, EV = _exit_prob(
+                N, profits, f, beta, V, sigma_eps, K, N_max, exit_prob[i]
             )
 
-            # E[V(N')] integrating over binomial survivors of the OTHER N-1 firms.
-            EV = 0.0
-            for s in range(N):  # s = survivors among other N-1 firms
-                prob_s = binom.pmf(s, N - 1, p_stay_others) if N > 1 else (1.0 if s == 0 else 0.0)
-                if prob_s < 1e-15:
-                    continue
-
-                # This firm stays => N_survivors = s + 1
-                N_surv = s + 1
-                N_next = min(N_surv + n_enter_current, N_max)
-
-                EV += prob_s * V[N_next - 1]
-
-            # Value of staying (deterministic component)
+            # Value of staying (deterministic component): the SAME Delta(N)
+            # that _exit_prob used to compute p_exit above.
             u_stay = pi_N - f + beta * EV
 
             # Inclusive value (expected value integrating over logistic shock):
@@ -112,48 +98,83 @@ def solve_model(N_max, a, b, c, f, K, beta, sigma_eps=1.0, tol=1e-8, max_iter=50
             #       = sigma * log(1 + exp(u_stay/sigma))
             # This is the "log-sum" formula from McFadden (1978)
             V_new[i] = sigma_eps * np.logaddexp(u_stay / sigma_eps, 0.0)
+            exit_prob_new[i] = p_exit_i
+            entry_count_new[i] = n_enter_current
 
-        # Dampened update
+        # Dampened update. The dampened step is 0.3 * (V_new - V); the honest
+        # convergence diagnostic is the UNDAMPENED sup-norm residual, since the
+        # fixed point is V = V_new, not V = V_update.
         V_update = dampen * V_new + (1.0 - dampen) * V
-        error = np.max(np.abs(V_update - V))
+        error = np.max(np.abs(V_new - V))
 
         if iteration % 100 == 0:
             print(f"  VFI iteration {iteration:4d}, error = {error:.2e}")
 
         V = V_update
+        exit_prob = exit_prob_new
+        entry_count = entry_count_new
 
         if error < tol:
             print(f"  VFI converged in {iteration} iterations (error = {error:.2e})")
             break
 
-    # --- Extract equilibrium policies ---
-    exit_prob = np.zeros(n_states)
-    entry_count = np.zeros(n_states)
-
-    for i in range(n_states):
-        N = N_grid[i]
-        exit_prob[i] = _exit_prob(N, profits, f, beta, V, sigma_eps)
-        p_stay = 1.0 - exit_prob[i]
-        expected_surv = max(0, int(np.round(N * p_stay)))
-        entry_count[i] = _free_entry_count(expected_surv, profits, f, beta, V, K, N_max, sigma_eps)
-
     info = {"iterations": iteration, "converged": error < tol, "error": error}
     return V, exit_prob, entry_count, N_grid, info
 
 
-def _exit_prob(N, profits, f, beta, V, sigma_eps):
-    """Compute equilibrium exit probability at state N.
+def _continuation_value(N, p_stay_others, n_enter, V, N_max):
+    """Expected next-period value for an incumbent conditional on staying.
 
-    With logistic idiosyncratic shocks, P(exit) = 1/(1 + exp(u_stay/sigma)).
-    Here u_stay uses a rough E[V(N')] based on current V at the expected next state.
+    Integrates V over the Binomial(N-1, p_stay_others) survivor count of the
+    OTHER N-1 rivals. The focal firm always counts as one survivor, and
+    n_enter entrants are added at the current-state entry rule:
+
+        E[V(N') | N, stay]
+            = sum_{s=0}^{N-1} Binomial(s; N-1, p_stay_others)
+                              * V(min{s + 1 + n_enter, N_max}).
+    """
+    EV = 0.0
+    for s in range(N):  # s = survivors among the other N-1 rivals
+        prob_s = binom.pmf(s, N - 1, p_stay_others) if N > 1 else (1.0 if s == 0 else 0.0)
+        if prob_s < 1e-15:
+            continue
+        N_surv = s + 1  # focal firm stays => +1
+        N_next = min(N_surv + n_enter, N_max)
+        EV += prob_s * V[N_next - 1]
+    return EV
+
+
+def _exit_prob(N, profits, f, beta, V, sigma_eps, K, N_max, p_exit_rivals):
+    """Compute the equilibrium exit probability at state N.
+
+    The logistic exit rule is p_exit(N) = 1 / (1 + exp(Delta(N)/sigma_eps)),
+    where Delta(N) = pi(N) - f + beta * E[V(N') | N, stay] is the SAME
+    deterministic stay surplus that drives the log-sum value update. The
+    continuation value E[V(N')] integrates over the Binomial(N-1, 1 - p_exit)
+    survivor distribution of the OTHER N-1 rivals.
+
+    By symmetry every rival uses the same exit rule, so p_exit(N) is the fixed
+    point of the map p -> 1/(1+exp(Delta(N; p)/sigma)). That fixed point is
+    solved jointly with the value function: the caller passes the previous VFI
+    sweep's exit probability ``p_exit_rivals`` for the rivals, and p_exit(N)
+    converges to p_exit_rivals as the VFI loop converges. This avoids a nested
+    scalar fixed point inside every VFI sweep.
+
+    Returns the triple (p_exit, n_enter, EV), where n_enter is the free-entry
+    count and EV is the continuation value E[V(N') | N, stay]. EV is returned
+    so the caller's log-sum value update uses the identical Delta(N).
     """
     pi_N = profits[N - 1]
 
-    # Rough continuation: assume N stays roughly the same (self-consistent approx)
-    # This is used only for computing the exit probability
-    EV_approx = V[N - 1]
-    u_stay = pi_N - f + beta * EV_approx
-    return 1.0 / (1.0 + np.exp(u_stay / sigma_eps))
+    p_stay_others = 1.0 - p_exit_rivals
+    expected_surv = max(0, int(np.round(N * p_stay_others)))
+    n_enter = _free_entry_count(
+        expected_surv, profits, f, beta, V, K, N_max, sigma_eps
+    )
+    EV = _continuation_value(N, p_stay_others, n_enter, V, N_max)
+    delta = pi_N - f + beta * EV
+    p_exit = 1.0 / (1.0 + np.exp(delta / sigma_eps))
+    return p_exit, n_enter, EV
 
 
 def _free_entry_count(N_surv, profits, f, beta, V, K, N_max, sigma_eps):
@@ -433,12 +454,16 @@ $$
         "        compute p_exit(N) from the logit stay/exit rule using V_n\n"
         "        compute expected survivor count S_bar(N)\n"
         "        choose entrants e(N) by the cutoff V_n(S_bar(N)+e) >= K\n"
-        "        for each possible number of rival survivors S:\n"
-        "            add V_n(min{S + 1 + e(N), N_max}) to the incumbent's continuation value\n"
-        "        update V_{n+1}(N) with the log-sum inclusive value\n"
+        "        for s = 0,...,N-1 surviving rivals (the focal firm always stays):\n"
+        "            weight = Binomial(s; N-1 rivals, 1 - p_exit(N))\n"
+        "            add weight * V_n(min{s + 1 + e(N), N_max}) to E[V(N') | stay]\n"
+        "        update V_{n+1}(N) with the log-sum inclusive value of E[V(N') | stay]\n"
         "    replace V_n by a damped average of V_n and V_{n+1}\n"
         "until max_N |V_{n+1}(N)-V_n(N)| < epsilon\n"
-        "Construct T(N'|N) from binomial survival and the same state-level entry rule\n"
+        "Construct T(N'|N): survivors ~ Binomial(N firms, 1 - p_exit(N)),\n"
+        "  plus the same state-level entry rule. The VFI step above conditions on\n"
+        "  the focal firm staying, so it draws from the N-1 rivals; the transition\n"
+        "  matrix is unconditional, so it draws from all N firms.\n"
         "Iterate mu_{m+1}=mu_m T until mu is invariant\n"
         "```\n\n"
         f"The value iteration converged in **{info['iterations']} iterations** with "

@@ -139,13 +139,13 @@ def main() -> None:
     seed = 20260508
 
     setup_style()
-    auctions = simulate_auctions(n_auctions, n_bidders, seed)
+    all_bids = simulate_auctions(n_auctions, n_bidders, seed)
     recovered = recover_pseudo_values(
-        auctions["bid"].to_numpy(),
+        all_bids["bid"].to_numpy(),
         n_bidders=n_bidders,
         trim_quantile=trim_quantile,
     )
-    data = pd.concat([auctions, recovered.drop(columns=["bid"])], axis=1)
+    data = pd.concat([all_bids, recovered.drop(columns=["bid"])], axis=1)
     data = data[data["kept"]].copy()
     data["error"] = data["pseudo_value"] - data["value"]
     data["abs_error"] = np.abs(data["error"])
@@ -156,9 +156,9 @@ def main() -> None:
     diagnostics = pd.DataFrame([{
         "Auctions": n_auctions,
         "Bidders": n_bidders,
-        "Observed bids": len(auctions),
+        "Observed bids": len(all_bids),
         "Kept bids": len(data),
-        "Trimmed share": round(1.0 - len(data) / len(auctions), 3),
+        "Trimmed share": round(1.0 - len(data) / len(all_bids), 3),
         "RMSE": round(float(np.sqrt(np.mean(data["error"] ** 2))), 3),
         "MAE": round(float(data["abs_error"].mean()), 3),
         "Correlation": round(float(np.corrcoef(data["value"], data["pseudo_value"])[0, 1]), 3),
@@ -168,7 +168,7 @@ def main() -> None:
     print("Auction valuation recovery tutorial")
     print(f"  Auctions: {n_auctions}")
     print(f"  Bidders per auction: {n_bidders}")
-    print(f"  Kept bids after trimming: {len(data)} / {len(auctions)}")
+    print(f"  Kept bids after trimming: {len(data)} / {len(all_bids)}")
     print(f"  RMSE: {diagnostics['RMSE'].iloc[0]:.3f}")
     print(f"  Correlation: {diagnostics['Correlation'].iloc[0]:.3f}")
 
@@ -277,7 +277,8 @@ exercise trims low and high bid quantiles before evaluating recovery.
         "Output: pseudo-values {\\hat v_i}\n\n"
         "1. Draw v_i ~ F_v and set b_i = s(v_i).\n"
         "2. Hide {v_i}; keep only {b_i} and n.\n"
-        "3. Estimate \\hat G(b_i) = rank(b_i) / N.\n"
+        "3. Estimate \\hat G(b_i) = rank(b_i) / N, with rank(b_i) 1-indexed "
+        "so the smallest bid maps to 1/N and the largest to 1.\n"
         "4. Estimate \\hat g(b_i) from a KDE on {b_i}.\n"
         "5. Keep I_q = {i: Q_q <= b_i <= Q_{1-q}, \\hat g(b_i) > 0}.\n"
         "6. For i in I_q, set\n"
@@ -290,7 +291,7 @@ exercise trims low and high bid quantiles before evaluating recovery.
 
     fig1, ax1 = plt.subplots(figsize=(8, 5))
     ax1.hist(
-        auctions["value"],
+        all_bids["value"],
         bins=45,
         density=True,
         alpha=0.42,
@@ -298,7 +299,7 @@ exercise trims low and high bid quantiles before evaluating recovery.
         label="Latent values",
     )
     ax1.hist(
-        auctions["bid"],
+        all_bids["bid"],
         bins=45,
         density=True,
         alpha=0.42,

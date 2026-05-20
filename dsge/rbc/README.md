@@ -6,7 +6,7 @@ A productivity shock changes the marginal product of every input. Capital was ch
 
 The tutorial walks two cases on the same primitives. Case A keeps labor fixed. The system has three equations and one jump variable. Case B adds endogenous labor. The system grows to four equations and two jump variables.
 
-Two solvers run in parallel. The fixed-labor case is small enough to solve by hand. We guess a linear capital decision rule and match coefficients on the linearized Euler equation. Klein QZ generalized-Schur cross-checks the answer to machine precision. The endogenous-labor case is too messy for hand algebra. Klein QZ is the primary solver there.
+Two solvers run on the same model, one after the other. The fixed-labor case is small enough to solve by hand. We guess a linear capital decision rule and match coefficients on the linearized Euler equation. Klein QZ generalized-Schur cross-checks the answer to machine precision. The endogenous-labor case is too messy for hand algebra. Klein QZ is the primary solver there.
 
 Each linear solution is checked against the exact nonlinear perfect-foresight transition for the same TFP path.
 

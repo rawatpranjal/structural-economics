@@ -95,7 +95,7 @@ for n = 0, 1, 2, ...:
         EV(a_i) <- sum_k P_{jk} * V_n(a_i, z_k)                # expected continuation on A
         EV_hat(g_l) <- interp(EV from A to G)                  # off-state continuation on G
         for each asset state a_i:
-            feasible(g_l) := { g_l <= R a_i + z_j }            # respects no-borrowing
+            feasible(g_l) := { 0 <= g_l <= R a_i + z_j }       # no-borrowing and budget
             obj(g_l) <- u(R a_i + z_j - g_l) + beta * EV_hat(g_l)
             g_a(a_i, z_j) <- argmax_{feasible} obj
             V_{n+1}(a_i, z_j) <- max obj
@@ -111,7 +111,7 @@ $V(a,z_j)$ rises with assets and income. Near $\underline{a}=0$, income states h
 
 <img src="figures/value-functions.png" alt="Value functions by income state" width="80%">
 
-Consumption rises with assets and is steepest near the borrowing limit. For the median income state, average MPC is **0.52** near zero assets and **0.04** near the top. The fall measures buffer-stock saving. An extra dollar is mostly consumed when assets are scarce. It is mostly saved after the buffer is large.
+Consumption rises with assets and is steepest near the borrowing limit. For the median income state, average MPC is **0.51** near zero assets and **0.04** near the top. The fall measures buffer-stock saving. An extra dollar is mostly consumed when assets are scarce. It is mostly saved after the buffer is large.
 
 The dashed line is the refined-grid median-income policy. Its maximum gap from the main grid is **2.55e-02**.
 
@@ -126,6 +126,21 @@ Forward simulation applies the policy after each income draw. Five agents start 
 A panel of 3,000 agents shows the cross-section after 400 periods. Median wealth is **0.20**, and the 90th percentile is **1.85**. About **20.5%** of agents sit near $\underline{a}$. The pile-up at zero and the right tail come from the policy and persistent risk.
 
 <img src="figures/simulated-paths.png" alt="Simulated asset paths and the induced cross-sectional asset distribution" width="80%">
+
+Convergence statistics, marginal propensities to consume, and simulated wealth quantiles are persisted here so the inline numbers in the report can be cross-checked against a committed artifact.
+
+**Solver, policy, and simulation diagnostics**
+
+| Quantity                        |      Value |
+|:--------------------------------|-----------:|
+| Main-grid VFI iterations        | 260        |
+| Main-grid sup-norm residual     |   9.91e-07 |
+| Refined-grid max gap (median z) |   0.0255   |
+| MPC near zero assets (median z) |   0.5051   |
+| MPC near top assets (median z)  |   0.0416   |
+| Simulated median wealth         |   0.2043   |
+| Simulated P90 wealth            |   1.8467   |
+| Share near constraint           |   0.2053   |
 
 ## Takeaway
 

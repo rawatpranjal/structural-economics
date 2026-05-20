@@ -142,6 +142,16 @@ Rows compare dividend states. Near $y\approx 1$, all ratios are close to the log
 | 1.573 |          42.114 |           16.373 |             19 |         26.771 |        109.637 |
 | 1.983 |          62.894 |           15.157 |             19 |         31.724 |        238.292 |
 
+The iteration count, sup-norm residual, and central relative error are persisted here so the convergence claims in the Solution Method section can be cross-checked against a committed artifact.
+
+**Solver convergence diagnostics for the baseline solution**
+
+| Quantity                       |      Value |
+|:-------------------------------|-----------:|
+| Baseline iterations            | 405        |
+| Baseline sup-norm residual     |   9.76e-10 |
+| Central max relative error (%) |   0.011    |
+
 ## Takeaway
 
 The Lucas tree has no household policy once market clearing sets $c=y$. The Euler equation is therefore a valuation equation for $p(y)$. Scaling by $u'(y)$ gives a linear fixed point. The price-dividend ratio shows how risk aversion prices dividend mean reversion.

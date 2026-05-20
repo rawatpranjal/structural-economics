@@ -6,7 +6,7 @@ Suppose we observe a consumer choosing bundles from several two-good budgets. Pr
 
 The object is the preference ordering implied by these finite choices. A GARP-consistent sample can be rationalized by many utility functions. We recover one upper-contour boundary through a chosen bundle.
 
-The computation uses Afriat inequalities. A linear program finds utility scores and supporting slopes. The lower envelope of those supports draws the contour.
+The computation uses Afriat inequalities. The supporting slopes are fixed to one over expenditure before the program runs, so a linear program only finds the utility scores. The lower envelope of those supports draws the contour.
 
 ## Equations
 
@@ -87,7 +87,7 @@ Output: recovered utility index U_hat and contour through x_k
 3. Set lambda_t = 1 / (p_t . x_t) to normalize supporting slopes.
 4. Solve for ordinal scores u_t subject to
        u_i - u_j <= lambda_j p_j . (x_i - x_j) for every pair (i,j),
-       average_t u_t = 1, and u_t >= 0.
+       sum_t u_t = T, and u_t >= 0.
 5. Define U_hat(y) = min_j [u_j + lambda_j p_j . (y - x_j)].
 6. For a grid of y_1 values, compute the smallest y_2 that satisfies
        U_hat((y_1,y_2)) >= u_k.

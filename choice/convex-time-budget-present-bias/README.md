@@ -148,9 +148,9 @@ Mean sooner allocations decline as the gross interest rate rises and as the dela
 
 <img src="figures/mean-allocations.png" alt="Mean sooner-token allocations by interest rate and delay length" width="80%">
 
-The profile log-likelihood for $\beta$ is sharp under the strong design that includes $t > 0$ cells. It is nearly flat under the weak design that uses only $t = 0$ cells. Without front-end delay variation the data cannot distinguish present bias from a more patient discount factor. At true $\beta = 0.9$ the strong-design 95 percent confidence region is bounded; the weak-design region extends across most of the plotted $\beta$ range.
+The profile log-likelihood for $\beta$ is sharp under the strong design that includes $t > 0$ cells. It is nearly flat under the weak design that uses only $t = 0$ cells. Without front-end delay variation the data cannot distinguish present bias from a more patient discount factor. At true $\beta = 0.9$ the strong-design 95 percent confidence region is bounded; the weak-design region extends across most of the plotted $\beta$ range. This identification figure profiles a Gaussian sum-of-squares criterion over $\beta$, without the Tobit censoring terms used by the Method 2 point estimator. The censoring share is modest at this noise level, so the criterion is a faithful identification diagnostic; the sharp-versus-flat contrast is the lesson, not the absolute likelihood level.
 
-<img src="figures/identification-profile.png" alt="Profile log-likelihood of beta under weak vs strong design" width="80%">
+<img src="figures/identification-profile.png" alt="Profile of the Gaussian criterion for beta under weak vs strong design" width="80%">
 
 Both methods recover present bias close to the truth $\beta = 0.9$ on the strong design. NLS gives $\hat\beta = 0.900$ with bootstrap SE 0.001. Tobit gives $\hat\beta = 0.903$. The daily discount factor and the curvature exponent are similarly close. The Tobit estimator differs from NLS only on cells where corner allocations are common; in this calibration the censoring rate is modest and the two methods agree.
 
@@ -181,7 +181,7 @@ The CTB design turns intertemporal preference estimation into a nonlinear regres
 
 Front-end delay variation is what makes $\beta$ separately identifiable. Without $t > 0$ cells the data tell the analyst about the product $\beta\, \delta^{k}$ but not about its factors. Adding even a single $t > 0$ cell sharpens the profile likelihood for $\beta$ dramatically.
 
-The two estimation methods are complements rather than substitutes. NLS on the demand function works at corners and lets the Stone-Geary minima be jointly estimated. Tobit on the log tangency is the right choice when corner choices are common and the analyst is willing to fix the Stone-Geary minima a priori. Andreoni and Sprenger report both methods in their Table 2 for exactly this reason.
+The two estimation methods are complements rather than substitutes. NLS on the demand function works directly on the dollar-value allocation, so corner choices contribute a residual rather than breaking the criterion. Tobit on the log tangency is the right choice when corner choices are common, because it scores those cells with a censoring term instead of an interior residual. Both methods here fix the Stone-Geary minima at zero, matching column 3 of Andreoni and Sprenger Table 2; the column-1 specification that estimates those minima jointly is a natural extension this tutorial does not run. Andreoni and Sprenger report both estimators in their Table 2 for exactly this reason.
 
 The empirical headline of the original paper is that $\hat\beta \approx 1$ in their UCSD sample, contradicting the prior literature that found substantial present bias from binary Multiple Price List elicitations. This is a substantive finding about monetary-payment present bias, not a defect of the CTB methodology. The methodology itself is what makes that conclusion interpretable in the first place.
 

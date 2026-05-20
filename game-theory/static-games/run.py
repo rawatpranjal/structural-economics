@@ -125,10 +125,11 @@ $$
 \max_{q_i \geq 0}\ (a-b(q_i+q_j)-c)q_i.
 $$
 
-The interior first-order condition gives the best response
+The interior first-order condition gives $(a-c-bq_j)/(2b)$, and clipping at
+the non-negativity constraint $q_i \geq 0$ gives the best response
 
 $$
-BR_i(q_j)=\frac{a-c-bq_j}{2b}.
+BR_i(q_j)=\max\lbrace 0,\ \tfrac{a-c-bq_j}{2b} \rbrace.
 $$
 
 A symmetric Nash equilibrium satisfies $q_i=q_j=q^{*}$ and

@@ -20,17 +20,30 @@ The firm observes productivity $\omega_{it}$ before choosing flexible inputs.
 This timing makes $l_{it}$ and $m_{it}$ correlated with $\omega_{it}$. Naive
 OLS therefore has a nonzero input-error covariance.
 
-The proxy variable is investment $I_{it}$. In the synthetic data, investment
-follows a monotone policy:
+The proxy variable is investment $I_{it}$. Investment follows a policy that is
+monotone in productivity given capital:
 
 $$I_{it}=h(k_{it},\omega_{it})+\nu_{it}, \qquad \frac{\partial h(k,\omega)}{\partial \omega}>0.$$
 
-The control-function estimator uses this monotonicity to form a productivity
-control $\tilde \omega_{it}=h^{-1}(k_{it},I_{it})$. It estimates
+The estimator builds a productivity control from this monotonicity. A polynomial
+in capital is fit to investment, and the residual is the part of investment
+that moves with productivity:
+
+$$\tilde \omega_{it}=I_{it}-\widehat{\mathrm{poly}}(k_{it}).$$
+
+The residual is monotone in $\omega_{it}$ given capital, so it controls for the
+productivity component that is correlated with the flexible inputs. The
+regression is
 
 $$y_{it} = \beta_l l_{it}+\beta_k k_{it}+\beta_m m_{it} +\rho \tilde\omega_{it}+u_{it}.$$
 
 Here $\rho$ is the coefficient on the productivity control $\tilde\omega_{it}$.
+Because $\tilde\omega_{it}$ holds productivity orthogonal to capital, the
+control identifies the flexible-input elasticities $\beta_l$ and $\beta_m$. It
+does not separately identify the capital elasticity $\beta_k$: capital is a
+predetermined state, and its productivity-correlated variation is absorbed by
+the control. Recovering $\beta_k$ cleanly needs the Olley-Pakes second stage,
+which this tutorial does not run.
 
 Markup recovery uses materials as the variable input. For Cobb-Douglas
 production, the materials elasticity is $\theta^m=\beta_m$. Let
@@ -54,17 +67,17 @@ $$\mu_{it}=\frac{\theta^m}{\alpha^m_{it}}.$$
 
 ## Solution Method
 
-The calculation first estimates the materials elasticity while controlling for productivity. It then divides that elasticity by each firm-year materials share. The proxy-control regression uses the synthetic investment schedule to form the productivity control.
+The calculation first estimates the materials elasticity while controlling for productivity. It then divides that elasticity by each firm-year materials share. The productivity control is built nonparametrically: a polynomial in capital is fit to investment, and the residual is the part of investment that moves with productivity. No true investment-schedule coefficient is used.
 
 ```text
 Algorithm: proxy-control markup measurement
-Input: panel {y_it, l_it, k_it, m_it, I_it, alpha^m_it}, proxy policy h, true benchmark mu_it
+Input: panel {y_it, l_it, k_it, m_it, I_it, alpha^m_it}, true benchmark mu_it
 Output: production elasticities and firm-year markup estimates
 1. Estimate the naive production regression:
        y_it = b_l l_it + b_k k_it + b_m m_it + residual_it
    and record the OLS materials elasticity b_m^OLS.
-2. Use monotonic investment to build a productivity control:
-       omega_tilde_it = h^{-1}(k_it, I_it).
+2. Fit a polynomial in capital to investment and take the residual as the
+   productivity control: omega_tilde_it = I_it - poly(k_it).
 3. Re-estimate production with the control included:
        y_it = b_l l_it + b_k k_it + b_m m_it + rho omega_tilde_it + u_it.
    The controlled b_m is the markup-relevant elasticity theta_hat^m.
@@ -74,11 +87,11 @@ Output: production elasticities and firm-year markup estimates
    markups by productivity quintile to inspect heterogeneity.
 ```
 
-The inverted proxy control is the numerical step. The final markup calculation is a firm-year division.
+The polynomial fit that builds the productivity control is the numerical step. The final markup calculation is a firm-year division.
 
 ## Results
 
-The production-function step drives the markup calculation. OLS overstates the flexible-input elasticities because high-productivity firms choose more inputs. The proxy-control estimate corrects for the omitted productivity state. It moves the materials elasticity close to its true value.
+The production-function step drives the markup calculation. OLS badly overstates the materials elasticity, the markup-relevant one, because high-productivity firms choose more materials. The proxy control corrects the materials and labor elasticities by absorbing the productivity state. It does not correct the capital elasticity: capital is predetermined, and the single-stage control absorbs its productivity-correlated variation rather than identifying it.
 
 <img src="figures/production-estimates.png" alt="True and estimated output elasticities" width="80%">
 
@@ -96,9 +109,9 @@ The coefficient table is read through the markup formula. Materials is the main 
 
 | Input     |   True elasticity |   OLS |   Proxy-control |   OLS bias |   Proxy bias |
 |:----------|------------------:|------:|----------------:|-----------:|-------------:|
-| Labor     |              0.32 | 0.452 |           0.333 |      0.132 |        0.013 |
-| Capital   |              0.24 | 0.492 |           0.245 |      0.252 |        0.005 |
-| Materials |              0.44 | 0.771 |           0.46  |      0.331 |        0.02  |
+| Labor     |              0.32 | 0.173 |           0.33  |     -0.147 |        0.01  |
+| Capital   |              0.24 | 0.215 |           0.515 |     -0.025 |        0.275 |
+| Materials |              0.44 | 0.932 |           0.451 |      0.492 |        0.011 |
 
 The quintile table makes the ground-truth comparison explicit. OLS-based markups are too high in every productivity cell. The proxy-control markups keep the right ordering and a much smaller level error.
 
@@ -106,11 +119,11 @@ The quintile table makes the ground-truth comparison explicit. OLS-based markups
 
 | productivity_quintile   |   mean_productivity |   true_markup |   ols_markup |   proxy_markup |   proxy_bias |
 |:------------------------|--------------------:|--------------:|-------------:|---------------:|-------------:|
-| Q1                      |              -0.45  |         0.865 |        1.513 |          0.901 |        0.036 |
-| Q2                      |              -0.162 |         1.005 |        1.76  |          1.048 |        0.043 |
-| Q3                      |               0.015 |         1.18  |        2.088 |          1.244 |        0.064 |
-| Q4                      |               0.195 |         1.365 |        2.4   |          1.43  |        0.065 |
-| Q5                      |               0.469 |         1.647 |        2.901 |          1.728 |        0.081 |
+| Q1                      |              -0.429 |         0.865 |        1.873 |          0.906 |        0.041 |
+| Q2                      |              -0.163 |         0.993 |        2.138 |          1.034 |        0.041 |
+| Q3                      |               0.016 |         1.179 |        2.551 |          1.234 |        0.055 |
+| Q4                      |               0.184 |         1.357 |        2.875 |          1.391 |        0.034 |
+| Q5                      |               0.463 |         1.655 |        3.554 |          1.72  |        0.065 |
 
 ## Takeaway
 

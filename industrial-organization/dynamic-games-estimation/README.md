@@ -23,8 +23,16 @@ The gap term raises the investment payoff when the rival leads.
 
 First-stage CCPs estimate the state-specific investment rate
 $p(\omega)=\Pr(a_i=1\mid \omega)$. Holding CCPs fixed gives a policy transition
-$\hat P$ and expected flow payoff $\bar\pi_\theta(\omega;\hat p)$. The logit
-action shock is integrated out. The value under the first-stage policy is
+$\hat P$ and an expected flow payoff $\bar\pi_\theta(\omega;\hat p)$. Integrating
+out the logit action shock adds the expected shock value to the policy-weighted
+payoff, so $\bar\pi_\theta$ is
+
+$$\bar\pi_\theta(\omega;\hat p) = (1-\hat p)\,\pi_i(\omega,0;\theta) + \hat p\,\pi_i(\omega,1;\theta) + H(\hat p) + \gamma,$$
+
+where $H(\hat p) = -\hat p\log\hat p-(1-\hat p)\log(1-\hat p)$ is the Bernoulli
+entropy of the investment rate and $\gamma$ is the Euler-Mascheroni constant.
+The $H(\hat p)+\gamma$ term is the expected value of the Type-I extreme value
+shock under the first-stage policy. The value under that policy is
 
 $$W_\theta = \bar\pi_\theta(\hat p) + \beta \hat P W_\theta.$$
 
@@ -82,7 +90,7 @@ Rows are own quality and columns are rival quality.
 
 <img src="figures/ccp-heatmaps.png" alt="True, first-stage, and model-implied investment CCPs" width="80%">
 
-Policy fit matters because the likelihood uses state-level investment probabilities. The model-implied RMSE against truth is **0.001**. The first-stage empirical RMSE is **0.017**.
+Policy fit matters because the likelihood uses state-level investment probabilities. The model-implied RMSE against truth is **0.00135**. The first-stage empirical RMSE is **0.017**.
 
 Known truth makes it possible to separate first-stage sampling error from second-stage structural fit.
 

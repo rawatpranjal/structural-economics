@@ -1,0 +1,9 @@
+Quantity,Value
+Main-grid VFI iterations,260
+Main-grid sup-norm residual,9.91e-07
+Refined-grid max gap (median z),2.55e-02
+MPC near zero assets (median z),0.5051
+MPC near top assets (median z),0.0416
+Simulated median wealth,0.2043
+Simulated P90 wealth,1.8467
+Share near constraint,0.2053

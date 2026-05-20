@@ -413,10 +413,12 @@ def main():
     print("  Grid search for starting values...")
     best_obj = np.inf
     best_theta0 = np.array([0.5, 0.3])
+    grid_evals = 0
     for sx_try in [0.1, 0.3, 0.5, 0.8, 1.0]:
         for sp_try in [0.1, 0.2, 0.3, 0.5, 0.8]:
             try:
                 obj_try = gmm_objective(np.array([sx_try, sp_try]), s_obs, x, p, z, nu)
+                grid_evals += 1
                 if obj_try < best_obj:
                     best_obj = obj_try
                     best_theta0 = np.array([sx_try, sp_try])
@@ -608,8 +610,11 @@ through $\mathrm{Cov}(p_{jt},\xi_{jt}) \ne 0$.
         f"**{len(conv_history)} iterations** with max "
         f"$|\\delta^{{\\mathrm{{recovered}}}}-\\delta^{{\\mathrm{{true}}}}|="
         f"{max_delta_error:.2e}$.\n\n"
-        f"The GMM search used Nelder-Mead after a coarse "
-        f"starting grid and evaluated the objective {result.nfev} times."
+        f"The GMM search first ran a coarse starting grid, where the grid "
+        f"evaluated the objective {grid_evals} times. The Nelder-Mead refinement "
+        f"from the best grid point then evaluated the objective {result.nfev} "
+        f"more times. The convergence diagnostics in the Results table record "
+        f"these counts so they can be checked against a fresh run."
     )
 
     report.add_results(
@@ -740,6 +745,35 @@ through $\mathrm{Cov}(p_{jt},\xi_{jt}) \ne 0$.
         description="The parameter table checks the simulation truth. The nonlinear "
         "dispersion estimates are less exact than the linear coefficients. They are "
         "also what break IIA.",
+    )
+
+    # --- Table: Convergence Diagnostics ---
+    diag_df = pd.DataFrame({
+        "Diagnostic": [
+            "contraction_iters",
+            "max_delta_error",
+            "grid_evals",
+            "gmm_nfev",
+            "max_own_elast_error",
+        ],
+        "Value": [
+            f"{len(conv_history)}",
+            f"{max_delta_error:.2e}",
+            f"{grid_evals}",
+            f"{result.nfev}",
+            f"{max_own_elast_error:.3f}",
+        ],
+    })
+    report.add_table(
+        "tables/convergence-diagnostics.csv",
+        "Convergence and Search Diagnostics",
+        diag_df,
+        description="These are the runtime counts and accuracy checks the prose "
+        "refers to: contraction iterations at the true parameters, the max "
+        "recovered-versus-true mean-utility error, starting-grid objective "
+        "evaluations, Nelder-Mead objective evaluations, and the largest "
+        "own-elasticity error in market 1. Committing them lets a re-run "
+        "verify the numbers in the text against an on-disk artifact.",
     )
 
     report.add_takeaway(

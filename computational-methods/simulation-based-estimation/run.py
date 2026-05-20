@@ -832,17 +832,22 @@ Under the uniform prior $\pi$ is constant on the support, so the numerator drops
         residual_table(
             ["LPM intercept", "LPM slope", "Mean log wage", "SD log wage", "Acceptance rate", "Mean accepted log wage"],
             target_aux,
+            msm,
             ii,
-            ii,
-        ).query("Estimator == 'MSM'").drop(columns=["Estimator"]).round(5),
+        ).query("Estimator == 'Indirect inference'").drop(columns=["Estimator"]).round(5),
     )
 
     report.add_results(
         "The method-comparison table puts parameter recoveries, loss values, work, and "
         "wall times on the same row. MSM and indirect inference report Nelder-Mead "
         "iterations and the criterion value at the argmin. ABC-SMC reports the total "
-        "number of simulator calls across all rounds and the same criterion evaluated "
-        "at the posterior mean, which is on the same scale as the MSM and II numbers."
+        "number of simulator calls across all rounds and the criterion evaluated "
+        "at the posterior mean. "
+        "The MSM and ABC criteria are directly comparable, because both sum squared "
+        "scaled residuals over the same 5 economic moments with the same scale vector. "
+        "The II criterion is not on the same scale: "
+        "II uses a different set of 6 auxiliary statistics with their own scale "
+        "denominators, so its value should not be read as a sharper fit than MSM or ABC."
     )
 
     report.add_table(

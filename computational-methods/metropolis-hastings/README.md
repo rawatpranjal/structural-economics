@@ -164,7 +164,7 @@ On a finite run it is only as good as the chain's mixing, which on multimodal ta
 | Posterior mean | 0.6667 | $\alpha_{\mathrm{post}} / (\alpha_{\mathrm{post}} + \beta_{\mathrm{post}})$ |
 | Posterior variance | 0.00889 | Analytical |
 | MH proposal scale | 0.10 | Bounded random walk on $(0, 1)$ |
-| MH draws | 20,000 | After burn-in of 1,000 |
+| MH draws | 20,000 total | 19,000 retained after burn-in of 1,000 |
 | **Method 2 mixture** | | |
 | Posterior interpretation | Two empirically plausible structural regimes | |
 | $\mu_1$ | (1.5, 1.5) | First-regime mean |

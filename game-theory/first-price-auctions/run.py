@@ -185,8 +185,8 @@ $$
     report.add_results(
         f"For value {focal_value:.1f} with {focal_n - 1} rivals, the payoff curve peaks "
         "at the analytic bid. Lower bids raise margin only when they still win. Higher "
-        "bids buy win probability at a higher payment. The grid best response sits on "
-        "the analytic bid."
+        "bids buy win probability at a higher payment. The grid best response lands "
+        "within one grid spacing of the analytic bid."
     )
     report.add_figure(
         "figures/best-response-check.png",

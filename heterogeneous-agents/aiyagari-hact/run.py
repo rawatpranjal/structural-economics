@@ -491,7 +491,11 @@ def main() -> None:
     dt_consumption = dt_eq["sol"]["consumption_policy"]
     mean_wealth_dt = dt_aggregate_capital(dist_dt, a_grid_dt)
     dt_gini = gini_from_density(a_grid_dt, dt_marginal)
-    dt_mass_at_constraint = float(dt_marginal[0])
+    # Sum the DT probability mass over the same physical window the HACT side
+    # integrates (a within a_min + 0.02). On the exponential DT grid several
+    # nodes fall inside this window, so this is the like-for-like analogue of
+    # the HACT integral, not the bare node-0 point mass.
+    dt_mass_at_constraint = float(np.sum(dt_marginal[a_grid_dt <= a_min + 0.02]))
 
     # =========================================================================
     # Comparison overlays
@@ -877,7 +881,7 @@ A discrete-time Aiyagari solver runs on the same calibration to produce the side
         "The two methods agree on the bulk shape of the distribution and on the right tail. "
         "Continuous time delivers a smooth density that the discrete-time histogram only approximates, but the cost of that smoothness is the upwind discretisation on a much finer asset grid. "
         "The right panel overlays the Lorenz curves implied by the same densities, with the corresponding Gini coefficients in the legend. "
-        f"The two Ginis agree to within ${abs(hact_gini - dt_gini):.3f}$, which is well below the calibration's own structural uncertainty.",
+        f"The two Ginis agree to within ${abs(hact_gini - dt_gini):.4f}$, which is well below the calibration's own structural uncertainty.",
     )
 
     # =========================================================================
@@ -1003,13 +1007,15 @@ A discrete-time Aiyagari solver runs on the same calibration to produce the side
             f"{abs(mpc_hact_at_lim[0] - dt_mpc_on_a[0, 0]):.4f}",
         ],
     })
+    gini_gap = abs(hact_gini - dt_gini)
+    mass_gap_pp = 100.0 * abs(mass_at_constraint - dt_mass_at_constraint)
     report.add_table(
         "tables/dt-vs-ct-comparison.csv",
         "Discrete-time and continuous-time Aiyagari side by side",
         cmp_table,
         description="The two solvers agree on the headline aggregates to within numerical precision. "
         "The interest rate, the aggregate capital stock, and the mean wealth differ across methods by amounts that are dominated by the bisection tolerance and the asset-grid spacing in each solver. "
-        "The wealth Gini agrees to three decimal places and the mass at the borrowing limit agrees to one percentage point. "
+        f"The wealth Gini differs by {gini_gap:.4f} across methods, and the mass within 0.02 of the borrowing limit differs by {mass_gap_pp:.2f} percentage points; both mass figures count the fraction of households in the same physical window so the comparison is like for like. "
         "The only systematic gap is the MPC at the borrowing limit at the lowest income state, where the discrete-time finite-difference object is bounded by the asset-grid spacing on its exponential grid and the HACT object captures the closed-form kink in the consumption policy. "
         "This divergence is the headline pedagogical point of the comparison: continuous time delivers the policy slope at the constraint as a finite, computable number rather than as the artifact of a discretisation choice.",
     )

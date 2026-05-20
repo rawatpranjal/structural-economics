@@ -265,7 +265,23 @@ def main() -> None:
         + (1.0 - bargaining_power) * benefit
     )
     surplus_ss = z_bar - benefit
-    contraction_modulus = beta * (1.0 - separation_rate)
+    linear_term_modulus = beta * (1.0 - separation_rate)
+    # Effective contraction modulus of the FULL nonlinear operator. The linear
+    # term contributes beta*(1-sigma); the theta-feedback term theta(EJ) inside
+    # the Bellman adds a negative correction. The total derivative of J_new
+    # w.r.t. EJ at the steady state (EJ_ss = k/(beta*chi), theta_ss = 1) is:
+    expected_job_value_ss = vacancy_cost / (beta * matching_efficiency)
+    theta_feedback_term = (
+        bargaining_power
+        * vacancy_cost
+        * (1.0 / (1.0 - matching_elasticity))
+        * (beta * matching_efficiency / vacancy_cost)
+        ** (1.0 / (1.0 - matching_elasticity))
+        * expected_job_value_ss ** (matching_elasticity / (1.0 - matching_elasticity))
+    )
+    # ||P||_inf = 1 for a row-stochastic transition matrix, so the effective
+    # Lipschitz constant is the absolute value of this derivative.
+    effective_modulus = abs(linear_term_modulus - theta_feedback_term)
 
     # Coarse nonlinear solver (tutorial run) and finer benchmark.
     n_z_coarse = 41
@@ -454,8 +470,15 @@ innovation raises tightness by $C={elasticity:.2f}$ percent.
         "nodes. It substitutes free entry inside the job-value Bellman:\n\n"
         "$$J_i=(1-\\gamma)(z_i-b)-\\gamma k\\theta_i+\\beta(1-\\sigma)\\sum_j P_{ij}J_j,\\qquad "
         "\\theta_i=(\\frac{\\beta\\chi}{k}\\sum_j P_{ij}J_j)^{1/(1-\\eta)}.$$\n\n"
-        "The operator is a contraction with modulus "
-        f"$\\beta(1-\\sigma)={contraction_modulus:.4f}$.\n\n"
+        "The operator is a contraction. Its linear term $\\beta(1-\\sigma)"
+        f"E[J']$ alone has modulus $\\beta(1-\\sigma)={linear_term_modulus:.4f}$, "
+        "but the substituted free-entry term $\\theta(E[J'])$ inside the "
+        "Bellman adds a negative correction. The total derivative of the "
+        "update with respect to $E[J']$ at the steady state gives an effective "
+        f"modulus of about ${effective_modulus:.3f}$, well below the linear-term "
+        "bound. The tight effective modulus is why the fixed point converges in "
+        "a few dozen iterations rather than the several hundred the linear-term "
+        "modulus would imply.\n\n"
         "```text\n"
         "Algorithm 1: Log-linear local rule\n"
         "Inputs    primitives (β, σ, χ, η, γ, b, z̄, ρ); shock series {ẑ_t}\n"
@@ -605,6 +628,45 @@ innovation raises tightness by $C={elasticity:.2f}$ percent.
             "Raising $b$ shrinks surplus and raises elasticity $C$. Moving "
             "from $b=0.40$ to $b=0.95$ takes $C$ from 1.55 to 18.65. The "
             "surplus calibration drives amplification."
+        ),
+    )
+
+    df_diagnostics = pd.DataFrame(
+        {
+            "Quantity": [
+                "Coarse-grid policy gap vs. log-linear",
+                "Coarse-grid interpolation gap vs. fine grid",
+                "Coarse-grid fixed-point iterations",
+                "Fine-grid fixed-point iterations",
+            ],
+            "policy_gap_pct": [
+                f"{100.0 * max_policy_gap:.4f}",
+                "",
+                "",
+                "",
+            ],
+            "grid_gap_pct": [
+                "",
+                f"{100.0 * max_grid_gap:.6f}",
+                "",
+                "",
+            ],
+            "iterations": [
+                "",
+                "",
+                f"{nonlinear['iterations']}",
+                f"{nonlinear_fine['iterations']}",
+            ],
+        }
+    )
+    report.add_table(
+        "tables/solver-diagnostics.csv",
+        "Nonlinear fixed-point solver diagnostics",
+        df_diagnostics,
+        description=(
+            "The policy gap, interpolation gap, and iteration counts are "
+            "persisted here so the convergence claims in the Solution Method "
+            "section can be cross-checked against a committed artifact."
         ),
     )
 

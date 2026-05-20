@@ -832,6 +832,28 @@ def main() -> None:
     peak_ra_Y = 100.0 * float(np.min(ra_irf["Y"]))
     print(f"Peak RA NK output response: {peak_ra_Y:.3f}%")
 
+    # ---- Peak inflation, real-rate, and quintile-ratio diagnostics ----
+    # Inflation is reported annualized (x4), matching the IRF figure.
+    def _peak(x: np.ndarray) -> float:
+        """Signed extremum of an IRF path (entry with the largest magnitude)."""
+        x = np.asarray(x, dtype=float)
+        return float(x[int(np.argmax(np.abs(x)))])
+
+    peak_hank_pi = 4.0 * 100.0 * _peak(delta_pi)
+    peak_ra_pi = 4.0 * 100.0 * _peak(ra_irf["pi"])
+    ra_real_rate_full = ra_irf["i"] - np.r_[ra_irf["pi"][1:], 0.0]
+    peak_hank_r = 4.0 * 100.0 * _peak(delta_r)
+    peak_ra_r = 4.0 * 100.0 * _peak(ra_real_rate_full)
+    # Date-0 consumption-IRF contribution by wealth quintile (policy channel).
+    q1_peak = float(quintile_irf[0, 0])
+    q5_peak = float(quintile_irf[4, 0])
+    q1_q5_ratio = q1_peak / q5_peak if q5_peak != 0.0 else float("nan")
+    print(
+        f"Peak HANK inflation: {peak_hank_pi:.3f}% vs RA {peak_ra_pi:.3f}%; "
+        f"peak HANK real rate: {peak_hank_r:.3f}% vs RA {peak_ra_r:.3f}%; "
+        f"Q1/Q5 date-0 consumption ratio: {q1_q5_ratio:.2f}"
+    )
+
     # ---- Figures ----
     plot_T = 40
     h = np.arange(plot_T)
@@ -1127,11 +1149,13 @@ for s = 0..T-1:
 ```
 
 The two-step structure mirrors Auclert, Bardóczy, Rognlie, and Straub (2021):
-anticipation curves are translation-invariant, so they are computed once and
-then convolved with the time-varying input path during the forward sweep.
-The full SSJ library uses an additional Toeplitz trick that drops the overall
-cost to $O(T\,|state|)$; the algorithm above is the simplest version that
-still gives the correct Jacobians.
+anticipation curves are translation-invariant, so they are computed once by a
+single $O(T\,|state|)$ backward iteration. The forward distribution sweep
+above then runs $T$ separate passes of length $T$, restarting $delta_D$ for
+each pulse date, so the sweep costs $O(T^2\,|state|)$ in total. The full SSJ
+library uses an additional Toeplitz trick that drops the overall cost to
+$O(T\,|state|)$; the algorithm above is the simplest version that still gives
+the correct Jacobians.
 
 **Firm, NKPC, fiscal, and monetary blocks.** All four are closed-form
 $T \times T$ matrices once we substitute $L = Y / Z$ and impose the budget
@@ -1162,9 +1186,10 @@ $10^{{{int(np.log10(cond))}}}$, well within double-precision range.
             "NK benchmark, because the skill-proportional dividend rule "
             "sends a relatively larger share of the dividend swing to "
             "high-skill, low-MPC households who absorb it through saving. "
-            "Even so, HANK shows larger inflation and real-rate responses "
-            "than RA because the cross-section forces real marginal cost "
-            "to move more to clear the goods market."
+            "Even so, HANK shows a larger inflation response than RA "
+            "because the cross-section forces real marginal cost to move "
+            "more to clear the goods market; the real-rate response is "
+            "close to the RA benchmark and slightly smaller on impact."
         ),
     )
 
@@ -1197,9 +1222,11 @@ $10^{{{int(np.log10(cond))}}}$, well within double-precision range.
             "filtered through the household's Euler equation: high-MPC "
             "households at the constraint barely respond to far-future news, "
             "while wealthy households respond similarly to news at any "
-            "horizon below their planning window. These curves are the "
-            "columns of $J^{C, r}_{0, s}$ before the forward distribution "
-            "propagation."
+            "horizon below their planning window. Each curve is the "
+            "skill-averaged date-0 policy perturbation $dc(a)$ for a unit "
+            "$r$ pulse at lag $s$ -- the raw anticipation curve before it "
+            "is integrated against the steady-state distribution to form a "
+            "Jacobian entry."
         ),
     )
 
@@ -1234,6 +1261,11 @@ $10^{{{int(np.log10(cond))}}}$, well within double-precision range.
             "Peak HANK output response (% of Y*)",
             "Peak HANK consumption response (% of C*)",
             "Peak RA NK output response (%)",
+            "Peak HANK inflation response (annualized %)",
+            "Peak RA NK inflation response (annualized %)",
+            "Peak HANK real-rate response (annualized %)",
+            "Peak RA NK real-rate response (annualized %)",
+            "Q1/Q5 peak consumption ratio",
         ],
         "Value": [
             f"{int(hh_bar['iterations'])}",
@@ -1252,6 +1284,11 @@ $10^{{{int(np.log10(cond))}}}$, well within double-precision range.
             f"{peak_Y:.3f}",
             f"{peak_C:.3f}",
             f"{peak_ra_Y:.3f}",
+            f"{peak_hank_pi:.3f}",
+            f"{peak_ra_pi:.3f}",
+            f"{peak_hank_r:.3f}",
+            f"{peak_ra_r:.3f}",
+            f"{q1_q5_ratio:.2f}",
         ],
     })
     report.add_table(
@@ -1272,10 +1309,12 @@ $10^{{{int(np.log10(cond))}}}$, well within double-precision range.
         "same calibration and produce IRFs of comparable aggregate "
         "magnitude. The cross-sectional decomposition is where the "
         "heterogeneity becomes visible: the lowest wealth quintile cuts "
-        "consumption roughly four times as much as the highest on impact, "
-        "consistent with the textbook MPC story. Inflation and the real "
-        "rate also respond more in HANK, because the cross-section forces "
-        "real marginal cost to move more to clear the goods market. The "
+        "consumption close to four times as much as the highest on impact, "
+        "consistent with the textbook MPC story. Inflation responds more "
+        "sharply in HANK, because the cross-section forces real marginal "
+        "cost to move more to clear the goods market; the real rate, in "
+        "contrast, moves slightly less than in the RA benchmark on impact. "
+        "The "
         "anticipation curves show why distant future shocks still have a "
         "contemporaneous effect on the date-0 policy: even high-MPC "
         "households reoptimize over their saving horizon when news arrives, "

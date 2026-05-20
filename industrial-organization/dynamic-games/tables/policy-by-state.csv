@@ -2,4 +2,8 @@ State,Firm 1 policy,Firm 2 policy,Firm 1 value,Firm 2 value,Value advantage,Max 
 "(0,0)",Invest,Invest,60.03,60.03,0.00,0.00e+00
 "(1,2)",Invest,Invest,58.87,78.59,-19.72,0.00e+00
 "(2,1)",Invest,Invest,78.59,58.87,19.72,0.00e+00
+"(4,0)",Wait,Invest,99.76,42.63,57.13,0.00e+00
+"(4,1)",Wait,Invest,93.34,52.83,40.51,0.00e+00
+"(4,2)",Wait,Invest,86.99,62.92,24.07,0.00e+00
+"(4,3)",Wait,Invest,81.61,71.95,9.66,0.00e+00
 "(4,4)",Wait,Wait,78.52,78.52,0.00,0.00e+00

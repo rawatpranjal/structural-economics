@@ -27,9 +27,13 @@ The household enters period $t$ with bond holdings $b_t \ge \underline b$,
 	$$c_t = x_t - g_\theta(b_t,y_t,z_t,r_t), \qquad u(c_t) = \frac{c_t^{1-\sigma}-1}{1-\sigma}.$$
 
 	The Structural Reinforcement Learning objective is a Monte Carlo estimate of
-	expected lifetime utility:
+	expected lifetime utility, with a small ridge penalty on the policy
+	parameters to keep the tabular logits bounded:
 
-	$$J(\theta) = \mathbb{E}[\sum_{t=0}^{T-1}\beta^t u(c_t)].$$
+	$$J(\theta) = \mathbb{E}\left[\sum_{t=0}^{T-1}\beta^t u(c_t)\right] - \kappa\,\overline{\theta^2}, \qquad \kappa = 10^{-5}.$$
+
+	The penalty coefficient $\kappa$ is small relative to per-period utility, so
+	it regularizes the parameters without materially distorting the policy.
 
 	For a candidate interest-rate grid point $r^\ell$, the current distribution
 	$\mu_t(b,y)$ implies aggregate desired bond holdings
@@ -150,7 +154,7 @@ Soft residuals are the differentiable training residuals. Hard residuals come fr
 | Converged by policy movement criterion                        | No          |
 | Epochs completed                                              | 90          |
 | Final parameter movement                                      | 0.0272527   |
-| Convergence threshold                                         | 0.0003      |
+| Convergence threshold                                         | 0.0001      |
 | Final normalized utility objective                            | -0.0237778  |
 | Mean soft market residual during training                     | 0.101114    |
 | Mean interpolated market-clearing residual                    | 9.77753e-18 |
@@ -165,17 +169,17 @@ The benchmark is the paper's Huggett aggregate-risk experiment, not an exact mas
 
 **Published SRL benchmark comparison**
 
-| Benchmark item             | Published SRL benchmark                                                                                                                                                      | Tutorial run                                                                                             | Assessment   |
-|:---------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------|:-------------|
-| Calibration                | beta=0.96, sigma=2, rho_y=0.6, nu_y=0.2, rho_z=0.9, nu_z=0.02, B=0, borrowing limit=-1                                                                                       | Uses the same Huggett calibration and c_min=1e-3                                                         | Matched      |
-| Grid and training settings | 200 bond points, b_max=50, 3 income states, 30 aggregate states, 20 rate points on [0.01, 0.06], T=170, 1000 epochs, 50 warm-up epochs, lr_ini=1e-3, lr_decay=0.5, batch=512 | Uses the same grid, horizon, learning-rate schedule, and batch size                                      | Matched      |
-| Convergence status         | Average convergence at 480.6 epochs over 10 runs                                                                                                                             | Did not converge after 90 epochs; final movement 0.0273                                                  | Not met      |
-| Market-clearing residual   | Average bond-market clearing gap about 4.4e-6                                                                                                                                | Mean absolute residual 9.78e-18; maximum 5.55e-17; bracketing share 1.000                                | Matched      |
-| Qualitative figure match   | monotone and concave consumption, smoother aggregate consumption than income, endogenous interest rates, saving schedule crossing zero                                       | monotone share 0.897; concave share 0.852; C/Y volatility ratio 1.000; saving schedule crosses zero: yes | Mixed        |
+| Benchmark item             | Published SRL benchmark                                                                                                                                                      | Tutorial run                                                                                                                                                               | Assessment           |
+|:---------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:---------------------|
+| Calibration                | beta=0.96, sigma=2, rho_y=0.6, nu_y=0.2, rho_z=0.9, nu_z=0.02, B=0, borrowing limit=-1                                                                                       | Uses the same Huggett calibration and c_min=1e-3                                                                                                                           | Matched              |
+| Grid and training settings | 200 bond points, b_max=50, 3 income states, 30 aggregate states, 20 rate points on [0.01, 0.06], T=170, 1000 epochs, 50 warm-up epochs, lr_ini=1e-3, lr_decay=0.5, batch=512 | Reduced quick grid: 56 bond points, b_max=12, 7 aggregate states, 9 rate points, T=44, 90 epochs, batch=14                                                                 | Not matched          |
+| Convergence status         | Average convergence at 480.6 epochs over 10 runs                                                                                                                             | Did not converge after 90 epochs; final movement 0.0273                                                                                                                    | Not met              |
+| Market-clearing residual   | Average bond-market clearing gap about 4.4e-6                                                                                                                                | Interpolated residual is zero by construction of the linear clearing weights: mean 9.78e-18, maximum 5.55e-17, bracketing share 1.000. Not comparable to the published gap | Zero by construction |
+| Qualitative figure match   | monotone and concave consumption, a below-one C/Y volatility ratio, endogenous interest rates, saving schedule crossing zero                                                 | monotone share 0.897; concave share 0.852; C/Y volatility ratio 1.000; saving schedule crosses zero: yes                                                                   | Mixed                |
 
 ## Takeaway
 
-Structural Reinforcement Learning turns the aggregate-risk Huggett problem into a simulation-based policy optimization problem with prices as low-dimensional state variables. The tutorial reproduces the paper benchmark's calibration and grid settings, then checks the same economic objects: concave consumption, endogenous prices, smoother aggregate consumption, and a near-zero market-clearing residual. In this run, the maximum interpolated bond-market residual is 5.551e-17.
+Structural Reinforcement Learning turns the aggregate-risk Huggett problem into a simulation-based policy optimization problem with prices as low-dimensional state variables. The tutorial uses the paper benchmark's calibration with a reduced quick grid, then checks the same economic objects: concave consumption, endogenous prices, an aggregate consumption volatility ratio of 1.000, so this short run does not yet reproduce the consumption-smoothing result, and a market-clearing residual. In this run, the maximum interpolated bond-market residual is 5.551e-17.
 
 ## References
 

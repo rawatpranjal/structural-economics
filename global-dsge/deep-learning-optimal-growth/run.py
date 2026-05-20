@@ -211,6 +211,8 @@ def train_policy(k_ss: float, k_min: float, k_max: float) -> tuple[
         "steps": np.array(log_steps),
         "loss": np.array(log_losses),
         "mean_policy_error": np.array(log_policy_errors),
+        "initial_loss": float(log_losses[0]),
+        "initial_policy_error": float(log_policy_errors[0]),
         "final_loss": float(log_losses[-1]),
     }
 
@@ -260,11 +262,13 @@ def main() -> None:
     exact_saving_share = ALPHA * BETA
 
     summary = pd.DataFrame([{
+        "Initial loss": float(train_log["initial_loss"]),
         "Final loss": float(train_log["final_loss"]),
         "Mean policy error": mean_policy_error,
         "Max policy error": max_policy_error,
         "Max Euler residual": max_euler_residual,
         "Terminal path error": final_path_error,
+        "Mean saving share": mean_saving_share,
         "Gradient steps": TRAIN_STEPS,
     }])
 
@@ -349,6 +353,10 @@ $$
 \qquad
 \hat{\theta} = \arg\min_{\theta} \Xi_n(\theta).
 $$
+
+The objective the code actually minimizes adds a light stability guard to
+$\Xi_n(\theta)$; that guard is zero during normal training and is described in
+the Solution Method section.
 
 The neural policy first chooses a saving share:
 
@@ -442,10 +450,19 @@ $$
         "        c_i_next = (1 - s_i_next) * y_i_next\n"
         "    Compute residuals r(k_i; theta):\n"
         "        r_i = log(beta * alpha * A * k_i_next^(alpha - 1) * c_i / c_i_next)\n"
-        "    Set Xi_n(theta) = (1/n) sum_i r_i^2\n"
+        "    Compute the stability guard g_i (zero whenever k_i_next stays\n"
+        "    inside [0.5 * k_min, 1.15 * k_max]; positive outside that band)\n"
+        "    Set Xi_n(theta) = (1/n) sum_i r_i^2 + 1e-3 * (1/n) sum_i g_i^2\n"
         "    Update theta with one Adam step using the gradient of Xi_n(theta)\n"
         "Audit k'(k; theta) on a holdout grid against the exact rule\n"
         "```\n\n"
+        "The minimized objective is the squared Euler residual plus a light "
+        "stability guard. The stability guard is a one-sided penalty, weighted "
+        "by 1e-3, that activates only when the predicted next capital leaves a "
+        "band slightly wider than the training interval. During normal training "
+        "the predicted capital stays inside that band, so the guard is zero and "
+        "the objective is the pure empirical risk; the guard only keeps early "
+        "gradient steps from drifting into infeasible capital.\n\n"
         "The audit is not part of the training loss. "
         "It exists because this Brock-Mirman case has the closed-form rule "
         "$k'=\\alpha\\beta A k^\\alpha$. "
@@ -555,7 +572,11 @@ $$
         "The table reports the holdout audit on the plotted grid. "
         "Policy errors are in capital units. "
         "The Euler residual column is the maximum absolute log residual. "
-        "Values near zero mean the Euler equation is nearly satisfied."
+        "Values near zero mean the Euler equation is nearly satisfied. "
+        "The initial-loss column records the loss at the first gradient step, "
+        "so the drop to the final loss is visible in the artifact itself. "
+        "The mean-saving-share column records the average neural saving share "
+        "over the audit grid."
     )
     report.add_table(
         "tables/training-summary.csv",

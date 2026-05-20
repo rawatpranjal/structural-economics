@@ -1,0 +1,6 @@
+Diagnostic,Value
+contraction_iters,627
+max_delta_error,2.45e-11
+grid_evals,25
+gmm_nfev,46
+max_own_elast_error,0.315

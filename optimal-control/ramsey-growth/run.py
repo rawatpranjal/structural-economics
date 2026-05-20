@@ -363,7 +363,7 @@ Here $u(c)=c^{{1-\sigma}}/(1-\sigma)$ is the period utility function, so $u'(c)=
     terminal_residuals = [abs(sol.y[0, -1] - k_star) / k_star for sol in solutions]
     table_data = {
         "$k_0/k^{*}$": [f"{m:.2f}" for m in k0_multiples],
-        "$c_0$ from shooting": [f"{c0:.6f}" for c0 in initial_consumption],
+        "$c_0$ from shooting": [f"{c0:.6g}" for c0 in initial_consumption],
         "$c_0/[f(k_0)-\\delta k_0]$": [
             f"{c0 / (f(k0) - delta * k0):.3f}"
             for k0, c0 in zip(k0_values, initial_consumption, strict=True)
@@ -374,7 +374,9 @@ Here $u(c)=c^{{1-\sigma}}/(1-\sigma)$ is the period utility function, so $u'(c)=
         "$c(50)/c^{*}$": [
             f"{sol.y[1, np.searchsorted(t_eval, 50.0)] / c_star:.4f}" for sol in solutions
         ],
-        "Terminal capital gap": [f"{resid:.2e}" for resid in terminal_residuals],
+        "Relative terminal capital gap": [
+            f"{resid:.2e}" for resid in terminal_residuals
+        ],
     }
     df = pd.DataFrame(table_data)
     report.add_table(
@@ -384,7 +386,8 @@ Here $u(c)=c^{{1-\sigma}}/(1-\sigma)$ is the period utility function, so $u'(c)=
         description=(
             "The table records the jump chosen by the root search. The consumption ratio is "
             "below one when the planner builds capital. It is above one when the planner "
-            "runs capital down. The last column reports the terminal capital gap."
+            "runs capital down. The last column reports the relative terminal capital gap, "
+            "the distance $|k(T)-k^{*}|$ expressed as a fraction of $k^{*}$."
         ),
     )
 

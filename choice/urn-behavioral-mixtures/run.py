@@ -393,6 +393,26 @@ Here $h$ is a summation index ranging over the same rule set as $m$.
         ),
     )
 
+    diagnostics = pd.DataFrame(
+        {
+            "iterations": [int(estimates["iterations"])],
+            "log_likelihood": [float(estimates["log_likelihood"])],
+            "bayes_conservative_split": [bayes_conservative_split],
+            "bayes_share_split": [bayes_share_split],
+            "bayes_count_split": [bayes_count_split],
+        }
+    )
+    report.add_table(
+        "tables/diagnostics.csv",
+        "EM and rule-separation diagnostics",
+        diagnostics.round({"log_likelihood": 2}),
+        description=(
+            "Persists the runtime scalars quoted in the prose: the EM iteration "
+            "count and log likelihood, and the number of tasks on which the Bayes "
+            "rule differs from each alternative rule."
+        ),
+    )
+
     report.add_takeaway(
         "The likelihood ratio gives a task-level belief benchmark. EM uses repeated "
         "choices to estimate shares of latent decision rules. The method is useful "

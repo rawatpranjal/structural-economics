@@ -94,7 +94,7 @@ Two solvers compute the same tightness rule.
 
 $$J_i=(1-\gamma)(z_i-b)-\gamma k\theta_i+\beta(1-\sigma)\sum_j P_{ij}J_j,\qquad \theta_i=(\frac{\beta\chi}{k}\sum_j P_{ij}J_j)^{1/(1-\eta)}.$$
 
-The operator is a contraction with modulus $\beta(1-\sigma)=0.9621$.
+The operator is a contraction. Its linear term $\beta(1-\sigma)E[J']$ alone has modulus $\beta(1-\sigma)=0.9621$, but the substituted free-entry term $\theta(E[J'])$ inside the Bellman adds a negative correction. The total derivative of the update with respect to $E[J']$ at the steady state gives an effective modulus of about $0.293$, well below the linear-term bound. The tight effective modulus is why the fixed point converges in a few dozen iterations rather than the several hundred the linear-term modulus would imply.
 
 ```text
 Algorithm 1: Log-linear local rule
@@ -168,6 +168,17 @@ Raising $b$ shrinks surplus and raises elasticity $C$. Moving from $b=0.40$ to $
 |           0.71 |          0.29 |           0.1018 |                     3.22 |
 |           0.85 |          0.15 |           0.0527 |                     6.22 |
 |           0.95 |          0.05 |           0.0176 |                    18.65 |
+
+The policy gap, interpolation gap, and iteration counts are persisted here so the convergence claims in the Solution Method section can be cross-checked against a committed artifact.
+
+**Nonlinear fixed-point solver diagnostics**
+
+| Quantity                                    | policy_gap_pct   | grid_gap_pct   | iterations   |
+|:--------------------------------------------|:-----------------|:---------------|:-------------|
+| Coarse-grid policy gap vs. log-linear       | 3.2287           |                |              |
+| Coarse-grid interpolation gap vs. fine grid |                  | 0.000397       |              |
+| Coarse-grid fixed-point iterations          |                  |                | 26           |
+| Fine-grid fixed-point iterations            |                  |                | 31           |
 
 ## Takeaway
 

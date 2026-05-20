@@ -92,17 +92,17 @@ The learned value surface is monotone in capital and increasing in productivity.
 
 <img src="figures/value-surface.png" alt="Q-learning value surface with closed-form policy contours" width="80%">
 
-The table compares the solvers on the same calibration. Q-learning uses no transition matrix. It matches the VFI policy and value to a few hundredths in capital units.
+The table compares the solvers on the same calibration. Q-learning uses no transition matrix. It matches the VFI policy and value to a few hundredths in capital units. The policy MAE column is computed on interior capital states only: the three lowest and three highest capital grid rows are excluded, since the closed-form rule can push next-period capital outside the discrete action grid at the boundary. All three solvers use the identical mask, so the comparison stays apples-to-apples; a full-grid MAE would be somewhat larger for every solver. The evaluation-count column counts deterministic sweep evaluations for value iteration and stochastic sampled transitions for Q-learning and DQN.
 
 **Algorithm comparison**
 
-| algorithm                         | transition matrix   |   policy MAE |   value sup-norm vs VFI |   samples |   runtime sec |
-|:----------------------------------|:--------------------|-------------:|------------------------:|----------:|--------------:|
-| value iteration                   | yes                 |       0.0038 |                  0      |   2175747 |         0.006 |
-| tabular Q-learning (4 seeds avg.) | no                  |       0.0154 |                  0.6721 |   6000000 |        79.278 |
-| DQN                               | no                  |       0.0299 |                nan      |    250000 |       121.828 |
+| algorithm                         | transition matrix   |   policy MAE (interior) |   value sup-norm vs VFI |   state-action evaluations | evaluation type      |   runtime sec |
+|:----------------------------------|:--------------------|------------------------:|------------------------:|---------------------------:|:---------------------|--------------:|
+| value iteration                   | yes                 |                  0.0038 |                  0      |                    2175747 | deterministic sweeps |         0.008 |
+| tabular Q-learning (4 seeds avg.) | no                  |                  0.0154 |                  0.6721 |                    6000000 | stochastic samples   |       160.228 |
+| DQN                               | no                  |                  0.0299 |                nan      |                     250000 | stochastic samples   |       450.346 |
 
-VFI converges in 361 sweeps. Q-learning hits a policy MAE of 0.0154 after 6,000,000 sampled transitions across 4 seeds. DQN reaches 0.0299 after 250,000 steps.
+VFI converges in 361 sweeps. Q-learning hits an interior-grid policy MAE of 0.0154 after 6,000,000 sampled transitions across 4 seeds. DQN reaches 0.0299 after 250,000 steps. The MAE figures exclude the three lowest and three highest capital grid rows, where the closed-form rule can leave the discrete action grid; the same boundary mask is applied to every solver.
 
 ## Takeaway
 

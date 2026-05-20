@@ -104,7 +104,7 @@ The forecast table reports test-block loss and residual-shock recovery. Relative
 | Ridge    | 0.0381    |      0.2699 |          0.4506 |                              0.9523 |              0.7728 |                   120 |
 | Lasso    | 0.0079    |      0.2476 |          0.4134 |                              0.9781 |              0.8826 |                    56 |
 
-The selection table separates statistical selection from economic sparsity. The true rule contains many small nonzero indicators, so missed dense signal matters even when the selected model forecasts well.
+The selection table separates statistical selection from economic sparsity. The true rule contains many small nonzero indicators, so missed dense signal matters even when the selected model forecasts well. Note that the false-inclusion count is always zero by DGP construction: every one of the 120 indicators has a nonzero true coefficient, so any indicator lasso selects is true by construction. The zero reflects the DGP, not lasso precision, and should not be read as a measurement of lasso selectivity.
 
 **Coefficient and selection summary**
 

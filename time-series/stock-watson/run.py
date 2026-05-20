@@ -170,9 +170,12 @@ def factor_augmented_forecast(y, F_hat, p_ar=2, h=1):
     n_eval = len(y_target)
 
     # AR regressors
+    # At forecast origin tau, column lag+1 holds y_{tau-lag}: lag 0 is the
+    # most recent observation y_tau, lag 1 is y_{tau-1}, matching the AR(p)
+    # equation y_{tau+h} = alpha + sum_l beta_l y_{tau-l+1} + gamma'F + eps.
     X_ar = np.ones((end - start, p_ar + 1))
     for lag in range(p_ar):
-        X_ar[:, lag + 1] = y[start - lag - 1: end - lag - 1]
+        X_ar[:, lag + 1] = y[start - lag: end - lag]
 
     # FAAR regressors: AR + factors
     X_faar = np.ones((end - start, p_ar + 1 + n_factors))
@@ -343,7 +346,7 @@ with the simulated $F_t$.
         f"| $\\sigma_{{e,i}}$ | $\\sim U(0.5, 1.5)$ | Idiosyncratic std. deviations |\n"
         f"| AR lags ($p$) | {p_ar} | Lags in forecasting equation |\n"
         f"| Horizon ($h$) | {h} | Forecast horizon |\n"
-        f"| Initial training share | 60% | Expanding-window forecast start |\n"
+        f"| Initial training share | 60% of the usable evaluation window | Expanding-window forecast start |\n"
         f"| Target series | $X_{{1t}}$ | Representative observed macro variable |"
     )
 

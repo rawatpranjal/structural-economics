@@ -19,7 +19,7 @@ $$V(x) = \theta x - \frac{1}{2}x^2$$
 First-best investment solves $V'(x)=0$, so
 $$x^{\ast} = \theta$$
 
-Regime $g$ lets the investor capture share $b_g(s)$ of marginal value.
+Regime $g$ lets the investor capture share $b_g(s)$ of revenue $\theta x$.
 The private first-order condition is
 $$b_g(s)\theta - x = 0,$$
 which gives
@@ -52,7 +52,7 @@ The calibration is illustrative. Higher specificity weakens market incentives. C
 |--------|----------------|
 | $s\in[0,1]$ | Asset specificity, with higher $s$ meaning weaker redeployability outside the relationship |
 | $\theta=4$ | Marginal productivity scale, so the first-best investment is $x^{\ast}=4$ |
-| $b_g(s)$ | Share of the marginal investment return captured by the investor under governance $g$ |
+| $b_g(s)$ | Share of revenue $\theta x$ captured by the investor under governance $g$ |
 | $F_g(s)$ | Drafting, monitoring, bureaucracy, and adaptation cost under governance $g$ |
 | Spot contract | Low fixed governance cost, but incentives fall sharply as specificity rises |
 | Long-term contract | More protection against hold-up, with moderate contracting cost |

@@ -1,4 +1,4 @@
-# Bus Engine Replacement: NFXP, CCP, MPEC, and the MCE-IRL Equivalence
+# Bus Engine Replacement: NFXP, CCP, MPEC, and the MCE-IRL Interpretation
 
 ## Overview
 
@@ -145,12 +145,11 @@ Use a constrained nonlinear optimizer to move theta and v jointly
 Report theta, likelihood, optimizer status, and the max Bellman residual
 ```
 
-Maximum-causal-entropy inverse reinforcement learning (MCE-IRL) recovers the same parameters from the same data using a different vocabulary. Under known transitions and Type-I extreme value shocks, the soft-Bellman equations and the MCE-IRL objective coincide algebraically with NFXP. The likelihood is identical and the estimator returns the same $\theta$ to within solver tolerance. The two literatures rename the same fixed point: payoffs become rewards, conditional value functions become soft-Q functions, and the replacement hazard becomes the soft policy.
+Maximum-causal-entropy inverse reinforcement learning (MCE-IRL) describes the same recovery problem in a different vocabulary. Under known transitions and Type-I extreme value shocks, the soft-Bellman equations and the MCE-IRL objective coincide algebraically with NFXP, term by term. The two literatures rename the same fixed point: payoffs become rewards, conditional value functions become soft-Q functions, and the replacement hazard becomes the soft policy. This tutorial does not run a separate MCE-IRL estimator, because at this setup it would be the NFXP code with relabelled variables.
 
 ```text
-Algorithm: MCE-IRL on Rust's bus engine (algorithmically identical to NFXP)
+MCE-IRL on Rust's bus engine, written in NFXP terms (no separate run here)
 Input: same grid X, transitions F_0 and F_1, discount beta, panel choices
-Output: reward parameters theta_IRL == theta_NFXP up to solver tolerance
 for each candidate theta:
     solve the soft-Bellman equations                # = NFXP inner fixed point
     compute the soft policy from the logit formula  # = replacement hazard
@@ -159,7 +158,7 @@ for each candidate theta:
 choose theta that maximizes the likelihood
 ```
 
-The point of including MCE-IRL here is not a new estimator. The point is that the structural-econometrics and inverse-RL literatures use different names for the same recovery problem. At this finite-state, known-transition, logit-shock setup they are the same algorithm.
+MCE-IRL appears here as an interpretation, not as a new estimator. The point is that the structural-econometrics and inverse-RL literatures use different names for the same recovery problem. At this finite-state, known-transition, logit-shock setup the MCE-IRL likelihood is the NFXP likelihood, so the NFXP estimates already report the MCE-IRL answer.
 
 ## Results
 

@@ -1,4 +1,4 @@
 Type,True alpha,Estimated alpha,True lambda,Estimated lambda,True gamma,Estimated gamma,True delta,Estimated delta,True share,Estimated share
-EUT,0.950,0.974,1.000,0.996,1.000,0.950,1.000,1.005,0.20,0.20
+EUT,0.950,0.975,1.000,1.000,1.000,0.950,1.000,1.006,0.20,0.20
 Mild CPT,0.850,0.856,1.500,1.487,0.650,0.643,0.850,0.847,0.50,0.52
 Strong CPT,0.700,0.701,2.500,2.533,0.400,0.398,0.950,0.950,0.30,0.28

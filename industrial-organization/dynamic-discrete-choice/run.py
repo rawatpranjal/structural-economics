@@ -321,7 +321,7 @@ def main() -> None:
 
     setup_style()
     report = ModelReport(
-        "Bus Engine Replacement: NFXP, CCP, MPEC, and the MCE-IRL Equivalence",
+        "Bus Engine Replacement: NFXP, CCP, MPEC, and the MCE-IRL Interpretation",
         include_reproduce=False,
         show_figure_captions=False,
     )
@@ -476,18 +476,17 @@ the objective.
         "Use a constrained nonlinear optimizer to move theta and v jointly\n"
         "Report theta, likelihood, optimizer status, and the max Bellman residual\n"
         "```\n\n"
-        "Maximum-causal-entropy inverse reinforcement learning (MCE-IRL) recovers the "
-        "same parameters from the same data using a different vocabulary. Under known "
-        "transitions and Type-I extreme value shocks, the soft-Bellman equations and the "
-        "MCE-IRL objective coincide algebraically with NFXP. The likelihood is identical "
-        "and the estimator returns the same $\\theta$ to within solver tolerance. The "
-        "two literatures rename the same fixed point: payoffs become rewards, conditional "
-        "value functions become soft-Q functions, and the replacement hazard becomes the "
-        "soft policy.\n\n"
+        "Maximum-causal-entropy inverse reinforcement learning (MCE-IRL) describes the "
+        "same recovery problem in a different vocabulary. Under known transitions and "
+        "Type-I extreme value shocks, the soft-Bellman equations and the MCE-IRL "
+        "objective coincide algebraically with NFXP, term by term. The two literatures "
+        "rename the same fixed point: payoffs become rewards, conditional value "
+        "functions become soft-Q functions, and the replacement hazard becomes the soft "
+        "policy. This tutorial does not run a separate MCE-IRL estimator, because at "
+        "this setup it would be the NFXP code with relabelled variables.\n\n"
         "```text\n"
-        "Algorithm: MCE-IRL on Rust's bus engine (algorithmically identical to NFXP)\n"
+        "MCE-IRL on Rust's bus engine, written in NFXP terms (no separate run here)\n"
         "Input: same grid X, transitions F_0 and F_1, discount beta, panel choices\n"
-        "Output: reward parameters theta_IRL == theta_NFXP up to solver tolerance\n"
         "for each candidate theta:\n"
         "    solve the soft-Bellman equations                # = NFXP inner fixed point\n"
         "    compute the soft policy from the logit formula  # = replacement hazard\n"
@@ -495,10 +494,11 @@ the objective.
         "    (= NFXP panel-choice log-likelihood, term by term)\n"
         "choose theta that maximizes the likelihood\n"
         "```\n\n"
-        "The point of including MCE-IRL here is not a new estimator. The point is that the "
-        "structural-econometrics and inverse-RL literatures use different names for the "
-        "same recovery problem. At this finite-state, known-transition, logit-shock setup "
-        "they are the same algorithm."
+        "MCE-IRL appears here as an interpretation, not as a new estimator. The point "
+        "is that the structural-econometrics and inverse-RL literatures use different "
+        "names for the same recovery problem. At this finite-state, known-transition, "
+        "logit-shock setup the MCE-IRL likelihood is the NFXP likelihood, so the NFXP "
+        "estimates already report the MCE-IRL answer."
     )
 
     values = np.asarray(solution_true["values"])

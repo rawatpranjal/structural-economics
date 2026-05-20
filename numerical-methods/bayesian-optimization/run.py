@@ -347,7 +347,7 @@ This is the same Bayesian update that produces a Beta posterior from a Beta-Bino
 
 A Gaussian process $\mathcal{GP}(m, k)$ is a distribution over functions $f : \mathcal{X} \to \mathbb{R}$ such that for any finite set of inputs $X = (x_1, \ldots, x_n) \in \mathcal{X}^n$ the vector of function values $f(X) = (f(x_1), \ldots, f(x_n)) \in \mathbb{R}^n$ is jointly Gaussian with mean $m(X) = (m(x_1), \ldots, m(x_n))$ and covariance matrix $K(X, X) \in \mathbb{R}^{n \times n}$ with entries $K_{ij} = k(x_i, x_j)$.
 The process is fully specified by its mean function $m : \mathcal{X} \to \mathbb{R}$ and its covariance kernel $k : \mathcal{X} \times \mathcal{X} \to \mathbb{R}$.
-We use a zero-mean prior, $f \sim \mathcal{GP}(0, k)$, with the squared-exponential kernel
+We use a constant-mean prior, $f \sim \mathcal{GP}(m, k)$ with $m(x) \equiv \bar{y}$ fixed to the sample mean of the observed targets, and the squared-exponential kernel
 
 $$k(x, x') = \sigma_f^2 \exp\left(-\tfrac{(x - x')^2}{2\, \ell^2}\right).$$
 
@@ -358,12 +358,12 @@ Suppose we have observed evaluations $y_i = f(x_i) + \varepsilon_i$ for $i = 1, 
 Stack the targets into $y = (y_1, \ldots, y_n)^{\top} \in \mathbb{R}^n$.
 Because the joint distribution of $(y, f(x_{\ast}))$ at any new input $x_{\ast} \in \mathcal{X}$ is Gaussian by construction, the conditional distribution $f(x_{\ast}) \mid (X, y)$ is also Gaussian, with closed-form posterior mean $\mu(x_{\ast})$ and variance $\sigma^2(x_{\ast})$:
 
-$$\mu(x_{\ast}) = \underbrace{k(x_{\ast}, X)}_{\text{similarity to training inputs}} \underbrace{\left[K(X, X) + \sigma_n^2 I\right]^{-1} y}_{\text{noise-corrected training residual}},$$
+$$\mu(x_{\ast}) = m(x_{\ast}) + \underbrace{k(x_{\ast}, X)}_{\text{similarity to training inputs}} \underbrace{\left[K(X, X) + \sigma_n^2 I\right]^{-1} (y - m(X))}_{\text{noise-corrected training residual}},$$
 
 $$\sigma^2(x_{\ast}) = \underbrace{k(x_{\ast}, x_{\ast})}_{\text{prior variance at } x_{\ast}} - \underbrace{k(x_{\ast}, X) \left[K(X, X) + \sigma_n^2 I\right]^{-1} k(X, x_{\ast})}_{\text{variance explained by the data}}.$$
 
 The vector $k(x_{\ast}, X) \in \mathbb{R}^n$ collects the kernel values $(k(x_{\ast}, x_1), \ldots, k(x_{\ast}, x_n))$ and $I$ is the $n \times n$ identity matrix.
-Read the posterior mean as a kernel-weighted regression: the row vector $k(x_{\ast}, X)$ gives the similarity of the candidate to each evaluated point, and the precision-weighted residual $[K + \sigma_n^2 I]^{-1} y$ tells the formula how to combine those similarities.
+Read the posterior mean as a kernel-weighted regression around the constant mean $m(x_{\ast})$: the row vector $k(x_{\ast}, X)$ gives the similarity of the candidate to each evaluated point, and the precision-weighted residual $[K + \sigma_n^2 I]^{-1} (y - m(X))$ tells the formula how to combine those similarities.
 Read the posterior variance as "prior variance minus what the data already explain", which is the GP analogue of the Bayesian shrinkage identity $\mathrm{Var}(\theta) = \mathrm{Var}(\mathbb{E}[\theta \mid D]) + \mathbb{E}[\mathrm{Var}(\theta \mid D)]$.
 The subtracted term cannot exceed the prior, so the posterior variance is always nonnegative and shrinks toward zero as the candidate moves close to an evaluated point.
 The variance collapsing at evaluated points is what makes Expected Improvement avoid re-querying the same input, and it is the reason posterior variance is the right signal for "where would another evaluation be informative".
@@ -631,10 +631,14 @@ The Bayesian-optimization loop alternates between fitting the GP and maximizing 
             f"{eval_to_global_sa}" if eval_to_global_sa else "not reached",
         ],
     })
+    sa_ratio = len(sa_curve) / n_total
+    rs_ratio = n_random / n_total
+    ms_ratio = len(multi_curve) / n_total
     report.add_results(
         "The comparison table is normalized on the same objective and bracket. "
         "All four methods recover the global peak. "
-        "The Bayesian-optimization budget is two orders of magnitude smaller than simulated annealing and one order smaller than random search or multi-start."
+        f"The Bayesian-optimization budget is roughly {sa_ratio:.0f}x smaller than simulated annealing, "
+        f"{rs_ratio:.0f}x smaller than random search, and {ms_ratio:.0f}x smaller than multi-start."
     )
     report.add_table(
         "tables/method_comparison.csv",

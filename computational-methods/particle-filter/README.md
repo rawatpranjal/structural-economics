@@ -161,14 +161,14 @@ Lower measurement noise makes the signal more informative. That setting reveals 
 
 |   Measurement std | Method    |   PF RMSE vs Kalman |   Mean ESS |   Loglike sd |   Kalman RMSE vs truth |
 |------------------:|:----------|--------------------:|-----------:|-------------:|-----------------------:|
-|              0.25 | bootstrap |              0.024  |   172.396  |       0.4286 |                 0.2361 |
-|              0.25 | optimal   |              0.0133 |   334.07   |       0.0851 |                 0.2361 |
-|              0.15 | bootstrap |              0.0315 |   116.293  |       0.8892 |                 0.2188 |
-|              0.15 | optimal   |              0.0123 |   339.868  |       0.074  |                 0.2188 |
-|              0.1  | bootstrap |              0.0364 |    81.3175 |       1.2776 |                 0.2114 |
-|              0.1  | optimal   |              0.0119 |   343.872  |       0.0511 |                 0.2114 |
-|              0.05 | bootstrap |              0.051  |    42.0492 |       1.4592 |                 0.2062 |
-|              0.05 | optimal   |              0.0117 |   347.331  |       0.0345 |                 0.2062 |
+|              0.25 | bootstrap |              0.0209 |   245.64   |       0.4486 |                 0.2361 |
+|              0.25 | optimal   |              0.0112 |   477.14   |       0.0756 |                 0.2361 |
+|              0.15 | bootstrap |              0.0254 |   165.99   |       0.6076 |                 0.2188 |
+|              0.15 | optimal   |              0.0106 |   485.555  |       0.0608 |                 0.2188 |
+|              0.1  | bootstrap |              0.0312 |   115.999  |       0.9175 |                 0.2114 |
+|              0.1  | optimal   |              0.0099 |   491.255  |       0.0514 |                 0.2114 |
+|              0.05 | bootstrap |              0.0425 |    60.2258 |       1.5488 |                 0.2062 |
+|              0.05 | optimal   |              0.0097 |   496.206  |       0.025  |                 0.2062 |
 
 With 500 particles, bootstrap RMSE is 0.0273. The optimal proposal lowers RMSE to 0.0100. The tables show the reason. Bootstrap ESS falls when the signal is sharp because most predicted particles do not explain the observation.
 

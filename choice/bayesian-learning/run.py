@@ -296,6 +296,7 @@ $$V_t(p)=\max[A(p),\ C_t(p)].$$
         f"| $p_L$ | {p_red_L} | Probability of a red signal in state $L$ |\n"
         f"| Prior $p_0$ | {prior_H} | Initial belief $\\Pr(H)$ |\n"
         f"| Signal horizon | {T} | Draws used for belief paths |\n"
+        f"| Stopping horizon | {T_stop} | Periods used for the backward-induction boundary |\n"
         f"| Simulated paths | {n_paths} per state | Monte Carlo paths shown against exact means |\n"
         f"| Investment payoff in $H$ | {payoff_invest_H} | Payoff if the project is good |\n"
         f"| Investment payoff in $L$ | {payoff_invest_L} | Payoff if the project is bad |\n"

@@ -336,8 +336,16 @@ The gap term raises the investment payoff when the rival leads.
 
 First-stage CCPs estimate the state-specific investment rate
 $p(\omega)=\Pr(a_i=1\mid \omega)$. Holding CCPs fixed gives a policy transition
-$\hat P$ and expected flow payoff $\bar\pi_\theta(\omega;\hat p)$. The logit
-action shock is integrated out. The value under the first-stage policy is
+$\hat P$ and an expected flow payoff $\bar\pi_\theta(\omega;\hat p)$. Integrating
+out the logit action shock adds the expected shock value to the policy-weighted
+payoff, so $\bar\pi_\theta$ is
+
+$$\bar\pi_\theta(\omega;\hat p) = (1-\hat p)\,\pi_i(\omega,0;\theta) + \hat p\,\pi_i(\omega,1;\theta) + H(\hat p) + \gamma,$$
+
+where $H(\hat p) = -\hat p\log\hat p-(1-\hat p)\log(1-\hat p)$ is the Bernoulli
+entropy of the investment rate and $\gamma$ is the Euler-Mascheroni constant.
+The $H(\hat p)+\gamma$ term is the expected value of the Type-I extreme value
+shock under the first-stage policy. The value under that policy is
 
 $$W_\theta = \bar\pi_\theta(\hat p) + \beta \hat P W_\theta.$$
 
@@ -434,7 +442,7 @@ $$\ell(\theta)=\sum_{i,t} d_{it}\log \Lambda[v_\theta(1,\omega_{it})-v_\theta(0,
     ax2.legend()
     report.add_results(
         "Policy fit matters because the likelihood uses state-level investment probabilities. "
-        f"The model-implied RMSE against truth is **{policy_rmse:.3f}**. The first-stage "
+        f"The model-implied RMSE against truth is **{policy_rmse:.5f}**. The first-stage "
         f"empirical RMSE is **{first_stage_rmse:.3f}**."
     )
     report.add_figure(

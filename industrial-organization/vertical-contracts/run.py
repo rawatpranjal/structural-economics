@@ -134,11 +134,17 @@ p_j^{*}(w_j)
 =\arg\max_{p_j\geq w_j} (p_j-w_j)q_j(p_j).
 $$
 
-For an interior product, this gives
+For an interior product, the unconstrained optimum is $(a_j+bw_j)/(2b)$. The
+retailer never prices below a small markup over wholesale, so the price used
+is
 
 $$
-p_j^{*}(w_j)=\frac{a_j+bw_j}{2b}.
+p_j^{*}(w_j)=\max\lbrace (a_j+bw_j)/(2b),\ w_j+\epsilon\rbrace,
+\quad \epsilon=0.05.
 $$
+
+The margin floor $\epsilon=0.05$ is a numerical guard; it never binds under
+the calibration in this tutorial.
 
 Contract $C$ maps assortment $A$ into wholesale prices and fixed transfers.
 The upstream side pays $F_j^C(A)$ to the retailer. The retailer chooses
@@ -160,7 +166,7 @@ $$
 
 In the all-unit discount case, Mars products can receive a lower wholesale
 price. The discount applies only if the assortment contains at least $\tau$
-Mars products:
+Mars products, with $\tau=4$ in this tutorial:
 
 $$
 w_j^C(A)=c_j+\mu-d\,\mathbf 1\{m(j)=\text{Mars}\}\mathbf 1\{M(A)\geq\tau\},
@@ -183,7 +189,7 @@ $F_j^C(A)$.
         f"| Machine capacity | {capacity} slots |\n"
         "| Demand | Product-specific intercepts with common slope $b=4$ |\n"
         "| Wholesale-only contract | Per-unit margin $\mu=0.42$, no fixed transfers |\n"
-        "| All-unit discount | Mars margin falls by $d=0.18$ once the shelf target is met |\n"
+        "| All-unit discount | Mars margin falls by $d=0.18$ once the shelf holds at least $\\tau=4$ Mars products |\n"
         "| Slotting-fee contract | Fixed payments of 1.10 for Mars products and 0.35 for rival products |"
     )
 

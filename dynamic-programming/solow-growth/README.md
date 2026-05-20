@@ -111,7 +111,7 @@ The right panel changes the saving rate. Higher $s$ shifts investment up and giv
 
 <img src="figures/convergence-and-comparative-statics.png" alt="Conditional convergence from three starting points and the comparative statics of the saving rate" width="80%">
 
-The table compares the closed form with the terminal simulation. Any gap comes from finite horizon truncation. The geometric residual is about 2.21e-04.
+The table compares the closed form with the terminal simulation. The gap comes from finite horizon truncation. The linear approximation predicts a remaining gap of about 2.21e-04; the actual gap is 2.73e-04, larger because $k_0=1.0$ starts far from $k^{\ast}$ in the nonlinear region where the linearization underestimates the true distance.
 
 **Closed-form steady state versus terminal simulation**
 

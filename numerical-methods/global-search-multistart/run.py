@@ -78,7 +78,11 @@ def main() -> None:
     # =========================================================================
     # Method 1: single-start L-BFGS-B
     # =========================================================================
-    p0_single = 1.0
+    # p0 = 1.7 sits inside the low-price basin of attraction. The basin
+    # boundary for L-BFGS-B is empirically near p = 1.5, not the economic
+    # kink at p = 2.0: from starts below 1.5 the positive gradient overshoots
+    # the low peak and the quasi-Newton step descends into the global basin.
+    p0_single = 1.7
     t0 = time.perf_counter()
     res_single = minimize(
         neg_profit, x0=np.array([p0_single]),
@@ -256,12 +260,13 @@ $$p_H^{\ast} = 4.25,
 
 The high-price peak is global on this calibration.
 The low-price peak is a strict local maximum.
-A start in $[c,\, p_L^{\max}]$ flows to the low peak under any local ascent.
-A start in $(p_L^{\max},\, p_H^{\max}]$ flows to the high peak.
+The two basins of attraction do not split at the kink.
+A quasi-Newton step from a low starting price has a strongly positive gradient and overshoots the low peak, so only starts in a narrow window just below the kink actually converge to the low peak; lower starts reach the high peak.
+This makes the low peak the harder one to discover and is exactly why a single start is unreliable.
 
 The next four subsections describe one method at a time.
 
-### Method 1: Multi-start L-BFGS-B
+### Multi-start L-BFGS-B
 
 Multi-start L-BFGS-B draws $N$ initial prices uniformly on the bracket and runs the local optimiser from each.
 
@@ -271,7 +276,7 @@ $$\hat p_{\mathrm{multi}}^{(N)} = \arg\max_{k \in \lbrace 1, \ldots, N\rbrace} \
 The probability of finding the global optimum is one minus the probability that all $N$ starts land in the low basin.
 Reporting that probability is the diagnostic for whether the start budget is large enough.
 
-### Method 2: Random search
+### Random search
 
 Random search drops the local optimiser entirely and uses a single sample of $N$ uniform draws.
 
@@ -280,13 +285,13 @@ $$\hat p_{\mathrm{rand}}^{(N)} = \arg\max_{k \in \lbrace 1, \ldots, N\rbrace} \p
 
 Random search is cheaper per evaluation than multi-start L-BFGS-B but converges only at rate $1/\sqrt{N}$.
 
-### Method 3: Nelder-Mead
+### Nelder-Mead
 
 Nelder-Mead is a derivative-free local search.
 It maintains a simplex of candidate points and reflects, expands, contracts, or shrinks it based on the ranks of the function values at the vertices.
 Convergence is local; basin dependence is the same as L-BFGS-B, so a single Nelder-Mead start with a poor initial point misses the global maximum on this problem.
 
-### Method 4: Simulated annealing
+### Simulated annealing
 
 Simulated annealing samples a Markov chain that proposes random moves and accepts them with a probability that depends on the change in objective and a slowly decreasing temperature.
 SciPy's `dual_annealing` combines a generalised-simulated-annealing global search with local refinement at each accepted move.
@@ -461,16 +466,20 @@ The result is a stochastic global search that does not need a starting point ins
     ax2.legend(loc="center right", fontsize=9)
     pct_high = float(np.mean(basin_color == "tab:red") * 100.0)
     pct_low = 100.0 - pct_high
+    low_mask = basin_color == "tab:orange"
+    boundary_lo = float(starts_dense[low_mask].min()) if low_mask.any() else float("nan")
+    boundary_hi = float(starts_dense[low_mask].max()) if low_mask.any() else float("nan")
     report.add_results(
         f"The basin map sweeps 200 evenly spaced starting prices and records where each L-BFGS-B run lands. "
-        f"Starts below the kink at $p_L^{{\\max}} = {p_kink:.2f}$ converge to the low peak. "
-        f"Starts above the kink converge to the high peak. "
+        f"Only starts in the narrow window $[{boundary_lo:.2f},\\, {boundary_hi:.2f}]$ converge to the low peak. "
+        f"Every start below that window also converges to the high peak: the gradient at a low price is strongly positive, so the quasi-Newton step overshoots the low peak and descends into the global basin. "
+        f"The L-BFGS-B basin boundary near $p \\approx {boundary_lo:.2f}$ is an artifact of the solver dynamics and sits below the economic kink $p_L^{{\\max}} = {p_kink:.2f}$, not at it. "
         f"The basin volumes are {pct_low:.1f} percent low and {pct_high:.1f} percent high on this bracket. "
-        f"A single start drawn uniformly from the bracket has roughly {pct_low:.0f} percent chance of returning the wrong answer."
+        f"A single start drawn uniformly from the bracket has roughly {pct_high:.0f} percent chance of landing in the global basin, so the low peak is the harder one to discover by chance."
     )
     report.add_figure(
         "figures/basin-map.png",
-        "L-BFGS-B converged price vs starting price; the kink at the low-segment exit separates the two basins",
+        "L-BFGS-B converged price vs starting price; only a narrow window of low starts reaches the low peak, the rest overshoot into the global basin",
         fig2,
     )
 
@@ -541,12 +550,14 @@ The result is a stochastic global search that does not need a starting point ins
     ax4.set_ylabel(r"Profit $\pi(p)$")
     ax4.set_title("Final answer of each method on the same profit surface")
     ax4.legend(loc="lower right", fontsize=9)
+    gap_abs = profit_global - profit_single
+    gap_pct = gap_abs / profit_single * 100.0
     report.add_results(
         f"All four method outputs are plotted on the same profit surface. "
         f"Both single-start methods land at the low-price local peak from $p_0 = {p0_single}$. "
         f"Their reported profits are $\\pi = {profit_single:.3f}$ for L-BFGS-B and $\\pi = {profit_nm:.3f}$ for Nelder-Mead. "
         f"Multi-start L-BFGS-B and simulated annealing both find the global peak at $p_H^{{\\ast}} = {p_high_peak:.3f}$ with profit $\\pi = {profit_global:.3f}$. "
-        f"The gap between local and global on this calibration is ${profit_global - profit_single:.3f}$, which is a 30 percent profit improvement that single-start methods miss silently."
+        f"The gap between local and global on this calibration is ${gap_abs:.3f}$, a {gap_pct:.0f} percent profit improvement that single-start methods miss silently."
     )
     report.add_figure(
         "figures/optimizer-paths.png",

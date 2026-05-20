@@ -126,7 +126,7 @@ The left panel reports per-enrollee transfers and hospital costs. The right pane
 
 Changing $\tau$ holds demand fixed and changes only the surplus split. Hospital profit rises with the bargaining weight. Insurer profit falls because more network value is paid upstream.
 
-The vertical line marks the baseline calibration. The exercise does not recompute demand for each $\tau$.
+The vertical line marks the baseline calibration. The networks are the same at every $\tau$, so full-agreement and disagreement demand are held fixed; only the surplus split changes across $\tau$.
 
 <img src="figures/profits-vs-bargaining.png" alt="Surplus division as the hospital bargaining weight changes" width="80%">
 

@@ -581,9 +581,10 @@ $p(\theta\mid Y)\propto p(\theta)\,p(Y\mid\theta)$.
         "log-determinant cheap and the gain numerically stable. Plain autodiff; "
         "no custom rule.\n\n"
         "**BlackJAX NUTS.** `blackjax.window_adaptation` tunes the step size and "
-        "mass matrix during warm-up. Four chains run in parallel from "
-        "near-zero unconstrained starting points. A random-walk Metropolis with "
-        "the same total computational budget runs as the baseline.\n\n"
+        "mass matrix during warm-up. Four chains run independently from "
+        "near-zero unconstrained starting points, one after another in a "
+        "sequential loop. A random-walk Metropolis with the same total draw "
+        "count runs as the baseline.\n\n"
         "### A small 2-by-2 worked example\n\n"
         "Before scaling to the 4-by-4 NK pencil, here is the smallest system "
         "that exercises Klein, the policy formula, and the gradient. The shock "
@@ -671,7 +672,7 @@ $p(\theta\mid Y)\propto p(\theta)\,p(Y\mid\theta)$.
         caption="ESS per parameter: NUTS vs. random-walk Metropolis.",
         fig=fig4,
         description=(
-            "ESS is on a log scale. NUTS exploits gradients of "
+            "The figure y-axis uses a log scale. NUTS exploits gradients of "
             "the log posterior with respect to all eight estimated parameters; "
             "RW-MH spends most of its budget rejecting proposals or accepting "
             "highly autocorrelated ones."
@@ -684,8 +685,13 @@ $p(\theta\mid Y)\propto p(\theta)\,p(Y\mid\theta)$.
         "likelihood. BlackJAX NUTS turns the differentiable posterior into "
         "samples. The recovery experiment shows the posterior concentrates "
         "on the data-generating parameters at $T=200$, and gradient-based "
-        "sampling delivers an order of magnitude more effective draws per "
-        "compute unit than the random-walk baseline."
+        "sampling delivers one to several orders of magnitude more effective "
+        "draws per raw sample than the random-walk baseline at the same total "
+        "draw count. That per-sample mixing gain does not carry over to a "
+        "per-wall-clock-second comparison: NUTS pays a large warm-up and "
+        "JIT-compilation cost, so on this run RW-MH produces more effective "
+        "draws per second on several parameters. The gradient-based advantage "
+        "is in samples drawn, not in wall time."
     )
 
     report.add_references([

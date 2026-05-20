@@ -67,9 +67,15 @@ $$K^d(r) = (\tfrac{r+\delta}{\alpha})^{1/(\alpha-1)}.$$
 **Stationary equilibrium.** A stationary equilibrium contains price $r^{\ast}$,
 wage $w^{\ast}$, policy $g_a$, and distribution $\mu$. The household problem is
 solved at $(r^{\ast},w^{\ast})$. The distribution is invariant under
-$(g_a,P)$. The capital market clears:
+$(g_a,P)$. The capital market clears, $K^s(r^{\ast}) = K^d(r^{\ast})$, with
+household capital supply
 
-$$K^s(r^{\ast}) = \sum_{i,j} a_i\,\mu(a_i,z_j) = K^d(r^{\ast}).$$
+$$K^s(r^{\ast}) = \sum_{i,j} a_i\,\mu(a_i,z_j).$$
+
+Bisection stops once the relative gap falls below tolerance, so the run delivers
+$K^s(r^{\ast}) \approx K^d(r^{\ast})$ rather than exact equality. The diagnostics
+table reports both sides; the small residual between them is the tolerance gap,
+not a model object.
 
 A standard result is $r^{\ast}<1/\beta-1$. At or above that rate,
 precautionary saving becomes unbounded. The economy has excess capital supply.
@@ -133,19 +139,21 @@ The market-clearing gap is the bisection residual. It is numerical error, not a 
 
 **Stationary equilibrium diagnostics**
 
-| Variable                     |      Value |
-|:-----------------------------|-----------:|
-| Interest rate $r^{\ast}$     |  0.025959  |
-| Wage $w^{\ast}$              |  1.2734    |
-| Aggregate capital $K^{\ast}$ |  6.7599    |
-| Output $Y^{\ast}$            |  1.9897    |
-| Capital-output ratio $K/Y$   |  3.3975    |
-| Mean wealth $\mathbb{E}[a]$  |  6.7633    |
-| Median wealth $\tilde a$     |  4.4728    |
-| P90 wealth                   | 16.3145    |
-| Gini                         |  0.5261    |
-| Mass at constraint           |  0.0245    |
-| Relative market-clearing gap |  0.0004939 |
+| Variable                     |       Value |
+|:-----------------------------|------------:|
+| Interest rate $r^{\ast}$     |   0.025959  |
+| Wage $w^{\ast}$              |   1.2734    |
+| Aggregate capital $K^{\ast}$ |   6.7599    |
+| Output $Y^{\ast}$            |   1.9897    |
+| Capital-output ratio $K/Y$   |   3.3975    |
+| Mean wealth $\mathbb{E}[a]$  |   6.7633    |
+| Median wealth $\tilde a$     |   4.4728    |
+| P90 wealth                   |  16.3145    |
+| Gini                         |   0.5261    |
+| Mass at constraint           |   0.0245    |
+| Relative market-clearing gap |   0.0004939 |
+| Bisection steps              |  12         |
+| VFI iterations               | 188         |
 
 ## Takeaway
 

@@ -69,7 +69,7 @@ for epoch = 1, ..., E:
 P(replace | x) <- exp Q(x, replace) / [exp Q(x, replace) + exp Q(x, keep)]
 ```
 
-The deep-RL appendix changes only the function approximation. Instead of a table with one entry per mileage grid point, it fits a small two-layer MLP $Q_\theta(x, \cdot)$ that maps mileage to the two action values. DQN can smooth and extrapolate across states, but it also introduces optimizer, target-network, and tuning choices that the table does not need. The target still uses the same soft-Bellman log-sum-exp.
+The deep-RL appendix changes only the function approximation. Instead of a table with one entry per mileage grid point, it fits a small two-hidden-layer MLP $Q_\theta(x, \cdot)$ that maps mileage to the two action values. DQN can smooth and extrapolate across states, but it also introduces optimizer, target-network, and tuning choices that the table does not need. The target still uses the same soft-Bellman log-sum-exp.
 
 ```text
 Algorithm: soft DQN on the same observed panel
@@ -107,11 +107,11 @@ The table compares the three methods on the same calibration. Q-learning and DQN
 
 | method                         | transition matrix   |   hazard MAE |   P=0.5 mileage |   samples |   runtime sec |
 |:-------------------------------|:--------------------|-------------:|----------------:|----------:|--------------:|
-| NFXP (model-based)             | yes                 |       0      |               6 |       228 |        0.0095 |
-| soft Q-learning (4 seeds avg.) | no                  |       0.0105 |               6 |   6120000 |      193.383  |
-| soft DQN                       | no                  |       0.0046 |               6 |   4080000 |       10.372  |
+| NFXP (model-based)             | yes                 |       0      |               6 |       228 |        0.0165 |
+| soft Q-learning (4 seeds avg.) | no                  |       0.0105 |               6 |   6120000 |      347.523  |
+| soft DQN                       | no                  |       0.0046 |               6 |   4080000 |       13.796  |
 
-NFXP converges in 228 Bellman iterations. Soft Q-learning hits a hazard MAE of 0.0105 after 30 passes through 51,000 observed transitions. Soft DQN reaches 0.0046 on the same panel.
+NFXP converges in 228 Bellman iterations. Soft Q-learning hits a hazard MAE of 0.0105 after 30 passes through 51,000 observed transitions. That MAE is measured over the visited mileage states only; the table leaves high-mileage states the panel never reaches at their uninformative initial value. Soft DQN reaches 0.0046 on the same panel.
 
 ## Takeaway
 

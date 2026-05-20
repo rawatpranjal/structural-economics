@@ -68,6 +68,7 @@ PCHIP holds the shape but drops one order of smoothness.
 | $a_{\text{kink}}$ | 0.5 | Borrowing-constraint kink in the policy |
 | $r$ | 0.04 | Interest rate in the consumption policy |
 | $y$ | 0.5 | Endowment (income) in the consumption policy |
+| $\mathrm{MPC}$ | 0.1 | Marginal propensity to consume above the kink |
 | Display node count $N$ | 10 | Nodes per fit in the target-vs-fit figure |
 | Convergence sweep | [np.int64(5), np.int64(10), np.int64(20), np.int64(40), np.int64(80)] | Node counts for the smooth-target sup-norm sweep |
 
@@ -124,7 +125,7 @@ Piecewise linear and PCHIP track the kink without overshoot, at the cost of a co
 
 <img src="figures/target-vs-fit.png" alt="Three approximations against the smooth (left) and kinked (right) targets at the same node count" width="80%">
 
-On the smooth target all three errors concentrate near $W = 0$, where curvature is largest. Cubic is uniformly smallest.
+On the smooth target all three errors concentrate near $W = 0$, where curvature is largest. PCHIP is uniformly smallest, ahead of the cubic spline at this node count.
 
 On the kinked target the cubic-spline error oscillates above and below zero around $a_{\text{kink}}$ (sup-error **4.57e-02**).
 
@@ -134,15 +135,15 @@ Piecewise linear under-shoots in the same interval (sup-error **7.63e-02**) but 
 
 <img src="figures/error-curves.png" alt="Pointwise error of each method on the smooth and kinked targets at $N=10$ nodes" width="80%">
 
-On the smooth target, doubling $N$ improves linear error roughly four-fold (slope $-2$).
+The log-log sup-norm slopes on the smooth target are **-1.5** for piecewise linear, **-1.7** for the cubic spline, and **-2.0** for PCHIP.
 
-Cubic and PCHIP drop at roughly slope $-4$.
+All three fall short of their textbook asymptotic rates. The cake-eating value function $V(W)$ has a logarithmic singularity as $W \to 0$, so curvature blows up near the left edge of the domain. That near-singular region keeps every method below its smooth-function rate at these node counts; the cubic spline does not reach the $-4$ slope a fully smooth target would give.
 
-On a kinked target this advantage disappears, and PCHIP becomes the right default because it preserves shape.
+On a kinked target the smoothness advantage disappears entirely, and PCHIP becomes the right default because it preserves shape.
 
 <img src="figures/convergence-vs-nodes.png" alt="Sup-norm error vs node count on the smooth cake-eating target, log-log axes" width="80%">
 
-At a fixed budget of 10 nodes the table summarises sup-norm and L2 errors for each method on both targets. Cubic spline is the lowest-error choice on the smooth target; PCHIP is the lowest-error choice on the kinked one.
+At a fixed budget of 10 nodes the table summarises sup-norm and L2 errors for each method on both targets. PCHIP (shape-preserving) is the lowest-error choice on the smooth target; PCHIP (shape-preserving) is the lowest-error choice on the kinked one.
 
 **Sup-norm and L2 errors at $N = 10$ nodes for each method on the smooth and kinked targets**
 
@@ -154,7 +155,7 @@ At a fixed budget of 10 nodes the table summarises sup-norm and L2 errors for ea
 
 ## Takeaway
 
-Piecewise linear is the safe default for value functions with borrowing constraints. It preserves shape, never overshoots, and requires no setup. Natural cubic spline gives the best convergence on smooth functions but rings near kinks and can violate monotonicity. PCHIP is the right middle ground for monotone-but-non-smooth policies. It beats linear on accuracy and cubic on shape preservation at the same node count.
+Piecewise linear is the safe default for value functions with borrowing constraints. It preserves shape, never overshoots, and requires no setup. Natural cubic spline is accurate on smooth functions but rings near kinks and can violate monotonicity. PCHIP gives the steepest log-log convergence slope on the smooth target here, ahead of the cubic spline, and is the right default for monotone-but-non-smooth policies. It beats linear on accuracy and cubic on shape preservation at the same node count.
 
 `lib.interpolate.linear_interp` is what the existing tutorials use today. Promoting cubic and PCHIP wrappers to `lib/interpolate.py` is worth doing once a second tutorial needs them.
 

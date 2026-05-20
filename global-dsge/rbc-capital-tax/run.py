@@ -124,7 +124,11 @@ def solve_rbc_tax(tau_k, beta=0.99, alpha=0.36, sigma=2.0, delta=0.025,
     # policy via iteration on the after-tax Euler equation.
     err_euler = np.inf
     for euler_iter in range(300):
+        # Jacobi update: every state is refined against the current g_K and
+        # g_c, results accumulate into _new buffers, then both policies swap
+        # in atomically after the full sweep. This matches the pseudocode.
         policy_c_new = np.zeros_like(policy_c)
+        policy_k_new = np.zeros_like(policy_k)
         for iz in range(n_z):
             resources = resources_all[iz]
             for ik in range(n_k):
@@ -138,10 +142,11 @@ def solve_rbc_tax(tau_k, beta=0.99, alpha=0.36, sigma=2.0, delta=0.025,
                 c_euler = (beta * Ec) ** (-1.0 / sigma)
                 c_euler = np.clip(c_euler, 1e-10, resources[ik] - K_min)
                 policy_c_new[iz, ik] = c_euler
-            policy_k[iz, :] = np.clip(resources - policy_c_new[iz, :], K_min, K_max)
+            policy_k_new[iz, :] = np.clip(resources - policy_c_new[iz, :], K_min, K_max)
 
         err_euler = np.max(np.abs(policy_c_new - policy_c))
         policy_c = policy_c_new.copy()
+        policy_k = policy_k_new
         if err_euler < tol:
             if verbose:
                 print(f"    tau={tau_k:.2f} Euler refinement converged in {euler_iter+1} iters")

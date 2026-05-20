@@ -14,6 +14,12 @@ from lib.output import ModelReport
 from lib.plotting import setup_style
 
 
+# Shared sign threshold for counting monotonicity violations. One constant
+# keeps the "Monotonicity violations" summary column to a single measurement
+# definition across all three estimators.
+MONOTONICITY_TOL = 1e-10
+
+
 def crra_utility(x: np.ndarray | float, rho: float) -> np.ndarray | float:
     """CRRA utility for positive lottery prizes."""
     if abs(rho - 1.0) < 1e-8:
@@ -55,7 +61,7 @@ def estimate_unconstrained_logits(counts: np.ndarray, trials: np.ndarray) -> dic
         "logits": logits,
         "probabilities": shares,
         "log_likelihood": log_likelihood(counts, trials, shares),
-        "violations": float(np.sum(np.diff(shares) < -1e-12)),
+        "violations": float(np.sum(np.diff(shares) < -MONOTONICITY_TOL)),
     }
 
 
@@ -79,7 +85,7 @@ def estimate_fixed_scale_crra(
         "probabilities": probabilities,
         "log_likelihood": log_likelihood(counts, trials, probabilities),
         "success": bool(result.success),
-        "violations": float(np.sum(np.diff(probabilities) < -1e-12)),
+        "violations": float(np.sum(np.diff(probabilities) < -MONOTONICITY_TOL)),
     }
 
 
@@ -106,7 +112,7 @@ def estimate_monotone_logits(counts: np.ndarray, trials: np.ndarray) -> dict[str
         "log_likelihood": log_likelihood(counts, trials, probabilities),
         "success": bool(result.success),
         "iterations": int(result.nit),
-        "violations": float(np.sum(np.diff(probabilities) < -1e-10)),
+        "violations": float(np.sum(np.diff(probabilities) < -MONOTONICITY_TOL)),
         "min_spacing": float(np.min(residuals)),
     }
 

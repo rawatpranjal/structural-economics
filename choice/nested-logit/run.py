@@ -35,13 +35,22 @@ TRUE_SIGMA = 0.7       # Nesting parameter (0 = logit, 1 = perfect within-nest)
 # =============================================================================
 
 def generate_product_data(n_markets: int = 30) -> pd.DataFrame:
-    """Generate a panel of cereal products across markets with nest assignments."""
+    """Generate a panel of cereal products across markets with nest assignments.
+
+    Two characteristics carry genuine cross-market variation so that
+    instruments built from them identify the endogenous regressors:
+
+    * ``sugar`` is a product-specific base recipe plus a small market-level
+      reformulation shock, so a product is slightly sweeter in some markets.
+    * ``cost_idio`` is the firm-and-market idiosyncratic cost component (the
+      part of marginal cost on top of the market-wide ``cost_shifter``).
+    """
     np.random.seed(42)
 
     products = {
         "product_id": [1, 2, 3, 4],
         "product_name": ["Choco-Bombs", "Store-Frosted", "Fiber-Bran", "Granola-Crunch"],
-        "sugar": [10.0, 8.0, 1.0, 2.0],
+        "sugar_base": [10.0, 8.0, 1.0, 2.0],
         "xi": [0.5, -0.1, 0.3, 0.1],
         "firm_id": [1, 2, 3, 4],
         "nest_id": [1, 1, 2, 2],
@@ -53,14 +62,18 @@ def generate_product_data(n_markets: int = 30) -> pd.DataFrame:
     for t in range(n_markets):
         cost_shock = np.random.normal(0, 0.3)
         for j in range(len(products["product_id"])):
-            mc = products["marginal_cost_base"][j] + cost_shock + np.random.normal(0, 0.1)
+            # Market-level recipe shock: same product is sweeter in some markets.
+            sugar = products["sugar_base"][j] + np.random.normal(0, 1.0)
+            # Idiosyncratic (firm x market) cost component on top of cost_shock.
+            cost_idio = np.random.normal(0, 0.1)
+            mc = products["marginal_cost_base"][j] + cost_shock + cost_idio
             price_factor = np.random.uniform(0.3, 0.8)
             price = mc * (1 + price_factor)
             rows.append({
                 "market_id": t,
                 "product_id": products["product_id"][j],
                 "product_name": products["product_name"][j],
-                "sugar": products["sugar"][j],
+                "sugar": sugar,
                 "xi": products["xi"][j],
                 "firm_id": products["firm_id"][j],
                 "nest_id": products["nest_id"][j],
@@ -68,6 +81,7 @@ def generate_product_data(n_markets: int = 30) -> pd.DataFrame:
                 "price": price,
                 "marginal_cost": mc,
                 "cost_shifter": cost_shock,
+                "cost_idio": cost_idio,
             })
     return pd.DataFrame(rows)
 
@@ -126,11 +140,24 @@ def compute_true_shares(df: pd.DataFrame, sigma: float = TRUE_SIGMA) -> pd.DataF
 # =============================================================================
 
 def generate_instruments(df: pd.DataFrame) -> pd.DataFrame:
-    """Create IVs for price and within-nest share (both endogenous)."""
+    """Create IVs for price and within-nest share (both endogenous).
+
+    All three excluded instruments carry genuine cross-market variation:
+
+    * ``rival_sugar_sum`` -- total sugar of all rival products in the market.
+      Sugar now varies by market, so this is a BLP-style characteristic
+      instrument for price, not a product fixed effect.
+    * ``same_nest_rival_sugar`` -- sugar of same-nest rivals. It shifts the
+      attractiveness of close substitutes and so moves the within-nest share.
+    * ``same_nest_rival_cost`` -- idiosyncratic cost of same-nest rivals. A
+      rival's cost shock moves the rival's price, hence the rival's share,
+      hence the conditional within-nest share of product j, while being
+      excluded from product j's own utility.
+    """
     df = df.copy()
     rival_sugar = []
-    num_in_nest = []
     same_nest_rival_sugar = []
+    same_nest_rival_cost = []
 
     for _, row in df.iterrows():
         mkt = df[df["market_id"] == row["market_id"]]
@@ -138,14 +165,13 @@ def generate_instruments(df: pd.DataFrame) -> pd.DataFrame:
         rival_sugar.append(others["sugar"].sum())
 
         same_nest = mkt[mkt["nest_id"] == row["nest_id"]]
-        num_in_nest.append(len(same_nest))
-
         same_nest_others = same_nest[same_nest["product_id"] != row["product_id"]]
         same_nest_rival_sugar.append(same_nest_others["sugar"].sum())
+        same_nest_rival_cost.append(same_nest_others["cost_idio"].sum())
 
     df["rival_sugar_sum"] = rival_sugar
-    df["num_in_nest"] = num_in_nest
     df["same_nest_rival_sugar"] = same_nest_rival_sugar
+    df["same_nest_rival_cost"] = same_nest_rival_cost
     return df
 
 
@@ -204,7 +230,7 @@ def estimate_nested_logit(df):
     Y = df["ln_share_ratio"].values
     X_exog = df[["sugar"]].values
     X_endog = df[["price", "ln_within_share"]].values
-    Z = df[["cost_shifter", "rival_sugar_sum", "num_in_nest", "same_nest_rival_sugar"]].values
+    Z = df[["cost_shifter", "rival_sugar_sum", "same_nest_rival_cost", "same_nest_rival_sugar"]].values
     res = estimate_2sls(Y, X_exog, X_endog, Z)
     # Coefficients: [const, sugar, -alpha, sigma]
     res["alpha"] = -res["coefficients"][2]
@@ -571,15 +597,20 @@ $$\mathcal{D}_{j\leftarrow k}= -\frac{\partial s_{jt}/\partial p_{kt}}{\partial 
         "6. Compute eta_jk,t and calD_{j<-k}; compare plain logit, fitted nested logit,\n"
         "   and the true synthetic nested-logit benchmark.\n"
         "```\n\n"
-        "The instruments match the two endogenous variables. Cost variation moves "
-        "prices. Rival characteristics and nest composition predict "
-        "$\\ln s_{j|g,t}$.\n\n"
+        "The instruments match the two endogenous variables. Own and rival "
+        "cost variation moves prices. Same-nest rival cost and same-nest rival "
+        "sugar predict $\\ln s_{j|g,t}$.\n\n"
         "| Instrument | Targets | Rationale |\n"
         "|---|---|---|\n"
         "| Cost shifter | Price | Moves marginal cost without entering utility directly |\n"
-        "| Rival sugar, all products | Price | Summarizes rival characteristics in the market |\n"
-        "| Number of products in nest | $\\ln s_{j\\mid g,t}$ | Changes the local competitive set |\n"
-        "| Same-nest rival sugar | $\\ln s_{j\\mid g,t}$ | Moves the attractiveness of close substitutes |"
+        "| Rival sugar, all products | Price | Total rival sugar varies by market because recipes shift across markets |\n"
+        "| Same-nest rival cost | $\\ln s_{j\\mid g,t}$ | A close substitute's cost shock moves its price and so its conditional share |\n"
+        "| Same-nest rival sugar | $\\ln s_{j\\mid g,t}$ | Recipe shifts for close substitutes move their attractiveness across markets |\n\n"
+        "Each instrument carries genuine cross-market variation. Sugar content "
+        "shifts by market through small recipe shocks, and same-nest rivals "
+        "carry idiosyncratic cost shocks. Two excluded instruments target "
+        "$\\ln s_{j\\mid g,t}$, so the order condition holds for both endogenous "
+        "regressors."
     )
 
     # --- Figure 1: Elasticity heatmap ---
@@ -639,10 +670,16 @@ $$\mathcal{D}_{j\leftarrow k}= -\frac{\partial s_{jt}/\partial p_{kt}}{\partial 
     report.add_table("tables/parameter-estimates.csv",
                      "Parameter estimates: true values vs plain logit vs nested logit", tdf,
                      description=(
-                         "The table checks whether estimation recovers the "
+                         "The table checks how closely estimation recovers the "
                          "parameters used to generate the synthetic shares. "
-                         "Plain logit cannot estimate $\\sigma$. Nested logit "
-                         "recovers the signs and the same-nest ranking."
+                         "Plain logit cannot estimate $\\sigma$ and biases "
+                         "$\\alpha$ because it ignores the within-nest term. "
+                         "Nested logit, identified by instruments that vary "
+                         "across markets, recovers $\\sigma$ and $\\alpha$ "
+                         "close to their true values. Small gaps remain as "
+                         "finite-sample bias: with 50 markets the estimates "
+                         "scatter around the truth rather than land on it "
+                         "exactly."
                      ))
 
     report.add_takeaway(

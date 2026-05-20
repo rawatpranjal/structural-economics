@@ -435,7 +435,15 @@ def main() -> None:
         "converged_runs": "Converged runs",
         "runs": "Replications",
     }).copy()
-    table["Threshold tau"] = table["Threshold tau"].map(lambda x: f"{x:.3f}")
+    def tau_label(x: float) -> str:
+        """Three-decimal label, widened to full precision when 3dp would not
+        round-trip to the float actually used in the sweep (e.g. tau = 1/3)."""
+        short = f"{x:.3f}"
+        if abs(float(short) - x) < 1e-10:
+            return short
+        return repr(float(x))
+
+    table["Threshold tau"] = table["Threshold tau"].map(tau_label)
     table["Mean final segregation S"] = table["Mean final segregation S"].map(lambda x: f"{x:.3f}")
     table["SD final segregation S"] = table["SD final segregation S"].map(lambda x: f"{x:.3f}")
     table["Mean iterations"] = table["Mean iterations"].map(lambda x: f"{x:.1f}")

@@ -1,0 +1,5 @@
+series,lag_below_0.05
+hmc_x,10
+hmc_y,9
+mh_x,200
+mh_y,200

@@ -237,7 +237,7 @@ Output: x_hat, iteration count, convergence flag
       do a line search along d_k to pick the next x_k
       update H_k by BFGS using the gradient difference
   recover lambda from the active-set stationarity equation
-  recover mu by complementary slackness on inactive bounds
+  recover mu for binding bounds from stationarity: mu_j = lambda - (a_j - (B x)_j)
 ```
 
 SLSQP is sensitive to the analytical Jacobian of the constraints. A wrong Jacobian silently mis-converges with no diagnostic. The default scaling can also struggle on problems where some constraints have much larger residuals than others. The remedy is either to rescale the constraints by hand or to switch to a method that does it internally, such as `scipy.optimize.minimize` with `method='trust-constr'`.
@@ -254,7 +254,7 @@ The barrier path enters the feasible region from the centre and bends toward $x^
 
 Each method drives different KKT residuals to zero in different orders. Projected gradient has primal feasibility at machine precision from the first iterate because the projection enforces it. Stationarity falls steadily as the iterate approaches the active-set boundary. Complementarity tracks the gap on the bound that should bind.
 
-The interior-point method reduces all three residuals together as the barrier shrinks. Complementarity is bounded above by $n\, t$ along the central path. Reaching machine-precision feasibility takes about a dozen barrier values.
+The interior-point method reduces all three residuals together as the barrier shrinks. The complementarity curve here uses the exact barrier multipliers $\mu_t = t / x_t$, so it equals exactly $n\, t$ at every point on the central path. The KKT table below instead reports the barrier row through the same heuristic multiplier recovery used for the other methods, so its complementarity entry differs from $n\, t$ by the factor $n$. Reaching machine-precision feasibility takes 9 barrier values.
 
 <img src="figures/kkt-residuals.png" alt="KKT residuals across iterations for projected gradient (left) and along the central path for the interior-point method (right)" width="80%">
 

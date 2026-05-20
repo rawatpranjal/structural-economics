@@ -728,14 +728,18 @@ raw simulator output. The next section lists the five summaries used.
     )
 
     report.add_takeaway(
-        "Neural posterior estimation handles a four-parameter Brock-Hommes "
-        "calibration at roughly the same simulation budget the SMM "
-        "tutorial uses for a single parameter. The masked autoregressive "
-        "flow replaces both the grid search and the ABC accept-reject "
-        "loop with a single trained density estimator. The same estimator "
-        "is amortized over the summary-statistic space, so a new return "
-        "series would only require a forward evaluation, not another "
-        "training run."
+        "Neural posterior estimation buys a full four-parameter "
+        "Brock-Hommes posterior, but it is not cheap in simulator calls. "
+        "Training the masked autoregressive flow consumes 10,000 model "
+        "simulations, against the 248 the SMM tutorial spends to point-"
+        "identify a single intensity-of-choice parameter, roughly 40x more "
+        "simulator calls. What the larger budget delivers is a joint "
+        "posterior over all four parameters and an estimator that replaces "
+        "both the grid search and the ABC accept-reject loop. That "
+        "estimator is amortized over the summary-statistic space, so a new "
+        "return series would only require a forward evaluation, not "
+        "another training run, which is where the 10,000-simulation cost "
+        "is recovered."
     )
 
     report.add_references([

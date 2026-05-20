@@ -389,6 +389,23 @@ def main() -> None:
         ]
     )
 
+    stability_table = pd.DataFrame(
+        [
+            {
+                "Metric": "Companion-matrix stability radius (OLS VAR)",
+                "Value": format_float(ols_radius),
+            },
+            {
+                "Metric": "Companion-matrix stability radius (Minnesota BVAR)",
+                "Value": format_float(bvar_radius),
+            },
+            {
+                "Metric": "BVAR coefficient norm relative to OLS norm",
+                "Value": format_float(shrinkage_ratio),
+            },
+        ]
+    )
+
     hyper_table = pd.DataFrame(
         [
             {
@@ -872,6 +889,17 @@ $$
             "The RMSE table reports one-step forecast errors on quarters not used "
             "for estimation. Values below one in the ratio column favor the "
             "Minnesota BVAR."
+        ),
+    )
+    report.add_table(
+        "tables/stability-metrics.csv",
+        "Companion-matrix stability and shrinkage metrics",
+        stability_table,
+        description=(
+            "The stability radius is the spectral radius of the VAR companion "
+            "matrix; values below one imply a stationary system. The shrinkage "
+            "ratio compares the lag-coefficient norm of the Minnesota BVAR with "
+            "that of the OLS VAR. These are the metrics quoted in the Takeaway."
         ),
     )
     report.add_table(

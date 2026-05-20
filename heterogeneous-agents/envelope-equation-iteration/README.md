@@ -1,4 +1,4 @@
-# Buffer-Stock Saving with Persistent Income by Envelope-Equation Iteration
+# Buffer-Stock Saving with IID Income by Envelope-Equation Iteration
 
 ## Overview
 
@@ -143,11 +143,11 @@ $W_a(a)$ is steep near zero assets. One more dollar is most valuable when the bu
 
 <img src="figures/value-derivative.png" alt="Marginal continuation value with state-specific decomposition" width="80%">
 
-The simulated asset distribution is right-skewed. Mean assets are 0.41. 3.1% of households sit at the borrowing limit. IID income keeps the asset scale modest. The borrowing-limit mass raises the average MPC to 0.220.
+The simulated asset distribution is right-skewed. Mean assets are 0.4124. 3.1% of households sit at the borrowing limit. IID income keeps the asset scale modest. The borrowing-limit mass raises the average MPC to 0.2197.
 
 <img src="figures/wealth-distribution.png" alt="Simulated terminal wealth distribution under the EEI policy" width="80%">
 
-EEI and EGP converge at nearly the same rate. Both update policies through the Euler equation. Grid VFI updates the value level and needs more iterations. This is a fixed-point comparison, not a timing claim.
+EEI and EGP converge at nearly the same rate. Both update policies through the Euler equation and track a consumption-level sup-norm error. Grid VFI updates the value level and tracks a value-level error, which is intrinsically larger-scaled, so VFI needs more iterations to cross the same absolute tolerance. The iteration counts are read against different error metrics, so this is a fixed-point comparison and not a clean iteration race or a timing claim.
 
 <img src="figures/convergence-comparison.png" alt="Convergence paths for EEI, EGP, and grid VFI on the same asset grid" width="80%">
 
@@ -176,7 +176,7 @@ The table reports the main economic moments and policy checks. The fine-grid row
 
 EEI is a fixed point for the same buffer-stock household. It iterates $W_a(a)$ instead of the value level. Low-wealth households consume more of a transfer. High-wealth households smooth toward the perfect-foresight MPC $\kappa^{\ast}\approx0.041$. Here $\kappa^{\ast} = R(\beta R)^{-1/\gamma}-1$ is the MPC in the perfect-foresight limit.
 
-The computational lesson is simple. The envelope condition can be an update rule. EGP is faster here because it uses an analytic inverse. All three methods agree up to the fine-grid gap.
+The computational lesson is simple. The envelope condition can be an update rule. EGP replaces the inner bisection with one analytic marginal-utility inverse per state, so each iteration does less work than the EEI Euler step. All three methods agree up to the fine-grid gap.
 
 ## References
 

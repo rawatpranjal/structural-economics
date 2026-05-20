@@ -520,11 +520,11 @@ Damped Picard with $\alpha = 1/2$ removes the oscillation.
 
     report.add_results(
         f"Picard reaches tolerance in **{pi_iter}** iterations on this calibration. "
-        f"Damped Picard at $\\alpha = {damping}$ takes **{dp_iter}** iterations because the damping slows asymptotic convergence on a problem that is already well behaved. "
+        f"Damped Picard at $\\alpha = {damping}$ exhausts the **{dp_iter}**-iteration budget without crossing the tolerance: the damping slows asymptotic convergence enough that its residual is still {dp_residuals[-1]:.2e}, above the {tol:.0e} tolerance, when the loop stops. "
         f"Anderson at $m = 5$ converges in **{an_iter}** iterations, faster than Picard by roughly a factor of {pi_iter / max(an_iter, 1):.1f}.\n\n"
         "Both panels show the same story on log scale. "
         "Anderson sits below Picard for almost every iteration. "
-        "The damped variant is parallel to Picard with a slight vertical offset."
+        "The damped variant is parallel to Picard with a slight vertical offset and has not yet reached tolerance at the iteration cap."
     )
     report.add_figure(
         "figures/convergence.png",
@@ -548,7 +548,7 @@ Damped Picard with $\alpha = 1/2$ removes the oscillation.
     ax3.invert_xaxis()
     ax3.legend(loc="upper left", fontsize=9)
     report.add_results(
-        "The stress test sweeps the outside share from a benign 0.5 down to 0.01. "
+        "The stress test sweeps the outside share from 0.1 down to 0.01. "
         "A small outside share pushes mean utilities out to large values where the contraction modulus approaches one. "
         "Picard iteration counts grow steeply on the small-$s_0$ end. "
         "Anderson stays much flatter because the residual history compensates for the slow contraction. "
@@ -597,6 +597,22 @@ Damped Picard with $\alpha = 1/2$ removes the oscillation.
     # ------------------------------------------------------------------
     # Tables
     # ------------------------------------------------------------------
+    def termination_status(residual, n_iter, max_it=max_iter, tol_=tol):
+        """Report convergence honestly from the termination condition.
+
+        A method "converged" only if its final residual met the
+        sup-norm tolerance. If the loop instead exhausted max_iter,
+        report that explicitly so the table does not claim a method
+        reached tolerance when it did not.
+        """
+        if residual < tol_:
+            return "converged"
+        return f"stopped at max_iter = {max_it}"
+
+    pi_status = termination_status(pi_residuals[-1], pi_iter)
+    dp_status = termination_status(dp_residuals[-1], dp_iter)
+    an_status = termination_status(an_residuals[-1], an_iter)
+
     method_table = pd.DataFrame({
         "Method": ["Picard", "Damped Picard", "Anderson (m = 5)"],
         "Setting": [
@@ -615,12 +631,13 @@ Damped Picard with $\alpha = 1/2$ removes the oscillation.
             f"{dp_errors[-1]:.2e}",
             f"{an_errors[-1]:.2e}",
         ],
-        "Status": ["converged", "converged", "converged"],
+        "Status": [pi_status, dp_status, an_status],
     })
     report.add_results(
         "The table compares the three methods on the same calibration and the same starting point. "
         "Anderson cuts the iteration count to a small fraction of Picard. "
-        "Final residuals and distances to the closed form are at machine precision for all three methods."
+        "Picard and Anderson reach the sup-norm tolerance; damped Picard at this damping factor exhausts the iteration budget before the residual crosses the tolerance, so its status reports the max-iteration stop rather than convergence. "
+        "The Status column reports the actual termination condition: a method reads as converged only when its final residual met the tolerance."
     )
     report.add_table(
         "tables/method_comparison.csv",

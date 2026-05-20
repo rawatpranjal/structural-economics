@@ -111,17 +111,17 @@ The log-scale plot shows convergence after the saddle path is selected. Far from
 
 <img src="figures/convergence-speed.png" alt="Log convergence of capital to the Ramsey steady state with the stable eigenvalue benchmark" width="80%">
 
-The table records the jump chosen by the root search. The consumption ratio is below one when the planner builds capital. It is above one when the planner runs capital down. The last column reports the terminal capital gap.
+The table records the jump chosen by the root search. The consumption ratio is below one when the planner builds capital. It is above one when the planner runs capital down. The last column reports the relative terminal capital gap, the distance $|k(T)-k^{\ast}|$ expressed as a fraction of $k^{\ast}$.
 
 **Shooting Diagnostics**
 
-|   $k_0/k^{\ast}$ |   $c_0$ from shooting |   $c_0/[f(k_0)-\delta k_0]$ |   $k(50)/k^{\ast}$ |   $c(50)/c^{\ast}$ |   Terminal capital gap |
-|--------------:|----------------------:|----------------------------:|----------------:|----------------:|-----------------------:|
-|          0.25 |              0.867114 |                       0.742 |          0.9548 |          0.979  |               2.75e-07 |
-|          0.5  |              1.16845  |                       0.84  |          0.9714 |          0.9868 |               3.7e-07  |
-|          0.75 |              1.39947  |                       0.923 |          0.9862 |          0.9936 |               3.17e-06 |
-|          1.5  |              1.92645  |                       1.15  |          1.0259 |          1.0118 |               7.69e-08 |
-|          2    |              2.20938  |                       1.302 |          1.0503 |          1.0228 |               4.36e-10 |
+|   $k_0/k^{\ast}$ |   $c_0$ from shooting |   $c_0/[f(k_0)-\delta k_0]$ |   $k(50)/k^{\ast}$ |   $c(50)/c^{\ast}$ |   Relative terminal capital gap |
+|--------------:|----------------------:|----------------------------:|----------------:|----------------:|--------------------------------:|
+|          0.25 |              0.867114 |                       0.742 |          0.9548 |          0.979  |                        2.75e-07 |
+|          0.5  |              1.16845  |                       0.84  |          0.9714 |          0.9868 |                        3.7e-07  |
+|          0.75 |              1.39947  |                       0.923 |          0.9862 |          0.9936 |                        3.17e-06 |
+|          1.5  |              1.92645  |                       1.15  |          1.0259 |          1.0118 |                        7.69e-08 |
+|          2    |              2.20938  |                       1.302 |          1.0503 |          1.0228 |                        4.36e-10 |
 
 ## Takeaway
 

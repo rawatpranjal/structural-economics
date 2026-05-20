@@ -485,7 +485,7 @@ $$
         f"log {np.exp(MIXED_START[2]):.2f}, log {np.exp(MIXED_START[3]):.2f}) | Initial mean tastes and heterogeneity |\n"
         f"| Price-taste bound | [{MIXED_BOUNDS[0][0]:.2f}, {MIXED_BOUNDS[0][1]:.2f}] | Keeps price sensitivity negative |\n"
         f"| Quality-taste bound | [{MIXED_BOUNDS[1][0]:.2f}, {MIXED_BOUNDS[1][1]:.2f}] | Keeps quality taste positive |\n"
-        f"| SD bounds | [{np.exp(MIXED_BOUNDS[2][0]):.2f}, {np.exp(MIXED_BOUNDS[2][1]):.2f}] | Applied to both random-coefficient standard deviations |\n"
+        f"| SD bounds | [{np.exp(MIXED_BOUNDS[2][0]):.2f}, {np.exp(MIXED_BOUNDS[2][1]):.2f}] | Effective sigma range; the bound is enforced on log-sigma for both random coefficients |\n"
         f"| Probability floor | {LIKELIHOOD_FLOOR:.0e} | Prevents log zero during likelihood evaluation |\n"
         f"| Max iterations | {MIXED_MAXITER} | L-BFGS-B iteration cap |\n"
         f"| Profile grid | {PROFILE_GRID_SIZE} x {PROFILE_GRID_SIZE} | Grid over $\\sigma_\\alpha$ and $\\sigma_\\beta$ for the likelihood surface |"

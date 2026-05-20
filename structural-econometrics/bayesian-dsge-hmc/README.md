@@ -82,7 +82,7 @@ The pipeline composes three JAX building blocks. Each one has a single responsib
 
 **Kalman filter (`lib/kalman_jax.py`).** Predict-update recursion in `jax.lax.scan`. Stationary initial covariance from the discrete Lyapunov solver. Symmetric Cholesky of the innovation covariance keeps the log-determinant cheap and the gain numerically stable. Plain autodiff; no custom rule.
 
-**BlackJAX NUTS.** `blackjax.window_adaptation` tunes the step size and mass matrix during warm-up. Four chains run in parallel from near-zero unconstrained starting points. A random-walk Metropolis with the same total computational budget runs as the baseline.
+**BlackJAX NUTS.** `blackjax.window_adaptation` tunes the step size and mass matrix during warm-up. Four chains run independently from near-zero unconstrained starting points, one after another in a sequential loop. A random-walk Metropolis with the same total draw count runs as the baseline.
 
 ### A small 2-by-2 worked example
 
@@ -92,7 +92,7 @@ $$v_{t+1}=\rho\,v_t,\qquad y_t=a\,\mathbb{E}_t y_{t+1}+b\,v_t.$$
 
 With state $s=(v,y)$ and $n_\text{predetermined}=1$, the Klein pencil is
 
-$$A=\begin{bmatrix}1 & 0\\ 0 & a\end{bmatrix},\qquad B=\begin{bmatrix}\rho & 0\\ -b & 1\end{bmatrix}.$$
+$$A=\begin{bmatrix}1 & 0\\ 0 & a\end{bmatrix},\qquadB=\begin{bmatrix}\rho & 0\\ -b & 1\end{bmatrix}.$$
 
 Pick $\rho=0.5$, $a=0.5$, $b=1$. The closed-form guess $y_t=\psi\,v_t$ gives $\psi\,(1-a\rho)=b$, so $\psi=b/(1-a\rho)=4/3$.
 
@@ -110,7 +110,7 @@ The three observables span 200 quarters. Output and inflation carry both shocks 
 
 <img src="/Users/pranjal/Code/computational-economics/structural-econometrics/bayesian-dsge-hmc/figures/observations.png" alt="Simulated observations." width="80%">
 
-NUTS ran 4 chains of 1000 warm-up plus 2000 kept draws in 520.2 seconds wall time. Random-walk Metropolis ran a single chain of 8000 draws in 3.0 seconds. NUTS reached an average acceptance of 0.91; RW-MH at the chosen step size reached 0.02.
+NUTS ran 4 chains of 1000 warm-up plus 2000 kept draws in 728.9 seconds wall time. Random-walk Metropolis ran a single chain of 8000 draws in 3.2 seconds. NUTS reached an average acceptance of 0.91; RW-MH at the chosen step size reached 0.02.
 
 Each panel overlays the prior (dashed black), the posterior histogram (light blue), and the data-generating value (red). The posteriors concentrate on the truth wherever the parameter is well identified from the three observables; remaining width is real posterior uncertainty given $T=200$.
 
@@ -133,13 +133,13 @@ The top row shows the response of $(y,\pi,i)$ to a one-standard-deviation moneta
 | sigma_d     |  0.01  |   0.0136829 |     0.0127763 |  0.00748374 |    0.0227336 | 1.00105  |    2493.58 |    41.4234  |     60.1973 |
 | rho_d       |  0.8   |   0.799726  |     0.799844  |  0.761747   |    0.836667  | 1.00013  |    2689.61 |    18.1934  |    147.834  |
 
-ESS is on a log scale. NUTS exploits gradients of the log posterior with respect to all eight estimated parameters; RW-MH spends most of its budget rejecting proposals or accepting highly autocorrelated ones.
+The figure y-axis uses a log scale. NUTS exploits gradients of the log posterior with respect to all eight estimated parameters; RW-MH spends most of its budget rejecting proposals or accepting highly autocorrelated ones.
 
 <img src="/Users/pranjal/Code/computational-economics/structural-econometrics/bayesian-dsge-hmc/figures/ess-comparison.png" alt="ESS per parameter: NUTS vs. random-walk Metropolis." width="80%">
 
 ## Takeaway
 
-Three pieces compose. Klein QZ in JAX gives a differentiable policy function. A Kalman filter in JAX gives a differentiable log likelihood. BlackJAX NUTS turns the differentiable posterior into samples. The recovery experiment shows the posterior concentrates on the data-generating parameters at $T=200$, and gradient-based sampling delivers an order of magnitude more effective draws per compute unit than the random-walk baseline.
+Three pieces compose. Klein QZ in JAX gives a differentiable policy function. A Kalman filter in JAX gives a differentiable log likelihood. BlackJAX NUTS turns the differentiable posterior into samples. The recovery experiment shows the posterior concentrates on the data-generating parameters at $T=200$, and gradient-based sampling delivers one to several orders of magnitude more effective draws per raw sample than the random-walk baseline at the same total draw count. That per-sample mixing gain does not carry over to a per-wall-clock-second comparison: NUTS pays a large warm-up and JIT-compilation cost, so on this run RW-MH produces more effective draws per second on several parameters. The gradient-based advantage is in samples drawn, not in wall time.
 
 ## References
 

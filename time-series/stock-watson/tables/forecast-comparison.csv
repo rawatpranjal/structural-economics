@@ -1,4 +1,4 @@
 Model,RMSE,Relative RMSE
-AR(2),1.753,1.0
-PCA factor AR(2),1.2621,0.72
-True factor AR(2),1.2732,0.7263
+AR(2),1.4186,1.0
+PCA factor AR(2),1.2572,0.8862
+True factor AR(2),1.2649,0.8917

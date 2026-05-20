@@ -26,22 +26,48 @@ def simulate_panel(n_firms: int = 320, n_years: int = 6, seed: int = 44) -> pd.D
     rows = []
     omega = rng.normal(0.0, 0.35, n_firms)
     capital = rng.normal(2.2, 0.45, n_firms)
+    beta_m = TRUE_BETA["Materials"]
+    # Unit input and output prices, so the materials revenue share is
+    # alpha_m = exp(log_materials) / exp(log_output).
     for t in range(n_years):
         omega = 0.72 * omega + rng.normal(0.0, 0.22, n_firms)
         capital = 0.82 * capital + 0.25 * omega + rng.normal(0.0, 0.18, n_firms) + 0.45
         labor = 1.05 + 0.10 * omega + 0.18 * capital + rng.normal(0.0, 0.22, n_firms)
-        materials = 1.20 + 0.10 * omega + 0.15 * capital + rng.normal(0.0, 0.18, n_firms)
         investment = 0.75 + 0.90 * omega + 0.20 * capital + rng.normal(0.0, 0.05, n_firms)
         eps = rng.normal(0.0, 0.08, n_firms)
-        y = (
+
+        # The markup is the firm-year primitive. Cost minimisation makes
+        # materials demand respond to it: the firm sets materials so the
+        # planned materials revenue share equals beta_m / mu. With unit prices,
+        # log materials and log expected output satisfy m = E[y] + log(beta_m / mu)
+        # up to an optimisation error u. Materials is chosen on expected output,
+        # before the output shock eps is realised.
+        true_markup = np.clip(
+            1.18 + 0.34 * (omega - omega.mean()) / omega.std()
+            + rng.normal(0.0, 0.08, n_firms),
+            0.85, 2.60,
+        )
+        log_share_target = np.log(beta_m / true_markup)
+        opt_error = rng.normal(0.0, 0.12, n_firms)
+        expected_y = (
             TRUE_BETA["Labor"] * labor
             + TRUE_BETA["Capital"] * capital
-            + TRUE_BETA["Materials"] * materials
+            + beta_m * (log_share_target + opt_error)
+            + omega
+        ) / (1.0 - beta_m)
+        materials = expected_y + log_share_target + opt_error
+        eps_y = (
+            TRUE_BETA["Labor"] * labor
+            + TRUE_BETA["Capital"] * capital
+            + beta_m * materials
             + omega
             + eps
         )
-        true_markup = np.clip(1.18 + 0.34 * (omega - omega.mean()) / omega.std() + rng.normal(0.0, 0.08, n_firms), 0.85, 2.60)
-        material_share = np.clip(TRUE_BETA["Materials"] / true_markup + rng.normal(0.0, 0.025, n_firms), 0.16, 0.75)
+        y = eps_y
+
+        # material_share is read off the panel: materials expenditure over
+        # revenue. With unit prices this is exp(log_materials) / exp(log_output).
+        material_share = np.exp(materials - y)
         for i in range(n_firms):
             rows.append({
                 "Firm": i,
@@ -68,7 +94,13 @@ def estimate_production(df: pd.DataFrame) -> pd.DataFrame:
     X_ols = np.column_stack([np.ones(len(df)), l, k, m])
     beta_ols, _ = ols(y, X_ols)
 
-    omega_proxy = (inv - 0.75 - 0.20 * k) / 0.90
+    # Nonparametric proxy inversion. Investment is monotone in productivity
+    # given capital, so the part of investment not explained by a polynomial
+    # in capital is monotone in productivity. np.polyfit estimates that
+    # polynomial from the data; the residual is the productivity control.
+    # No true investment-schedule coefficient is used here.
+    capital_trend = np.polyfit(k, inv, deg=2)
+    omega_proxy = inv - np.polyval(capital_trend, k)
     X_proxy = np.column_stack([np.ones(len(df)), l, k, m, omega_proxy])
     beta_proxy, _ = ols(y, X_proxy)
 
@@ -129,17 +161,30 @@ The firm observes productivity $\omega_{it}$ before choosing flexible inputs.
 This timing makes $l_{it}$ and $m_{it}$ correlated with $\omega_{it}$. Naive
 OLS therefore has a nonzero input-error covariance.
 
-The proxy variable is investment $I_{it}$. In the synthetic data, investment
-follows a monotone policy:
+The proxy variable is investment $I_{it}$. Investment follows a policy that is
+monotone in productivity given capital:
 
 $$I_{it}=h(k_{it},\omega_{it})+\nu_{it}, \qquad \frac{\partial h(k,\omega)}{\partial \omega}>0.$$
 
-The control-function estimator uses this monotonicity to form a productivity
-control $\tilde \omega_{it}=h^{-1}(k_{it},I_{it})$. It estimates
+The estimator builds a productivity control from this monotonicity. A polynomial
+in capital is fit to investment, and the residual is the part of investment
+that moves with productivity:
+
+$$\tilde \omega_{it}=I_{it}-\widehat{\mathrm{poly}}(k_{it}).$$
+
+The residual is monotone in $\omega_{it}$ given capital, so it controls for the
+productivity component that is correlated with the flexible inputs. The
+regression is
 
 $$y_{it} = \beta_l l_{it}+\beta_k k_{it}+\beta_m m_{it} +\rho \tilde\omega_{it}+u_{it}.$$
 
 Here $\rho$ is the coefficient on the productivity control $\tilde\omega_{it}$.
+Because $\tilde\omega_{it}$ holds productivity orthogonal to capital, the
+control identifies the flexible-input elasticities $\beta_l$ and $\beta_m$. It
+does not separately identify the capital elasticity $\beta_k$: capital is a
+predetermined state, and its productivity-correlated variation is absorbed by
+the control. Recovering $\beta_k$ cleanly needs the Olley-Pakes second stage,
+which this tutorial does not run.
 
 Markup recovery uses materials as the variable input. For Cobb-Douglas
 production, the materials elasticity is $\theta^m=\beta_m$. Let
@@ -165,17 +210,18 @@ $$\mu_{it}=\frac{\theta^m}{\alpha^m_{it}}.$$
     report.add_solution_method(
         "The calculation first estimates the materials elasticity while controlling for "
         "productivity. It then divides that elasticity by each firm-year materials share. "
-        "The proxy-control regression uses the synthetic investment schedule to form the "
-        "productivity control.\n\n"
+        "The productivity control is built nonparametrically: a polynomial in capital is "
+        "fit to investment, and the residual is the part of investment that moves with "
+        "productivity. No true investment-schedule coefficient is used.\n\n"
         "```text\n"
         "Algorithm: proxy-control markup measurement\n"
-        "Input: panel {y_it, l_it, k_it, m_it, I_it, alpha^m_it}, proxy policy h, true benchmark mu_it\n"
+        "Input: panel {y_it, l_it, k_it, m_it, I_it, alpha^m_it}, true benchmark mu_it\n"
         "Output: production elasticities and firm-year markup estimates\n"
         "1. Estimate the naive production regression:\n"
         "       y_it = b_l l_it + b_k k_it + b_m m_it + residual_it\n"
         "   and record the OLS materials elasticity b_m^OLS.\n"
-        "2. Use monotonic investment to build a productivity control:\n"
-        "       omega_tilde_it = h^{-1}(k_it, I_it).\n"
+        "2. Fit a polynomial in capital to investment and take the residual as the\n"
+        "   productivity control: omega_tilde_it = I_it - poly(k_it).\n"
         "3. Re-estimate production with the control included:\n"
         "       y_it = b_l l_it + b_k k_it + b_m m_it + rho omega_tilde_it + u_it.\n"
         "   The controlled b_m is the markup-relevant elasticity theta_hat^m.\n"
@@ -184,8 +230,8 @@ $$\mu_{it}=\frac{\theta^m}{\alpha^m_{it}}.$$
         "5. Compare theta_hat^m and mu_hat_it with the simulated truth, and aggregate\n"
         "   markups by productivity quintile to inspect heterogeneity.\n"
         "```\n\n"
-        "The inverted proxy control is the numerical step. The final markup calculation "
-        "is a firm-year division."
+        "The polynomial fit that builds the productivity control is the numerical step. "
+        "The final markup calculation is a firm-year division."
     )
 
     fig1, ax1 = plt.subplots(figsize=(8, 5))
@@ -203,10 +249,12 @@ $$\mu_{it}=\frac{\theta^m}{\alpha^m_{it}}.$$
         "figures/production-estimates.png",
         "True and estimated output elasticities",
         fig1,
-        description="The production-function step drives the markup calculation. OLS overstates "
-        "the flexible-input elasticities because high-productivity firms choose more inputs. "
-        "The proxy-control estimate corrects for the omitted productivity state. It moves "
-        "the materials elasticity close to its true value.",
+        description="The production-function step drives the markup calculation. OLS badly "
+        "overstates the materials elasticity, the markup-relevant one, because high-productivity "
+        "firms choose more materials. The proxy control corrects the materials and labor "
+        "elasticities by absorbing the productivity state. It does not correct the capital "
+        "elasticity: capital is predetermined, and the single-stage control absorbs its "
+        "productivity-correlated variation rather than identifying it.",
     )
 
     fig2, ax2 = plt.subplots(figsize=(8, 5))

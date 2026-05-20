@@ -226,7 +226,8 @@ the state-space parameters are unknown.
         f"| Measurement std | {MEASUREMENT_STD:.2f} |\n"
         f"| Process std | ({PROCESS_STD[0]:.2f}, {PROCESS_STD[1]:.2f}) |\n"
         f"| Periods | {n_periods} |\n"
-        "| Initial state | $s_0 = (0,0)$ |"
+        "| Initial state mean $s_{0|0}$ | $(0,0)$ |\n"
+        "| Initial state covariance $P_{0|0}$ | $0_{2\\times 2}$ (zero matrix) |"
     )
 
     report.add_solution_method(
@@ -252,8 +253,15 @@ the state-space parameters are unknown.
         "    gain:               K_t = P_{t|t-1} Psi' S_t^{-1}\n"
         "    update state:       s_hat_{t|t} = s_hat_{t|t-1} + K_t nu_t\n"
         "    update covariance:  P_{t|t} = P_{t|t-1} - K_t Psi P_{t|t-1}\n"
+        "    symmetrize:         P_{t|t} <- 0.5 (P_{t|t} + P_{t|t}')\n"
         "    add log p(nu_t; 0, S_t) to the likelihood\n"
-        "```"
+        "```\n\n"
+        "The covariance update is symmetric in exact arithmetic; the explicit "
+        "symmetrization step replaces $P_{t|t}$ with $0.5(P_{t|t} + P_{t|t}')$ "
+        "to cancel floating-point drift and keep the matrix numerically symmetric. "
+        "The filter starts from $P_{0|0} = 0$, treating the initial state as known "
+        "with certainty, so the early-period posteriors understate uncertainty "
+        "relative to a diffuse prior."
     )
 
     fig1, axes1 = plt.subplots(3, 1, figsize=(9, 7.4), sharex=True)

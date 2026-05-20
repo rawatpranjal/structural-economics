@@ -315,7 +315,7 @@ def main():
     setup_style()
 
     report = ModelReport(
-        "Consumer Rationalizability with Afriat's Test",
+        "Consumer Rationalizability with the GARP Test",
         include_reproduce=False,
         show_figure_captions=False,
     )
@@ -371,21 +371,33 @@ Afriat's theorem makes this finite test enough. If GARP holds, the data are rati
     )
 
     report.add_solution_method(
-        "The code uses the graph version of Afriat's test. Nodes are observed "
-        "budgets and bundles. An edge $i\\to j$ means bundle $x_j$ was affordable "
-        "when $x_i$ was chosen. Warshall's algorithm then fills in every indirect "
-        "comparison.\n\n"
+        "The code checks GARP with the graph version of the revealed-preference "
+        "test. Nodes are observed budgets and bundles. An edge $i\\to j$ means "
+        "bundle $x_j$ was affordable when $x_i$ was chosen. Warshall's algorithm "
+        "then fills in every indirect comparison, and the violation scan reads "
+        "off the GARP contradictions. The test returns a pass or fail decision; "
+        "it does not construct the Afriat inequalities or a utility function.\n\n"
         "```text\n"
         "Input: prices p_t and chosen bundles x_t for t=1,...,T\n"
         "Output: pass/fail GARP decision and violating observation pairs\n\n"
-        "1. For each pair (i,j), set R[i,j] = 1 if p_i . x_i >= p_i . x_j.\n"
+        "1. For each pair (i,j), set R[i,j] = 1 if p_i . x_i + TOL >= p_i . x_j.\n"
         "2. Initialize R_star = R.\n"
         "3. For each intermediate node k:\n"
         "       for each origin i and destination j:\n"
         "           set R_star[i,j] = R_star[i,j] or (R_star[i,k] and R_star[k,j]).\n"
-        "4. For each reachable pair (i,j), flag a violation if p_j . x_j > p_j . x_i.\n"
+        "4. For each reachable pair (i,j), flag a violation if p_j . x_j > p_j . x_i + TOL.\n"
         "5. The data pass GARP exactly when the violation set is empty.\n"
         "```\n\n"
+        "Both budget comparisons use a numerical tolerance TOL = 1e-10. It is "
+        "added on the lax side when assigning revealed preference and on the "
+        "strict side when flagging a violation, so observations that are equal up "
+        "to floating-point error are not misread as a strict cycle.\n\n"
+        "The corrupted sample is built by a swap-retry loop. Each attempt swaps "
+        "two chosen bundles in an otherwise rational dataset and rechecks GARP; "
+        "the loop runs up to 200 attempts and returns the first dataset that "
+        "fails. If no swap fails within 200 attempts, the code returns a "
+        "hardcoded fallback dataset with a known violation. At the committed "
+        "seed the swap path succeeds, so the figures show swap-corrupted data.\n\n"
         f"The Cobb-Douglas sample passes with {len(violations_con)} violations. "
         f"The corrupted sample fails with {len(violations_inc)} violating pairs."
     )
@@ -460,11 +472,15 @@ Afriat's theorem makes this finite test enough. If GARP holds, the data are rati
     )
 
     report.add_takeaway(
-        "Afriat's test asks whether finite household choice data can still be read "
-        "as utility maximization after all budget comparisons are linked. Passing "
-        "GARP does not identify a unique utility function. It says some monotone "
+        "The GARP test asks whether finite household choice data can still be read "
+        "as utility maximization after all budget comparisons are linked. By "
+        "Afriat's theorem, passing GARP is equivalent to rationalizability, but it "
+        "does not identify a unique utility function: it says some monotone "
         "concave utility function can rationalize the observed bundles. Failing "
-        "GARP says no such utility function rationalizes the full dataset."
+        "GARP says no such utility function rationalizes the full dataset. A "
+        "constructive companion would solve the Afriat inequalities for explicit "
+        "utility levels and the Afriat efficiency index; this tutorial stops at "
+        "the pass-or-fail decision."
     )
 
     report.add_references([

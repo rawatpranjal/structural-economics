@@ -705,7 +705,7 @@ The tutorial solves balanced trade and mobility directly. This matches the finit
     disp_eq = equilibria[dispersion.name]
     agg_eq = equilibria[agglomeration.name]
     report.add_results(
-        f"The dispersion-dominant center share is {disp_eq.labor.max():.1%}. "
+        f"The dispersion-dominant largest labor share is {disp_eq.labor.max():.1%}. "
         f"The strong-agglomeration largest share is {agg_eq.labor.max():.1%}. "
         "Nominal wages, price indexes, and amenities differ across space. "
         "Real utility is still equalized."
@@ -809,6 +809,9 @@ The tutorial solves balanced trade and mobility directly. This matches the finit
     left_final = migration["agglomeration_left"]["final_labor"]
     right_final = migration["agglomeration_right"]["final_labor"]
     path_gap = float(np.max(np.abs(left_final - right_final)))
+    pd.DataFrame({"path_gap": [path_gap]}).to_csv(
+        "tables/convergence-path-dependence.csv", index=False
+    )
     report.add_results(
         "Allen and Arkolakis define two composite parameters that decide which regime the model lives in. "
         "$\\gamma_1 = 1 - (\\sigma-1)\\alpha - \\sigma\\beta$ collects the dispersion forces. "

@@ -314,7 +314,7 @@ Random search draws $N$ prices uniformly on the bracket and returns the argmax o
 $$\hat p_{\mathrm{rand}} = \arg\max_{i \in \lbrace 1, \ldots, N\rbrace} \pi(p_i),
 \qquad p_i \stackrel{\mathrm{iid}}{\sim} \mathrm{Uniform}[p_{\mathrm{lo}}, p_{\mathrm{hi}}].$$
 
-The expected error scales as $1/N$ in one dimension, the same order as the grid but with stochastic noise on each draw.
+The expected error scales as $1/\sqrt{N}$ in one dimension, slower than the deterministic grid but with a rate that does not degrade as price dimensions are added.
 
 ### Method 3: Golden-section search
 

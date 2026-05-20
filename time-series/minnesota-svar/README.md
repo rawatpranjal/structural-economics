@@ -218,6 +218,16 @@ The RMSE table reports one-step forecast errors on quarters not used for estimat
 | Policy rate   |          0.434 |                 0.395 |        0.909 |
 | All variables |          0.434 |                 0.391 |        0.901 |
 
+The stability radius is the spectral radius of the VAR companion matrix; values below one imply a stationary system. The shrinkage ratio compares the lag-coefficient norm of the Minnesota BVAR with that of the OLS VAR. These are the metrics quoted in the Takeaway.
+
+**Companion-matrix stability and shrinkage metrics**
+
+| Metric                                             |   Value |
+|:---------------------------------------------------|--------:|
+| Companion-matrix stability radius (OLS VAR)        |   0.875 |
+| Companion-matrix stability radius (Minnesota BVAR) |   0.765 |
+| BVAR coefficient norm relative to OLS norm         |   0.698 |
+
 These hyperparameters encode the economic belief that macro variables are persistent, but that distant and cross-variable lags should need strong evidence before receiving large coefficients.
 
 **Minnesota prior hyperparameters**

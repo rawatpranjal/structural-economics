@@ -63,6 +63,10 @@ $$
 \hat{\theta} = \arg\min_{\theta} \Xi_n(\theta).
 $$
 
+The objective the code actually minimizes adds a light stability guard to
+$\Xi_n(\theta)$; that guard is zero during normal training and is described in
+the Solution Method section.
+
 The neural policy first chooses a saving share:
 
 $$
@@ -149,10 +153,14 @@ For t = 1,...,T:
         c_i_next = (1 - s_i_next) * y_i_next
     Compute residuals r(k_i; theta):
         r_i = log(beta * alpha * A * k_i_next^(alpha - 1) * c_i / c_i_next)
-    Set Xi_n(theta) = (1/n) sum_i r_i^2
+    Compute the stability guard g_i (zero whenever k_i_next stays
+    inside [0.5 * k_min, 1.15 * k_max]; positive outside that band)
+    Set Xi_n(theta) = (1/n) sum_i r_i^2 + 1e-3 * (1/n) sum_i g_i^2
     Update theta with one Adam step using the gradient of Xi_n(theta)
 Audit k'(k; theta) on a holdout grid against the exact rule
 ```
+
+The minimized objective is the squared Euler residual plus a light stability guard. The stability guard is a one-sided penalty, weighted by 1e-3, that activates only when the predicted next capital leaves a band slightly wider than the training interval. During normal training the predicted capital stays inside that band, so the guard is zero and the objective is the pure empirical risk; the guard only keeps early gradient steps from drifting into infeasible capital.
 
 The audit is not part of the training loss. It exists because this Brock-Mirman case has the closed-form rule $k'=\alpha\beta A k^\alpha$. The comparison shows what the residual-trained neural policy learned.
 
@@ -178,13 +186,13 @@ Starting below the steady state gives a transition path. The exact path converge
 
 <img src="figures/simulated-path.png" alt="Capital transition under neural and closed-form policies" width="80%">
 
-The table reports the holdout audit on the plotted grid. Policy errors are in capital units. The Euler residual column is the maximum absolute log residual. Values near zero mean the Euler equation is nearly satisfied.
+The table reports the holdout audit on the plotted grid. Policy errors are in capital units. The Euler residual column is the maximum absolute log residual. Values near zero mean the Euler equation is nearly satisfied. The initial-loss column records the loss at the first gradient step, so the drop to the final loss is visible in the artifact itself. The mean-saving-share column records the average neural saving share over the audit grid.
 
 **Policy Approximation Accuracy**
 
-|   Final loss |   Mean policy error |   Max policy error |   Max Euler residual |   Terminal path error |   Gradient steps |
-|-------------:|--------------------:|-------------------:|---------------------:|----------------------:|-----------------:|
-|  2.31559e-08 |         4.43835e-05 |        0.000162423 |          0.000282804 |           0.000116169 |             6000 |
+|   Initial loss |   Final loss |   Mean policy error |   Max policy error |   Max Euler residual |   Terminal path error |   Mean saving share |   Gradient steps |
+|---------------:|-------------:|--------------------:|-------------------:|---------------------:|----------------------:|--------------------:|-----------------:|
+|      0.0758802 |  2.31559e-08 |         4.43835e-05 |        0.000162423 |          0.000282804 |           0.000116169 |            0.342023 |             6000 |
 
 The estimated policy is nearly identical to the exact Brock-Mirman policy. The learned saving share is nearly flat. Its mean is 0.3420. The exact saving share is $\alpha\beta=0.3420$.
 

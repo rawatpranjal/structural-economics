@@ -108,7 +108,9 @@ Output: grid {z_j}, transition P_N, invariant pi
       A_BL = embed P_{n-1} in bottom-left of n x n zero matrix
       A_BR = embed P_{n-1} in bottom-right of n x n zero matrix
       P_n  = p*A_TL + (1-p)*A_TR + (1-p)*A_BL + p*A_BR
-      row-normalize interior rows of P_n     (they receive two contributions)
+      normalize all rows of P_n              (interior rows summed two
+                                              contributions and need scaling;
+                                              endpoint rows already sum to 1)
   sigma_z = sigma_eps / sqrt(1 - rho^2)
   z_j     = sigma_z * sqrt(N-1) * (2*(j-1)/(N-1) - 1)        for j = 1..N
   pi_j    = binomial(N-1, j-1) / 2^{N-1}

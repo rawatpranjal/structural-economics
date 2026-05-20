@@ -100,7 +100,7 @@ Output: pseudo-values {\hat v_i}
 
 1. Draw v_i ~ F_v and set b_i = s(v_i).
 2. Hide {v_i}; keep only {b_i} and n.
-3. Estimate \hat G(b_i) = rank(b_i) / N.
+3. Estimate \hat G(b_i) = rank(b_i) / N, with rank(b_i) 1-indexed so the smallest bid maps to 1/N and the largest to 1.
 4. Estimate \hat g(b_i) from a KDE on {b_i}.
 5. Keep I_q = {i: Q_q <= b_i <= Q_{1-q}, \hat g(b_i) > 0}.
 6. For i in I_q, set

@@ -1,0 +1,8 @@
+metric,value
+bench_V_rel,0.00020686422789991413
+bench_k_max_abs,0.046149112911496815
+bench_l_max_abs,0.015007215007215025
+coarse_iterations,515.0
+coarse_error,9.954637718578851e-06
+fine_iterations,525.0
+fine_error,9.962649301087367e-06

@@ -177,7 +177,7 @@ def solve_asymmetric_bne(
     alpha_lo: float = 1.0,
     alpha_hi: float = 1.9,
     n_grid: int = 4001,
-) -> tuple[float, np.ndarray, np.ndarray, np.ndarray]:
+) -> tuple[float, np.ndarray, np.ndarray, np.ndarray, float]:
     """Solve the MMRS boundary-value problem by forward shooting on alpha.
 
     Near b = 0, both inverse bid functions admit the asymptotic series
@@ -185,7 +185,8 @@ def solve_asymmetric_bne(
     where alpha is a free coefficient that pins down the asymmetry. Forward
     integrate from a small b_0 with this asymptotic; stop when phi_1 reaches
     M_1 = 1 and read off the upper bid bbar and phi_2(bbar). Bisect alpha
-    until phi_2(bbar) hits M_2 = 2.
+    until phi_2(bbar) hits M_2 = 2. Returns the upper bid, the bid grid, both
+    inverse bid functions, and the bisected coefficient alpha.
     """
     def shoot(alpha: float) -> tuple[float, float, object]:
         phi0 = [2.0 * b_0 - alpha * b_0**3, 2.0 * b_0 + alpha * b_0**3]
@@ -221,7 +222,7 @@ def solve_asymmetric_bne(
     b_grid = np.concatenate([[0.0], sol.t])
     phi1 = np.concatenate([[0.0], sol.y[0]])
     phi2 = np.concatenate([[0.0], sol.y[1]])
-    return float(bbar), b_grid, phi1, phi2
+    return float(bbar), b_grid, phi1, phi2, float(alpha_opt)
 
 
 def bne_bid_at_values(
@@ -256,7 +257,7 @@ def main() -> None:
     asym_bid_weak = expected_bid(asym["average_strategy_1"], bids)
     asym_bid_strong = expected_bid(asym["average_strategy_2"], bids)
 
-    bbar_bne, bne_b_grid, bne_phi1, bne_phi2 = solve_asymmetric_bne()
+    bbar_bne, bne_b_grid, bne_phi1, bne_phi2, alpha_bne = solve_asymmetric_bne()
     bne_bid_weak = bne_bid_at_values(values_weak, bne_b_grid, bne_phi1, bbar_bne)
     bne_bid_strong = bne_bid_at_values(values_strong, bne_b_grid, bne_phi2, bbar_bne)
     asym_residual_weak = float(np.max(np.abs(asym_bid_weak - bne_bid_weak)))
@@ -497,9 +498,10 @@ continuous BNE bid function $b_i(v)$ is the inverse of $\phi_i(b)$.
     ax2.set_ylabel("Exploitability")
     ax2.set_title("Exploitability of the Average Strategy on the Asymmetric Game")
     report.add_results(
-        "Exploitability of the average strategy falls steadily across iterations and "
-        "tracks the textbook rate of order one over the square root of iterations on a "
-        "log-log plot. Exploitability never reaches exactly zero because the bid grid is "
+        "Exploitability of the average strategy falls steadily across iterations. On a "
+        "log-log plot the committed run decays at an empirical rate of approximately "
+        "O(T^{-0.8}), faster than the O(1/sqrt(T)) Hannan bound rather than tracking it. "
+        "Exploitability never reaches exactly zero because the bid grid is "
         "finite, but the residual gap is small relative to expected revenue. "
         "Exploitability is the asymmetric analogue of the bid-grid deviation check used "
         "by the existing first-price auction tutorial."
@@ -546,6 +548,10 @@ continuous BNE bid function $b_i(v)$ is the inverse of $\phi_i(b)$.
         {
             "Quantity": "MMRS upper bid $\\bar{b}$",
             "Value": f"{bbar_bne:.4f}",
+        },
+        {
+            "Quantity": "MMRS shooting coefficient $\\alpha$",
+            "Value": f"{alpha_bne:.4f}",
         },
         {
             "Quantity": "Asymmetric exploitability (final iteration)",

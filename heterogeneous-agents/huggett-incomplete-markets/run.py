@@ -294,7 +294,6 @@ def main():
     # Aggregate moments on the working grid
     mean_wealth = (g[:, 0] @ a) * da + (g[:, 1] @ a) * da
     market_residual = abs(mean_wealth)
-    mean_wealth_display = 0.0 if market_residual < 5e-5 else mean_wealth
     mean_cons = (g[:, 0] @ c[:, 0]) * da + (g[:, 1] @ c[:, 1]) * da
     # Mass within a fixed asset-range window of the borrowing limit
     constraint_window = 0.02
@@ -726,7 +725,7 @@ repeat (outer bisection)
         description="The value functions are increasing and concave in assets. "
         "$V_H(a)$ lies above $V_L(a)$ because high income raises cash on hand. "
         "Both curves steepen near the borrowing limit. "
-        f"The relative value gap against the reference grid is ${100 * V_gap_rel:.2f}\\%$.",
+        f"The relative value gap against the reference grid is ${100 * V_gap_rel:.3f}\\%$.",
     )
 
     # --- Figure 2: Savings Policy (with reference overlay) ---
@@ -784,7 +783,7 @@ repeat (outer bisection)
     ax4.axvline(0, color="k", linestyle="--", linewidth=0.8)
     ax4.axhline(rho, color="gray", linestyle="--", linewidth=0.8, alpha=0.7)
     ax4.plot(0, r_eq, "ro", markersize=8, zorder=5,
-             label=f"$r^{{\\ast}} = {r_eq:.4f}$")
+             label=f"$r^{{\\ast}} = {r_eq:.5f}$")
     ax4.plot(0, r_eq_ref, "kx", markersize=8, zorder=5,
              label=f"$r^{{\\ast}}_{{\\rm ref}} = {r_eq_ref:.4f}$")
     ax4.set_xlabel("Aggregate asset demand $S(r) = \\int a\\,(g_L + g_H)\\,da$")
@@ -800,8 +799,8 @@ repeat (outer bisection)
         description="The demand curve plots aggregate asset demand against $r$. "
         "Higher returns raise saving and reduce borrowing, so $S(r)$ rises with $r$. "
         "The complete-markets benchmark is $r = \\rho$. "
-        f"The Huggett equilibrium is lower, at $r^{{\\ast}} = {r_eq:.4f}$. "
-        f"The precautionary wedge is $\\rho - r^{{\\ast}} = {wedge:.4f}$.",
+        f"The Huggett equilibrium is lower, at $r^{{\\ast}} = {r_eq:.5f}$. "
+        f"The precautionary wedge is $\\rho - r^{{\\ast}} = {wedge:.5f}$.",
     )
 
     # =========================================================================
@@ -832,7 +831,7 @@ repeat (outer bisection)
             f"{r_eq:.5f}",
             f"{r_eq_ref:.5f}",
             f"{wedge:.5f}",
-            f"{mean_wealth_display:.5f}",
+            f"{market_residual:.2e}",
             f"{(g[:, 0] @ (np.ones(I) * z[0])) * da + (g[:, 1] @ (np.ones(I) * z[1])) * da:.4f}",
             f"{mean_cons:.4f}",
             f"{mass_at_constraint:.4f}",
@@ -853,15 +852,16 @@ repeat (outer bisection)
         "Equilibrium and Discretisation Summary",
         df,
         description="The table reports prices, cross-sectional moments, and discretisation "
-        "diagnostics. Mean assets are zero because bisection chose $r^{\\ast}$ to satisfy "
-        "$S(r^{\\ast}) = 0$.",
+        "diagnostics. The mean-wealth and bond-market-residual rows report the same quantity: "
+        "bisection drives $|S(r^{\\ast})|$ down to the small residual shown, so mean assets "
+        "are zero up to that bisection tolerance rather than exactly zero.",
     )
 
     report.add_takeaway(
         r"""
 The Huggett price is a market-clearing return. Income risk and the borrowing limit make
 households want buffer wealth at $r = \rho$. The bond market clears only at a lower
-return. In this run the wedge is """ + f"$\\rho - r^{{\\ast}} = {wedge:.4f}$" + r""".
+return. In this run the wedge is """ + f"$\\rho - r^{{\\ast}} = {wedge:.5f}$" + r""".
 
 The HJB/KFE loop ties the household policy to the stationary cross section. The upwind
 HJB respects the borrowing limit. The KFE then measures aggregate asset demand. Bisection

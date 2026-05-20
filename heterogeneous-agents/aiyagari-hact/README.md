@@ -207,7 +207,7 @@ The savings drift $s_j(a) = w z_j + r^{\ast} a - c_j(a)$ is the deterministic as
 
 <img src="figures/savings-policy.png" alt="Savings drift by income state at the HACT equilibrium." width="80%">
 
-The left panel shows the stationary marginal density over assets $g(a) = \sum_j g_j(a)$ at the equilibrium prices. The red curve is the HACT density on the linear asset grid. The bars are the discrete-time marginal mass binned at uniform width and rescaled by the bin width to produce a comparable density. The two methods agree on the bulk shape of the distribution and on the right tail. Continuous time delivers a smooth density that the discrete-time histogram only approximates, but the cost of that smoothness is the upwind discretisation on a much finer asset grid. The right panel overlays the Lorenz curves implied by the same densities, with the corresponding Gini coefficients in the legend. The two Ginis agree to within $0.011$, which is well below the calibration's own structural uncertainty.
+The left panel shows the stationary marginal density over assets $g(a) = \sum_j g_j(a)$ at the equilibrium prices. The red curve is the HACT density on the linear asset grid. The bars are the discrete-time marginal mass binned at uniform width and rescaled by the bin width to produce a comparable density. The two methods agree on the bulk shape of the distribution and on the right tail. Continuous time delivers a smooth density that the discrete-time histogram only approximates, but the cost of that smoothness is the upwind discretisation on a much finer asset grid. The right panel overlays the Lorenz curves implied by the same densities, with the corresponding Gini coefficients in the legend. The two Ginis agree to within $0.0114$, which is well below the calibration's own structural uncertainty.
 
 <img src="figures/wealth-distribution-comparison.png" alt="Stationary wealth distribution and Lorenz curves, HACT vs DT." width="80%">
 
@@ -238,7 +238,7 @@ The table reports equilibrium prices, aggregate quantities, distributional momen
 | Bisection iterations                       | 11         |
 | Relative capital-market gap                | -0.0003544 |
 
-The two solvers agree on the headline aggregates to within numerical precision. The interest rate, the aggregate capital stock, and the mean wealth differ across methods by amounts that are dominated by the bisection tolerance and the asset-grid spacing in each solver. The wealth Gini agrees to three decimal places and the mass at the borrowing limit agrees to one percentage point. The only systematic gap is the MPC at the borrowing limit at the lowest income state, where the discrete-time finite-difference object is bounded by the asset-grid spacing on its exponential grid and the HACT object captures the closed-form kink in the consumption policy. This divergence is the headline pedagogical point of the comparison: continuous time delivers the policy slope at the constraint as a finite, computable number rather than as the artifact of a discretisation choice.
+The two solvers agree on the headline aggregates to within numerical precision. The interest rate, the aggregate capital stock, and the mean wealth differ across methods by amounts that are dominated by the bisection tolerance and the asset-grid spacing in each solver. The wealth Gini differs by 0.0114 across methods, and the mass within 0.02 of the borrowing limit differs by 0.75 percentage points; both mass figures count the fraction of households in the same physical window so the comparison is like for like. The only systematic gap is the MPC at the borrowing limit at the lowest income state, where the discrete-time finite-difference object is bounded by the asset-grid spacing on its exponential grid and the HACT object captures the closed-form kink in the consumption policy. This divergence is the headline pedagogical point of the comparison: continuous time delivers the policy slope at the constraint as a finite, computable number rather than as the artifact of a discretisation choice.
 
 **Discrete-time and continuous-time Aiyagari side by side**
 
@@ -248,7 +248,7 @@ The two solvers agree on the headline aggregates to within numerical precision. 
 | Aggregate capital K*                  | 6.8203  |         6.7599  |         0.0603 |
 | Mean wealth                           | 6.8178  |         6.7633  |         0.0546 |
 | Wealth Gini                           | 0.5146  |         0.526   |         0.0114 |
-| Mass at borrowing limit               | 0.0541  |         0.0245  |         0.0296 |
+| Mass at borrowing limit               | 0.0541  |         0.0466  |         0.0075 |
 | MPC at borrowing limit, lowest income | 1.2315  |         1.024   |         0.2075 |
 
 ## Takeaway

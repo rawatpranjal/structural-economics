@@ -145,7 +145,7 @@ def fit_single_type(df: pd.DataFrame, theta0: np.ndarray) -> tuple:
         return -ll
 
     res = minimize(neg_ll, theta0, method="L-BFGS-B",
-                   bounds=[(0.05, 2.0), (0.5, 5.0), (0.05, 2.0), (0.05, 5.0)])
+                   bounds=[(0.05, 2.0), (1.0, 5.0), (0.05, 2.0), (0.05, 5.0)])
     return res.x, -res.fun
 
 
@@ -235,7 +235,7 @@ def fit_mixture_em(df: pd.DataFrame, C: int, theta_init: np.ndarray,
                 neg_weighted_ll_for_type, theta[c],
                 args=(weights_subj, list(subjects), df),
                 method="L-BFGS-B",
-                bounds=[(0.05, 2.0), (0.5, 5.0), (0.05, 2.0), (0.05, 5.0)],
+                bounds=[(0.05, 2.0), (1.0, 5.0), (0.05, 2.0), (0.05, 5.0)],
                 options={"maxiter": 30},
             )
             theta[c] = res.x
@@ -400,10 +400,15 @@ def main() -> None:
     max_post_c3 = fit_c3["posteriors"].max(axis=1)
     type_assignments_hat = fit_c3["posteriors"].argmax(axis=1)
 
-    # Relative risk premia for the descriptive figure (replicates BFDE Figure 2)
-    df["ev"] = df["p"] * df["x1"] + (1.0 - df["p"]) * df["x2"]
-    df["rrp"] = (df["ev"] - df["ce"]) / np.maximum(df["ev"], 1e-9)
-    rrp_by_p = df.groupby("p")["rrp"].median()
+    # Relative risk premia for the descriptive figure (replicates BFDE Figure 2).
+    # Restrict to gain-only lotteries: relative risk premium (EV - CE) / EV is a
+    # gain-domain diagnostic. Loss and mixed lotteries have EV <= 0, so the ratio
+    # is not comparable across domains and pooling them would contaminate the
+    # median the figure reports.
+    df_gain = df[df["domain"] == "gain"].copy()
+    df_gain["ev"] = df_gain["p"] * df_gain["x1"] + (1.0 - df_gain["p"]) * df_gain["x2"]
+    df_gain["rrp"] = (df_gain["ev"] - df_gain["ce"]) / df_gain["ev"]
+    rrp_by_p = df_gain.groupby("p")["rrp"].median()
 
     # =====================================================================
     # Report
@@ -556,7 +561,8 @@ The normalised entropy criterion $\mathrm{NEC} = -\frac{1}{N \ln C} \sum_{i, c} 
         "The E-step computes posterior membership probabilities given current parameters. "
         "The M-step updates mixing proportions to the posterior means and re-fits each type's parameters by weighted maximum likelihood. "
         "Each subject's noise scale $\\xi_i$ is profiled under the subject's maximum-posterior type, following the implementation in BFDE. "
-        "EM is monotone in log-likelihood by construction.\n\n"
+        "Textbook EM raises the log-likelihood at every iteration, but the $\\xi_i$ update here uses the maximum-posterior type rather than a type-weighted expectation. "
+        "That is an approximation, also used in the BFDE implementation, which does not formally guarantee monotone improvement; in practice the log-likelihood still rises at every iteration on this design.\n\n"
         "```text\n"
         "Algorithm: Finite-mixture EM\n"
         "Input : data, number of types C, initial (theta, pi)\n"
@@ -585,6 +591,8 @@ The normalised entropy criterion $\mathrm{NEC} = -\frac{1}{N \ln C} \sum_{i, c} 
         "Initial values are seeded from the BFDE headline pattern, augmented with type-specific loss aversion: an EUT type with $\\lambda = 1$, a mild-CPT type with $\\lambda = 1.5$, and a strong-CPT type with $\\lambda = 2.5$. "
         "Bayesian information criterion across $C \\in \\lbrace 1, 2, 3, 4\\rbrace$ selects $C = 3$. "
         "Mixed lotteries are essential for identifying the type-specific $\\lambda$; without them the three types still differ on $(\\alpha, \\gamma, \\delta)$ but $\\lambda$ remains unidentified.\n\n"
+        "In this tutorial the C = 3 initial values coincide with the true data-generating parameters, so the recovery reported below is an oracle start: it shows EM converges and stays at the truth, not that EM finds the truth from a cold start. "
+        "A realistic application would warm-start from BFDE headline values that differ from the unknown truth and would need restarts to guard against local maxima.\n\n"
         "Method 3 can fail through label switching (component permutations give the same likelihood) and through bad initial values (EM converges to local maxima in mixture problems). "
         "The label-switching fix is to reorder components by $\\gamma$ after convergence; the local-maxima problem is mitigated by warm starts from the BFDE headline parameters."
     )

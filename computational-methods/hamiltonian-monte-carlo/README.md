@@ -177,7 +177,7 @@ Hamiltonian Monte Carlo replaces the random-walk proposal with a leapfrog trajec
 
 ### Method 1: Hamiltonian Monte Carlo
 
-Each HMC iteration is a momentum resample, a leapfrog trajectory, and a Metropolis accept-reject. The leapfrog integrator interleaves momentum half-steps with position full-steps; the order matters because two half-steps in the momentum bracket one position step, so the integrator is time-reversible at each substep and conserves volume in $(\theta, r)$-space. Volume preservation is the technical reason the Metropolis correction needs only the energy difference and not a Jacobian. Discarding the momentum after every iteration marginalizes it out and leaves the $\theta$-chain stationary on the target posterior. On a well-tuned trajectory the leapfrog energy drift is tiny and acceptance rates of 0.7 to 0.9 are typical.
+Each HMC iteration is a momentum resample, a leapfrog trajectory, and a Metropolis accept-reject. The leapfrog integrator interleaves momentum half-steps with position full-steps; the order matters because two half-steps in the momentum bracket one position step, so the integrator is time-reversible at each substep and conserves volume in $(\theta, r)$-space. Volume preservation is the technical reason the Metropolis correction needs only the energy difference and not a Jacobian. Discarding the momentum after every iteration marginalizes it out and leaves the $\theta$-chain stationary on the target posterior. On a well-tuned trajectory the leapfrog energy drift is tiny and the acceptance rate is high; for this two-dimensional banana posterior at the tuned hyperparameters it sits near 0.99, while the often-cited 0.7 to 0.9 range is the high-dimensional asymptotic benchmark.
 
 ```text
 Algorithm: One HMC iteration
@@ -230,7 +230,7 @@ The left panel shows a single leapfrog trajectory at the tuned step size $\varep
 
 <img src="figures/leapfrog-trajectory.png" alt="Leapfrog trajectory on the banana and the Hamiltonian along it for two step sizes" width="80%">
 
-The autocorrelation plots show how quickly each chain forgets where it was. For $\theta_1$, the HMC autocorrelation drops to near zero within 10 lags, while random-walk MH stays correlated out beyond 200 lags. Effective sample size for $\theta_1$ is 726 for HMC across 3,500 draws and 203 for RW-MH across 38,000 draws. HMC delivers an order-of-magnitude better effective-sample efficiency on the banana ridge.
+The autocorrelation plots show how quickly each chain forgets where it was. For $\theta_1$, the HMC autocorrelation drops to near zero within 10 lags (the per-series lag counts behind this figure are in `tables/acf-summary.csv`), while random-walk MH stays correlated out beyond 200 lags. Effective sample size for $\theta_1$ is 726 for HMC across 3,500 draws and 203 for RW-MH across 38,000 draws. HMC delivers an order-of-magnitude better effective-sample efficiency on the banana ridge.
 
 <img src="figures/autocorrelation-comparison.png" alt="Autocorrelation of HMC and random-walk MH draws on the banana target" width="80%">
 
@@ -245,7 +245,7 @@ Each row records one sampler. The HMC chain uses fewer draws but yields larger e
 | Random-walk MH          |   38000 |             0.671 |          0.097 |          0.34  |     203 |     201 | 40000.0              |                        |
 | Hamiltonian Monte Carlo |    3500 |             0.991 |          0.04  |          0.082 |     726 |     841 |                      | 103974.0               |
 
-The leapfrog step-size sweep shows the trade-off behind HMC tuning. Acceptance drops sharply once $\varepsilon$ pushes the discretization error past the implicit Metropolis tolerance. Effective sample size is largest at a step size that keeps acceptance around 0.6 to 0.8, which matches the asymptotic-optimal acceptance results in the HMC literature.
+The leapfrog step-size sweep shows the trade-off behind HMC tuning. Acceptance drops sharply once $\varepsilon$ pushes the discretization error past the implicit Metropolis tolerance. Effective sample size is largest in this sweep at a step size that keeps acceptance around 0.96 to 0.99, higher than the 0.6 to 0.8 asymptotic-optimal acceptance results in the HMC literature, because those asymptotics describe the high-dimensional limit and this banana posterior is only two-dimensional.
 
 Each row is a short HMC run at a different step size with the same number of leapfrog steps. The sweet spot trades off discretization error against trajectory length.
 

@@ -93,16 +93,20 @@ repeat for n = 0, 1, 2, ...:
         compute p_exit(N) from the logit stay/exit rule using V_n
         compute expected survivor count S_bar(N)
         choose entrants e(N) by the cutoff V_n(S_bar(N)+e) >= K
-        for each possible number of rival survivors S:
-            add V_n(min{S + 1 + e(N), N_max}) to the incumbent's continuation value
-        update V_{n+1}(N) with the log-sum inclusive value
+        for s = 0,...,N-1 surviving rivals (the focal firm always stays):
+            weight = Binomial(s; N-1 rivals, 1 - p_exit(N))
+            add weight * V_n(min{s + 1 + e(N), N_max}) to E[V(N') | stay]
+        update V_{n+1}(N) with the log-sum inclusive value of E[V(N') | stay]
     replace V_n by a damped average of V_n and V_{n+1}
 until max_N |V_{n+1}(N)-V_n(N)| < epsilon
-Construct T(N'|N) from binomial survival and the same state-level entry rule
+Construct T(N'|N): survivors ~ Binomial(N firms, 1 - p_exit(N)),
+  plus the same state-level entry rule. The VFI step above conditions on
+  the focal firm staying, so it draws from the N-1 rivals; the transition
+  matrix is unconditional, so it draws from all N firms.
 Iterate mu_{m+1}=mu_m T until mu is invariant
 ```
 
-The value iteration converged in **667 iterations** with sup-norm error **9.94e-09**. The invariant distribution solves $\mu=\mu T$ for the policy-induced Markov chain, where $T$ is the transition matrix.
+The value iteration converged in **762 iterations** with sup-norm error **9.94e-09**. The invariant distribution solves $\mu=\mu T$ for the policy-induced Markov chain, where $T$ is the transition matrix.
 
 ## Results
 
@@ -114,7 +118,7 @@ Exit risk rises with crowding because profits and continuation values fall. Expe
 
 <img src="figures/entry-exit-probabilities.png" alt="Exit probability and expected entry by market size" width="80%">
 
-The invariant distribution is tightly centered because free entry offsets exits near the profitable range. The black markers show a long simulation from the same Markov chain. The maximum simulation gap is **5.42e-04** after burn-in.
+The invariant distribution is tightly centered because free entry offsets exits near the profitable range. The black markers show a long simulation from the same Markov chain. The maximum simulation gap is **4.78e-04** after burn-in.
 
 <img src="figures/stationary-distribution.png" alt="Stationary distribution of active firms" width="80%">
 
@@ -134,11 +138,11 @@ Expected market size lies below the static zero-profit count. Entrants must reco
 | Zero-profit N (static)              |  10.3      |
 | Per-firm profit at E[N]             |   0.79     |
 | Net profit (pi - f) at E[N]         |   0.29     |
-| Expected incumbent exit probability |   0.0027   |
+| Expected incumbent exit probability |   0.0026   |
 | Expected exits (firms/period)       |   0.021    |
 | Expected entry (firms/period)       |   0.02     |
-| Max stationary simulation gap       |   0.000542 |
-| VFI iterations                      | 667        |
+| Max stationary simulation gap       |   0.000478 |
+| VFI iterations                      | 762        |
 
 Thin markets have high incumbent value and attract entrants. Crowded markets have lower profits and higher exit risk. Entry shuts down before incumbents are certain to leave.
 
@@ -148,14 +152,14 @@ Thin markets have high incumbent value and attract entrants. Crowded markets hav
 |----:|---------------:|------------------:|-------:|------------:|-----------------:|
 |   1 |         16     |            15.5   | 21.133 |      0      |                7 |
 |   2 |          7.111 |             6.611 | 12.244 |      0      |                6 |
-|   3 |          4     |             3.5   |  9.133 |      0      |                5 |
-|   5 |          1.778 |             1.278 |  6.912 |      0.0004 |                3 |
-|   7 |          1     |             0.5   |  6.138 |      0.0018 |                1 |
-|  10 |          0.529 |             0.029 |  3.96  |      0.0221 |                0 |
-|  15 |          0.25  |            -0.25  |  2.48  |      0.1085 |                0 |
-|  20 |          0.145 |            -0.355 |  1.982 |      0.1783 |                0 |
-|  25 |          0.095 |            -0.405 |  1.723 |      0.2259 |                0 |
-|  30 |          0.067 |            -0.433 |  1.562 |      0.2592 |                0 |
+|   3 |          4     |             3.5   |  9.133 |      0.0001 |                5 |
+|   5 |          1.778 |             1.278 |  6.913 |      0.001  |                3 |
+|   7 |          1     |             0.5   |  6.138 |      0.0022 |                1 |
+|  10 |          0.529 |             0.029 |  3.889 |      0.0205 |                0 |
+|  15 |          0.25  |            -0.25  |  2.328 |      0.0975 |                0 |
+|  20 |          0.145 |            -0.355 |  1.824 |      0.1614 |                0 |
+|  25 |          0.095 |            -0.405 |  1.576 |      0.2069 |                0 |
+|  30 |          0.067 |            -0.433 |  1.428 |      0.2398 |                0 |
 
 ## Takeaway
 

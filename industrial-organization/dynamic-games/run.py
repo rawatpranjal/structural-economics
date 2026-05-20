@@ -49,13 +49,27 @@ def payoff_matrices(V: np.ndarray, q1: int, q2: int, beta: float, invest_cost: f
     return pay1, pay2
 
 
-def select_equilibrium(pay1: np.ndarray, pay2: np.ndarray) -> tuple[int, int]:
+def select_equilibrium(
+    pay1: np.ndarray, pay2: np.ndarray, fallback_log: list[bool] | None = None,
+) -> tuple[int, int]:
+    """Return an action profile for the 2-by-2 state game.
+
+    Prefers a pure-strategy Nash equilibrium and, when several exist,
+    selects the one with the largest joint payoff. While value iteration
+    is still moving, an intermediate continuation-value guess can produce
+    a state game with no pure NE; in that case the joint-payoff-maximising
+    profile is used as a fallback. ``fallback_log`` records whether the
+    fallback fired, so the caller can check that it does not fire at the
+    converged equilibrium.
+    """
     equilibria = []
     for a1 in [0, 1]:
         for a2 in [0, 1]:
             if pay1[a1, a2] >= pay1[1 - a1, a2] - 1e-10 and pay2[a1, a2] >= pay2[a1, 1 - a2] - 1e-10:
                 equilibria.append((a1, a2))
     if not equilibria:
+        if fallback_log is not None:
+            fallback_log.append(True)
         total = pay1 + pay2
         idx = np.unravel_index(np.argmax(total), total.shape)
         return int(idx[0]), int(idx[1])
@@ -81,6 +95,19 @@ def solve_game(q_max: int = 4, beta: float = 0.90, invest_cost: float = 2.2) -> 
         policy = policy_new
         if error < 1e-8:
             break
+
+    # Verify the converged output is a genuine pure-strategy MPE: re-solve
+    # every state game at the converged values and confirm the no-pure-NE
+    # fallback never fires. It can fire on intermediate value guesses while
+    # iteration is still moving, but it must not fire at the fixed point.
+    converged_fallback: list[bool] = []
+    for q1 in range(q_max + 1):
+        for q2 in range(q_max + 1):
+            pay1, pay2 = payoff_matrices(V, q1, q2, beta, invest_cost)
+            select_equilibrium(pay1, pay2, fallback_log=converged_fallback)
+    assert not converged_fallback, (
+        "no pure-strategy Nash equilibrium at the converged values"
+    )
     return {"V": V, "policy": policy, "iterations": iteration, "error": error}
 
 
@@ -188,6 +215,7 @@ with $V_i(\omega)=G_i(a_i^{*},a_j^{*};\omega,V)$ at every state.
         "| Market size | $M=14$ | Scale of current profits |\n"
         "| Quality in demand | $\\eta=0.75$ | How quality shifts product share |\n"
         "| Direct quality payoff | $\\lambda=0.35$ | Extra payoff from own quality |\n"
+        "| Iteration damping weight | $\\alpha=0.35$ | Step size in the value update |\n"
         "| Equilibrium concept | Pure-strategy MPE | Nash equilibrium in each state game |"
     )
 
@@ -206,11 +234,20 @@ with $V_i(\omega)=G_i(a_i^{*},a_j^{*};\omega,V)$ at every state.
         "    Build G_i^n(a_1,a_2; omega) from profit, cost, and continuation value.\n"
         "    Find pure Nash equilibria of the 2-by-2 state game.\n"
         "    Select the equilibrium with the largest joint payoff if there is a tie.\n"
+        "    If no pure NE exists (fallback), take the joint-payoff-maximising profile.\n"
         "    Set T_i V^n(omega) equal to the selected equilibrium payoff.\n"
-        "  Update V_i^{n+1} = alpha T_i V^n + (1-alpha) V_i^n.  (alpha: iteration damping weight)\n"
+        "  Update V_i^{n+1} = alpha T_i V^n + (1-alpha) V_i^n.  (alpha=0.35: damping weight)\n"
         "  Stop when max_{i,omega} |T_i V^n(omega)-V_i^n(omega)| < epsilon.\n"
         "Output: MPE policy a_i^{*}(omega), values V_i(omega), and deviation gains.\n"
         "```\n\n"
+        "A 2-by-2 simultaneous game need not have a pure-strategy Nash "
+        "equilibrium. While value iteration is still moving, an intermediate "
+        "continuation-value guess can produce such a state game, so the inner "
+        "step uses a fallback: when no pure NE exists it takes the "
+        "joint-payoff-maximising profile. At the converged values every state "
+        "game has a pure NE and the fallback no longer fires, which the solver "
+        "checks before returning. The reported policy is therefore a genuine "
+        "pure-strategy Markov-perfect equilibrium at every state.\n\n"
         "After convergence, compute one-step deviation gains. At the reported "
         "policy, every gain should be zero."
     )
@@ -267,7 +304,7 @@ with $V_i(\omega)=G_i(a_i^{*},a_j^{*};\omega,V)$ at every state.
     )
 
     rows = []
-    for state in [(0, 0), (1, 2), (2, 1), (4, 4)]:
+    for state in [(0, 0), (1, 2), (2, 1), (4, 0), (4, 1), (4, 2), (4, 3), (4, 4)]:
         q1, q2 = state
         rows.append({
             "State": f"({q1},{q2})",
