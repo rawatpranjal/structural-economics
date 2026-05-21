@@ -356,11 +356,24 @@ def fix_file(path: Path) -> bool:
     return False
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    args = argv if argv is not None else sys.argv[1:]
+    if args:
+        paths = [Path(a).resolve() for a in args]
+        for p in paths:
+            if not p.exists():
+                print(f"error: not found: {p}", file=sys.stderr)
+                return 2
+    else:
+        paths = active_markdown_files()
     changed = []
-    for path in active_markdown_files():
+    for path in paths:
         if fix_file(path):
-            changed.append(path.relative_to(ROOT))
+            try:
+                rel = path.relative_to(ROOT)
+            except ValueError:
+                rel = path
+            changed.append(rel)
     for rel in changed:
         print(f"fixed: {rel}")
     print(f"\nTotal files changed: {len(changed)}")
