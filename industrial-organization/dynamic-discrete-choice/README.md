@@ -88,7 +88,7 @@ $$
 \max_{\theta,v}\ \ell(\theta,v)
 \quad\text{subject to}\quad
 v_a(x) = u(x,a;\theta) + \beta \sum_{x'} F_a(x' \mid x)
-\left[\log\sum_{j\in\{0,1\}}\exp(v_j(x'))+\gamma\right]
+\left[\log\sum_{j\in\lbrace0,1\rbrace}\exp(v_j(x'))+\gamma\right]
 $$
 
 for every action and mileage state. The likelihood still uses the logit choice

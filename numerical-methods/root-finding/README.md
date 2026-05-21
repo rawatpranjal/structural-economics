@@ -11,7 +11,7 @@ These are the four solvers behind $\mathrm{scipy.optimize.brentq}$ and the equil
 ## Equations
 
 The general problem is to find $r$ satisfying $Z(r) = 0$ for a scalar function $Z : \mathbb{R} \to \mathbb{R}$.
-The methods below produce a sequence $\{r_n\}$ that converges to a root $r^{\ast}$.
+The methods below produce a sequence $\lbrace r_n\rbrace$ that converges to a root $r^{\ast}$.
 
 ### The test instance
 

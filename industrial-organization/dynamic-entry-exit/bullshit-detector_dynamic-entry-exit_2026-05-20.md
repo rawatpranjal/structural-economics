@@ -30,7 +30,7 @@ E[N]) products of an undisclosed approximation.
   > "An incumbent's exit value is normalized to zero. If it stays, its deterministic
   > surplus is $\Delta(N)=\pi(N)-f+\beta \mathbb{E}\left[V(N_{t+1})\mid N_t=N,\text{ stay}\right].$
   > ...The incumbent exit probability is
-  > $p_{\mathrm{exit}}(N)=\frac{1}{1+\exp\{\Delta(N)/\sigma_\varepsilon\}}.$"
+  > $p_{\mathrm{exit}}(N)=\frac{1}{1+\exp\lbrace\Delta(N)/\sigma_\varepsilon\rbrace}.$"
   >
   > - `README.md:22-41`
 

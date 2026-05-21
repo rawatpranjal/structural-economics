@@ -15,7 +15,7 @@ slots. Product $j$ has demand intercept $a_j$, marginal cost $c_j$, and
 manufacturer label $m(j)$. Retail demand is separable:
 
 $$
-q_j(p_j)=\max\{a_j-bp_j,0\}.
+q_j(p_j)=\max\lbrace a_j-bp_j,0\rbrace.
 $$
 
 Here $b$ is the common demand slope. Given wholesale price $w_j$, the retailer sets the product price by
@@ -60,9 +60,9 @@ price. The discount applies only if the assortment contains at least $\tau$
 Mars products, with $\tau=4$ in this tutorial:
 
 $$
-w_j^C(A)=c_j+\mu-d\mathbf 1\{m(j)=\text{Mars}\}\mathbf 1\{M(A)\geq\tau\},
+w_j^C(A)=c_j+\mu-d\mathbf{1}\lbrace m(j)=\text{Mars}\rbrace\mathbf{1}\lbrace M(A)\geq\tau\rbrace,
 \quad
-M(A)=\sum_{j\in A}\mathbf 1\{m(j)=\text{Mars}\}.
+M(A)=\sum_{j\in A}\mathbf{1}\lbrace m(j)=\text{Mars}\rbrace.
 $$
 
 Slotting fees instead leave wholesale margins unchanged and work through

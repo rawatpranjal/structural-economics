@@ -53,7 +53,7 @@ quantity or share $q_j(p)$, and owner $f(j)$. The ownership matrix records
 which products belong to the same firm:
 
 $$
-\Omega_{jk}=\mathbf 1\{f(j)=f(k)\}.
+\Omega_{jk}=\mathbf{1}\lbrace f(j)=f(k)\rbrace.
 $$
 
 Worked example. Take $J=4$ products with pre-merger owners $f^{\text{pre}}=(1,2,3,4)$,
@@ -114,7 +114,7 @@ where $\xi_j$ is the mean indirect utility of product $j$ from non-price
 characteristics. The closed-form Jacobian is
 
 $$
-\Delta^{L}_{jk}=\alphas_j(\mathbf 1\{j=k\}-s_k).
+\Delta^{L}_{jk}=\alpha s_j(\mathbf{1}\lbrace j=k\rbrace-s_k).
 $$
 
 Opened element by element for $J=4$ this reads

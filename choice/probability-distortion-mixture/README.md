@@ -169,7 +169,7 @@ The classification posterior is sharp. The maximum posterior exceeds 0.95 on 100
 
 <img src="figures/classification-posterior.png" alt="Histogram of maximum posterior membership probability across subjects" width="80%">
 
-Bayesian information criterion across $C \in \{1, 2, 3, 4\}$ selects $C = 3$ on this simulated sample, replicating the BFDE Table III pattern. The first step from $C = 1$ to $C = 2$ delivers a large BIC drop because the data clearly demand at least two types. The second step from $C = 2$ to $C = 3$ delivers a smaller but decisive drop because the strong-CPT type is genuinely distinct from the mild-CPT type. The fourth component, by contrast, raises BIC: it captures only noise and the parsimony penalty correctly rejects it.
+Bayesian information criterion across $C \in \lbrace1, 2, 3, 4\rbrace$ selects $C = 3$ on this simulated sample, replicating the BFDE Table III pattern. The first step from $C = 1$ to $C = 2$ delivers a large BIC drop because the data clearly demand at least two types. The second step from $C = 2$ to $C = 3$ delivers a smaller but decisive drop because the strong-CPT type is genuinely distinct from the mild-CPT type. The fourth component, by contrast, raises BIC: it captures only noise and the parsimony penalty correctly rejects it.
 
 <img src="figures/model-selection-bic.png" alt="BIC across mixture sizes" width="80%">
 

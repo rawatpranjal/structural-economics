@@ -50,7 +50,7 @@ where $\sigma$ is the exogenous separation rate. Free entry equates expected
 discounted job value with vacancy cost:
 
 $$
-k=\betaq(\theta_t) \mathbb{E}_t[J_{t+1}].
+k=\beta q(\theta_t) \mathbb{E}_t[J_{t+1}].
 $$
 
 This condition pins down $\theta_t$.

@@ -99,7 +99,7 @@ w* <- (1 - beta) * (b + beta * sum_i p_i V_i)  # invert C = w* / (1 - beta)
 The continuous lognormal case gives a benchmark. The scalar fixed-point equation
 
 $$
-r = (1-\beta) b+\betam(r),\qquad m(r)=\mathbb{E}_{F}[\max(W,r)],
+r = (1-\beta) b+\beta m(r),\qquad m(r)=\mathbb{E}_{F}[\max(W,r)],
 $$
 
 where $r$ is the reservation wage, has a closed-form $m(r)$ from lognormal moments. The code solves the residual by Brent's method.

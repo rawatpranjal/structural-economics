@@ -52,8 +52,8 @@ value profile $v$, bidder $i$'s ex post regret is the best gain from lying:
 $$
 R_i(v;\theta) =
 \max_{b_i' \in [0,1]}
-\{u_i(v_i,(b_i',v_{-i});\theta)
-{}- u_i(v_i,v;\theta)\}.
+\lbrace u_i(v_i,(b_i',v_{-i});\theta)
+{}- u_i(v_i,v;\theta)\rbrace.
 $$
 
 If $R_i(v;\theta)=0$, the bidder cannot improve at that profile. Duetting et

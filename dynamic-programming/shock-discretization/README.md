@@ -22,7 +22,7 @@ Here $R$ is the gross return factor, $\beta \in (0,1)$ is the discount factor,
 and $u(\cdot)$ is a concave increasing utility function. $\mathcal{A}$ is the
 feasible asset set.
 
-The finite object is the grid $\{z_1,\dots,z_N\}$ and transition matrix $P$.
+The finite object is the grid $\lbrace z_1,\dots,z_N\rbrace$ and transition matrix $P$.
 The continuous target is the Gaussian AR(1)
 
 $$

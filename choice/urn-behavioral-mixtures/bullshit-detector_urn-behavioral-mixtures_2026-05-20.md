@@ -50,7 +50,7 @@
 
 ### Finding 2: Bayesian posterior formula (HOLDS)
 
-- **Claim source (verbatim):** "$\Pr(H\mid k,n) = \frac{1}{1+\exp[-\{\log(\pi_0/(1-\pi_0))+\Lambda(k,n)\}]}$" — `README.md:26-28`
+- **Claim source (verbatim):** "$\Pr(H\mid k,n) = \frac{1}{1+\exp[-\lbrace\log(\pi_0/(1-\pi_0))+\Lambda(k,n)\rbrace]}$" — `README.md:26-28`
 - **Code evidence (verbatim):**
   ```python
   log_prior_odds = np.log(prior_h / (1.0 - prior_h))

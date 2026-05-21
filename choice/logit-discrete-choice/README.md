@@ -10,7 +10,7 @@ The computational task is maximum likelihood. Each trial coefficient vector give
 
 ## Equations
 
-Consumers $i=1,\ldots,N$ choose one product $j\in\{1,\ldots,J\}$.
+Consumers $i=1,\ldots,N$ choose one product $j\in\lbrace1,\ldots,J\rbrace$.
 Product $j$ has price $p_j$ and quality $q_j$. The deterministic part of
 utility is common across consumers in this simple market.
 
@@ -31,7 +31,7 @@ P_j(\beta)=\Pr(y_i=j\mid p,q;\beta)
 =\frac{\exp(V_j)}{\sum_{k=1}^J \exp(V_k)}.
 $$
 
-If $d_{ij}=1\{y_i=j\}$ records the observed purchase, the sample
+If $d_{ij}=1\lbrace y_i=j\rbrace$ records the observed purchase, the sample
 log-likelihood is
 
 $$

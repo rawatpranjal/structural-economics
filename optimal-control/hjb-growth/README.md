@@ -129,10 +129,7 @@ $$
 
 The sign of $s_i$ depends on the consumption derived from the upwind
 derivative, which in turn depends on the side picked. The standard resolution
-computes both candidate drifts, $s^{+}_i = f(k_i) - \delta k_i - (D^{+}_i
-V)^{-1/\sigma}$ and $s^{-}_i$ analogously, and uses $D^{+}$ when $s^{+}_i > 0$,
-$D^{-}$ when $s^{-}_i < 0$, and the zero-drift consumption $c^{0}_i = f(k_i) -
-\delta k_i$ otherwise. This is the rule encoded above and used in the
+computes both candidate drifts, $s^{+}_i = f(k_i) - \delta k_i - (D^{+}_i V)^{-1/\sigma}$ and $s^{-}_i$ analogously, and uses $D^{+}$ when $s^{+}_i > 0$, $D^{-}$ when $s^{-}_i < 0$, and the zero-drift consumption $c^{0}_i = f(k_i) - \delta k_i$ otherwise. This is the rule encoded above and used in the
 algorithm below.
 
 ### Boundary conditions

@@ -11,12 +11,12 @@ The computational need is to update this curve without solving for the whole val
 ## Equations
 
 The household enters with assets $a$ and IID income $y_j$.
-Income has probabilities $\pi_j$ over $\{y_1,\dots,y_{n_y}\}$.
+Income has probabilities $\pi_j$ over $\lbrace y_1,\dots,y_{n_y}\rbrace$.
 With gross return $R = 1+r$, the Bellman equation is
 
 $$
 V(a,y_j) = \max_{a' \geq \underline a} 
-\{u(R a + y_j - a') + \betaW(a') \},
+\lbrace u(R a + y_j - a') + \beta W(a') \rbrace,
 \qquad
 W(a') = \sum_{\ell=1}^{n_y}\pi_\ellV(a',y_\ell),
 $$
@@ -37,7 +37,7 @@ $$
 At an interior optimum, the Euler equation uses only $W_a(a')$:
 
 $$
-u'(c(a,y_j)) = \betaW_a(g(a,y_j)).
+u'(c(a,y_j)) = \beta W_a(g(a,y_j)).
 $$
 
 The envelope condition updates that object from the policy:
@@ -53,7 +53,7 @@ The borrowing limit binds when the household wants $a' < \underline a$.
 Then $g(a,y_j) = \underline a$ and the Euler inequality is
 
 $$
-u'(R a + y_j - \underline a) \geq \betaW_a(\underline a),
+u'(R a + y_j - \underline a) \geq \beta W_a(\underline a),
 $$
 
 This case produces high MPCs near zero assets.
@@ -86,7 +86,7 @@ The Euler step solves a scalar root at each state.
 It finds $c \in (0, Ra + y_j - \underline a)$ such that
 
 $$
-u'(c) = \betaW_a(R a + y_j - c).
+u'(c) = \beta W_a(R a + y_j - c).
 $$
 
 The borrowing check comes first.

@@ -10,7 +10,7 @@ Exit and entry rules depend on future market sizes. We solve a finite-state Bell
 
 ## Equations
 
-Let $N_t\in\{1,\ldots,N_{\max}\}$ denote the number of active firms at the start
+Let $N_t\in\lbrace1,\ldots,N_{\max}\rbrace$ denote the number of active firms at the start
 of period $t$. With inverse demand $P=a-bQ$ and constant marginal cost $c$, the
 symmetric Cournot flow profit before fixed cost is
 
@@ -37,18 +37,18 @@ The incumbent exit probability is
 
 $$
 p_{\mathrm{exit}}(N)=
-\frac{1}{1+\exp\{\Delta(N)/\sigma_\varepsilon\}}.
+\frac{1}{1+\exp\lbrace\Delta(N)/\sigma_\varepsilon\rbrace}.
 $$
 
 Entry is decided at the current market state, before the realized exit draws.
 Potential entrants use the expected survivor count
-$\bar S(N_t)=\mathrm{round}\{N_t[1-p_{\mathrm{exit}}(N_t)]\}$ and enter until
+$\bar S(N_t)=\mathrm{round}\lbrace N_t[1-p_{\mathrm{exit}}(N_t)]\rbrace$ and enter until
 the next entrant would not cover the sunk cost. Entrant $m$ enters only if its
 post-entry value $V(\bar S(N_t)+m)$ is at least $K$. Thus
 
 $$
-e(N_t)=\max\{e\geq 0: \bar S(N_t)+e\leq N_{\max}
-\ \text{and}\ V(\bar S(N_t)+m)\geq K\ \text{for all}\ m=1,\ldots,e\},
+e(N_t)=\max\lbrace e\geq 0: \bar S(N_t)+e\leq N_{\max}
+\ \text{and}\ V(\bar S(N_t)+m)\geq K\ \text{for all}\ m=1,\ldots,e\rbrace,
 $$
 
 with $e(N_t)=0$ when the first entrant does not cover $K$.
@@ -58,7 +58,7 @@ Survival and entry define the transition law.
 $$
 S_t\sim \mathrm{Binomial}\left(N_t,1-p_{\mathrm{exit}}(N_t)\right),
 \qquad
-N_{t+1}=\max\{1,\min(S_t+e(N_t),N_{\max})\}.
+N_{t+1}=\max\lbrace1,\min(S_t+e(N_t),N_{\max})\rbrace.
 $$
 
 ## Model Setup

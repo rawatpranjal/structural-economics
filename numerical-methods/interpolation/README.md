@@ -10,7 +10,7 @@ Cubic splines shine on the smooth target. They ring on the kinked one. Linear in
 
 ## Equations
 
-The general problem is to recover an unknown function $f : [x_0, x_N] \to \mathbb{R}$ from values $\{(x_i, y_i)\}_{i=0}^{N}$ at a finite set of nodes.
+The general problem is to recover an unknown function $f : [x_0, x_N] \to \mathbb{R}$ from values $\lbrace(x_i, y_i)\rbrace_{i=0}^{N}$ at a finite set of nodes.
 An interpolant $\hat f$ matches the data ($\hat f(x_i) = y_i$ for every $i$) and provides a rule for evaluating $\hat f(x)$ at any $x$ between nodes.
 
 ### The test instances

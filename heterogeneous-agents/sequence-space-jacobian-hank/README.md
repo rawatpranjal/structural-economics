@@ -114,11 +114,7 @@ sequence-space HANK notebook of Auclert et al. (2021).
 | Sequence horizon | $T$ | 300 | Quarters |
 | Monetary shock | $\varepsilon_0$ | 0.00250 | 100 bp annualized tightening |
 
-**Steady-state values.** Real return $r^\ast = 0.0050$
-quarterly (~2.0 percent annual). Output $Y^\ast =
-1.000$, real wage $w^\ast = 0.8333$, profits $\mathrm{Div}^\ast =
-0.1667$, fiscal transfer $T^\ast = 0.1387$. Aggregate
-consumption $C^\ast = 1.0000$, asset holdings $A^\ast = 5.6000$
+**Steady-state values.** Real return $r^\ast = 0.0050$ quarterly (~2.0 percent annual). Output $Y^\ast = 1.000$, real wage $w^\ast = 0.8333$, profits $\mathrm{Div}^\ast = 0.1667$, fiscal transfer $T^\ast = 0.1387$. Aggregate consumption $C^\ast = 1.0000$, asset holdings $A^\ast = 5.6000$
 clear the bond market against $B = 5.6$, and effective labor supply
 $N^E_{\ast} = 1.0000$ matches steady-state labor demand.
 

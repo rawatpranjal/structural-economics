@@ -10,7 +10,7 @@ The computation builds that relation, closes it transitively, and checks the GAR
 
 ## Equations
 
-Let $\mathcal{D}=\{(p_t,x_t)\}_{t=1}^T$ denote the observed data. Price vectors are positive, and bundles are nonnegative. Expenditure at observation $t$ is $m_t=p_t\cdot x_t$.
+Let $\mathcal{D}=\lbrace(p_t,x_t)\rbrace_{t=1}^T$ denote the observed data. Price vectors are positive, and bundles are nonnegative. Expenditure at observation $t$ is $m_t=p_t\cdot x_t$.
 
 Direct revealed preference is written as $iRj$.
 

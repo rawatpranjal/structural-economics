@@ -10,10 +10,10 @@ Shooting treats $c_0$ as the unknown. Each guess defines a full path through the
 
 ## Equations
 
-The planner chooses a feasible path $\{c(t)\}_{t\geq 0}$:
+The planner chooses a feasible path $\lbrace c(t)\rbrace_{t\geq 0}$:
 
 $$
-\max_{\{c(t)\}} \int_0^\infty e^{-\rho t}
+\max_{\lbrace c(t)\rbrace} \int_0^\infty e^{-\rho t}
 \frac{c(t)^{1-\sigma}}{1-\sigma} dt
 \quad\text{s.t.}\quad
 \dot{k}(t)=f(k(t))-\delta k(t)-c(t),

@@ -27,7 +27,7 @@ $$
 Let $\mathrm{GARP}(S)=1$ when these restrictions hold after keeping only observations in $S$. The Houtman-Maks index is
 
 $$
-HM = \max_{S \subseteq \{1,\ldots,T\}} |S| \quad \text{s.t.} \quad \mathrm{GARP}(S)=1.
+HM = \max_{S \subseteq \lbrace1,\ldots,T\rbrace} |S| \quad \text{s.t.} \quad \mathrm{GARP}(S)=1.
 $$
 
 The minimum number of observations needed to restore GARP is

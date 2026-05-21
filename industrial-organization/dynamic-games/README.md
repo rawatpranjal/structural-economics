@@ -11,8 +11,8 @@ The policy needs a fixed point. Today's best response uses tomorrow's value, and
 ## Equations
 
 Let the industry state be the quality pair
-$\omega_t=(q_{1t},q_{2t})$, with $q_{it}\in\{0,\ldots,Q\}$.
-Each firm chooses $a_{it}\in\{0,1\}$, where $a_{it}=1$ means invest.
+$\omega_t=(q_{1t},q_{2t})$, with $q_{it}\in\lbrace0,\ldots,Q\rbrace$.
+Each firm chooses $a_{it}\in\lbrace0,1\rbrace$, where $a_{it}=1$ means invest.
 Flow profit uses a logit-share reduced form:
 
 $$
@@ -23,7 +23,7 @@ Investment raises the chance of moving one rung up the ladder. Waiting avoids
 the investment cost but leaves a small depreciation risk:
 
 $$
-\Pr(q_i'=\min\{q_i+1,Q\}\mid q_i,a_i=1)=0.62, \qquad \Pr(q_i'=\max\{q_i-1,0\}\mid q_i,a_i=0)=0.12 .
+\Pr(q_i'=\min\lbrace q_i+1,Q\rbrace\mid q_i,a_i=1)=0.62, \qquad \Pr(q_i'=\max\lbrace q_i-1,0\rbrace\mid q_i,a_i=0)=0.12 .
 $$
 
 Given candidate continuation values $V_i$, each state contains a simultaneous
@@ -37,7 +37,7 @@ A pure-strategy Markov-perfect equilibrium is a policy
 $a^{\ast}(\omega)=(a_1^{\ast}(\omega),a_2^{\ast}(\omega))$ and values satisfying
 
 $$
-G_i(a_i^{\ast},a_j^{\ast};\omega,V)\geq G_i(a_i,a_j^{\ast};\omega,V) \quad\text{for all }a_i\in\{0,1\},
+G_i(a_i^{\ast},a_j^{\ast};\omega,V)\geq G_i(a_i,a_j^{\ast};\omega,V) \quad\text{for all }a_i\in\lbrace0,1\rbrace,
 $$
 
 with $V_i(\omega)=G_i(a_i^{\ast},a_j^{\ast};\omega,V)$ at every state.
@@ -48,7 +48,7 @@ with $V_i(\omega)=G_i(a_i^{\ast},a_j^{\ast};\omega,V)$ at every state.
 |-----------|-------|------|
 | Firms | 2 | Symmetric oligopolists |
 | Quality ladder | $q_i=0,\ldots,4$ | Payoff-relevant industry state |
-| Actions | $a_i\in\{0,1\}$ | Wait or invest |
+| Actions | $a_i\in\lbrace0,1\rbrace$ | Wait or invest |
 | Discount factor | $\beta=0.90$ | Continuation-value weight |
 | Investment cost | $\kappa=2.20$ | Current cost of attempting to improve quality |
 | Market size | $M=14$ | Scale of current profits |

@@ -14,11 +14,11 @@ A likelihood needs continuation values because today's investment changes tomorr
 
 The firm-view state is $\omega=(q_i,q_j)$, where $q_i$ is own quality and
 $q_j$ is rival quality. Both qualities lie on the four-rung ladder
-$\{0,1,2,3\}$. Firm $i$ chooses $a_i\in\{0,1\}$, where one means invest.
+$\lbrace0,1,2,3\rbrace$. Firm $i$ chooses $a_i\in\lbrace0,1\rbrace$, where one means invest.
 Flow payoff is
 
 $$
-\pi_i(\omega,a_i;\theta) = \theta_q q_i - \theta_c a_i + \theta_g \max\{q_j-q_i,0\} a_i .
+\pi_i(\omega,a_i;\theta) = \theta_q q_i - \theta_c a_i + \theta_g \max\lbrace q_j-q_i,0\rbrace a_i .
 $$
 
 The gap term raises the investment payoff when the rival leads.
@@ -49,11 +49,11 @@ v_\theta(a_i,\omega) = \pi_i(\omega,a_i;\theta) + \beta E_{\hat p_j}\left[W_\the
 $$
 
 The second-stage pseudo likelihood scores observed investment choices, where
-$d_{it}\in\{0,1\}$ is the observed investment indicator for firm $i$ at period
+$d_{it}\in\lbrace0,1\rbrace$ is the observed investment indicator for firm $i$ at period
 $t$ and $\Lambda(\cdot)$ is the logistic CDF:
 
 $$
-\ell(\theta)=\sum_{i,t} d_{it}\log \Lambda[v_\theta(1,\omega_{it})-v_\theta(0,\omega_{it})] +(1-d_{it})\log\{1-\Lambda[v_\theta(1,\omega_{it})-v_\theta(0,\omega_{it})]\}.
+\ell(\theta)=\sum_{i,t} d_{it}\log \Lambda[v_\theta(1,\omega_{it})-v_\theta(0,\omega_{it})] +(1-d_{it})\log\lbrace1-\Lambda[v_\theta(1,\omega_{it})-v_\theta(0,\omega_{it})]\rbrace.
 $$
 
 ## Model Setup

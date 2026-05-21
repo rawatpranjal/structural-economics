@@ -11,7 +11,7 @@ Grid search over next assets is slow inside household blocks. EGP avoids that se
 ## Equations
 
 The household enters the period with assets $a$ and income $y_j$. Income is IID
-on $\{y_1,\dots,y_{n_y}\}$ with probabilities $\pi_j$. With gross return
+on $\lbrace y_1,\dots,y_{n_y}\rbrace$ with probabilities $\pi_j$. With gross return
 $R=1+r$, the household chooses next-period assets $a'=g(a,y_j)$. Consumption is
 the residual, and the borrowing limit is $\underline a$:
 
