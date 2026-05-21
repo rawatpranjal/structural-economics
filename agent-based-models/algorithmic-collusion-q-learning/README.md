@@ -14,53 +14,73 @@ There are two firms, indexed by $i = 1,2$. Firm $i$ chooses price $p_i$ and has
 constant marginal cost $c$. Product quality is $a$, the outside-option value is
 $a_0$, and $\mu$ controls product differentiation. The inside utility index is
 
-$$u_i = \frac{\{a - p_i\}}{\{\mu\}}, \qquad u_0 = \frac{\{a_0\}}{\{\mu\}}.$$
+$$
+u_i = \frac{\{a - p_i\}}{\{\mu\}}, \qquad u_0 = \frac{\{a_0\}}{\{\mu\}}.
+$$
 
 The braces mark the numerator and denominator of each utility index. A lower
 price raises $u_i$; a larger $\mu$ makes a given price difference matter less.
 Logit demand is
 
-$$s_i(p) = \frac{\exp(u_i)}{\exp(u_0) + \sum_{j=1}^2 \exp(u_j)}.$$
+$$
+s_i(p) = \frac{\exp(u_i)}{\exp(u_0) + \sum_{j=1}^2 \exp(u_j)}.
+$$
 
 The numerator is product $i$'s exponentiated utility. The denominator is the
 outside-good term plus the exponentiated utilities of the two inside goods.
 
 Current profit is
 
-$$\pi_i(p) = (p_i - c)s_i(p).$$
+$$
+\pi_i(p) = (p_i - c)s_i(p).
+$$
 
 The own-price derivative of the logit share is
 
-$$\frac{\partial s_i}{\partial p_i} = -\frac{s_i(p)(1-s_i(p))}{\mu}.$$
+$$
+\frac{\partial s_i}{\partial p_i} = -\frac{s_i(p)(1-s_i(p))}{\mu}.
+$$
 
 The static Bertrand-Nash price sets $\partial \pi_i / \partial p_i = 0$:
 
-$$\frac{\partial \pi_i}{\partial p_i} = s_i(p) + (p_i-c)\frac{\partial s_i}{\partial p_i} = s_i(p)[1 - \frac{(p_i-c)(1-s_i(p))}{\mu}] = 0.$$
+$$
+\frac{\partial \pi_i}{\partial p_i} = s_i(p) + (p_i-c)\frac{\partial s_i}{\partial p_i} = s_i(p)[1 - \frac{(p_i-c)(1-s_i(p))}{\mu}] = 0.
+$$
 
 Since $s_i(p)>0$, the Bertrand first-order condition is
 
-$$1 - \frac{(p_i - c)(1 - s_i(p))}{\mu} = 0.$$
+$$
+1 - \frac{(p_i - c)(1 - s_i(p))}{\mu} = 0.
+$$
 
 The joint monopolist maximizes $\Pi(p)=\pi_1(p)+\pi_2(p)$. Its condition for
 product $i$ keeps the Bertrand own-profit term and adds the cross-product term:
 
-$$1 - \frac{(p_i - c)(1 - s_i(p))}{\mu} + \frac{(p_j - c)s_j(p)}{\mu} = 0,\quad j \ne i.$$
+$$
+1 - \frac{(p_i - c)(1 - s_i(p))}{\mu} + \frac{(p_j - c)s_j(p)}{\mu} = 0,\quad j \ne i.
+$$
 
 The price grid uses the static benchmarks. Let $p_B$ be the Bertrand price,
 $p_M$ be the monopoly price, and $\Delta$ be the grid step. The action set is
 
-$$\mathcal{P} = \{p_B-\Delta\} \cup \{p_B, p_B+\Delta,\dots,p_M\} \cup \{p_M+\Delta\}.$$
+$$
+\mathcal{P} = \{p_B-\Delta\} \cup \{p_B, p_B+\Delta,\dots,p_M\} \cup \{p_M+\Delta\}.
+$$
 
 The Q-learning state is the previous-period price-index pair
 $s_t = (a_{1,t-1}, a_{2,t-1})$ (here $s_t$ is the Q-learning state pair, distinct from the demand share $s_i(p)$ defined above). Firm $i$'s action is its current price-grid
 index $a_{i,t}$ (where $a_{i,t}$ is a price-grid index, not the product quality parameter $a$ defined above). After observing current profit and next state $s_{t+1}$,
 the tabular update is
 
-$$Q_i(s_t, a_{i,t}) \leftarrow (1-\alpha) Q_i(s_t, a_{i,t}) + \alpha [\pi_i(p_t) + \delta \max_a Q_i(s_{t+1}, a)].$$
+$$
+Q_i(s_t, a_{i,t}) \leftarrow (1-\alpha) Q_i(s_t, a_{i,t}) + \alpha [\pi_i(p_t) + \delta \max_a Q_i(s_{t+1}, a)].
+$$
 
 The reported collusion index is
 
-$$\mathrm{CI} = \frac{\bar p_{\mathrm{learned}} - p_{\mathrm{Bertrand}}}{p_{\mathrm{Monopoly}} - p_{\mathrm{Bertrand}}}.$$
+$$
+\mathrm{CI} = \frac{\bar p_{\mathrm{learned}} - p_{\mathrm{Bertrand}}}{p_{\mathrm{Monopoly}} - p_{\mathrm{Bertrand}}}.
+$$
 
 ## Model Setup
 
@@ -101,19 +121,19 @@ Output: greedy pricing rules for both firms
    3a. Set epsilon_t = exp(-beta t).
    3b. Each firm observes the previous price-index pair s_t.
    3c. For each firm i:
-       with probability epsilon_t, draw a_{i,t} = Uniform({0,...,k-1});
-       otherwise set a_{i,t} to the first argmax_a Q_i(s_t,a).
-   3d. Current prices are the grid values indexed by (a_{1,t}, a_{2,t}).
-   3e. Current profits are pi_i(a_{1,t},a_{2,t}).
-   3f. Set s_{t+1} = (a_{1,t}, a_{2,t}).
+       with probability epsilon_t, draw a[i,t] = Uniform({0,...,k-1});
+       otherwise set a[i,t] to the first argmax_a Q_i(s_t,a).
+   3d. Current prices are the grid values indexed by (a[1,t], a[2,t]).
+   3e. Current profits are pi_i(a[1,t],a[2,t]).
+   3f. Set s[t+1] = (a[1,t], a[2,t]).
    3g. For each firm i, update
-       Q_i(s_t,a_{i,t}) <- (1-alpha) Q_i(s_t,a_{i,t})
-       + alpha [ pi_i(a_{1,t},a_{2,t})
-       + delta max_a Q_i(s_{t+1},a) ].
+       Q_i(s_t,a[i,t]) <- (1-alpha) Q_i(s_t,a[i,t])
+       + alpha [ pi_i(a[1,t],a[2,t])
+       + delta max_a Q_i(s[t+1],a) ].
 4. Freeze Q and roll out greedy play to measure learned prices.
 5. For the impulse response, start from the learned greedy state,
-   set a_{1,0} to the low-grid action once, let firm 2 choose greedily,
-   then roll out greedy actions from s_1 = (a_{1,0}, a_{2,0}).
+   set a[1,0] to the low-grid action once, let firm 2 choose greedily,
+   then roll out greedy actions from s_1 = (a[1,0], a[2,0]).
 ```
 
 The impulse response is intentionally mechanical. It asks what the frozen policy does after a single undercut. The figure is a diagnostic for this one learned policy, not proof of robust punishment.

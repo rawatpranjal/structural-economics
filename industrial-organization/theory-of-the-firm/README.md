@@ -14,35 +14,63 @@ Let $s$ denote asset specificity.
 Let $g\in\mathcal{G}$ index spot exchange, a long-term contract, and vertical
 integration.
 Relationship-specific investment $x$ creates gross value
-$$V(x) = \theta x - \frac{1}{2}x^2$$
+
+$$
+V(x) = \theta x - \frac{1}{2}x^2
+$$
 
 First-best investment solves $V'(x)=0$, so
-$$x^{\ast} = \theta$$
+
+$$
+x^{\ast} = \theta
+$$
 
 Regime $g$ lets the investor capture share $b_g(s)$ of revenue $\theta x$.
 The private first-order condition is
-$$b_g(s)\theta - x = 0,$$
+
+$$
+b_g(s)\theta - x = 0,
+$$
+
 which gives
-$$x_g(s) = b_g(s)\theta$$
+
+$$
+x_g(s) = b_g(s)\theta
+$$
 
 Total surplus subtracts governance cost $F_g(s)$:
-$$W_g(s) = \theta x_g(s) - \frac{1}{2}x_g(s)^2 - F_g(s)$$
+
+$$
+W_g(s) = \theta x_g(s) - \frac{1}{2}x_g(s)^2 - F_g(s)
+$$
 
 The incentive schedules are
-$$b_{\text{spot}}(s)=0.72-0.55s,\quad
+
+$$
+b_{\text{spot}}(s)=0.72-0.55s,\quad
 b_{\text{contract}}(s)=0.72-0.25s,\quad
-b_{\text{integration}}(s)=0.74-0.03s.$$
+b_{\text{integration}}(s)=0.74-0.03s.
+$$
 
 Governance costs are
-$$F_{\text{spot}}(s)=0.02+0.04s,\quad
+
+$$
+F_{\text{spot}}(s)=0.02+0.04s,\quad
 F_{\text{contract}}(s)=0.38+0.03s,\quad
-F_{\text{integration}}(s)=1.05-0.35s.$$
+F_{\text{integration}}(s)=1.05-0.35s.
+$$
 
 The selected governance form is
-$$g^{\ast}(s)=\arg\max_{g\in\mathcal{G}} W_g(s).$$
+
+$$
+g^{\ast}(s)=\arg\max_{g\in\mathcal{G}} W_g(s).
+$$
 
 The first-best surplus benchmark is
-$$W^{\ast}=\frac{1}{2}\theta^2$$
+
+$$
+W^{\ast}=\frac{1}{2}\theta^2
+$$
 
 ## Model Setup
 

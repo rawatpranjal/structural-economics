@@ -13,38 +13,50 @@ The computation iterates the law of motion from an initial $k_0$. A closed-form 
 Let $K_t$ denote aggregate capital, $A_t$ labor-augmenting technology, and
 $L_t$ raw labor. Output is Cobb-Douglas:
 
-$$Y_t = K_t^\alpha (A_t L_t)^{1-\alpha}, \qquad \alpha\in(0,1).$$
+$$
+Y_t = K_t^\alpha (A_t L_t)^{1-\alpha}, \qquad \alpha\in(0,1).
+$$
 
 Capital, technology, and labor evolve as
 
-$$K_{t+1}=(1-\delta)K_t + sY_t, \qquad
-A_{t+1}=(1+g)A_t, \qquad L_{t+1}=(1+n)L_t,$$
+$$
+K_{t+1}=(1-\delta)K_t + sY_t, \qquad
+A_{t+1}=(1+g)A_t, \qquad L_{t+1}=(1+n)L_t,
+$$
 
 Here $s$ is the saving rate, $\delta$ is depreciation, $g$ is technology
 growth, and $n$ is labor-force growth.
 
 Divide by $A_tL_t$ to work in effective-labor units:
 
-$$k_t = \frac{K_t}{A_t L_t}, \qquad
-y_t = \frac{Y_t}{A_t L_t} = k_t^\alpha,$$
+$$
+k_t = \frac{K_t}{A_t L_t}, \qquad
+y_t = \frac{Y_t}{A_t L_t} = k_t^\alpha,
+$$
 
 with consumption per effective worker $c_t = (1-s) y_t$.
 
 In these units, the law of motion is one scalar equation:
 
-$$k_{t+1} = \phi(k_t) := \frac{(1-\delta) k_t + s\,k_t^\alpha}{(1+g)(1+n)}.$$
+$$
+k_{t+1} = \phi(k_t) := \frac{(1-\delta) k_t + sk_t^\alpha}{(1+g)(1+n)}.
+$$
 
 Define break-even investment as
 
-$$\Delta := (1+g)(1+n) - 1 + \delta$$
+$$
+\Delta := (1+g)(1+n) - 1 + \delta
+$$
 
 The steady state $k^{\ast}$ solves $\phi(k^{\ast})=k^{\ast}$. This is
 equivalent to $s(k^{\ast})^\alpha = \Delta k^{\ast}$.
 
 The closed-form values are
 
-$$k^{\ast}=\left(\frac{s}{\Delta}\right)^{1/(1-\alpha)}, \qquad
-y^{\ast}=(k^{\ast})^\alpha, \qquad c^{\ast}=(1-s) y^{\ast}.$$
+$$
+k^{\ast}=\left(\frac{s}{\Delta}\right)^{1/(1-\alpha)}, \qquad
+y^{\ast}=(k^{\ast})^\alpha, \qquad c^{\ast}=(1-s) y^{\ast}.
+$$
 
 ## Model Setup
 
@@ -66,7 +78,9 @@ There is no Bellman equation here. Once $s$ is fixed, the model is the scalar ma
 
 A local linearization gives the convergence rate near the steady state:
 
-$$k_{t+1} - k^{\ast} \approx \lambda\,(k_t - k^{\ast}), \qquad \lambda \equiv \phi'(k^{\ast}) = \frac{(1-\delta) + s\alpha\,(k^{\ast})^{\alpha-1}}{(1+g)(1+n)}.$$
+$$
+k_{t+1} - k^{\ast} \approx \lambda(k_t - k^{\ast}), \qquad \lambda \equiv \phi'(k^{\ast}) = \frac{(1-\delta) + s\alpha(k^{\ast})^{\alpha-1}}{(1+g)(1+n)}.
+$$
 
 When $\lambda \in (0,1)$, deviations shrink at a geometric rate. The half-life is $H := \ln(0.5)/\ln(\lambda)$.
 

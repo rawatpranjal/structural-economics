@@ -33,7 +33,13 @@
 
 ### Finding 1: Omega derivative subscript -- README convention vs code indexing
 
-- **Claim source (verbatim):** "$$\Omega_{jk}=-O_{jk}\frac{\partial s_k}{\partial p_j}.$$" -- `README.md:33` (also `run.py:427`)
+- **Claim source (verbatim):** "
+
+$$
+\Omega_{jk}=-O_{jk}\frac{\partial s_k}{\partial p_j}.
+$$
+
+" -- `README.md:33` (also `run.py:427`)
 
 - **Code evidence (verbatim):**
   ```python
@@ -48,7 +54,6 @@
               else:
                   D[j, k] = alpha * shares[j] * shares[k]
       return D
-
 
   def compute_markups(alpha: float, shares: np.ndarray,
                       ownership: np.ndarray) -> np.ndarray:

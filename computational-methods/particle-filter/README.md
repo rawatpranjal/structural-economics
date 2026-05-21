@@ -120,10 +120,10 @@ Input: observations y_t, particles s_0^(i), proposal q, particle count N
 Output: filtered state means, ESS, likelihood estimate
 for t = 1, ..., T:
     for each particle i:
-        draw proposed state s_t^(i) from q(s_t | s_{t-1}^(i), y_t)
-        compute importance weight w_t^{(i)} from target / proposal density
-    normalize weights and estimate E[s_t | y_{1:t}]
-    compute ESS_t = 1 / sum_i (w_t^{(i)})^2
+        draw proposed state s_t^(i) from q(s_t | s[t-1]^(i), y_t)
+        compute importance weight w_t^((i)) from target / proposal density
+    normalize weights and estimate E[s_t | y[1:t]]
+    compute ESS_t = 1 / sum_i (w_t^((i)))^2
     resample particles according to normalized weights
     accumulate the likelihood increment
 ```

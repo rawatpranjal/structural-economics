@@ -33,14 +33,14 @@
 
 ### Finding 1: Convergence statistics are live-computed and cannot be grounded from committed artifacts
 
-- **Claim source (verbatim):** "The baseline $\gamma=2.0$ solution converges in **405 iterations** to sup-norm residual **9.76e-10**. On the central $\pm 3\,\mathrm{sd}(\log y)$ region, the maximum relative error is **0.011%**." — `README.md:109`
+- **Claim source (verbatim):** "The baseline $\gamma=2.0$ solution converges in **405 iterations** to sup-norm residual **9.76e-10**. On the central $\pm 3\mathrm{sd}(\log y)$ region, the maximum relative error is **0.011%**." — `README.md:109`
 
 - **Code evidence (verbatim):**
   ```python
   f"The baseline $\\gamma={gamma}$ solution converges in "
   f"**{solution.iterations} iterations** to sup-norm residual "
   f"**{solution.error:.2e}**. On the central "
-  f"$\\pm 3\\,\\mathrm{{sd}}(\\log y)$ region, the maximum relative error is "
+  f"$\\pm 3\\\mathrm{{sd}}(\\log y)$ region, the maximum relative error is "
   f"**{max_relative_error_pct:.3f}%**."
   ```
   `run.py:341-345`

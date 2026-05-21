@@ -16,9 +16,9 @@ With gross return $R = 1+r$, the Bellman equation is
 
 $$
 V(a,y_j) = \max_{a' \geq \underline a} 
-\{\,u(R a + y_j - a') + \beta\,W(a') \},
+\{u(R a + y_j - a') + \betaW(a') \},
 \qquad
-W(a') = \sum_{\ell=1}^{n_y}\pi_\ell\,V(a',y_\ell),
+W(a') = \sum_{\ell=1}^{n_y}\pi_\ellV(a',y_\ell),
 $$
 
 The policy is $g(a,y_j)$.
@@ -37,14 +37,14 @@ $$
 At an interior optimum, the Euler equation uses only $W_a(a')$:
 
 $$
-u'(c(a,y_j)) = \beta\,W_a(g(a,y_j)).
+u'(c(a,y_j)) = \betaW_a(g(a,y_j)).
 $$
 
 The envelope condition updates that object from the policy:
 
 $$
-W_a(a) = \sum_{\ell=1}^{n_y}\pi_\ell\,V_a(a,y_\ell) =
-R\,\sum_{\ell=1}^{n_y}\pi_\ell\,u'(c(a,y_\ell)).
+W_a(a) = \sum_{\ell=1}^{n_y}\pi_\ellV_a(a,y_\ell) =
+R\sum_{\ell=1}^{n_y}\pi_\ellu'(c(a,y_\ell)).
 $$
 
 These two equations close the system without using the value level.
@@ -53,7 +53,7 @@ The borrowing limit binds when the household wants $a' < \underline a$.
 Then $g(a,y_j) = \underline a$ and the Euler inequality is
 
 $$
-u'(R a + y_j - \underline a) \geq \beta\,W_a(\underline a),
+u'(R a + y_j - \underline a) \geq \betaW_a(\underline a),
 $$
 
 This case produces high MPCs near zero assets.
@@ -86,7 +86,7 @@ The Euler step solves a scalar root at each state.
 It finds $c \in (0, Ra + y_j - \underline a)$ such that
 
 $$
-u'(c) = \beta\,W_a(R a + y_j - c).
+u'(c) = \betaW_a(R a + y_j - c).
 $$
 
 The borrowing check comes first.
@@ -106,22 +106,22 @@ Output    consumption policy c(a, y), saving policy g(a, y),
 Initialise c_0(a_i, y_j) = (R - 1) a_i + y_j        # consume current resources
 repeat n = 0, 1, 2, ...
     # 1. Envelope step: collapse the policy into W_a on the exogenous grid
-    W_{a,n}(a_i) = R * sum_l pi_l * u'(c_n(a_i, y_l))
+    W[a,n](a_i) = R * sum_l pi_l * u'(c_n(a_i, y_l))
 
     # 2. Euler step at each (a_i, y_j)
     for each i, j:
         cash = R a_i + y_j
-        if u'(cash - a_min) >= beta * W_{a,n}(a_min):
-            g_{n+1}(a_i, y_j) = a_min                # constraint binds
-            c_{n+1}(a_i, y_j) = cash - a_min
+        if u'(cash - a_min) >= beta * W[a,n](a_min):
+            g[n+1](a_i, y_j) = a_min                # constraint binds
+            c[n+1](a_i, y_j) = cash - a_min
         else:
-            # Solve u'(c) - beta * W_{a,n}(cash - c) = 0 by bisection on c.
-            c_star = bisect(lambda c: u'(c) - beta * W_{a,n}(cash - c),
+            # Solve u'(c) - beta * W[a,n](cash - c) = 0 by bisection on c.
+            c_star = bisect(lambda c: u'(c) - beta * W[a,n](cash - c),
                             lo=eps, hi=cash - a_min - eps)
-            g_{n+1}(a_i, y_j) = cash - c_star
-            c_{n+1}(a_i, y_j) = c_star
+            g[n+1](a_i, y_j) = cash - c_star
+            c[n+1](a_i, y_j) = c_star
 
-    err = max_{i,j} |c_{n+1}(a_i, y_j) - c_n(a_i, y_j)|
+    err = max[i,j] |c[n+1](a_i, y_j) - c_n(a_i, y_j)|
 until err < eps
 ```
 

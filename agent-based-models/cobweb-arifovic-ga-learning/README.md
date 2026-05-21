@@ -37,23 +37,31 @@ Per-firm cost is quadratic in own quantity: $C(q) = x q + \tfrac{y}{2} q^{2}$.
 
 **Inverse demand with shock.** Market clearing gives
 
-$$p_t = \frac{1}{b}\Big(\underbrace{a}_{\text{choke price}} + \underbrace{\varepsilon_t}_{\text{i.i.d. demand shock}} - \underbrace{Q_t}_{\text{aggregate quantity}}\Big).$$
+$$
+p_t = \frac{1}{b}\Big(\underbrace{a}_{\text{choke price}} + \underbrace{\varepsilon_t}_{\text{i.i.d. demand shock}} - \underbrace{Q_t}_{\text{aggregate quantity}}\Big).
+$$
 
 **Firm supply.** Firm $i$ forms a price expectation $p_{i,t}^{e}$ before
 producing, then sets $q_{i,t}$ to maximize expected profit. The first-order
 condition gives the price-taking supply rule
 
-$$q_{i,t} = \frac{p_{i,t}^{e} - x}{y}.$$
+$$
+q_{i,t} = \frac{p_{i,t}^{e} - x}{y}.
+$$
 
 **Naive cobweb law of motion.** Plugging $p_{i,t}^{e} = p_{t-1}$ into the
 supply rule for every firm and substituting into inverse demand gives a
 one-step recursion in price:
 
-$$p_t = \underbrace{\alpha}_{\text{intercept}} - \underbrace{\beta}_{\text{slope ratio}} \cdot p_{t-1}, \qquad \alpha = \frac{a y + n x}{b y}, \quad \beta = \frac{n}{b y}.$$
+$$
+p_t = \underbrace{\alpha}_{\text{intercept}} - \underbrace{\beta}_{\text{slope ratio}} \cdot p_{t-1}, \qquad \alpha = \frac{a y + n x}{b y}, \quad \beta = \frac{n}{b y}.
+$$
 
 The fixed point of this recursion is the rational-expectations equilibrium
 
-$$p^{\ast} = \frac{a y + n x}{b y + n}, \qquad q^{\ast} = \frac{p^{\ast} - x}{y}.$$
+$$
+p^{\ast} = \frac{a y + n x}{b y + n}, \qquad q^{\ast} = \frac{p^{\ast} - x}{y}.
+$$
 
 The naive cobweb converges to $p^{\ast}$ when $\beta < 1$ and explodes when
 $\beta > 1$.
@@ -66,7 +74,9 @@ plan in the current period.
 
 **Fitness function.** The realized profit at the cleared price $p_t$ is
 
-$$\pi_{i,t} = \underbrace{p_t \cdot q_{i,t}}_{\text{revenue}} - \underbrace{x \cdot q_{i,t}}_{\text{linear cost}} - \underbrace{\tfrac{y}{2} q_{i,t}^{2}}_{\text{convex cost}}.$$
+$$
+\pi_{i,t} = \underbrace{p_t \cdot q_{i,t}}_{\text{revenue}} - \underbrace{x \cdot q_{i,t}}_{\text{linear cost}} - \underbrace{\tfrac{y}{2} q_{i,t}^{2}}_{\text{convex cost}}.
+$$
 
 **Abstract GA loop.** Let $\mathbf{B}_t = (b_{1,t}, \ldots, b_{n,t})$ be the
 population of chromosomes at the start of period $t$. One generation
@@ -153,17 +163,23 @@ The estimation block uses a naive-cobweb price series with i.i.d. demand-interce
 
 **Structural demand equation.** The data are the realized pairs $\{(p_t, Q_t)\}_{t=1}^{T}$. The demand we want to recover is
 
-$$Q_t = a - b \cdot p_t + \varepsilon_t.$$
+$$
+Q_t = a - b \cdot p_t + \varepsilon_t.
+$$
 
 **Why naive OLS is biased.** Market clearing forces the realized price to absorb the demand shock,
 
-$$p_t = \frac{a + \varepsilon_t - Q_t}{b} \quad \Longrightarrow \quad \mathrm{Cov}(p_t,  \varepsilon_t) = \frac{\mathrm{Var}(\varepsilon_t)}{b} > 0.$$
+$$
+p_t = \frac{a + \varepsilon_t - Q_t}{b} \quad \Longrightarrow \quad \mathrm{Cov}(p_t,  \varepsilon_t) = \frac{\mathrm{Var}(\varepsilon_t)}{b} > 0.
+$$
 
 An OLS regression of $Q_t$ on $p_t$ therefore underestimates the demand slope; the same simultaneity that drives prices in real markets drives them here.
 
 **Lagged-price IV.** The lagged price $p_{t-1}$ is correlated with $p_t$ through firms' naive supply rule but uncorrelated with the current shock under i.i.d. $\varepsilon_t$,
 
-$$\mathrm{Cov}(p_{t-1},  p_t) \neq 0, \qquad \mathbb{E}[\,p_{t-1} \cdot \varepsilon_t\,] = 0.$$
+$$
+\mathrm{Cov}(p_{t-1},  p_t) \neq 0, \qquad \mathbb{E}[p_{t-1} \cdot \varepsilon_t] = 0.
+$$
 
 Two-stage least squares with $p_{t-1}$ as instrument is consistent. The first stage projects $p_t$ onto $(1, p_{t-1})$; the second stage regresses $Q_t$ on the fitted prices.
 
@@ -182,7 +198,7 @@ Coefficients with HC0 standard errors. Naive OLS underestimates the demand slope
 
 **Demand-curve recovery: true vs naive OLS vs 2SLS**
 
-| Parameter     |   True value |   Naive OLS |   OLS SE |    2SLS |   2SLS SE |
+| Parameter     |   True value |   Naive OLS |   OLS SE |    2SLS estimate |   2SLS SE |
 |:--------------|-------------:|------------:|---------:|--------:|----------:|
 | Intercept $a$ |           60 |     20.9452 | 0.562537 | 67.059  |   3.08055 |
 | Slope $b$     |           30 |      6.5707 | 0.337715 | 34.2436 |   1.84817 |

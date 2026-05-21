@@ -27,29 +27,39 @@ $A$ is a scale parameter that absorbs market size.
 $\epsilon$ is the demand elasticity, and $\epsilon > 1$ is required for the optimum to exist.
 $c$ is the constant marginal cost.
 
-$$D(p) = A\, p^{-\epsilon}.$$
+$$
+D(p) = A p^{-\epsilon}.
+$$
 
 Profit is the price-cost margin times the quantity sold.
 
-$$\pi(p) = (p - c)  D(p) = A\, (p - c)  p^{-\epsilon}.$$
+$$
+\pi(p) = (p - c)  D(p) = A (p - c)  p^{-\epsilon}.
+$$
 
 The first-order condition $\pi'(p) = 0$ has a closed-form root that pins down what every method should return.
 
-$$\pi'(p) = A\, p^{-(\epsilon + 1)} \left[(1 - \epsilon)  p + \epsilon\, c\right],
+$$
+\pi'(p) = A p^{-(\epsilon + 1)} \left[(1 - \epsilon)  p + \epsilon c\right],
 \qquad
-p^{\ast} = \frac{\epsilon}{\epsilon - 1}  c.$$
+p^{\ast} = \frac{\epsilon}{\epsilon - 1}  c.
+$$
 
 Rearranging the optimum gives the Lerner price-cost margin.
 
-$$\frac{p^{\ast} - c}{p^{\ast}} = \frac{1}{\epsilon}.$$
+$$
+\frac{p^{\ast} - c}{p^{\ast}} = \frac{1}{\epsilon}.
+$$
 
 At the baseline calibration $\epsilon = 2.5$ and $c = 1$ the closed form gives $p^{\ast} = 5/3 \approx 1.667$ and Lerner markup $1/2.5 = 0.4$.
 
 The second derivative is needed by Newton and to identify the inflection point of $\pi$.
 
-$$\pi''(p) = -A\, \epsilon\, p^{-(\epsilon + 2)} \left[(1 - \epsilon)  p + (\epsilon + 1)  c\right],
+$$
+\pi''(p) = -A \epsilon p^{-(\epsilon + 2)} \left[(1 - \epsilon)  p + (\epsilon + 1)  c\right],
 \qquad
-p_{\mathrm{inflect}} = \frac{\epsilon + 1}{\epsilon - 1}  c.$$
+p_{\mathrm{inflect}} = \frac{\epsilon + 1}{\epsilon - 1}  c.
+$$
 
 Profit is concave on $(0, p_{\mathrm{inflect}})$ and convex on $(p_{\mathrm{inflect}}, \infty)$.
 The optimum sits strictly inside the concave region, with $p^{\ast} < p_{\mathrm{inflect}}$.
@@ -60,8 +70,10 @@ The next four subsections describe one method at a time.
 
 Grid search covers the bracket with a uniform mesh of $N$ nodes and returns the argmax over the mesh.
 
-$$\hat p_{\mathrm{grid}} = \arg\max_{i \in \lbrace 1, \ldots, N\rbrace} \pi(p_i),
-\qquad p_i = p_{\mathrm{lo}} + \frac{(i - 1) (p_{\mathrm{hi}} - p_{\mathrm{lo}})}{N - 1}.$$
+$$
+\hat p_{\mathrm{grid}} = \arg\max_{i \in \lbrace 1, \ldots, N\rbrace} \pi(p_i),
+\qquad p_i = p_{\mathrm{lo}} + \frac{(i - 1) (p_{\mathrm{hi}} - p_{\mathrm{lo}})}{N - 1}.
+$$
 
 The distance from the nearest mesh point to $p^{\ast}$ is at most half the spacing, so the error scales as $1/N$.
 
@@ -69,8 +81,10 @@ The distance from the nearest mesh point to $p^{\ast}$ is at most half the spaci
 
 Random search draws $N$ prices uniformly on the bracket and returns the argmax of the sampled profits.
 
-$$\hat p_{\mathrm{rand}} = \arg\max_{i \in \lbrace 1, \ldots, N\rbrace} \pi(p_i),
-\qquad p_i \stackrel{\mathrm{iid}}{\sim} \mathrm{Uniform}[p_{\mathrm{lo}}, p_{\mathrm{hi}}].$$
+$$
+\hat p_{\mathrm{rand}} = \arg\max_{i \in \lbrace 1, \ldots, N\rbrace} \pi(p_i),
+\qquad p_i \stackrel{\mathrm{iid}}{\sim} \mathrm{Uniform}[p_{\mathrm{lo}}, p_{\mathrm{hi}}].
+$$
 
 The expected error scales as $1/\sqrt{N}$ in one dimension, slower than the deterministic grid but with a rate that does not degrade as price dimensions are added.
 
@@ -79,11 +93,13 @@ The expected error scales as $1/\sqrt{N}$ in one dimension, slower than the dete
 Golden-section search contracts a unimodal bracket $[a_n, b_n]$ using the golden ratio.
 Two interior probes split the bracket so that one is reused after each shrink.
 
-$$\phi = \frac{\sqrt{5} - 1}{2} \approx 0.618,
+$$
+\phi = \frac{\sqrt{5} - 1}{2} \approx 0.618,
 \qquad
-p_n = b_n - \phi\, (b_n - a_n),
+p_n = b_n - \phi (b_n - a_n),
 \qquad
-q_n = a_n + \phi\, (b_n - a_n).$$
+q_n = a_n + \phi (b_n - a_n).
+$$
 
 Here $p_n$ and $q_n$ are the left and right probe prices at iteration $n$, distinct from the price control $p$.
 The bracket shrinks by a constant factor $\phi$ each step, giving linear convergence.
@@ -92,7 +108,9 @@ The bracket shrinks by a constant factor $\phi$ each step, giving linear converg
 
 Newton follows the tangent of $\pi'$ at the current iterate.
 
-$$x_{n+1} = x_n - \frac{\pi'(x_n)}{\pi''(x_n)}.$$
+$$
+x_{n+1} = x_n - \frac{\pi'(x_n)}{\pi''(x_n)}.
+$$
 
 Newton is equivalent to maximising a parabolic surrogate that matches $\pi$ in value, slope, and curvature at $x_n$.
 The surrogate is concave only when $\pi''(x_n)$ is negative, which holds only when $x_n$ lies below $p_{\mathrm{inflect}}$.
@@ -130,7 +148,7 @@ Input : bracket [p_lo, p_hi]; grid size N
 Output: p_hat
   build N equally spaced prices p_1 < ... < p_N on [p_lo, p_hi]
   i_best <- argmax over i of pi(p_i)
-  p_hat  <- p_{i_best}
+  p_hat  <- p[i_best]
 ```
 
 Grid search has no failure mode in one dimension. Its limitation is dimensional. Reaching $10^{-10}$ accuracy needs about $N \sim 4 \times 10^{10}$ nodes. The cost grows as $N^d$ in $d$ dimensions.
@@ -146,7 +164,7 @@ Output: p_hat
   rng <- random number generator seeded by s
   draw N prices p_1, ..., p_N independently from Uniform[p_lo, p_hi]
   i_best <- argmax over i of pi(p_i)
-  p_hat  <- p_{i_best}
+  p_hat  <- p[i_best]
 ```
 
 Random search misses with non-zero probability. A single run can leave a wide gap to $p^{\ast}$. The standard discipline is to repeat across seeds and report the worst run. Averaging across seeds at each $N$ recovers the smooth $1/\sqrt{N}$ rate.
@@ -181,12 +199,12 @@ Input : x_0; tolerance eta; pi', pi''; bracket [p_lo, p_hi]
 Output: x_n
   for n = 0, 1, ... :
       if safeguard and pi''(x_n) >= 0:
-          if pi'(x_n) > 0: x_{n+1} <- (p_hi + x_n) / 2
-          else           : x_{n+1} <- (p_lo + x_n) / 2
+          if pi'(x_n) > 0: x[n+1] <- (p_hi + x_n) / 2
+          else           : x[n+1] <- (p_lo + x_n) / 2
       else:
-          x_{n+1} <- x_n - pi'(x_n) / pi''(x_n)
-          if safeguard and x_{n+1} not in (p_lo, p_hi):
-              x_{n+1} <- clip(x_{n+1}, p_lo, p_hi)
+          x[n+1] <- x_n - pi'(x_n) / pi''(x_n)
+          if safeguard and x[n+1] not in (p_lo, p_hi):
+              x[n+1] <- clip(x[n+1], p_lo, p_hi)
       stop when |pi'(x_n)| < eta
 ```
 

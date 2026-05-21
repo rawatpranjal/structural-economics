@@ -34,7 +34,13 @@
 
 - **Original claim:** "We use a zero-mean prior, $f \sim \mathcal{GP}(0, k)$" — `README.md:38` (original audit)
 - **Current state:** `run.py:350` now reads: `"We use a constant-mean prior, $f \sim \mathcal{GP}(m, k)$ with $m(x) \equiv \bar{y}$ fixed to the sample mean of the observed targets"`. The phrase "zero-mean" does not appear anywhere in `run.py`.
-- **Formula check:** `run.py:361` emits `$$\mu(x_{\ast}) = m(x_{\ast}) + \ldots [K(X,X) + \sigma_n^2 I]^{-1} (y - m(X))$$`, which matches the code: `run.py:71-72` computes `self.y_mean = float(self.y.mean())` and `y_centered = self.y - self.y_mean`; `run.py:82` returns `mu = self.y_mean + K_s.T @ self._alpha`. Equations, pseudocode, and code are now internally consistent.
+- **Formula check:** `run.py:361` emits `
+
+$$
+\mu(x_{\ast}) = m(x_{\ast}) + \ldots [K(X,X) + \sigma_n^2 I]^{-1} (y - m(X))
+$$
+
+`, which matches the code: `run.py:71-72` computes `self.y_mean = float(self.y.mean())` and `y_centered = self.y - self.y_mean`; `run.py:82` returns `mu = self.y_mean + K_s.T @ self._alpha`. Equations, pseudocode, and code are now internally consistent.
 - **Category:** HOLDS
 - **Result-changing:** no
 

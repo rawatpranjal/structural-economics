@@ -22,33 +22,47 @@ $C_t$ consumption, $I_t$ investment, $Y_t$ output, and (when present) $N_t$
 hours worked. Production is Cobb-Douglas and the resource constraint splits
 output into consumption and investment:
 
-$$Y_t = A_t K_{t-1}^\alpha N_t^{1-\alpha}, \qquad Y_t = C_t + I_t,$$
+$$
+Y_t = A_t K_{t-1}^\alpha N_t^{1-\alpha}, \qquad Y_t = C_t + I_t,
+$$
 
-$$K_t = I_t + (1-\delta)K_{t-1}.$$
+$$
+K_t = I_t + (1-\delta)K_{t-1}.
+$$
 
 TFP follows an AR(1) in logs:
 
-$$\log A_t = \rho \log A_{t-1} + \varepsilon_t, \qquad \varepsilon_t \sim N(0, \sigma_\varepsilon^2).$$
+$$
+\log A_t = \rho \log A_{t-1} + \varepsilon_t, \qquad \varepsilon_t \sim N(0, \sigma_\varepsilon^2).
+$$
 
 The household has CRRA utility over consumption. With endogenous labor it also
 dislikes hours:
 
-$$\mathbb{E}_0\sum_{t=0}^{\infty} \beta^t \left[\frac{C_t^{1-\sigma}}{1-\sigma} - \psi \frac{N_t^{1+\chi}}{1+\chi}\right].$$
+$$
+\mathbb{E}_0\sum_{t=0}^{\infty} \beta^t \left[\frac{C_t^{1-\sigma}}{1-\sigma} - \psi \frac{N_t^{1+\chi}}{1+\chi}\right].
+$$
 
 The labor-disutility weight $\psi$ disappears in Case A because $N_t$ is fixed
 at one. The consumption Euler equation is
 
-$$C_t^{-\sigma} = \beta\,\mathbb{E}_t\left[ C_{t+1}^{-\sigma} \left(\alpha A_{t+1} K_t^{\alpha-1} N_{t+1}^{1-\alpha} + 1 - \delta\right)\right].$$
+$$
+C_t^{-\sigma} = \beta\mathbb{E}_t\left[ C_{t+1}^{-\sigma} \left(\alpha A_{t+1} K_t^{\alpha-1} N_{t+1}^{1-\alpha} + 1 - \delta\right)\right].
+$$
 
 When labor is endogenous, the intratemporal labor-supply condition adds
 
-$$\psi N_t^\chi = (1-\alpha)\frac{Y_t}{N_t} C_t^{-\sigma}.$$
+$$
+\psi N_t^\chi = (1-\alpha)\frac{Y_t}{N_t} C_t^{-\sigma}.
+$$
 
 ### B. Steady state
 
 At the deterministic steady state ($A=1$, $\varepsilon=0$),
 
-$$\alpha (K/N)^{\alpha-1} = \frac{1}{\beta} - 1 + \delta, \qquad I = \delta K, \qquad C = Y - I.$$
+$$
+\alpha (K/N)^{\alpha-1} = \frac{1}{\beta} - 1 + \delta, \qquad I = \delta K, \qquad C = Y - I.
+$$
 
 Case A pins $N = 1$. Case B picks $N = \bar N$ as a calibration target and
 recovers $\psi$ from the steady-state labor-supply condition. The Case A
@@ -61,7 +75,9 @@ $C/Y = 0.76$, and a labor weight $\psi = 7.883$.
 Let a hat denote a log deviation from steady state, so $\hat x_t = \log(X_t/X)$.
 Linearizing the equilibrium conditions gives a system of the form
 
-$$A\,\mathbb{E}_t s_{t+1} = B\,s_t,$$
+$$
+A\mathbb{E}_t s_{t+1} = Bs_t,
+$$
 
 with $s_t$ stacking the predetermined and jump variables. Predetermined
 variables enter at their lagged value. Jump variables can move freely on impact.
@@ -129,8 +145,8 @@ Outputs: capital decision rule k_t = p * k_lag + q * a_t,
       C/Y * c_t + (K/Y) * k_t
       = a_t + alpha * k_lag + (K/Y) * (1 - delta) * k_lag
 3. Linearize Euler equation:
-      sigma * (c_{t+1} - c_t) = (beta * alpha / (K/Y)) *
-                                 (a_{t+1} + (alpha - 1) * k_t)
+      sigma * (c[t+1] - c_t) = (beta * alpha / (K/Y)) *
+                                 (a[t+1] + (alpha - 1) * k_t)
 4. Guess k_t = p * k_lag + q * a_t, infer c_t = c_k * k_lag + c_a * a_t
    from the resource constraint.
 5. Substitute into the linearized Euler equation.
@@ -148,7 +164,7 @@ Adding labor pushes the system past comfortable hand algebra. The state vector b
 ```text
 Inputs:  alpha, beta, delta, rho, sigma, chi; steady state with calibrated psi
 Outputs: state transition F (2x2), jump rule P (2x2)
-         x_{t+1} = F * x_t,    y_t = P * x_t
+         x[t+1] = F * x_t,    y_t = P * x_t
          x_t = (k_lag, a_t)',  y_t = (c_t, n_t)'
 
 1. Build (A, B) for the 4x4 system. Rows: capital accumulation,
@@ -158,10 +174,10 @@ Outputs: state transition F (2x2), jump rule P (2x2)
    placing stable roots (|lambda| < 1) first.
 3. Blanchard-Kahn check: # stable roots == # predetermined states (= 2).
 4. Partition the Schur vectors into [Z_xx Z_xy; Z_yx Z_yy].
-5. Recover P = Z_yx * Z_xx^{-1}                        # jump rule
-6. Recover F = Z_xx * T_xx^{-1} * S_xx * Z_xx^{-1}     # state transition
+5. Recover P = Z_yx * Z_xx^(-1)                        # jump rule
+6. Recover F = Z_xx * T_xx^(-1) * S_xx * Z_xx^(-1)     # state transition
    from the stable triangular blocks T_xx, S_xx.
-7. Initialize x_0 = (0, sigma_e). Iterate x_{t+1} = F x_t, y_t = P x_t.
+7. Initialize x_0 = (0, sigma_e). Iterate x[t+1] = F x_t, y_t = P x_t.
 8. Recover output and investment from production and capital accumulation.
 ```
 

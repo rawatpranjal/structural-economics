@@ -18,17 +18,23 @@ A binary lottery is the pair $G = (x_1, p; x_2)$, which pays $x_1$ with probabil
 The convention $x_1 > x_2$ makes $x_1$ the better outcome regardless of sign, so $G$ can be a gain-only, loss-only, or mixed lottery.
 Cumulative prospect theory values $G$ by attaching a probability weight $w(p)$ to the better outcome and $1 - w(p)$ to the worse one, then mapping each outcome through a value function $v$.
 
-$$v(G) = v(x_1)  w(p) + v(x_2)  [1 - w(p)].$$
+$$
+v(G) = v(x_1)  w(p) + v(x_2)  [1 - w(p)].
+$$
 
 The certainty equivalent is the sure amount that delivers the same value as $G$.
 
-$$\widehat{ce}(G) = v^{-1}(v(G)).$$
+$$
+\widehat{ce}(G) = v^{-1}(v(G)).
+$$
 
 ### Value function with loss aversion
 
 The value function is sign-dependent power utility (Tversky-Kahneman 1992).
 
-$$v(x) = \begin{cases} x^{\alpha}, & x \geq 0, \\ -\lambda\, (-x)^{\alpha}, & x < 0. \end{cases}$$
+$$
+v(x) = \begin{cases} x^{\alpha}, & x \geq 0, \\ -\lambda (-x)^{\alpha}, & x < 0. \end{cases}
+$$
 
 The curvature parameter $\alpha > 0$ governs concavity over gains and convexity over losses, with $\alpha = 1$ giving linear utility and risk-neutral behaviour. The loss-aversion factor $\lambda \geq 1$ scales the disutility of losses relative to the utility of equivalent-magnitude gains, so $\lambda = 1$ means no loss aversion and $\lambda = 2$ means a $-\$10$ loss feels twice as bad as a $\$10$ gain feels good. The original Tversky-Kahneman estimate is $\lambda \approx 2.25$.
 
@@ -38,7 +44,9 @@ In a single-domain lottery $\lambda$ cancels out of $\widehat{ce}$ because every
 
 The weighting function is the Goldstein-Einhorn two-parameter form.
 
-$$w(p) = \frac{\delta\, p^{\gamma}}{\delta\, p^{\gamma} + (1 - p)^{\gamma}}, \qquad \delta, \gamma \geq 0.$$
+$$
+w(p) = \frac{\delta p^{\gamma}}{\delta p^{\gamma} + (1 - p)^{\gamma}}, \qquad \delta, \gamma \geq 0.
+$$
 
 The slope parameter $\gamma$ controls curvature, and $\gamma < 1$ produces the inverted-S shape that overweights small probabilities and underweights large ones. The elevation parameter $\delta$ shifts the curve vertically, with $\delta > 1$ raising every decision weight uniformly above the linear benchmark. Linear weighting, the expected-utility case, corresponds to $\gamma = \delta = 1$.
 
@@ -46,9 +54,11 @@ The slope parameter $\gamma$ controls curvature, and $\gamma < 1$ produces the i
 
 Subject $i$ reports a certainty equivalent for each lottery $g$. The observation is the model-predicted value plus a Gaussian shock whose standard deviation scales with the lottery's payoff range.
 
-$$ce_{ig} = \widehat{ce}_g(\theta_i) + \varepsilon_{ig}, \qquad
+$$
+ce_{ig} = \widehat{ce}_g(\theta_i) + \varepsilon_{ig}, \qquad
 \varepsilon_{ig} \sim \mathcal{N}(0, \sigma_{ig}^2), \qquad
-\sigma_{ig} = \xi_i \, (x_{1g} - x_{2g}).$$
+\sigma_{ig} = \xi_i  (x_{1g} - x_{2g}).
+$$
 
 The subject-level scale $\xi_i$ is profiled out by closed-form maximum likelihood once the preference parameters are fixed.
 
@@ -56,15 +66,21 @@ The subject-level scale $\xi_i$ is profiled out by closed-form maximum likelihoo
 
 The population contains $C$ latent preference types. Type $c$ has parameter vector $\theta_c = (\alpha_c, \lambda_c, \gamma_c, \delta_c)$ and population proportion $\pi_c$, with $\sum_c \pi_c = 1$. Each subject's likelihood contribution averages over the types.
 
-$$L_i(\Psi) = \sum_{c=1}^{C} \pi_c \, f(ce_i \mid \theta_c, \xi_i),$$
+$$
+L_i(\Psi) = \sum_{c=1}^{C} \pi_c  f(ce_i \mid \theta_c, \xi_i),
+$$
 
 where $f(ce_i \mid \theta_c, \xi_i) = \prod_{g=1}^{G_i} \phi_{\sigma_{ig}}(ce_{ig} - \widehat{ce}_g(\theta_c))$ is the product of Gaussian densities across subject $i$'s lotteries, $\phi_{\sigma}$ is the density of $\mathcal{N}(0, \sigma^2)$, and $\Psi = (\theta_1, \ldots, \theta_C, \pi_1, \ldots, \pi_{C-1}, \xi_1, \ldots, \xi_N)$ collects all parameters. The sample log-likelihood is
 
-$$\ln L(\Psi) = \sum_{i=1}^{N} \ln \sum_{c=1}^{C} \pi_c \, f(ce_i \mid \theta_c, \xi_i).$$
+$$
+\ln L(\Psi) = \sum_{i=1}^{N} \ln \sum_{c=1}^{C} \pi_c  f(ce_i \mid \theta_c, \xi_i).
+$$
 
 Bayesian updating gives the posterior probability that subject $i$ belongs to type $c$.
 
-$$\tau_{ic} = \frac{\pi_c \, f(ce_i \mid \theta_c, \xi_i)}{\sum_{c'=1}^{C} \pi_{c'} \, f(ce_i \mid \theta_{c'}, \xi_i)}.$$
+$$
+\tau_{ic} = \frac{\pi_c  f(ce_i \mid \theta_c, \xi_i)}{\sum_{c'=1}^{C} \pi_{c'}  f(ce_i \mid \theta_{c'}, \xi_i)}.
+$$
 
 The normalised entropy criterion $\mathrm{NEC} = -\frac{1}{N \ln C} \sum_{i, c} \tau_{ic} \ln \tau_{ic}$ summarises classification sharpness; values near zero mean each subject is assigned almost without ambiguity to a single type.
 

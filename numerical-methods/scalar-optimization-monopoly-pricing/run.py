@@ -240,7 +240,7 @@ def main() -> None:
     fig1, ax1 = plt.subplots()
     p_plot = np.linspace(p_low, p_high, 400)
     ax1.plot(p_plot, profit(p_plot), color="tab:blue", linewidth=2,
-             label=r"$\pi(p) = (p - c)\, A p^{-\epsilon}$")
+             label=r"$\pi(p) = (p - c)  A p^{-\epsilon}$")
     ax1.axvline(p_star, color="tab:red", linestyle="--", linewidth=1.5,
                 label=fr"$p^{{\ast}} = \epsilon c / (\epsilon - 1) = {p_star:.3f}$")
     ax1.axvline(c, color="tab:gray", linestyle=":", linewidth=1.0,
@@ -313,7 +313,7 @@ def main() -> None:
     ax3a.axvline(p_inflect, color="tab:purple", linestyle=":", linewidth=1.0,
                  label=fr"$p_{{\mathrm{{inflect}}}} = {p_inflect:.3f}$")
     ax3a.axvspan(p_low, p_high, color="tab:gray", alpha=0.07,
-                 label=fr"Search bracket $[{p_low:.2f},\, {p_high:.2f}]$")
+                 label=fr"Search bracket $[{p_low:.2f},  {p_high:.2f}]$")
     n_show_bad = len(newton_bad_history)
     for i in range(n_show_bad):
         xi = float(newton_bad_history[i, 1])

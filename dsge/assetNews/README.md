@@ -21,35 +21,49 @@ d = exp(rho*log(d(-1)) + sigma1*n(-1) + sigma2*z)
 
 or, in log deviations,
 
-$$x_t = \rho x_{t-1} + \sigma_1 n_{t-1} + \sigma_2 z_t.$$
+$$
+x_t = \rho x_{t-1} + \sigma_1 n_{t-1} + \sigma_2 z_t.
+$$
 
 The surprise innovation $z_t$ is contemporaneous. The news innovation $n_t$ is
 known at date $t$ but enters dividends at date $t+1$.
 
 The asset-pricing equation is
 
-$$p_t d_t^{-\gamma} = \beta \mathbb{E}_t\left[ d_{t+1}^{-\gamma}(p_{t+1}+d_{t+1}) \right],$$
+$$
+p_t d_t^{-\gamma} = \beta \mathbb{E}_t\left[ d_{t+1}^{-\gamma}(p_{t+1}+d_{t+1}) \right],
+$$
 
 which is equivalently
 
-$$p_t = \mathbb{E}_t\left[ M_{t+1}(p_{t+1}+d_{t+1}) \right], \qquad M_{t+1}=\beta\left(\frac{d_{t+1}}{d_t}\right)^{-\gamma}.$$
+$$
+p_t = \mathbb{E}_t\left[ M_{t+1}(p_{t+1}+d_{t+1}) \right], \qquad M_{t+1}=\beta\left(\frac{d_{t+1}}{d_t}\right)^{-\gamma}.
+$$
 
 At the deterministic steady state $d=1$,
 
-$$p = \beta(p+1), \qquad p=\frac{\beta}{1-\beta}=99.00.$$
+$$
+p = \beta(p+1), \qquad p=\frac{\beta}{1-\beta}=99.00.
+$$
 
 Write $q_t=\log(p_t/p)$. A first-order expansion of the Euler equation gives
 
-$$q_t = \gamma x_t + \beta\mathbb{E}_t q_{t+1} +(1-\beta-\gamma)\mathbb{E}_t x_{t+1}.$$
+$$
+q_t = \gamma x_t + \beta\mathbb{E}_t q_{t+1} +(1-\beta-\gamma)\mathbb{E}_t x_{t+1}.
+$$
 
 Since $\mathbb{E}_t x_{t+1}=\rho x_t+\sigma_1 n_t$, the linear solution has
 the form
 
-$$q_t = A x_t + B n_t,$$
+$$
+q_t = A x_t + B n_t,
+$$
 
 with
 
-$$A=\frac{\gamma+\rho(1-\beta-\gamma)}{1-\beta\rho}, \qquad B=\sigma_1\left(\beta A+1-\beta-\gamma\right).$$
+$$
+A=\frac{\gamma+\rho(1-\beta-\gamma)}{1-\beta\rho}, \qquad B=\sigma_1\left(\beta A+1-\beta-\gamma\right).
+$$
 
 For this calibration, $A=1.917$ and $B=-0.009$.
 
@@ -86,13 +100,13 @@ Outputs: x_t, q_t, p_t, and the price-dividend ratio
 
 1. Compute the steady state d=1 and p=beta/(1-beta).
 2. Linearize the Euler equation in x_t=log d_t and q_t=log(p_t/p).
-3. Use E_t x_{t+1}=rho x_t + sigma1 n_t to solve q_t=A x_t+B n_t.
+3. Use E_t x[t+1]=rho x_t + sigma1 n_t to solve q_t=A x_t+B n_t.
 4. For a surprise shock, set x_0=sigma2 and n_t=0 for all t.
 5. For a news shock, set n_0=1, x_0=0, and let x_1=sigma1.
-6. Iterate x_t=rho x_{t-1} after the shock has entered dividends.
+6. Iterate x_t=rho x[t-1] after the shock has entered dividends.
 7. Recover the first-order price response q_t=A x_t+B n_t.
 8. For the nonlinear benchmark, extend the same x_t path far into the
-   future and solve p_t=beta(d_{t+1}/d_t)^(-gamma)(p_{t+1}+d_{t+1})
+   future and solve p_t=beta(d[t+1]/d_t)^(-gamma)(p[t+1]+d[t+1])
    backward from the terminal steady-state price.
 ```
 

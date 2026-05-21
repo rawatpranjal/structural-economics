@@ -16,7 +16,9 @@ The planner picks an allocation vector $x \in \mathbb{R}^3$.
 Each entry $x_j$ is the budget share assigned to project $j$.
 Utility is quadratic in $x$.
 
-$$u(x) = a^\top x - \tfrac{1}{2}  x^\top B x.$$
+$$
+u(x) = a^\top x - \tfrac{1}{2}  x^\top B x.
+$$
 
 $a \in \mathbb{R}^3$ is the vector of marginal returns at zero allocation.
 $B$ is a symmetric positive-definite matrix.
@@ -27,14 +29,18 @@ Two constraints bind the choice.
 The first is a budget cap on total spending.
 The second is a separate non-negativity bound on each project.
 
-$$\sum_{j=1}^{3} x_j \leq I,
-\qquad x_j \geq 0,\quad j = 1, 2, 3.$$
+$$
+\sum_{j=1}^{3} x_j \leq I,
+\qquad x_j \geq 0,\quad j = 1, 2, 3.
+$$
 
 The Lagrangian builds in both constraints.
 $\lambda$ is the multiplier on the budget cap.
 $\mu = (\mu_1, \mu_2, \mu_3)$ are the multipliers on the three non-negativity bounds.
 
-$$\mathcal{L}(x, \lambda, \mu) = a^\top x - \tfrac{1}{2}  x^\top B x - \lambda \left(\sum_j x_j - I \right) + \mu^\top x.$$
+$$
+\mathcal{L}(x, \lambda, \mu) = a^\top x - \tfrac{1}{2}  x^\top B x - \lambda \left(\sum_j x_j - I \right) + \mu^\top x.
+$$
 
 A Karush-Kuhn-Tucker (KKT) point is the constrained optimum.
 The KKT conditions split into four blocks.
@@ -43,25 +49,33 @@ Each block has a clean economic reading.
 The first block is stationarity.
 It equates the gradient of utility with the shadow-price vector.
 
-$$a - B x - \lambda\, \mathbf{1} + \mu = 0.$$
+$$
+a - B x - \lambda \mathbf{1} + \mu = 0.
+$$
 
 The second block is primal feasibility.
 It is just the constraint set written out again.
 
-$$\sum_j x_j \leq I,
-\qquad x_j \geq 0.$$
+$$
+\sum_j x_j \leq I,
+\qquad x_j \geq 0.
+$$
 
 The third block is dual feasibility.
 It says every shadow price is non-negative.
 
-$$\lambda \geq 0,
-\qquad \mu_j \geq 0.$$
+$$
+\lambda \geq 0,
+\qquad \mu_j \geq 0.
+$$
 
 The fourth block is complementary slackness.
 It says either a constraint binds or its multiplier is zero, never both.
 
-$$\lambda \left(I - \sum_j x_j \right) = 0,
-\qquad \mu_j\, x_j = 0.$$
+$$
+\lambda \left(I - \sum_j x_j \right) = 0,
+\qquad \mu_j x_j = 0.
+$$
 
 The baseline calibration is $a = (4, 3, 0.5)$, $B = I_3$, and $I = 3$.
 The unconstrained maximum is $a$ itself.
@@ -70,11 +84,13 @@ The budget therefore binds at the constrained optimum.
 A second active-set check shows that project 3 also hits its non-negativity bound.
 With those two constraints active, the closed form is direct.
 
-$$x^{\ast} = (2,  1,  0),
+$$
+x^{\ast} = (2,  1,  0),
 \qquad
 \lambda^{\ast} = 2,
 \qquad
-\mu^{\ast} = (0,  0,  1.5).$$
+\mu^{\ast} = (0,  0,  1.5).
+$$
 
 The non-zero multiplier $\mu_3^{\ast} = 1.5$ is the shadow price of the non-negativity bound on project 3.
 It is the utility a vanishingly small relaxation of $x_3 \geq 0$ would buy.
@@ -86,9 +102,11 @@ The next four subsections describe a baseline and three methods.
 A common shortcut keeps only the budget equality and drops the non-negativity bounds.
 The Lagrangian is then linear in $x$ and $\lambda$.
 
-$$x = a - \lambda\, \mathbf{1},
+$$
+x = a - \lambda \mathbf{1},
 \qquad
-\lambda = \frac{\sum_j a_j - I}{n}.$$
+\lambda = \frac{\sum_j a_j - I}{n}.
+$$
 
 At the calibration this gives $\lambda = 1.5$ and $x = (2.5, 1.5, -1)$.
 Project 3 receives a negative allocation, which has no economic meaning.
@@ -98,7 +116,9 @@ The three methods below all enforce the non-negativity bounds and recover the co
 
 Projected gradient takes a gradient step on $u$ and then projects the result onto the simplex $\Delta_I = \lbrace x : x \geq 0,  \sum_j x_j = I \rbrace$.
 
-$$x_{k+1} = \Pi_{\Delta_I}\left(x_k + \alpha\, (a - B x_k)\right).$$
+$$
+x_{k+1} = \Pi_{\Delta_I}\left(x_k + \alpha (a - B x_k)\right).
+$$
 
 Here $\alpha$ is the step size and $\Pi_{\Delta_I}$ is Euclidean projection onto the simplex.
 The step size must satisfy $\alpha \leq 1/L$ where $L$ is the operator norm of $B$; with $B = I_3$ the bound is $\alpha \leq 1$.
@@ -107,20 +127,26 @@ The step size must satisfy $\alpha \leq 1/L$ where $L$ is the operator norm of $
 
 Log barrier replaces the non-negativity inequalities with a smooth penalty controlled by a parameter $t > 0$.
 
-$$\min_x\, -u(x) - t \sum_j \log x_j
-\qquad \text{subject to} \quad \sum_j x_j = I.$$
+$$
+\min_x -u(x) - t \sum_j \log x_j
+\qquad \text{subject to} \quad \sum_j x_j = I.
+$$
 
 The barrier penalises iterates that approach the boundary $x_j = 0$.
 As $t$ shrinks the optimum of the smoothed problem traces a central path that converges to the true optimum $x^{\ast}$ in the limit $t \to 0$.
 
 The first-order condition for the barrier subproblem is one equation per project plus the budget equality.
 
-$$a_j - x_j - \lambda + \frac{t}{x_j} = 0,
-\qquad \sum_j x_j = I.$$
+$$
+a_j - x_j - \lambda + \frac{t}{x_j} = 0,
+\qquad \sum_j x_j = I.
+$$
 
 For diagonal $B = I_3$ each project's component solves a quadratic in $x_j$.
 
-$$x_j(\lambda;  t) = \frac{(a_j - \lambda) + \sqrt{(a_j - \lambda)^2 + 4 t}}{2}.$$
+$$
+x_j(\lambda;  t) = \frac{(a_j - \lambda) + \sqrt{(a_j - \lambda)^2 + 4 t}}{2}.
+$$
 
 The budget multiplier $\lambda$ is the unique scalar that makes $\sum_j x_j(\lambda;  t)$ equal $I$, and a single one-dimensional root finder solves for it.
 The duality gap of the barrier problem is exactly $n \cdot t$, which is the per-project complementarity slack along the central path.
@@ -168,11 +194,11 @@ At the baseline calibration the answer is $x = (2.5, 1.5, -1)$. Project 3 receiv
 
 ### Method 1: Projected gradient on the simplex
 
-Projected gradient walks the iterate uphill in utility, then snaps it back to the feasible simplex. Each step has two pieces. The gradient piece is $y = x_k + \alpha\, (a - B x_k)$, which moves in the direction of steepest utility increase. The projection piece is $\Pi_{\Delta_I}(y)$, which finds the closest point in the budget simplex to $y$ in Euclidean distance. The composition keeps every iterate feasible, including non-negativity.
+Projected gradient walks the iterate uphill in utility, then snaps it back to the feasible simplex. Each step has two pieces. The gradient piece is $y = x_k + \alpha (a - B x_k)$, which moves in the direction of steepest utility increase. The projection piece is $\Pi_{\Delta_I}(y)$, which finds the closest point in the budget simplex to $y$ in Euclidean distance. The composition keeps every iterate feasible, including non-negativity.
 
 The simplex projection is closed form. Sort the components of $y$ in descending order. Find the largest index $\rho$ for which a running average is positive. Subtract a single scalar shift from $y$ and clip negatives to zero. The whole projection costs one sort plus a linear scan over $\rho$.
 
-Convergence is linear in the gap to the optimum. The contraction rate is roughly $1 - \alpha\, \mu / L$, with $\mu$ the smallest eigenvalue of $B$ and $L$ the largest. On the calibration $B = I_3$ the eigenvalues coincide and the rate is $1 - \alpha$. The method needs only a gradient and the projection routine, which makes it the easiest constrained method to implement from scratch.
+Convergence is linear in the gap to the optimum. The contraction rate is roughly $1 - \alpha \mu / L$, with $\mu$ the smallest eigenvalue of $B$ and $L$ the largest. On the calibration $B = I_3$ the eigenvalues coincide and the rate is $1 - \alpha$. The method needs only a gradient and the projection routine, which makes it the easiest constrained method to implement from scratch.
 
 ```text
 Algorithm: Projected gradient on the budget simplex
@@ -181,8 +207,8 @@ Output: x_k
   for k = 0, 1, ... :
       grad     <- a - B x_k
       y        <- x_k + alpha * grad
-      x_{k+1}  <- project_simplex(y, I)
-      stop when ||x_{k+1} - x_k|| < eta
+      x[k+1]  <- project_simplex(y, I)
+      stop when ||x[k+1] - x_k|| < eta
 
   project_simplex(y, I):
       sort y in descending order to get u_1 >= u_2 >= ... >= u_n
@@ -254,7 +280,7 @@ The barrier path enters the feasible region from the centre and bends toward $x^
 
 Each method drives different KKT residuals to zero in different orders. Projected gradient has primal feasibility at machine precision from the first iterate because the projection enforces it. Stationarity falls steadily as the iterate approaches the active-set boundary. Complementarity tracks the gap on the bound that should bind.
 
-The interior-point method reduces all three residuals together as the barrier shrinks. The complementarity curve here uses the exact barrier multipliers $\mu_t = t / x_t$, so it equals exactly $n\, t$ at every point on the central path. The KKT table below instead reports the barrier row through the same heuristic multiplier recovery used for the other methods, so its complementarity entry differs from $n\, t$ by the factor $n$. Reaching machine-precision feasibility takes 9 barrier values.
+The interior-point method reduces all three residuals together as the barrier shrinks. The complementarity curve here uses the exact barrier multipliers $\mu_t = t / x_t$, so it equals exactly $n t$ at every point on the central path. The KKT table below instead reports the barrier row through the same heuristic multiplier recovery used for the other methods, so its complementarity entry differs from $n t$ by the factor $n$. Reaching machine-precision feasibility takes 9 barrier values.
 
 <img src="figures/kkt-residuals.png" alt="KKT residuals across iterations for projected gradient (left) and along the central path for the interior-point method (right)" width="80%">
 

@@ -13,41 +13,55 @@ The computation updates $p_t$ with Bayes' rule and solves a finite-horizon Bellm
 Let $\theta\in\{H,L\}$ denote the unknown state and let $s_t\in\{R,B\}$ denote
 the period-$t$ signal. The maintained signal probabilities are
 
-$$\Pr(R\mid H)=p_H,\qquad \Pr(R\mid L)=p_L,\qquad p_H>p_L.$$
+$$
+\Pr(R\mid H)=p_H,\qquad \Pr(R\mid L)=p_L,\qquad p_H>p_L.
+$$
 
 The posterior after observing $s_{t+1}$ is
 
-$$p_{t+1}
+$$
+p_{t+1}
 =\frac{f_H(s_{t+1})p_t}
-{f_H(s_{t+1})p_t+f_L(s_{t+1})(1-p_t)},$$
+{f_H(s_{t+1})p_t+f_L(s_{t+1})(1-p_t)},
+$$
 
 where $f_\theta(s)=\Pr(s\mid \theta)$.
 
 Equivalently, posterior odds evolve additively in log likelihood ratios:
 
-$$\log\frac{p_{t+1}}{1-p_{t+1}}
+$$
+\log\frac{p_{t+1}}{1-p_{t+1}}
 =\log\frac{p_t}{1-p_t}
-+\log\frac{f_H(s_{t+1})}{f_L(s_{t+1})}.$$
++\log\frac{f_H(s_{t+1})}{f_L(s_{t+1})}.
+$$
 
 After $T$ signals, if $k_T$ of them are red, the sufficient statistic is
 
-$$\Lambda_T
+$$
+\Lambda_T
 =k_T\log\frac{p_H}{p_L}
-+(T-k_T)\log\frac{1-p_H}{1-p_L}.$$
++(T-k_T)\log\frac{1-p_H}{1-p_L}.
+$$
 
 For the stopping problem, investing gives payoff $\pi_H$ in state $H$ and
 $\pi_L$ in state $L$; rejecting gives zero. At belief $p$, the current action
 value is
 
-$$A(p)=\max[p\pi_H+(1-p)\pi_L,\ 0].$$
+$$
+A(p)=\max[p\pi_H+(1-p)\pi_L,\ 0].
+$$
 
 With one more signal available, the continuation value is
 
-$$C_t(p)=\Pr(R\mid p)V_{t+1}(p_R')+\Pr(B\mid p)V_{t+1}(p_B'),$$
+$$
+C_t(p)=\Pr(R\mid p)V_{t+1}(p_R')+\Pr(B\mid p)V_{t+1}(p_B'),
+$$
 
-where $\Pr(R\mid p)=p\,p_H+(1-p) p_L$ is the predictive probability of a red signal at belief $p$, $\Pr(B\mid p)=1-\Pr(R\mid p)$, and $p_R'$ and $p_B'$ are the Bayes-updated beliefs after a red or blue signal. The finite-horizon recursion is
+where $\Pr(R\mid p)=pp_H+(1-p) p_L$ is the predictive probability of a red signal at belief $p$, $\Pr(B\mid p)=1-\Pr(R\mid p)$, and $p_R'$ and $p_B'$ are the Bayes-updated beliefs after a red or blue signal. The finite-horizon recursion is
 
-$$V_t(p)=\max[A(p),\ C_t(p)].$$
+$$
+V_t(p)=\max[A(p),\ C_t(p)].
+$$
 
 ## Model Setup
 
@@ -75,16 +89,16 @@ Input: prior p_0, likelihoods f_H and f_L, payoffs pi_H and pi_L, horizon T
 Output: posterior path p_t and stopping regions over beliefs
 
 Filtering:
-    for each incoming signal s_{t+1}:
-        multiply prior odds p_t / (1-p_t) by f_H(s_{t+1}) / f_L(s_{t+1})
-        convert odds back to p_{t+1}
+    for each incoming signal s[t+1]:
+        multiply prior odds p_t / (1-p_t) by f_H(s[t+1]) / f_L(s[t+1])
+        convert odds back to p[t+1]
 
 Stopping:
     set terminal value V_T(p) = max[p*pi_H + (1-p)*pi_L, 0]
     for t = T-1, ..., 0:
         for each belief grid point p_i:
             compute posteriors after red and blue signals
-            interpolate V_{t+1} at those two posteriors
+            interpolate V[t+1] at those two posteriors
             compare action value A(p_i) with continuation value C_t(p_i)
         record the reject, continue, and invest regions
 ```

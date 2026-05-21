@@ -14,9 +14,11 @@ A monopolist faces a population of consumers split between two segments.
 Segment $L$ has linear demand with intercept $A_L$ and slope $b_L$.
 Segment $H$ has linear demand with intercept $A_H$ and slope $b_H$.
 
-$$D_L(p) = \max\lbrace 0,  A_L - b_L\, p \rbrace,
+$$
+D_L(p) = \max\lbrace 0,  A_L - b_L p \rbrace,
 \qquad
-D_H(p) = \max\lbrace 0,  A_H - b_H\, p \rbrace.$$
+D_H(p) = \max\lbrace 0,  A_H - b_H p \rbrace.
+$$
 
 Each segment quits the market at its own choke price.
 The low-valuation segment exits at $p_L^{\max} = A_L / b_L$.
@@ -25,7 +27,9 @@ The high-valuation segment exits at the larger price $p_H^{\max} = A_H / b_H$.
 The population mixture weight $\lambda \in (0, 1)$ records the share of low-valuation consumers.
 Profit is the weighted sum of segment revenues minus the marginal-cost wedge.
 
-$$\pi(p) = (p - c) \left[\lambda\, D_L(p) + (1 - \lambda)  D_H(p)\right].$$
+$$
+\pi(p) = (p - c) \left[\lambda D_L(p) + (1 - \lambda)  D_H(p)\right].
+$$
 
 The objective is piecewise quadratic in $p$.
 On $[c,  p_L^{\max}]$ both segments are active.
@@ -34,21 +38,29 @@ The two regimes are smoothly stitched at the kink $p_L^{\max}$.
 
 In the both-segments regime the first-order condition is linear in $p$.
 
-$$\pi'(p) = \lambda (A_L - 2 b_L\, p) + (1 - \lambda)(A_H - 2 b_H\, p) + (\lambda b_L + (1 - \lambda) b_H)  c.$$
+$$
+\pi'(p) = \lambda (A_L - 2 b_L p) + (1 - \lambda)(A_H - 2 b_H p) + (\lambda b_L + (1 - \lambda) b_H)  c.
+$$
 
 In the high-only regime profit is the standard quadratic with a single interior maximizer.
 
-$$p_H^{\ast} = \frac{A_H + b_H\, c}{2 b_H}.$$
+$$
+p_H^{\ast} = \frac{A_H + b_H c}{2 b_H}.
+$$
 
 At the calibration $A_L = 10$, $b_L = 5$, $A_H = 8$, $b_H = 1$, $c = 0.5$, $\lambda = 0.6$, both regimes have an interior maximizer.
 
-$$p_L^{\ast} \approx 1.603,
+$$
+p_L^{\ast} \approx 1.603,
 \qquad
-\pi(p_L^{\ast}) \approx 4.14.$$
+\pi(p_L^{\ast}) \approx 4.14.
+$$
 
-$$p_H^{\ast} = 4.25,
+$$
+p_H^{\ast} = 4.25,
 \qquad
-\pi(p_H^{\ast}) \approx 5.625.$$
+\pi(p_H^{\ast}) \approx 5.625.
+$$
 
 The high-price peak is global on this calibration.
 The low-price peak is a strict local maximum.
@@ -62,8 +74,10 @@ The next four subsections describe one method at a time.
 
 Multi-start L-BFGS-B draws $N$ initial prices uniformly on the bracket and runs the local optimiser from each.
 
-$$\hat p_{\mathrm{multi}}^{(N)} = \arg\max_{k \in \lbrace 1, \ldots, N\rbrace} \pi\left(\mathrm{LBFGSB}(p_0^{(k)})\right),
-\qquad p_0^{(k)} \sim \mathrm{Uniform}[p_{\mathrm{lo}}, p_{\mathrm{hi}}].$$
+$$
+\hat p_{\mathrm{multi}}^{(N)} = \arg\max_{k \in \lbrace 1, \ldots, N\rbrace} \pi\left(\mathrm{LBFGSB}(p_0^{(k)})\right),
+\qquad p_0^{(k)} \sim \mathrm{Uniform}[p_{\mathrm{lo}}, p_{\mathrm{hi}}].
+$$
 
 The probability of finding the global optimum is one minus the probability that all $N$ starts land in the low basin.
 Reporting that probability is the diagnostic for whether the start budget is large enough.
@@ -72,8 +86,10 @@ Reporting that probability is the diagnostic for whether the start budget is lar
 
 Random search drops the local optimiser entirely and uses a single sample of $N$ uniform draws.
 
-$$\hat p_{\mathrm{rand}}^{(N)} = \arg\max_{k \in \lbrace 1, \ldots, N\rbrace} \pi(p^{(k)}),
-\qquad p^{(k)} \sim \mathrm{Uniform}[p_{\mathrm{lo}}, p_{\mathrm{hi}}].$$
+$$
+\hat p_{\mathrm{rand}}^{(N)} = \arg\max_{k \in \lbrace 1, \ldots, N\rbrace} \pi(p^{(k)}),
+\qquad p^{(k)} \sim \mathrm{Uniform}[p_{\mathrm{lo}}, p_{\mathrm{hi}}].
+$$
 
 Random search is cheaper per evaluation than multi-start L-BFGS-B but converges only at rate $1/\sqrt{N}$.
 

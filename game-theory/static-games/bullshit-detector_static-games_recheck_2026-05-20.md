@@ -30,7 +30,13 @@
 ### Finding 1 (original DILUTED/LOW): RESOLVED
 
 - **Original claim (verbatim):** "The interior first-order condition gives the best response $BR_i(q_j)=\frac{a-c-bq_j}{2b}.$" — original `README.md`
-- **Current README evidence (verbatim):** "The interior first-order condition gives $(a-c-bq_j)/(2b)$, and clipping at the non-negativity constraint $q_i \geq 0$ gives the best response $$BR_i(q_j)=\max\lbrace 0,\ \tfrac{a-c-bq_j}{2b} \rbrace.$$" — `README.md:26-31`
+- **Current README evidence (verbatim):** "The interior first-order condition gives $(a-c-bq_j)/(2b)$, and clipping at the non-negativity constraint $q_i \geq 0$ gives the best response
+
+$$
+BR_i(q_j)=\max\lbrace 0,\ \tfrac{a-c-bq_j}{2b} \rbrace.
+$$
+
+" — `README.md:26-31`
 - **Code evidence (verbatim):**
   ```python
   return np.maximum(0.0, (a - c - b * q_other) / (2.0 * b))

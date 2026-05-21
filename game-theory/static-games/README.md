@@ -59,10 +59,10 @@ Algorithm: damped Cournot best-response iteration
 Inputs: demand parameters a, b, marginal cost c, start q_0, damping lambda
 Output: quantity path q_t and fixed-point residuals
 
-1. Start from a candidate pair q_t = (q_{1t}, q_{2t}).
+1. Start from a candidate pair q_t = (q[1t], q[2t]).
 2. Compute each firm's best response to the other firm's current output.
-3. Update q_{t+1} = (1-lambda) q_t + lambda BR(q_t).
-4. Repeat until max_i |q_{it} - BR_i(q_{-i,t})| is near zero.
+3. Update q[t+1] = (1-lambda) q_t + lambda BR(q_t).
+4. Repeat until max_i |q[it] - BR_i(q[-i,t])| is near zero.
 5. Compare the numerical fixed point with q* = (a-c)/(3b).
 ```
 

@@ -18,7 +18,9 @@ Think of $x_{jt}$ as a product attribute such as quality, style, or size.
 
 The indirect utility from inside product $j$ is:
 
-$$u_{ijt} = \beta_0 + \beta_x x_{jt} + \alpha p_{jt} + \xi_{jt} + \sigma_x \nu_{i1} x_{jt} + \sigma_p \nu_{i2} p_{jt} + \varepsilon_{ijt}$$
+$$
+u_{ijt} = \beta_0 + \beta_x x_{jt} + \alpha p_{jt} + \xi_{jt} + \sigma_x \nu_{i1} x_{jt} + \sigma_p \nu_{i2} p_{jt} + \varepsilon_{ijt}
+$$
 
 Here $x_{jt}$ is an observed product characteristic, $p_{jt}$ is price,
 $\xi_{jt}$ is unobserved quality, $\nu_i \sim N(0,I)$, and
@@ -29,20 +31,28 @@ normalized to zero.
 
 Mean utility and individual taste enter separately:
 
-$$\delta_{jt} = \beta_0 + \beta_x x_{jt} + \alpha p_{jt} + \xi_{jt}, \qquad \mu_{ijt} = \sigma_x \nu_{i1} x_{jt} + \sigma_p \nu_{i2} p_{jt}$$
+$$
+\delta_{jt} = \beta_0 + \beta_x x_{jt} + \alpha p_{jt} + \xi_{jt}, \qquad \mu_{ijt} = \sigma_x \nu_{i1} x_{jt} + \sigma_p \nu_{i2} p_{jt}
+$$
 
 For a candidate $\sigma=(\sigma_x,\sigma_p)$, simulated market shares are:
 
-$$s_{jt} = \frac{1}{ns} \sum_{i=1}^{ns} \frac{\exp(\delta_{jt} + \mu_{ijt})}{1 + \sum_{k=1}^{J} \exp(\delta_{kt} + \mu_{ikt})}$$
+$$
+s_{jt} = \frac{1}{ns} \sum_{i=1}^{ns} \frac{\exp(\delta_{jt} + \mu_{ijt})}{1 + \sum_{k=1}^{J} \exp(\delta_{kt} + \mu_{ikt})}
+$$
 
 The BLP contraction finds the mean utilities that make predicted shares equal
 observed shares:
 
-$$\delta^{(r+1)}_{jt} = \delta^{(r)}_{jt} + \log s^{\text{obs}}_{jt} - \log s^{\text{pred}}_{jt}(\delta^{(r)}, \sigma)$$
+$$
+\delta^{(r+1)}_{jt} = \delta^{(r)}_{jt} + \log s^{\text{obs}}_{jt} - \log s^{\text{pred}}_{jt}(\delta^{(r)}, \sigma)
+$$
 
 Given $\delta(\sigma)$, the linear demand equation is:
 
-$$\delta_{jt} = X_{jt}\theta_1 + \xi_{jt}, \qquad X_{jt}=(1,x_{jt},p_{jt})$$
+$$
+\delta_{jt} = X_{jt}\theta_1 + \xi_{jt}, \qquad X_{jt}=(1,x_{jt},p_{jt})
+$$
 
 Here $\theta_1 = (\beta_0, \beta_x, \alpha)$ collects the linear demand coefficients.
 

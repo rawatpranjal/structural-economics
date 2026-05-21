@@ -122,7 +122,7 @@ Outputs: transaction log, realized surplus, price path
 
 Initialize active buyers B_0 and active sellers A_0.
 For event t = 1, 2, ..., T:
-  1. Stop if B_{t-1} or A_{t-1} is empty.
+  1. Stop if B[t-1] or A[t-1] is empty.
   2. Draw one active side with probability proportional to active traders.
   3. If buyer i arrives, draw b_i(t) from U[0, v_i].
   4. If seller j arrives, draw a_j(t) from U[c_j, pbar].

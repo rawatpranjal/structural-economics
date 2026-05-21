@@ -49,7 +49,13 @@
 
 ### Finding 1: Demand and choke price — HOLDS
 
-- **Claim source (verbatim):** "Demand follows $$q(p)=a-bp,\qquad p\leq \bar p\equiv a/b,$$" — `README.md:14`
+- **Claim source (verbatim):** "Demand follows
+
+$$
+q(p)=a-bp,\qquad p\leq \bar p\equiv a/b,
+$$
+
+" — `README.md:14`
 - **Code evidence:** `run.py:16`: `return max(a - b * price, 0.0)`. ✓ Choke price a/b computed at `run.py:46`: `total_cost = cm + cr`, `monopoly_price = (a + b * total_cost) / (2 * b)` implicitly uses a/b = 10.0. ✓
 - **Category:** HOLDS
 
@@ -57,7 +63,13 @@
 
 ### Finding 2: Integrated price formula — HOLDS
 
-- **Claim source (verbatim):** "$$p^I=\frac{\bar p+c_M+c_R}{2}$$" — `README.md:21`
+- **Claim source (verbatim):** "
+
+$$
+p^I=\frac{\bar p+c_M+c_R}{2}
+$$
+
+" — `README.md:21`
 - **Code evidence:** `run.py:47`: `monopoly_price = (a + b * total_cost) / (2 * b)` = `(a/b + c_M + c_R)/2`. With a=20, b=2, c_M=2, c_R=1: `(10 + 3)/2 = 6.5`. ✓
 - **Category:** HOLDS
 
@@ -65,7 +77,13 @@
 
 ### Finding 3: Retailer best response — HOLDS
 
-- **Claim source (verbatim):** "Its best response is $$p_R(w)=\frac{\bar p+w+c_R}{2}.$$" — `README.md:25-26`
+- **Claim source (verbatim):** "Its best response is
+
+$$
+p_R(w)=\frac{\bar p+w+c_R}{2}.
+$$
+
+" — `README.md:25-26`
 - **Code evidence:** `run.py:50`: `retail_dm = (a + b * (wholesale_dm + cr)) / (2 * b)` = `(a/b + w + c_R)/2`. ✓
 - **Category:** HOLDS
 
@@ -73,7 +91,13 @@
 
 ### Finding 4: Manufacturer FOC w^DM — HOLDS
 
-- **Claim source (verbatim):** "$$w^{DM}=\frac{\bar p-c_R+c_M}{2}.$$" — `README.md:31`
+- **Claim source (verbatim):** "
+
+$$
+w^{DM}=\frac{\bar p-c_R+c_M}{2}.
+$$
+
+" — `README.md:31`
 - **Code evidence:** `run.py:49`: `wholesale_dm = (a / b - cr + cm) / 2`. With a/b=10, c_R=1, c_M=2: `(10 - 1 + 2)/2 = 5.5`. ✓
 - **Data evidence:** `tables/vertical-contracts.csv:3`: `Linear wholesale,8.25,5.50,...` — wholesale = 5.50 matches computed 5.5. ✓
 - **Category:** HOLDS
@@ -82,7 +106,19 @@
 
 ### Finding 5: Two-part tariff setup — HOLDS
 
-- **Claim source (verbatim):** "A two-part tariff sets $$w^{TPT}=c_M$$ and uses the fixed fee $$F=(p^I-c_M-c_R)q(p^I)$$" — `README.md:35-38`
+- **Claim source (verbatim):** "A two-part tariff sets
+
+$$
+w^{TPT}=c_M
+$$
+
+and uses the fixed fee
+
+$$
+F=(p^I-c_M-c_R)q(p^I)
+$$
+
+" — `README.md:35-38`
 - **Code evidence:** `run.py:52`: `two_part_w = cm`; `run.py:53-54`: fee computed as retailer profit `(p_I - c_M - c_R) * q_I` when `fixed_fee=0`, then passed to `outcome()` as fixed fee. With p_I=6.5, c_M=2, c_R=1, q_I=7: `(6.5 - 3) * 7 = 24.5`. ✓
 - **Data evidence:** `tables/vertical-contracts.csv:4`: `Two-part tariff,6.50,2.00,24.50,...` — fixed fee 24.50. ✓
 - **Category:** HOLDS

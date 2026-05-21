@@ -44,7 +44,13 @@
 
 ### Finding 2: FOC b_g(s)θ - x = 0 — HOLDS
 
-- **Claim source (verbatim):** "The private first-order condition is $$b_g(s)\theta - x = 0,$$" — `README.md:23-24`
+- **Claim source (verbatim):** "The private first-order condition is
+
+$$
+b_g(s)\theta - x = 0,
+$$
+
+" — `README.md:23-24`
 - **Code evidence:** `run.py:39`: `investment = theta * incentive`. With `incentive = np.clip(b_g(s), 0.05, 1.0)` from `run.py:38`: `x = theta * b_g(s)` ↔ FOC `b_g*theta - x = 0`. ✓
 - **Category:** HOLDS
 
@@ -52,7 +58,13 @@
 
 ### Finding 3: Investment formula x_g(s) = b_g(s)θ — HOLDS
 
-- **Claim source (verbatim):** "which gives $$x_g(s) = b_g(s)\theta$$" — `README.md:26`
+- **Claim source (verbatim):** "which gives
+
+$$
+x_g(s) = b_g(s)\theta
+$$
+
+" — `README.md:26`
 - **Code evidence:** `run.py:39`: `investment = theta * incentive`. ✓
 - **Category:** HOLDS
 
@@ -60,7 +72,13 @@
 
 ### Finding 4: Surplus formula W_g(s) — HOLDS
 
-- **Claim source (verbatim):** "$$W_g(s) = \theta x_g(s) - \frac{1}{2}x_g(s)^2 - F_g(s)$$" — `README.md:29`
+- **Claim source (verbatim):** "
+
+$$
+W_g(s) = \theta x_g(s) - \frac{1}{2}x_g(s)^2 - F_g(s)
+$$
+
+" — `README.md:29`
 - **Code evidence:** `run.py:40`: `surplus = theta * investment - 0.5 * investment**2 - values["governance_cost"]`. Exact match. ✓
 - **Category:** HOLDS
 
@@ -68,7 +86,13 @@
 
 ### Finding 5: First-best surplus W* = 0.5θ² — HOLDS
 
-- **Claim source (verbatim):** "$$W^{\ast}=\frac{1}{2}\theta^2$$" — `README.md:45`
+- **Claim source (verbatim):** "
+
+$$
+W^{\ast}=\frac{1}{2}\theta^2
+$$
+
+" — `README.md:45`
 - **Code evidence:** `run.py:36`: `first_best_surplus = 0.5 * theta**2`. With θ=4: `0.5 * 16 = 8.0`. Independent recomputation: 8.0. ✓
 - **Category:** HOLDS
 

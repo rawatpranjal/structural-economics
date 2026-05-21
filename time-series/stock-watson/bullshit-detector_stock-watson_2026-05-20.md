@@ -31,7 +31,13 @@
 
 ### Finding 1: AR lag construction — claimed lags 1 and 2, code uses lags 2 and 3
 
-- **Claim source (verbatim):** "fit AR(p): y_{t+h} on 1, y_t,...,y_{t-p+1}" — `README.md:74` (algorithm pseudocode, step 5). Also `README.md:37`: "$$y_{t+h} =\alpha+\sum_{\ell=1}^{p}\beta_\ell y_{t-\ell+1} +\gamma'\hat F_t+\varepsilon_{t+h}.$$"
+- **Claim source (verbatim):** "fit AR(p): y_{t+h} on 1, y_t,...,y_{t-p+1}" — `README.md:74` (algorithm pseudocode, step 5). Also `README.md:37`: "
+
+$$
+y_{t+h} =\alpha+\sum_{\ell=1}^{p}\beta_\ell y_{t-\ell+1} +\gamma'\hat F_t+\varepsilon_{t+h}.
+$$
+
+"
 
 - **Code evidence (verbatim):**
   ```python

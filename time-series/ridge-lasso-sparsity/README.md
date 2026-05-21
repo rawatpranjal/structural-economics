@@ -14,26 +14,36 @@ Let $r_t$ be the policy-rate level and let $\Delta r_t$ be the rate change at
 meeting $t$. The information set contains a lagged policy rate and a vector
 $x_t$ of standardized policy-concept indicators.
 
-$$\Delta r_t = \phi r_{t-1} + x_t'\beta + u_t.$$
+$$
+\Delta r_t = \phi r_{t-1} + x_t'\beta + u_t.
+$$
 
 Here $\phi$ is the autoregressive coefficient on the lagged policy rate.
 
 The systematic policy component is
 
-$$m_t = \phi r_{t-1} + x_t'\beta,$$
+$$
+m_t = \phi r_{t-1} + x_t'\beta,
+$$
 
 and the policy shock is the residual
 
-$$u_t = \Delta r_t - m_t.$$
+$$
+u_t = \Delta r_t - m_t.
+$$
 
 The forecast uses a linear rule $f_t=b_0+z_t'b$, where
 $z_t=(r_{t-1},x_t')'$. Ridge estimates the coefficients by
 
-$$\hat b_{\mathrm{ridge}} = \arg\min_b \frac{1}{n}\sum_{t=1}^n (\Delta r_t-b_0-z_t'b)^2 +\lambda\sum_{j=1}^p b_j^2.$$
+$$
+\hat b_{\mathrm{ridge}} = \arg\min_b \frac{1}{n}\sum_{t=1}^n (\Delta r_t-b_0-z_t'b)^2 +\lambda\sum_{j=1}^p b_j^2.
+$$
 
 Lasso replaces the quadratic penalty with an absolute-value penalty.
 
-$$\hat b_{\mathrm{lasso}} = \arg\min_b \frac{1}{n}\sum_{t=1}^n (\Delta r_t-b_0-z_t'b)^2 +\lambda\sum_{j=1}^p |b_j|.$$
+$$
+\hat b_{\mathrm{lasso}} = \arg\min_b \frac{1}{n}\sum_{t=1}^n (\Delta r_t-b_0-z_t'b)^2 +\lambda\sum_{j=1}^p |b_j|.
+$$
 
 The tuning parameter $\lambda$ is chosen on a blocked validation sample. Ridge
 keeps many small correlated signals. Lasso can set coefficients exactly to
@@ -62,7 +72,7 @@ Ridge has a closed-form penalized least-squares solution after centering and sca
 
 ```text
 Procedure: policy-shock measurement with shrinkage forecasts
-Inputs: rate changes Delta r_t, lagged rate r_{t-1}, indicators x_t
+Inputs: rate changes Delta r_t, lagged rate r[t-1], indicators x_t
 Output: forecasts f_t and measured shocks e_t = Delta r_t - f_t
 
 1. Split meetings into training, validation, and test blocks.

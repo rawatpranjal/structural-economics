@@ -405,7 +405,7 @@ def main():
              label=f"$r^{{\\ast}} = {r_eq:.5f}$")
     ax4.plot(0, r_eq_ref, "kx", markersize=8, zorder=5,
              label=f"$r^{{\\ast}}_{{\\rm ref}} = {r_eq_ref:.4f}$")
-    ax4.set_xlabel("Aggregate asset demand $S(r) = \\int a\\,(g_L + g_H)\\,da$")
+    ax4.set_xlabel("Aggregate asset demand $S(r) = \\int a\ (g_L + g_H)\ da$")
     ax4.set_ylabel("Interest rate $r$")
     ax4.set_title("Bond Market Clearing")
     ax4.set_xlim([-0.12, 0.12])

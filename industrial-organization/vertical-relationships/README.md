@@ -11,31 +11,64 @@ The computation solves the integrated channel and the separated game. Backward i
 ## Equations
 
 Demand follows
-$$q(p)=a-bp,\qquad p\leq \bar p\equiv a/b,$$
+
+$$
+q(p)=a-bp,\qquad p\leq \bar p\equiv a/b,
+$$
+
 where $p$ is the retail price. The choke price is $\bar p$. Costs are $c_M$
 upstream and $c_R$ downstream.
 
 The integrated channel solves
-$$\Pi^I(p)=(p-c_M-c_R)q(p),$$
+
+$$
+\Pi^I(p)=(p-c_M-c_R)q(p),
+$$
+
 so the joint-profit price is
-$$p^I=\frac{\bar p+c_M+c_R}{2}.$$
+
+$$
+p^I=\frac{\bar p+c_M+c_R}{2}.
+$$
 
 Under a linear wholesale price $w$, the retailer solves
-$$\max_p\ (p-w-c_R)q(p).$$
+
+$$
+\max_p\ (p-w-c_R)q(p).
+$$
+
 Its best response is
-$$p_R(w)=\frac{\bar p+w+c_R}{2}.$$
+
+$$
+p_R(w)=\frac{\bar p+w+c_R}{2}.
+$$
 
 The manufacturer chooses $w$ while anticipating that response:
-$$\max_w\ (w-c_M)q(p_R(w)),$$
+
+$$
+\max_w\ (w-c_M)q(p_R(w)),
+$$
+
 which gives
-$$w^{DM}=\frac{\bar p-c_R+c_M}{2}.$$
+
+$$
+w^{DM}=\frac{\bar p-c_R+c_M}{2}.
+$$
 
 Because $w^{DM}>c_M$, the retailer acts as if marginal cost is too high.
 
 A two-part tariff sets
-$$w^{TPT}=c_M$$
+
+$$
+w^{TPT}=c_M
+$$
+
 and uses the fixed fee
-$$F=(p^I-c_M-c_R)q(p^I)$$
+
+$$
+F=(p^I-c_M-c_R)q(p^I)
+$$
+
 to transfer operating profit upstream.
 
 The fee changes the profit split without changing the retailer's margin.

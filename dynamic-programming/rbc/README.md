@@ -13,17 +13,23 @@ The Bellman equation has no closed-form stochastic policy. We solve it on a glob
 **Technology and resources.** Capital $k_t$, labor $l_t\in(0,1)$, and TFP $z_t$
 produce output through Cobb-Douglas technology:
 
-$$y_t = z_t\,k_t^{\alpha} l_t^{1-\alpha},\qquad \alpha\in(0,1),$$
+$$
+y_t = z_tk_t^{\alpha} l_t^{1-\alpha},\qquad \alpha\in(0,1),
+$$
 
 The resource constraint is
 
-$$c_t + k_{t+1} = z_t\,k_t^{\alpha} l_t^{1-\alpha} + (1-\delta) k_t,$$
+$$
+c_t + k_{t+1} = z_tk_t^{\alpha} l_t^{1-\alpha} + (1-\delta) k_t,
+$$
 
 with $c_t>0$ and $k_{t+1}\geq 0$. Investment is $i_t = k_{t+1} - (1-\delta) k_t$.
 
 **Preferences.** Period utility uses log consumption and log leisure:
 
-$$u(c,l)=\log c+\phi\log(1-l),\qquad \phi>0,$$
+$$
+u(c,l)=\log c+\phi\log(1-l),\qquad \phi>0,
+$$
 
 The household maximizes
 $\mathbb{E}_0\sum_{t=0}^{\infty}\beta^t u(c_t,l_t)$.
@@ -31,13 +37,17 @@ $\mathbb{E}_0\sum_{t=0}^{\infty}\beta^t u(c_t,l_t)$.
 **TFP process.** Productivity takes two values $z_t\in\{z_L,z_H\}=\{0.95,1.05\}$
 with persistent symmetric transitions:
 
-$$P_{ij}=\Pr(z_{t+1}=z_j\mid z_t=z_i),\qquad
-P=\begin{pmatrix}0.95 & 0.05\\ 0.05 & 0.95\end{pmatrix}.$$
+$$
+P_{ij}=\Pr(z_{t+1}=z_j\mid z_t=z_i),\qquad
+P=\begin{pmatrix}0.95 & 0.05\\ 0.05 & 0.95\end{pmatrix}.
+$$
 
 **Bellman equation.** Conditioning on the current state $(k,z_i)$, the household
 solves:
 
-$$V(k,z_i)=\max_{k', l\in(0,1)}[\log c+\phi\log(1-l)+\beta\sum_{j}P_{ij} V(k',z_j)],$$
+$$
+V(k,z_i)=\max_{k', l\in(0,1)}[\log c+\phi\log(1-l)+\beta\sum_{j}P_{ij} V(k',z_j)],
+$$
 
 subject to $c=z_i k^{\alpha} l^{1-\alpha}+(1-\delta)k-k'>0$. The policy
 functions are $g_k(k,z)=k'$ and $g_l(k,z)=l$.
@@ -46,12 +56,16 @@ functions are $g_k(k,z)=k'$ and $g_l(k,z)=l$.
 Bellman, the Euler condition for capital pins down the steady-state
 capital-labor ratio,
 
-$$\frac{k_{ss}}{l_{ss}}=(\frac{1/\beta-1+\delta}{\alpha})^{1/(\alpha-1)},$$
+$$
+\frac{k_{ss}}{l_{ss}}=(\frac{1/\beta-1+\delta}{\alpha})^{1/(\alpha-1)},
+$$
 
 and the labor first-order condition pins down hours
 
-$$l_{ss}=\frac{w_{ss}}{w_{ss}+\phi\,(c_{ss}/l_{ss})},\qquad
-w_{ss}=(1-\alpha)(k_{ss}/l_{ss})^{\alpha}.$$
+$$
+l_{ss}=\frac{w_{ss}}{w_{ss}+\phi(c_{ss}/l_{ss})},\qquad
+w_{ss}=(1-\alpha)(k_{ss}/l_{ss})^{\alpha}.
+$$
 
 The stochastic policy fluctuates around this benchmark.
 
@@ -79,7 +93,9 @@ The stochastic policy fluctuates around this benchmark.
 
 **Bellman update.** The Bellman operator
 
-$$(TV)(k,z_i)=\max_{(l,k')}[\log c(k,z_i,l,k')+\phi\log(1-l)+\beta\sum_{j}P_{ij}V(k',z_j)]$$
+$$
+(TV)(k,z_i)=\max_{(l,k')}[\log c(k,z_i,l,k')+\phi\log(1-l)+\beta\sum_{j}P_{ij}V(k',z_j)]
+$$
 
 is a $\beta$-contraction. VFI applies it until the value function changes by less than the tolerance. For each state, the code evaluates every labor and next-capital pair. It masks negative consumption and takes a joint argmax. The selected indices define the two policy rules.
 
@@ -92,19 +108,19 @@ Inputs   capital grid K = {k_i}, labor grid L = {l_m}, TFP states {z_1,z_2},
            tolerance epsilon
 Outputs  V(k_i, z_s), capital policy g_k(k_i, z_s), labor policy g_l(k_i, z_s)
 
-Precompute  u_{i,s,m,j} <- log c + phi log(1 - l_m)
+Precompute  u[i,s,m,j] <- log c + phi log(1 - l_m)
             with c = z_s k_i^alpha l_m^(1-alpha) + (1-delta) k_i - k_j,
-            and u_{i,s,m,j} <- -infinity if c <= 0
-Initialize  V_{i,s} <- (log c_guess + phi log(1 - l_guess)) / (1 - beta)
+            and u[i,s,m,j] <- -infinity if c <= 0
+Initialize  V[i,s] <- (log c_guess + phi log(1 - l_guess)) / (1 - beta)
 repeat n = 0, 1, 2, ...:
-    EV_{j,s} <- sum_t P_{s,t} V_{j,t}                  # 1 mat-mat
-    M_{i,s,m,j} <- u_{i,s,m,j} + beta * EV_{j,s}        # broadcast add
-    (m*, j*)_{i,s} <- argmax over (m, j) of M_{i,s,m,j} # joint argmax
-    V^new_{i,s}    <- max over (m, j) of M_{i,s,m,j}
-    err            <- max_{i,s} | V^new_{i,s} - V_{i,s} |
+    EV[j,s] <- sum_t P[s,t] V[j,t]                  # 1 mat-mat
+    M[i,s,m,j] <- u[i,s,m,j] + beta * EV[j,s]        # broadcast add
+    (m*, j*)[i,s] <- argmax over (m, j) of M[i,s,m,j] # joint argmax
+    V^new[i,s]    <- max over (m, j) of M[i,s,m,j]
+    err            <- max[i,s] | V^new[i,s] - V[i,s] |
     V              <- V^new
 stop when err < epsilon
-g_k(k_i, z_s) <- k_{j*_{i,s}};   g_l(k_i, z_s) <- l_{m*_{i,s}}
+g_k(k_i, z_s) <- k[j*[i,s]];   g_l(k_i, z_s) <- l[m*[i,s]]
 ```
 
 **Fine-grid audit.** The fine grid uses 200 capital nodes and 100 labor nodes on the same domain. It is an audit, not the policy used for simulation. The max relative value error is **2.1e-04**. The max capital-policy gap is **0.0461**. The max hours gap is **0.0150**.

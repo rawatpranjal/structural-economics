@@ -41,4 +41,3 @@ The tutorial is economics-first, reproducible, and coherent with its generated a
 | `python3 scripts/qc_repro.py industrial-organization --only dynamic-games --timeout 300 --restore --out /tmp/qc-repro-dynamic-games.json` | 0 |
 | `python3 scripts/validate_catalog.py` | 0 |
 | `python3 scripts/validate_catalog.py` | 0 |
-

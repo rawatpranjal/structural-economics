@@ -16,11 +16,11 @@ $$
 \max_{\lbrace c(t)\rbrace_{t \geq 0}}
 \int_0^\infty e^{-\rho t}  u(c(t)) dt
 \quad\text{s.t.}\quad
-\dot{k}(t)=f(k(t))-\delta\, k(t)-c(t),
+\dot{k}(t)=f(k(t))-\delta k(t)-c(t),
 \quad k(0) \text{ given},
 $$
 
-with $f(k)=A\, k^\alpha$ and $u(c)=c^{1-\sigma}/(1-\sigma)$ for $\sigma \ne 1$.
+with $f(k)=A k^\alpha$ and $u(c)=c^{1-\sigma}/(1-\sigma)$ for $\sigma \ne 1$.
 The parameter $\rho$ is the continuous-time discount rate, $\delta$ the
 depreciation rate, $\alpha$ the capital share, and $A$ the level of TFP.
 
@@ -34,22 +34,22 @@ utility, and inherits the value at the end:
 
 $$
 V(k) = \max_{c \geq 0} 
-\lbrace u(c) \Delta t + e^{-\rho\,\Delta t}  V(k + \dot k\,\Delta t)\rbrace + o(\Delta t),
-\qquad \dot k = f(k) - \delta\, k - c .
+\lbrace u(c) \Delta t + e^{-\rho\Delta t}  V(k + \dot k\Delta t)\rbrace + o(\Delta t),
+\qquad \dot k = f(k) - \delta k - c .
 $$
 
-Expand $e^{-\rho \Delta t} = 1 - \rho\,\Delta t + o(\Delta t)$ and
-$V(k + \dot k\,\Delta t) = V(k) + V'(k) \dot k\,\Delta t + o(\Delta t)$.
+Expand $e^{-\rho \Delta t} = 1 - \rho\Delta t + o(\Delta t)$ and
+$V(k + \dot k\Delta t) = V(k) + V'(k) \dot k\Delta t + o(\Delta t)$.
 Subtract $V(k)$, divide by $\Delta t$, and let $\Delta t \to 0$. The constant
-term $V(k)$ on both sides cancels, the $\rho\,\Delta t \cdot V'\,\dot k$
+term $V(k)$ on both sides cancels, the $\rho\Delta t \cdot V'\dot k$
 cross-product is $o(\Delta t)$, and what remains is the **Hamilton-Jacobi-Bellman
 equation**
 
 $$
-\rho\, V(k) = \max_{c>0} 
+\rho V(k) = \max_{c>0} 
 \lbrace
-\underbrace{u(c)}_{\text{flow utility}} \, + \,
-\underbrace{V'(k) (f(k) - \delta\, k - c)}_{\text{shadow value} \, \times \, \text{drift}}
+\underbrace{u(c)}_{\text{flow utility}}  + 
+\underbrace{V'(k) (f(k) - \delta k - c)}_{\text{shadow value}  \times  \text{drift}}
 \rbrace .
 $$
 
@@ -80,14 +80,14 @@ $$
 Substituting back, the implied drift of capital is
 
 $$
-s(k) \equiv \dot k = f(k) - \delta\, k - c^{\ast}(k),
+s(k) \equiv \dot k = f(k) - \delta k - c^{\ast}(k),
 $$
 
 and the HJB collapses to a single nonlinear ordinary differential equation for
 $V$:
 
 $$
-\rho\, V(k) = u(c^{\ast}(k)) + V'(k)  s(k) .
+\rho V(k) = u(c^{\ast}(k)) + V'(k)  s(k) .
 $$
 
 Two structural features matter for the numerical scheme. The drift $s(k)$ can
@@ -108,7 +108,7 @@ D^{+}_i V = \frac{V_{i+1} - V_i}{\Delta k},
 D^{-}_i V = \frac{V_i - V_{i-1}}{\Delta k} .
 $$
 
-A central difference $(V_{i+1} - V_{i-1})/(2\,\Delta k)$ would use both sides
+A central difference $(V_{i+1} - V_{i-1})/(2\Delta k)$ would use both sides
 with equal weight. That choice is unstable for first-order PDEs of this form
 because information flows in the direction of the drift: the value at $k_i$ is
 affected by the value at the point the system is moving toward, not the point
@@ -122,17 +122,17 @@ D_i V =
 \begin{cases}
 D^{+}_i V & \text{if } s_i > 0 \text{ (forward, into the right neighbour)},\\
 D^{-}_i V & \text{if } s_i < 0 \text{ (backward, into the left neighbour)},\\
-(f(k_i) - \delta\, k_i)^{-\sigma} & \text{if } s_i = 0
+(f(k_i) - \delta k_i)^{-\sigma} & \text{if } s_i = 0
 \text{ (steady-state marginal utility)} .
 \end{cases}
 $$
 
 The sign of $s_i$ depends on the consumption derived from the upwind
 derivative, which in turn depends on the side picked. The standard resolution
-computes both candidate drifts, $s^{+}_i = f(k_i) - \delta\, k_i - (D^{+}_i
+computes both candidate drifts, $s^{+}_i = f(k_i) - \delta k_i - (D^{+}_i
 V)^{-1/\sigma}$ and $s^{-}_i$ analogously, and uses $D^{+}$ when $s^{+}_i > 0$,
 $D^{-}$ when $s^{-}_i < 0$, and the zero-drift consumption $c^{0}_i = f(k_i) -
-\delta\, k_i$ otherwise. This is the rule encoded above and used in the
+\delta k_i$ otherwise. This is the rule encoded above and used in the
 algorithm below.
 
 ### Boundary conditions
@@ -158,10 +158,10 @@ steady state where the envelope $V'(k_{ss}) = u'(c_{ss})$ holds and the drift
 vanishes. Plugging the Cobb-Douglas marginal product gives the closed form
 
 $$
-k_{ss} = \left(\frac{\alpha\, A}{\rho + \delta}\right)^{1/(1-\alpha)},
+k_{ss} = \left(\frac{\alpha A}{\rho + \delta}\right)^{1/(1-\alpha)},
 $$
 
-with steady-state consumption $c_{ss} = f(k_{ss}) - \delta\, k_{ss}$.
+with steady-state consumption $c_{ss} = f(k_{ss}) - \delta k_{ss}$.
 
 ## Model Setup
 
@@ -185,11 +185,11 @@ The HJB is solved by an implicit upwind finite-difference scheme. The loop alter
 
 ### The upwind step
 
-At each grid point the solver computes the forward slope $D^{+}_i V$ and the backward slope $D^{-}_i V$, derives the consumption that each slope implies via $c = (D V)^{-1/\sigma}$, and computes the implied drift $s = f(k) - \delta\, k - c$. The drift sign chooses which slope the algorithm keeps. When neither one-sided drift has the expected sign the grid point sits at a local steady state and the consumption is set to net output $f(k_i) - \delta\, k_i$, which is the policy that holds capital fixed.
+At each grid point the solver computes the forward slope $D^{+}_i V$ and the backward slope $D^{-}_i V$, derives the consumption that each slope implies via $c = (D V)^{-1/\sigma}$, and computes the implied drift $s = f(k) - \delta k - c$. The drift sign chooses which slope the algorithm keeps. When neither one-sided drift has the expected sign the grid point sits at a local steady state and the consumption is set to net output $f(k_i) - \delta k_i$, which is the policy that holds capital fixed.
 
 ### The implicit step
 
-An explicit pseudo-time update $V^{n+1} = V^n + \Delta\,(u(c^n) + G^n V^n - \rho V^n)$ is unstable for moderately large $\Delta$ because the upwind generator $G^n$ has eigenvalues with arbitrarily large negative real part (the leaving rate at a point with steep drift can be very large). The implicit version replaces $G^n V^n$ with $G^n V^{n+1}$ and rearranges to
+An explicit pseudo-time update $V^{n+1} = V^n + \Delta(u(c^n) + G^n V^n - \rho V^n)$ is unstable for moderately large $\Delta$ because the upwind generator $G^n$ has eigenvalues with arbitrarily large negative real part (the leaving rate at a point with steep drift can be very large). The implicit version replaces $G^n V^n$ with $G^n V^{n+1}$ and rearranges to
 
 $$
 [(1/\Delta + \rho)  \mathbf{I} - G^n]  V^{n+1} = u(c^n) + V^n / \Delta .
@@ -204,7 +204,7 @@ Algorithm: implicit upwind HJB iteration
 Inputs: grid {k_i}, primitives (rho, sigma, alpha, delta, A),
         pseudo-time step Delta, tolerance eps
 Initialise V^0_i = u(f(k_i)) / rho                # myopic guess
-For n = 0, 1, ... until ||V^{n+1} - V^n||_infinity < eps:
+For n = 0, 1, ... until ||V^(n+1) - V^n||_infinity < eps:
     1. Form forward and backward slopes D^+ V^n_i and D^- V^n_i.
     2. Use the FOC to compute candidate consumption:
        c^+_i = (D^+ V^n_i)^(-1/sigma), c^-_i = (D^- V^n_i)^(-1/sigma).
@@ -218,7 +218,7 @@ For n = 0, 1, ... until ||V^{n+1} - V^n||_infinity < eps:
        sub-diagonal -s^-_i / dk, super-diagonal s^+_i / dk,
        diagonal -(s^+_i / dk - s^-_i / dk).
     6. Solve the implicit linear system
-       [(1/Delta + rho) I - G^n] V^{n+1} = u(c^n) + V^n / Delta
+       [(1/Delta + rho) I - G^n] V^(n+1) = u(c^n) + V^n / Delta
        by sparse LU on a tridiagonal matrix.
 Output: value V, consumption policy c(k), drift s(k) = dot{k}
 ```

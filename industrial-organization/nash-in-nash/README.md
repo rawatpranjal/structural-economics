@@ -105,13 +105,13 @@ Input: full networks G, premiums P, costs c^D and c^H, demand q(.), weight tau
 Output: bilateral transfers w_hd and merged-system transfers W_Hd
 Compute full-agreement demand q_d(G) for every insurer d
 for each hospital h and insurer d:
-    form G^{-hd} by removing hospital h only from insurer d
-    compute disagreement demand q_d(G^{-hd})
-    Delta_hd = (P_d - c_d^D) * [q_d(G) - q_d(G^{-hd})]
+    form G^(-hd) by removing hospital h only from insurer d
+    compute disagreement demand q_d(G^(-hd))
+    Delta_hd = (P_d - c_d^D) * [q_d(G) - q_d(G^(-hd))]
     S_hd = Delta_hd - c_h^H * q_d(G)
     w_hd = c_h^H + tau * S_hd / q_d(G)
 for each insurer d under hospital-system ownership:
-    form G^{-Hd} by removing the whole hospital system from insurer d
+    form G^(-Hd) by removing the whole hospital system from insurer d
     compute the system surplus using the same demand object
     W_Hd = system cost + tau * system surplus / q_d(G)
 ```

@@ -16,11 +16,15 @@ Let $x_t \in X$ denote mileage at the start of period $t$. The action
 $a_t=1$ replaces the engine and $a_t=0$ keeps it. Replacement flow utility is
 normalized to zero:
 
-$$u(x,1) = 0,$$
+$$
+u(x,1) = 0,
+$$
 
 and the keep payoff is
 
-$$u(x,0) = \theta_0 + \theta_1 x, \qquad \theta_1 < 0.$$
+$$
+u(x,0) = \theta_0 + \theta_1 x, \qquad \theta_1 < 0.
+$$
 
 The transition matrix $F_a(x' \mid x)$ gives next period's mileage. Replacement
 uses $F_1$ and is close to the transition from a new engine. Keeping uses $F_0$
@@ -29,40 +33,52 @@ and lets mileage drift upward.
 With additive Type-I extreme value shocks, the conditional value functions
 satisfy
 
-$$v_a(x) = u(x,a) + \beta \sum_{x'} F_a(x' \mid x)
-\left[\log\left(\exp(v_1(x')) + \exp(v_0(x'))\right) + \gamma\right],$$
+$$
+v_a(x) = u(x,a) + \beta \sum_{x'} F_a(x' \mid x)
+\left[\log\left(\exp(v_1(x')) + \exp(v_0(x'))\right) + \gamma\right],
+$$
 
 where $\gamma$ is Euler's constant. The replacement probability is
 
-$$P_\theta(1 \mid x) =
-\frac{\exp(v_1(x))}{\exp(v_1(x))+\exp(v_0(x))}.$$
+$$
+P_\theta(1 \mid x) =
+\frac{\exp(v_1(x))}{\exp(v_1(x))+\exp(v_0(x))}.
+$$
 
 For panel observations $(x_{it}, d_{it})$, where $d_{it}=1$ means replacement,
 the full-solution likelihood is
 
-$$\ell(\theta)=\sum_{i,t}
+$$
+\ell(\theta)=\sum_{i,t}
 d_{it}\log P_\theta(1 \mid x_{it}) +
-(1-d_{it})\log[1-P_\theta(1 \mid x_{it})].$$
+(1-d_{it})\log[1-P_\theta(1 \mid x_{it})].
+$$
 
 The CCP estimator starts from a first-stage estimate $\hat p(x)$ of
 $\Pr(a=1 \mid x)$. Given $\hat p$, form the policy transition
 
-$$\hat F(x' \mid x)=\hat p(x)F_1(x' \mid x)+[1-\hat p(x)]F_0(x' \mid x).$$
+$$
+\hat F(x' \mid x)=\hat p(x)F_1(x' \mid x)+[1-\hat p(x)]F_0(x' \mid x).
+$$
 
 For any candidate $\theta$, the Hotz-Miller ex ante value solves the linear
 system
 
-$$W_\theta =
-\bar u_\theta(\hat p)+\beta \hat F W_\theta,$$
+$$
+W_\theta =
+\bar u_\theta(\hat p)+\beta \hat F W_\theta,
+$$
 
 where $\bar u_\theta(\hat p)$ includes the keep payoff and the logit entropy
 terms implied by $\hat p$.
 
 The model-implied replacement probability is then
 
-$$P_\theta^{HM}(1 \mid x)
+$$
+P_\theta^{HM}(1 \mid x)
 =\Lambda\left(\beta F_1 W_\theta
--\theta_0-\theta_1 x-\beta F_0 W_\theta\right),$$
+-\theta_0-\theta_1 x-\beta F_0 W_\theta\right),
+$$
 
 with $\Lambda(z)=1/(1+\exp(-z))$.
 
@@ -110,7 +126,7 @@ for each candidate theta proposed by the outer optimizer:
         inclusive(x) = log(exp(v_1(x)) + exp(v_0(x))) + gamma
         update v_1(x) = beta * sum_x' F_1(x' | x) inclusive(x')
         update v_0(x) = theta_0 + theta_1 x + beta * sum_x' F_0(x' | x) inclusive(x')
-        error = sup_x,a |v_a^{new}(x) - v_a^{old}(x)|
+        error = sup_x,a |v_a^(new)(x) - v_a^(old)(x)|
     until error < epsilon
     compute P_theta(1 | x) from the logit choice formula
     evaluate the panel choice likelihood

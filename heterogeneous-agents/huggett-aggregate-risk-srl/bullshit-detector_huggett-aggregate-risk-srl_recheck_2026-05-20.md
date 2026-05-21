@@ -112,7 +112,13 @@
 
 ### Finding 5 (original): L2 regularization documented in Equations — HOLDS
 
-- **Claim source (verbatim):** "$$J(\theta) = \mathbb{E}\left[\sum_{t=0}^{T-1}\beta^t u(c_t)\right] - \kappa\,\overline{\theta^2}, \qquad \kappa = 10^{-5}.$$" and "The penalty coefficient $\kappa$ is small relative to per-period utility, so it regularizes the parameters without materially distorting the policy." — `README.md:33-36`
+- **Claim source (verbatim):** "
+
+$$
+J(\theta) = \mathbb{E}\left[\sum_{t=0}^{T-1}\beta^t u(c_t)\right] - \kappa\overline{\theta^2}, \qquad \kappa = 10^{-5}.
+$$
+
+" and "The penalty coefficient $\kappa$ is small relative to per-period utility, so it regularizes the parameters without materially distorting the policy." — `README.md:33-36`
 - **Code evidence (verbatim):**
   ```python
   objective_value = jnp.mean(returns) - 1.0e-5 * jnp.mean(theta**2)

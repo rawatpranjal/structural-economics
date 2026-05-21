@@ -94,7 +94,7 @@ exercise trims low and high bid quantiles before evaluating recovery.
 Let $N$ be the number of observed bids. The estimator uses empirical ranks for $\hat G$ and a kernel density estimate for $\hat g$.
 
 ```text
-Input: bids {b_i}_{i=1}^N, bidder count n, trim q
+Input: bids {b_i}[i=1]^N, bidder count n, trim q
 Simulation object: F_v and monotone s(v)
 Output: pseudo-values {\hat v_i}
 
@@ -102,7 +102,7 @@ Output: pseudo-values {\hat v_i}
 2. Hide {v_i}; keep only {b_i} and n.
 3. Estimate \hat G(b_i) = rank(b_i) / N, with rank(b_i) 1-indexed so the smallest bid maps to 1/N and the largest to 1.
 4. Estimate \hat g(b_i) from a KDE on {b_i}.
-5. Keep I_q = {i: Q_q <= b_i <= Q_{1-q}, \hat g(b_i) > 0}.
+5. Keep I_q = {i: Q_q <= b_i <= Q[1-q], \hat g(b_i) > 0}.
 6. For i in I_q, set
       \hat v_i = b_i + \hat G(b_i) / [(n-1) \hat g(b_i)].
 7. Compare {\hat v_i: i in I_q} with the hidden {v_i: i in I_q}.
@@ -133,7 +133,7 @@ Errors are smallest in the middle of the bid support and larger near the remaini
 
 **Recovery Diagnostics**
 
-|   Auctions |   Bidders |   Observed bids |   Kept bids |   Trimmed share |   RMSE |   MAE |   Correlation |
+|   Auctions |   Bidders |   Observed bids |   Kept bids |   Trimmed share |   RMSE error |   MAE error |   Correlation |
 |-----------:|----------:|----------------:|------------:|----------------:|-------:|------:|--------------:|
 |       3000 |         4 |           12000 |       10800 |             0.1 |  0.001 | 0.001 |             1 |
 

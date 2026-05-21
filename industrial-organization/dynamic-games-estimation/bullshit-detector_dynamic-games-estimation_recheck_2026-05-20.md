@@ -37,11 +37,11 @@
 **Recheck evidence (verbatim):**
 ```
 README.md:30-34
-$$\bar\pi_\theta(\omega;\hat p) = (1-\hat p)\,\pi_i(\omega,0;\theta) + \hat p\,\pi_i(\omega,1;\theta) + H(\hat p) + \gamma,$$
+\bar\pi_\theta(\omega;\hat p) = (1-\hat p)\pi_i(\omega,0;\theta) + \hat p\pi_i(\omega,1;\theta) + H(\hat p) + \gamma,
 
-where $H(\hat p) = -\hat p\log\hat p-(1-\hat p)\log(1-\hat p)$ is the Bernoulli
-entropy of the investment rate and $\gamma$ is the Euler-Mascheroni constant.
-The $H(\hat p)+\gamma$ term is the expected value of the Type-I extreme value
+where H(\hat p) = -\hat p\log\hat p-(1-\hat p)\log(1-\hat p) is the Bernoulli
+entropy of the investment rate and \gamma is the Euler-Mascheroni constant.
+The H(\hat p)+\gamma term is the expected value of the Type-I extreme value
 shock under the first-stage policy.
 ```
 

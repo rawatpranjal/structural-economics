@@ -13,8 +13,10 @@ A Bellman equation needs finite shock states. It also needs a transition matrix 
 A household with assets $a$ faces shock $z_i$. It chooses next assets $a'$.
 The continuation value averages over next-period shock states:
 
-$$V(a,z_i) = \max_{a' \in \mathcal{A}}
-[ u(Ra+\exp(z_i)-a') + \beta \sum_{j=1}^N P_{ij} V(a',z_j) ].$$
+$$
+V(a,z_i) = \max_{a' \in \mathcal{A}}
+[ u(Ra+\exp(z_i)-a') + \beta \sum_{j=1}^N P_{ij} V(a',z_j) ].
+$$
 
 Here $R$ is the gross return factor, $\beta \in (0,1)$ is the discount factor,
 and $u(\cdot)$ is a concave increasing utility function. $\mathcal{A}$ is the
@@ -23,13 +25,17 @@ feasible asset set.
 The finite object is the grid $\{z_1,\dots,z_N\}$ and transition matrix $P$.
 The continuous target is the Gaussian AR(1)
 
-$$z_{t+1} = \rho\, z_t + \sigma_\epsilon\, \varepsilon_{t+1},
-\qquad \varepsilon_{t+1} \sim \mathcal{N}(0,1).$$
+$$
+z_{t+1} = \rho z_t + \sigma_\epsilon \varepsilon_{t+1},
+\qquad \varepsilon_{t+1} \sim \mathcal{N}(0,1).
+$$
 
 The AR(1) has unconditional law $z_t \sim \mathcal{N}(0,\sigma_z^2)$ with
 
-$$\sigma_z^2 = \frac{\sigma_\epsilon^2}{1-\rho^2},
-\qquad \rho_k \equiv \mathrm{Corr}(z_t, z_{t+k}) = \rho^k.$$
+$$
+\sigma_z^2 = \frac{\sigma_\epsilon^2}{1-\rho^2},
+\qquad \rho_k \equiv \mathrm{Corr}(z_t, z_{t+k}) = \rho^k.
+$$
 
 For $\rho=0.95$ and $\sigma_\epsilon=0.02$, the standard deviation is
 $\sigma_z = 0.0641$. The shock half-life is
@@ -39,8 +45,10 @@ A finite chain replaces the conditional Gaussian law with
 $P\in\mathbb{R}^{N\times N}$. Each row gives probabilities
 $P_{ij}=\Pr(z_{t+1}=z_j\mid z_t=z_i)$. The conditional expectation becomes
 
-$$\mathbb{E}[V(a',z_{t+1})\mid z_t=z_i]
-= \sum_{j=1}^N P_{ij} V(a', z_j).$$
+$$
+\mathbb{E}[V(a',z_{t+1})\mid z_t=z_i]
+= \sum_{j=1}^N P_{ij} V(a', z_j).
+$$
 
 The chain has an invariant distribution $\pi$ satisfying $\pi=\pi P$ and
 $\sum_i \pi_i = 1$. Two diagnostics matter:
@@ -79,10 +87,10 @@ Input:  rho, sigma_eps, N, half-width m
 Output: grid {z_j}, transition P, invariant pi
   sigma_z = sigma_eps / sqrt(1 - rho^2)
   z_j     = -m*sigma_z + (j-1) * 2*m*sigma_z/(N-1)         for j = 1..N
-  c_j     = (z_{j-1} + z_j) / 2                             (cell midpoints)
-  c_1     = -inf,   c_{N+1} = +inf
+  c_j     = (z[j-1] + z_j) / 2                             (cell midpoints)
+  c_1     = -inf,   c[N+1] = +inf
   for i = 1..N, j = 1..N:
-      P[i,j] = Phi((c_{j+1} - rho*z_i) / sigma_eps)
+      P[i,j] = Phi((c[j+1] - rho*z_i) / sigma_eps)
              - Phi((c_j     - rho*z_i) / sigma_eps)
   solve pi = pi P,   sum_j pi_j = 1
 ```
@@ -103,17 +111,17 @@ Output: grid {z_j}, transition P_N, invariant pi
   P_2 = [[p, 1-p],
          [1-p, p]]
   for n = 3..N:
-      A_TL = embed P_{n-1} in top-left of n x n zero matrix
-      A_TR = embed P_{n-1} in top-right of n x n zero matrix
-      A_BL = embed P_{n-1} in bottom-left of n x n zero matrix
-      A_BR = embed P_{n-1} in bottom-right of n x n zero matrix
+      A_TL = embed P[n-1] in top-left of n x n zero matrix
+      A_TR = embed P[n-1] in top-right of n x n zero matrix
+      A_BL = embed P[n-1] in bottom-left of n x n zero matrix
+      A_BR = embed P[n-1] in bottom-right of n x n zero matrix
       P_n  = p*A_TL + (1-p)*A_TR + (1-p)*A_BL + p*A_BR
       normalize all rows of P_n              (interior rows summed two
                                               contributions and need scaling;
                                               endpoint rows already sum to 1)
   sigma_z = sigma_eps / sqrt(1 - rho^2)
   z_j     = sigma_z * sqrt(N-1) * (2*(j-1)/(N-1) - 1)        for j = 1..N
-  pi_j    = binomial(N-1, j-1) / 2^{N-1}
+  pi_j    = binomial(N-1, j-1) / 2^(N-1)
 ```
 
 For highly persistent shocks on coarse grids, this is usually safer. It protects the moments that enter continuation values.

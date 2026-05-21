@@ -13,19 +13,25 @@ The Bellman equation is solved three ways on the same wealth grid. Method 1 is v
 Let $W_t$ be remaining cake at the start of period $t$.
 The household chooses $c_t \in [0, W_t]$ and leaves next-period cake:
 
-$$W_{t+1} = W_t - c_t, \qquad W_0 \text{ given}.$$
+$$
+W_{t+1} = W_t - c_t, \qquad W_0 \text{ given}.
+$$
 
 Here $W_0$ is the initial cake endowment.
 
 Preferences use discount factor $\beta \in (0,1)$ and CRRA flow utility:
 
-$$\sum_{t=0}^{\infty} \beta^t u(c_t),
+$$
+\sum_{t=0}^{\infty} \beta^t u(c_t),
 \qquad u(c)=\frac{c^{1-\sigma}}{1-\sigma},
-\qquad u(c)=\log c \text{ when } \sigma=1.$$
+\qquad u(c)=\log c \text{ when } \sigma=1.
+$$
 
 The value function solves a one-state Bellman equation:
 
-$$V(W) = \max_{0 \le c \le W} \big\{\, \underbrace{u(c)}_{\text{flow utility today}} + \underbrace{\beta\, V(W-c)}_{\text{discounted continuation value}} \,\big\}.$$
+$$
+V(W) = \max_{0 \le c \le W} \big\{ \underbrace{u(c)}_{\text{flow utility today}} + \underbrace{\beta V(W-c)}_{\text{discounted continuation value}} \big\}.
+$$
 
 The flow / continuation split is the entire economic content of the Bellman equation.
 Eating one more unit today raises $u(c)$ but shrinks the stock left for tomorrow, which lowers $V(W-c)$.
@@ -33,7 +39,9 @@ The optimum balances those two forces.
 
 The first-order condition and envelope condition give the Euler equation:
 
-$$u'(c_t) = \beta\, u'(c_{t+1}).$$
+$$
+u'(c_t) = \beta u'(c_{t+1}).
+$$
 
 This says marginal utility rises as the cake stock falls.
 In the log case, consumption falls at rate $\beta$.
@@ -41,15 +49,19 @@ In the log case, consumption falls at rate $\beta$.
 A policy is a function $c^{\ast}: W \mapsto c$ that prescribes a feasible consumption choice at every stock.
 Guessing a constant consumption share and verifying the Euler equation gives the closed-form optimal policy:
 
-$$c^{\ast}(W) = (1-\beta)  W,
-\qquad g(W) = W - c^{\ast}(W) = \beta\, W.$$
+$$
+c^{\ast}(W) = (1-\beta)  W,
+\qquad g(W) = W - c^{\ast}(W) = \beta W.
+$$
 
 Here $g(W)$ is the law of motion for the cake under the optimal policy.
 The matching value function is:
 
-$$V(W) = \frac{\ln((1-\beta) W)}{1-\beta} +
+$$
+V(W) = \frac{\ln((1-\beta) W)}{1-\beta} +
 \frac{\beta \ln \beta}{(1-\beta)^2},
-\qquad V'(W) = \frac{1}{(1-\beta) W}.$$
+\qquad V'(W) = \frac{1}{(1-\beta) W}.
+$$
 
 This closed form is the target for the numerical check.
 
@@ -58,7 +70,9 @@ This closed form is the target for the numerical check.
 Let $T$ be the Bellman operator.
 It maps any candidate value function $V$ to a new function $TV$ defined pointwise by:
 
-$$(TV)(W) = \max_{0 \le c \le W} \{\, u(c) + \beta\, V(W-c) \,\}.$$
+$$
+(TV)(W) = \max_{0 \le c \le W} \{ u(c) + \beta V(W-c) \}.
+$$
 
 The operator $T$ is a contraction with modulus $\beta$ in the sup norm $\| \cdot \|_{\infty}$.
 By the Banach fixed-point theorem it has a unique fixed point $V^{\ast}$.
@@ -70,19 +84,23 @@ The sup-norm distance to $V^{\ast}$ shrinks by a factor of $\beta$ at each step.
 A policy is a function $\pi: W \mapsto c$ that prescribes a consumption choice at every stock $W$.
 Define the policy operator $T_{\pi}$ that performs one Bellman step with $\pi$ held fixed:
 
-$$(T_{\pi} V)(W) = u(\pi(W)) + \beta\, V(W - \pi(W)).$$
+$$
+(T_{\pi} V)(W) = u(\pi(W)) + \beta V(W - \pi(W)).
+$$
 
 The operator $T_{\pi}$ is also a $\beta$-contraction in the sup norm.
 Its unique fixed point is denoted $V_{\pi}$.
 $V_{\pi}$ is the expected discounted utility of always playing $\pi$.
 
-Let $T_{\pi}^{\,k}$ denote the $k$-fold composition $T_{\pi} \circ \cdots \circ T_{\pi}$ with $k$ copies.
-Applying $T_{\pi}^{\,k}$ to any starting $V$ moves it $k$ steps closer to $V_{\pi}$.
+Let $T_{\pi}^{k}$ denote the $k$-fold composition $T_{\pi} \circ \cdots \circ T_{\pi}$ with $k$ copies.
+Applying $T_{\pi}^{k}$ to any starting $V$ moves it $k$ steps closer to $V_{\pi}$.
 This tutorial uses the variant of modified policy iteration whose evaluation phase starts from the improved iterate $T V_n$, the same Bellman update VFI computes, rather than from $V_n$.
 One improvement step is followed by $k$ such evaluation sweeps, so the policy contraction $T_{\pi}$ is applied a total of $k+1$ times per outer step:
 
-$$\pi_{n+1}(W) \in \arg\max_{c} \{\, u(c) + \beta\, V_n(W-c) \,\},
-\qquad V_{n+1} = T_{\pi_{n+1}}^{\,k}  (T V_n).$$
+$$
+\pi_{n+1}(W) \in \arg\max_{c} \{ u(c) + \beta V_n(W-c) \},
+\qquad V_{n+1} = T_{\pi_{n+1}}^{k}  (T V_n).
+$$
 
 The integer $k$ is the inner-sweep count and is set by the user.
 Choosing $k=0$ does no evaluation sweep, so the outer step reduces to $V_{n+1} = T V_n$ and recovers value function iteration exactly.
@@ -95,20 +113,26 @@ Let $P_{\pi}$ be the $N_W \times N_W$ matrix whose row $i$ holds the linear-inte
 Row $i$ of $P_{\pi}$ has at most two nonzero entries, one for each end of the bracketing interval.
 Stacking grid values into a vector, the policy operator becomes:
 
-$$T_{\pi} V = u(\pi) + \beta\, P_{\pi}  V.$$
+$$
+T_{\pi} V = u(\pi) + \beta P_{\pi}  V.
+$$
 
 The fixed point $V_{\pi}$ satisfies $V_{\pi} = u(\pi) + \beta P_{\pi} V_{\pi}$.
 Rearranging gives a linear system in $V_{\pi}$:
 
-$$\underbrace{(I - \beta\, P_{\pi})}_{\text{discounted resolvent}}  V_{\pi} = \underbrace{u(\pi)}_{\text{flow utility under } \pi}.$$
+$$
+\underbrace{(I - \beta P_{\pi})}_{\text{discounted resolvent}}  V_{\pi} = \underbrace{u(\pi)}_{\text{flow utility under } \pi}.
+$$
 
 The resolvent $(I - \beta P_{\pi})^{-1}$ is the discrete analogue of the geometric series $\sum_{k=0}^{\infty} (\beta P_{\pi})^k$, which is exactly the discounted sum of flow utilities along the Markov chain induced by the policy.
 That is why the linear system is the exact policy evaluation: it computes the infinite expected discounted utility in one solve rather than approximating it by repeated application of $T_{\pi}$.
 The matrix $I - \beta P_{\pi}$ is invertible because $\beta P_{\pi}$ has spectral radius at most $\beta < 1$.
 Exact policy iteration alternates policy improvement with this exact solve:
 
-$$\pi_{n+1} \in \arg\max_{c} \{\, u(c) + \beta\, V_n(W-c) \,\},
-\qquad V_{n+1} = \underbrace{(I - \beta\, P_{\pi_{n+1}})^{-1}  u(\pi_{n+1})}_{\text{exact value of always playing } \pi_{n+1}}.$$
+$$
+\pi_{n+1} \in \arg\max_{c} \{ u(c) + \beta V_n(W-c) \},
+\qquad V_{n+1} = \underbrace{(I - \beta P_{\pi_{n+1}})^{-1}  u(\pi_{n+1})}_{\text{exact value of always playing } \pi_{n+1}}.
+$$
 
 The iteration can be read as Newton's method applied to the fixed-point equation $V = T V$.
 Near an optimal policy the improvement step makes only second-order changes in $V$.
@@ -147,9 +171,9 @@ Output: value V*(W_i), consumption policy c*(W_i)
           W'     <- W_i - c_grid                   # next-period wealth
           V_cont <- interp(V_n, W')                # off-grid continuation
           obj    <- u(c_grid) + beta * V_cont
-          V_{n+1}(W_i) <- max(obj)
+          V[n+1](W_i) <- max(obj)
           c*(W_i)      <- argmax(obj)
-      err <- max_i | V_{n+1}(W_i) - V_n(W_i) |
+      err <- max_i | V[n+1](W_i) - V_n(W_i) |
       stop when err < epsilon
 ```
 
@@ -173,7 +197,7 @@ Output: value V*(W_i), consumption policy c*(W_i)
       repeat k times :
           V_eval(W_i) <- u(pi(W_i)) + beta * interp(V_eval, W_i - pi(W_i))
       err   <- max_i | V_eval(W_i) - V_n(W_i) |
-      V_{n+1} <- V_eval
+      V[n+1] <- V_eval
       stop when err < epsilon
 ```
 
@@ -194,8 +218,8 @@ Output: value V*(W_i), consumption policy c*(W_i)
           pi(W_i) <- argmax_c { u(c) + beta * interp(V_n, W_i - c) }
       # exact policy evaluation
       build P_pi : row i has linear-interp weights at W_i - pi(W_i)
-      solve (I - beta * P_pi) V_{n+1} = u(pi)
-      err <- max_i | V_{n+1}(W_i) - V_n(W_i) |
+      solve (I - beta * P_pi) V[n+1] = u(pi)
+      err <- max_i | V[n+1](W_i) - V_n(W_i) |
       stop when err < epsilon
 ```
 

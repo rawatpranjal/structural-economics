@@ -38,7 +38,13 @@
   ```
   `run.py:38-40`
 - **Data evidence (if applicable):** Not applicable — this is a structural/prose claim, not numeric.
-- **Analysis:** The code implements a model where the investor's private payoff is implicitly `b_g(s)*theta*x - 0.5*x^2` (investor receives fraction `b_g` of revenue `theta*x`, bears full quadratic cost). The private FOC is `b_g(s)*theta - x = 0`, giving `x = b_g(s)*theta`. This is correctly stated in the next sentence of README.md:23 as `$$b_g(s)\theta - x = 0,$$`.
+- **Analysis:** The code implements a model where the investor's private payoff is implicitly `b_g(s)*theta*x - 0.5*x^2` (investor receives fraction `b_g` of revenue `theta*x`, bears full quadratic cost). The private FOC is `b_g(s)*theta - x = 0`, giving `x = b_g(s)*theta`. This is correctly stated in the next sentence of README.md:23 as `
+
+$$
+b_g(s)\theta - x = 0,
+$$
+
+`.
 
   "Marginal value" in standard usage refers to `V'(x) = theta - x`. If the investor captured share `b_g` of marginal value `V'(x)`, the private FOC would be `b_g*(theta - x) = 0`, giving `x = theta` regardless of `b_g` — eliminating hold-up entirely, contradicting the model's purpose. The code and the stated FOC are consistent with the investor capturing share `b_g` of REVENUE (the linear term `theta*x`), not of marginal value `V'(x)`.
 
@@ -60,7 +66,13 @@
 
 ### Finding 2: FOC formula — HOLDS
 
-- **Claim source (verbatim):** "The private first-order condition is $$b_g(s)\theta - x = 0,$$" — `README.md:23-24`
+- **Claim source (verbatim):** "The private first-order condition is
+
+$$
+b_g(s)\theta - x = 0,
+$$
+
+" — `README.md:23-24`
 - **Code evidence (verbatim):**
   ```python
   incentive = np.clip(values["incentive"], 0.05, 1.0)
@@ -74,7 +86,13 @@
 
 ### Finding 3: Investment formula x_g(s) = b_g(s)*theta — HOLDS
 
-- **Claim source (verbatim):** "which gives $$x_g(s) = b_g(s)\theta$$" — `README.md:26`
+- **Claim source (verbatim):** "which gives
+
+$$
+x_g(s) = b_g(s)\theta
+$$
+
+" — `README.md:26`
 - **Code evidence:** `investment = theta * incentive` at `run.py:39`, where `incentive = b_g(s)` from `run.py:38`. ✓
 - **Category:** HOLDS
 
@@ -82,7 +100,13 @@
 
 ### Finding 4: Surplus formula — HOLDS
 
-- **Claim source (verbatim):** "Total surplus subtracts governance cost $F_g(s)$: $$W_g(s) = \theta x_g(s) - \frac{1}{2}x_g(s)^2 - F_g(s)$$" — `README.md:28-29`
+- **Claim source (verbatim):** "Total surplus subtracts governance cost $F_g(s)$:
+
+$$
+W_g(s) = \theta x_g(s) - \frac{1}{2}x_g(s)^2 - F_g(s)
+$$
+
+" — `README.md:28-29`
 - **Code evidence (verbatim):**
   ```python
   surplus = theta * investment - 0.5 * investment**2 - values["governance_cost"]
@@ -95,7 +119,13 @@
 
 ### Finding 5: First-best surplus W* = 0.5*theta^2 — HOLDS
 
-- **Claim source (verbatim):** "The first-best surplus benchmark is $$W^{\ast}=\frac{1}{2}\theta^2$$" — `README.md:44-45`
+- **Claim source (verbatim):** "The first-best surplus benchmark is
+
+$$
+W^{\ast}=\frac{1}{2}\theta^2
+$$
+
+" — `README.md:44-45`
 - **Code evidence (verbatim):**
   ```python
   first_best_surplus = 0.5 * theta**2

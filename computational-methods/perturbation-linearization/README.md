@@ -63,7 +63,7 @@ Output: Taylor law, map errors, IRF errors, asymmetry statistic
 1. Read the Taylor coefficients of F at x_bar straight from the known parameters
 2. Build the local law F_n(x) from those Taylor coefficients, keeping terms through order n
 3. Compare F_n(x) with F(x) near and away from x_bar
-4. Starting from x_0 = epsilon, iterate x_{t+1} = F_n(x_t)
+4. Starting from x_0 = epsilon, iterate x[t+1] = F_n(x_t)
 5. Repeat from x_0 = -epsilon and add the two paths
 6. Use nonzero sums to measure nonlinear asymmetry
 ```

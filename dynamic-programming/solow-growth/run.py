@@ -151,8 +151,8 @@ def main() -> None:
     break_even = effective_depreciation * k_grid
 
     fig1, ax1 = plt.subplots(figsize=(8, 5))
-    ax1.plot(k_grid, investment, linewidth=2.2, label=r"Investment $s\,k^\alpha$")
-    ax1.plot(k_grid, break_even, linewidth=2.2, label=r"Break-even $\Delta\,k$")
+    ax1.plot(k_grid, investment, linewidth=2.2, label=r"Investment $s k^\alpha$")
+    ax1.plot(k_grid, break_even, linewidth=2.2, label=r"Break-even $\Delta k$")
     ax1.axvline(k_star, color="black", linestyle="--", linewidth=1.3,
                 label=fr"$k^{{\ast}} = {k_star:.2f}$")
     ax1.scatter([k0], [savings_rate * k0**alpha], color="tab:blue", zorder=4,
@@ -217,7 +217,7 @@ def main() -> None:
             cc["k"] / k_star,
             linewidth=2.0,
             color=color,
-            label=fr"$k_0 = {k_init/k_star:.1f}\,k^{{\ast}}$",
+            label=fr"$k_0 = {k_init/k_star:.1f} k^{{\ast}}$",
         )
     ax4a.axhline(1.0, color="black", linestyle="--", linewidth=1.0, alpha=0.6,
                  label=r"$k^{\ast}$")
@@ -227,7 +227,7 @@ def main() -> None:
     ax4a.legend()
 
     ax4b.plot(diagram_grid, effective_depreciation * diagram_grid, color="black",
-              linewidth=2.0, label=r"$\Delta\,k$")
+              linewidth=2.0, label=r"$\Delta k$")
     cs_palette = ["tab:purple", "tab:blue", "tab:red"]
     for s_alt, k_alt, color in zip(s_alternatives, ks_alt, cs_palette):
         ax4b.plot(diagram_grid, s_alt * diagram_grid ** alpha, linewidth=1.8, color=color,

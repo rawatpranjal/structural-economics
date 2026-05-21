@@ -23,8 +23,8 @@
 | 6 | Duality gap along central path is exactly $n \cdot t$ | HOLDS | — | — |
 | 7 | Projected gradient converges in 95 iterations | HOLDS | — | — |
 | 8 | After 9 barrier values, iterate within 8.90e-09 of closed form | HOLDS | — | — |
-| 9 | Figure complementarity uses exact $\mu_t = t/x_t$, equals $n\,t$ on central path | HOLDS | — | — |
-| 10 | KKT table barrier row uses heuristic recovery; complementarity differs from $n\,t$ by factor $n$ | HOLDS | — | — |
+| 9 | Figure complementarity uses exact $\mu_t = t/x_t$, equals $nt$ on central path | HOLDS | — | — |
+| 10 | KKT table barrier row uses heuristic recovery; complementarity differs from $nt$ by factor $n$ | HOLDS | — | — |
 | 11 | 9 barrier values to machine-precision feasibility (fixed: was "about a dozen") | HOLDS | — | — |
 | 12 | SLSQP pseudocode names stationarity for binding-bound mu recovery (fixed: was "complementary slackness") | HOLDS | — | — |
 | 13 | Baseline utility 9.25 exceeds feasible optimum 8.5 | HOLDS | — | — |

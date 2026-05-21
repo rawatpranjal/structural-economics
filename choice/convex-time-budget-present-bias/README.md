@@ -16,7 +16,9 @@ The general problem is to recover three structural parameters from interior allo
 
 A subject faces the future-value budget constraint
 
-$$(1 + r) c_t + c_{t+k} = m,$$
+$$
+(1 + r) c_t + c_{t+k} = m,
+$$
 
 where $c_t$ is the sooner payment, $c_{t+k}$ is the later payment, $1 + r$ is the gross interest rate over the delay $k$, and $m$ is the dollar value of the token budget at the later token rate.
 
@@ -33,16 +35,20 @@ With a front-end delay $t > 0$ both payments are in the future and $\beta$ drops
 
 Maximising $U$ subject to the budget gives the interior tangency condition (Andreoni-Sprenger eq 4):
 
-$$\frac{c_t}{c_{t+k}} = \begin{cases}
-(\beta\, \delta^{k}  (1 + r))^{1/(\alpha - 1)}, & t = 0, \\
+$$
+\frac{c_t}{c_{t+k}} = \begin{cases}
+(\beta \delta^{k}  (1 + r))^{1/(\alpha - 1)}, & t = 0, \\
 (\delta^{k}  (1 + r))^{1/(\alpha - 1)}, & t > 0.
-\end{cases}$$
+\end{cases}
+$$
 
 Combining the tangency with the budget gives the closed-form sooner demand (Andreoni-Sprenger eq 5):
 
-$$c_t(\beta, \delta, \alpha;  r, k, t, m)
+$$
+c_t(\beta, \delta, \alpha;  r, k, t, m)
 = \frac{\xi(\beta, \delta, \alpha;  r, k, t)}
-       {1 + (1 + r)  \xi(\beta, \delta, \alpha;  r, k, t)}  m,$$
+       {1 + (1 + r)  \xi(\beta, \delta, \alpha;  r, k, t)}  m,
+$$
 
 with $\xi = (\beta_{\mathrm{eff}}  \delta^{k}  (1 + r))^{1/(\alpha - 1)}$ and $\beta_{\mathrm{eff}} = \beta$ when $t = 0$, $\beta_{\mathrm{eff}} = 1$ otherwise.
 
@@ -50,10 +56,12 @@ with $\xi = (\beta_{\mathrm{eff}}  \delta^{k}  (1 + r))^{1/(\alpha - 1)}$ and $\
 
 Taking logs of the tangency condition gives a relation that is linear in observables (Andreoni-Sprenger eq 6):
 
-$$\ln\left(\frac{c_t}{c_{t+k}}\right) =
+$$
+\ln\left(\frac{c_t}{c_{t+k}}\right) =
 \frac{\ln \beta}{\alpha - 1} \mathbf{1}_{t = 0} +
 \frac{\ln \delta}{\alpha - 1} k +
-\frac{1}{\alpha - 1} \ln(1 + r).$$
+\frac{1}{\alpha - 1} \ln(1 + r).
+$$
 
 The three regression coefficients map back to $(\beta, \delta, \alpha)$ by inversion.
 The slope on $\ln(1 + r)$ identifies $\alpha$.
@@ -61,15 +69,17 @@ The slope on $k$ identifies $\delta$ given $\alpha$.
 The dummy $\mathbf{1}_{t = 0}$ identifies $\beta$ given $\alpha$.
 
 If the design uses only $t = 0$ cells, the $\mathbf{1}_{t = 0}$ regressor drops out.
-What remains is the constant term $\ln(\beta\, \delta^{k_0})$ for each fixed $k_0$, which mixes $\beta$ and $\delta^{k_0}$ in a single number.
+What remains is the constant term $\ln(\beta \delta^{k_0})$ for each fixed $k_0$, which mixes $\beta$ and $\delta^{k_0}$ in a single number.
 Front-end delay variation is what unlocks $\beta$.
 
 ### Method 1: NLS on the demand function
 
 Method 1 estimates $(\beta, \delta, \alpha)$ by nonlinear least squares on the closed-form demand:
 
-$$\hat\theta^{\mathrm{NLS}} = \arg\min_{\theta = (\beta, \delta, \alpha)}
-\sum_{i, j} (c_{t,  ij} - c_t(\theta;  r_j, k_j, t_j, m_j))^2.$$
+$$
+\hat\theta^{\mathrm{NLS}} = \arg\min_{\theta = (\beta, \delta, \alpha)}
+\sum_{i, j} (c_{t,  ij} - c_t(\theta;  r_j, k_j, t_j, m_j))^2.
+$$
 
 The sum runs over subjects $i$ and choice cells $j$.
 NLS does not need an interior assumption and the residual is in dollar units, but corner choices contribute zero residual rather than a censoring term.
@@ -82,7 +92,9 @@ The model is $y_{ij} = X_{ij}^\top (a, b, c) + \varepsilon_{ij}$ with $\varepsil
 Lower and upper corner allocations censor $y$ and contribute log-CDF or log-survival terms.
 The likelihood is the standard two-limit Tobit form:
 
-$$\ell(a, b, c, \sigma) = \sum_{ij \in \mathrm{int}} \log \phi_\sigma(y_{ij} - X_{ij}^\top (a, b, c)) + \sum_{ij \in \mathrm{lower}} \log \Phi_\sigma(L - X_{ij}^\top (a, b, c)) + \sum_{ij \in \mathrm{upper}} \log [1 - \Phi_\sigma(U - X_{ij}^\top (a, b, c))].$$
+$$
+\ell(a, b, c, \sigma) = \sum_{ij \in \mathrm{int}} \log \phi_\sigma(y_{ij} - X_{ij}^\top (a, b, c)) + \sum_{ij \in \mathrm{lower}} \log \Phi_\sigma(L - X_{ij}^\top (a, b, c)) + \sum_{ij \in \mathrm{upper}} \log [1 - \Phi_\sigma(U - X_{ij}^\top (a, b, c))].
+$$
 
 Estimates of $(\beta, \delta, \alpha)$ recover by inversion:
 $\hat\alpha = 1 + 1 / \hat c$, $\hat\delta = \exp(\hat b / \hat c)$, $\hat\beta = \exp(\hat a / \hat c)$.
@@ -114,7 +126,7 @@ NLS treats the dollar-value sooner payment $c_t$ as the dependent variable and m
 
 ```text
 Algorithm: NLS on the demand function
-Input : observations (c_t, t, k, 1+r, m)_{ij}; bounds on (beta, delta, alpha)
+Input : observations (c_t, t, k, 1+r, m)[ij]; bounds on (beta, delta, alpha)
 Output: theta_hat = (beta_hat, delta_hat, alpha_hat)
   for each candidate theta proposed by the optimizer:
     1. compute xi = (beta_eff(theta, t) * delta^k * (1+r))^(1/(alpha-1)) per cell
@@ -131,10 +143,10 @@ Method 2 takes logs of the tangency condition to obtain a regression that is lin
 
 ```text
 Algorithm: Two-limit Tobit MLE on the log tangency
-Input : (log_ratio, t, k, 1+r, censor_flags)_{ij}; bounds on (a, b, c, sigma)
+Input : (log_ratio, t, k, 1+r, censor_flags)[ij]; bounds on (a, b, c, sigma)
 Output: (beta_hat, delta_hat, alpha_hat, sigma_hat)
   for each candidate (a, b, c, sigma):
-    1. mu_{ij} = a * 1{t = 0} + b * k + c * log(1+r)
+    1. mu[ij] = a * 1{t = 0} + b * k + c * log(1+r)
     2. interior obs contribute log normal density at (y - mu) / sigma
     3. lower corner obs contribute log Phi((y - mu) / sigma)
     4. upper corner obs contribute log (1 - Phi((y - mu) / sigma))
@@ -168,7 +180,7 @@ The recovery table reports point estimates and bootstrap standard errors. Subjec
 | Daily discount factor delta | 0.99928 |        0.99929 |             1e-05  |          0.99924 |
 | CRRA exponent alpha         | 0.92    |        0.9187  |             0.0004 |          0.924   |
 
-The design comparison contrasts NLS estimates from the strong and weak designs on the same subjects and the same noise. Both designs recover $\beta$ close to the truth, with the weak-design standard error roughly twice the strong-design one. NLS on the closed-form demand exploits structural curvature in $(\beta\, \delta^{k}  (1 + r))^{1/(\alpha - 1)}$ across $k$ and $1 + r$, which gives some traction even when the front-end delay is fixed at zero. The log-tangency linearisation that Method 2 uses does not have this advantage: under the weak design the $\mathbf{1}_{t = 0}$ regressor is degenerate, the profile log-likelihood for $\beta$ goes flat, and Tobit-style identification of $\beta$ collapses. The profile-likelihood figure above shows that flatness directly.
+The design comparison contrasts NLS estimates from the strong and weak designs on the same subjects and the same noise. Both designs recover $\beta$ close to the truth, with the weak-design standard error roughly twice the strong-design one. NLS on the closed-form demand exploits structural curvature in $(\beta \delta^{k}  (1 + r))^{1/(\alpha - 1)}$ across $k$ and $1 + r$, which gives some traction even when the front-end delay is fixed at zero. The log-tangency linearisation that Method 2 uses does not have this advantage: under the weak design the $\mathbf{1}_{t = 0}$ regressor is degenerate, the profile log-likelihood for $\beta$ goes flat, and Tobit-style identification of $\beta$ collapses. The profile-likelihood figure above shows that flatness directly.
 
 **Strong vs weak design on the same simulation**
 
@@ -181,7 +193,7 @@ The design comparison contrasts NLS estimates from the strong and weak designs o
 
 The CTB design turns intertemporal preference estimation into a nonlinear regression on continuous allocations. Each subject's choice in each $(t, k, 1 + r)$ cell is the interior solution to a one-period optimisation, and the closed-form demand or its log-tangency linearisation gives the moment used for estimation.
 
-Front-end delay variation is what makes $\beta$ separately identifiable. Without $t > 0$ cells the data tell the analyst about the product $\beta\, \delta^{k}$ but not about its factors. Adding even a single $t > 0$ cell sharpens the profile likelihood for $\beta$ dramatically.
+Front-end delay variation is what makes $\beta$ separately identifiable. Without $t > 0$ cells the data tell the analyst about the product $\beta \delta^{k}$ but not about its factors. Adding even a single $t > 0$ cell sharpens the profile likelihood for $\beta$ dramatically.
 
 The two estimation methods are complements rather than substitutes. NLS on the demand function works directly on the dollar-value allocation, so corner choices contribute a residual rather than breaking the criterion. Tobit on the log tangency is the right choice when corner choices are common, because it scores those cells with a censoring term instead of an interior residual. Both methods here fix the Stone-Geary minima at zero, matching column 3 of Andreoni and Sprenger Table 2; the column-1 specification that estimates those minima jointly is a natural extension this tutorial does not run. Andreoni and Sprenger report both estimators in their Table 2 for exactly this reason.
 

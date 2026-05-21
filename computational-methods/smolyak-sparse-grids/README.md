@@ -24,7 +24,7 @@ with $\varepsilon' \sim \mathcal{N}(0, 1)$. The first-order conditions across
 sectors give one Euler equation per capital:
 
 $$
-\frac{1}{c} = \beta \alpha A_i \mathbb{E}\left[ \frac{e^{z'} (k_i')^{\alpha - 1}}{c'} \,\middle|\, z \right],
+\frac{1}{c} = \beta \alpha A_i \mathbb{E}\left[ \frac{e^{z'} (k_i')^{\alpha - 1}}{c'} \middle| z \right],
 \qquad i = 1, \dots, N.
 $$
 
@@ -36,7 +36,7 @@ allocation in closed form:
 $$
 \frac{A_i (k_i')^{\alpha - 1}}{A_j (k_j')^{\alpha - 1}} = 1,
 \qquad
-k_i' = \omega_i\, S,
+k_i' = \omega_i S,
 \qquad
 \omega_i = \frac{A_i^{1 / (1 - \alpha)}}{\sum_{j=1}^{N} A_j^{1 / (1 - \alpha)}}.
 $$
@@ -58,7 +58,7 @@ With $Z \equiv \sum_j A_j^{1 / (1 - \alpha)}$, the four sector Euler
 equations collapse to a single scalar condition on $S$:
 
 $$
-\frac{1}{c} = \beta \alpha Z^{1 - \alpha} S^{\alpha - 1} \mathbb{E}\left[ \frac{e^{z'}}{c'} \,\middle|\, z \right].
+\frac{1}{c} = \beta \alpha Z^{1 - \alpha} S^{\alpha - 1} \mathbb{E}\left[ \frac{e^{z'}}{c'} \middle| z \right].
 $$
 
 This is the unknown that Smolyak collocation will fit on $[-1, 1]^{d}$ after a
@@ -214,16 +214,16 @@ Input: dimension d, level mu, parameters (beta, alpha, A_1..A_N, rho, sigma),
        state bounds [lo, hi], quadrature nodes (eps_q, w_q), tol = 1e-7
 Output: converged coefficients theta_star
 1. Build admissible level set I = {i : mu+1 <= |i| <= mu+d, i_k >= 1}
-2. Build sparse grid H = dedup union over i in I of X_{i_1} x ... x X_{i_d}
+2. Build sparse grid H = dedup union over i in I of X[i_1] x ... x X[i_d]
 3. Build admissible degree set A = {a : sum_k level(a_k) <= mu}
-4. Build basis matrix Phi with Phi[n, k] = prod_j T_{A[k, j]}(H[n, j])
+4. Build basis matrix Phi with Phi[n, k] = prod_j T[A[k, j]](H[n, j])
 5. theta_old <- coefficients of a constant saving fraction
 6. repeat:
      for each node x_n in H:
        compute next-period state x_n' under k' = omega * S(x_n; theta_old)
        evaluate E_n by Gauss-Hermite quadrature over productivity shocks
        solve scalar Euler equation for S_n in (0, Y_n) via brentq
-     theta_new <- Phi^{-1} log S
+     theta_new <- Phi^(-1) log S
      if max_k |theta_new[k] - theta_old[k]| < tol: break
      theta_old <- theta_new
 7. return theta_new

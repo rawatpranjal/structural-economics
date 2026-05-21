@@ -14,11 +14,15 @@ Let $k_t$ be capital and $z_t$ a productivity shock. Output is $y_t = z_t A k_t^
 
 The planner's value function solves the Bellman equation:
 
-$$V(k, z) = \max_{k' \in [0, y]} \{\, \log(z A k^{\alpha} - k') + \beta\, \mathbb{E}[V(k', z') \mid z] \,\}.$$
+$$
+V(k, z) = \max_{k' \in [0, y]} \{ \log(z A k^{\alpha} - k') + \beta \mathbb{E}[V(k', z') \mid z] \}.
+$$
 
 Tabular Q-learning stores an action-value $Q(s, a)$ for each state-action pair and updates it from observed transitions:
 
-$$Q(s, a) \leftarrow Q(s, a) + \alpha_t [\, r + \beta \max_{a'} Q(s', a') - Q(s, a) \,].$$
+$$
+Q(s, a) \leftarrow Q(s, a) + \alpha_t [ r + \beta \max_{a'} Q(s', a') - Q(s, a) ].
+$$
 
 Here $\alpha_t$ is the step size (learning rate) for update $t$.
 
@@ -60,7 +64,7 @@ for t = 1, ..., T:
     sample action a_t uniformly over feasible actions at s_t
     receive reward r_t = log(z A k^alpha - k'(a_t))
     sample next productivity from the transition row
-    Q(s_t, a_t) += alpha_t * (r_t + beta * max_a Q(s_{t+1}, a) - Q(s_t, a_t))
+    Q(s_t, a_t) += alpha_t * (r_t + beta * max_a Q(s[t+1], a) - Q(s_t, a_t))
 ```
 
 The deep-RL appendix replaces the table with a small two-layer MLP $Q_\theta(k, z, \cdot)$. A replay buffer stores recent transitions. The loss is a Huber penalty against a slow-moving target network.
@@ -72,7 +76,7 @@ Output: parameters theta of Q_theta(k, z, .)
 Initialize online and target networks with the same weights
 for t = 1, ..., T_dqn:
     select a_t with epsilon-greedy on Q_theta(s_t, .)
-    step the environment, store (s_t, a_t, r_t, s_{t+1}) in the buffer
+    step the environment, store (s_t, a_t, r_t, s[t+1]) in the buffer
     sample a minibatch and form targets y = r + beta * max_a Q_target(s', a)
     take a gradient step on Huber(Q_theta(s, a) - y)
     every K steps copy the online weights into the target network

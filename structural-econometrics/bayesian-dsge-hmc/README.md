@@ -18,16 +18,16 @@ y_t = \mathbb{E}_t y_{t+1} - \tfrac{1}{\sigma}(i_t - \mathbb{E}_t \pi_{t+1}) + d
 $$
 
 $$
-\pi_t = \beta\,\mathbb{E}_t \pi_{t+1} + \kappa\,y_t,
+\pi_t = \beta\mathbb{E}_t \pi_{t+1} + \kappay_t,
 $$
 
 $$
-i_t = \phi_\pi\,\pi_t + \phi_y\,y_t + v_t.
+i_t = \phi_\pi\pi_t + \phi_yy_t + v_t.
 $$
 
 Two AR(1) shocks: a Taylor-rule wedge $v_t$ with persistence $\rho_v$ and
 innovation s.d. $\sigma_v$, and a natural-rate demand shock $d_t$ with $\rho_d$,
-$\sigma_d$. In Klein form $A\,\mathbb{E}_t s_{t+1}=B\,s_t$ with state
+$\sigma_d$. In Klein form $A\mathbb{E}_t s_{t+1}=Bs_t$ with state
 $s=(v,d,y,\pi)$ and $n_\text{predetermined}=2$,
 
 $$
@@ -45,7 +45,7 @@ B=\underbrace{\begin{bmatrix}
 \end{bmatrix}}_{\text{coefficients on } s_t}.
 $$
 
-Klein QZ returns the policy matrices $(F, P)$ in $x_{t+1}=F\,x_t$ and $y_t=P\,x_t$
+Klein QZ returns the policy matrices $(F, P)$ in $x_{t+1}=Fx_t$ and $y_t=Px_t$
 with $x=(v,d)$, $y=(y_t,\pi_t)$. Adding the Taylor rule yields observables
 $(y_t, \pi_t, i_t)$ and a linear Gaussian state-space form. The Kalman filter
 gives the log marginal likelihood
@@ -88,17 +88,23 @@ The pipeline composes three JAX building blocks. Each one has a single responsib
 
 Before scaling to the 4-by-4 NK pencil, here is the smallest system that exercises Klein, the policy formula, and the gradient. The shock is predetermined and the forward-looking variable solves a simple Euler-style condition:
 
-$$v_{t+1}=\rho\,v_t,\qquad y_t=a\,\mathbb{E}_t y_{t+1}+b\,v_t.$$
+$$
+v_{t+1}=\rhov_t,\qquad y_t=a\mathbb{E}_t y_{t+1}+bv_t.
+$$
 
 With state $s=(v,y)$ and $n_\text{predetermined}=1$, the Klein pencil is
 
-$$A=\begin{bmatrix}1 & 0\\ 0 & a\end{bmatrix},\qquad B=\begin{bmatrix}\rho & 0\\ -b & 1\end{bmatrix}.$$
+$$
+A=\begin{bmatrix}1 & 0\\ 0 & a\end{bmatrix},\qquad B=\begin{bmatrix}\rho & 0\\ -b & 1\end{bmatrix}.
+$$
 
-Pick $\rho=0.5$, $a=0.5$, $b=1$. The closed-form guess $y_t=\psi\,v_t$ gives $\psi\,(1-a\rho)=b$, so $\psi=b/(1-a\rho)=4/3$.
+Pick $\rho=0.5$, $a=0.5$, $b=1$. The closed-form guess $y_t=\psiv_t$ gives $\psi(1-a\rho)=b$, so $\psi=b/(1-a\rho)=4/3$.
 
 Now the Schur path. Reducing the pencil gives
 
-$$M=A^{-1}B=\begin{bmatrix}0.5 & 0\\ -2 & 2\end{bmatrix},\quad\text{eigenvalues }\{0.5, 2\}.$$
+$$
+M=A^{-1}B=\begin{bmatrix}0.5 & 0\\ -2 & 2\end{bmatrix},\quad\text{eigenvalues }\{0.5, 2\}.
+$$
 
 Only the eigenvalue $\rho=0.5$ is stable, matching the one predetermined variable, so Blanchard-Kahn holds. Its eigenvector $(1, 4/3)^\top$ partitions as $Z_{11}=1$, $Z_{21}=4/3$. The Klein formulas then deliver $F=Z_{11} T_{11} Z_{11}^{-1}=0.5$ and $P=Z_{21} Z_{11}^{-1}=4/3$, the same numbers as the closed form.
 

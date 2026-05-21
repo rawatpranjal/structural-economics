@@ -66,7 +66,9 @@ quarter $H$ and sets all other policy wedges to zero.
 
 Let the active current shock be $s_t=v_t$ with $\mathbb{E}_t s_{t+1}=\rho_v s_t$. Guess linear responses:
 
-$$x_t=\psi_x s_t,\qquad \pi_t=\psi_\pi s_t,\qquad i_t=\psi_i s_t.$$
+$$
+x_t=\psi_x s_t,\qquad \pi_t=\psi_\pi s_t,\qquad i_t=\psi_i s_t.
+$$
 
 Plug the guess into the IS curve and Phillips curve. The Taylor rule then gives this 2 by 2 system:
 
@@ -91,7 +93,7 @@ Outputs: output, inflation, and policy-rate responses
 1. For a current AR(1) wedge, solve the 2 by 2 coefficient system above.
 2. Iterate v_t=rho_v^t eps to draw the current-shock IRF.
 3. For a future wedge at H, set v_H=eps and v_t=0 otherwise.
-4. Given x_{t+1} and pi_{t+1}, solve the two date-t equations backward.
+4. Given x[t+1] and pi[t+1], solve the two date-t equations backward.
 5. Record x_0 and pi_0 for each H and compare rational with behavioral attention.
 ```
 

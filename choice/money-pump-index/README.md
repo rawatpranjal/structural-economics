@@ -14,24 +14,32 @@ There are $T$ observations. Observation $i$ records a price vector
 $p_i \in \mathbb{R}^G_+$ and chosen bundle $x_i \in \mathbb{R}^G_+$.
 Let
 
-$$E_{ij}=p_i \cdot x_j$$
+$$
+E_{ij}=p_i \cdot x_j
+$$
 
 be the cost of bundle $j$ at observation $i$ prices. Choosing $x_i$ when
 $x_j$ was affordable, $E_{ii} \ge E_{ij}$, directly reveals
 $x_i \succeq^D x_j$. For strict comparisons, define the relative budget slack
 on a direct revealed-preference edge as
 
-$$w_{ij} = \frac{E_{ii} - E_{ij}}{E_{ii}}.$$
+$$
+w_{ij} = \frac{E_{ii} - E_{ij}}{E_{ii}}.
+$$
 
 The graph keeps edges with $w_{ij}>0$. For a directed cycle
 $C=(i_1,\ldots,i_m,i_1)$, average slack is
 
-$$\bar w(C)=\frac{1}{m}\sum_{\ell=1}^{m} w_{i_\ell,i_{\ell+1}}.$$
+$$
+\bar w(C)=\frac{1}{m}\sum_{\ell=1}^{m} w_{i_\ell,i_{\ell+1}}.
+$$
 
 The Money Pump Index is the largest average slack over all directed cycles in
 the revealed-preference graph:
 
-$$\mathrm{MPI} = \max_C \bar w(C).$$
+$$
+\mathrm{MPI} = \max_C \bar w(C).
+$$
 
 ## Model Setup
 
@@ -53,8 +61,8 @@ Inputs: prices p_i, bundles x_i, tolerance eps
 2. Add arc i -> j when (E_ii - E_ij) / E_ii > eps.
 3. Attach weight w_ij = (E_ii - E_ij) / E_ii to each arc.
 4. Let D_k(v) be the largest total weight of a k-arc path ending at v.
-5. Update D_k(v) = max_{u -> v} D_{k-1}(u) + w_uv for k = 1,...,T.
-6. Return max_v min_{0 <= k < T} [D_T(v) - D_k(v)] / (T - k).
+5. Update D_k(v) = max[u -> v] D[k-1](u) + w_uv for k = 1,...,T.
+6. Return max_v min[0 <= k < T] [D_T(v) - D_k(v)] / (T - k).
 Output: MPI, the maximum average budget slack in a cycle.
 ```
 
