@@ -42,10 +42,10 @@ $$
 Standard dynamic-programming arguments produce the Hamilton-Jacobi-Bellman equation with Poisson income switching:
 
 $$
-\rho V_j(a) \,=\, \max_{c \,>\, 0}\, \Big\lbrace
+\rho V_j(a) \,=\, \max_{c \,>\, 0}  \Big\lbrace
 \underbrace{u(c)}_{\text{flow utility}}
-\,+\, \underbrace{V_j'(a)\, (w z_j + r a - c)}_{\text{drift in } a}
-\,+\, \underbrace{\sum_{k} Q_{jk}\, V_k(a)}_{\text{income jump}}
+\,+\, \underbrace{V_j'(a)  (w z_j + r a - c)}_{\text{drift in } a}
+\,+\, \underbrace{\sum_{k} Q_{jk}  V_k(a)}_{\text{income jump}}
 \Big\rbrace .
 $$
 
@@ -67,12 +67,12 @@ Under the optimal rule $c_j(a)$ and its drift $s_j(a)$, the cross-sectional dens
 $$
 \frac{\partial g_j}{\partial t}(a, t)
 \,=\,
--\frac{\partial}{\partial a}\big[s_j(a)\, g_j(a, t)\big]
-\,+\, \sum_{k} Q_{kj}\, g_k(a, t) .
+-\frac{\partial}{\partial a}\big[s_j(a)  g_j(a, t)\big]
+\,+\, \sum_{k} Q_{kj}  g_k(a, t) .
 $$
 
 The first term is the divergence of the deterministic flux $s_j\, g_j$, and the second term is the net inflow from income switching.
-The stationary density solves the time-invariant version with the normalisation $\int (\sum_j g_j)\, da = 1$, and the discretised form is the linear system $\mathbf{A}^{\top} g = 0$ where $\mathbf{A}$ is the same upwind generator that the HJB assembles.
+The stationary density solves the time-invariant version with the normalisation $\int (\sum_j g_j)  da = 1$, and the discretised form is the linear system $\mathbf{A}^{\top} g = 0$ where $\mathbf{A}$ is the same upwind generator that the HJB assembles.
 The two equations are therefore dual under one transposition: the same matrix that propagates values backward propagates densities forward, and the same numerical effort discretises both.
 
 The mean field that closes the system is the interest rate $r$.
@@ -80,7 +80,7 @@ Each household reacts to $r$ as exogenous through the HJB.
 The population's behaviour generates aggregate capital supply
 
 $$
-K^{s}(r) \,=\, \int_{\underline a}^{\bar a} a\, \sum_{j} g_j(a; r)\, da ,
+K^{s}(r) \,=\, \int_{\underline a}^{\bar a} a\, \sum_{j} g_j(a; r)  da ,
 $$
 
 where the dependence on $r$ runs through the consumption rule, the drift, and hence the stationary density.
@@ -130,7 +130,7 @@ In this run the linear branch was used.
 The mean-field-game fixed point is computed by an iterative scheme on the price $r$ that nests an HJB solve and a KFE solve at each candidate.
 At a candidate $r$, the firm side delivers $K^{d}(r)$ and the wage $w(r)$ from the calibrated technology.
 The household HJB is then solved by implicit upwind iteration at the prices $(r, w(r))$, and the same upwind generator is transposed to produce the stationary density in one sparse solve.
-Aggregate capital supply $K^{s}(r) = \int a \sum_j g_j(a)\, da$ is compared against $K^{d}(r)$, and the bracket on $r$ is updated by bisection until the two match.
+Aggregate capital supply $K^{s}(r) = \int a \sum_j g_j(a)  da$ is compared against $K^{d}(r)$, and the bracket on $r$ is updated by bisection until the two match.
 The shared upwind generator is what makes the algorithm cheap: the same matrix discretises both the HJB and the KFE, so each pass through the inner loop costs one matrix assembly rather than two separate discretisations.
 The construction of that generator and the boundary handling are explained in [`heterogeneous-agents/huggett-incomplete-markets/`](../../heterogeneous-agents/huggett-incomplete-markets/) and are reused here without re-derivation.
 
@@ -140,7 +140,7 @@ Place a uniform asset grid $a_1 < a_2 < \cdots < a_I$ on $[\underline a, \bar a]
 The resulting upwind generator on the joint state space is the block matrix
 
 $$
-\mathbf A \,=\, \mathrm{diag}(A_{1}, A_{2}, \dots, A_{N})
+\mathbf{A} \,=\, \mathrm{diag}(A_{1}, A_{2}, \dots, A_{N})
 \,+\, \mathbf{Q} \otimes \mathbf{I}_{I} ,
 $$
 
@@ -148,7 +148,7 @@ where each asset block $A_j$ is tridiagonal in $a$ at the current consumption ru
 The HJB is then advanced by an implicit pseudo-time step,
 
 $$
-\big[(1/\Delta + \rho)\, \mathbf I - \mathbf A\big]\, V^{n+1}
+\big[(1/\Delta + \rho)  \mathbf{I} - \mathbf{A}\big]  V^{n+1}
 \,=\, u(c^{n}) + V^{n} / \Delta ,
 $$
 
@@ -158,7 +158,7 @@ A large step size $\Delta = 10^{3}$ pushes the update into a Newton-step regime 
 ### KFE by transposing the same generator
 
 When the HJB inner loop converges, the same generator $\mathbf{A}$ at the optimal policy is also the operator that propagates the density forward in time, $\partial g / \partial t = \mathbf{A}^{\top} g$.
-The stationary density therefore solves $\mathbf{A}^{\top} g = 0$ with the normalisation $\int (\sum_j g_j)\, da = 1$.
+The stationary density therefore solves $\mathbf{A}^{\top} g = 0$ with the normalisation $\int (\sum_j g_j)  da = 1$.
 This system is singular because $\mathbf{A}$ has zero row sums; the null space of $\mathbf{A}^{\top}$ is one-dimensional and spanned by the stationary density.
 The code pins the scale by replacing one row with the normalisation constraint, solves the resulting non-singular system by sparse LU, and rescales the solution to integrate to one.
 The HJB and the KFE share the operator $\mathbf{A}$, so this step is essentially free given the HJB solve.

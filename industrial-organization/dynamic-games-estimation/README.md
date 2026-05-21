@@ -27,7 +27,7 @@ $\hat P$ and an expected flow payoff $\bar\pi_\theta(\omega;\hat p)$. Integratin
 out the logit action shock adds the expected shock value to the policy-weighted
 payoff, so $\bar\pi_\theta$ is
 
-$$\bar\pi_\theta(\omega;\hat p) = (1-\hat p)\,\pi_i(\omega,0;\theta) + \hat p\,\pi_i(\omega,1;\theta) + H(\hat p) + \gamma,$$
+$$\bar\pi_\theta(\omega;\hat p) = (1-\hat p) \pi_i(\omega,0;\theta) + \hat p\,\pi_i(\omega,1;\theta) + H(\hat p) + \gamma,$$
 
 where $H(\hat p) = -\hat p\log\hat p-(1-\hat p)\log(1-\hat p)$ is the Bernoulli
 entropy of the investment rate and $\gamma$ is the Euler-Mascheroni constant.

@@ -16,14 +16,16 @@ The general problem is to recover three structural parameters from interior allo
 
 A subject faces the future-value budget constraint
 
-$$(1 + r)\, c_t + c_{t+k} = m,$$
+$$(1 + r) c_t + c_{t+k} = m,$$
 
 where $c_t$ is the sooner payment, $c_{t+k}$ is the later payment, $1 + r$ is the gross interest rate over the delay $k$, and $m$ is the dollar value of the token budget at the later token rate.
 
 Preferences are quasi-hyperbolic over CRRA period utility (Andreoni-Sprenger eq 3, with the Stone-Geary minima set to zero):
 
-$$U(c_t, c_{t+k}) = \frac{1}{\alpha}\, c_t^{\alpha}
-+ \beta\, \delta^{k} \cdot \frac{1}{\alpha}\, c_{t+k}^{\alpha}.$$
+$$
+U(c_t, c_{t+k}) = \frac{1}{\alpha} c_t^{\alpha} +
+\beta \delta^{k} \cdot \frac{1}{\alpha} c_{t+k}^{\alpha}.
+$$
 
 Here $\alpha < 1$ is the CRRA exponent (relative risk aversion equals $1 - \alpha$), $\delta$ is the per-day discount factor, and $\beta$ is the present-bias parameter.
 The factor $\beta$ multiplies the later utility only when the sooner date is today.
@@ -32,26 +34,26 @@ With a front-end delay $t > 0$ both payments are in the future and $\beta$ drops
 Maximising $U$ subject to the budget gives the interior tangency condition (Andreoni-Sprenger eq 4):
 
 $$\frac{c_t}{c_{t+k}} = \begin{cases}
-(\beta\, \delta^{k}\, (1 + r))^{1/(\alpha - 1)}, & t = 0, \\
-(\delta^{k}\, (1 + r))^{1/(\alpha - 1)}, & t > 0.
+(\beta\, \delta^{k}  (1 + r))^{1/(\alpha - 1)}, & t = 0, \\
+(\delta^{k}  (1 + r))^{1/(\alpha - 1)}, & t > 0.
 \end{cases}$$
 
 Combining the tangency with the budget gives the closed-form sooner demand (Andreoni-Sprenger eq 5):
 
-$$c_t(\beta, \delta, \alpha;\, r, k, t, m)
-= \frac{\xi(\beta, \delta, \alpha;\, r, k, t)}
-       {1 + (1 + r)\, \xi(\beta, \delta, \alpha;\, r, k, t)}\, m,$$
+$$c_t(\beta, \delta, \alpha;  r, k, t, m)
+= \frac{\xi(\beta, \delta, \alpha;  r, k, t)}
+       {1 + (1 + r)  \xi(\beta, \delta, \alpha;  r, k, t)}  m,$$
 
-with $\xi = (\beta_{\mathrm{eff}}\, \delta^{k}\, (1 + r))^{1/(\alpha - 1)}$ and $\beta_{\mathrm{eff}} = \beta$ when $t = 0$, $\beta_{\mathrm{eff}} = 1$ otherwise.
+with $\xi = (\beta_{\mathrm{eff}}  \delta^{k}  (1 + r))^{1/(\alpha - 1)}$ and $\beta_{\mathrm{eff}} = \beta$ when $t = 0$, $\beta_{\mathrm{eff}} = 1$ otherwise.
 
 ### Identification via the front-end delay
 
 Taking logs of the tangency condition gives a relation that is linear in observables (Andreoni-Sprenger eq 6):
 
-$$\ln\left(\frac{c_t}{c_{t+k}}\right)
-= \frac{\ln \beta}{\alpha - 1}\, \mathbf{1}_{t = 0}
-+ \frac{\ln \delta}{\alpha - 1}\, k
-+ \frac{1}{\alpha - 1}\, \ln(1 + r).$$
+$$\ln\left(\frac{c_t}{c_{t+k}}\right) =
+\frac{\ln \beta}{\alpha - 1} \mathbf{1}_{t = 0} +
+\frac{\ln \delta}{\alpha - 1} k +
+\frac{1}{\alpha - 1} \ln(1 + r).$$
 
 The three regression coefficients map back to $(\beta, \delta, \alpha)$ by inversion.
 The slope on $\ln(1 + r)$ identifies $\alpha$.
@@ -67,7 +69,7 @@ Front-end delay variation is what unlocks $\beta$.
 Method 1 estimates $(\beta, \delta, \alpha)$ by nonlinear least squares on the closed-form demand:
 
 $$\hat\theta^{\mathrm{NLS}} = \arg\min_{\theta = (\beta, \delta, \alpha)}
-\sum_{i, j} (c_{t,\, ij} - c_t(\theta;\, r_j, k_j, t_j, m_j))^2.$$
+\sum_{i, j} (c_{t,  ij} - c_t(\theta;  r_j, k_j, t_j, m_j))^2.$$
 
 The sum runs over subjects $i$ and choice cells $j$.
 NLS does not need an interior assumption and the residual is in dollar units, but corner choices contribute zero residual rather than a censoring term.
@@ -75,8 +77,8 @@ NLS does not need an interior assumption and the residual is in dollar units, bu
 ### Method 2: Two-limit Tobit MLE on the log tangency
 
 Method 2 takes the linear regression form of the log tangency and assumes a Gaussian error.
-Let $y_{ij} = \ln(c_{t,\, ij} / c_{t + k,\, ij})$ and $X_{ij} = (\mathbf{1}_{t_j = 0},\, k_j,\, \ln(1 + r_j))^\top$ with linear coefficients $(a, b, c)$.
-The model is $y_{ij} = X_{ij}^\top (a, b, c) + \varepsilon_{ij}$ with $\varepsilon \sim \mathcal N(0, \sigma^2)$.
+Let $y_{ij} = \ln(c_{t,  ij} / c_{t + k,  ij})$ and $X_{ij} = (\mathbf{1}_{t_j = 0},  k_j,  \ln(1 + r_j))^\top$ with linear coefficients $(a, b, c)$.
+The model is $y_{ij} = X_{ij}^\top (a, b, c) + \varepsilon_{ij}$ with $\varepsilon \sim \mathcal{N}(0, \sigma^2)$.
 Lower and upper corner allocations censor $y$ and contribute log-CDF or log-survival terms.
 The likelihood is the standard two-limit Tobit form:
 
@@ -166,7 +168,7 @@ The recovery table reports point estimates and bootstrap standard errors. Subjec
 | Daily discount factor delta | 0.99928 |        0.99929 |             1e-05  |          0.99924 |
 | CRRA exponent alpha         | 0.92    |        0.9187  |             0.0004 |          0.924   |
 
-The design comparison contrasts NLS estimates from the strong and weak designs on the same subjects and the same noise. Both designs recover $\beta$ close to the truth, with the weak-design standard error roughly twice the strong-design one. NLS on the closed-form demand exploits structural curvature in $(\beta\, \delta^{k}\, (1 + r))^{1/(\alpha - 1)}$ across $k$ and $1 + r$, which gives some traction even when the front-end delay is fixed at zero. The log-tangency linearisation that Method 2 uses does not have this advantage: under the weak design the $\mathbf{1}_{t = 0}$ regressor is degenerate, the profile log-likelihood for $\beta$ goes flat, and Tobit-style identification of $\beta$ collapses. The profile-likelihood figure above shows that flatness directly.
+The design comparison contrasts NLS estimates from the strong and weak designs on the same subjects and the same noise. Both designs recover $\beta$ close to the truth, with the weak-design standard error roughly twice the strong-design one. NLS on the closed-form demand exploits structural curvature in $(\beta\, \delta^{k}  (1 + r))^{1/(\alpha - 1)}$ across $k$ and $1 + r$, which gives some traction even when the front-end delay is fixed at zero. The log-tangency linearisation that Method 2 uses does not have this advantage: under the weak design the $\mathbf{1}_{t = 0}$ regressor is degenerate, the profile log-likelihood for $\beta$ goes flat, and Tobit-style identification of $\beta$ collapses. The profile-likelihood figure above shows that flatness directly.
 
 **Strong vs weak design on the same simulation**
 

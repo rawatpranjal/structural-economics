@@ -16,13 +16,13 @@ A monopolist faces a population of consumers split between two segments.
 Segment $L$ has linear demand with intercept $A_L > 0$ and slope $b_L > 0$.
 Segment $H$ has linear demand with intercept $A_H > 0$ and slope $b_H > 0$.
 
-$$D_L(p) = \max\lbrace 0,\, A_L - b_L\, p \rbrace,
+$$D_L(p) = \max\lbrace 0,  A_L - b_L\, p \rbrace,
 \qquad
-D_H(p) = \max\lbrace 0,\, A_H - b_H\, p \rbrace.$$
+D_H(p) = \max\lbrace 0,  A_H - b_H\, p \rbrace.$$
 
 With low-segment share $\lambda \in (0, 1)$ and constant marginal cost $c \ge 0$, the mixture profit is
 
-$$\pi(p) = (p - c) \left[\lambda\, D_L(p) + (1 - \lambda)\, D_H(p)\right].$$
+$$\pi(p) = (p - c) \left[\lambda\, D_L(p) + (1 - \lambda)  D_H(p)\right].$$
 
 The objective is piecewise quadratic in $p$ with a strict local maximum at the both-segments peak $p_L^{\ast}$ and a global maximum at the high-only peak $p_H^{\ast}$.
 On the calibration used here, $p_L^{\ast} \approx 1.603$ with $\pi \approx 4.14$, and $p_H^{\ast} = 4.25$ with $\pi \approx 5.625$.
@@ -61,12 +61,12 @@ The variance collapsing at evaluated points is what makes Expected Improvement a
 Let $f^{\ast} = \max_{i \le n} y_i$ denote the best observed value so far.
 Expected Improvement scores a candidate $x \in \mathcal{X}$ by the expected positive gain over $f^{\ast}$, with expectation taken under the GP posterior at $x$:
 
-$$\mathrm{EI}(x) = \mathbb{E}\left[\max\lbrace f(x) - f^{\ast} - \xi,\, 0 \rbrace \mid X, y \right].$$
+$$\mathrm{EI}(x) = \mathbb{E}\left[\max\lbrace f(x) - f^{\ast} - \xi,  0 \rbrace \mid X, y \right].$$
 
 The parameter $\xi \ge 0$ is an exploration tilt, in units of the objective: it requires a posterior improvement of at least $\xi$ before contributing to the score.
 Since $f(x) \mid X, y \sim \mathcal{N}(\mu(x), \sigma^2(x))$, the expectation is a truncated-Gaussian integral with the closed form
 
-$$\mathrm{EI}(x) = \underbrace{(\mu(x) - f^{\ast} - \xi)\, \Phi(z)}_{\text{exploitation: bet on posterior mean}} + \underbrace{\sigma(x)\, \phi(z)}_{\text{exploration: bet on posterior spread}},
+$$\mathrm{EI}(x) = \underbrace{(\mu(x) - f^{\ast} - \xi)  \Phi(z)}_{\text{exploitation: bet on posterior mean}} + \underbrace{\sigma(x)  \phi(z)}_{\text{exploration: bet on posterior spread}},
 \qquad
 z = \frac{\mu(x) - f^{\ast} - \xi}{\sigma(x)},$$
 
@@ -93,7 +93,7 @@ The Bayesian-optimization loop alternates between fitting the GP and maximizing 
 | $A_H$, $b_H$ | 8.0, 1.0 | High-valuation linear demand |
 | $c$ | 0.5 | Marginal cost |
 | $\lambda$ | 0.6 | Share of low-valuation consumers |
-| Search bracket | $[0.501,\, 8.0]$ | Outer bounds for every method |
+| Search bracket | $[0.501,  8.0]$ | Outer bounds for every method |
 | Low peak | $p_L^{\ast} = 1.6029$, $\pi = 4.1360$ | Local maximum |
 | High peak | $p_H^{\ast} = 4.2500$, $\pi = 5.6250$ | Global maximum |
 | Initial design | 5 uniform draws, seed 0 | Seed observations for the GP |
@@ -101,7 +101,7 @@ The Bayesian-optimization loop alternates between fitting the GP and maximizing 
 | Total BO budget | 30 | Per acquisition rule |
 | Kernel signal std $\sigma_f$ | 2.00 | Squared-exponential kernel |
 | Kernel noise std $\sigma_n$ | 1e-03 | Almost-deterministic profit |
-| Length-scale grid | $[0.30,\, 2.50]$, 12 points | Tuned by log marginal likelihood |
+| Length-scale grid | $[0.30,  2.50]$, 12 points | Tuned by log marginal likelihood |
 | EI exploration $\xi$ | 0.00 | Posterior-improvement tilt |
 
 ## Solution Method

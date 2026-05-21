@@ -14,9 +14,9 @@ A monopolist faces a population of consumers split between two segments.
 Segment $L$ has linear demand with intercept $A_L$ and slope $b_L$.
 Segment $H$ has linear demand with intercept $A_H$ and slope $b_H$.
 
-$$D_L(p) = \max\lbrace 0,\, A_L - b_L\, p \rbrace,
+$$D_L(p) = \max\lbrace 0,  A_L - b_L\, p \rbrace,
 \qquad
-D_H(p) = \max\lbrace 0,\, A_H - b_H\, p \rbrace.$$
+D_H(p) = \max\lbrace 0,  A_H - b_H\, p \rbrace.$$
 
 Each segment quits the market at its own choke price.
 The low-valuation segment exits at $p_L^{\max} = A_L / b_L$.
@@ -25,16 +25,16 @@ The high-valuation segment exits at the larger price $p_H^{\max} = A_H / b_H$.
 The population mixture weight $\lambda \in (0, 1)$ records the share of low-valuation consumers.
 Profit is the weighted sum of segment revenues minus the marginal-cost wedge.
 
-$$\pi(p) = (p - c) \left[\lambda\, D_L(p) + (1 - \lambda)\, D_H(p)\right].$$
+$$\pi(p) = (p - c) \left[\lambda\, D_L(p) + (1 - \lambda)  D_H(p)\right].$$
 
 The objective is piecewise quadratic in $p$.
-On $[c,\, p_L^{\max}]$ both segments are active.
-On $(p_L^{\max},\, p_H^{\max}]$ only the high-valuation segment is active.
+On $[c,  p_L^{\max}]$ both segments are active.
+On $(p_L^{\max},  p_H^{\max}]$ only the high-valuation segment is active.
 The two regimes are smoothly stitched at the kink $p_L^{\max}$.
 
 In the both-segments regime the first-order condition is linear in $p$.
 
-$$\pi'(p) = \lambda (A_L - 2 b_L\, p) + (1 - \lambda)(A_H - 2 b_H\, p) + (\lambda b_L + (1 - \lambda) b_H)\, c.$$
+$$\pi'(p) = \lambda (A_L - 2 b_L\, p) + (1 - \lambda)(A_H - 2 b_H\, p) + (\lambda b_L + (1 - \lambda) b_H)  c.$$
 
 In the high-only regime profit is the standard quadratic with a single interior maximizer.
 
@@ -97,7 +97,7 @@ The result is a stochastic global search that does not need a starting point ins
 | $A_H$, $b_H$ | 8.0, 1.0 | High-valuation linear demand |
 | $c$ | 0.5 | Marginal cost |
 | $\lambda$ | 0.6 | Share of low-valuation consumers |
-| Search bracket | $[0.501,\, 8.0]$ | Outer bounds for every method |
+| Search bracket | $[0.501,  8.0]$ | Outer bounds for every method |
 | Low choke price | $p_L^{\max} = 2.00$ | Low-valuation segment quits |
 | Low peak | $p_L^{\ast} = 1.6029$, $\pi = 4.1360$ | Local maximum |
 | High peak | $p_H^{\ast} = 4.2500$, $\pi = 5.6250$ | Global maximum |
@@ -193,7 +193,7 @@ The profit surface has a local peak at $p_L^{\ast} = 1.603$ where both segments 
 
 <img src="figures/profit-surface.png" alt="Two-segment monopoly profit with low-price and high-price peaks marked" width="80%">
 
-The basin map sweeps 200 evenly spaced starting prices and records where each L-BFGS-B run lands. Only starts in the narrow window $[1.52,\, 1.97]$ converge to the low peak. Every start below that window also converges to the high peak: the gradient at a low price is strongly positive, so the quasi-Newton step overshoots the low peak and descends into the global basin. The L-BFGS-B basin boundary near $p \approx 1.52$ is an artifact of the solver dynamics and sits below the economic kink $p_L^{\max} = 2.00$, not at it. The basin volumes are 6.5 percent low and 93.5 percent high on this bracket. A single start drawn uniformly from the bracket has roughly 94 percent chance of landing in the global basin, so the low peak is the harder one to discover by chance.
+The basin map sweeps 200 evenly spaced starting prices and records where each L-BFGS-B run lands. Only starts in the narrow window $[1.52,  1.97]$ converge to the low peak. Every start below that window also converges to the high peak: the gradient at a low price is strongly positive, so the quasi-Newton step overshoots the low peak and descends into the global basin. The L-BFGS-B basin boundary near $p \approx 1.52$ is an artifact of the solver dynamics and sits below the economic kink $p_L^{\max} = 2.00$, not at it. The basin volumes are 6.5 percent low and 93.5 percent high on this bracket. A single start drawn uniformly from the bracket has roughly 94 percent chance of landing in the global basin, so the low peak is the harder one to discover by chance.
 
 <img src="figures/basin-map.png" alt="L-BFGS-B converged price vs starting price; only a narrow window of low starts reaches the low peak, the rest overshoot into the global basin" width="80%">
 

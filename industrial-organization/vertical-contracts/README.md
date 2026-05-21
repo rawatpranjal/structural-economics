@@ -10,7 +10,7 @@ Exact enumeration checks every feasible seven-product subset. One extra Mars ite
 
 ## Equations
 
-Let $\mathcal J$ be the product catalog and let $K$ be the number of vending
+Let $\mathcal{J}$ be the product catalog and let $K$ be the number of vending
 slots. Product $j$ has demand intercept $a_j$, marginal cost $c_j$, and
 manufacturer label $m(j)$. Retail demand is separable:
 
@@ -42,7 +42,7 @@ The upstream side pays $F_j^C(A)$ to the retailer. The retailer chooses
 
 $$
 A_C^{\ast}
-=\arg\max_{A\subset\mathcal J:\ |A|=K}
+=\arg\max_{A\subset\mathcal{J}:\ |A|=K}
 \sum_{j\in A}\left[(p_j^{\ast}-w_j^C(A))q_j(p_j^{\ast})+F_j^C(A)\right].
 $$
 

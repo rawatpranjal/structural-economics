@@ -151,10 +151,10 @@ After sorting and dropping repeated endogenous assets, DC-EGM interpolates the
 branch curve back to the common current-asset grid:
 
 $$
-g_t^d(a)=\mathrm{interp}\left(a;\,
+g_t^d(a)=\mathrm{interp}\left(a; 
 a_{t,i}^{\mathrm{endo},d}, a_i^{+}\right),
 \qquad
-V_t^d(a)=\mathrm{interp}\left(a;\,
+V_t^d(a)=\mathrm{interp}\left(a; 
 a_{t,i}^{\mathrm{endo},d}, \widetilde V_t^d(a_{t,i}^{\mathrm{endo},d})\right).
 $$
 

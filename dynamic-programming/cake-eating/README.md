@@ -41,15 +41,15 @@ In the log case, consumption falls at rate $\beta$.
 A policy is a function $c^{\ast}: W \mapsto c$ that prescribes a feasible consumption choice at every stock.
 Guessing a constant consumption share and verifying the Euler equation gives the closed-form optimal policy:
 
-$$c^{\ast}(W) = (1-\beta)\, W,
+$$c^{\ast}(W) = (1-\beta)  W,
 \qquad g(W) = W - c^{\ast}(W) = \beta\, W.$$
 
 Here $g(W)$ is the law of motion for the cake under the optimal policy.
 The matching value function is:
 
-$$V(W) = \frac{\ln((1-\beta) W)}{1-\beta}
-+ \frac{\beta \ln \beta}{(1-\beta)^2},
-\qquad V'(W) = \frac{1}{(1-\beta)\,W}.$$
+$$V(W) = \frac{\ln((1-\beta) W)}{1-\beta} +
+\frac{\beta \ln \beta}{(1-\beta)^2},
+\qquad V'(W) = \frac{1}{(1-\beta) W}.$$
 
 This closed form is the target for the numerical check.
 
@@ -82,7 +82,7 @@ This tutorial uses the variant of modified policy iteration whose evaluation pha
 One improvement step is followed by $k$ such evaluation sweeps, so the policy contraction $T_{\pi}$ is applied a total of $k+1$ times per outer step:
 
 $$\pi_{n+1}(W) \in \arg\max_{c} \{\, u(c) + \beta\, V_n(W-c) \,\},
-\qquad V_{n+1} = T_{\pi_{n+1}}^{\,k}\, (T V_n).$$
+\qquad V_{n+1} = T_{\pi_{n+1}}^{\,k}  (T V_n).$$
 
 The integer $k$ is the inner-sweep count and is set by the user.
 Choosing $k=0$ does no evaluation sweep, so the outer step reduces to $V_{n+1} = T V_n$ and recovers value function iteration exactly.
@@ -95,12 +95,12 @@ Let $P_{\pi}$ be the $N_W \times N_W$ matrix whose row $i$ holds the linear-inte
 Row $i$ of $P_{\pi}$ has at most two nonzero entries, one for each end of the bracketing interval.
 Stacking grid values into a vector, the policy operator becomes:
 
-$$T_{\pi} V = u(\pi) + \beta\, P_{\pi}\, V.$$
+$$T_{\pi} V = u(\pi) + \beta\, P_{\pi}  V.$$
 
 The fixed point $V_{\pi}$ satisfies $V_{\pi} = u(\pi) + \beta P_{\pi} V_{\pi}$.
 Rearranging gives a linear system in $V_{\pi}$:
 
-$$\underbrace{(I - \beta\, P_{\pi})}_{\text{discounted resolvent}}\, V_{\pi} = \underbrace{u(\pi)}_{\text{flow utility under } \pi}.$$
+$$\underbrace{(I - \beta\, P_{\pi})}_{\text{discounted resolvent}}  V_{\pi} = \underbrace{u(\pi)}_{\text{flow utility under } \pi}.$$
 
 The resolvent $(I - \beta P_{\pi})^{-1}$ is the discrete analogue of the geometric series $\sum_{k=0}^{\infty} (\beta P_{\pi})^k$, which is exactly the discounted sum of flow utilities along the Markov chain induced by the policy.
 That is why the linear system is the exact policy evaluation: it computes the infinite expected discounted utility in one solve rather than approximating it by repeated application of $T_{\pi}$.
@@ -108,7 +108,7 @@ The matrix $I - \beta P_{\pi}$ is invertible because $\beta P_{\pi}$ has spectra
 Exact policy iteration alternates policy improvement with this exact solve:
 
 $$\pi_{n+1} \in \arg\max_{c} \{\, u(c) + \beta\, V_n(W-c) \,\},
-\qquad V_{n+1} = \underbrace{(I - \beta\, P_{\pi_{n+1}})^{-1}\, u(\pi_{n+1})}_{\text{exact value of always playing } \pi_{n+1}}.$$
+\qquad V_{n+1} = \underbrace{(I - \beta\, P_{\pi_{n+1}})^{-1}  u(\pi_{n+1})}_{\text{exact value of always playing } \pi_{n+1}}.$$
 
 The iteration can be read as Newton's method applied to the fixed-point equation $V = T V$.
 Near an optimal policy the improvement step makes only second-order changes in $V$.
@@ -121,7 +121,7 @@ Convergence is therefore super-linear once the policy is close to the optimum, w
 | $\beta$ | 0.9 | Discount factor; closed-form saving rate is $\beta$ |
 | $\sigma$ | 1.0 | CRRA curvature; $\sigma=1$ gives the log closed form |
 | $W_0$ | 1.0 | Initial cake endowment |
-| $W$ | $[0.01,\, 1.0]$ | Wealth grid for $V$ and $c^{\ast}$ |
+| $W$ | $[0.01,  1.0]$ | Wealth grid for $V$ and $c^{\ast}$ |
 | $N_W$ | 500 | Uniform grid points for the state $W$ |
 | $N_c$ | 300 | Inner grid for the consumption choice at each state |
 | $k$ | 5 | Inner policy-evaluation sweeps in modified policy iteration |

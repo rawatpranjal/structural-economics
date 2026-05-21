@@ -16,7 +16,7 @@ The planner picks an allocation vector $x \in \mathbb{R}^3$.
 Each entry $x_j$ is the budget share assigned to project $j$.
 Utility is quadratic in $x$.
 
-$$u(x) = a^\top x - \tfrac{1}{2}\, x^\top B x.$$
+$$u(x) = a^\top x - \tfrac{1}{2}  x^\top B x.$$
 
 $a \in \mathbb{R}^3$ is the vector of marginal returns at zero allocation.
 $B$ is a symmetric positive-definite matrix.
@@ -34,7 +34,7 @@ The Lagrangian builds in both constraints.
 $\lambda$ is the multiplier on the budget cap.
 $\mu = (\mu_1, \mu_2, \mu_3)$ are the multipliers on the three non-negativity bounds.
 
-$$\mathcal{L}(x, \lambda, \mu) = a^\top x - \tfrac{1}{2}\, x^\top B x - \lambda \left(\sum_j x_j - I \right) + \mu^\top x.$$
+$$\mathcal{L}(x, \lambda, \mu) = a^\top x - \tfrac{1}{2}  x^\top B x - \lambda \left(\sum_j x_j - I \right) + \mu^\top x.$$
 
 A Karush-Kuhn-Tucker (KKT) point is the constrained optimum.
 The KKT conditions split into four blocks.
@@ -70,11 +70,11 @@ The budget therefore binds at the constrained optimum.
 A second active-set check shows that project 3 also hits its non-negativity bound.
 With those two constraints active, the closed form is direct.
 
-$$x^{\ast} = (2,\, 1,\, 0),
+$$x^{\ast} = (2,  1,  0),
 \qquad
 \lambda^{\ast} = 2,
 \qquad
-\mu^{\ast} = (0,\, 0,\, 1.5).$$
+\mu^{\ast} = (0,  0,  1.5).$$
 
 The non-zero multiplier $\mu_3^{\ast} = 1.5$ is the shadow price of the non-negativity bound on project 3.
 It is the utility a vanishingly small relaxation of $x_3 \geq 0$ would buy.
@@ -96,7 +96,7 @@ The three methods below all enforce the non-negativity bounds and recover the co
 
 ### Method 1: Projected gradient
 
-Projected gradient takes a gradient step on $u$ and then projects the result onto the simplex $\Delta_I = \lbrace x : x \geq 0,\, \sum_j x_j = I \rbrace$.
+Projected gradient takes a gradient step on $u$ and then projects the result onto the simplex $\Delta_I = \lbrace x : x \geq 0,  \sum_j x_j = I \rbrace$.
 
 $$x_{k+1} = \Pi_{\Delta_I}\left(x_k + \alpha\, (a - B x_k)\right).$$
 
@@ -120,9 +120,9 @@ $$a_j - x_j - \lambda + \frac{t}{x_j} = 0,
 
 For diagonal $B = I_3$ each project's component solves a quadratic in $x_j$.
 
-$$x_j(\lambda;\, t) = \frac{(a_j - \lambda) + \sqrt{(a_j - \lambda)^2 + 4 t}}{2}.$$
+$$x_j(\lambda;  t) = \frac{(a_j - \lambda) + \sqrt{(a_j - \lambda)^2 + 4 t}}{2}.$$
 
-The budget multiplier $\lambda$ is the unique scalar that makes $\sum_j x_j(\lambda;\, t)$ equal $I$, and a single one-dimensional root finder solves for it.
+The budget multiplier $\lambda$ is the unique scalar that makes $\sum_j x_j(\lambda;  t)$ equal $I$, and a single one-dimensional root finder solves for it.
 The duality gap of the barrier problem is exactly $n \cdot t$, which is the per-project complementarity slack along the central path.
 
 ### Method 3: SLSQP
@@ -136,13 +136,13 @@ Multipliers are recovered after the fact from the stationarity equation by avera
 
 | Symbol | Value | Role |
 |--------|-------|------|
-| $a$ | $(4.0,\, 3.0,\, 0.5)$ | Marginal returns at zero allocation |
+| $a$ | $(4.0,  3.0,  0.5)$ | Marginal returns at zero allocation |
 | $B$ | $I_3$ | Curvature of utility, diagonal positive definite |
 | $I$ | 3.0 | Total budget |
 | $n$ | 3 | Number of projects |
-| $x^{\ast}$ | $(2.0,\, 1.0,\, 0.0)$ | Closed-form optimal allocation |
+| $x^{\ast}$ | $(2.0,  1.0,  0.0)$ | Closed-form optimal allocation |
 | $\lambda^{\ast}$ | 2.0 | Closed-form budget shadow price |
-| $\mu^{\ast}$ | $(0.0,\, 0.0,\, 1.5)$ | Closed-form bound multipliers |
+| $\mu^{\ast}$ | $(0.0,  0.0,  1.5)$ | Closed-form bound multipliers |
 | $u^{\ast}$ | 8.5000 | Utility at the closed-form optimum |
 | Step $\alpha$ | 0.25 | Projected gradient step size |
 | Barrier sequence | $10$ down to $10^{-8}$ | Decreasing log-barrier parameters |
@@ -244,7 +244,7 @@ SLSQP is sensitive to the analytical Jacobian of the constraints. A wrong Jacobi
 
 ## Results
 
-The feasible region is the budget triangle. Each vertex puts the entire budget on one project. The closed-form optimum sits on the hypotenuse where the project-3 bound is active. Projected gradient starts at $x_0 = (0.5,\, 0.5,\, 2.0)$, where project 3 is heavily over-funded. The first projection lands on the budget hyperplane and subsequent steps slide along it toward $x^{\ast}$. The run converges in **95** iterations and every iterate is feasible.
+The feasible region is the budget triangle. Each vertex puts the entire budget on one project. The closed-form optimum sits on the hypotenuse where the project-3 bound is active. Projected gradient starts at $x_0 = (0.5,  0.5,  2.0)$, where project 3 is heavily over-funded. The first projection lands on the budget hyperplane and subsequent steps slide along it toward $x^{\ast}$. The run converges in **95** iterations and every iterate is feasible.
 
 <img src="figures/simplex-paths.png" alt="Projected gradient path on the budget simplex; project 3 is implicit" width="80%">
 

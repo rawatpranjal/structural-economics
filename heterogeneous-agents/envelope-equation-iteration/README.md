@@ -15,8 +15,8 @@ Income has probabilities $\pi_j$ over $\{y_1,\dots,y_{n_y}\}$.
 With gross return $R = 1+r$, the Bellman equation is
 
 $$
-V(a,y_j) = \max_{a' \geq \underline a}\,
-\{\,u(R a + y_j - a') + \beta\,W(a')\,\},
+V(a,y_j) = \max_{a' \geq \underline a} 
+\{\,u(R a + y_j - a') + \beta\,W(a') \},
 \qquad
 W(a') = \sum_{\ell=1}^{n_y}\pi_\ell\,V(a',y_\ell),
 $$
@@ -83,7 +83,7 @@ The envelope step computes $W_a(a_i)$ by averaging marginal utilities across inc
 The Euler step solves for current consumption at each $(a_i,y_j)$.
 
 The Euler step solves a scalar root at each state.
-It finds $c \in (0,\,Ra + y_j - \underline a)$ such that
+It finds $c \in (0, Ra + y_j - \underline a)$ such that
 
 $$
 u'(c) = \beta\,W_a(R a + y_j - c).

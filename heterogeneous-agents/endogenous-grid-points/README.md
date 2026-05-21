@@ -17,7 +17,7 @@ the residual, and the borrowing limit is $\underline a$:
 
 $$
 V(a,y_j) = \max_{a'\geq \underline a}
-  [\,u(R a + y_j - a') + \beta\,\sum_{\ell=1}^{n_y}\pi_\ell\, V(a',y_\ell)\,],
+  [\,u(R a + y_j - a') + \beta\,\sum_{\ell=1}^{n_y}\pi_\ell\, V(a',y_\ell) ],
 \qquad c(a,y_j) = R a + y_j - g(a,y_j).
 $$
 

@@ -42,23 +42,23 @@ the new value function $V_j$. The discrete-time Bellman is
 
 $$
 V_i(a) \,=\, \max_{c \,\geq\, 0} \Big\lbrace
-u(c)\, \Delta t \,+\, e^{-\rho\, \Delta t}\,
-\big[(1 - \lambda_i\, \Delta t)\, V_i(a + \dot a\, \Delta t)
+u(c)  \Delta t \,+\, e^{-\rho\, \Delta t} 
+\big[(1 - \lambda_i\, \Delta t)  V_i(a + \dot a\, \Delta t)
 \,+\, \lambda_i\, \Delta t\, V_j(a)\big] \Big\rbrace
 \,+\, o(\Delta t) .
 $$
 
 Expand $e^{-\rho \Delta t} = 1 - \rho\, \Delta t + o(\Delta t)$ and
-$V_i(a + \dot a\, \Delta t) = V_i(a) + V_i'(a)\, \dot a\, \Delta t +
+$V_i(a + \dot a\, \Delta t) = V_i(a) + V_i'(a)  \dot a\, \Delta t +
 o(\Delta t)$. Subtract $V_i(a)$, divide by $\Delta t$, and take
 $\Delta t \to 0$. The cross terms $\rho\, \Delta t \cdot \lambda_i$ and
-$\rho\, \Delta t \cdot V_i'(a)\, \dot a$ are $o(\Delta t)$ and drop out. The
+$\rho\, \Delta t \cdot V_i'(a)  \dot a$ are $o(\Delta t)$ and drop out. The
 result is the **HJB equation with Poisson switching**
 
 $$
-\rho\, V_i(a) \,=\, \max_{c \,>\, 0}\, \Big\lbrace
+\rho\, V_i(a) \,=\, \max_{c \,>\, 0}  \Big\lbrace
 \underbrace{u(c)}_{\text{flow utility}}
-\,+\, \underbrace{V_i'(a)\, (z_i + r\, a - c)}_{\text{drift in } a}
+\,+\, \underbrace{V_i'(a)  (z_i + r\, a - c)}_{\text{drift in } a}
 \,+\, \underbrace{\lambda_i\, (V_j(a) - V_i(a))}_{\text{income jump}}
 \Big\rbrace .
 $$
@@ -71,7 +71,7 @@ $V_j(a) - V_i(a)$ from arriving in the other one.
 
 ### First-order condition
 
-The maximand depends on $c$ through $u(c) - V_i'(a)\, c$, so the interior
+The maximand depends on $c$ through $u(c) - V_i'(a)  c$, so the interior
 first-order condition equates marginal utility to the marginal value of
 assets,
 
@@ -122,7 +122,7 @@ boundary, plus the income-switching gain or loss. In differential form,
 $$
 \frac{\partial g_i}{\partial t}(a, t)
 \,=\,
--\frac{\partial}{\partial a}\big[s_i(a)\, g_i(a, t)\big]
+-\frac{\partial}{\partial a}\big[s_i(a)  g_i(a, t)\big]
 \,-\, \lambda_i\, g_i(a, t)
 \,+\, \lambda_j\, g_j(a, t) .
 $$
@@ -133,9 +133,9 @@ rate $\lambda_i$. The third term adds mass arriving from state $j$ at rate
 $\lambda_j$. The stationary density satisfies
 
 $$
-0 \,=\, -\frac{\partial}{\partial a}\big[s_i(a)\, g_i(a)\big]
+0 \,=\, -\frac{\partial}{\partial a}\big[s_i(a)  g_i(a)\big]
 \,-\, \lambda_i\, g_i(a) \,+\, \lambda_j\, g_j(a),
-\qquad \int_{\underline a}^{\bar a} \big[g_L(a) + g_H(a)\big]\, da \,=\, 1 .
+\qquad \int_{\underline a}^{\bar a} \big[g_L(a) + g_H(a)\big]  da \,=\, 1 .
 $$
 
 Discretised on the same asset grid as the HJB, this becomes
@@ -151,7 +151,7 @@ The single bond is in zero net supply. The bond market clears when the
 average asset holding integrates to zero,
 
 $$
-S(r) \,\equiv\, \int_{\underline a}^{\bar a} a\, [g_L(a) + g_H(a)]\, da \,=\, 0 .
+S(r) \,\equiv\, \int_{\underline a}^{\bar a} a\, [g_L(a) + g_H(a)]  da \,=\, 0 .
 $$
 
 The equilibrium return $r^{\ast}$ is the root of $S(r)$. With incomplete
@@ -229,13 +229,13 @@ asset block of the upwind generator is tridiagonal: at row $(k, i)$ the
 super-diagonal entry is $s^{+}_{k, i}/\Delta a$, the sub-diagonal entry is
 $-s^{-}_{k, i}/\Delta a$, and the diagonal entry is the negative of their sum.
 Stacking both income states gives a $2I \times 2I$ block-tridiagonal generator
-$\mathbf A^{n}$,
+$\mathbf{A}^{n}$,
 
 $$
-\mathbf A^{n} \,=\, \mathrm{diag}(A_{L}^{n},\, A_{H}^{n})
+\mathbf{A}^{n} \,=\, \mathrm{diag}(A_{L}^{n},  A_{H}^{n})
 \,+\,
-\begin{pmatrix} -\lambda_L\, \mathbf I & \lambda_L\, \mathbf I \\
-\lambda_H\, \mathbf I & -\lambda_H\, \mathbf I \end{pmatrix} ,
+\begin{pmatrix} -\lambda_L\, \mathbf{I} & \lambda_L\, \mathbf{I} \\
+\lambda_H\, \mathbf{I} & -\lambda_H\, \mathbf{I} \end{pmatrix} ,
 $$
 
 where $A_i^{n}$ is the upwind asset-drift block for income state $i$ at the
@@ -245,45 +245,45 @@ non-positive diagonal.
 
 ### Implicit pseudo-time step
 
-An explicit update $V^{n+1} = V^n + \Delta\, (u(c^n) + \mathbf A^{n} V^n -
+An explicit update $V^{n+1} = V^n + \Delta\, (u(c^n) + \mathbf{A}^{n} V^n -
 \rho V^n)$ is unstable for moderate $\Delta$ because the upwind transition
 rates $|s_{k, i}|/\Delta a$ can be large on fine grids. The implicit version
-replaces $\mathbf A^{n} V^n$ with $\mathbf A^{n} V^{n+1}$ and rearranges to
+replaces $\mathbf{A}^{n} V^n$ with $\mathbf{A}^{n} V^{n+1}$ and rearranges to
 
 $$
-[(1/\Delta + \rho)\, \mathbf{I} - \mathbf A^{n}]\, V^{n+1}
+[(1/\Delta + \rho)  \mathbf{I} - \mathbf{A}^{n}]  V^{n+1}
 \,=\, u(c^{n}) + V^{n} / \Delta .
 $$
 
 The matrix on the left is strictly diagonally dominant with positive
-diagonal (because $\mathbf A^{n}$ has zero row sums and non-positive
+diagonal (because $\mathbf{A}^{n}$ has zero row sums and non-positive
 diagonal), so the system is unconditionally invertible regardless of
 $\Delta$. Taking $\Delta \to \infty$ recovers a Newton step on
-$\rho V - u(c) - \mathbf A V = 0$ with the policy frozen, which is why the
+$\rho V - u(c) - \mathbf{A} V = 0$ with the policy frozen, which is why the
 HJB inner loop converges in a handful of iterations rather than the hundreds
 that an explicit value iteration would need.
 
 ### KFE by transposing the same generator
 
-When the HJB inner loop converges, the upwind generator $\mathbf A^{\ast}$ at
+When the HJB inner loop converges, the upwind generator $\mathbf{A}^{\ast}$ at
 the equilibrium policy is exactly the operator whose transpose pushes the
 density forward in time:
 
 $$
-\frac{\partial g}{\partial t} \,=\, \mathbf A^{\top}\, g .
+\frac{\partial g}{\partial t} \,=\, \mathbf{A}^{\top}  g .
 $$
 
-The stationary density solves $\mathbf A^{\top} g = 0$, a singular system
-because $\mathbf A$ has zero row sums (so $\mathbf A^{\top}$ has a zero
+The stationary density solves $\mathbf{A}^{\top} g = 0$, a singular system
+because $\mathbf{A}$ has zero row sums (so $\mathbf{A}^{\top}$ has a zero
 right-singular vector). The code pins down the scale by replacing one row
 with a normalisation constraint, solving the resulting non-singular system
-by sparse LU, and rescaling so that $\int (g_L + g_H)\, da = 1$. The same
+by sparse LU, and rescaling so that $\int (g_L + g_H)  da = 1$. The same
 matrix that solved the HJB therefore solves the KFE; this **operator
 duality** is the elegance of the continuous-time framework.
 
 ### Outer bisection on $r$
 
-Bond demand $S(r) \,=\, \int a\, (g_L + g_H)\, da$ is monotone increasing in
+Bond demand $S(r) \,=\, \int a\, (g_L + g_H)  da$ is monotone increasing in
 $r$ at this calibration: a higher return makes saving more attractive
 ($s_i(a)$ rises by $a$ for all $a > 0$) and borrowing more painful, so the
 density shifts rightward on the asset axis. Since $S(\rho) > 0$ (the

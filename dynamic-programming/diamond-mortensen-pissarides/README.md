@@ -36,12 +36,12 @@ per-period cost of an open vacancy.
 
 **Job value and free entry.** A filled job has value
 
-$$J_t=z_t-w_t+\beta(1-\sigma)\,\mathbb{E}_t[J_{t+1}],$$
+$$J_t=z_t-w_t+\beta(1-\sigma) \mathbb{E}_t[J_{t+1}],$$
 
 where $\sigma$ is the exogenous separation rate. Free entry equates expected
 discounted job value with vacancy cost:
 
-$$k=\beta\,q(\theta_t)\,\mathbb{E}_t[J_{t+1}].$$
+$$k=\beta\,q(\theta_t) \mathbb{E}_t[J_{t+1}].$$
 
 This condition pins down $\theta_t$.
 

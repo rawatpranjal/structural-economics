@@ -11,7 +11,7 @@ For each $s$, the code computes investment and surplus under each form. A grid s
 ## Equations
 
 Let $s$ denote asset specificity.
-Let $g\in\mathcal G$ index spot exchange, a long-term contract, and vertical
+Let $g\in\mathcal{G}$ index spot exchange, a long-term contract, and vertical
 integration.
 Relationship-specific investment $x$ creates gross value
 $$V(x) = \theta x - \frac{1}{2}x^2$$
@@ -39,7 +39,7 @@ F_{\text{contract}}(s)=0.38+0.03s,\quad
 F_{\text{integration}}(s)=1.05-0.35s.$$
 
 The selected governance form is
-$$g^{\ast}(s)=\arg\max_{g\in\mathcal G} W_g(s).$$
+$$g^{\ast}(s)=\arg\max_{g\in\mathcal{G}} W_g(s).$$
 
 The first-best surplus benchmark is
 $$W^{\ast}=\frac{1}{2}\theta^2$$

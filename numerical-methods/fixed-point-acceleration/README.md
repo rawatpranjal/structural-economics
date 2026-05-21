@@ -57,7 +57,7 @@ For the test instance this rate is bounded below one and convergence is monotone
 
 Damped Picard mixes the current iterate with the Picard image using a damping factor $\alpha \in (0, 1]$.
 
-$$\delta^{t+1} = (1 - \alpha)\, \delta^t + \alpha\, T(\delta^t)
+$$\delta^{t+1} = (1 - \alpha)  \delta^t + \alpha\, T(\delta^t)
 = \delta^t + \alpha \left[\log s^{\mathrm{obs}} - \log s(\delta^t)\right].$$
 
 A smaller $\alpha$ stabilises iteration when the map oscillates near the boundary of contractiveness.
@@ -90,7 +90,7 @@ Two firms set quantities $q_1, q_2$ to maximise profit on linear inverse demand 
 
 $$\mathrm{BR}_i(q_{-i}) = \frac{a - c - q_{-i}}{2},
 \qquad
-q^{\ast} = \frac{a - c}{3}\, \text{ for both firms.}$$
+q^{\ast} = \frac{a - c}{3}  \text{ for both firms.}$$
 
 The fixed-point map is $T(q_1, q_2) = (\mathrm{BR}_1(q_2), \mathrm{BR}_2(q_1))$.
 Vanilla Picard on this map oscillates around $q^{\ast}$ with damping factor $1/2$.
@@ -101,9 +101,9 @@ Damped Picard with $\alpha = 1/2$ removes the oscillation.
 | Symbol | Value | Role |
 |--------|-------|------|
 | $J$ | 4 | Number of inside products |
-| $\delta^{\ast}$ | $(1.0,\, 0.5,\, -0.3,\, -1.2)$ | True mean utilities used to generate $s^{\mathrm{obs}}$ |
+| $\delta^{\ast}$ | $(1.0,  0.5,  -0.3,  -1.2)$ | True mean utilities used to generate $s^{\mathrm{obs}}$ |
 | $s_0^{\mathrm{obs}}$ | 0.1560 | Outside option share |
-| Inside shares $s^{\mathrm{obs}}$ | $(0.4241,\, 0.2573,\, 0.1156,\, 0.0470)$ | Observed market shares |
+| Inside shares $s^{\mathrm{obs}}$ | $(0.4241,  0.2573,  0.1156,  0.0470)$ | Observed market shares |
 | Damping factor $\alpha$ | 0.5 | Used by damped Picard |
 | Anderson memory $m$ | 5 | Length of residual history |
 | Tolerance $\eta$ | 1e-12 | Sup-norm stopping rule on $T(\delta) - \delta$ |

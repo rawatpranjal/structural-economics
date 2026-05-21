@@ -261,9 +261,9 @@ $\{S_s(\theta^m), b_s(\theta^m), y_s(\theta^m)\}$ using Algorithm 2.
 $$
 m_{sim}(\theta^m)=
 \left(
-\Pr_{sim}\{j\in S_s(\theta^m)\}_{j=1}^J,\,
-\Pr_{sim}\{y_s(\theta^m)=j\}_{j=1}^J,\,
-E_{sim}|S_s(\theta^m)|,\,
+\Pr_{sim}\{j\in S_s(\theta^m)\}_{j=1}^J, 
+\Pr_{sim}\{y_s(\theta^m)=j\}_{j=1}^J, 
+E_{sim}|S_s(\theta^m)|, 
 \Pr_{sim}\{|S_s(\theta^m)|=1\}
 \right).
 $$

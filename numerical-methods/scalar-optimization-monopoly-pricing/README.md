@@ -31,13 +31,13 @@ $$D(p) = A\, p^{-\epsilon}.$$
 
 Profit is the price-cost margin times the quantity sold.
 
-$$\pi(p) = (p - c)\, D(p) = A\, (p - c)\, p^{-\epsilon}.$$
+$$\pi(p) = (p - c)  D(p) = A\, (p - c)  p^{-\epsilon}.$$
 
 The first-order condition $\pi'(p) = 0$ has a closed-form root that pins down what every method should return.
 
-$$\pi'(p) = A\, p^{-(\epsilon + 1)} \left[(1 - \epsilon)\, p + \epsilon\, c\right],
+$$\pi'(p) = A\, p^{-(\epsilon + 1)} \left[(1 - \epsilon)  p + \epsilon\, c\right],
 \qquad
-p^{\ast} = \frac{\epsilon}{\epsilon - 1}\, c.$$
+p^{\ast} = \frac{\epsilon}{\epsilon - 1}  c.$$
 
 Rearranging the optimum gives the Lerner price-cost margin.
 
@@ -47,9 +47,9 @@ At the baseline calibration $\epsilon = 2.5$ and $c = 1$ the closed form gives $
 
 The second derivative is needed by Newton and to identify the inflection point of $\pi$.
 
-$$\pi''(p) = -A\, \epsilon\, p^{-(\epsilon + 2)} \left[(1 - \epsilon)\, p + (\epsilon + 1)\, c\right],
+$$\pi''(p) = -A\, \epsilon\, p^{-(\epsilon + 2)} \left[(1 - \epsilon)  p + (\epsilon + 1)  c\right],
 \qquad
-p_{\mathrm{inflect}} = \frac{\epsilon + 1}{\epsilon - 1}\, c.$$
+p_{\mathrm{inflect}} = \frac{\epsilon + 1}{\epsilon - 1}  c.$$
 
 Profit is concave on $(0, p_{\mathrm{inflect}})$ and convex on $(p_{\mathrm{inflect}}, \infty)$.
 The optimum sits strictly inside the concave region, with $p^{\ast} < p_{\mathrm{inflect}}$.
@@ -61,7 +61,7 @@ The next four subsections describe one method at a time.
 Grid search covers the bracket with a uniform mesh of $N$ nodes and returns the argmax over the mesh.
 
 $$\hat p_{\mathrm{grid}} = \arg\max_{i \in \lbrace 1, \ldots, N\rbrace} \pi(p_i),
-\qquad p_i = p_{\mathrm{lo}} + \frac{(i - 1)\,(p_{\mathrm{hi}} - p_{\mathrm{lo}})}{N - 1}.$$
+\qquad p_i = p_{\mathrm{lo}} + \frac{(i - 1) (p_{\mathrm{hi}} - p_{\mathrm{lo}})}{N - 1}.$$
 
 The distance from the nearest mesh point to $p^{\ast}$ is at most half the spacing, so the error scales as $1/N$.
 
@@ -108,7 +108,7 @@ A start in the convex region drives the iterates away from $p^{\ast}$.
 | $p^{\ast}$ | 1.6667 | Closed-form optimum $\epsilon c / (\epsilon - 1)$ |
 | $1/\epsilon$ | 0.4000 | Lerner markup |
 | $p_{\mathrm{inflect}}$ | 2.3333 | Inflection point of $\pi$ |
-| Bracket $[p_{\mathrm{lo}}, p_{\mathrm{hi}}]$ | $[1.05,\, 5.00]$ | Search interval for grid, random, golden section |
+| Bracket $[p_{\mathrm{lo}}, p_{\mathrm{hi}}]$ | $[1.05,  5.00]$ | Search interval for grid, random, golden section |
 | Sample budget $N$ at headline run | 1001 | Used for grid and random search comparison row |
 | Random seed | 42 | Seed for the headline random-search run |
 | Replications across $N$ | 50 | Used to average random-search error in the convergence figure |
@@ -198,7 +198,7 @@ At baseline the closed-form price is $p^{\ast} = 1.667$ and the Lerner markup is
 
 <img src="figures/profit-curve.png" alt="Constant-elasticity monopoly profit with closed-form optimum and inflection point" width="80%">
 
-Grid search on $N = 11$ points pins $p^{\ast}$ to the nearest node. Random search on $N = 20$ uniform draws scatters across the bracket. Golden section contracts the bracket $[1.05,\, 5.00]$ at the fixed factor $\phi$ each step. Newton from $x_0 = 1.2$ enters the basin of attraction directly and reaches the tolerance in a handful of steps.
+Grid search on $N = 11$ points pins $p^{\ast}$ to the nearest node. Random search on $N = 20$ uniform draws scatters across the bracket. Golden section contracts the bracket $[1.05,  5.00]$ at the fixed factor $\phi$ each step. Newton from $x_0 = 1.2$ enters the basin of attraction directly and reaches the tolerance in a handful of steps.
 
 <img src="figures/method-paths.png" alt="Iterates of grid, random, golden-section, and Newton overlaid on the profit curve" width="80%">
 

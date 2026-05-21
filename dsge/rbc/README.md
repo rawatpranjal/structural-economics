@@ -42,7 +42,7 @@ $$C_t^{-\sigma} = \beta\,\mathbb{E}_t\left[ C_{t+1}^{-\sigma} \left(\alpha A_{t+
 
 When labor is endogenous, the intratemporal labor-supply condition adds
 
-$$\psi N_t^\chi = (1-\alpha)\frac{Y_t}{N_t}\,C_t^{-\sigma}.$$
+$$\psi N_t^\chi = (1-\alpha)\frac{Y_t}{N_t} C_t^{-\sigma}.$$
 
 ### B. Steady state
 

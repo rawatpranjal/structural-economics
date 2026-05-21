@@ -16,9 +16,9 @@ Let $\theta \in \mathbb{R}^d$ denote the parameter we wish to sample and let $\p
 The target here is the *banana posterior* in dimension $d = 2$, defined generatively by
 
 $$
-\theta_1 \sim \mathcal{N}(0,\, \sigma_x^2),
+\theta_1 \sim \mathcal{N}(0,  \sigma_x^2),
 \qquad
-\theta_2 \mid \theta_1 \sim \mathcal{N}\big(\alpha\, (\theta_1^2 - \sigma_x^2),\, \sigma_y^2\big),
+\theta_2 \mid \theta_1 \sim \mathcal{N}\big(\alpha\, (\theta_1^2 - \sigma_x^2),  \sigma_y^2\big),
 $$
 
 with shape parameters $\sigma_x > 0$, $\sigma_y > 0$, and $\alpha \in \mathbb{R}$.
@@ -50,7 +50,7 @@ Define the *potential energy* $U$, *kinetic energy* $K$, and *Hamiltonian* $H$ b
 $$
 U(\theta) = -\log \pi(\theta \mid D),
 \qquad
-K(r) = \tfrac{1}{2}\, r^{\top} M^{-1} r,
+K(r) = \tfrac{1}{2}  r^{\top} M^{-1} r,
 \qquad
 H(\theta, r) = U(\theta) + K(r).
 $$
@@ -85,7 +85,7 @@ Continuous Hamiltonian dynamics is unavailable in closed form, so we discretize 
 One leapfrog step from $(\theta_t, r_t)$ to $(\theta_{t+1}, r_{t+1})$ is a half momentum step, a full position step, and another half momentum step:
 
 $$
-r_{t + \tfrac{1}{2}} = \underbrace{r_t}_{\text{current momentum}} - \underbrace{\tfrac{\varepsilon}{2}\, \nabla U(\theta_t)}_{\text{half kick from the force at } \theta_t},
+r_{t + \tfrac{1}{2}} = \underbrace{r_t}_{\text{current momentum}} - \underbrace{\tfrac{\varepsilon}{2}  \nabla U(\theta_t)}_{\text{half kick from the force at } \theta_t},
 $$
 
 $$
@@ -93,7 +93,7 @@ $$
 $$
 
 $$
-r_{t + 1} = r_{t + \tfrac{1}{2}} - \underbrace{\tfrac{\varepsilon}{2}\, \nabla U(\theta_{t + 1})}_{\text{half kick from the force at the new position}}.
+r_{t + 1} = r_{t + \tfrac{1}{2}} - \underbrace{\tfrac{\varepsilon}{2}  \nabla U(\theta_{t + 1})}_{\text{half kick from the force at the new position}}.
 $$
 
 #### Worked example
@@ -120,7 +120,7 @@ Second, run $L \ge 1$ leapfrog steps with step size $\varepsilon$ from $(\theta_
 Third, accept the proposal with Metropolis probability
 
 $$
-\alpha(\theta_t, r;\, \theta^{\star}, r^{\star}) = \min\Big\lbrace 1,\, \exp\big(\underbrace{H(\theta_t, r)}_{\text{energy at trajectory start}} - \underbrace{H(\theta^{\star}, r^{\star})}_{\text{energy at trajectory end}}\big) \Big\rbrace,
+\alpha(\theta_t, r;  \theta^{\star}, r^{\star}) = \min\Big\lbrace 1,  \exp\big(\underbrace{H(\theta_t, r)}_{\text{energy at trajectory start}} - \underbrace{H(\theta^{\star}, r^{\star})}_{\text{energy at trajectory end}}\big) \Big\rbrace,
 $$
 
 setting $\theta_{t+1} = \theta^{\star}$ if accepted and $\theta_{t+1} = \theta_t$ otherwise.
@@ -148,7 +148,7 @@ $$
 and accepts with
 
 $$
-\alpha(\theta_t, \theta^{\star}) = \min\lbrace 1,\, \pi(\theta^{\star} \mid D) / \pi(\theta_t \mid D) \rbrace.
+\alpha(\theta_t, \theta^{\star}) = \min\lbrace 1,  \pi(\theta^{\star} \mid D) / \pi(\theta_t \mid D) \rbrace.
 $$
 
 This is identical to Method 2 of [`computational-methods/metropolis-hastings/`](../../computational-methods/metropolis-hastings/); we repeat it here so the per-evaluation comparison against HMC is direct and uses the same banana target.

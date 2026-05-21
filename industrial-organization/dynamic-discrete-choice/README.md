@@ -41,8 +41,8 @@ For panel observations $(x_{it}, d_{it})$, where $d_{it}=1$ means replacement,
 the full-solution likelihood is
 
 $$\ell(\theta)=\sum_{i,t}
-d_{it}\log P_\theta(1 \mid x_{it})
-+ (1-d_{it})\log[1-P_\theta(1 \mid x_{it})].$$
+d_{it}\log P_\theta(1 \mid x_{it}) +
+(1-d_{it})\log[1-P_\theta(1 \mid x_{it})].$$
 
 The CCP estimator starts from a first-stage estimate $\hat p(x)$ of
 $\Pr(a=1 \mid x)$. Given $\hat p$, form the policy transition

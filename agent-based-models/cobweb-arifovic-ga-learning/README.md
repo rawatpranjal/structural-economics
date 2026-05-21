@@ -157,13 +157,13 @@ $$Q_t = a - b \cdot p_t + \varepsilon_t.$$
 
 **Why naive OLS is biased.** Market clearing forces the realized price to absorb the demand shock,
 
-$$p_t = \frac{a + \varepsilon_t - Q_t}{b} \quad \Longrightarrow \quad \mathrm{Cov}(p_t,\, \varepsilon_t) = \frac{\mathrm{Var}(\varepsilon_t)}{b} > 0.$$
+$$p_t = \frac{a + \varepsilon_t - Q_t}{b} \quad \Longrightarrow \quad \mathrm{Cov}(p_t,  \varepsilon_t) = \frac{\mathrm{Var}(\varepsilon_t)}{b} > 0.$$
 
 An OLS regression of $Q_t$ on $p_t$ therefore underestimates the demand slope; the same simultaneity that drives prices in real markets drives them here.
 
 **Lagged-price IV.** The lagged price $p_{t-1}$ is correlated with $p_t$ through firms' naive supply rule but uncorrelated with the current shock under i.i.d. $\varepsilon_t$,
 
-$$\mathrm{Cov}(p_{t-1},\, p_t) \neq 0, \qquad \mathbb{E}[\,p_{t-1} \cdot \varepsilon_t\,] = 0.$$
+$$\mathrm{Cov}(p_{t-1},  p_t) \neq 0, \qquad \mathbb{E}[\,p_{t-1} \cdot \varepsilon_t\,] = 0.$$
 
 Two-stage least squares with $p_{t-1}$ as instrument is consistent. The first stage projects $p_t$ onto $(1, p_{t-1})$; the second stage regresses $Q_t$ on the fitted prices.
 

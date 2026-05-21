@@ -31,7 +31,7 @@ Let $g(k)$ denote the optimal $k'$ and $c^{\ast}(k) = A k^{\alpha} - g(k)$ the
 implied consumption. The first-order and envelope conditions deliver the
 Euler equation
 
-$$u'(c_t) = \beta\, f'(k_{t+1})\, u'(c_{t+1}),
+$$u'(c_t) = \beta\, f'(k_{t+1})  u'(c_{t+1}),
 \qquad f'(k) = \alpha A k^{\alpha-1}.$$
 
 For log utility and Cobb-Douglas production, conjecture $g(k) = s A k^{\alpha}$
@@ -40,7 +40,7 @@ $s = \alpha\beta$, so
 
 $$g(k) = \alpha\beta\, A\, k^{\alpha},
 \qquad
-c^{\ast}(k) = (1-\alpha\beta)\, A\, k^{\alpha}.$$
+c^{\ast}(k) = (1-\alpha\beta)  A\, k^{\alpha}.$$
 
 The value function is affine in $\log k$,
 
@@ -50,8 +50,8 @@ B = \frac{\alpha}{1-\alpha\beta},$$
 
 with intercept
 
-$$E = \frac{1}{1-\beta}\left[\,\log(A(1-\alpha\beta))
-+ \frac{\beta\alpha}{1-\alpha\beta}\,\log(A\,\alpha\beta)\,\right].$$
+$$E = \frac{1}{1-\beta}\left[\log(A(1-\alpha\beta)) +
+\frac{\beta\alpha}{1-\alpha\beta} \log(A\,\alpha\beta) \right].$$
 
 The steady state solves $k = g(k)$, equivalently $\beta f'(k_{ss}) = 1$:
 
@@ -67,7 +67,7 @@ $$k_{ss} = (\alpha\beta A)^{1/(1-\alpha)},
 | $\beta$ | 0.9 | Discount factor; pins down impatience and the saving rate |
 | $k_{ss}$ | 9.9519 | Closed-form steady-state capital $(\alpha\beta A)^{1/(1-\alpha)}$ |
 | $c_{ss}$ | 26.9071 | Steady-state consumption $A k_{ss}^{\alpha} - k_{ss}$ |
-| $k$ domain | $[0.01,\, 24.88]$ | Capital range; upper bound is $2.5\,k_{ss}$ |
+| $k$ domain | $[0.01,  24.88]$ | Capital range; upper bound is $2.5\,k_{ss}$ |
 | $N_k$ | 500 | Uniform state grid for $k$ |
 | $N_{k'}$ | 500 | Inner choice grid for $k'$ at each Bellman update |
 | Tolerance $\varepsilon$ | 1e-06 | Sup-norm convergence threshold |
@@ -80,7 +80,7 @@ Define the Bellman operator on bounded continuous functions of capital,
 
 $$(TV)(k) = \max_{0 < k' < A k^{\alpha}}\{\, \log(A k^{\alpha} - k') + \beta\, V(k') \,\}.$$
 
-VFI starts from an initial value on the capital grid. At each $k_i$, the code searches over feasible $k'$ values. The feasible range is $k' \in [k_{min},\, A k_i^{\alpha})$ where $k_{min}=0.01$ is the lower bound on next-period capital. It chooses the $k'$ with the highest current utility plus interpolated continuation value. The loop stops when the sup-norm change in $V$ is below $\varepsilon$.
+VFI starts from an initial value on the capital grid. At each $k_i$, the code searches over feasible $k'$ values. The feasible range is $k' \in [k_{min},  A k_i^{\alpha})$ where $k_{min}=0.01$ is the lower bound on next-period capital. It chooses the $k'$ with the highest current utility plus interpolated continuation value. The loop stops when the sup-norm change in $V$ is below $\varepsilon$.
 
 ```text
 Algorithm: Optimal-growth VFI with continuous k'

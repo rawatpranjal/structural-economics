@@ -18,13 +18,13 @@ taxes), the budget constraint and the intra- and inter-temporal first-order
 conditions are
 
 $$
-c_t + a_{t+1} = (1 + r_t)\, a_t + w_t\, e\, n_t + e\, T_t, \qquad a_{t+1} \geq 0,
+c_t + a_{t+1} = (1 + r_t)  a_t + w_t\, e\, n_t + e\, T_t, \qquad a_{t+1} \geq 0,
 $$
 
 $$
-v_{\varphi}\, n_t^{1/\varphi} = w_t\, e\, c_t^{-1/\eta},
+v_{\varphi}  n_t^{1/\varphi} = w_t\, e\, c_t^{-1/\eta},
 \qquad
-c_t^{-1/\eta} = \beta\, \mathbb{E}_t\lbrack (1 + r_{t+1})\, c_{t+1}^{-1/\eta} \rbrack,
+c_t^{-1/\eta} = \beta\, \mathbb{E}_t\lbrack (1 + r_{t+1})  c_{t+1}^{-1/\eta} \rbrack,
 $$
 
 where $\eta$ is the elasticity of intertemporal substitution and $\varphi$ is
@@ -45,7 +45,7 @@ costs. To first order in deviations from the zero-inflation steady state
 $mc^{\ast} = 1 / \mu^{\ast}$, the New Keynesian Phillips curve is
 
 $$
-\pi_t = \frac{1}{1 + r^{\ast}}\, \pi_{t+1} + \kappa\, (mc_t - 1/\mu^{\ast}),
+\pi_t = \frac{1}{1 + r^{\ast}}  \pi_{t+1} + \kappa\, (mc_t - 1/\mu^{\ast}),
 $$
 
 where the discount factor $1/(1 + r^{\ast})$ comes from real-rate discounting
@@ -60,7 +60,7 @@ nominal rate deflated by current inflation:
 $$
 i^{\ast}_t = i^{\ast} + v_t,
 \qquad
-1 + r_t = (1 + i^{\ast}_{t-1} + \phi_{\pi}\, \pi_{t-1}) / (1 + \pi_t).
+1 + r_t = (1 + i^{\ast}_{t-1} + \phi_{\pi}  \pi_{t-1}) / (1 + \pi_t).
 $$
 
 Government debt $B$ is constant and the fiscal block balances the budget with
@@ -86,7 +86,7 @@ J^{Y, x}_{t, s} = \frac{\partial Y_t}{\partial x_s}, \qquad
 Y \in \lbrace C, A, N^E \rbrace, \quad x \in \lbrace r, w, T \rbrace,
 $$
 
-where $N^E_t = \int e\, n_t(a, e)\, \mathrm{d}\mu_t$ is aggregate effective
+where $N^E_t = \int e\, n_t(a, e)  \mathrm{d}\mu_t$ is aggregate effective
 labor supply. Building these matrices via the fake-news algorithm is the
 algorithmic content of SSJ.
 

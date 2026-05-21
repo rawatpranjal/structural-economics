@@ -71,7 +71,7 @@ Choose a small grid and transition matrix that keep variance and persistence. Ta
 
 ### Tauchen (1986): integrate Gaussian mass between cell midpoints
 
-Tauchen places an evenly spaced grid over $[-m\sigma_z,\, m\sigma_z]$. For each $z_i$, $z_{t+1}$ is normal with mean $\rho z_i$. $P_{ij}$ is the conditional mass assigned to the cell around $z_j$, computed using the standard normal CDF $\Phi(\cdot)$. Endpoint cells collect remaining tail mass.
+Tauchen places an evenly spaced grid over $[-m\sigma_z,  m\sigma_z]$. For each $z_i$, $z_{t+1}$ is normal with mean $\rho z_i$. $P_{ij}$ is the conditional mass assigned to the cell around $z_j$, computed using the standard normal CDF $\Phi(\cdot)$. Endpoint cells collect remaining tail mass.
 
 ```text
 Algorithm 1: Tauchen

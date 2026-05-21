@@ -51,11 +51,11 @@ $(y_t, \pi_t, i_t)$ and a linear Gaussian state-space form. The Kalman filter
 gives the log marginal likelihood
 
 $$
-\log p(Y\mid\theta) = \sum_{t=1}^{T}\log \mathcal{N}(y_t;\,H\hat x_{t\mid t-1},\,H\Sigma_{t\mid t-1}H^\top+S),
+\log p(Y\mid\theta) = \sum_{t=1}^{T}\log \mathcal{N}(y_t; H\hat x_{t\mid t-1}, H\Sigma_{t\mid t-1}H^\top+S),
 $$
 
 evaluated with the predict-update recursion. The posterior is
-$p(\theta\mid Y)\propto p(\theta)\,p(Y\mid\theta)$.
+$p(\theta\mid Y)\propto p(\theta) p(Y\mid\theta)$.
 
 ## Model Setup
 
@@ -92,15 +92,15 @@ $$v_{t+1}=\rho\,v_t,\qquad y_t=a\,\mathbb{E}_t y_{t+1}+b\,v_t.$$
 
 With state $s=(v,y)$ and $n_\text{predetermined}=1$, the Klein pencil is
 
-$$A=\begin{bmatrix}1 & 0\\ 0 & a\end{bmatrix},\qquadB=\begin{bmatrix}\rho & 0\\ -b & 1\end{bmatrix}.$$
+$$A=\begin{bmatrix}1 & 0\\ 0 & a\end{bmatrix},\qquad B=\begin{bmatrix}\rho & 0\\ -b & 1\end{bmatrix}.$$
 
 Pick $\rho=0.5$, $a=0.5$, $b=1$. The closed-form guess $y_t=\psi\,v_t$ gives $\psi\,(1-a\rho)=b$, so $\psi=b/(1-a\rho)=4/3$.
 
 Now the Schur path. Reducing the pencil gives
 
-$$M=A^{-1}B=\begin{bmatrix}0.5 & 0\\ -2 & 2\end{bmatrix},\quad\text{eigenvalues }\{0.5,\,2\}.$$
+$$M=A^{-1}B=\begin{bmatrix}0.5 & 0\\ -2 & 2\end{bmatrix},\quad\text{eigenvalues }\{0.5, 2\}.$$
 
-Only the eigenvalue $\rho=0.5$ is stable, matching the one predetermined variable, so Blanchard-Kahn holds. Its eigenvector $(1,\,4/3)^\top$ partitions as $Z_{11}=1$, $Z_{21}=4/3$. The Klein formulas then deliver $F=Z_{11}\,T_{11}\,Z_{11}^{-1}=0.5$ and $P=Z_{21}\,Z_{11}^{-1}=4/3$, the same numbers as the closed form.
+Only the eigenvalue $\rho=0.5$ is stable, matching the one predetermined variable, so Blanchard-Kahn holds. Its eigenvector $(1, 4/3)^\top$ partitions as $Z_{11}=1$, $Z_{21}=4/3$. The Klein formulas then deliver $F=Z_{11} T_{11} Z_{11}^{-1}=0.5$ and $P=Z_{21} Z_{11}^{-1}=4/3$, the same numbers as the closed form.
 
 Gradients close the loop. Differentiating $\psi=b/(1-a\rho)$ by hand gives $\partial\psi/\partial a=b\rho/(1-a\rho)^2=8/9$, $\partial\psi/\partial b=1/(1-a\rho)=4/3$, and $\partial\psi/\partial\rho=ab/(1-a\rho)^2=8/9$. The implicit-IFT JVP in `lib/perturbation_jax.py` returns those three numbers from `jax.grad` at machine precision. Drop the toy and the same machinery handles the 4-by-4 NK system unchanged.
 

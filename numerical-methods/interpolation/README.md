@@ -24,14 +24,14 @@ The second target is a stylised consumption policy with a borrowing constraint a
 
 $$c(a) =
 \begin{cases}
-(1 + r)\, a + y, & a \leq a_{\text{kink}} \\
-c(a_{\text{kink}}) + (1 + r)\, \mathrm{MPC}\, (a - a_{\text{kink}}), & a > a_{\text{kink}}.
+(1 + r)  a + y, & a \leq a_{\text{kink}} \\
+c(a_{\text{kink}}) + (1 + r)  \mathrm{MPC}  (a - a_{\text{kink}}), & a > a_{\text{kink}}.
 \end{cases}$$
 
 Below the kink the agent is constrained and consumes everything.
 Above the kink they save with marginal propensity to consume $\mathrm{MPC} < 1$.
 The function is continuous in level.
-The slope drops from $(1 + r)$ to $(1 + r)\,\mathrm{MPC}$ at $a_{\text{kink}}$.
+The slope drops from $(1 + r)$ to $(1 + r) \mathrm{MPC}$ at $a_{\text{kink}}$.
 
 The next three subsections describe one method at a time.
 
@@ -40,7 +40,7 @@ The next three subsections describe one method at a time.
 Piecewise linear interpolation connects adjacent nodes with straight segments.
 For a query $x$ in $[x_i, x_{i+1}]$ the interpolant is the convex combination of the bracketing values.
 
-$$\hat{f}(x) = \frac{x_{i+1} - x}{x_{i+1} - x_i}\, f(x_i) + \frac{x - x_i}{x_{i+1} - x_i}\, f(x_{i+1}).$$
+$$\hat{f}(x) = \frac{x_{i+1} - x}{x_{i+1} - x_i}  f(x_i) + \frac{x - x_i}{x_{i+1} - x_i}  f(x_{i+1}).$$
 
 The interpolant is $C^0$ but generally not differentiable at the nodes.
 
@@ -63,8 +63,8 @@ PCHIP holds the shape but drops one order of smoothness.
 | Symbol | Value | Role |
 |--------|-------|------|
 | $\beta$ | 0.9 | Discount factor in the cake-eating target |
-| Smooth domain $[W_{\min}, W_{\max}]$ | $[0.05,\, 1.0]$ | Wealth range for the smooth target |
-| Kinked domain $[a_{\min}, a_{\max}]$ | $[0.05,\, 5.0]$ | Asset range for the kinked target |
+| Smooth domain $[W_{\min}, W_{\max}]$ | $[0.05,  1.0]$ | Wealth range for the smooth target |
+| Kinked domain $[a_{\min}, a_{\max}]$ | $[0.05,  5.0]$ | Asset range for the kinked target |
 | $a_{\text{kink}}$ | 0.5 | Borrowing-constraint kink in the policy |
 | $r$ | 0.04 | Interest rate in the consumption policy |
 | $y$ | 0.5 | Endowment (income) in the consumption policy |

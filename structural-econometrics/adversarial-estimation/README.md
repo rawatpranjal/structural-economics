@@ -16,7 +16,7 @@ The setup has three objects.
 
 - The real sample $\lbrace X_i \rbrace_{i=1}^{n}$, drawn i.i.d. from an unknown distribution $P_0$.
 - A parametric structural model $\lbrace P_\theta : \theta \in \Theta \rbrace$ that can be simulated. The model need not admit a closed-form density.
-- A class of candidate discriminators $\mathcal D_n$. Each $D \in \mathcal D_n$ maps an observation $x$ to a number $D(x) \in [0, 1]$, read as the predicted probability that $x$ is a real observation rather than a simulated one.
+- A class of candidate discriminators $\mathcal{D}_n$. Each $D \in \mathcal{D}_n$ maps an observation $x$ to a number $D(x) \in [0, 1]$, read as the predicted probability that $x$ is a real observation rather than a simulated one.
 
 Simulated observations come from a fixed shock vector and a structural transform. Draw $\tilde X_i \sim \tilde P_0$ once for $i = 1, \dots, m$. At any candidate $\theta$,
 
@@ -29,7 +29,7 @@ The same shocks are reused at every candidate $\theta$. This is the standard com
 The estimator is the min-max
 
 $$
-\hat\theta = \arg\underbrace{\min_{\theta \in \Theta}}_{\text{outer: match real data}}\, \underbrace{\max_{D \in \mathcal D_n}}_{\text{inner: best telltale}}\, M(\theta, D),
+\hat\theta = \arg\underbrace{\min_{\theta \in \Theta}}_{\text{outer: match real data}}  \underbrace{\max_{D \in \mathcal{D}_n}}_{\text{inner: best telltale}}  M(\theta, D),
 $$
 
 with the cross-entropy
@@ -39,7 +39,7 @@ M(\theta, D) = \underbrace{\frac{1}{n}\sum_{i=1}^{n} \log D(X_i)}_{\text{score o
 $$
 
 Read the inner $\max$ as a hostile critic and the outer $\min$ as the modeller responding to that critic.
-The inner step searches the class $\mathcal D_n$ for the discriminator that most easily tells real points from simulated points; this is exactly the log-likelihood of a binary classification problem with labels $1$ for real and $0$ for simulated.
+The inner step searches the class $\mathcal{D}_n$ for the discriminator that most easily tells real points from simulated points; this is exactly the log-likelihood of a binary classification problem with labels $1$ for real and $0$ for simulated.
 The outer step then picks the structural $\theta$ that makes this best-case classifier do worst, which forces the simulated distribution toward the real one.
 This is the Goodfellow et al. (2014) GAN objective, with the simulator $T_\theta$ in the role of the generator.
 
@@ -55,7 +55,7 @@ Minimizing the inner maximum over $\theta$ therefore drives the simulated distri
 
 ### Method 1: Oracle discriminator
 
-Plug the closed-form ratio into $D^{\ast}_\theta$. For the standard logistic location family the density is $p_\theta(x) = \Lambda(x - \theta)\, \Lambda(-(x - \theta))$ with $\Lambda(z) = (1 + e^{-z})^{-1}$. The oracle simplifies to
+Plug the closed-form ratio into $D^{\ast}_\theta$. For the standard logistic location family the density is $p_\theta(x) = \Lambda(x - \theta)  \Lambda(-(x - \theta))$ with $\Lambda(z) = (1 + e^{-z})^{-1}$. The oracle simplifies to
 
 $$
 D^{\ast}_\theta(x) = \Lambda\left(-\theta - 2 \log(1 + e^{-x}) + 2 \log(1 + e^{-(x - \theta)})\right).
@@ -65,7 +65,7 @@ Substituting $D^{\ast}_\theta$ into $M$ and minimizing over $\theta$ recovers ma
 
 ### Method 2: Logistic discriminator with polynomial features
 
-Restrict $\mathcal D_n$ to logistic regressions on the first $d$ powers of $x$:
+Restrict $\mathcal{D}_n$ to logistic regressions on the first $d$ powers of $x$:
 
 $$
 D_\lambda(x) = \Lambda(\lambda_0 + \lambda_1 x + \lambda_2 x^2 + \dots + \lambda_d x^d), \qquad \lambda \in \mathbb{R}^{d+1}.
@@ -81,13 +81,13 @@ At the min-max solution the resulting $\hat\theta$ is asymptotically equivalent 
 
 ### Method 3: Shallow neural-network discriminator
 
-Replace $\mathcal D_n$ by a one-hidden-layer network with $H$ tanh units:
+Replace $\mathcal{D}_n$ by a one-hidden-layer network with $H$ tanh units:
 
 $$
 D_\eta(x) = \Lambda(b_{\mathrm{out}} + c^{\top} \tanh(W x + b)), \qquad \eta = (W, b, c, b_{\mathrm{out}}).
 $$
 
-With enough hidden units the class $\mathcal D_n$ can approximate the oracle $D^{\ast}_\theta$ uniformly on a compact set. The Kaji-Manresa-Pouliot result then says the adversarial estimator inherits the MLE asymptotic distribution, up to a finite-simulation correction:
+With enough hidden units the class $\mathcal{D}_n$ can approximate the oracle $D^{\ast}_\theta$ uniformly on a compact set. The Kaji-Manresa-Pouliot result then says the adversarial estimator inherits the MLE asymptotic distribution, up to a finite-simulation correction:
 
 $$
 \sqrt{n}(\hat\theta - \theta_0) \Rightarrow \mathcal{N}\left(0, \frac{1 + n/m}{I_0}\right),
@@ -195,7 +195,7 @@ Each colored line is the Monte Carlo average of $M(\theta, \hat D_\theta)$, deme
 
 The second diagnostic compares the sampling distributions of the estimators. Each adversarial estimator sits next to maximum likelihood on the same simulated data. Any difference between the two histograms is due to the discriminator, not to the data. The oracle adversarial estimator overlaps the maximum-likelihood distribution almost exactly. The logistic and neural discriminators sit next to it with a slightly wider spread. That extra spread is the cost of training the discriminator on a finite simulation sample.
 
-Each panel overlays the maximum-likelihood histogram in grey with one adversarial estimator in color. The vertical line marks the true location $\theta_0 = 0$. The dashed black curve is the asymptotic Gaussian prediction $\mathcal{N}(0,\, (1 + n/m)/(n\, I_0))$ from Corollary 4 of the paper. Standard deviations in the legend are on the rate scale $\sqrt{n} \cdot \mathrm{sd}(\hat\theta)$, matching the asymptotic numbers in the model setup table.
+Each panel overlays the maximum-likelihood histogram in grey with one adversarial estimator in color. The vertical line marks the true location $\theta_0 = 0$. The dashed black curve is the asymptotic Gaussian prediction $\mathcal{N}(0,  (1 + n/m)/(n\, I_0))$ from Corollary 4 of the paper. Standard deviations in the legend are on the rate scale $\sqrt{n} \cdot \mathrm{sd}(\hat\theta)$, matching the asymptotic numbers in the model setup table.
 
 <img src="figures/estimator-histograms.png" alt="Monte Carlo distributions of adversarial estimators against MLE" width="80%">
 

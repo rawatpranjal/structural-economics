@@ -14,7 +14,7 @@ The planner solves
 
 $$
 \max_{\{c(t)\}_{t \geq 0}}
-\int_0^\infty e^{-\rho t}\frac{c(t)^{1-\sigma}}{1-\sigma}\,dt
+\int_0^\infty e^{-\rho t}\frac{c(t)^{1-\sigma}}{1-\sigma} dt
 \quad\text{s.t.}\quad
 \dot{k}(t)=Ak(t)^\alpha-\delta k(t)-c(t).
 $$

@@ -14,7 +14,7 @@ The planner solves
 
 $$
 \max_{\lbrace c(t)\rbrace_{t \geq 0}}
-\int_0^\infty e^{-\rho t}\, u(c(t))\,dt
+\int_0^\infty e^{-\rho t}  u(c(t)) dt
 \quad\text{s.t.}\quad
 \dot{k}(t)=f(k(t))-\delta\, k(t)-c(t),
 \quad k(0) \text{ given},
@@ -33,23 +33,23 @@ consumption $c$ over the small interval, collects the discounted flow of
 utility, and inherits the value at the end:
 
 $$
-V(k) = \max_{c \geq 0}\,
-\lbrace u(c)\,\Delta t + e^{-\rho\,\Delta t}\, V(k + \dot k\,\Delta t)\rbrace + o(\Delta t),
+V(k) = \max_{c \geq 0} 
+\lbrace u(c) \Delta t + e^{-\rho\,\Delta t}  V(k + \dot k\,\Delta t)\rbrace + o(\Delta t),
 \qquad \dot k = f(k) - \delta\, k - c .
 $$
 
 Expand $e^{-\rho \Delta t} = 1 - \rho\,\Delta t + o(\Delta t)$ and
-$V(k + \dot k\,\Delta t) = V(k) + V'(k)\,\dot k\,\Delta t + o(\Delta t)$.
+$V(k + \dot k\,\Delta t) = V(k) + V'(k) \dot k\,\Delta t + o(\Delta t)$.
 Subtract $V(k)$, divide by $\Delta t$, and let $\Delta t \to 0$. The constant
 term $V(k)$ on both sides cancels, the $\rho\,\Delta t \cdot V'\,\dot k$
 cross-product is $o(\Delta t)$, and what remains is the **Hamilton-Jacobi-Bellman
 equation**
 
 $$
-\rho\, V(k) = \max_{c>0}\,
+\rho\, V(k) = \max_{c>0} 
 \lbrace
 \underbrace{u(c)}_{\text{flow utility}} \, + \,
-\underbrace{V'(k)\,(f(k) - \delta\, k - c)}_{\text{shadow value} \, \times \, \text{drift}}
+\underbrace{V'(k) (f(k) - \delta\, k - c)}_{\text{shadow value} \, \times \, \text{drift}}
 \rbrace .
 $$
 
@@ -62,7 +62,7 @@ Pontryagin formulation.
 
 ### First-order condition and the optimal policy
 
-The maximand depends on $c$ through $u(c) - V'(k)\,c$. The first-order condition
+The maximand depends on $c$ through $u(c) - V'(k) c$. The first-order condition
 for an interior optimum is therefore
 
 $$
@@ -87,7 +87,7 @@ and the HJB collapses to a single nonlinear ordinary differential equation for
 $V$:
 
 $$
-\rho\, V(k) = u(c^{\ast}(k)) + V'(k)\, s(k) .
+\rho\, V(k) = u(c^{\ast}(k)) + V'(k)  s(k) .
 $$
 
 Two structural features matter for the numerical scheme. The drift $s(k)$ can
@@ -153,7 +153,7 @@ $$
 f'(k_{ss}) = \rho + \delta ,
 $$
 
-derived by differentiating $\rho V = u(c) + V'(k)\,(f - \delta k - c)$ at the
+derived by differentiating $\rho V = u(c) + V'(k) (f - \delta k - c)$ at the
 steady state where the envelope $V'(k_{ss}) = u'(c_{ss})$ holds and the drift
 vanishes. Plugging the Cobb-Douglas marginal product gives the closed form
 
@@ -192,7 +192,7 @@ At each grid point the solver computes the forward slope $D^{+}_i V$ and the bac
 An explicit pseudo-time update $V^{n+1} = V^n + \Delta\,(u(c^n) + G^n V^n - \rho V^n)$ is unstable for moderately large $\Delta$ because the upwind generator $G^n$ has eigenvalues with arbitrarily large negative real part (the leaving rate at a point with steep drift can be very large). The implicit version replaces $G^n V^n$ with $G^n V^{n+1}$ and rearranges to
 
 $$
-[(1/\Delta + \rho)\, \mathbf{I} - G^n]\, V^{n+1} = u(c^n) + V^n / \Delta .
+[(1/\Delta + \rho)  \mathbf{I} - G^n]  V^{n+1} = u(c^n) + V^n / \Delta .
 $$
 
 The matrix on the left is strictly diagonally dominant with positive diagonal because $G^n$ has zero row sums and non-positive diagonal (it is the generator of a sub-Markov process), so the linear system is unconditionally invertible regardless of $\Delta$. Taking $\Delta \to \infty$ recovers a Newton step on $\rho V - u(c) - G V = 0$ with the policy frozen, which is the deepest reason the algorithm converges in a handful of iterations.

@@ -75,8 +75,8 @@ Local convergence is quadratic when $Z'(r^{\ast}) \neq 0$.
 | $\delta$ | 0.08 | Depreciation rate |
 | $r^{\ast}$ | 0.041667 | Closed-form clearing rate $1/\beta - 1$ |
 | $K^{\ast}$ | 5.4468 | Target aggregate capital at $r^{\ast}$ |
-| Bracket $[a_0, b_0]$ | $[1e-06,\, 0.1]$ | Sign-change bracket for bisection and Brent |
-| Secant seeds | $[1e-06,\, 0.1]$ | Two starting points for secant |
+| Bracket $[a_0, b_0]$ | $[1e-06,  0.1]$ | Sign-change bracket for bisection and Brent |
+| Secant seeds | $[1e-06,  0.1]$ | Two starting points for secant |
 | Newton start $x_0$ | 0.02 | Starting iterate for Newton-Raphson |
 | Tolerance $\varepsilon$ | 1e-10 | Stopping rule on residual and bracket width |
 

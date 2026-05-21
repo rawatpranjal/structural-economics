@@ -80,7 +80,7 @@ The simulation uses $J = 5$ alternatives plus a default option, with all $2^{5} 
 | Menus | 31 | Every non-empty subset |
 | Subjects | 500 | Independent draws per menu |
 | True ranking | $a_1 \succ a_2 \succ a_3 \succ a_4 \succ a_5$ | Strict total order |
-| True attention $\gamma$ | $(0.40,\, 0.70,\, 0.50,\, 0.80,\, 0.60)$ | Per-alternative attention probabilities |
+| True attention $\gamma$ | $(0.40,  0.70,  0.50,  0.80,  0.60)$ | Per-alternative attention probabilities |
 | Bootstrap reps | 80 | Subject-cluster bootstrap for SE |
 | Method-1 ranking space | 120 | $J!$ candidate orderings |
 

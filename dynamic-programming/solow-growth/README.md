@@ -28,11 +28,11 @@ Divide by $A_tL_t$ to work in effective-labor units:
 $$k_t = \frac{K_t}{A_t L_t}, \qquad
 y_t = \frac{Y_t}{A_t L_t} = k_t^\alpha,$$
 
-with consumption per effective worker $c_t = (1-s)\,y_t$.
+with consumption per effective worker $c_t = (1-s) y_t$.
 
 In these units, the law of motion is one scalar equation:
 
-$$k_{t+1} = \phi(k_t) := \frac{(1-\delta)\,k_t + s\,k_t^\alpha}{(1+g)(1+n)}.$$
+$$k_{t+1} = \phi(k_t) := \frac{(1-\delta) k_t + s\,k_t^\alpha}{(1+g)(1+n)}.$$
 
 Define break-even investment as
 
@@ -44,7 +44,7 @@ equivalent to $s(k^{\ast})^\alpha = \Delta k^{\ast}$.
 The closed-form values are
 
 $$k^{\ast}=\left(\frac{s}{\Delta}\right)^{1/(1-\alpha)}, \qquad
-y^{\ast}=(k^{\ast})^\alpha, \qquad c^{\ast}=(1-s)\,y^{\ast}.$$
+y^{\ast}=(k^{\ast})^\alpha, \qquad c^{\ast}=(1-s) y^{\ast}.$$
 
 ## Model Setup
 
@@ -107,7 +107,7 @@ The dotted line is $k^{\ast}+(k_0-k^{\ast})\lambda^t$. It tracks the path well n
 
 The left panel starts three economies from different capital stocks. They share the same primitives, so they converge to the same normalized $k^{\ast}$. Conditional convergence means convergence to that own steady state.
 
-The right panel changes the saving rate. Higher $s$ shifts investment up and gives $k^{\ast}\in\{2.80,\,4.31,\,6.01\}$. It raises the level of output per worker, not the long-run growth rate.
+The right panel changes the saving rate. Higher $s$ shifts investment up and gives $k^{\ast}\in\{2.80, 4.31, 6.01\}$. It raises the level of output per worker, not the long-run growth rate.
 
 <img src="figures/convergence-and-comparative-statics.png" alt="Conditional convergence from three starting points and the comparative statics of the saving rate" width="80%">
 

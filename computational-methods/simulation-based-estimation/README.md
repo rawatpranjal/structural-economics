@@ -63,7 +63,7 @@ Let $b(\cdot)$ be a vector of auxiliary statistics: the OLS coefficients of the 
 $$
 \hat\theta_{II} = \arg\min_\theta\,
 \underbrace{
-[b_{sim}(\theta) - b_{obs}]^{\prime}\, W_b\,
+[b_{sim}(\theta) - b_{obs}]^{\prime}  W_b\,
 [b_{sim}(\theta) - b_{obs}]
 }_{Q_{II}(\theta)},
 $$
@@ -87,7 +87,7 @@ $$
 For a tolerance $\varepsilon > 0$ the ABC posterior is
 
 $$
-\pi_\varepsilon(\theta \mid m_{obs}) \propto \underbrace{\pi(\theta)}_{\text{prior}}\, \underbrace{\Pr[\rho(\theta) \le \varepsilon]}_{\text{ABC pseudo-likelihood}}.
+\pi_\varepsilon(\theta \mid m_{obs}) \propto \underbrace{\pi(\theta)}_{\text{prior}}  \underbrace{\Pr[\rho(\theta) \le \varepsilon]}_{\text{ABC pseudo-likelihood}}.
 $$
 
 The pseudo-likelihood replaces the unknown true likelihood by the probability that a fresh simulation lands within $\varepsilon$ of the observed moments.
@@ -100,13 +100,13 @@ ABC-SMC approaches $\pi_0$ through a sequence $\varepsilon_0 > \varepsilon_1 > \
 Particles in round $t \ge 1$ are drawn by sampling a parent $\theta_{t-1}^{(j)}$ with probability $w_{t-1}^{(j)}$, perturbing it with a Gaussian kernel
 
 $$
-K_t(\theta \mid \theta^{\prime}) = \mathcal{N}(\theta^{\prime},\, 2\, \widehat{\mathrm{Cov}}_{t-1}),
+K_t(\theta \mid \theta^{\prime}) = \mathcal{N}(\theta^{\prime},  2\, \widehat{\mathrm{Cov}}_{t-1}),
 $$
 
 and keeping the proposal only if $\rho(\theta) \le \varepsilon_t$. The factor two in the covariance is the Beaumont-Cornuet-Marin-Robert (2009) twice-empirical-covariance rule. The importance weight corrects for the proposal,
 
 $$
-w_t^{(i)} \propto \frac{\pi(\theta_t^{(i)})}{\sum_{j=1}^{N} w_{t-1}^{(j)}\, K_t(\theta_t^{(i)} \mid \theta_{t-1}^{(j)})}.
+w_t^{(i)} \propto \frac{\pi(\theta_t^{(i)})}{\sum_{j=1}^{N} w_{t-1}^{(j)}  K_t(\theta_t^{(i)} \mid \theta_{t-1}^{(j)})}.
 $$
 
 Under the uniform prior $\pi$ is constant on the support, so the numerator drops out and the weight is just the inverse of the kernel-mixture density evaluated at $\theta_t^{(i)}$.

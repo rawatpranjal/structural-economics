@@ -10,7 +10,7 @@ The computation compares every chosen bundle under every observed price vector. 
 
 ## Equations
 
-The data are $\mathcal D=\{(p^t,x^t)\}_{t=1}^{T}$, where
+The data are $\mathcal{D}=\{(p^t,x^t)\}_{t=1}^{T}$, where
 $p^t\in\mathbb{R}_{++}^{L}$ is the observed price vector and
 $x^t\in\mathbb{R}_{+}^{L}$ is the chosen bundle. Own expenditure is
 $m_t=p^t\cdot x^t$.

@@ -38,11 +38,11 @@ $$p(y_t)=\beta\,\mathbb{E}_t\left[
 
 **Scaled price.** Define the marginal-utility-scaled price
 
-$$f(y)\equiv u'(y)\,p(y).$$
+$$f(y)\equiv u'(y) p(y).$$
 
 Multiplying the Euler equation by $u'(y_t)$ gives
 
-$$f(y)=\beta\,\mathbb{E}\left[f(y')+u'(y')\,y'\,\big|\,y\right].$$
+$$f(y)=\beta\,\mathbb{E}\left[f(y')+u'(y') y'\,\big|\,y\right].$$
 
 Here $y'$ denotes next-period endowment ($y_{t+1}$); primes denote next-period values throughout.
 
@@ -79,7 +79,7 @@ The flat ratio gives a direct check on the numerical solution.
 
 The update operator is
 
-$$(Tf)(y)=\beta\,\mathbb{E}\\left[f(y')+u'(y')y'\,\big|\,y\right]$$
+$$(Tf)(y)=\beta\,\mathbb{E}\left[f(y')+u'(y')y'\,\big|\,y\right]$$
 
 This operator is a $\beta$-contraction. The run stops when sup-norm changes fall below $10^{-9}$.
 

@@ -48,7 +48,7 @@ whenever $g_a(a,z_j)=\underline a$.
 $\mu$ over $(a,z)$ satisfies the operator equation
 
 $$
-\mu(a',z_k) = \sum_j P_{jk}\sum_{i:\,g_a(a_i,z_j)=a'} \mu(a_i,z_j),
+\mu(a',z_k) = \sum_j P_{jk}\sum_{i: g_a(a_i,z_j)=a'} \mu(a_i,z_j),
 $$
 
 Here $i$ indexes nodes of the asset grid $\{a_i\}$. Aggregate household assets are

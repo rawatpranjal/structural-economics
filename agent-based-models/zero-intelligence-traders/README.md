@@ -14,9 +14,9 @@ Buyer $i$ has value $v_i$ for one unit. Seller $j$ has cost $c_j$ for one unit.
 At event $t$, the active bid book and ask book are
 
 $$
-B_t=\lbrace b_i(t): i\in \mathcal B_t\rbrace
+B_t=\lbrace b_i(t): i\in \mathcal{B}_t\rbrace
 \qquad\text{and}\qquad
-A_t=\lbrace a_j(t): j\in \mathcal A_t\rbrace.
+A_t=\lbrace a_j(t): j\in \mathcal{A}_t\rbrace.
 $$
 
 ZIC buyers and sellers draw feasible quotes:

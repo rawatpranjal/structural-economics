@@ -18,7 +18,7 @@ A binary lottery is the pair $G = (x_1, p; x_2)$, which pays $x_1$ with probabil
 The convention $x_1 > x_2$ makes $x_1$ the better outcome regardless of sign, so $G$ can be a gain-only, loss-only, or mixed lottery.
 Cumulative prospect theory values $G$ by attaching a probability weight $w(p)$ to the better outcome and $1 - w(p)$ to the worse one, then mapping each outcome through a value function $v$.
 
-$$v(G) = v(x_1)\, w(p) + v(x_2)\, [1 - w(p)].$$
+$$v(G) = v(x_1)  w(p) + v(x_2)  [1 - w(p)].$$
 
 The certainty equivalent is the sure amount that delivers the same value as $G$.
 
@@ -47,7 +47,7 @@ The slope parameter $\gamma$ controls curvature, and $\gamma < 1$ produces the i
 Subject $i$ reports a certainty equivalent for each lottery $g$. The observation is the model-predicted value plus a Gaussian shock whose standard deviation scales with the lottery's payoff range.
 
 $$ce_{ig} = \widehat{ce}_g(\theta_i) + \varepsilon_{ig}, \qquad
-\varepsilon_{ig} \sim \mathcal N(0, \sigma_{ig}^2), \qquad
+\varepsilon_{ig} \sim \mathcal{N}(0, \sigma_{ig}^2), \qquad
 \sigma_{ig} = \xi_i \, (x_{1g} - x_{2g}).$$
 
 The subject-level scale $\xi_i$ is profiled out by closed-form maximum likelihood once the preference parameters are fixed.
@@ -58,7 +58,7 @@ The population contains $C$ latent preference types. Type $c$ has parameter vect
 
 $$L_i(\Psi) = \sum_{c=1}^{C} \pi_c \, f(ce_i \mid \theta_c, \xi_i),$$
 
-where $f(ce_i \mid \theta_c, \xi_i) = \prod_{g=1}^{G_i} \phi_{\sigma_{ig}}(ce_{ig} - \widehat{ce}_g(\theta_c))$ is the product of Gaussian densities across subject $i$'s lotteries, $\phi_{\sigma}$ is the density of $\mathcal N(0, \sigma^2)$, and $\Psi = (\theta_1, \ldots, \theta_C, \pi_1, \ldots, \pi_{C-1}, \xi_1, \ldots, \xi_N)$ collects all parameters. The sample log-likelihood is
+where $f(ce_i \mid \theta_c, \xi_i) = \prod_{g=1}^{G_i} \phi_{\sigma_{ig}}(ce_{ig} - \widehat{ce}_g(\theta_c))$ is the product of Gaussian densities across subject $i$'s lotteries, $\phi_{\sigma}$ is the density of $\mathcal{N}(0, \sigma^2)$, and $\Psi = (\theta_1, \ldots, \theta_C, \pi_1, \ldots, \pi_{C-1}, \xi_1, \ldots, \xi_N)$ collects all parameters. The sample log-likelihood is
 
 $$\ln L(\Psi) = \sum_{i=1}^{N} \ln \sum_{c=1}^{C} \pi_c \, f(ce_i \mid \theta_c, \xi_i).$$
 
@@ -78,10 +78,10 @@ The lottery design extends the Bruhin-Fehr-Duda-Epper Zurich 2003 cells to three
 | Lotteries per subject | 85 | 35 gain, 35 loss, 15 mixed |
 | Total observations | 17000 | One certainty equivalent per (subject, lottery) cell |
 | True types | 3 | EUT, mild CPT, strong CPT |
-| True mixing $\pi$ | $(0.20,\, 0.50,\, 0.30)$ | Population proportions |
-| True type-1 $(\alpha, \lambda, \gamma, \delta)$ | $(0.95,\, 1.00,\, 1.00,\, 1.00)$ | EUT type |
-| True type-2 $(\alpha, \lambda, \gamma, \delta)$ | $(0.85,\, 1.50,\, 0.65,\, 0.85)$ | Mild CPT |
-| True type-3 $(\alpha, \lambda, \gamma, \delta)$ | $(0.70,\, 2.50,\, 0.40,\, 0.95)$ | Strong CPT, loss aversion close to TK92's 2.25 |
+| True mixing $\pi$ | $(0.20,  0.50,  0.30)$ | Population proportions |
+| True type-1 $(\alpha, \lambda, \gamma, \delta)$ | $(0.95,  1.00,  1.00,  1.00)$ | EUT type |
+| True type-2 $(\alpha, \lambda, \gamma, \delta)$ | $(0.85,  1.50,  0.65,  0.85)$ | Mild CPT |
+| True type-3 $(\alpha, \lambda, \gamma, \delta)$ | $(0.70,  2.50,  0.40,  0.95)$ | Strong CPT, loss aversion close to TK92's 2.25 |
 | Subject noise $\xi_i$ | Uniform(0.05, 0.20) | Heteroskedastic Gaussian errors |
 | EM tolerance | $10^{-4}$ | Stopping rule on log-likelihood improvement |
 

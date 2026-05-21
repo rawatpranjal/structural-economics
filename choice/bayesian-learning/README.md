@@ -45,7 +45,7 @@ With one more signal available, the continuation value is
 
 $$C_t(p)=\Pr(R\mid p)V_{t+1}(p_R')+\Pr(B\mid p)V_{t+1}(p_B'),$$
 
-where $\Pr(R\mid p)=p\,p_H+(1-p)\,p_L$ is the predictive probability of a red signal at belief $p$, $\Pr(B\mid p)=1-\Pr(R\mid p)$, and $p_R'$ and $p_B'$ are the Bayes-updated beliefs after a red or blue signal. The finite-horizon recursion is
+where $\Pr(R\mid p)=p\,p_H+(1-p) p_L$ is the predictive probability of a red signal at belief $p$, $\Pr(B\mid p)=1-\Pr(R\mid p)$, and $p_R'$ and $p_B'$ are the Bayes-updated beliefs after a red or blue signal. The finite-horizon recursion is
 
 $$V_t(p)=\max[A(p),\ C_t(p)].$$
 

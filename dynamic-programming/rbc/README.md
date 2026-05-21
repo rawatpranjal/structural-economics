@@ -13,13 +13,13 @@ The Bellman equation has no closed-form stochastic policy. We solve it on a glob
 **Technology and resources.** Capital $k_t$, labor $l_t\in(0,1)$, and TFP $z_t$
 produce output through Cobb-Douglas technology:
 
-$$y_t = z_t\,k_t^{\alpha}\,l_t^{1-\alpha},\qquad \alpha\in(0,1),$$
+$$y_t = z_t\,k_t^{\alpha} l_t^{1-\alpha},\qquad \alpha\in(0,1),$$
 
 The resource constraint is
 
-$$c_t + k_{t+1} = z_t\,k_t^{\alpha}\,l_t^{1-\alpha} + (1-\delta)\,k_t,$$
+$$c_t + k_{t+1} = z_t\,k_t^{\alpha} l_t^{1-\alpha} + (1-\delta) k_t,$$
 
-with $c_t>0$ and $k_{t+1}\geq 0$. Investment is $i_t = k_{t+1} - (1-\delta)\,k_t$.
+with $c_t>0$ and $k_{t+1}\geq 0$. Investment is $i_t = k_{t+1} - (1-\delta) k_t$.
 
 **Preferences.** Period utility uses log consumption and log leisure:
 
@@ -37,7 +37,7 @@ P=\begin{pmatrix}0.95 & 0.05\\ 0.05 & 0.95\end{pmatrix}.$$
 **Bellman equation.** Conditioning on the current state $(k,z_i)$, the household
 solves:
 
-$$V(k,z_i)=\max_{k',\,l\in(0,1)}[\log c+\phi\log(1-l)+\beta\sum_{j}P_{ij}\,V(k',z_j)],$$
+$$V(k,z_i)=\max_{k', l\in(0,1)}[\log c+\phi\log(1-l)+\beta\sum_{j}P_{ij} V(k',z_j)],$$
 
 subject to $c=z_i k^{\alpha} l^{1-\alpha}+(1-\delta)k-k'>0$. The policy
 functions are $g_k(k,z)=k'$ and $g_l(k,z)=l$.
