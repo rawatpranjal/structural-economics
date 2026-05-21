@@ -67,7 +67,7 @@ The naive cobweb converges to $p^{\ast}$ when $\beta < 1$ and explodes when
 $\beta > 1$.
 
 **Genetic-algorithm representation.** Each firm carries a length-$L$ binary
-string $b_i \in \{0,1\}^{L}$ that decodes deterministically to a quantity in
+string $b_i \in \lbrace0,1\rbrace^{L}$ that decodes deterministically to a quantity in
 the bracket $[q_{\min}, q_{\max}]$. The population size equals the number of
 firms in the market, $N = n$, so each chromosome is one firm's production
 plan in the current period.
@@ -87,7 +87,7 @@ $$
 \text{(1) Decode} \quad & q_{i,t} = \mathrm{decode}(b_{i,t}). \\
 \text{(2) Clear} \quad & Q_t = \sum_{i=1}^{n} q_{i,t}, \qquad p_t = \tfrac{a + \varepsilon_t - Q_t}{b}. \\
 \text{(3) Score} \quad & \pi_{i,t} = p_t \cdot q_{i,t} - x \cdot q_{i,t} - \tfrac{y}{2} q_{i,t}^{2}. \\
-\text{(4) Select} \quad & \text{tournament on } \{\pi_{i,t}\}_{i=1}^{n} \text{ produces parent indices.} \\
+\text{(4) Select} \quad & \text{tournament on } \lbrace\pi_{i,t}\rbrace_{i=1}^{n} \text{ produces parent indices.} \\
 \text{(5) Recombine} \quad & \text{crossover with prob.\ } p_c, \text{ then bit-flip mutation with per-bit prob.\ } p_m. \\
 \text{(6) Elect} \quad & \text{keep child } b_i' \text{ iff } \pi(\mathrm{decode}(b_i'), p_t) \geq \pi_{\sigma(i),t}; \text{ else keep parent.} \\
 \text{(7) Update} \quad & \mathbf{B}_{t+1} \leftarrow \text{surviving population.}
@@ -161,7 +161,7 @@ Looking inside the GA population shows what convergence means in this model. The
 
 The estimation block uses a naive-cobweb price series with i.i.d. demand-intercept shocks $\varepsilon_t$ as test data. The GA itself tracks REE so closely under the election operator that the resulting price barely moves. The naive cobweb provides the AR(1)-style persistence that makes the IV exercise interesting.
 
-**Structural demand equation.** The data are the realized pairs $\{(p_t, Q_t)\}_{t=1}^{T}$. The demand we want to recover is
+**Structural demand equation.** The data are the realized pairs $\lbrace(p_t, Q_t)\rbrace_{t=1}^{T}$. The demand we want to recover is
 
 $$
 Q_t = a - b \cdot p_t + \varepsilon_t.

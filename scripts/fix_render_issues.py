@@ -157,12 +157,126 @@ def strip_pseudocode_latex(text: str) -> str:
     return "\n".join(out)
 
 
+def brace_math_font_macros(text: str) -> str:
+    """Brace single-token arguments to math-font macros across the file."""
+    return re.sub(
+        r"\\(mathbb|mathbf|mathcal|mathrm|mathfrak|mathit|mathsf|mathtt)\s+([A-Za-z0-9])",
+        r"\\\1{\2}",
+        text,
+    )
+
+
+def fix_escaped_curly_in_math(text: str) -> str:
+    """Replace `\\{` -> `\\lbrace` and `\\}` -> `\\rbrace` inside math regions
+    only. Also rewrites `\\big\\{` family to `\\big\\lbrace` family."""
+    lines = text.split("\n")
+    out: list[str] = []
+    in_fence = False
+    in_display = False
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("```"):
+            in_fence = not in_fence
+            out.append(line)
+            continue
+        if in_fence:
+            out.append(line)
+            continue
+        new_line_parts: list[str] = []
+        i = 0
+        # Track inline $ state per character to scope substitutions.
+        inline = False
+        local_display = in_display
+        n = len(line)
+        buf_start = 0
+        while i < n:
+            two = line[i:i + 2]
+            ch = line[i]
+            # Skip code spans.
+            if ch == "`":
+                # Find closing backtick.
+                end = line.find("`", i + 1)
+                if end == -1:
+                    end = n
+                else:
+                    end += 1
+                # Flush prior buffer with substitution if in math.
+                segment = line[buf_start:i]
+                new_line_parts.append(
+                    _curly_sub(segment) if (inline or local_display) else segment
+                )
+                new_line_parts.append(line[i:end])
+                i = end
+                buf_start = i
+                continue
+            if two == "$$":
+                segment = line[buf_start:i]
+                new_line_parts.append(
+                    _curly_sub(segment) if (inline or local_display) else segment
+                )
+                new_line_parts.append("$$")
+                local_display = not local_display
+                i += 2
+                buf_start = i
+                continue
+            if ch == "$" and (i == 0 or line[i - 1] != "\\"):
+                segment = line[buf_start:i]
+                new_line_parts.append(
+                    _curly_sub(segment) if (inline or local_display) else segment
+                )
+                new_line_parts.append("$")
+                inline = not inline
+                i += 1
+                buf_start = i
+                continue
+            i += 1
+        # Flush remainder.
+        segment = line[buf_start:]
+        new_line_parts.append(
+            _curly_sub(segment) if (inline or local_display) else segment
+        )
+        out.append("".join(new_line_parts))
+        in_display = local_display
+    return "\n".join(out)
+
+
+def _curly_sub(s: str) -> str:
+    """Apply `\\{` -> `\\lbrace`, `\\}` -> `\\rbrace`, and the `\\big`
+    family of sized delimiters wrapping curly braces. Insert a space
+    after `\\lbrace`/`\\rbrace` when followed by a letter so KaTeX
+    does not parse `\\lbracef` as one command."""
+    s = re.sub(r"\\(big|Big|bigg|Bigg)\\\{", r"\\\1\\lbrace", s)
+    s = re.sub(r"\\(big|Big|bigg|Bigg)\\\}", r"\\\1\\rbrace", s)
+    s = s.replace("\\{", "\\lbrace").replace("\\}", "\\rbrace")
+    s = re.sub(r"\\(lbrace|rbrace)(?=[A-Za-z])", r"\\\1 ", s)
+    return s
+
+
+GREEK_GLUED_FIX = re.compile(
+    r"\\(alpha|beta|gamma|delta|epsilon|zeta|eta|theta|iota|kappa|"
+    r"lambda|mu|nu|xi|pi|rho|sigma|tau|upsilon|phi|chi|psi|omega|"
+    r"Alpha|Beta|Gamma|Delta|Epsilon|Zeta|Eta|Theta|Iota|Kappa|"
+    r"Lambda|Mu|Nu|Xi|Pi|Rho|Sigma|Tau|Upsilon|Phi|Chi|Psi|Omega|"
+    r"varepsilon|vartheta|varpi|varrho|varsigma|varphi)"
+    r"([a-zA-Z])"
+)
+
+
+def fix_glued_greek(text: str) -> str:
+    """Insert a space between a Greek macro and a following letter (round-1
+    `\\,` removal sometimes glued `\\alpha\\,s` into `\\alphas`)."""
+    return GREEK_GLUED_FIX.sub(r"\\\1 \2", text)
+
+
 def fix_file(path: Path) -> bool:
     original = path.read_text()
     text = original
     text = strip_thin_space(text)
     text = reformat_dollar_blocks(text)
     text = strip_pseudocode_latex(text)
+    text = brace_math_font_macros(text)
+    text = fix_escaped_curly_in_math(text)
+    text = fix_glued_greek(text)
     if text != original:
         path.write_text(text)
         return True

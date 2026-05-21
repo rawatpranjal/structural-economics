@@ -26,7 +26,7 @@
 ### Finding 1 (original Finding 1 — now HOLDS): `_exit_prob` uses Binomial-integrated E[V(N')|stay]
 
 - **Claim source (verbatim):**
-  > "If it stays, its deterministic surplus is $\Delta(N)=\pi(N)-f+\beta \mathbb{E}\left[V(N_{t+1})\mid N_t=N,\text{ stay}\right]$. ... The incumbent exit probability is $p_{\mathrm{exit}}(N)=\frac{1}{1+\exp\{\Delta(N)/\sigma_\varepsilon\}}$."
+  > "If it stays, its deterministic surplus is $\Delta(N)=\pi(N)-f+\beta \mathbb{E}\left[V(N_{t+1})\mid N_t=N,\text{ stay}\right]$. ... The incumbent exit probability is $p_{\mathrm{exit}}(N)=\frac{1}{1+\exp\lbrace\Delta(N)/\sigma_\varepsilon\rbrace}$."
   >
   > — `README.md:25`, `README.md:39-41`
 
@@ -142,7 +142,7 @@
 ### Finding 5 (new, low severity): entry-count inside VFI uses lagged exit_prob for expected_surv
 
 - **Claim source (verbatim):**
-  > "Potential entrants use the expected survivor count $\bar S(N_t)=\mathrm{round}\{N_t[1-p_{\mathrm{exit}}(N_t)]\}$"
+  > "Potential entrants use the expected survivor count $\bar S(N_t)=\mathrm{round}\lbrace N_t[1-p_{\mathrm{exit}}(N_t)]\rbrace$"
   >
   > — `README.md:45`
 

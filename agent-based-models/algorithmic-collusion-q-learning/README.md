@@ -15,7 +15,7 @@ constant marginal cost $c$. Product quality is $a$, the outside-option value is
 $a_0$, and $\mu$ controls product differentiation. The inside utility index is
 
 $$
-u_i = \frac{\{a - p_i\}}{\{\mu\}}, \qquad u_0 = \frac{\{a_0\}}{\{\mu\}}.
+u_i = \frac{\lbrace a - p_i\rbrace}{\lbrace\mu\rbrace}, \qquad u_0 = \frac{\lbrace a_0\rbrace}{\lbrace\mu\rbrace}.
 $$
 
 The braces mark the numerator and denominator of each utility index. A lower
@@ -64,7 +64,7 @@ The price grid uses the static benchmarks. Let $p_B$ be the Bertrand price,
 $p_M$ be the monopoly price, and $\Delta$ be the grid step. The action set is
 
 $$
-\mathcal{P} = \{p_B-\Delta\} \cup \{p_B, p_B+\Delta,\dots,p_M\} \cup \{p_M+\Delta\}.
+\mathcal{P} = \lbrace p_B-\Delta\rbrace \cup \lbrace p_B, p_B+\Delta,\dots,p_M\rbrace \cup \lbrace p_M+\Delta\rbrace.
 $$
 
 The Q-learning state is the previous-period price-index pair

@@ -10,7 +10,7 @@ The transition for $\omega_1$ is implicit. Tomorrow's share depends on tomorrow'
 
 ## Equations
 
-Let $z_t\in\{1,\ldots,8\}$ be the Markov shock. In state $z$, aggregate growth
+Let $z_t\in\lbrace1,\ldots,8\rbrace$ be the Markov shock. In state $z$, aggregate growth
 is $g_z$, the equity dividend is $d_z$, and agent 1 receives endowment share
 $\eta_{1z}$ with $\eta_{2z}=1-\eta_{1z}$. Agent $i$ has CRRA utility with
 risk aversion $\gamma$ and chooses consumption $c_i$, next-period equity

@@ -10,11 +10,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DISPLAY_MATH_BAD_PREFIX = re.compile(r"^\s*[+*-]\s+")
 TABLE_SEPARATOR_CELL = re.compile(r":?-{3,}:?")
-FRAGILE_MATH_DELIMITERS = (
-    "\\left" + "{",
-    "\\left" + "\\{",
-    "\\right" + "}",
-    "\\right" + "\\}",
+FRAGILE_MATH_DELIMITERS = tuple(
+    "\\" + prefix + suffix
+    for prefix in ("left", "right", "big", "Big", "bigg", "Bigg")
+    for suffix in ("{", "}", "\\{", "\\}")
 )
 FRAGILE_MATH_SIZE_COMMANDS = tuple(
     "\\" + command for command in ("bigl", "bigr", "Bigl", "Bigr")
@@ -40,7 +39,9 @@ BARE_ACRONYMS = {
 }
 # Header cell deemed "code-style": lowercase identifier with underscore/digit.
 CODE_STYLE_HEADER = re.compile(r"^[a-z][a-z0-9]*(?:[_/][a-z0-9]+)+$")
-UNBRACED_MATHBB = re.compile(r"\\mathbb\s+[A-Za-z]")
+UNBRACED_MATH_FONT = re.compile(
+    r"\\(mathbb|mathbf|mathcal|mathrm|mathfrak|mathit|mathsf|mathtt)\s+[A-Za-z0-9]"
+)
 UNBRACED_STAR_SCRIPT = re.compile(r"(?<!\\)(\^|_)\*")
 BRACED_LITERAL_STAR_SCRIPT = re.compile(r"(?<!\\)(\^|_)\{\*\}")
 EMPTY_SCRIPT_TARGET = re.compile(r"(?<!\\)(\^|_)(?:\s|$|[,$.;:)\]}]|[\^_])")
@@ -240,9 +241,10 @@ def fragile_math_command_errors() -> list[str]:
                     errors.append(
                         f"{rel}:{lineno} uses unsupported math command {command}; use \\mathrm{{...}}"
                     )
-            if UNBRACED_MATHBB.search(line):
+            m = UNBRACED_MATH_FONT.search(line)
+            if m:
                 errors.append(
-                    f"{rel}:{lineno} uses unbraced \\mathbb; write \\mathbb{{E}} or \\mathbb{{R}}"
+                    f"{rel}:{lineno} uses unbraced \\{m.group(1)}; brace the argument (e.g. \\{m.group(1)}{{X}})"
                 )
     return errors
 
@@ -414,6 +416,117 @@ def table_header_errors() -> list[str]:
     return errors
 
 
+def _iter_math_states(lines: list[str]):
+    """Yield (lineno, line, in_inline, in_display) walking math state.
+
+    Skips fenced code blocks. Tracks `$$` display state and `$` inline state
+    on a per-line basis. Inline `$` parsing strips inline code spans first.
+    """
+    in_fence = False
+    in_display = False
+    for lineno, line in enumerate(lines, start=1):
+        stripped = line.strip()
+        if stripped.startswith("```"):
+            in_fence = not in_fence
+            yield lineno, line, False, False
+            continue
+        if in_fence:
+            yield lineno, line, False, False
+            continue
+        # Strip inline code spans before parsing $.
+        bare = re.sub(r"`[^`]*`", "", line)
+        # Remove escaped $.
+        bare = bare.replace("\\$", "")
+        # Toggle display state on each $$ pair.
+        display_count = bare.count("$$")
+        without_display = bare.replace("$$", "")
+        single_count = without_display.count("$")
+        has_inline = (single_count > 0) or in_display
+        yield lineno, line, has_inline, in_display or display_count > 0
+        if display_count % 2 == 1:
+            in_display = not in_display
+
+
+def markdown_link_in_math_errors() -> list[str]:
+    """Reject `](` inside display math; GitHub markdown eats `[X](Y)`."""
+    errors = []
+    for path in active_text_files():
+        if path.suffix != ".md":
+            continue
+        rel = path.relative_to(ROOT)
+        lines = path.read_text(errors="replace").splitlines()
+        in_fence = False
+        in_display = False
+        for lineno, line in enumerate(lines, start=1):
+            stripped = line.strip()
+            if stripped.startswith("```"):
+                in_fence = not in_fence
+                continue
+            if in_fence:
+                continue
+            # Only flag when fully inside a multi-line $$...$$ block.
+            if in_display and "](" in line:
+                errors.append(
+                    f"{rel}:{lineno} `](` inside display math is parsed as a markdown link by GitHub; rewrite without bracket+paren adjacency"
+                )
+            if line.count("$$") % 2 == 1:
+                in_display = not in_display
+    return errors
+
+
+def multiline_inline_math_errors() -> list[str]:
+    """Reject lines with an odd number of unescaped `$` (inline math
+    that opens or closes across a line break). GitHub terminates inline
+    math at the line break and the trailing fragment becomes prose."""
+    errors = []
+    for path in active_text_files():
+        if path.suffix != ".md":
+            continue
+        rel = path.relative_to(ROOT)
+        lines = path.read_text(errors="replace").splitlines()
+        in_fence = False
+        in_display = False
+        for lineno, line in enumerate(lines, start=1):
+            stripped = line.strip()
+            if stripped.startswith("```"):
+                in_fence = not in_fence
+                continue
+            if in_fence:
+                continue
+            bare = re.sub(r"`[^`]*`", "", line).replace("\\$", "")
+            display_count = bare.count("$$")
+            without_display = bare.replace("$$", "")
+            single_count = without_display.count("$")
+            if not in_display and display_count % 2 == 0:
+                if single_count % 2 == 1:
+                    errors.append(
+                        f"{rel}:{lineno} unmatched `$` on this line; inline math must open and close on the same line"
+                    )
+            if display_count % 2 == 1:
+                in_display = not in_display
+    return errors
+
+
+def escaped_curly_in_math_errors() -> list[str]:
+    """Reject raw `\\{` or `\\}` inside math; use `\\lbrace` / `\\rbrace`."""
+    errors = []
+    for path in active_text_files():
+        if path.suffix != ".md":
+            continue
+        rel = path.relative_to(ROOT)
+        lines = path.read_text(errors="replace").splitlines()
+        for lineno, line, in_inline, in_display in _iter_math_states(lines):
+            if not (in_inline or in_display):
+                continue
+            bare = re.sub(r"`[^`]*`", "", line)
+            # Only flag once per offending line.
+            if re.search(r"\\\{|\\\}", bare):
+                errors.append(
+                    f"{rel}:{lineno} `\\{{` or `\\}}` inside math is fragile on GitHub; use `\\lbrace` and `\\rbrace`"
+                )
+    return errors
+
+
 def _run_self_tests() -> None:
     """Smoke fixtures for each new check. Raises on regression."""
     assert INLINE_DISPLAY_MATH.search("quality: $$x = 1$$.")
@@ -429,6 +542,11 @@ def _run_self_tests() -> None:
     assert not header_cell_is_bad("$\\alpha$")
     assert not header_cell_is_bad("Iterations")
     assert not header_cell_is_bad("OLS estimate")
+    assert UNBRACED_MATH_FONT.search(r"\mathbf A")
+    assert UNBRACED_MATH_FONT.search(r"\mathcal D")
+    assert not UNBRACED_MATH_FONT.search(r"\mathbf{A}")
+    assert "\\big" + "\\{" in FRAGILE_MATH_DELIMITERS
+    assert "\\Bigg" + "}" in FRAGILE_MATH_DELIMITERS
 
 
 def validate() -> int:
@@ -462,6 +580,9 @@ def validate() -> int:
     errors.extend(inline_display_math_errors())
     errors.extend(pseudocode_math_errors())
     errors.extend(table_header_errors())
+    errors.extend(markdown_link_in_math_errors())
+    errors.extend(multiline_inline_math_errors())
+    errors.extend(escaped_curly_in_math_errors())
 
     if errors:
         print("Catalog validation failed:")

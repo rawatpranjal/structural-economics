@@ -76,7 +76,7 @@ $$
 \begin{aligned}
 b_i
 &=
-\max\{0,\max_{j\in S_i} u_{ij}\}.
+\max\lbrace0,\max_{j\in S_i} u_{ij}\rbrace.
 \end{aligned}
 $$
 
@@ -151,9 +151,9 @@ For a normal match distribution, the reservation equation can be solved as a one
 
 ### Algorithm 1. Reservation order
 
-**Inputs.** Product primitives $\{q_j,p_j,x_j\}_{j=1}^J$, trial parameter $\theta=(\beta,\ell_c)$, and fixed $(\alpha,\gamma,\sigma)$.
+**Inputs.** Product primitives $\lbrace q_j,p_j,x_j\rbrace_{j=1}^J$, trial parameter $\theta=(\beta,\ell_c)$, and fixed $(\alpha,\gamma,\sigma)$.
 
-**Outputs.** Reservation values $\{z_j(\theta)\}_{j=1}^J$ and priority order $\pi(\theta)$.
+**Outputs.** Reservation values $\lbrace z_j(\theta)\rbrace_{j=1}^J$ and priority order $\pi(\theta)$.
 
 1. Convert the log cost into a positive base search cost:
 
@@ -193,7 +193,7 @@ $$
 
 ### Algorithm 2. Simulate one search path
 
-**Inputs.** Reservation values $\{z_j(\theta)\}$, order $\pi(\theta)$, shocks $\{\varepsilon_{ij}\}_{j=1}^J$, mean utilities $\{\mu_j(\theta)\}_{j=1}^J$, and match-value scale $\sigma$.
+**Inputs.** Reservation values $\lbrace z_j(\theta)\rbrace$, order $\pi(\theta)$, shocks $\lbrace\varepsilon_{ij}\rbrace_{j=1}^J$, mean utilities $\lbrace\mu_j(\theta)\rbrace_{j=1}^J$, and match-value scale $\sigma$.
 
 **Outputs.** Inspected set $S_i$, terminal best value $b_i$, and purchase $y_i$.
 
@@ -214,7 +214,7 @@ $$
 4. If $z_j(\theta)>b_i$, inspect product $j$ and update the inspected set:
 
 $$
-S_i\leftarrow S_i\cup\{j\}.
+S_i\leftarrow S_i\cup\lbrace j\rbrace.
 $$
 
 5. Reveal the match value:
@@ -239,14 +239,14 @@ The estimator simulates the full path for many consumers at each parameter vecto
 
 ### Algorithm 3. Estimate $\theta$ by simulated moments
 
-**Inputs.** Observed moments $m_{obs}$, fixed simulation shocks $\{\varepsilon_{sj}\}_{s=1,j=1}^{S,J}$, starting value $\theta_0$, and scale floor $a_{min}$.
+**Inputs.** Observed moments $m_{obs}$, fixed simulation shocks $\lbrace\varepsilon_{sj}\rbrace_{s=1,j=1}^{S,J}$, starting value $\theta_0$, and scale floor $a_{min}$.
 
 **Output.** Simulated-moments estimate $\hat\theta$.
 
 1. For each moment $\ell$, compute the scale:
 
 $$
-a_\ell=\max\{|m_{obs,\ell}|,a_{min}\}.
+a_\ell=\max\lbrace|m_{obs,\ell}|,a_{min}\rbrace.
 $$
 
 2. Let Nelder-Mead propose a candidate $\theta^m=(\beta^m,\ell_c^m)$.
@@ -254,17 +254,17 @@ $$
 3. At $\theta^m$, compute $z_j(\theta^m)$ and $\pi(\theta^m)$ using Algorithm 1.
 
 4. For each simulated consumer $s$, simulate
-$\{S_s(\theta^m), b_s(\theta^m), y_s(\theta^m)\}$ using Algorithm 2.
+$\lbrace S_s(\theta^m), b_s(\theta^m), y_s(\theta^m)\rbrace$ using Algorithm 2.
 
 5. Build the simulated moment vector:
 
 $$
 m_{sim}(\theta^m)=
 \left(
-\Pr_{sim}\{j\in S_s(\theta^m)\}_{j=1}^J, 
-\Pr_{sim}\{y_s(\theta^m)=j\}_{j=1}^J, 
+\Pr_{sim}\lbrace j\in S_s(\theta^m)\rbrace_{j=1}^J, 
+\Pr_{sim}\lbrace y_s(\theta^m)=j\rbrace_{j=1}^J, 
 E_{sim}|S_s(\theta^m)|, 
-\Pr_{sim}\{|S_s(\theta^m)|=1\}
+\Pr_{sim}\lbrace|S_s(\theta^m)|=1\rbrace
 \right).
 $$
 

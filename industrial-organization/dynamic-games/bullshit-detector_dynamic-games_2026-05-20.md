@@ -27,7 +27,7 @@
 
 ### Finding 1: "pure-strategy MPE" claim is diluted by undisclosed no-NE fallback
 
-- **Claim source (verbatim):** "A pure-strategy Markov-perfect equilibrium is a policy $a^{\ast}(\omega)=(a_1^{\ast}(\omega),a_2^{\ast}(\omega))$ and values satisfying $G_i(a_i^{\ast},a_j^{\ast};\omega,V)\geq G_i(a_i,a_j^{\ast};\omega,V)$ for all $a_i\in\{0,1\}$" -- `README.md:30-35`
+- **Claim source (verbatim):** "A pure-strategy Markov-perfect equilibrium is a policy $a^{\ast}(\omega)=(a_1^{\ast}(\omega),a_2^{\ast}(\omega))$ and values satisfying $G_i(a_i^{\ast},a_j^{\ast};\omega,V)\geq G_i(a_i,a_j^{\ast};\omega,V)$ for all $a_i\in\lbrace0,1\rbrace$" -- `README.md:30-35`
 - **Claim source (verbatim, pseudocode):** "Find pure Nash equilibria of the 2-by-2 state game. Select the equilibrium with the largest joint payoff if there is a tie." -- `README.md:62-63` (Solution Method pseudocode)
 - **Code evidence (verbatim):**
   ```python

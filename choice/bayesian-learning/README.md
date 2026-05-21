@@ -10,7 +10,7 @@ The computation updates $p_t$ with Bayes' rule and solves a finite-horizon Bellm
 
 ## Equations
 
-Let $\theta\in\{H,L\}$ denote the unknown state and let $s_t\in\{R,B\}$ denote
+Let $\theta\in\lbrace H,L\rbrace$ denote the unknown state and let $s_t\in\lbrace R,B\rbrace$ denote
 the period-$t$ signal. The maintained signal probabilities are
 
 $$

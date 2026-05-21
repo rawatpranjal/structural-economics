@@ -101,13 +101,13 @@ $\hat\alpha = 1 + 1 / \hat c$, $\hat\delta = \exp(\hat b / \hat c)$, $\hat\beta 
 
 ## Model Setup
 
-The simulation uses the Andreoni-Sprenger 3x3 design (their Section I.A) with $t \in \{0, 7, 35\}$ days and $k \in \{35, 70, 98\}$ days. Each $(t, k)$ cell contains five gross-interest-rate cells. A fixed token budget of 100 is allocated each decision. The later token rate is $a_{t + k} = \$0.20$ and the sooner rate $a_t$ is implied by $a_t = a_{t + k} / (1 + r)$.
+The simulation uses the Andreoni-Sprenger 3x3 design (their Section I.A) with $t \in \lbrace0, 7, 35\rbrace$ days and $k \in \lbrace35, 70, 98\rbrace$ days. Each $(t, k)$ cell contains five gross-interest-rate cells. A fixed token budget of 100 is allocated each decision. The later token rate is $a_{t + k} = \$0.20$ and the sooner rate $a_t$ is implied by $a_t = a_{t + k} / (1 + r)$.
 
 | Symbol | Value | Role |
 |--------|-------|------|
 | Subjects | 100 | Independent allocators in the simulation |
-| $(t, k)$ cells | 9 | All combinations of $t \in \{0, 7, 35\}$ and $k \in \{35, 70, 98\}$ |
-| Interest rates per cell | 5 | $1 + r \in \{1.05, 1.11, 1.25, 1.43, 2.00\}$ |
+| $(t, k)$ cells | 9 | All combinations of $t \in \lbrace0, 7, 35\rbrace$ and $k \in \lbrace35, 70, 98\rbrace$ |
+| Interest rates per cell | 5 | $1 + r \in \lbrace1.05, 1.11, 1.25, 1.43, 2.00\rbrace$ |
 | Token budget | 100 | Per decision |
 | $a_{t + k}$ | 0.20 | Later token rate (dollars) |
 | True $\beta$ | 0.9 | Present-bias parameter ($\beta = 1$ is no bias) |
@@ -158,7 +158,7 @@ Tobit handles corner censoring directly, which is its main advantage when subjec
 
 ## Results
 
-Mean sooner allocations decline as the gross interest rate rises and as the delay length $k$ grows. The three lines per panel correspond to the three front-end delays $t \in \{0, 7, 35\}$. The downward slope on $1 + r$ identifies CRRA curvature $\alpha$. The downward shift across $k$ panels at any fixed $1 + r$ identifies $\delta$. The vertical gap between the $t = 0$ line and the $t > 0$ lines at the same $(k, 1 + r)$ is what identifies $\beta$. Solid curves overlay the NLS-fitted demand function from Method 1.
+Mean sooner allocations decline as the gross interest rate rises and as the delay length $k$ grows. The three lines per panel correspond to the three front-end delays $t \in \lbrace0, 7, 35\rbrace$. The downward slope on $1 + r$ identifies CRRA curvature $\alpha$. The downward shift across $k$ panels at any fixed $1 + r$ identifies $\delta$. The vertical gap between the $t = 0$ line and the $t > 0$ lines at the same $(k, 1 + r)$ is what identifies $\beta$. Solid curves overlay the NLS-fitted demand function from Method 1.
 
 <img src="figures/mean-allocations.png" alt="Mean sooner-token allocations by interest rate and delay length" width="80%">
 

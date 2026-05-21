@@ -15,7 +15,7 @@ Let $k_t$ be capital and $z_t$ a productivity shock. Output is $y_t = z_t A k_t^
 The planner's value function solves the Bellman equation:
 
 $$
-V(k, z) = \max_{k' \in [0, y]} \{ \log(z A k^{\alpha} - k') + \beta \mathbb{E}[V(k', z') \mid z] \}.
+V(k, z) = \max_{k' \in [0, y]} \lbrace \log(z A k^{\alpha} - k') + \beta \mathbb{E}[V(k', z') \mid z] \rbrace.
 $$
 
 Tabular Q-learning stores an action-value $Q(s, a)$ for each state-action pair and updates it from observed transitions:

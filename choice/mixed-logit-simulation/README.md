@@ -103,7 +103,7 @@ The standard deviations are optimized in logs. The optimizer can move freely ove
 
 ### Algorithm 1. Simulated likelihood at a trial $\theta$
 
-**Inputs.** Observed choices and characteristics $\{y_i,p_{ij},q_{ij}\}_{i=1,j=1}^{N,J}$, fixed draws $\nu_r=(\nu_{r\alpha},\nu_{r\beta})$ for $r=1,\ldots,R$, a trial parameter vector $\theta=(\bar\alpha,\bar\beta,\ell_\alpha,\ell_\beta)$, and probability floor $\eta>0$.
+**Inputs.** Observed choices and characteristics $\lbrace y_i,p_{ij},q_{ij}\rbrace_{i=1,j=1}^{N,J}$, fixed draws $\nu_r=(\nu_{r\alpha},\nu_{r\beta})$ for $r=1,\ldots,R$, a trial parameter vector $\theta=(\bar\alpha,\bar\beta,\ell_\alpha,\ell_\beta)$, and probability floor $\eta>0$.
 
 **Output.** The simulated objective $Q_R(\theta)$.
 
@@ -143,14 +143,14 @@ $$
 
 $$
 \ell_R(\theta)=
-\sum_{i=1}^N \log \max\{\widehat P_{i y_i}(\theta),\eta\},
+\sum_{i=1}^N \log \max\lbrace\widehat P_{i y_i}(\theta),\eta\rbrace,
 \qquad
 Q_R(\theta)=-\ell_R(\theta)/N.
 $$
 
 ### Algorithm 2. Optimization and price substitution
 
-**Inputs.** Starting value $\theta_0$, bounds $B$, common draws $\{\nu_r\}_{r=1}^R$, data $\{y_i,p_{ij},q_{ij}\}$, and price step $\Delta p$.
+**Inputs.** Starting value $\theta_0$, bounds $B$, common draws $\lbrace\nu_r\rbrace_{r=1}^R$, data $\lbrace y_i,p_{ij},q_{ij}\rbrace$, and price step $\Delta p$.
 
 **Outputs.** Estimate $\hat\theta$, fitted shares $\hat s_j$, and substitution matrix $D$.
 

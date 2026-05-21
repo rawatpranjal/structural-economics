@@ -31,7 +31,7 @@
 
 ### Finding 1: Example 2 menu indices are wrong — bar chart shows p=0.000 for two of three pairwise probabilities
 
-- **Claim source (verbatim):** "At the calibration $\gamma(a) = 4/9$, $\gamma(b) = 1/2$, $\gamma(c) = 9/10$ with $a \succ b \succ c$, the closed-form probabilities are $p(a, \{a, b\}) = 0.000$, $p(b, \{b, c\}) = 0.000$, and $p(a, \{a, c\}) = 0.444$. Both $p(a, \{a, b\})$ and $p(a, \{a, c\})$ fall below the weak-stochastic-transitivity threshold of $0.5$, while $p(b, \{b, c\})$ meets it." — `README.md:143`
+- **Claim source (verbatim):** "At the calibration $\gamma(a) = 4/9$, $\gamma(b) = 1/2$, $\gamma(c) = 9/10$ with $a \succ b \succ c$, the closed-form probabilities are $p(a, \lbrace a, b\rbrace) = 0.000$, $p(b, \lbrace b, c\rbrace) = 0.000$, and $p(a, \lbrace a, c\rbrace) = 0.444$. Both $p(a, \lbrace a, b\rbrace)$ and $p(a, \lbrace a, c\rbrace)$ fall below the weak-stochastic-transitivity threshold of $0.5$, while $p(b, \lbrace b, c\rbrace)$ meets it." — `README.md:143`
 
 - **Code evidence (verbatim):**
   ```python

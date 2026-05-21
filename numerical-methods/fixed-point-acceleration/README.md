@@ -12,7 +12,7 @@ The lesson is about iteration speed and reliability. Vanilla iteration always co
 
 The general problem is to find $x \in \mathbb{R}^d$ satisfying $x = T(x)$ for a given map $T : \mathbb{R}^d \to \mathbb{R}^d$.
 A fixed point exists and is unique whenever $T$ is a contraction in some norm.
-The methods below iteratively construct a sequence $\{x^t\}$ that converges to the fixed point $x^{\ast}$.
+The methods below iteratively construct a sequence $\lbrace x^t\rbrace$ that converges to the fixed point $x^{\ast}$.
 
 ### The test instance
 

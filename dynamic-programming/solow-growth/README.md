@@ -121,7 +121,7 @@ The dotted line is $k^{\ast}+(k_0-k^{\ast})\lambda^t$. It tracks the path well n
 
 The left panel starts three economies from different capital stocks. They share the same primitives, so they converge to the same normalized $k^{\ast}$. Conditional convergence means convergence to that own steady state.
 
-The right panel changes the saving rate. Higher $s$ shifts investment up and gives $k^{\ast}\in\{2.80, 4.31, 6.01\}$. It raises the level of output per worker, not the long-run growth rate.
+The right panel changes the saving rate. Higher $s$ shifts investment up and gives $k^{\ast}\in\lbrace2.80, 4.31, 6.01\rbrace$. It raises the level of output per worker, not the long-run growth rate.
 
 <img src="figures/convergence-and-comparative-statics.png" alt="Conditional convergence from three starting points and the comparative statics of the saving rate" width="80%">
 

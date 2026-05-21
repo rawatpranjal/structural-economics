@@ -49,8 +49,7 @@ o(\Delta t) .
 $$
 
 Expand $e^{-\rho \Delta t} = 1 - \rho \Delta t + o(\Delta t)$ and
-$V_i(a + \dot a \Delta t) = V_i(a) + V_i'(a)  \dot a \Delta t +
-o(\Delta t)$. Subtract $V_i(a)$, divide by $\Delta t$, and take
+$V_i(a + \dot a \Delta t) = V_i(a) + V_i'(a)  \dot a \Delta t + o(\Delta t)$. Subtract $V_i(a)$, divide by $\Delta t$, and take
 $\Delta t \to 0$. The cross terms $\rho \Delta t \cdot \lambda_i$ and
 $\rho \Delta t \cdot V_i'(a)  \dot a$ are $o(\Delta t)$ and drop out. The
 result is the **HJB equation with Poisson switching**
@@ -222,8 +221,7 @@ that no probability mass sits there in equilibrium.
 
 ### The upwind generator
 
-Once the upwind drifts are picked at every grid point, define $s^{+}_{k, i}
-\equiv \max(s_{k, i}, 0)$ and $s^{-}_{k, i} \equiv \min(s_{k, i}, 0)$. The
+Once the upwind drifts are picked at every grid point, define $s^{+}_{k, i} \equiv \max(s_{k, i}, 0)$ and $s^{-}_{k, i} \equiv \min(s_{k, i}, 0)$. The
 asset block of the upwind generator is tridiagonal: at row $(k, i)$ the
 super-diagonal entry is $s^{+}_{k, i}/\Delta a$, the sub-diagonal entry is
 $-s^{-}_{k, i}/\Delta a$, and the diagonal entry is the negative of their sum.
@@ -244,8 +242,7 @@ non-positive diagonal.
 
 ### Implicit pseudo-time step
 
-An explicit update $V^{n+1} = V^n + \Delta (u(c^n) + \mathbf{A}^{n} V^n -
-\rho V^n)$ is unstable for moderate $\Delta$ because the upwind transition
+An explicit update $V^{n+1} = V^n + \Delta (u(c^n) + \mathbf{A}^{n} V^n - \rho V^n)$ is unstable for moderate $\Delta$ because the upwind transition
 rates $|s_{k, i}|/\Delta a$ can be large on fine grids. The implicit version
 replaces $\mathbf{A}^{n} V^n$ with $\mathbf{A}^{n} V^{n+1}$ and rearranges to
 

@@ -30,7 +30,7 @@ $$
 The value function solves a one-state Bellman equation:
 
 $$
-V(W) = \max_{0 \le c \le W} \big\{ \underbrace{u(c)}_{\text{flow utility today}} + \underbrace{\beta V(W-c)}_{\text{discounted continuation value}} \big\}.
+V(W) = \max_{0 \le c \le W} \big\lbrace \underbrace{u(c)}_{\text{flow utility today}} + \underbrace{\beta V(W-c)}_{\text{discounted continuation value}} \big\rbrace.
 $$
 
 The flow / continuation split is the entire economic content of the Bellman equation.
@@ -71,7 +71,7 @@ Let $T$ be the Bellman operator.
 It maps any candidate value function $V$ to a new function $TV$ defined pointwise by:
 
 $$
-(TV)(W) = \max_{0 \le c \le W} \{ u(c) + \beta V(W-c) \}.
+(TV)(W) = \max_{0 \le c \le W} \lbrace u(c) + \beta V(W-c) \rbrace.
 $$
 
 The operator $T$ is a contraction with modulus $\beta$ in the sup norm $\| \cdot \|_{\infty}$.
@@ -98,7 +98,7 @@ This tutorial uses the variant of modified policy iteration whose evaluation pha
 One improvement step is followed by $k$ such evaluation sweeps, so the policy contraction $T_{\pi}$ is applied a total of $k+1$ times per outer step:
 
 $$
-\pi_{n+1}(W) \in \arg\max_{c} \{ u(c) + \beta V_n(W-c) \},
+\pi_{n+1}(W) \in \arg\max_{c} \lbrace u(c) + \beta V_n(W-c) \rbrace,
 \qquad V_{n+1} = T_{\pi_{n+1}}^{k}  (T V_n).
 $$
 
@@ -130,7 +130,7 @@ The matrix $I - \beta P_{\pi}$ is invertible because $\beta P_{\pi}$ has spectra
 Exact policy iteration alternates policy improvement with this exact solve:
 
 $$
-\pi_{n+1} \in \arg\max_{c} \{ u(c) + \beta V_n(W-c) \},
+\pi_{n+1} \in \arg\max_{c} \lbrace u(c) + \beta V_n(W-c) \rbrace,
 \qquad V_{n+1} = \underbrace{(I - \beta P_{\pi_{n+1}})^{-1}  u(\pi_{n+1})}_{\text{exact value of always playing } \pi_{n+1}}.
 $$
 

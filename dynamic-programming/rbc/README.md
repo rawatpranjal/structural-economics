@@ -34,7 +34,7 @@ $$
 The household maximizes
 $\mathbb{E}_0\sum_{t=0}^{\infty}\beta^t u(c_t,l_t)$.
 
-**TFP process.** Productivity takes two values $z_t\in\{z_L,z_H\}=\{0.95,1.05\}$
+**TFP process.** Productivity takes two values $z_t\in\lbrace z_L,z_H\rbrace=\lbrace0.95,1.05\rbrace$
 with persistent symmetric transitions:
 
 $$
@@ -77,7 +77,7 @@ The stochastic policy fluctuates around this benchmark.
 | $\delta$ | 0.0233 | Depreciation rate |
 | $\alpha$ | 0.3333 | Capital share in Cobb-Douglas |
 | $\phi$ | 1.74 | Leisure weight in utility |
-| $z\in\{z_L,z_H\}$ | $\{0.95,1.05\}$ | Two-state aggregate TFP |
+| $z\in\lbrace z_L,z_H\rbrace$ | $\lbrace0.95,1.05\rbrace$ | Two-state aggregate TFP |
 | $P_{ii}$ | 0.95 | Probability of staying in the same TFP state |
 | $k_{ss}$ | 10.4980 | Deterministic steady-state capital at $z=1$ |
 | $l_{ss}$ | 0.3330 | Deterministic steady-state hours |

@@ -35,7 +35,7 @@ $$
 \varepsilon_{t+1}\sim\mathcal{N}(0,\sigma_\varepsilon^2),
 $$
 
-approximated by an $N$-state Rouwenhorst chain. The grid is $\{z_j\}$, and
+approximated by an $N$-state Rouwenhorst chain. The grid is $\lbrace z_j\rbrace$, and
 $P_{jk}=\Pr(z_{t+1}=z_k\mid z_t=z_j)$. The chain matches the AR(1) variance
 and persistence, and is normalized so $\mathbb{E}[z]=1$.
 
@@ -57,7 +57,7 @@ $$
 \mu(a',z_k) = \sum_j P_{jk}\sum_{i: g_a(a_i,z_j)=a'} \mu(a_i,z_j),
 $$
 
-Here $i$ indexes nodes of the asset grid $\{a_i\}$. Aggregate household assets are
+Here $i$ indexes nodes of the asset grid $\lbrace a_i\rbrace$. Aggregate household assets are
 $K^s(r) = \sum_{i,j} a_i\mu(a_i,z_j)$.
 
 **Firm.** Cobb-Douglas technology $Y = K^{\alpha} L^{1-\alpha}$ with capital
@@ -103,7 +103,7 @@ precautionary saving becomes unbounded. The economy has excess capital supply.
 | Depreciation $\delta$ | 0.08 | Pinning $K^d(r)$ |
 | Income persistence $\rho$ | 0.9 | AR(1) coefficient on $\log z$ |
 | Innovation s.d. $\sigma_\varepsilon$ | 0.2 | AR(1) shock scale |
-| Income states $N$ | 7 | Rouwenhorst nodes for $\{z_j\}$ |
+| Income states $N$ | 7 | Rouwenhorst nodes for $\lbrace z_j\rbrace$ |
 | Asset bracket | $[0,50]$ | $\underline a$ at no-borrowing limit |
 | Asset grid (coarse) | 200 pts | Exponential, denser at $\underline a$ |
 | Capital-market tolerance | 5e-04 | Stop when $\lvert K^s-K^d\rvert/K^d$ falls below |

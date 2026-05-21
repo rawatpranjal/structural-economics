@@ -42,7 +42,7 @@ In the supply equations, $p$ and $s$ are vectors collecting prices and shares ac
 Firm $f$ chooses prices for its products. Product $j$'s FOC is
 
 $$
-0=s_j(p)+\sum_k \mathbf 1[f(j)=f(k)](p_k-c_k)\frac{\partial s_k(p)}{\partial p_j}.
+0=s_j(p)+\sum_k \mathbf{1}\lbrace f(j)=f(k)\rbrace (p_k-c_k) \frac{\partial s_k(p)}{\partial p_j}.
 $$
 
 Here $c_k$ denotes the marginal cost of product $k$.

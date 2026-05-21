@@ -24,11 +24,11 @@ With prior $\pi_0=\Pr(H)$, Bayes' rule is
 
 $$
 \Pr(H\mid k,n) =
-\frac{1}{1+\exp[-\{\log(\pi_0/(1-\pi_0))+\Lambda(k,n)\}]}.
+\frac{1}{1+\exp[-\lbrace\log(\pi_0/(1-\pi_0))+\Lambda(k,n)\rbrace]}.
 $$
 
 Rule $m$ maps the sufficient statistic and counts into a choice probability
-$q_m(k,n)$. With subject $i$'s choices $d_{it}\in\{0,1\}$ (where $t$ indexes tasks), the panel likelihood
+$q_m(k,n)$. With subject $i$'s choices $d_{it}\in\lbrace0,1\rbrace$ (where $t$ indexes tasks), the panel likelihood
 under rule $m$ is
 
 $$

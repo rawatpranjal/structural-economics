@@ -30,7 +30,7 @@ with state $k$ summarizing the entire future. The Bellman equation is
 
 $$
 V(k) = \max_{0 < k' < A k^{\alpha}}
-\{ \log(A k^{\alpha}-k') + \beta V(k') \}.
+\lbrace \log(A k^{\alpha}-k') + \beta V(k') \rbrace.
 $$
 
 Let $g(k)$ denote the optimal $k'$ and $c^{\ast}(k) = A k^{\alpha} - g(k)$ the
@@ -95,7 +95,7 @@ $$
 Define the Bellman operator on bounded continuous functions of capital,
 
 $$
-(TV)(k) = \max_{0 < k' < A k^{\alpha}}\{ \log(A k^{\alpha} - k') + \beta V(k') \}.
+(TV)(k) = \max_{0 < k' < A k^{\alpha}}\lbrace \log(A k^{\alpha} - k') + \beta V(k') \rbrace.
 $$
 
 VFI starts from an initial value on the capital grid. At each $k_i$, the code searches over feasible $k'$ values. The feasible range is $k' \in [k_{min},  A k_i^{\alpha})$ where $k_{min}=0.01$ is the lower bound on next-period capital. It chooses the $k'$ with the highest current utility plus interpolated continuation value. The loop stops when the sup-norm change in $V$ is below $\varepsilon$.

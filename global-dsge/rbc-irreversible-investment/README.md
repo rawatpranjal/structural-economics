@@ -31,8 +31,8 @@ Here $P(z,z')$ is the transition probability from productivity state $z$ to next
 The standard RBC choice set is
 
 $$
-\Gamma^{std}(K,z)=\{K'\geq 0:
-zK^\alpha+(1-\delta)K-K'>0\}.
+\Gamma^{std}(K,z)=\lbrace K'\geq 0:
+zK^\alpha+(1-\delta)K-K'>0\rbrace.
 $$
 
 Irreversibility adds
@@ -40,8 +40,8 @@ Irreversibility adds
 $$
 I_t\equiv K_{t+1}-(1-\delta)K_t\geq 0,
 \qquad
-\Gamma^{irr}(K,z)=\{K'\geq (1-\delta)K:
-zK^\alpha+(1-\delta)K-K'>0\}.
+\Gamma^{irr}(K,z)=\lbrace K'\geq (1-\delta)K:
+zK^\alpha+(1-\delta)K-K'>0\rbrace.
 $$
 
 Let $\lambda_t$ denote the multiplier on irreversible investment.

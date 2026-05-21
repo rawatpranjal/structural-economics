@@ -12,7 +12,7 @@ Soft Q-learning replaces the matrix with the simulated bus panel. The agent sees
 
 ## Equations
 
-Let $x_t$ be mileage and $a_t \in \{\mathrm{replace}, \mathrm{keep}\}$. Flow payoffs are $u(x, \mathrm{replace}) = 0$ and $u(x, \mathrm{keep}) = \theta_0 + \theta_1 x$, with Type-I extreme value choice shocks $\varepsilon_t$.
+Let $x_t$ be mileage and $a_t \in \lbrace\mathrm{replace}, \mathrm{keep}\rbrace$. Flow payoffs are $u(x, \mathrm{replace}) = 0$ and $u(x, \mathrm{keep}) = \theta_0 + \theta_1 x$, with Type-I extreme value choice shocks $\varepsilon_t$.
 
 The conditional value functions solve
 
@@ -47,7 +47,7 @@ The sampled next state $x_{t+1}$ is a noisy draw from the same transition distri
 | Object | Value |
 |--------|-------|
 | Mileage state $x$ | 61 grid points on $[0, 15]$ in steps of 0.25 |
-| Action $a$ | $\{\mathrm{replace}, \mathrm{keep}\}$ |
+| Action $a$ | $\lbrace\mathrm{replace}, \mathrm{keep}\rbrace$ |
 | Discount $\beta$ | 0.9 |
 | Replacement-payoff intercept $\theta_0$ | 2.00 |
 | Mileage-cost slope $\theta_1$ | -0.15 |
