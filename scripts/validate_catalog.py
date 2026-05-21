@@ -507,6 +507,90 @@ def multiline_inline_math_errors() -> list[str]:
     return errors
 
 
+SAFE_SUBSCRIPT_BODY = re.compile(r"^[A-Za-z0-9]+$")
+
+
+def inline_subscript_braces_errors() -> list[str]:
+    """Reject `_{...}` inside inline `$...$` math when the braced body
+    contains anything other than a plain alphanumeric identifier.
+
+    Empirically, every render bug the user has caught involves a braced
+    subscript with operators, commas, spaces, or LaTeX macros inside
+    (`_{n+1}`, `_{k, i}`, `_{++}`, `_{\\infty}`). Subscripts whose body
+    is a pure alphanumeric token (`_{ij}`, `_{10}`) appear to render
+    correctly on GitHub. The fix at source is to drop braces if the
+    subscript is one token, rename the symbol, or promote the
+    expression to display math.
+    """
+    errors = []
+    for path in active_text_files():
+        if path.suffix != ".md":
+            continue
+        rel = path.relative_to(ROOT)
+        lines = path.read_text(errors="replace").splitlines()
+        in_fence = False
+        in_display = False
+        for lineno, line in enumerate(lines, start=1):
+            stripped = line.strip()
+            if stripped.startswith("```"):
+                in_fence = not in_fence
+                continue
+            if in_fence:
+                continue
+            bare = re.sub(r"`[^`]*`", "", line)
+            blocks = []
+            i = 0
+            n = len(bare)
+            inline_start = None
+            local_display = in_display
+            while i < n:
+                two = bare[i:i + 2]
+                ch = bare[i]
+                if two == "$$":
+                    local_display = not local_display
+                    i += 2
+                    continue
+                if ch == "$" and (i == 0 or bare[i - 1] != "\\"):
+                    if local_display:
+                        i += 1
+                        continue
+                    if inline_start is None:
+                        inline_start = i + 1
+                    else:
+                        blocks.append((inline_start, i))
+                        inline_start = None
+                    i += 1
+                    continue
+                i += 1
+            in_display = local_display
+            for start, end in blocks:
+                content = bare[start:end]
+                # Walk braced subscripts and check body content.
+                k = 0
+                while True:
+                    k = content.find("_{", k)
+                    if k == -1:
+                        break
+                    j = k + 2
+                    depth = 1
+                    while j < len(content) and depth > 0:
+                        if content[j] == "{":
+                            depth += 1
+                        elif content[j] == "}":
+                            depth -= 1
+                            if depth == 0:
+                                break
+                        j += 1
+                    body = content[k + 2:j]
+                    if not SAFE_SUBSCRIPT_BODY.fullmatch(body):
+                        errors.append(
+                            f"{rel}:{lineno} `_{{{body}}}` inside inline `$...$` is fragile on GitHub; drop braces if one token, rename, or promote to display math"
+                        )
+                        break
+                    k = j + 1
+    return errors
+
+
 def escaped_curly_in_math_errors() -> list[str]:
     """Reject raw `\\{` or `\\}` inside math; use `\\lbrace` / `\\rbrace`."""
     errors = []
@@ -583,6 +667,20 @@ def validate() -> int:
     errors.extend(markdown_link_in_math_errors())
     errors.extend(multiline_inline_math_errors())
     errors.extend(escaped_curly_in_math_errors())
+
+    # Warnings (do not fail the build, but surface for review). The
+    # inline-subscript rule catches the GitHub markdown-italic bug the
+    # user has confirmed on a handful of pages, but the corpus has
+    # ~230 plausible sites; promote to error after a manual audit
+    # confirms which patterns actually break on GitHub.
+    warnings = inline_subscript_braces_errors()
+
+    if warnings:
+        print(f"Catalog validation warnings ({len(warnings)}):")
+        for w in warnings[:20]:
+            print(f"  ~ {w}")
+        if len(warnings) > 20:
+            print(f"  ... and {len(warnings) - 20} more")
 
     if errors:
         print("Catalog validation failed:")

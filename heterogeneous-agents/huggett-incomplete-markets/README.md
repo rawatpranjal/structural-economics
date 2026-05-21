@@ -202,14 +202,14 @@ D^{+}_{k, i} V = \frac{V_i(a_{k+1}) - V_i(a_k)}{\Delta a},
 D^{-}_{k, i} V = \frac{V_i(a_k) - V_i(a_{k-1})}{\Delta a},
 $$
 
-and the candidate consumptions $c^{+}_{k, i} = (D^{+}_{k, i} V)^{-1/\sigma}$
-and $c^{-}_{k, i} = (D^{-}_{k, i} V)^{-1/\sigma}$. The implied drifts are
-$s^{+}_{k, i} = z_i + r a_k - c^{+}_{k, i}$ and $s^{-}_{k, i}$ analogously.
-The upwind rule keeps the side whose drift points away from the grid point:
-forward when $s^{+}_{k, i} > 0$, backward when $s^{-}_{k, i} < 0$, and the
-zero-drift consumption $c^{0}_{k, i} = z_i + r a_k$ otherwise. A central
-difference would mix the two sides with equal weight and produce oscillating
-iterates because information in the HJB flows in the direction of the drift.
+The forward and backward candidate consumptions and the implied drifts are
+
+$$
+c^{\pm}_{k, i} = (D^{\pm}_{k, i} V)^{-1/\sigma}, \qquad
+s^{\pm}_{k, i} = z_i + r a_k - c^{\pm}_{k, i} .
+$$
+
+The upwind rule keeps the side whose drift points away from the grid point: the forward side when the forward drift is positive, the backward side when the backward drift is negative, and the zero-drift consumption $c^0 = z_i + r a_k$ otherwise. A central difference would mix the two sides with equal weight and produce oscillating iterates because information in the HJB flows in the direction of the drift.
 
 At the borrowing limit $a_1 = \underline a$ the backward difference is
 undefined, so the algorithm uses the forward difference and additionally
@@ -221,10 +221,13 @@ that no probability mass sits there in equilibrium.
 
 ### The upwind generator
 
-Once the upwind drifts are picked at every grid point, define $s^{+}_{k, i} \equiv \max(s_{k, i}, 0)$ and $s^{-}_{k, i} \equiv \min(s_{k, i}, 0)$. The
-asset block of the upwind generator is tridiagonal: at row $(k, i)$ the
-super-diagonal entry is $s^{+}_{k, i}/\Delta a$, the sub-diagonal entry is
-$-s^{-}_{k, i}/\Delta a$, and the diagonal entry is the negative of their sum.
+Once the upwind drifts are picked at every grid point, split the signed drift into its positive and negative parts:
+
+$$
+s^{+}_{k, i} \equiv \max(s_{k, i}, 0), \qquad s^{-}_{k, i} \equiv \min(s_{k, i}, 0) .
+$$
+
+The asset block of the upwind generator is tridiagonal: at row $(k, i)$ the super-diagonal entry is the positive drift divided by $\Delta a$, the sub-diagonal entry is minus the negative drift divided by $\Delta a$, and the diagonal entry is the negative of their sum.
 Stacking both income states gives a $2I \times 2I$ block-tridiagonal generator
 $\mathbf{A}^{n}$,
 

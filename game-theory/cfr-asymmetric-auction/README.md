@@ -72,7 +72,7 @@ $$
 \varepsilon(\sigma) = \sum_{i = 1}^{2} \left(\max_{\sigma'_i} U_i(\sigma'_i, \sigma_{-i}) - U_i(\sigma_i, \sigma_{-i})\right),
 $$
 
-where $U_i(\sigma) = \sum_{v} P(v) \sum_{b} \sigma_i(b \mid v) \cdot u_i(v, b; \sigma_{-i})$
+where $U_i(\sigma) = \sum_v P(v) \sum_b \sigma_i(b \mid v) \cdot u_i(v, b; \sigma_{-i})$
 is the ex-ante expected payoff. Exploitability equals zero exactly at a Bayesian
 Nash equilibrium of the discretized game. The best response in the maximization
 is computed by picking, at each type, the bid on $B$ with the highest expected

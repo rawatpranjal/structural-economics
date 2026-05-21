@@ -50,7 +50,7 @@ A small $\ell$ gives a wiggly prior; a large $\ell$ gives a smooth prior.
 
 Suppose we have observed evaluations $y_i = f(x_i) + \varepsilon_i$ for $i = 1, \ldots, n$, where the observation noise $\varepsilon_i \sim \mathcal{N}(0, \sigma_n^2)$ is independent and $\sigma_n > 0$ is the noise standard deviation.
 Stack the targets into $y = (y_1, \ldots, y_n)^{\top} \in \mathbb{R}^n$.
-Because the joint distribution of $(y, f(x_{\ast}))$ at any new input $x_{\ast} \in \mathcal{X}$ is Gaussian by construction, the conditional distribution $f(x_{\ast}) \mid (X, y)$ is also Gaussian, with closed-form posterior mean $\mu(x_{\ast})$ and variance $\sigma^2(x_{\ast})$:
+Because the joint distribution of $(y, f(x_\ast))$ at any new input $x_\ast \in \mathcal{X}$ is Gaussian by construction, the conditional distribution $f(x_\ast) \mid (X, y)$ is also Gaussian, with closed-form posterior mean $\mu(x_\ast)$ and variance $\sigma^2(x_\ast)$:
 
 $$
 \mu(x_{\ast}) = m(x_{\ast}) + \underbrace{k(x_{\ast}, X)}_{\text{similarity to training inputs}} \underbrace{\left[K(X, X) + \sigma_n^2 I\right]^{-1} (y - m(X))}_{\text{noise-corrected training residual}},
@@ -60,8 +60,8 @@ $$
 \sigma^2(x_{\ast}) = \underbrace{k(x_{\ast}, x_{\ast})}_{\text{prior variance at } x_{\ast}} - \underbrace{k(x_{\ast}, X) \left[K(X, X) + \sigma_n^2 I\right]^{-1} k(X, x_{\ast})}_{\text{variance explained by the data}}.
 $$
 
-The vector $k(x_{\ast}, X) \in \mathbb{R}^n$ collects the kernel values $(k(x_{\ast}, x_1), \ldots, k(x_{\ast}, x_n))$ and $I$ is the $n \times n$ identity matrix.
-Read the posterior mean as a kernel-weighted regression around the constant mean $m(x_{\ast})$: the row vector $k(x_{\ast}, X)$ gives the similarity of the candidate to each evaluated point, and the precision-weighted residual $[K + \sigma_n^2 I]^{-1} (y - m(X))$ tells the formula how to combine those similarities.
+The vector $k(x_\ast, X) \in \mathbb{R}^n$ collects the kernel values $(k(x_\ast, x_1), \ldots, k(x_\ast, x_n))$ and $I$ is the $n \times n$ identity matrix.
+Read the posterior mean as a kernel-weighted regression around the constant mean $m(x_\ast)$: the row vector $k(x_\ast, X)$ gives the similarity of the candidate to each evaluated point, and the precision-weighted residual $[K + \sigma_n^2 I]^{-1} (y - m(X))$ tells the formula how to combine those similarities.
 Read the posterior variance as "prior variance minus what the data already explain", which is the GP analogue of the Bayesian shrinkage identity $\mathrm{Var}(\theta) = \mathrm{Var}(\mathbb{E}[\theta \mid D]) + \mathbb{E}[\mathrm{Var}(\theta \mid D)]$.
 The subtracted term cannot exceed the prior, so the posterior variance is always nonnegative and shrinks toward zero as the candidate moves close to an evaluated point.
 The variance collapsing at evaluated points is what makes Expected Improvement avoid re-querying the same input, and it is the reason posterior variance is the right signal for "where would another evaluation be informative".
@@ -124,7 +124,7 @@ Bayesian optimization is a single loop. Fit a Gaussian-process surrogate to the 
 
 ### Method 1: Gaussian-process surrogate
 
-The Gaussian process places a prior on the unknown profit function. After $n$ evaluations $(X, y)$ the posterior at any candidate price $x_{\ast}$ is Gaussian with closed-form mean and variance. The closed form requires one Cholesky factor of the $n \times n$ kernel matrix, so the cost is $O(n^3)$ in evaluations and $O(n^2)$ per prediction. For budgets of tens to hundreds of evaluations this is negligible.
+The Gaussian process places a prior on the unknown profit function. After $n$ evaluations $(X, y)$ the posterior at any candidate price $x_\ast$ is Gaussian with closed-form mean and variance. The closed form requires one Cholesky factor of the $n \times n$ kernel matrix, so the cost is $O(n^3)$ in evaluations and $O(n^2)$ per prediction. For budgets of tens to hundreds of evaluations this is negligible.
 
 ```text
 Algorithm: GP posterior at candidates X_star

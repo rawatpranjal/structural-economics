@@ -69,8 +69,8 @@ PCHIP holds the shape but drops one order of smoothness.
 | Symbol | Value | Role |
 |--------|-------|------|
 | $\beta$ | 0.9 | Discount factor in the cake-eating target |
-| Smooth domain $[W_{\min}, W_{\max}]$ | $[0.05,  1.0]$ | Wealth range for the smooth target |
-| Kinked domain $[a_{\min}, a_{\max}]$ | $[0.05,  5.0]$ | Asset range for the kinked target |
+| Smooth domain $[W_\min, W_\max]$ | $[0.05,  1.0]$ | Wealth range for the smooth target |
+| Kinked domain $[a_\min, a_\max]$ | $[0.05,  5.0]$ | Asset range for the kinked target |
 | $a_{\text{kink}}$ | 0.5 | Borrowing-constraint kink in the policy |
 | $r$ | 0.04 | Interest rate in the consumption policy |
 | $y$ | 0.5 | Endowment (income) in the consumption policy |

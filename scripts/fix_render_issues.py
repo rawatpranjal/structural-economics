@@ -268,6 +268,78 @@ def fix_glued_greek(text: str) -> str:
     return GREEK_GLUED_FIX.sub(r"\\\1 \2", text)
 
 
+SINGLE_TOKEN_BRACE_SUB = re.compile(r"_\{([A-Za-z0-9]|\\[A-Za-z]+)\}")
+
+
+def drop_single_token_subscript_braces(text: str) -> str:
+    """Inside inline `$...$` math, rewrite `_{x}` -> `_x` when the
+    subscript is a single token (letter, digit, or LaTeX macro)."""
+    lines = text.split("\n")
+    out: list[str] = []
+    in_fence = False
+    in_display = False
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("```"):
+            in_fence = not in_fence
+            out.append(line)
+            continue
+        if in_fence:
+            out.append(line)
+            continue
+        new_parts: list[str] = []
+        i = 0
+        n = len(line)
+        inline = False
+        local_display = in_display
+        buf_start = 0
+        while i < n:
+            ch = line[i]
+            two = line[i:i + 2]
+            if ch == "`":
+                end = line.find("`", i + 1)
+                if end == -1:
+                    end = n
+                else:
+                    end += 1
+                seg = line[buf_start:i]
+                new_parts.append(
+                    SINGLE_TOKEN_BRACE_SUB.sub(r"_\1", seg) if (inline and not local_display) else seg
+                )
+                new_parts.append(line[i:end])
+                i = end
+                buf_start = i
+                continue
+            if two == "$$":
+                seg = line[buf_start:i]
+                new_parts.append(
+                    SINGLE_TOKEN_BRACE_SUB.sub(r"_\1", seg) if (inline and not local_display) else seg
+                )
+                new_parts.append("$$")
+                local_display = not local_display
+                i += 2
+                buf_start = i
+                continue
+            if ch == "$" and (i == 0 or line[i - 1] != "\\"):
+                seg = line[buf_start:i]
+                new_parts.append(
+                    SINGLE_TOKEN_BRACE_SUB.sub(r"_\1", seg) if (inline and not local_display) else seg
+                )
+                new_parts.append("$")
+                inline = not inline
+                i += 1
+                buf_start = i
+                continue
+            i += 1
+        seg = line[buf_start:]
+        new_parts.append(
+            SINGLE_TOKEN_BRACE_SUB.sub(r"_\1", seg) if (inline and not local_display) else seg
+        )
+        out.append("".join(new_parts))
+        in_display = local_display
+    return "\n".join(out)
+
+
 def fix_file(path: Path) -> bool:
     original = path.read_text()
     text = original
@@ -277,6 +349,7 @@ def fix_file(path: Path) -> bool:
     text = brace_math_font_macros(text)
     text = fix_escaped_curly_in_math(text)
     text = fix_glued_greek(text)
+    text = drop_single_token_subscript_braces(text)
     if text != original:
         path.write_text(text)
         return True

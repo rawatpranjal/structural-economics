@@ -177,7 +177,7 @@ probabilities, then lets the neural part bend the utility surface.
 
 For any trial $\theta$, the code forms $\tilde x_{ijr}$ for all consumers,
 products, and latent draws. It then evaluates $h_{ijr}(\theta)$,
-$v_{\theta}(i,j,r)$, $P_{ijr}(\theta)$, and finally $\widehat P_{ij}(\theta)$.
+$v_\theta(i,j,r)$, $P_{ijr}(\theta)$, and finally $\widehat P_{ij}(\theta)$.
 The same fixed draws are used for every trial $\theta$.
 
 After estimation, the Premium price counterfactual recomputes fitted shares

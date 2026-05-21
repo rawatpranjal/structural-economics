@@ -97,8 +97,8 @@
 
 ### Finding 3: Sweep count inconsistency — "k times" vs "k+1 times" across sections
 
-- **Claim source 1 (verbatim):** "Modified policy iteration applies the policy contraction $T_{\pi}$ a total of $k$ times per outer step and shrinks the error roughly by $\beta^{k+1}$." — `README.md:252` (Takeaway)
-- **Claim source 2 (verbatim):** "MPI with $k = 5$ inner sweeps drops faster because each outer step composes the policy contraction $T_{\pi}$ a total of $k+1$ times." — `README.md:219` (Results/Convergence)
+- **Claim source 1 (verbatim):** "Modified policy iteration applies the policy contraction $T_\pi$ a total of $k$ times per outer step and shrinks the error roughly by $\beta^{k+1}$." — `README.md:252` (Takeaway)
+- **Claim source 2 (verbatim):** "MPI with $k = 5$ inner sweeps drops faster because each outer step composes the policy contraction $T_\pi$ a total of $k+1$ times." — `README.md:219` (Results/Convergence)
 - **Claim source 3 (verbatim):** "$V_{n+1} = T_{\pi_{n+1}}^{k} V_n$" — `README.md:84` (Equations)
 - **Code evidence:** Code does `bellman_step` (one T application) + `k_inner` eval sweeps = k+1 total T-like applications. The convergence prose (README:219) is consistent with the code. The Equations section (README:84) and Takeaway (README:252) state k, not k+1.
 - **Category:** DATA DRIFT

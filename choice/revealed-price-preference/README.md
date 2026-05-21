@@ -10,10 +10,13 @@ The computation compares every chosen bundle under every observed price vector. 
 
 ## Equations
 
-The data are $\mathcal{D}=\lbrace(p^t,x^t)\rbrace_{t=1}^{T}$, where
-$p^t\in\mathbb{R}_{++}^{L}$ is the observed price vector and
-$x^t\in\mathbb{R}_{+}^{L}$ is the chosen bundle. Own expenditure is
-$m_t=p^t\cdot x^t$.
+The data are a finite sequence of price-bundle pairs
+
+$$
+\mathcal{D} = \lbrace (p^t, x^t) \rbrace_{t=1}^{T},
+$$
+
+where the price vector $p^t$ is strictly positive and the chosen bundle $x^t$ is nonnegative, both of dimension $L$. Own expenditure at observation $t$ is $m_t = p^t \cdot x^t$.
 
 For price-regime comparisons, where $s,t\in\lbrace1,...,T\rbrace$ each index an observation, define the cross-cost matrix
 

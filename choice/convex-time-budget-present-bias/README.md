@@ -113,7 +113,7 @@ The simulation uses the Andreoni-Sprenger 3x3 design (their Section I.A) with $t
 | True $\beta$ | 0.9 | Present-bias parameter ($\beta = 1$ is no bias) |
 | True $\delta$ | 0.99928 | Daily discount factor (annual rate $\approx$ 30.1%) |
 | True $\alpha$ | 0.92 | CRRA exponent in $u(c) = c^{\alpha} / \alpha$ |
-| Noise $\sigma_{\varepsilon}$ | 0.3 | Std of Gaussian shock to log tangency |
+| Noise $\sigma_\varepsilon$ | 0.3 | Std of Gaussian shock to log tangency |
 | Bootstrap reps | 200 | Subject-cluster resamples for SEs |
 
 ## Solution Method
