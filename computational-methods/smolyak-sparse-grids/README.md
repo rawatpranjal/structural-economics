@@ -204,7 +204,7 @@ $$
 (Y_n - S_n) \cdot S_n^{\alpha - 1} = \frac{1}{\beta \alpha Z^{1-\alpha} E_n},
 $$
 
-a scalar equation in $S_n \in (0, Y_n)$. The left-hand side is strictly decreasing in $S_n$ on that interval, so a one-dimensional bracketed root solver returns the unique $S_n^{\mathrm{new}}$ at each node. The new coefficient vector is $\theta^{\mathrm{new}} = \Phi^{-1} \log S^{\mathrm{new}}$, and the iteration stops when $\|\theta^{\mathrm{new}} - \theta^{\mathrm{old}}\|_{\infty}$ falls below tolerance. Without the cross-sector ratio identity, each node would carry $N$ unknowns and the system would have to be solved jointly across nodes.
+a scalar equation in $S_n \in (0, Y_n)$. The left-hand side is strictly decreasing in $S_n$ on that interval, so a one-dimensional bracketed root solver returns the unique $S_n^{\mathrm{new}}$ at each node. The new coefficient vector is $\theta^{\mathrm{new}} = \Phi^{-1} \log S^{\mathrm{new}}$, and the iteration stops when $\|\theta^{\mathrm{new}} - \theta^{\mathrm{old}}\|_\infty$ falls below tolerance. Without the cross-sector ratio identity, each node would carry $N$ unknowns and the system would have to be solved jointly across nodes.
 
 ### Full algorithm
 

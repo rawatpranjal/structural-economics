@@ -31,7 +31,7 @@
 
 ### Finding 1: "We use a zero-mean prior" — code uses constant-mean GP
 
-- **Claim source (verbatim):** "We use a zero-mean prior, $f \sim \mathcal{GP}(0, k)$" and posterior formula "$\mu(x_{\ast}) = k(x_{\ast}, X) \left[K(X,X) + \sigma_n^2 I\right]^{-1} y$" — `README.md:38` and `README.md:49`
+- **Claim source (verbatim):** "We use a zero-mean prior, $f \sim \mathcal{GP}(0, k)$" and posterior formula "$\mu(x_\ast) = k(x_\ast, X) \left[K(X,X) + \sigma_n^2 I\right]^{-1} y$" — `README.md:38` and `README.md:49`
 - **Code evidence (verbatim):**
   ```python
   def fit(self, X: np.ndarray, y: np.ndarray) -> "GaussianProcess":

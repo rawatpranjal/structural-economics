@@ -62,7 +62,7 @@ These payoffs create excess entry pressure when the rival is unlikely to enter.
 
 ## Solution Method
 
-The symmetric QRE reduces to a one-dimensional root search. For candidate probability $p$, define $G_{\lambda}(p)=p-QBR(p;\lambda)$. A fixed point sets this residual to zero. Bisection is enough because $G_{\lambda}$ rises on $[0,1]$ and changes sign across the bracket.
+The symmetric QRE reduces to a one-dimensional root search. For candidate probability $p$, define $G_\lambda(p)=p-QBR(p;\lambda)$. A fixed point sets this residual to zero. Bisection is enough because $G_\lambda$ rises on $[0,1]$ and changes sign across the bracket.
 
 ```text
 Algorithm: symmetric logit-QRE path in the entry game

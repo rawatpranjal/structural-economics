@@ -68,7 +68,7 @@ $\beta > 1$.
 
 **Genetic-algorithm representation.** Each firm carries a length-$L$ binary
 string $b_i \in \lbrace0,1\rbrace^{L}$ that decodes deterministically to a quantity in
-the bracket $[q_{\min}, q_{\max}]$. The population size equals the number of
+the bracket $[q_\min, q_\max]$. The population size equals the number of
 firms in the market, $N = n$, so each chromosome is one firm's production
 plan in the current period.
 

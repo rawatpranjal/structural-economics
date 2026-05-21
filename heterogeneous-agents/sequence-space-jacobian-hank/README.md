@@ -100,11 +100,11 @@ sequence-space HANK notebook of Auclert et al. (2021).
 | Elasticity of intertemporal substitution | $\eta$ | 0.50 | Relative risk aversion $= 1/\eta = 2$ |
 | Frisch elasticity | $\varphi$ | 0.50 | Labor-supply curvature |
 | Discount factor | $\beta$ | 0.9822 | Calibrated so $A^\ast = B$ |
-| Labor disutility | $v_{\varphi}$ | 0.7862 | Calibrated so $N^E_{\ast} = 1$ |
+| Labor disutility | $v_\varphi$ | 0.7862 | Calibrated so $N^E_\ast = 1$ |
 | Markup | $\mu^{\ast}$ | 1.20 | 20 percent steady-state markup |
 | TFP | $Z$ | 1.00 | Normalized |
 | NKPC slope | $\kappa$ | 0.10 | On real marginal cost |
-| Taylor inflation | $\phi_{\pi}$ | 1.50 | |
+| Taylor inflation | $\phi_\pi$ | 1.50 | |
 | Shock persistence | $\rho_v$ | 0.61 | AR(1) on monetary innovation |
 | Skill persistence | $\rho_e$ | 0.966 | AR(1) on log skill |
 | Skill innovation std | $\sigma_e$ | 0.50 | Unconditional std target |
@@ -116,7 +116,7 @@ sequence-space HANK notebook of Auclert et al. (2021).
 
 **Steady-state values.** Real return $r^\ast = 0.0050$ quarterly (~2.0 percent annual). Output $Y^\ast = 1.000$, real wage $w^\ast = 0.8333$, profits $\mathrm{Div}^\ast = 0.1667$, fiscal transfer $T^\ast = 0.1387$. Aggregate consumption $C^\ast = 1.0000$, asset holdings $A^\ast = 5.6000$
 clear the bond market against $B = 5.6$, and effective labor supply
-$N^E_{\ast} = 1.0000$ matches steady-state labor demand.
+$N^E_\ast = 1.0000$ matches steady-state labor demand.
 
 ## Solution Method
 
@@ -127,8 +127,8 @@ the heavy piece because its inputs and outputs are sequences of aggregates.
 $(c, n)$ policy by FOC inversion, with a Newton subsolver for the borrowing-
 constrained region. The stationary distribution follows from forward-iterating
 the Young (2010) lottery on the saving policy. A joint Broyden iteration on
-$(\beta, v_{\varphi})$ matches the asset target $A^{\ast} = B$ and the
-labor-supply target $N^E_{\ast} = 1$.
+$(\beta, v_\varphi)$ matches the asset target $A^{\ast} = B$ and the
+labor-supply target $N^E_\ast = 1$.
 
 **Fake-news household Jacobian.** Each Jacobian column $J^{Y, x}_{:, s}$ is
 the path of aggregate $Y$ in response to a unit pulse to input $x$ at date $s$.
@@ -180,9 +180,9 @@ $3 T \times 3 T$ system is solved by a single dense linear solve.
 
 **Convergence.** The household EGM converged in
 424 iterations to a sup-norm residual of
-9.82e-10. The joint $(\beta, v_{\varphi})$ calibration
+9.82e-10. The joint $(\beta, v_\varphi)$ calibration
 converged in a few Broyden steps to the targets $A^{\ast} = B$ and
-$N^E_{\ast} = 1$. The Jacobian construction took 35.9 seconds at
+$N^E_\ast = 1$. The Jacobian construction took 35.9 seconds at
 $T = 300$. The aggregate condition number of $H_U$ is order
 $10^{3}$, well within double-precision range.
 
@@ -242,7 +242,7 @@ Block composition pays for itself: firm, NKPC, fiscal, and monetary blocks are c
 
 The HANK-vs-RA comparison shows what the heterogeneity is doing economically. At this calibration, the aggregate output and consumption responses are of similar size to the RA NK benchmark, but the cross-section is dramatic: lower wealth quintiles cut consumption several times as much as the upper quintiles. The amplification at the level of inflation and the real rate is also larger in HANK. The same SSJ scaffolding extends to two-asset HANK, sticky wages, estimation by likelihood, and richer fiscal blocks; those extensions and a more aggressive amplification calibration (e.g., shareholder-only dividend rebates) are in the [`sequence-jacobian`](https://github.com/shade-econ/sequence-jacobian) package, which is the natural next stop.
 
-**Numerical match with the canonical package.** Running the same calibration through the canonical [`sequence-jacobian`](https://github.com/shade-econ/sequence-jacobian) package (notebook grid $n_E = 7$, $n_A = 500$) for a $+100$ bp tightening with $\rho_v = 0.61$ gives $\beta^{\ast} = 0.98224$, $v_{\varphi}^{\ast} = 0.7864$, peak output $-0.1908$ percent, peak consumption $-0.1908$ percent, peak inflation $-0.690$ percent annualized, and peak real return $+0.694$ percent annualized. This tutorial returns $\beta^{\ast} = 0.98223$, $v_{\varphi}^{\ast} = 0.7862$, peak output and consumption both $-0.190$ percent, peak inflation $-0.688$ percent, and peak real return $+0.688$ percent. The two implementations agree to roughly three significant figures; the remaining gap reflects the $n_A = 200$ grid used here versus the $n_A = 500$ grid used in the canonical notebook.
+**Numerical match with the canonical package.** Running the same calibration through the canonical [`sequence-jacobian`](https://github.com/shade-econ/sequence-jacobian) package (notebook grid $n_E = 7$, $n_A = 500$) for a $+100$ bp tightening with $\rho_v = 0.61$ gives $\beta^{\ast} = 0.98224$, $v_\varphi^{\ast} = 0.7864$, peak output $-0.1908$ percent, peak consumption $-0.1908$ percent, peak inflation $-0.690$ percent annualized, and peak real return $+0.694$ percent annualized. This tutorial returns $\beta^{\ast} = 0.98223$, $v_\varphi^{\ast} = 0.7862$, peak output and consumption both $-0.190$ percent, peak inflation $-0.688$ percent, and peak real return $+0.688$ percent. The two implementations agree to roughly three significant figures; the remaining gap reflects the $n_A = 200$ grid used here versus the $n_A = 500$ grid used in the canonical notebook.
 
 ## References
 

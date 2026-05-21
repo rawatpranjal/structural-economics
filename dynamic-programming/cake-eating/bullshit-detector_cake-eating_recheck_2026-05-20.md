@@ -76,9 +76,9 @@
 
 - **Old state:** Equations section used `k`, Takeaway used "k times", only Results/Convergence used "k+1".
 - **Fixed state (verbatim):**
-  - Equations section, `README.md:82`: "One improvement step is followed by $k$ such evaluation sweeps, so the policy contraction $T_{\pi}$ is applied a total of $k+1$ times per outer step"
-  - Takeaway, `README.md:253`: "Modified policy iteration applies the policy contraction $T_{\pi}$ a total of $k+1$ times per outer step and shrinks the error roughly by $\beta^{k+1}$."
-  - Results/Convergence, `README.md:220`: "each outer step composes the policy contraction $T_{\pi}$ a total of $k+1$ times" (unchanged, was already correct)
+  - Equations section, `README.md:82`: "One improvement step is followed by $k$ such evaluation sweeps, so the policy contraction $T_\pi$ is applied a total of $k+1$ times per outer step"
+  - Takeaway, `README.md:253`: "Modified policy iteration applies the policy contraction $T_\pi$ a total of $k+1$ times per outer step and shrinks the error roughly by $\beta^{k+1}$."
+  - Results/Convergence, `README.md:220`: "each outer step composes the policy contraction $T_\pi$ a total of $k+1$ times" (unchanged, was already correct)
 - **Code evidence:** `run.py:135-139` applies `bellman_step` (1 application) + `k_inner` sweeps = k+1 total. All three sections now agree with the code.
 - **Category:** HOLDS
 - **Severity:** none

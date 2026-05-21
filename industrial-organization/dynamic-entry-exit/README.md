@@ -10,7 +10,7 @@ Exit and entry rules depend on future market sizes. We solve a finite-state Bell
 
 ## Equations
 
-Let $N_t\in\lbrace1,\ldots,N_{\max}\rbrace$ denote the number of active firms at the start
+Let $N_t\in\lbrace1,\ldots,N_\max\rbrace$ denote the number of active firms at the start
 of period $t$. With inverse demand $P=a-bQ$ and constant marginal cost $c$, the
 symmetric Cournot flow profit before fixed cost is
 
@@ -72,7 +72,7 @@ $$
 | $K$       | 5.0  | Sunk entry cost |
 | $\beta$  | 0.95 | Discount factor |
 | $\sigma_\varepsilon$ | 1.0 | Logistic shock scale |
-| $N_{\max}$ | 30 | Maximum number of firms |
+| $N_\max$ | 30 | Maximum number of firms |
 | State space | $1,\ldots,30$ | Operating markets; zero-firm market entry is not modeled |
 | Simulation periods | 200 | Market path shown in the results |
 

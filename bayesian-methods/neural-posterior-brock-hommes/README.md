@@ -29,10 +29,10 @@ $$
 
 The summation index $j$ runs over the same rule set $\lbrace F, T \rbrace$
 as $h$. The free parameters are
-$\theta = (\beta, g, \sigma_{\epsilon}, c_T)$:
+$\theta = (\beta, g, \sigma_\epsilon, c_T)$:
 $\beta$ the intensity of choice (logit sharpness),
 $g$ the trend gain (extrapolation strength in the trend-follower forecast),
-$\sigma_{\epsilon}$ the shock scale (standard deviation of noise-trader
+$\sigma_\epsilon$ the shock scale (standard deviation of noise-trader
 supply), and $c_T$ the trend-following cost. All four enter the simulator
 nonlinearly through the logit-choice loop. The data-generating density
 $p(y \mid \theta)$ over the simulator output $y$ would be needed for
@@ -42,11 +42,11 @@ is to replace that density with samples.
 
 ### Normalizing flows
 
-A normalizing flow is a parameterized bijection $f_{\phi}$ between two
+A normalizing flow is a parameterized bijection $f_\phi$ between two
 spaces of equal dimension, with parameters $\phi$. Push a standard base
-sample $z \sim p_{0}$ (usually $p_{0} = \mathcal{N}(0, I)$, with $I$ the
-identity matrix) through $f_{\phi}$ to obtain
-$\theta = f_{\phi}(z; y)$, conditioned on simulator output $y$. From here
+sample $z \sim p_0$ (usually $p_0 = \mathcal{N}(0, I)$, with $I$ the
+identity matrix) through $f_\phi$ to obtain
+$\theta = f_\phi(z; y)$, conditioned on simulator output $y$. From here
 on $y$ denotes simulator output, distinct from the model state $x_t$ above.
 The change of variables theorem gives the implied density on $\theta$:
 
@@ -59,8 +59,8 @@ p_{0}\left(f_{\phi}^{-1}(\theta; y)\right)
 $$
 
 Two properties make the flow useful: every $\theta$ has a tractable density
-$q_{\phi}(\theta \mid y)$, and drawing samples from it costs one forward
-pass through $f_{\phi}$. The flow is a flexible probability density and a
+$q_\phi(\theta \mid y)$, and drawing samples from it costs one forward
+pass through $f_\phi$. The flow is a flexible probability density and a
 flexible sampler at the same time. The masked autoregressive flow
 (Papamakarios, Pavlakou, and Murray 2017) factors the density into a
 product of conditional Gaussians and masks the network weights so the
@@ -68,7 +68,7 @@ Jacobian is triangular, which makes the determinant cheap to compute.
 
 ### Neural posterior estimation
 
-Let $\pi_{\theta}$ denote the prior over the parameter vector $\theta$; this
+Let $\pi_\theta$ denote the prior over the parameter vector $\theta$; this
 is a different object from the per-type profit score $\rho_{h,t}$ above.
 NPE chooses the flow parameters $\phi$ that minimize the expected negative
 log-density of the true parameters under the flow:
@@ -84,10 +84,10 @@ $$
 
 The expectation is over the joint distribution of prior samples and
 simulator outputs. The training data are pairs $(\theta_i, y_i)$ with
-$\theta_i$ drawn from the prior $\pi_{\theta}$ and $y_i$ obtained by
+$\theta_i$ drawn from the prior $\pi_\theta$ and $y_i$ obtained by
 running the simulator on $\theta_i$. In the population limit the minimizer
 of this loss equals the true posterior
-$p(\theta \mid y) \propto p(y \mid \theta)  \pi_{\theta}(\theta)$; the
+$p(\theta \mid y) \propto p(y \mid \theta)  \pi_\theta(\theta)$; the
 construction is due to Papamakarios and Murray (2016) and the
 simulation-based-inference setting is reviewed in
 Cranmer-Brehmer-Louppe (2020). The same trained flow can then be evaluated
@@ -179,7 +179,7 @@ raw simulator output. The next section lists the five summaries used.
 
 ## Model Setup
 
-The prior is a four-dimensional box. Bounds are wide enough to admit behaviorally distinct dynamics: $\beta$ spans from near-uniform switching to near-corner allocations, $g$ spans weak to strong extrapolation, $\sigma_{\epsilon}$ spans quiet to noisy markets, and $c_T$ ranges from no cost to a level that meaningfully penalizes the trend rule.
+The prior is a four-dimensional box. Bounds are wide enough to admit behaviorally distinct dynamics: $\beta$ spans from near-uniform switching to near-corner allocations, $g$ spans weak to strong extrapolation, $\sigma_\epsilon$ spans quiet to noisy markets, and $c_T$ ranges from no cost to a level that meaningfully penalizes the trend rule.
 
 | Parameter | Symbol | Prior | True value | Role |
 |---|---:|:---:|---:|---|
@@ -188,7 +188,7 @@ The prior is a four-dimensional box. Bounds are wide enough to admit behaviorall
 | Shock scale | $\sigma_\epsilon$ | $\mathrm{U}(0.005, 0.050)$ | 0.020 | Std of noise-trader supply shock |
 | Trend cost | $c_T$ | $\mathrm{U}(0.000, 0.005)$ | 0.001 | Cost of using the trend rule |
 
-Other primitives stay at the values used in the SMM tutorial: the gross risk-free return $R = 1.01$, dividend $d = 0.20$, forecast bound on the trend rule $\bar x = 0.35$ (caps the extrapolated trend so the simulator stays bounded), score memory $\lambda = 0.80$, combined risk-aversion scale $a\sigma^{2} = 0.04$ (the product of absolute risk aversion and return variance that appears in the profit score), simulation horizon $T_{sim} = 700$, and burn-in $T_{0} = 100$ periods discarded before any moment is computed.
+Other primitives stay at the values used in the SMM tutorial: the gross risk-free return $R = 1.01$, dividend $d = 0.20$, forecast bound on the trend rule $\bar x = 0.35$ (caps the extrapolated trend so the simulator stays bounded), score memory $\lambda = 0.80$, combined risk-aversion scale $a\sigma^{2} = 0.04$ (the product of absolute risk aversion and return variance that appears in the profit score), simulation horizon $T_{sim} = 700$, and burn-in $T_0 = 100$ periods discarded before any moment is computed.
 
 The simulator output is reduced to five summary statistics on the post-burn return series $r_t = \Delta x_t = x_t - x_{t-1}$. The first three are the moments the SMM tutorial already targets; the last two add linear return persistence and a longer-lag volatility-clustering signal.
 

@@ -74,28 +74,33 @@ $$
 (TV)(W) = \max_{0 \le c \le W} \lbrace u(c) + \beta V(W-c) \rbrace.
 $$
 
-The operator $T$ is a contraction with modulus $\beta$ in the sup norm $\| \cdot \|_{\infty}$.
+The operator $T$ is a contraction with modulus $\beta$ in the sup norm $\| \cdot \|_\infty$.
 By the Banach fixed-point theorem it has a unique fixed point $V^{\ast}$.
-The iteration $V_{n+1} = T V_n$ starts from any guess $V_0$.
-The sup-norm distance to $V^{\ast}$ shrinks by a factor of $\beta$ at each step.
+The iteration
+
+$$
+V_{n+1} = T V_n
+$$
+
+starts from any guess $V_0$ and the sup-norm distance to $V^{\ast}$ shrinks by a factor of $\beta$ at each step.
 
 ### Method 2: Modified Policy Iteration
 
 A policy is a function $\pi: W \mapsto c$ that prescribes a consumption choice at every stock $W$.
-Define the policy operator $T_{\pi}$ that performs one Bellman step with $\pi$ held fixed:
+Define the policy operator $T_\pi$ that performs one Bellman step with $\pi$ held fixed:
 
 $$
 (T_{\pi} V)(W) = u(\pi(W)) + \beta V(W - \pi(W)).
 $$
 
-The operator $T_{\pi}$ is also a $\beta$-contraction in the sup norm.
-Its unique fixed point is denoted $V_{\pi}$.
-$V_{\pi}$ is the expected discounted utility of always playing $\pi$.
+The operator $T_\pi$ is also a $\beta$-contraction in the sup norm.
+Its unique fixed point is denoted $V_\pi$.
+$V_\pi$ is the expected discounted utility of always playing $\pi$.
 
-Let $T_{\pi}^{k}$ denote the $k$-fold composition $T_{\pi} \circ \cdots \circ T_{\pi}$ with $k$ copies.
-Applying $T_{\pi}^{k}$ to any starting $V$ moves it $k$ steps closer to $V_{\pi}$.
+Let $T_\pi^{k}$ denote the $k$-fold composition $T_\pi \circ \cdots \circ T_\pi$ with $k$ copies.
+Applying $T_\pi^{k}$ to any starting $V$ moves it $k$ steps closer to $V_\pi$.
 This tutorial uses the variant of modified policy iteration whose evaluation phase starts from the improved iterate $T V_n$, the same Bellman update VFI computes, rather than from $V_n$.
-One improvement step is followed by $k$ such evaluation sweeps, so the policy contraction $T_{\pi}$ is applied a total of $k+1$ times per outer step:
+One improvement step is followed by $k$ such evaluation sweeps, so the policy contraction $T_\pi$ is applied a total of $k+1$ times per outer step:
 
 $$
 \pi_{n+1}(W) \in \arg\max_{c} \lbrace u(c) + \beta V_n(W-c) \rbrace,
@@ -109,24 +114,24 @@ Letting $k \to \infty$ recovers exact policy iteration.
 ### Method 3: Exact Howard Policy Iteration
 
 On the finite grid the policy operator becomes an affine map on $\mathbb{R}^{N_W}$.
-Let $P_{\pi}$ be the $N_W \times N_W$ matrix whose row $i$ holds the linear-interpolation weights at the point $W_i - \pi(W_i)$.
-Row $i$ of $P_{\pi}$ has at most two nonzero entries, one for each end of the bracketing interval.
+Let $P_\pi$ be the $N_W \times N_W$ matrix whose row $i$ holds the linear-interpolation weights at the point $W_i - \pi(W_i)$.
+Row $i$ of $P_\pi$ has at most two nonzero entries, one for each end of the bracketing interval.
 Stacking grid values into a vector, the policy operator becomes:
 
 $$
 T_{\pi} V = u(\pi) + \beta P_{\pi}  V.
 $$
 
-The fixed point $V_{\pi}$ satisfies $V_{\pi} = u(\pi) + \beta P_{\pi} V_{\pi}$.
-Rearranging gives a linear system in $V_{\pi}$:
+The fixed point $V_\pi$ satisfies $V_\pi = u(\pi) + \beta P_\pi V_\pi$.
+Rearranging gives a linear system in $V_\pi$:
 
 $$
 \underbrace{(I - \beta P_{\pi})}_{\text{discounted resolvent}}  V_{\pi} = \underbrace{u(\pi)}_{\text{flow utility under } \pi}.
 $$
 
-The resolvent $(I - \beta P_{\pi})^{-1}$ is the discrete analogue of the geometric series $\sum_{k=0}^{\infty} (\beta P_{\pi})^k$, which is exactly the discounted sum of flow utilities along the Markov chain induced by the policy.
-That is why the linear system is the exact policy evaluation: it computes the infinite expected discounted utility in one solve rather than approximating it by repeated application of $T_{\pi}$.
-The matrix $I - \beta P_{\pi}$ is invertible because $\beta P_{\pi}$ has spectral radius at most $\beta < 1$.
+The resolvent $(I - \beta P_\pi)^{-1}$ is the discrete analogue of the geometric series $\sum_{k=0}^{\infty} (\beta P_\pi)^k$, which is exactly the discounted sum of flow utilities along the Markov chain induced by the policy.
+That is why the linear system is the exact policy evaluation: it computes the infinite expected discounted utility in one solve rather than approximating it by repeated application of $T_\pi$.
+The matrix $I - \beta P_\pi$ is invertible because $\beta P_\pi$ has spectral radius at most $\beta < 1$.
 Exact policy iteration alternates policy improvement with this exact solve:
 
 $$
@@ -158,7 +163,7 @@ Three solvers run on the same wealth grid. They share the same initial guess $V_
 
 ### Method 1: Value Function Iteration
 
-At each outer step apply the Bellman operator $T$ to the current value function $V_n$. The inner work is a state-by-state maximization over a uniform consumption grid $c_{\mathrm{grid}}$ of size $N_c$. The continuation value $V_n(W - c)$ is read off the grid by linear interpolation. The iteration stops when the sup-norm update $\|V_{n+1} - V_n\|_{\infty}$ falls below the tolerance $\varepsilon$.
+At each outer step apply the Bellman operator $T$ to the current value function $V_n$. The inner work is a state-by-state maximization over a uniform consumption grid $c_{\mathrm{grid}}$ of size $N_c$. The continuation value $V_n(W - c)$ is read off the grid by linear interpolation. The iteration stops when the sup-norm update $\|V_{n+1} - V_n\|_\infty$ falls below the tolerance $\varepsilon$.
 
 ```text
 Algorithm: Value Function Iteration
@@ -181,7 +186,7 @@ Failure mode: each step shrinks the sup-norm distance to $V^{\ast}$ by exactly t
 
 ### Method 2: Modified Policy Iteration
 
-Each outer step has two phases. The improvement phase computes a new policy $\pi_{n+1}$ by the same state-by-state maximization used in VFI. The evaluation phase starts from the Bellman update $T V_n$ and then applies the policy operator $T_{\pi_{n+1}}$ a further $k$ times, so $T_{\pi_{n+1}}$ is composed $k+1$ times in total per outer step. Each evaluation sweep skips the maximization and is therefore cheaper than a VFI sweep. The improvement step prevents the iteration from getting stuck at a suboptimal $V_{\pi}$.
+Each outer step has two phases. The improvement phase computes a new policy $\pi_{n+1}$ by the same state-by-state maximization used in VFI. The evaluation phase starts from the Bellman update $T V_n$ and then applies the policy operator $T_{\pi_{n+1}}$ a further $k$ times, so $T_{\pi_{n+1}}$ is composed $k+1$ times in total per outer step. Each evaluation sweep skips the maximization and is therefore cheaper than a VFI sweep. The improvement step prevents the iteration from getting stuck at a suboptimal $V_\pi$.
 
 ```text
 Algorithm: Modified Policy Iteration
@@ -205,7 +210,7 @@ Failure mode: setting $k=0$ skips the evaluation phase, makes MPI identical to V
 
 ### Method 3: Exact Howard Policy Iteration
 
-Each outer step also has two phases. The improvement phase computes a new policy $\pi_{n+1}$ exactly as in VFI and MPI. The evaluation phase solves the linear system $(I - \beta P_{\pi_{n+1}}) V_{n+1} = u(\pi_{n+1})$ for the new value. Row $i$ of $P_{\pi}$ contains the two interpolation weights for the bracket around $W_i - \pi(W_i)$, so $P_{\pi}$ has at most $2 N_W$ nonzero entries. The implementation in this tutorial uses a dense direct solve for clarity.
+Each outer step also has two phases. The improvement phase computes a new policy $\pi_{n+1}$ exactly as in VFI and MPI. The evaluation phase solves the linear system $(I - \beta P_{\pi_{n+1}}) V_{n+1} = u(\pi_{n+1})$ for the new value. Row $i$ of $P_\pi$ contains the two interpolation weights for the bracket around $W_i - \pi(W_i)$, so $P_\pi$ has at most $2 N_W$ nonzero entries. The implementation in this tutorial uses a dense direct solve for clarity.
 
 ```text
 Algorithm: Exact Howard Policy Iteration
@@ -223,7 +228,7 @@ Output: value V*(W_i), consumption policy c*(W_i)
       stop when err < epsilon
 ```
 
-Failure mode: a dense direct solve costs $O(N_W^{3})$ flops per outer iteration. On a 500-point grid this cost is negligible. On a 50000-point grid the linear solve dominates wall time. Production implementations exploit the sparsity of $P_{\pi}$ or fall back to MPI with a moderate $k$.
+Failure mode: a dense direct solve costs $O(N_W^{3})$ flops per outer iteration. On a 500-point grid this cost is negligible. On a 50000-point grid the linear solve dominates wall time. Production implementations exploit the sparsity of $P_\pi$ or fall back to MPI with a moderate $k$.
 
 On this calibration, VFI converges in **68** iterations with final sup-norm update **4.23e-07**. MPI with $k=5$ converges in **13** outer iterations with final update **1.88e-12**. Exact PI converges in **11** outer iterations with final update **0.00e+00**.
 
@@ -241,7 +246,7 @@ Starting from $W_0 = 1$ the policy produces geometric depletion of the cake. The
 
 <img src="figures/simulation.png" alt="Wealth and consumption paths starting from $W_0=1$, numerical against closed form" width="80%">
 
-The convergence plot shows three different rates on the same problem. VFI traces a straight line on the log scale with slope $\log_{10} \beta$. This is the contraction rate of the operator $T$ in the sup norm. MPI with $k = 5$ inner sweeps drops faster because each outer step composes the policy contraction $T_{\pi}$ a total of $k+1$ times. Exact PI reaches tolerance in a handful of outer iterations and shows the super-linear shape characteristic of Newton's method. The wall times on this run are recorded for reference. VFI took **0.54s**. MPI took **0.11s**. Exact PI took **0.15s**.
+The convergence plot shows three different rates on the same problem. VFI traces a straight line on the log scale with slope $\log_{10} \beta$. This is the contraction rate of the operator $T$ in the sup norm. MPI with $k = 5$ inner sweeps drops faster because each outer step composes the policy contraction $T_\pi$ a total of $k+1$ times. Exact PI reaches tolerance in a handful of outer iterations and shows the super-linear shape characteristic of Newton's method. The wall times on this run are recorded for reference. VFI took **0.54s**. MPI took **0.11s**. Exact PI took **0.15s**.
 
 <img src="figures/convergence.png" alt="Sup-norm update against outer iteration for the three solvers" width="80%">
 
@@ -274,7 +279,7 @@ The method table summarises the trade-off across the three solvers. VFI takes th
 
 Cake eating isolates Bellman logic in a one-state deterministic resource problem. The optimal policy consumes a constant share of the remaining stock. Under log utility this share is exactly $1 - \beta$. The closed form makes the three numerical solvers easy to compare against the same target.
 
-Value function iteration applies the contraction $T$ and shrinks the sup-norm error by a factor of $\beta$ each step. Modified policy iteration applies the policy contraction $T_{\pi}$ a total of $k+1$ times per outer step and shrinks the error roughly by $\beta^{k+1}$. Exact policy iteration solves for $V_{\pi}$ in closed form by inverting $I - \beta P_{\pi}$ and shows the super-linear rate of Newton's method.
+Value function iteration applies the contraction $T$ and shrinks the sup-norm error by a factor of $\beta$ each step. Modified policy iteration applies the policy contraction $T_\pi$ a total of $k+1$ times per outer step and shrinks the error roughly by $\beta^{k+1}$. Exact policy iteration solves for $V_\pi$ in closed form by inverting $I - \beta P_\pi$ and shows the super-linear rate of Newton's method.
 
 All three methods converge to the same discrete approximation of $V^{\ast}$. The remaining gap to the closed form is shared by all three. It comes from the finite wealth grid and the finite consumption grid, not from the choice of solver.
 
