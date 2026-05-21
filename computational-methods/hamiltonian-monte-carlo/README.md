@@ -18,7 +18,7 @@ The target here is the *banana posterior* in dimension $d = 2$, defined generati
 $$
 \theta_1 \sim \mathcal{N}(0,  \sigma_x^2),
 \qquad
-\theta_2 \mid \theta_1 \sim \mathcal{N}\big(\alpha\, (\theta_1^2 - \sigma_x^2),  \sigma_y^2\big),
+\theta_2 \mid \theta_1 \sim \mathcal{N}\big(\alpha (\theta_1^2 - \sigma_x^2),  \sigma_y^2\big),
 $$
 
 with shape parameters $\sigma_x > 0$, $\sigma_y > 0$, and $\alpha \in \mathbb{R}$.
@@ -89,7 +89,7 @@ r_{t + \tfrac{1}{2}} = \underbrace{r_t}_{\text{current momentum}} - \underbrace{
 $$
 
 $$
-\theta_{t + 1} = \underbrace{\theta_t}_{\text{current position}} + \underbrace{\varepsilon\, r_{t + \tfrac{1}{2}}}_{\text{drift using the half-step momentum}},
+\theta_{t + 1} = \underbrace{\theta_t}_{\text{current position}} + \underbrace{\varepsilon r_{t + \tfrac{1}{2}}}_{\text{drift using the half-step momentum}},
 $$
 
 $$
@@ -141,7 +141,7 @@ It uses no momentum and no gradient.
 At step size $s > 0$ a symmetric Gaussian proposal draws
 
 $$
-\theta^{\star} = \theta_t + s\, \eta_t,
+\theta^{\star} = \theta_t + s \eta_t,
 \qquad \eta_t \sim \mathcal{N}(0, I_d),
 $$
 
@@ -182,7 +182,7 @@ Each HMC iteration is a momentum resample, a leapfrog trajectory, and a Metropol
 ```text
 Algorithm: One HMC iteration
 Input : current theta_t, step size eps, leapfrog steps L
-Output: next theta_{t+1}
+Output: next theta[t+1]
   draw r ~ N(0, I)
   # Leapfrog trajectory from (theta_t, r)
   q, p = theta_t, r
@@ -197,10 +197,10 @@ Output: next theta_{t+1}
   H_t    = -log pi(theta_t)    + 0.5 * r^T r
   H_star = -log pi(theta_star) + 0.5 * r_star^T r_star
   alpha  = min(1, exp(H_t - H_star))
-  if uniform() < alpha: theta_{t+1} = theta_star else theta_{t+1} = theta_t
+  if uniform() < alpha: theta[t+1] = theta_star else theta[t+1] = theta_t
 ```
 
-Step size $\varepsilon$ controls discretization error. Too large, and the Hamiltonian drifts and acceptance collapses. Too small, and the trajectory barely moves and each iteration spends $L$ gradient evaluations for a tiny exploration step. The number of steps $L$ controls trajectory length $L\,\varepsilon$; long trajectories explore aggressively but at higher cost and with a risk of trajectory U-turn, which is the motivation for the No-U-Turn Sampler that automates $L$.
+Step size $\varepsilon$ controls discretization error. Too large, and the Hamiltonian drifts and acceptance collapses. Too small, and the trajectory barely moves and each iteration spends $L$ gradient evaluations for a tiny exploration step. The number of steps $L$ controls trajectory length $L\varepsilon$; long trajectories explore aggressively but at higher cost and with a risk of trajectory U-turn, which is the motivation for the No-U-Turn Sampler that automates $L$.
 
 HMC fails on multimodal posteriors with isolated modes. Hamiltonian dynamics is local; it does not jump between separated basins of probability mass any more than a random walk does. It also fails when the gradient is unavailable or unreliable, which is why HMC is the wrong tool for black-box objectives where Bayesian optimization ([`numerical-methods/bayesian-optimization/`](../../numerical-methods/bayesian-optimization/)) wins instead.
 
@@ -211,11 +211,11 @@ Random-walk MH is the comparison. It uses no gradient and no momentum. On the ba
 ```text
 Algorithm: One RW-MH iteration
 Input : current theta_t, proposal scale s
-Output: next theta_{t+1}
+Output: next theta[t+1]
   draw eta ~ N(0, I)
   theta_star = theta_t + s * eta
   alpha = min(1, exp(log pi(theta_star) - log pi(theta_t)))
-  if uniform() < alpha: theta_{t+1} = theta_star else theta_{t+1} = theta_t
+  if uniform() < alpha: theta[t+1] = theta_star else theta[t+1] = theta_t
 ```
 
 The full algorithm is documented in [`computational-methods/metropolis-hastings/`](../../computational-methods/metropolis-hastings/), which also pairs RW-MH with the closed-form Beta-Binomial conjugate model as the sanity check. Here the same sampler is run on a harder target so the gradient-aware HMC can dominate it directly.

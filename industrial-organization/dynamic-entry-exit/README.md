@@ -96,14 +96,14 @@ repeat for n = 0, 1, 2, ...:
         for s = 0,...,N-1 surviving rivals (the focal firm always stays):
             weight = Binomial(s; N-1 rivals, 1 - p_exit(N))
             add weight * V_n(min{s + 1 + e(N), N_max}) to E[V(N') | stay]
-        update V_{n+1}(N) with the log-sum inclusive value of E[V(N') | stay]
-    replace V_n by a damped average of V_n and V_{n+1}
-until max_N |V_{n+1}(N)-V_n(N)| < epsilon
+        update V[n+1](N) with the log-sum inclusive value of E[V(N') | stay]
+    replace V_n by a damped average of V_n and V[n+1]
+until max_N |V[n+1](N)-V_n(N)| < epsilon
 Construct T(N'|N): survivors ~ Binomial(N firms, 1 - p_exit(N)),
   plus the same state-level entry rule. The VFI step above conditions on
   the focal firm staying, so it draws from the N-1 rivals; the transition
   matrix is unconditional, so it draws from all N firms.
-Iterate mu_{m+1}=mu_m T until mu is invariant
+Iterate mu[m+1]=mu_m T until mu is invariant
 ```
 
 The value iteration converged in **762 iterations** with sup-norm error **9.94e-09**. The invariant distribution solves $\mu=\mu T$ for the policy-induced Markov chain, where $T$ is the transition matrix.

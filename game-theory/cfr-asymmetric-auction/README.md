@@ -141,14 +141,14 @@ Outputs: time-averaged strategies sigma_bar_1, sigma_bar_2
 2. For t = 1, 2, ..., T:
    a. For each i, compute sigma_i^t(b | v) by regret matching on R_i(v, .).
    b. For each i, form the marginal opponent bid PMF
-      q_{-i}(b) = sum_{v'} P_{-i}(v') sigma_{-i}^t(b | v').
-   c. Compute the win probability w_{-i}(b) under uniform tie-break.
+      q[-i](b) = sum[v'] P[-i](v') sigma[-i]^t(b | v').
+   c. Compute the win probability w[-i](b) under uniform tie-break.
    d. For each i, v in V_i, b in B, compute the counterfactual value
-      cf_i(v, b) = P_i(v) (v - b) w_{-i}(b)
+      cf_i(v, b) = P_i(v) (v - b) w[-i](b)
       and the strategy-mixture value cf_i_mix(v) = sum_b sigma_i^t(b | v) cf_i(v, b).
    e. R_i(v, b) <- R_i(v, b) + cf_i(v, b) - cf_i_mix(v).
    f. S_i(v, b) <- S_i(v, b) + sigma_i^t(b | v).
-3. Return sigma_bar_i(b | v) = S_i(v, b) / sum_{b'} S_i(v, b').
+3. Return sigma_bar_i(b | v) = S_i(v, b) / sum[b'] S_i(v, b').
 ```
 
 The exploitability $\varepsilon(\bar{\sigma})$ from the Equations section is the convergence diagnostic. It is logged at a logarithmic grid of iteration counts so the decay shows up cleanly on a log-log plot.

@@ -14,19 +14,27 @@ There are $T$ observations. Observation $t$ has prices $p_t \in \mathbb{R}_{+}^{
 
 Choice $t$ directly weakly reveals $x_t$ preferred to $x_s$ when $x_s$ was affordable at prices $p_t$:
 
-$$x_t R^D x_s \quad \Longleftrightarrow \quad p_t \cdot x_t \geq p_t \cdot x_s.$$
+$$
+x_t R^D x_s \quad \Longleftrightarrow \quad p_t \cdot x_t \geq p_t \cdot x_s.
+$$
 
 The direct relation is strict when the inequality is strict. Let $R$ be the transitive closure of $R^D$. GARP holds on a subset $S$ if there is no pair $t,s \in S$ such that
 
-$$x_t R x_s \quad \text{and} \quad p_s \cdot x_s > p_s \cdot x_t.$$
+$$
+x_t R x_s \quad \text{and} \quad p_s \cdot x_s > p_s \cdot x_t.
+$$
 
 Let $\mathrm{GARP}(S)=1$ when these restrictions hold after keeping only observations in $S$. The Houtman-Maks index is
 
-$$HM = \max_{S \subseteq \{1,\ldots,T\}} |S| \quad \text{s.t.} \quad \mathrm{GARP}(S)=1.$$
+$$
+HM = \max_{S \subseteq \{1,\ldots,T\}} |S| \quad \text{s.t.} \quad \mathrm{GARP}(S)=1.
+$$
 
 The minimum number of observations needed to restore GARP is
 
-$$T - HM.$$
+$$
+T - HM.
+$$
 
 ## Model Setup
 
@@ -46,7 +54,7 @@ The exact routine treats the dataset as a finite search problem. It builds the r
 
 ```text
 Algorithm: exact Houtman-Maks core
-Inputs: observations {(p_t, x_t)}_{t=1}^T
+Inputs: observations {(p_t, x_t)}[t=1]^T
 Output: largest subset S* satisfying GARP
 
 for k = T, T-1, ..., 1:
@@ -61,7 +69,7 @@ Enumeration is exact, but the number of subsets grows quickly. The greedy rule u
 
 ```text
 Algorithm: SCC greedy Houtman-Maks diagnosis
-Inputs: observations {(p_t, x_t)}_{t=1}^T
+Inputs: observations {(p_t, x_t)}[t=1]^T
 Output: a GARP-consistent retained set S
 
 initialize S = {1, ..., T}

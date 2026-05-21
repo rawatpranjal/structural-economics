@@ -22,22 +22,28 @@ Each inside product $j$ delivers a mean utility $\delta_j$ and an idiosyncratic 
 The outside option is normalised to mean utility zero.
 Choice probabilities give predicted market shares as functions of the mean-utility vector $\delta = (\delta_1, \ldots, \delta_J)$.
 
-$$s_j(\delta) = \frac{\exp(\delta_j)}{1 + \sum_{k=1}^{J} \exp(\delta_k)},
+$$
+s_j(\delta) = \frac{\exp(\delta_j)}{1 + \sum_{k=1}^{J} \exp(\delta_k)},
 \qquad
-s_0(\delta) = \frac{1}{1 + \sum_{k=1}^{J} \exp(\delta_k)}.$$
+s_0(\delta) = \frac{1}{1 + \sum_{k=1}^{J} \exp(\delta_k)}.
+$$
 
 Observed shares $s_j^{\mathrm{obs}}$ are given.
 The unknown is the mean-utility vector $\delta^{\ast}$ that generates them.
 For plain logit the inversion has a closed form.
 This closed form is the benchmark for every iterative method below.
 
-$$\delta_j^{\ast} = \log s_j^{\mathrm{obs}} - \log s_0^{\mathrm{obs}}.$$
+$$
+\delta_j^{\ast} = \log s_j^{\mathrm{obs}} - \log s_0^{\mathrm{obs}}.
+$$
 
 The fixed-point map for this instance adds the log-share residual to the current guess.
 
-$$T_j(\delta) = \delta_j + \log s_j^{\mathrm{obs}} - \log s_j(\delta),
+$$
+T_j(\delta) = \delta_j + \log s_j^{\mathrm{obs}} - \log s_j(\delta),
 \qquad
-\delta^{\ast} \text{ solves } T(\delta^{\ast}) = \delta^{\ast}.$$
+\delta^{\ast} \text{ solves } T(\delta^{\ast}) = \delta^{\ast}.
+$$
 
 A guess that under-predicts the share of product $j$ pushes $\delta_j$ up.
 A guess that over-predicts pushes it down.
@@ -48,7 +54,9 @@ The next three subsections describe one method at a time.
 
 Picard iteration applies the fixed-point map directly at every step.
 
-$$\delta^{t+1} = T(\delta^t).$$
+$$
+\delta^{t+1} = T(\delta^t).
+$$
 
 Convergence is linear with rate equal to the contraction modulus of $T$.
 For the test instance this rate is bounded below one and convergence is monotone.
@@ -57,8 +65,10 @@ For the test instance this rate is bounded below one and convergence is monotone
 
 Damped Picard mixes the current iterate with the Picard image using a damping factor $\alpha \in (0, 1]$.
 
-$$\delta^{t+1} = (1 - \alpha)  \delta^t + \alpha\, T(\delta^t)
-= \delta^t + \alpha \left[\log s^{\mathrm{obs}} - \log s(\delta^t)\right].$$
+$$
+\delta^{t+1} = (1 - \alpha)  \delta^t + \alpha T(\delta^t)
+= \delta^t + \alpha \left[\log s^{\mathrm{obs}} - \log s(\delta^t)\right].
+$$
 
 A smaller $\alpha$ stabilises iteration when the map oscillates near the boundary of contractiveness.
 The cost is a slower asymptotic rate.
@@ -71,11 +81,15 @@ Stack the differences as columns of $F_t \in \mathbb{R}^{J \times m_t}$ and $G_t
 
 The least-squares step solves for combination weights.
 
-$$\gamma_t = \arg\min_\gamma \lVert f_t - F_t\, \gamma \rVert_2.$$
+$$
+\gamma_t = \arg\min_\gamma \lVert f_t - F_t \gamma \rVert_2.
+$$
 
 The next iterate combines the most recent fixed-point image with a residual-history correction.
 
-$$\delta^{t+1} = g_t - G_t\, \gamma_t.$$
+$$
+\delta^{t+1} = g_t - G_t \gamma_t.
+$$
 
 Anderson reduces to Picard when $m = 0$.
 For $m \geq 1$ it can be quadratically faster on contractions.
@@ -88,9 +102,11 @@ If the residual more than doubles, the algorithm reverts to one damped-Picard st
 The Cournot mini extension uses the same machinery on a duopoly best-response system.
 Two firms set quantities $q_1, q_2$ to maximise profit on linear inverse demand $P(Q) = a - Q$ with $Q = q_1 + q_2$ and constant marginal cost $c$.
 
-$$\mathrm{BR}_i(q_{-i}) = \frac{a - c - q_{-i}}{2},
+$$
+\mathrm{BR}_i(q_{-i}) = \frac{a - c - q_{-i}}{2},
 \qquad
-q^{\ast} = \frac{a - c}{3}  \text{ for both firms.}$$
+q^{\ast} = \frac{a - c}{3}  \text{ for both firms.}
+$$
 
 The fixed-point map is $T(q_1, q_2) = (\mathrm{BR}_1(q_2), \mathrm{BR}_2(q_1))$.
 Vanilla Picard on this map oscillates around $q^{\ast}$ with damping factor $1/2$.
@@ -124,8 +140,8 @@ Algorithm: Picard iteration
 Input : initial delta_0; tolerance eta
 Output: delta_T satisfying ||T(delta_T) - delta_T|| < eta
   for t = 0, 1, ... :
-      delta_{t+1} <- T(delta_t)
-      stop when ||delta_{t+1} - delta_t||_inf < eta
+      delta[t+1] <- T(delta_t)
+      stop when ||delta[t+1] - delta_t||_inf < eta
 ```
 
 Picard fails only if the map fails to be a contraction. For plain logit it always works. When the contraction modulus approaches one, convergence becomes prohibitively slow.
@@ -139,8 +155,8 @@ Algorithm: Damped Picard
 Input : initial delta_0; damping alpha; tolerance eta
 Output: delta_T
   for t = 0, 1, ... :
-      delta_{t+1} <- (1 - alpha) * delta_t + alpha * T(delta_t)
-      stop when ||delta_{t+1} - delta_t||_inf < eta
+      delta[t+1] <- (1 - alpha) * delta_t + alpha * T(delta_t)
+      stop when ||delta[t+1] - delta_t||_inf < eta
 ```
 
 Damped Picard does not introduce new failure modes. Choosing $\alpha$ too small wastes iterations on a contraction that does not need stabilising.
@@ -160,11 +176,11 @@ Output: delta_T
       solve gamma <- argmin_g ||(g_t - delta_t) - F g||
       delta_candidate <- g_t - G gamma
       if ||T(delta_candidate) - delta_candidate|| > c * ||g_t - delta_t||:
-          delta_{t+1} <- 0.5 * delta_t + 0.5 * g_t        # damped fallback
+          delta[t+1] <- 0.5 * delta_t + 0.5 * g_t        # damped fallback
       else:
-          delta_{t+1} <- delta_candidate
-      g_{t+1} <- T(delta_{t+1})
-      stop when ||g_{t+1} - delta_{t+1}||_inf < eta
+          delta[t+1] <- delta_candidate
+      g[t+1] <- T(delta[t+1])
+      stop when ||g[t+1] - delta[t+1]||_inf < eta
 ```
 
 Anderson can extrapolate unstably when the residual history is nearly collinear. It can also overshoot when the safeguard threshold is too loose. The safeguard reverts to damped Picard for one step. Anderson then resumes with a refreshed history. Without the safeguard, an extrapolated step can grow the residual instead of shrinking it.

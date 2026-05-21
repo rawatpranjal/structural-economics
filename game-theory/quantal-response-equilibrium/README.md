@@ -70,7 +70,7 @@ Inputs: precision grid Lambda, payoff gap Delta(p)=2-3p, tolerance epsilon
 Outputs: QRE entry probabilities p(lambda), residuals, gaps to p^N
 
 1. Compute the exact symmetric mixed Nash benchmark p^N from Delta(p^N)=0.
-2. For each lambda in Lambda, define QBR(p;lambda) = [1+exp(-lambda Delta(p))]^{-1}.
+2. For each lambda in Lambda, define QBR(p;lambda) = [1+exp(-lambda Delta(p))]^(-1).
 3. Set the initial bracket [low, high] = [0, 1].
 4. Bisect the bracket on G_lambda(p)=p-QBR(p;lambda).
 5. Stop when |G_lambda(p)| or the bracket width is below epsilon.

@@ -32,7 +32,13 @@
 
 **Recheck evidence (verbatim):**
 - `run.py:275`: `"""ds_k/dp_j matrix.  Own: -alpha*s_j*(1-s_j).  Cross: alpha*s_j*s_k."""`
-- `README.md:33`: `$$\Omega_{jk}=-O_{jk}\frac{\partial s_k}{\partial p_j}.$$`
+- `README.md:33`: `
+
+$$
+\Omega_{jk}=-O_{jk}\frac{\partial s_k}{\partial p_j}.
+$$
+
+`
 
 Docstring now says `ds_k/dp_j`, matching the README equation convention (row j is the price-changing product, column k is the share-changing product). The matrix entries are consistent: `D[j,k]` own (`j==k`): `-alpha*shares[j]*(1-shares[j])` = `-alpha*s_j*(1-s_j)` = `ds_j/dp_j`; cross (`j!=k`): `alpha*shares[j]*shares[k]` = `alpha*s_j*s_k` = `ds_k/dp_j` for k the share product. All conventions now aligned.
 

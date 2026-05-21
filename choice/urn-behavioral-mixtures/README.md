@@ -132,7 +132,7 @@ Persists the runtime scalars quoted in the prose: the EM iteration count and log
 
 **EM and rule-separation diagnostics**
 
-|   iterations |   log_likelihood |   bayes_conservative_split |   bayes_share_split |   bayes_count_split |
+|   Iterations |   Log likelihood |   Bayes conservative split |   Bayes share split |   Bayes count split |
 |-------------:|-----------------:|---------------------------:|--------------------:|--------------------:|
 |            6 |         -8816.71 |                          6 |                   4 |                  10 |
 

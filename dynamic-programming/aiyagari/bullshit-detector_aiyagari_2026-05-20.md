@@ -30,7 +30,7 @@
 
 ### Finding 1: Equilibrium equation implies K^s = K^d exactly; table shows two different values
 
-- **Claim source (verbatim):** "The capital market clears: $K^s(r^{\ast}) = \sum_{i,j} a_i\,\mu(a_i,z_j) = K^d(r^{\ast})$." — `README.md:72`
+- **Claim source (verbatim):** "The capital market clears: $K^s(r^{\ast}) = \sum_{i,j} a_i\mu(a_i,z_j) = K^d(r^{\ast})$." — `README.md:72`
 - **Code evidence (verbatim):**
   ```python
   r_eq = r_trial
@@ -45,8 +45,8 @@
   `run.py:253`
 - **Data evidence:** `tables/equilibrium.csv`:
   ```
-  Aggregate capital $K^{\ast}$,6.7599     <- K_d
-  Mean wealth $\mathbb{E}[a]$,6.7633      <- K_s
+  Aggregate capital K^(\ast),6.7599     <- K_d
+  Mean wealth \mathbb{E}[a],6.7633      <- K_s
   Relative market-clearing gap,+4.939e-04
   ```
   K_d = 6.7599, K_s = 6.7633. Absolute difference 0.0034; relative difference 0.050%.

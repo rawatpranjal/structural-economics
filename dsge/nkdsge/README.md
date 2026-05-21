@@ -63,15 +63,21 @@ The source `model.mod` uses $\phi_\pi=0.33$ and $\kappa=0.95$. The tutorial inst
 
 Let the active shock be $s_t=\rho_s s_{t-1}+\varepsilon_t$. The equilibrium object is a pair of coefficients. They map the shock state into output and inflation:
 
-$$y_t=\psi_y s_t,\qquad \pi_t=\psi_\pi s_t. $$
+$$
+y_t=\psi_y s_t,\qquad \pi_t=\psi_\pi s_t. 
+$$
 
 The Phillips curve links the two coefficients:
 
-$$\psi_\pi=\frac{\kappa\psi_y}{1-\beta\rho_s}. $$
+$$
+\psi_\pi=\frac{\kappa\psi_y}{1-\beta\rho_s}. 
+$$
 
 Substituting the guess into the IS curve and Taylor rule leaves one scalar equation:
 
-$$\psi_y\left[(1-\rho_s)+\frac{\phi_y}{\sigma}+\frac{(\phi_\pi-\rho_s)\kappa}{\sigma(1-\beta\rho_s)}\right]= b_s,$$
+$$
+\psi_y\left[(1-\rho_s)+\frac{\phi_y}{\sigma}+\frac{(\phi_\pi-\rho_s)\kappa}{\sigma(1-\beta\rho_s)}\right]= b_s,
+$$
 
 Here $b_s=-1/\sigma$ for a policy wedge and $b_s=1$ for a demand shock. The sign changes because the two shocks enter different equations.
 

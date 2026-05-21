@@ -18,16 +18,22 @@ The methods below produce a sequence $\{r_n\}$ that converges to a root $r^{\ast
 The test instance is the equilibrium real interest rate in a stylised one-good production economy.
 Aggregate capital demand from the firm-side first-order condition is
 
-$$K_d(r) = \left( \frac{\alpha}{r + \delta} \right)^{\frac{1}{1 - \alpha}}.$$
+$$
+K_d(r) = \left( \frac{\alpha}{r + \delta} \right)^{\frac{1}{1 - \alpha}}.
+$$
 
 Target supply is $K^{\ast} \equiv K_d(r^{\ast})$ at $r^{\ast} = 1/\beta - 1$.
 Excess demand is then
 
-$$Z(r) = K_d(r) - K^{\ast}, \qquad Z(r^{\ast}) = 0.$$
+$$
+Z(r) = K_d(r) - K^{\ast}, \qquad Z(r^{\ast}) = 0.
+$$
 
 The derivative used by Newton is
 
-$$Z'(r) = -\frac{1}{1 - \alpha} \frac{K_d(r)}{r + \delta} < 0.$$
+$$
+Z'(r) = -\frac{1}{1 - \alpha} \frac{K_d(r)}{r + \delta} < 0.
+$$
 
 The next four subsections describe one method at a time.
 
@@ -35,7 +41,9 @@ The next four subsections describe one method at a time.
 
 Bisection halves a sign-change bracket at every iteration.
 
-$$m_n = \frac{a_n + b_n}{2}, \qquad b_{n+1} - a_{n+1} = \frac{1}{2}(b_n - a_n).$$
+$$
+m_n = \frac{a_n + b_n}{2}, \qquad b_{n+1} - a_{n+1} = \frac{1}{2}(b_n - a_n).
+$$
 
 The sub-bracket containing the sign change is kept and the rest is discarded.
 Convergence is linear with rate one half, regardless of curvature.
@@ -44,7 +52,9 @@ Convergence is linear with rate one half, regardless of curvature.
 
 Secant fits a chord through the last two iterates and steps to the chord's zero.
 
-$$x_{n+1} = x_n - Z(x_n) \frac{x_n - x_{n-1}}{Z(x_n) - Z(x_{n-1})}.$$
+$$
+x_{n+1} = x_n - Z(x_n) \frac{x_n - x_{n-1}}{Z(x_n) - Z(x_{n-1})}.
+$$
 
 The method needs two starting points but no derivative.
 Local convergence is superlinear with order $(1 + \sqrt{5}) / 2 \approx 1.618$.
@@ -61,7 +71,9 @@ Brent therefore inherits the global guarantee of bisection together with the asy
 
 Newton-Raphson follows the tangent of $Z$ at the current iterate.
 
-$$x_{n+1} = x_n - \frac{Z(x_n)}{Z'(x_n)}.$$
+$$
+x_{n+1} = x_n - \frac{Z(x_n)}{Z'(x_n)}.
+$$
 
 The method needs a derivative but only one starting point.
 Local convergence is quadratic when $Z'(r^{\ast}) \neq 0$.
@@ -135,7 +147,7 @@ Algorithm: Newton-Raphson
 Input : x_0; tolerance eps; Z, Z'
 Output: x_n
   for n = 0, 1, ... :
-      x_{n+1} <- x_n - Z(x_n) / Z'(x_n)
+      x[n+1] <- x_n - Z(x_n) / Z'(x_n)
       stop when |Z(x_n)| < eps
 ```
 

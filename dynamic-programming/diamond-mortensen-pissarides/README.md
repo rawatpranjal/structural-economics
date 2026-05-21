@@ -13,42 +13,54 @@ The code compares a log-linear rule with a finite-state free-entry fixed point. 
 **Matching technology.** Let $u_t$ be unemployment, $v_t$ vacancies, and
 $\theta_t=v_t/u_t$ tightness. Constant-returns matching gives
 
-$$m(u_t,v_t)=\chi u_t^{1-\eta}v_t^\eta,\qquad
+$$
+m(u_t,v_t)=\chi u_t^{1-\eta}v_t^\eta,\qquad
 f(\theta_t)=\chi\theta_t^{\eta},\qquad
-q(\theta_t)=\chi\theta_t^{\eta-1},$$
+q(\theta_t)=\chi\theta_t^{\eta-1},
+$$
 
 Here $f$ is the worker job-finding rate. The term $q$ is the firm
 vacancy-filling rate.
 
 **Productivity.** Aggregate productivity is a stationary AR(1) in logs,
 
-$$\hat z_{t+1}=\rho\hat z_t+\epsilon_{t+1},\quad
+$$
+\hat z_{t+1}=\rho\hat z_t+\epsilon_{t+1},\quad
 \epsilon_{t+1}\sim\mathcal{N}(0,\sigma_\epsilon^2),\quad
-z_t=\bar z\exp(\hat z_t).$$
+z_t=\bar z\exp(\hat z_t).
+$$
 
 **Wage rule.** Nash bargaining with worker weight $\gamma$ splits joint
 surplus and yields the equilibrium wage
 
-$$w_t=\gamma(z_t+k\theta_t)+(1-\gamma)b,$$
+$$
+w_t=\gamma(z_t+k\theta_t)+(1-\gamma)b,
+$$
 
 Here $b$ is the flow value of unemployment. The parameter $k$ is the
 per-period cost of an open vacancy.
 
 **Job value and free entry.** A filled job has value
 
-$$J_t=z_t-w_t+\beta(1-\sigma) \mathbb{E}_t[J_{t+1}],$$
+$$
+J_t=z_t-w_t+\beta(1-\sigma) \mathbb{E}_t[J_{t+1}],
+$$
 
 where $\sigma$ is the exogenous separation rate. Free entry equates expected
 discounted job value with vacancy cost:
 
-$$k=\beta\,q(\theta_t) \mathbb{E}_t[J_{t+1}].$$
+$$
+k=\betaq(\theta_t) \mathbb{E}_t[J_{t+1}].
+$$
 
 This condition pins down $\theta_t$.
 
 **Stock dynamics.** Once $\theta_t$ is known, unemployment follows
 
-$$u_{t+1}=\sigma(1-u_t)+(1-f(\theta_t))u_t,\qquad
-v_t=\theta_t u_t.$$
+$$
+u_{t+1}=\sigma(1-u_t)+(1-f(\theta_t))u_t,\qquad
+v_t=\theta_t u_t.
+$$
 
 The deterministic steady state has $u_{ss}=\sigma/(\sigma+f(\theta_{ss}))$.
 
@@ -56,9 +68,11 @@ The deterministic steady state has $u_{ss}=\sigma/(\sigma+f(\theta_{ss}))$.
 $\hat\theta_t=\log\theta_t-\log\theta_{ss}$. Linearizing free entry at
 $\theta_{ss}=1$ gives $\hat\theta_t=C\hat z_t$, with
 
-$$C=\frac{\rho}{A-B\rho},\qquad
+$$
+C=\frac{\rho}{A-B\rho},\qquad
 A=\frac{\eta k}{(1-\gamma)\beta\chi},\qquad
-B=\beta A(1-\sigma)-\frac{\gamma k}{1-\gamma}.$$
+B=\beta A(1-\sigma)-\frac{\gamma k}{1-\gamma}.
+$$
 
 At baseline, $A=1.1098$ and $B=0.5262$. A one-percent productivity
 innovation raises tightness by $C=1.55$ percent.
@@ -92,7 +106,9 @@ Two solvers compute the same tightness rule.
 
 **Nonlinear free-entry fixed point.** The nonlinear solver discretizes $\hat z_t$ on a Rouwenhorst grid with $N_z=41$ nodes. It substitutes free entry inside the job-value Bellman:
 
-$$J_i=(1-\gamma)(z_i-b)-\gamma k\theta_i+\beta(1-\sigma)\sum_j P_{ij}J_j,\qquad \theta_i=(\frac{\beta\chi}{k}\sum_j P_{ij}J_j)^{1/(1-\eta)}.$$
+$$
+J_i=(1-\gamma)(z_i-b)-\gamma k\theta_i+\beta(1-\sigma)\sum_j P_{ij}J_j,\qquad \theta_i=(\frac{\beta\chi}{k}\sum_j P_{ij}J_j)^{1/(1-\eta)}.
+$$
 
 The operator is a contraction. Its linear term $\beta(1-\sigma)E[J']$ alone has modulus $\beta(1-\sigma)=0.9621$, but the substituted free-entry term $\theta(E[J'])$ inside the Bellman adds a negative correction. The total derivative of the update with respect to $E[J']$ at the steady state gives an effective modulus of about $0.293$, well below the linear-term bound. The tight effective modulus is why the fixed point converges in a few dozen iterations rather than the several hundred the linear-term modulus would imply.
 
@@ -107,20 +123,20 @@ Outputs   elasticity C; tightness {θ_t}; unemployment {u_t}, vacancies {v_t}
 4. For each ẑ_t in the simulation:
        θ_t  ← exp(C · ẑ_t)
        f_t  ← χ θ_t^η
-       u_{t+1} ← σ (1 − u_t) + (1 − f_t) u_t
+       u[t+1] ← σ (1 − u_t) + (1 − f_t) u_t
        v_t  ← θ_t · u_t
 ```
 
 ```text
 Algorithm 2: Nonlinear finite-state free-entry fixed point
-Inputs    primitives; Rouwenhorst grid {ẑ_i}_{i=1..N_z};
+Inputs    primitives; Rouwenhorst grid {ẑ_i}[i=1..N_z];
           transition matrix P; calibrated k; tolerance ε
 Outputs   job value J_i and tightness θ_i at each productivity state z_i
 
 Initialise   J_i ← k / (β χ)               # value if free entry binds today
 repeat n = 0, 1, 2, ...:
-    EJ_i  ← Σ_j P_{ij} J_j                 # one mat-vec multiply
-    θ_i   ← (β χ EJ_i / k)^{1/(1−η)}       # invert free entry
+    EJ_i  ← Σ_j P[ij] J_j                 # one mat-vec multiply
+    θ_i   ← (β χ EJ_i / k)^(1/(1−η))       # invert free entry
     J_i^new ← (1−γ)(z_i − b) − γ k θ_i + β(1−σ) EJ_i
     err   ← max_i |J_i^new − J_i|
     J_i   ← J_i^new
@@ -173,7 +189,7 @@ The policy gap, interpolation gap, and iteration counts are persisted here so th
 
 **Nonlinear fixed-point solver diagnostics**
 
-| Quantity                                    | policy_gap_pct   | grid_gap_pct   | iterations   |
+| Quantity                                    | Policy gap (%)   | Grid gap (%)   | Iterations   |
 |:--------------------------------------------|:-----------------|:---------------|:-------------|
 | Coarse-grid policy gap vs. log-linear       | 3.2287           |                |              |
 | Coarse-grid interpolation gap vs. fine grid |                  | 0.000397       |              |

@@ -17,7 +17,7 @@ the residual, and the borrowing limit is $\underline a$:
 
 $$
 V(a,y_j) = \max_{a'\geq \underline a}
-  [\,u(R a + y_j - a') + \beta\,\sum_{\ell=1}^{n_y}\pi_\ell\, V(a',y_\ell) ],
+  [u(R a + y_j - a') + \beta\sum_{\ell=1}^{n_y}\pi_\ell V(a',y_\ell) ],
 \qquad c(a,y_j) = R a + y_j - g(a,y_j).
 $$
 
@@ -33,8 +33,8 @@ with the discounted marginal benefit of saving,
 
 $$
 \underbrace{u'(c(a,y_j))}_{\text{cost of saving today}} =
-\beta R\,
-\underbrace{\sum_{\ell=1}^{n_y}\pi_\ell\,u'(c(g(a,y_j),y_\ell))}_{\text{expected marginal utility tomorrow}}.
+\beta R
+\underbrace{\sum_{\ell=1}^{n_y}\pi_\ellu'(c(g(a,y_j),y_\ell))}_{\text{expected marginal utility tomorrow}}.
 $$
 
 When the borrowing limit binds, $g(a,y_j)=\underline a$. The Euler condition
@@ -73,7 +73,7 @@ that expectation into current consumption $c_i$. The budget identity then gives
 the current asset that would choose $a_i'$:
 
 $$
-c_i = (u')^{-1}(\beta R \sum_{\ell} \pi_\ell\, u'(c_n(a_i', y_\ell))),
+c_i = (u')^{-1}(\beta R \sum_{\ell} \pi_\ell u'(c_n(a_i', y_\ell))),
 \qquad
 a^{\text{endo}}_{ij} = \frac{c_i + a_i' - y_j}{R}.
 $$
@@ -93,22 +93,22 @@ Initialise c_0(a_i, y_j) = (R-1) a_i + y_j        # consume current resources
 repeat n = 0, 1, 2, ...
     # 1. Euler inversion at each candidate next asset a_i'
     M_i  = sum_l pi_l * u'(c_n(a_i', y_l))         # expected MU tomorrow
-    c_i  = (u')^{-1}(beta R M_i)                  # consumption today
+    c_i  = (u')^(-1)(beta R M_i)                  # consumption today
 
     for each income state y_j:
         # 2. Endogenous current asset
-        a^endo_{i,j} = (c_i + a_i' - y_j) / R
+        a^endo[i,j] = (c_i + a_i' - y_j) / R
 
         # 3. Invert by interpolation onto the exogenous grid A = {a_i}
-        g_{n+1}(a_i, y_j) = interp(a_i; a^endo_{:,j}, a'_:)
+        g[n+1](a_i, y_j) = interp(a_i; a^endo[:,j], a'_:)
 
         # 4. Constrained branch
-        for each a_i <= a^endo_{1,j}:
-            g_{n+1}(a_i, y_j) = a_min
+        for each a_i <= a^endo[1,j]:
+            g[n+1](a_i, y_j) = a_min
 
-        c_{n+1}(a_i, y_j) = R a_i + y_j - g_{n+1}(a_i, y_j)
+        c[n+1](a_i, y_j) = R a_i + y_j - g[n+1](a_i, y_j)
 
-    err = max_{i,j} |c_{n+1}(a_i, y_j) - c_n(a_i, y_j)|
+    err = max[i,j] |c[n+1](a_i, y_j) - c_n(a_i, y_j)|
 until err < eps
 ```
 

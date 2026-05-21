@@ -111,7 +111,7 @@ The last column checks that recovered utility equals $u_t$ at each observed bund
 
 **Afriat numbers and fit diagnostics**
 
-|   Observation |   Expenditure |    u_t |   lambda_t |   True U normalized |   Fit error |
+|   Observation |   Expenditure |    Utility ($u_t$) |   Multiplier ($\lambda_t$) |   True U normalized |   Fit error |
 |--------------:|--------------:|-------:|-----------:|--------------------:|------------:|
 |             1 |          6.3  | 0.3738 |     0.1587 |              0.5457 |    0        |
 |             2 |          9.76 | 0.7013 |     0.1025 |              0.7205 |    0        |

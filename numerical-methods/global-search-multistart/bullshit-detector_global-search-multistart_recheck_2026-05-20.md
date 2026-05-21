@@ -64,7 +64,7 @@ Both the gap and the percentage are now computed from the live run. `gap_abs = 5
 **Original claim (verbatim from prior audit):** "Starts below the kink at $p_L^{\max} = 2.00$ converge to the low peak." — original `README.md:195`
 
 **Resolution:**
-- `README.md:196` (generated): "Only starts in the narrow window $[1.52,\, 1.97]$ converge to the low peak. Every start below that window also converges to the high peak: the gradient at a low price is strongly positive, so the quasi-Newton step overshoots the low peak and descends into the global basin. The L-BFGS-B basin boundary near $p \approx 1.52$ is an artifact of the solver dynamics and sits below the economic kink $p_L^{\max} = 2.00$, not at it."
+- `README.md:196` (generated): "Only starts in the narrow window $[1.52, 1.97]$ converge to the low peak. Every start below that window also converges to the high peak: the gradient at a low price is strongly positive, so the quasi-Newton step overshoots the low peak and descends into the global basin. The L-BFGS-B basin boundary near $p \approx 1.52$ is an artifact of the solver dynamics and sits below the economic kink $p_L^{\max} = 2.00$, not at it."
 
 The prose now correctly distinguishes the L-BFGS-B empirical boundary (~1.52 from the 200-start dense scan) from the economic kink (2.00). The equation in `run.py:474-477` computes the window from the dense scan dynamically (`boundary_lo`, `boundary_hi`), not hardcoded.
 
@@ -91,7 +91,7 @@ Verified: `re.findall(r'### Method \d+:', README)` returns exactly five headers,
 
 ### Finding 5 (NEW): Basin window lower bound is $1.52$ in prose but first low-basin start in 50-start CSV is $1.549$
 
-**Claim source (verbatim):** "Only starts in the narrow window $[1.52,\, 1.97]$ converge to the low peak." — `README.md:196`
+**Claim source (verbatim):** "Only starts in the narrow window $[1.52, 1.97]$ converge to the low peak." — `README.md:196`
 
 **Code evidence (verbatim):**
 ```python
@@ -140,6 +140,6 @@ Note: the fix, if desired, is to add a note in prose distinguishing "dense-scan 
 
 0. **Bullshit score is 10%.** Three honest-fix tests pass; four violated-invariant tests correctly fail (bugs eliminated). One new LOW/DATA DRIFT finding (Finding 5) does not require a code fix; it may warrant a prose clarification distinguishing the two grids.
 
-1. Finding 5 is optional cleanup. If the user wants the prose window to reference both grids, add a parenthetical: "Only starts in the narrow window $[1.52,\, 1.97]$ (from a 200-point dense scan) converge to the low peak; the 50-start multistart log shows starts as low as $1.549$ in this basin."
+1. Finding 5 is optional cleanup. If the user wants the prose window to reference both grids, add a parenthetical: "Only starts in the narrow window $[1.52, 1.97]$ (from a 200-point dense scan) converge to the low peak; the 50-start multistart log shows starts as low as $1.549$ in this basin."
 
 2. No other action required. The tutorial is faithful. The violated-invariant tests correctly fail on fixed code (proving the bugs are gone) and the honest-fix tests pass (proving the claims are true).

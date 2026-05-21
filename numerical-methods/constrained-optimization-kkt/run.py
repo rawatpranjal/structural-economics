@@ -202,9 +202,9 @@ def main() -> None:
     ax1.plot(pg_arr[:n_show_pg, 0], pg_arr[:n_show_pg, 1],
              "o", color="tab:orange", markersize=5, label="Projected gradient iterate")
     ax1.plot(pg_arr[0, 0], pg_arr[0, 1], "o", color="tab:gray", markersize=8,
-             markeredgecolor="black", label=fr"Start $x_0 = (0.5,\, 0.5,\, 2.0)$")
+             markeredgecolor="black", label=fr"Start $x_0 = (0.5,  0.5,  2.0)$")
     ax1.plot(x_star[0], x_star[1], "*", color="tab:red", markersize=18,
-             label=fr"$x^{{\ast}} = (2,\, 1,\, 0)$")
+             label=fr"$x^{{\ast}} = (2,  1,  0)$")
     ax1.text(I_total + 0.05, 0.05, "$x_3 = 0$\n(project 3 inactive)", fontsize=9, color="tab:purple")
     ax1.set_xlabel("Project 1 allocation $x_1$")
     ax1.set_ylabel("Project 2 allocation $x_2$")
@@ -243,7 +243,7 @@ def main() -> None:
                  fontsize=9, color="tab:purple",
                  arrowprops=dict(arrowstyle="->", color="tab:purple", linewidth=0.8, alpha=0.7))
     ax2.plot(x_star[0], x_star[1], "*", color="tab:red", markersize=18,
-             label=fr"$x^{{\ast}} = (2,\, 1,\, 0)$")
+             label=fr"$x^{{\ast}} = (2,  1,  0)$")
     ax2.set_xlabel("Project 1 allocation $x_1$")
     ax2.set_ylabel("Project 2 allocation $x_2$")
     ax2.set_title("Interior-point central path as the barrier shrinks")

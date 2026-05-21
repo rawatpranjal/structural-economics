@@ -14,7 +14,9 @@ Let $i$ index firms and $t$ index years. Output, labor, capital, and materials
 are logs. They are denoted by $y_{it}$, $l_{it}$, $k_{it}$, and $m_{it}$. The
 plant technology is Cobb-Douglas:
 
-$$y_{it} = \beta_l l_{it}+\beta_k k_{it}+\beta_m m_{it} +\omega_{it}+\varepsilon_{it}.$$
+$$
+y_{it} = \beta_l l_{it}+\beta_k k_{it}+\beta_m m_{it} +\omega_{it}+\varepsilon_{it}.
+$$
 
 The firm observes productivity $\omega_{it}$ before choosing flexible inputs.
 This timing makes $l_{it}$ and $m_{it}$ correlated with $\omega_{it}$. Naive
@@ -23,19 +25,25 @@ OLS therefore has a nonzero input-error covariance.
 The proxy variable is investment $I_{it}$. Investment follows a policy that is
 monotone in productivity given capital:
 
-$$I_{it}=h(k_{it},\omega_{it})+\nu_{it}, \qquad \frac{\partial h(k,\omega)}{\partial \omega}>0.$$
+$$
+I_{it}=h(k_{it},\omega_{it})+\nu_{it}, \qquad \frac{\partial h(k,\omega)}{\partial \omega}>0.
+$$
 
 The estimator builds a productivity control from this monotonicity. A polynomial
 in capital is fit to investment, and the residual is the part of investment
 that moves with productivity:
 
-$$\tilde \omega_{it}=I_{it}-\widehat{\mathrm{poly}}(k_{it}).$$
+$$
+\tilde \omega_{it}=I_{it}-\widehat{\mathrm{poly}}(k_{it}).
+$$
 
 The residual is monotone in $\omega_{it}$ given capital, so it controls for the
 productivity component that is correlated with the flexible inputs. The
 regression is
 
-$$y_{it} = \beta_l l_{it}+\beta_k k_{it}+\beta_m m_{it} +\rho \tilde\omega_{it}+u_{it}.$$
+$$
+y_{it} = \beta_l l_{it}+\beta_k k_{it}+\beta_m m_{it} +\rho \tilde\omega_{it}+u_{it}.
+$$
 
 Here $\rho$ is the coefficient on the productivity control $\tilde\omega_{it}$.
 Because $\tilde\omega_{it}$ holds productivity orthogonal to capital, the
@@ -48,11 +56,15 @@ which this tutorial does not run.
 Markup recovery uses materials as the variable input. For Cobb-Douglas
 production, the materials elasticity is $\theta^m=\beta_m$. Let
 
-$$\alpha^m_{it} = \frac{\text{materials expenditure}_{it}}{\text{revenue}_{it}}$$
+$$
+\alpha^m_{it} = \frac{\text{materials expenditure}_{it}}{\text{revenue}_{it}}
+$$
 
 be the materials revenue share. Cost minimization implies the gross markup
 
-$$\mu_{it}=\frac{\theta^m}{\alpha^m_{it}}.$$
+$$
+\mu_{it}=\frac{\theta^m}{\alpha^m_{it}}.
+$$
 
 ## Model Setup
 
@@ -107,7 +119,7 @@ The coefficient table is read through the markup formula. Materials is the main 
 
 **Production function estimates**
 
-| Input     |   True elasticity |   OLS |   Proxy-control |   OLS bias |   Proxy bias |
+| Input     |   True elasticity |   OLS estimate |   Proxy-control |   OLS bias |   Proxy bias |
 |:----------|------------------:|------:|----------------:|-----------:|-------------:|
 | Labor     |              0.32 | 0.173 |           0.33  |     -0.147 |        0.01  |
 | Capital   |              0.24 | 0.215 |           0.515 |     -0.025 |        0.275 |
@@ -117,7 +129,7 @@ The quintile table makes the ground-truth comparison explicit. OLS-based markups
 
 **Markup moments by productivity quintile**
 
-| productivity_quintile   |   mean_productivity |   true_markup |   ols_markup |   proxy_markup |   proxy_bias |
+| Productivity quintile   |   Mean productivity |   True markup |   OLS markup |   Proxy markup |   Proxy bias |
 |:------------------------|--------------------:|--------------:|-------------:|---------------:|-------------:|
 | Q1                      |              -0.429 |         0.865 |        1.873 |          0.906 |        0.041 |
 | Q2                      |              -0.163 |         0.993 |        2.138 |          1.034 |        0.041 |

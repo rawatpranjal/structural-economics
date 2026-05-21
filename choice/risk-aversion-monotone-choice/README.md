@@ -35,7 +35,7 @@ The fixed scale choice model is
 
 $$
 \Pr(d=1\mid p;\rho) =
-\lambda + (1-2\lambda)\frac{1}{1+\exp[-s\,\Delta EU(p;\rho)]}.
+\lambda + (1-2\lambda)\frac{1}{1+\exp[-s\Delta EU(p;\rho)]}.
 $$
 
 The monotone row logit estimates one logit $\alpha_j$ per row from binomial
@@ -82,7 +82,7 @@ Input: rows (p_j, y_j, N_j), fixed scale s, lapse rate lambda
 1. Simulate risky choice counts from CRRA probabilities.
 2. Estimate saturated logits for each row.
 3. Search over rho for the fixed scale CRRA likelihood.
-4. Estimate row logits subject to alpha_{j+1} >= alpha_j.
+4. Estimate row logits subject to alpha[j+1] >= alpha_j.
 5. Compare fitted curves and likelihood loss.
 Output: fitted risky choice curves and model comparisons
 ```

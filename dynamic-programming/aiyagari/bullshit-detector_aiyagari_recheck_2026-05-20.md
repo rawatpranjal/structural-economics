@@ -30,18 +30,18 @@
 
 ### Prior Finding 1 — RESOLVED: equilibrium equation now approximate
 
-- **Prior claim (verbatim, buggy):** "The capital market clears: $K^s(r^{\ast}) = \sum_{i,j} a_i\,\mu(a_i,z_j) = K^d(r^{\ast})$." — original `README.md:72`
+- **Prior claim (verbatim, buggy):** "The capital market clears: $K^s(r^{\ast}) = \sum_{i,j} a_i\mu(a_i,z_j) = K^d(r^{\ast})$." — original `README.md:72`
 - **Current README evidence (verbatim):**
   ```
   Bisection stops once the relative gap falls below tolerance, so the run delivers
-  K^s(r^{\ast}) \approx K^d(r^{\ast}) rather than exact equality. The diagnostics
+  K^s(r^(\ast)) \approx K^d(r^(\ast)) rather than exact equality. The diagnostics
   table reports both sides; the small residual between them is the tolerance gap,
   not a model object.
   ```
   `README.md:75-78`
 - **Code evidence:** `run.py:242-245`: `r_eq = r_trial; K_eq = K_d; w_eq = w_trial; market_gap = K_s - K_d`. The demand-side `K_eq` assignment is unchanged (correct: factor prices use demand-side capital), but the README now explicitly states the approximation. The prose notes the residual is "the tolerance gap, not a model object." `README.md:138`: "The market-clearing gap is the bisection residual. It is numerical error, not a model object." ✓
 - **Data evidence:** `tables/equilibrium.csv`: `Aggregate capital $K^{\ast}$,6.7599` (K_d) and `Mean wealth $\mathbb{E}[a]$,6.7633` (K_s). Absolute difference = 0.0034; relative = 0.050%. Both sides still reported distinctly. The diagnostics table includes `Relative market-clearing gap,+4.939e-04`. ✓
-- **Test:** `test_finding1_violated_invariant_equation_states_exact_equality` FAILS (correct post-fix: `\,\mu(a_i,z_j) = K^d(r^{\ast})` no longer present). `test_finding1_honest_fix_equation_is_approximate` PASSES: `K^s(r^{\ast}) \approx K^d(r^{\ast})` and "tolerance" both present. `test_finding1_table_reports_both_sides_distinctly` PASSES: `abs(6.7599 - 6.7633) = 0.0034 > 1e-4`. ✓
+- **Test:** `test_finding1_violated_invariant_equation_states_exact_equality` FAILS (correct post-fix: `\mu(a_i,z_j) = K^d(r^{\ast})` no longer present). `test_finding1_honest_fix_equation_is_approximate` PASSES: `K^s(r^{\ast}) \approx K^d(r^{\ast})` and "tolerance" both present. `test_finding1_table_reports_both_sides_distinctly` PASSES: `abs(6.7599 - 6.7633) = 0.0034 > 1e-4`. ✓
 - **Category:** HOLDS
 
 ---
@@ -71,7 +71,7 @@
 
 ### Finding 2: Stationary distribution operator — HOLDS
 
-- **Claim source (verbatim):** "$\mu(a',z_k) = \sum_j P_{jk}\sum_{i:\,g_a(a_i,z_j)=a'} \mu(a_i,z_j)$" — `README.md:51-53`
+- **Claim source (verbatim):** "$\mu(a',z_k) = \sum_j P_{jk}\sum_{i:g_a(a_i,z_j)=a'} \mu(a_i,z_j)$" — `README.md:51-53`
 - **Code evidence:** `run.py:105-115`: forward iteration over `(policy_idx, transition)`. Operator matches claim. ✓
 - **Category:** HOLDS
 

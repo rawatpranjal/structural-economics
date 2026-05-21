@@ -70,7 +70,7 @@ This is the same shrinkage logic that drives the Gaussian-process posterior in [
 The posterior variance is
 
 $$
-\mathrm{Var}[\theta \mid D] = \frac{\alpha_{\mathrm{post}}  \beta_{\mathrm{post}}}{(\alpha_{\mathrm{post}} + \beta_{\mathrm{post}})^2\, (\alpha_{\mathrm{post}} + \beta_{\mathrm{post}} + 1)}.
+\mathrm{Var}[\theta \mid D] = \frac{\alpha_{\mathrm{post}}  \beta_{\mathrm{post}}}{(\alpha_{\mathrm{post}} + \beta_{\mathrm{post}})^2 (\alpha_{\mathrm{post}} + \beta_{\mathrm{post}} + 1)}.
 $$
 
 The tail probability $P(\theta > t \mid D)$ for $t \in (0, 1)$ is one minus the regularized incomplete Beta function
@@ -97,7 +97,7 @@ On the calibration used in the rest of this tutorial ($\alpha = 2$, $\beta = 2$,
 The second target is a posterior over $\theta = (\theta_1, \theta_2) \in \mathbb{R}^2$ given by a two-component Gaussian mixture:
 
 $$
-\pi(\theta \mid D) = \omega\, \phi(\theta;  \mu_1, \Sigma) + (1 - \omega)  \phi(\theta;  \mu_2, \Sigma),
+\pi(\theta \mid D) = \omega \phi(\theta;  \mu_1, \Sigma) + (1 - \omega)  \phi(\theta;  \mu_2, \Sigma),
 $$
 
 where $\omega \in (0, 1)$ is the mixing weight, $\mu_1, \mu_2 \in \mathbb{R}^2$ are the component means, $\Sigma \in \mathbb{R}^{2 \times 2}$ is the shared component covariance, and the bivariate normal density is
@@ -113,7 +113,7 @@ Random-walk Metropolis-Hastings constructs a Markov chain $(\theta_t)_{t \ge 0}$
 Given current state $\theta_t \in \mathbb{R}^d$ (with $d = 2$ here), a Gaussian random-walk proposal draws
 
 $$
-\theta^{\star} = \theta_t + s\, \eta_t,
+\theta^{\star} = \theta_t + s \eta_t,
 \qquad
 \eta_t \sim \mathcal{N}(0, I_d),
 \qquad

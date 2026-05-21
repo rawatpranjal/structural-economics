@@ -19,8 +19,27 @@ FRAGILE_MATH_DELIMITERS = (
 FRAGILE_MATH_SIZE_COMMANDS = tuple(
     "\\" + command for command in ("bigl", "bigr", "Bigl", "Bigr")
 )
-FRAGILE_MATH_SPACING_COMMANDS = ("\\;", "\\!")
+FRAGILE_MATH_SPACING_COMMANDS = ("\\;", "\\!", "\\,")
 UNSUPPORTED_MATH_COMMANDS = ("\\operatorname",)
+# Inline display math: `$$` is not the only thing on its line.
+INLINE_DISPLAY_MATH = re.compile(r"^(?!\s*\$\$\s*$).*\$\$")
+# Math-y tokens inside code fences (LaTeX braces or `$`).
+CODE_FENCE_MATH_TOKEN = re.compile(r"\$|_\{|\^\{")
+# Prose-language code fences where pseudocode lives (no real-code lang tag).
+PROSE_CODE_FENCE_LANGS = {"", "text", "pseudo", "pseudocode", "algorithm", "plain"}
+# Greek-letter spellings that should not stand alone as a column header.
+GREEK_NAMES = {
+    "alpha", "beta", "gamma", "delta", "epsilon", "zeta", "eta", "theta",
+    "iota", "kappa", "lambda", "mu", "nu", "xi", "omicron", "pi", "rho",
+    "sigma", "tau", "upsilon", "phi", "chi", "psi", "omega",
+}
+# Short acronyms that should not stand alone as a column header.
+BARE_ACRONYMS = {
+    "OLS", "IV", "2SLS", "GMM", "MLE", "KL", "HHI", "MSE", "RMSE", "FOC",
+    "MPC", "DGP", "PDF", "CDF", "AR", "MA", "VAR", "DSGE", "BLP",
+}
+# Header cell deemed "code-style": lowercase identifier with underscore/digit.
+CODE_STYLE_HEADER = re.compile(r"^[a-z][a-z0-9]*(?:[_/][a-z0-9]+)+$")
 UNBRACED_MATHBB = re.compile(r"\\mathbb\s+[A-Za-z]")
 UNBRACED_STAR_SCRIPT = re.compile(r"(?<!\\)(\^|_)\*")
 BRACED_LITERAL_STAR_SCRIPT = re.compile(r"(?<!\\)(\^|_)\{\*\}")
@@ -91,9 +110,11 @@ def active_text_files() -> list[Path]:
             rel = path.relative_to(ROOT)
             if ".git" in rel.parts or "_legacy" in rel.parts:
                 continue
-            # Skip bullshit-detector audit reports: they quote broken
-            # claim-source math by design and are not catalog content.
+            # Skip audit/QC reports: they quote broken claim-source math by
+            # design and are not catalog content.
             if path.name.startswith("bullshit-detector_"):
+                continue
+            if "qc-reports" in rel.parts:
                 continue
             files.append(path)
     return sorted(files)
@@ -208,8 +229,9 @@ def fragile_math_command_errors() -> list[str]:
             continue
         rel = path.relative_to(ROOT)
         for lineno, line in enumerate(path.read_text(errors="replace").splitlines(), start=1):
+            bare = re.sub(r"`[^`]*`", "", line) if path.suffix == ".md" else line
             for command in FRAGILE_MATH_SPACING_COMMANDS:
-                if command in line:
+                if command in bare:
                     errors.append(
                         f"{rel}:{lineno} uses renderer-fragile math spacing command {command}; remove it"
                     )
@@ -256,6 +278,159 @@ def math_script_errors() -> list[str]:
     return errors
 
 
+def inline_display_math_errors() -> list[str]:
+    """Reject `$$...$$` blocks that share a line with prose.
+
+    GitHub markdown often falls back to text when `$$` opens or closes inline
+    with surrounding prose. The fallback then runs through markdown's
+    italic/underscore processing and corrupts subscripts.
+    """
+    errors = []
+    for path in active_text_files():
+        if path.suffix != ".md":
+            continue
+        rel = path.relative_to(ROOT)
+        in_fence = False
+        for lineno, line in enumerate(path.read_text(errors="replace").splitlines(), start=1):
+            stripped = line.strip()
+            if stripped.startswith("```"):
+                in_fence = not in_fence
+                continue
+            if in_fence:
+                continue
+            # Strip inline code spans so backtick-quoted `$$...$$` references
+            # in prose (e.g. in CLAUDE.md) don't trip the check.
+            bare = re.sub(r"`[^`]*`", "", line)
+            if "$$" not in bare:
+                continue
+            if bare.strip() == "$$":
+                continue
+            if bare.count("$$") >= 2:
+                m = re.match(r"^\s*\$\$.*\$\$\s*$", bare)
+                if m:
+                    continue
+            errors.append(
+                f"{rel}:{lineno} `$$` must be on its own line; prose or punctuation must not share the line"
+            )
+    return errors
+
+
+def pseudocode_math_errors() -> list[str]:
+    """Reject LaTeX-style math inside prose-language code fences.
+
+    Pseudocode blocks in tutorial READMEs must read as plain text. LaTeX
+    macros, `$`, and brace-grouped subscripts/superscripts belong in
+    `$$...$$` blocks, not in `\`\`\`text` fences.
+    """
+    errors = []
+    for path in active_text_files():
+        if path.suffix != ".md":
+            continue
+        rel = path.relative_to(ROOT)
+        in_fence = False
+        fence_lang = ""
+        for lineno, line in enumerate(path.read_text(errors="replace").splitlines(), start=1):
+            stripped = line.strip()
+            if stripped.startswith("```"):
+                if in_fence:
+                    in_fence = False
+                    fence_lang = ""
+                else:
+                    in_fence = True
+                    fence_lang = stripped[3:].strip().lower()
+                continue
+            if not in_fence:
+                continue
+            if fence_lang not in PROSE_CODE_FENCE_LANGS:
+                continue
+            if CODE_FENCE_MATH_TOKEN.search(line):
+                errors.append(
+                    f"{rel}:{lineno} pseudocode block contains math notation (`$`, `_{{...}}`, or `^{{...}}`); rewrite as plain prose"
+                )
+    return errors
+
+
+def split_markdown_table_cells(row: str) -> list[str]:
+    """Split a Markdown table row into trimmed cell contents."""
+    body = row.strip()
+    if body.startswith("|"):
+        body = body[1:]
+    if body.endswith("|"):
+        body = body[:-1]
+    return [cell.strip() for cell in re.split(r"(?<!\\)\|", body)]
+
+
+def header_cell_is_bad(cell: str) -> bool:
+    """Return whether a header cell looks like a raw code/symbol identifier."""
+    if not cell:
+        return False
+    # Strip a wrapping pair of backticks or `$...$` so we evaluate the content.
+    plain = cell
+    if plain.startswith("`") and plain.endswith("`") and len(plain) >= 2:
+        plain = plain[1:-1].strip()
+    # Header containing English words alongside symbols/acronyms is fine.
+    if re.search(r"[A-Za-z]{4,}", plain) and " " in plain:
+        return False
+    # Pure-math header like `$\alpha$` or `$\beta_{\text{sugar}}$` is fine.
+    if plain.startswith("$") and plain.endswith("$"):
+        return False
+    lower = plain.lower()
+    if lower in GREEK_NAMES:
+        return True
+    if plain in BARE_ACRONYMS:
+        return True
+    if CODE_STYLE_HEADER.match(plain):
+        return True
+    return False
+
+
+def table_header_errors() -> list[str]:
+    """Reject Markdown table headers that read as code identifiers."""
+    errors = []
+    for path in active_text_files():
+        if path.suffix != ".md":
+            continue
+        rel = path.relative_to(ROOT)
+        lines = path.read_text(errors="replace").splitlines()
+        in_fence = False
+        for i, line in enumerate(lines):
+            stripped = line.strip()
+            if stripped.startswith("```"):
+                in_fence = not in_fence
+                continue
+            if in_fence:
+                continue
+            if i + 1 >= len(lines):
+                continue
+            if not is_markdown_table_separator(lines[i + 1]):
+                continue
+            if "|" not in line:
+                continue
+            for cell in split_markdown_table_cells(line):
+                if header_cell_is_bad(cell):
+                    errors.append(
+                        f"{rel}:{i + 1} table header cell `{cell}` reads as a code identifier; use English with the symbol in parentheses (e.g. `Price coefficient ($\\alpha$)`)"
+                    )
+    return errors
+
+
+def _run_self_tests() -> None:
+    """Smoke fixtures for each new check. Raises on regression."""
+    assert INLINE_DISPLAY_MATH.search("quality: $$x = 1$$.")
+    assert not INLINE_DISPLAY_MATH.search("$$")
+    assert CODE_FENCE_MATH_TOKEN.search("p_{rho, gamma}(j)")
+    assert CODE_FENCE_MATH_TOKEN.search("$x$")
+    assert not CODE_FENCE_MATH_TOKEN.search("theta_hat <- argmax f(theta)")
+    assert header_cell_is_bad("alpha")
+    assert header_cell_is_bad("beta_sugar")
+    assert header_cell_is_bad("gamma2/gamma1")
+    assert header_cell_is_bad("OLS")
+    assert not header_cell_is_bad("Price coefficient ($\\alpha$)")
+    assert not header_cell_is_bad("$\\alpha$")
+    assert not header_cell_is_bad("Iterations")
+    assert not header_cell_is_bad("OLS estimate")
+
+
 def validate() -> int:
     errors = []
     links = catalog_links()
@@ -284,6 +459,9 @@ def validate() -> int:
     errors.extend(fragile_math_delimiter_errors())
     errors.extend(fragile_math_command_errors())
     errors.extend(math_script_errors())
+    errors.extend(inline_display_math_errors())
+    errors.extend(pseudocode_math_errors())
+    errors.extend(table_header_errors())
 
     if errors:
         print("Catalog validation failed:")
@@ -296,4 +474,5 @@ def validate() -> int:
 
 
 if __name__ == "__main__":
+    _run_self_tests()
     sys.exit(validate())

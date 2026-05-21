@@ -76,7 +76,7 @@ log-density of the true parameters under the flow:
 $$
 \underbrace{\mathcal{L}(\phi)}_{\text{training loss}}
 =
-\mathbb{E}_{\theta \sim \pi_{\theta}, \, y \sim p(y \mid \theta)}
+\mathbb{E}_{\theta \sim \pi_{\theta},  y \sim p(y \mid \theta)}
 \left[
 \underbrace{- \log q_{\phi}(\theta \mid y)}_{\text{flow log-density}}
 \right].
@@ -87,7 +87,7 @@ simulator outputs. The training data are pairs $(\theta_i, y_i)$ with
 $\theta_i$ drawn from the prior $\pi_{\theta}$ and $y_i$ obtained by
 running the simulator on $\theta_i$. In the population limit the minimizer
 of this loss equals the true posterior
-$p(\theta \mid y) \propto p(y \mid \theta) \, \pi_{\theta}(\theta)$; the
+$p(\theta \mid y) \propto p(y \mid \theta)  \pi_{\theta}(\theta)$; the
 construction is due to Papamakarios and Murray (2016) and the
 simulation-based-inference setting is reviewed in
 Cranmer-Brehmer-Louppe (2020). The same trained flow can then be evaluated
@@ -150,7 +150,7 @@ Step 6.  Query at y_obs = 1.0:
 A numerical sanity check on Step 6 is also possible by hand. At $y_{obs} = 1.0$ the unnormalized posterior is $\exp(-\lvert 1 - \mu \rvert)$. Integrating over the prior support gives
 
 $$
-Z = \int_{-5}^{5} \exp(-\lvert 1 - \mu \rvert) \, d\mu = (1 - e^{-6}) + (1 - e^{-4}) \approx 1.979,
+Z = \int_{-5}^{5} \exp(-\lvert 1 - \mu \rvert)  d\mu = (1 - e^{-6}) + (1 - e^{-4}) \approx 1.979,
 $$
 
 so the normalized posterior densities at three candidate $\mu$ values are $p(\mu = 1 \mid 1.0) \approx 0.505$, $p(\mu = 0 \mid 1.0) \approx 0.186$, $p(\mu = -1 \mid 1.0) \approx 0.068$. Any NPE flow trained on enough simulator pairs must reproduce these three numbers up to flow expressivity and Monte Carlo error. The toy-example figure shows this is the case at two other observations.

@@ -22,8 +22,8 @@ $j$ at Poisson intensity $\lambda_i$, so the expected duration in state $i$ is
 $1/\lambda_i$. Assets $a$ accumulate continuously between jumps according to
 
 $$
-\dot a \,=\, s_i(a) \,=\, z_i + r\, a - c_i(a),
-\qquad a \,\geq\, \underline a ,
+\dot a = s_i(a) = z_i + r a - c_i(a),
+\qquad a \geq \underline a ,
 $$
 
 where $r$ is the equilibrium return on the bond, $c_i(a)$ is the consumption
@@ -34,32 +34,32 @@ is CRRA: $u(c) = c^{1-\sigma}/(1-\sigma)$ for $\sigma \ne 1$.
 
 Let $V_i(a)$ be the household's value when assets are $a$ and income state is
 $i$. Over a small interval of length $\Delta t$, with probability
-$1 - \lambda_i\, \Delta t + o(\Delta t)$ the income state stays at $i$ and
-assets drift by $\dot a\, \Delta t$. With probability
-$\lambda_i\, \Delta t + o(\Delta t)$ the income state jumps to $j$ at the start
+$1 - \lambda_i \Delta t + o(\Delta t)$ the income state stays at $i$ and
+assets drift by $\dot a \Delta t$. With probability
+$\lambda_i \Delta t + o(\Delta t)$ the income state jumps to $j$ at the start
 of the interval and the household enters next period with the same assets but
 the new value function $V_j$. The discrete-time Bellman is
 
 $$
-V_i(a) \,=\, \max_{c \,\geq\, 0} \Big\lbrace
-u(c)  \Delta t \,+\, e^{-\rho\, \Delta t} 
-\big[(1 - \lambda_i\, \Delta t)  V_i(a + \dot a\, \Delta t)
-\,+\, \lambda_i\, \Delta t\, V_j(a)\big] \Big\rbrace
-\,+\, o(\Delta t) .
+V_i(a) = \max_{c \geq 0} \Big\lbrace
+u(c)  \Delta t + e^{-\rho \Delta t} 
+\big[(1 - \lambda_i \Delta t)  V_i(a + \dot a \Delta t) +
+\lambda_i \Delta t V_j(a)\big] \Big\rbrace +
+o(\Delta t) .
 $$
 
-Expand $e^{-\rho \Delta t} = 1 - \rho\, \Delta t + o(\Delta t)$ and
-$V_i(a + \dot a\, \Delta t) = V_i(a) + V_i'(a)  \dot a\, \Delta t +
+Expand $e^{-\rho \Delta t} = 1 - \rho \Delta t + o(\Delta t)$ and
+$V_i(a + \dot a \Delta t) = V_i(a) + V_i'(a)  \dot a \Delta t +
 o(\Delta t)$. Subtract $V_i(a)$, divide by $\Delta t$, and take
-$\Delta t \to 0$. The cross terms $\rho\, \Delta t \cdot \lambda_i$ and
-$\rho\, \Delta t \cdot V_i'(a)  \dot a$ are $o(\Delta t)$ and drop out. The
+$\Delta t \to 0$. The cross terms $\rho \Delta t \cdot \lambda_i$ and
+$\rho \Delta t \cdot V_i'(a)  \dot a$ are $o(\Delta t)$ and drop out. The
 result is the **HJB equation with Poisson switching**
 
 $$
-\rho\, V_i(a) \,=\, \max_{c \,>\, 0}  \Big\lbrace
-\underbrace{u(c)}_{\text{flow utility}}
-\,+\, \underbrace{V_i'(a)  (z_i + r\, a - c)}_{\text{drift in } a}
-\,+\, \underbrace{\lambda_i\, (V_j(a) - V_i(a))}_{\text{income jump}}
+\rho V_i(a) = \max_{c > 0}  \Big\lbrace
+\underbrace{u(c)}_{\text{flow utility}} +
+\underbrace{V_i'(a)  (z_i + r a - c)}_{\text{drift in } a} +
+\underbrace{\lambda_i (V_j(a) - V_i(a))}_{\text{income jump}}
 \Big\rbrace .
 $$
 
@@ -76,15 +76,15 @@ first-order condition equates marginal utility to the marginal value of
 assets,
 
 $$
-u'(c_i(a)) \,=\, V_i'(a)
+u'(c_i(a)) = V_i'(a)
 \quad\Longrightarrow\quad
-c_i(a) \,=\, [V_i'(a)]^{-1/\sigma} ,
+c_i(a) = [V_i'(a)]^{-1/\sigma} ,
 $$
 
 and the implied savings drift is
 
 $$
-s_i(a) \,=\, z_i + r\, a - c_i(a) .
+s_i(a) = z_i + r a - c_i(a) .
 $$
 
 The marginal value $V_i'(a)$ is the **shadow price** of one extra unit of
@@ -98,15 +98,15 @@ constraint. It binds whenever the unconstrained drift would push assets
 through the floor. The Kuhn-Tucker condition is
 
 $$
-s_i(\underline a) \,\geq\, 0
+s_i(\underline a) \geq 0
 \quad\Longleftrightarrow\quad
-V_i'(\underline a) \,\geq\, u'(z_i + r\, \underline a) ,
+V_i'(\underline a) \geq u'(z_i + r \underline a) ,
 $$
 
 with equality when the constraint is slack and strict inequality (a kink in
 $V_i'$) when the household would prefer to dissave further. The numerical
 scheme enforces this by computing the implied unconstrained drift at
-$a = \underline a$ and clipping consumption to $z_i + r\, \underline a$ when
+$a = \underline a$ and clipping consumption to $z_i + r \underline a$ when
 the drift would be negative.
 
 ### The Kolmogorov forward equation
@@ -121,25 +121,24 @@ boundary, plus the income-switching gain or loss. In differential form,
 
 $$
 \frac{\partial g_i}{\partial t}(a, t)
-\,=\,
--\frac{\partial}{\partial a}\big[s_i(a)  g_i(a, t)\big]
-\,-\, \lambda_i\, g_i(a, t)
-\,+\, \lambda_j\, g_j(a, t) .
+= -\frac{\partial}{\partial a}\big[s_i(a)  g_i(a, t)\big] -
+\lambda_i g_i(a, t) +
+\lambda_j g_j(a, t) .
 $$
 
-The first term is the divergence of the deterministic flux $s_i\, g_i$ along
+The first term is the divergence of the deterministic flux $s_i g_i$ along
 the asset axis. The second term removes mass from state $i$ at the leaving
 rate $\lambda_i$. The third term adds mass arriving from state $j$ at rate
 $\lambda_j$. The stationary density satisfies
 
 $$
-0 \,=\, -\frac{\partial}{\partial a}\big[s_i(a)  g_i(a)\big]
-\,-\, \lambda_i\, g_i(a) \,+\, \lambda_j\, g_j(a),
-\qquad \int_{\underline a}^{\bar a} \big[g_L(a) + g_H(a)\big]  da \,=\, 1 .
+0 = -\frac{\partial}{\partial a}\big[s_i(a)  g_i(a)\big] -
+\lambda_i g_i(a) + \lambda_j g_j(a),
+\qquad \int_{\underline a}^{\bar a} \big[g_L(a) + g_H(a)\big]  da = 1 .
 $$
 
 Discretised on the same asset grid as the HJB, this becomes
-$\mathbf{A}^{\top} g \,=\, 0$, where $\mathbf{A}$ is the upwind generator
+$\mathbf{A}^{\top} g = 0$, where $\mathbf{A}$ is the upwind generator
 used to solve the HJB and $g$ is the joint density across grid points and
 income states. The HJB and KFE are dual under one transposition: the same
 matrix encodes both the operator that propagates values backward and the
@@ -151,7 +150,7 @@ The single bond is in zero net supply. The bond market clears when the
 average asset holding integrates to zero,
 
 $$
-S(r) \,\equiv\, \int_{\underline a}^{\bar a} a\, [g_L(a) + g_H(a)]  da \,=\, 0 .
+S(r) \equiv \int_{\underline a}^{\bar a} a [g_L(a) + g_H(a)]  da = 0 .
 $$
 
 The equilibrium return $r^{\ast}$ is the root of $S(r)$. With incomplete
@@ -199,24 +198,24 @@ with spacing $\Delta a$. At each pair $(a_k, i)$ the solver computes the
 forward and backward asset slopes
 
 $$
-D^{+}_{k, i} V \,=\, \frac{V_i(a_{k+1}) - V_i(a_k)}{\Delta a},
+D^{+}_{k, i} V = \frac{V_i(a_{k+1}) - V_i(a_k)}{\Delta a},
 \qquad
-D^{-}_{k, i} V \,=\, \frac{V_i(a_k) - V_i(a_{k-1})}{\Delta a},
+D^{-}_{k, i} V = \frac{V_i(a_k) - V_i(a_{k-1})}{\Delta a},
 $$
 
 and the candidate consumptions $c^{+}_{k, i} = (D^{+}_{k, i} V)^{-1/\sigma}$
 and $c^{-}_{k, i} = (D^{-}_{k, i} V)^{-1/\sigma}$. The implied drifts are
-$s^{+}_{k, i} = z_i + r\, a_k - c^{+}_{k, i}$ and $s^{-}_{k, i}$ analogously.
+$s^{+}_{k, i} = z_i + r a_k - c^{+}_{k, i}$ and $s^{-}_{k, i}$ analogously.
 The upwind rule keeps the side whose drift points away from the grid point:
 forward when $s^{+}_{k, i} > 0$, backward when $s^{-}_{k, i} < 0$, and the
-zero-drift consumption $c^{0}_{k, i} = z_i + r\, a_k$ otherwise. A central
+zero-drift consumption $c^{0}_{k, i} = z_i + r a_k$ otherwise. A central
 difference would mix the two sides with equal weight and produce oscillating
 iterates because information in the HJB flows in the direction of the drift.
 
 At the borrowing limit $a_1 = \underline a$ the backward difference is
 undefined, so the algorithm uses the forward difference and additionally
 enforces the state constraint by clipping consumption to
-$z_i + r\, \underline a$ when the implied forward drift is negative. At the
+$z_i + r \underline a$ when the implied forward drift is negative. At the
 upper end $a_I = \bar a$ the forward difference is undefined, so the
 algorithm uses the backward difference; the upper bound is set wide enough
 that no probability mass sits there in equilibrium.
@@ -232,10 +231,10 @@ Stacking both income states gives a $2I \times 2I$ block-tridiagonal generator
 $\mathbf{A}^{n}$,
 
 $$
-\mathbf{A}^{n} \,=\, \mathrm{diag}(A_{L}^{n},  A_{H}^{n})
-\,+\,
-\begin{pmatrix} -\lambda_L\, \mathbf{I} & \lambda_L\, \mathbf{I} \\
-\lambda_H\, \mathbf{I} & -\lambda_H\, \mathbf{I} \end{pmatrix} ,
+\mathbf{A}^{n} = \mathrm{diag}(A_{L}^{n},  A_{H}^{n})
++
+\begin{pmatrix} -\lambda_L \mathbf{I} & \lambda_L \mathbf{I} \\
+\lambda_H \mathbf{I} & -\lambda_H \mathbf{I} \end{pmatrix} ,
 $$
 
 where $A_i^{n}$ is the upwind asset-drift block for income state $i$ at the
@@ -245,14 +244,14 @@ non-positive diagonal.
 
 ### Implicit pseudo-time step
 
-An explicit update $V^{n+1} = V^n + \Delta\, (u(c^n) + \mathbf{A}^{n} V^n -
+An explicit update $V^{n+1} = V^n + \Delta (u(c^n) + \mathbf{A}^{n} V^n -
 \rho V^n)$ is unstable for moderate $\Delta$ because the upwind transition
 rates $|s_{k, i}|/\Delta a$ can be large on fine grids. The implicit version
 replaces $\mathbf{A}^{n} V^n$ with $\mathbf{A}^{n} V^{n+1}$ and rearranges to
 
 $$
 [(1/\Delta + \rho)  \mathbf{I} - \mathbf{A}^{n}]  V^{n+1}
-\,=\, u(c^{n}) + V^{n} / \Delta .
+= u(c^{n}) + V^{n} / \Delta .
 $$
 
 The matrix on the left is strictly diagonally dominant with positive
@@ -270,7 +269,7 @@ the equilibrium policy is exactly the operator whose transpose pushes the
 density forward in time:
 
 $$
-\frac{\partial g}{\partial t} \,=\, \mathbf{A}^{\top}  g .
+\frac{\partial g}{\partial t} = \mathbf{A}^{\top}  g .
 $$
 
 The stationary density solves $\mathbf{A}^{\top} g = 0$, a singular system
@@ -283,7 +282,7 @@ duality** is the elegance of the continuous-time framework.
 
 ### Outer bisection on $r$
 
-Bond demand $S(r) \,=\, \int a\, (g_L + g_H)  da$ is monotone increasing in
+Bond demand $S(r) = \int a (g_L + g_H)  da$ is monotone increasing in
 $r$ at this calibration: a higher return makes saving more attractive
 ($s_i(a)$ rises by $a$ for all $a > 0$) and borrowing more painful, so the
 density shifts rightward on the asset axis. Since $S(\rho) > 0$ (the
@@ -305,8 +304,8 @@ repeat (outer bisection)
     initialise V_i(a) = u(z_i + r a) / rho                         # myopic guess
     repeat
         for each (a_k, i):
-            dVf = (V_i(a_{k+1}) - V_i(a_k)) / da                   # forward
-            dVb = (V_i(a_k) - V_i(a_{k-1})) / da                   # backward
+            dVf = (V_i(a[k+1]) - V_i(a_k)) / da                   # forward
+            dVb = (V_i(a_k) - V_i(a[k-1])) / da                   # backward
             cf  = (dVf)^(-1/sigma);   sf = z_i + r a_k - cf
             cb  = (dVb)^(-1/sigma);   sb = z_i + r a_k - cb
             if   sf > 0: c_i(a_k) = cf;            drift = sf      # upwind forward

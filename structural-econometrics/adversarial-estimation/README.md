@@ -195,7 +195,7 @@ Each colored line is the Monte Carlo average of $M(\theta, \hat D_\theta)$, deme
 
 The second diagnostic compares the sampling distributions of the estimators. Each adversarial estimator sits next to maximum likelihood on the same simulated data. Any difference between the two histograms is due to the discriminator, not to the data. The oracle adversarial estimator overlaps the maximum-likelihood distribution almost exactly. The logistic and neural discriminators sit next to it with a slightly wider spread. That extra spread is the cost of training the discriminator on a finite simulation sample.
 
-Each panel overlays the maximum-likelihood histogram in grey with one adversarial estimator in color. The vertical line marks the true location $\theta_0 = 0$. The dashed black curve is the asymptotic Gaussian prediction $\mathcal{N}(0,  (1 + n/m)/(n\, I_0))$ from Corollary 4 of the paper. Standard deviations in the legend are on the rate scale $\sqrt{n} \cdot \mathrm{sd}(\hat\theta)$, matching the asymptotic numbers in the model setup table.
+Each panel overlays the maximum-likelihood histogram in grey with one adversarial estimator in color. The vertical line marks the true location $\theta_0 = 0$. The dashed black curve is the asymptotic Gaussian prediction $\mathcal{N}(0,  (1 + n/m)/(n I_0))$ from Corollary 4 of the paper. Standard deviations in the legend are on the rate scale $\sqrt{n} \cdot \mathrm{sd}(\hat\theta)$, matching the asymptotic numbers in the model setup table.
 
 <img src="figures/estimator-histograms.png" alt="Monte Carlo distributions of adversarial estimators against MLE" width="80%">
 

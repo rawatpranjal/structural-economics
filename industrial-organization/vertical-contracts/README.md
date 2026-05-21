@@ -60,7 +60,7 @@ price. The discount applies only if the assortment contains at least $\tau$
 Mars products, with $\tau=4$ in this tutorial:
 
 $$
-w_j^C(A)=c_j+\mu-d\,\mathbf 1\{m(j)=\text{Mars}\}\mathbf 1\{M(A)\geq\tau\},
+w_j^C(A)=c_j+\mu-d\mathbf 1\{m(j)=\text{Mars}\}\mathbf 1\{M(A)\geq\tau\},
 \quad
 M(A)=\sum_{j\in A}\mathbf 1\{m(j)=\text{Mars}\}.
 $$

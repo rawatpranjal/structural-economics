@@ -342,7 +342,7 @@ def main() -> None:
     ax4.plot(cournot_dp_hist[:8, 0], cournot_dp_hist[:8, 1], "s-", color="tab:green",
              markersize=5, linewidth=1.0, alpha=0.8, label="Damped Picard, monotone")
     ax4.plot(q_star, q_star, "*", color="tab:red", markersize=18,
-             label=fr"$q^{{\ast}} = ({q_star:.2f},\, {q_star:.2f})$")
+             label=fr"$q^{{\ast}} = ({q_star:.2f},  {q_star:.2f})$")
     ax4.set_xlabel(r"$q_1$")
     ax4.set_ylabel(r"$q_2$")
     ax4.set_title("Cournot best-response iteration to the symmetric Nash quantity")

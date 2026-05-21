@@ -18,15 +18,19 @@ An interpolant $\hat f$ matches the data ($\hat f(x_i) = y_i$ for every $i$) and
 Two targets stress different smoothness regimes.
 The first target is the closed-form log-utility cake-eating value function on a smooth interior.
 
-$$V(W) = \frac{\log((1-\beta) W)}{1-\beta} + \frac{\beta \log \beta}{(1-\beta)^2}.$$
+$$
+V(W) = \frac{\log((1-\beta) W)}{1-\beta} + \frac{\beta \log \beta}{(1-\beta)^2}.
+$$
 
 The second target is a stylised consumption policy with a borrowing constraint at $a_{\text{kink}}$.
 
-$$c(a) =
+$$
+c(a) =
 \begin{cases}
 (1 + r)  a + y, & a \leq a_{\text{kink}} \\
 c(a_{\text{kink}}) + (1 + r)  \mathrm{MPC}  (a - a_{\text{kink}}), & a > a_{\text{kink}}.
-\end{cases}$$
+\end{cases}
+$$
 
 Below the kink the agent is constrained and consumes everything.
 Above the kink they save with marginal propensity to consume $\mathrm{MPC} < 1$.
@@ -40,7 +44,9 @@ The next three subsections describe one method at a time.
 Piecewise linear interpolation connects adjacent nodes with straight segments.
 For a query $x$ in $[x_i, x_{i+1}]$ the interpolant is the convex combination of the bracketing values.
 
-$$\hat{f}(x) = \frac{x_{i+1} - x}{x_{i+1} - x_i}  f(x_i) + \frac{x - x_i}{x_{i+1} - x_i}  f(x_{i+1}).$$
+$$
+\hat{f}(x) = \frac{x_{i+1} - x}{x_{i+1} - x_i}  f(x_i) + \frac{x - x_i}{x_{i+1} - x_i}  f(x_{i+1}).
+$$
 
 The interpolant is $C^0$ but generally not differentiable at the nodes.
 
@@ -80,11 +86,11 @@ Each method takes nodes $(x_i, y_i)$ and returns a function on $[x_0, x_N]$.
 
 ```text
 Algorithm: Piecewise linear
-Input : nodes (x_i, y_i); query x in [x_i, x_{i+1}]
+Input : nodes (x_i, y_i); query x in [x_i, x[i+1]]
 Output: y_hat
-  h_i   <- x_{i+1} - x_i
+  h_i   <- x[i+1] - x_i
   w     <- (x - x_i) / h_i
-  y_hat <- (1 - w) y_i + w y_{i+1}
+  y_hat <- (1 - w) y_i + w y[i+1]
 ```
 
 **Natural cubic spline.** Fit a piecewise cubic with $C^2$ continuity and zero second derivatives at the endpoints.
@@ -93,11 +99,11 @@ Output: y_hat
 Algorithm: Natural cubic spline
 Input : nodes (x_i, y_i)
 Output: spline S(x)
-  build tridiagonal system in y''_1, ..., y''_{N-1}
+  build tridiagonal system in y''_1, ..., y''[N-1]
   with natural BC y''_0 = y''_N = 0
   solve once for the second-derivative values
-  on [x_i, x_{i+1}], evaluate the cubic from
-    y_i, y_{i+1}, y''_i, y''_{i+1}
+  on [x_i, x[i+1]], evaluate the cubic from
+    y_i, y[i+1], y''_i, y''[i+1]
 ```
 
 **PCHIP (shape-preserving).** Fit a piecewise cubic Hermite polynomial whose endpoint slopes are chosen by the Fritsch-Carlson rule so the result preserves monotonicity.
@@ -106,11 +112,11 @@ Output: spline S(x)
 Algorithm: PCHIP
 Input : nodes (x_i, y_i)
 Output: H(x)
-  m_i <- (y_{i+1} - y_i) / (x_{i+1} - x_i)   # secant slopes
+  m_i <- (y[i+1] - y_i) / (x[i+1] - x_i)   # secant slopes
   pick endpoint slopes d_i by Fritsch-Carlson rule
     so that monotonicity of {y_i} is preserved
-  on [x_i, x_{i+1}], evaluate Hermite cubic from
-    y_i, y_{i+1}, d_i, d_{i+1}
+  on [x_i, x[i+1]], evaluate Hermite cubic from
+    y_i, y[i+1], d_i, d[i+1]
 ```
 
 The linear branch reuses `lib.interpolate.linear_interp`. The cubic and PCHIP branches use `scipy.interpolate.CubicSpline` (`bc_type='natural'`) and `scipy.interpolate.PchipInterpolator`.

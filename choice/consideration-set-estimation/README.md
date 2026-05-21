@@ -21,9 +21,11 @@ The agent picks the $\succ$-best alternative in $C(A)$; if $C(A) = \varnothing$ 
 
 The induced choice probability (Manzini-Mariotti Definition 2) is closed form:
 
-$$p_{\succ, \gamma}(a, A) = \gamma(a) \prod_{b \in A : b \succ a} (1 - \gamma(b)),
+$$
+p_{\succ, \gamma}(a, A) = \gamma(a) \prod_{b \in A : b \succ a} (1 - \gamma(b)),
 \qquad
-p_{\succ, \gamma}(a^{\ast}, A) = \prod_{b \in A} (1 - \gamma(b)).$$
+p_{\succ, \gamma}(a^{\ast}, A) = \prod_{b \in A} (1 - \gamma(b)).
+$$
 
 The product is over alternatives in $A$ ranked strictly above $a$.
 There is no explicit sum over $2^{|A|}$ consideration sets; the independence of attention draws collapses the sum analytically.
@@ -34,12 +36,16 @@ Two facts pin down the primitives from observed choice frequencies (Manzini-Mari
 
 The attention probability is recovered from singleton menus that include the default.
 
-$$\gamma(a) = 1 - p(a^{\ast}, \lbrace a\rbrace).$$
+$$
+\gamma(a) = 1 - p(a^{\ast}, \lbrace a\rbrace).
+$$
 
 The preference ranking is recovered from the asymmetric impact of menu removals.
 Removing an alternative ranked above the chosen one raises the chosen one's probability; removing an alternative ranked below has no effect.
 
-$$a \succ b \iff p(a, A) = p(a, A \setminus \lbrace b\rbrace) \text{ for every } A \ni a, b.$$
+$$
+a \succ b \iff p(a, A) = p(a, A \setminus \lbrace b\rbrace) \text{ for every } A \ni a, b.
+$$
 
 Equivalently, $a \succ b$ iff $p(b, A) > p(b, A \setminus \lbrace a\rbrace)$ for some menu $A$ containing both.
 
@@ -49,7 +55,9 @@ The likelihood factorises across alternatives once the ranking is fixed.
 Let $N_c(j)$ count observations in which alternative $j$ was chosen, and let $N_b(j; \succ)$ count observations in which $j$ was in the menu and was ranked above the chosen alternative or above the default.
 The conditional MLE of $\gamma(j)$ is then a single ratio:
 
-$$\hat\gamma(j) \mid \succ = \frac{N_c(j)}{N_c(j) + N_b(j; \succ)}.$$
+$$
+\hat\gamma(j) \mid \succ = \frac{N_c(j)}{N_c(j) + N_b(j; \succ)}.
+$$
 
 The outer step enumerates the $J!$ candidate rankings and evaluates the resulting log-likelihood; the inner step is closed form.
 
@@ -65,7 +73,9 @@ A higher score for "removing $i$ raises $j$" than for "removing $j$ raises $i$" 
 
 A Luce model assigns each alternative a positive utility and predicts
 
-$$p_L(a, A) = \frac{u(a)}{u(a^{\ast}) + \sum_{b \in A} u(b)}.$$
+$$
+p_L(a, A) = \frac{u(a)}{u(a^{\ast}) + \sum_{b \in A} u(b)}.
+$$
 
 Luce satisfies IIA: removing any alternative raises every other alternative's probability by the same proportional factor.
 The Manzini-Mariotti rule predicts a strictly asymmetric pattern and therefore lies outside the Luce class whenever the attention parameters do not co-move with the ranking.
@@ -100,10 +110,10 @@ Output: ranking_hat, gamma_hat
   for each permutation rho of (1, ..., J):
     for each j in 1..J:
       N_c[j]      <- sum_m c[m, j]
-      N_b[j; rho] <- sum_{m, k != j with j in menu and rho(j) above k} c[m, k]
-                   + sum_{m with j in menu} c[m, default]
+      N_b[j; rho] <- sum[m, k != j with j in menu and rho(j) above k] c[m, k]
+                   + sum[m with j in menu] c[m, default]
       gamma[j]    <- N_c[j] / (N_c[j] + N_b[j; rho])
-    ll <- sum over (m, j) of c[m, j] * log p_{rho, gamma}(j, A_m)
+    ll <- sum over (m, j) of c[m, j] * log p[rho, gamma](j, A_m)
     if ll > best_ll:
       best_ll <- ll; ranking_hat <- rho; gamma_hat <- gamma
 ```

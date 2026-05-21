@@ -45,7 +45,7 @@ $$
 Write $m_{sim}(\theta) = m(S(\theta, \varepsilon_{sim}))$ for the same moments computed on simulated data. MSM minimizes the scaled quadratic criterion
 
 $$
-\hat\theta_{MSM} = \arg\min_\theta\,
+\hat\theta_{MSM} = \arg\min_\theta
 \underbrace{[m_{sim}(\theta) - m_{obs}]^{\prime}}_{\text{moment gap, simulated vs observed}}\
 \underbrace{W_m}_{\text{scale matrix}}\
 \underbrace{[m_{sim}(\theta) - m_{obs}]}_{\text{moment gap}}
@@ -61,9 +61,9 @@ Scaling each gap by the magnitude of the observed moment is the simplest such no
 Let $b(\cdot)$ be a vector of auxiliary statistics: the OLS coefficients of the linear probability regression $d_i = b_0 + b_1 \log w_i$, augmented with offer-distribution moments and the acceptance rate. Write $b_{obs} = b(\text{observed sample})$ and $b_{sim}(\theta) = b(S(\theta, \varepsilon_{sim}))$. Indirect inference minimizes
 
 $$
-\hat\theta_{II} = \arg\min_\theta\,
+\hat\theta_{II} = \arg\min_\theta
 \underbrace{
-[b_{sim}(\theta) - b_{obs}]^{\prime}  W_b\,
+[b_{sim}(\theta) - b_{obs}]^{\prime}  W_b
 [b_{sim}(\theta) - b_{obs}]
 }_{Q_{II}(\theta)},
 $$
@@ -100,7 +100,7 @@ ABC-SMC approaches $\pi_0$ through a sequence $\varepsilon_0 > \varepsilon_1 > \
 Particles in round $t \ge 1$ are drawn by sampling a parent $\theta_{t-1}^{(j)}$ with probability $w_{t-1}^{(j)}$, perturbing it with a Gaussian kernel
 
 $$
-K_t(\theta \mid \theta^{\prime}) = \mathcal{N}(\theta^{\prime},  2\, \widehat{\mathrm{Cov}}_{t-1}),
+K_t(\theta \mid \theta^{\prime}) = \mathcal{N}(\theta^{\prime},  2 \widehat{\mathrm{Cov}}_{t-1}),
 $$
 
 and keeping the proposal only if $\rho(\theta) \le \varepsilon_t$. The factor two in the covariance is the Beaumont-Cornuet-Marin-Robert (2009) twice-empirical-covariance rule. The importance weight corrects for the proposal,
@@ -180,7 +180,7 @@ For round t = 1, ..., T - 1:
   Compute Cov_t = 2 * weighted_covariance(round t - 1 particles).
   For i = 1, ..., N:
     Repeat:
-      Sample parent index j proportional to w_{t-1}.
+      Sample parent index j proportional to w[t-1].
       Propose theta_i = parent_j + N(0, Cov_t); resample if outside prior box.
       d_i <- scaled_euclidean(moments(S(theta_i)), m_obs).
     Until d_i <= epsilon_t.

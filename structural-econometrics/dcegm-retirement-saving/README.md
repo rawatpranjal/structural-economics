@@ -232,8 +232,8 @@ The selected consumption and saving policies are copied from the winning branch.
 ```text
 Algorithm: DC-EGM for retirement and saving
 Input:
-    current asset grid A = {a_j}_{j=1}^J
-    next asset grid A^+ = {a_i^+}_{i=1}^J
+    current asset grid A = {a_j}[j=1]^J
+    next asset grid A^+ = {a_i^+}[i=1]^J
     ages t = 0,...,T-1
     primitives beta, R, gamma, y_t(d), psi_t(d), borrowing limit a_min
 
@@ -244,14 +244,14 @@ Initialize:
 Subroutine SOLVE_BRANCH(t, d, next_status):
     y = y_t(d)
     psi = psi_t(d)
-    compute mu_i = d V_{t+1}^{next_status}(a_i^+) / d a^+
+    compute mu_i = d V[t+1]^(next_status)(a_i^+) / d a^+
         at every next-asset grid point a_i^+
     clip mu_i to a small positive value if a numerical derivative is nonpositive
 
     for each grid point a_i^+ in A^+:
         c_i = (beta * R * mu_i)^(-1 / gamma)
         a_i_endo = (c_i + a_i^+ - y) / R
-        V_i_endo = u(c_i) + psi + beta * V_{t+1}^{next_status}(a_i^+)
+        V_i_endo = u(c_i) + psi + beta * V[t+1]^(next_status)(a_i^+)
 
     sort rows by a_i_endo
     repair monotonicity by replacing a_i_endo with its running maximum
@@ -264,7 +264,7 @@ Subroutine SOLVE_BRANCH(t, d, next_status):
         set g_t^d(a) = a_min
         set c_t^d(a) = R * a + y - a_min
         set V_t^d(a) = u(c_t^d(a)) + psi
-                         + beta * V_{t+1}^{next_status}(a_min)
+                         + beta * V[t+1]^(next_status)(a_min)
 
     for all other current assets a:
         set c_t^d(a) = R * a + y - g_t^d(a)

@@ -16,13 +16,17 @@ A monopolist faces a population of consumers split between two segments.
 Segment $L$ has linear demand with intercept $A_L > 0$ and slope $b_L > 0$.
 Segment $H$ has linear demand with intercept $A_H > 0$ and slope $b_H > 0$.
 
-$$D_L(p) = \max\lbrace 0,  A_L - b_L\, p \rbrace,
+$$
+D_L(p) = \max\lbrace 0,  A_L - b_L p \rbrace,
 \qquad
-D_H(p) = \max\lbrace 0,  A_H - b_H\, p \rbrace.$$
+D_H(p) = \max\lbrace 0,  A_H - b_H p \rbrace.
+$$
 
 With low-segment share $\lambda \in (0, 1)$ and constant marginal cost $c \ge 0$, the mixture profit is
 
-$$\pi(p) = (p - c) \left[\lambda\, D_L(p) + (1 - \lambda)  D_H(p)\right].$$
+$$
+\pi(p) = (p - c) \left[\lambda D_L(p) + (1 - \lambda)  D_H(p)\right].
+$$
 
 The objective is piecewise quadratic in $p$ with a strict local maximum at the both-segments peak $p_L^{\ast}$ and a global maximum at the high-only peak $p_H^{\ast}$.
 On the calibration used here, $p_L^{\ast} \approx 1.603$ with $\pi \approx 4.14$, and $p_H^{\ast} = 4.25$ with $\pi \approx 5.625$.
@@ -37,7 +41,9 @@ A Gaussian process $\mathcal{GP}(m, k)$ is a distribution over functions $f : \m
 The process is fully specified by its mean function $m : \mathcal{X} \to \mathbb{R}$ and its covariance kernel $k : \mathcal{X} \times \mathcal{X} \to \mathbb{R}$.
 We use a constant-mean prior, $f \sim \mathcal{GP}(m, k)$ with $m(x) \equiv \bar{y}$ fixed to the sample mean of the observed targets, and the squared-exponential kernel
 
-$$k(x, x') = \sigma_f^2 \exp\left(-\tfrac{(x - x')^2}{2\, \ell^2}\right).$$
+$$
+k(x, x') = \sigma_f^2 \exp\left(-\tfrac{(x - x')^2}{2 \ell^2}\right).
+$$
 
 Here $\sigma_f > 0$ is the prior signal standard deviation and $\ell > 0$ is the length scale, which controls how quickly the kernel decays with distance.
 A small $\ell$ gives a wiggly prior; a large $\ell$ gives a smooth prior.
@@ -46,9 +52,13 @@ Suppose we have observed evaluations $y_i = f(x_i) + \varepsilon_i$ for $i = 1, 
 Stack the targets into $y = (y_1, \ldots, y_n)^{\top} \in \mathbb{R}^n$.
 Because the joint distribution of $(y, f(x_{\ast}))$ at any new input $x_{\ast} \in \mathcal{X}$ is Gaussian by construction, the conditional distribution $f(x_{\ast}) \mid (X, y)$ is also Gaussian, with closed-form posterior mean $\mu(x_{\ast})$ and variance $\sigma^2(x_{\ast})$:
 
-$$\mu(x_{\ast}) = m(x_{\ast}) + \underbrace{k(x_{\ast}, X)}_{\text{similarity to training inputs}} \underbrace{\left[K(X, X) + \sigma_n^2 I\right]^{-1} (y - m(X))}_{\text{noise-corrected training residual}},$$
+$$
+\mu(x_{\ast}) = m(x_{\ast}) + \underbrace{k(x_{\ast}, X)}_{\text{similarity to training inputs}} \underbrace{\left[K(X, X) + \sigma_n^2 I\right]^{-1} (y - m(X))}_{\text{noise-corrected training residual}},
+$$
 
-$$\sigma^2(x_{\ast}) = \underbrace{k(x_{\ast}, x_{\ast})}_{\text{prior variance at } x_{\ast}} - \underbrace{k(x_{\ast}, X) \left[K(X, X) + \sigma_n^2 I\right]^{-1} k(X, x_{\ast})}_{\text{variance explained by the data}}.$$
+$$
+\sigma^2(x_{\ast}) = \underbrace{k(x_{\ast}, x_{\ast})}_{\text{prior variance at } x_{\ast}} - \underbrace{k(x_{\ast}, X) \left[K(X, X) + \sigma_n^2 I\right]^{-1} k(X, x_{\ast})}_{\text{variance explained by the data}}.
+$$
 
 The vector $k(x_{\ast}, X) \in \mathbb{R}^n$ collects the kernel values $(k(x_{\ast}, x_1), \ldots, k(x_{\ast}, x_n))$ and $I$ is the $n \times n$ identity matrix.
 Read the posterior mean as a kernel-weighted regression around the constant mean $m(x_{\ast})$: the row vector $k(x_{\ast}, X)$ gives the similarity of the candidate to each evaluated point, and the precision-weighted residual $[K + \sigma_n^2 I]^{-1} (y - m(X))$ tells the formula how to combine those similarities.
@@ -61,14 +71,18 @@ The variance collapsing at evaluated points is what makes Expected Improvement a
 Let $f^{\ast} = \max_{i \le n} y_i$ denote the best observed value so far.
 Expected Improvement scores a candidate $x \in \mathcal{X}$ by the expected positive gain over $f^{\ast}$, with expectation taken under the GP posterior at $x$:
 
-$$\mathrm{EI}(x) = \mathbb{E}\left[\max\lbrace f(x) - f^{\ast} - \xi,  0 \rbrace \mid X, y \right].$$
+$$
+\mathrm{EI}(x) = \mathbb{E}\left[\max\lbrace f(x) - f^{\ast} - \xi,  0 \rbrace \mid X, y \right].
+$$
 
 The parameter $\xi \ge 0$ is an exploration tilt, in units of the objective: it requires a posterior improvement of at least $\xi$ before contributing to the score.
 Since $f(x) \mid X, y \sim \mathcal{N}(\mu(x), \sigma^2(x))$, the expectation is a truncated-Gaussian integral with the closed form
 
-$$\mathrm{EI}(x) = \underbrace{(\mu(x) - f^{\ast} - \xi)  \Phi(z)}_{\text{exploitation: bet on posterior mean}} + \underbrace{\sigma(x)  \phi(z)}_{\text{exploration: bet on posterior spread}},
+$$
+\mathrm{EI}(x) = \underbrace{(\mu(x) - f^{\ast} - \xi)  \Phi(z)}_{\text{exploitation: bet on posterior mean}} + \underbrace{\sigma(x)  \phi(z)}_{\text{exploration: bet on posterior spread}},
 \qquad
-z = \frac{\mu(x) - f^{\ast} - \xi}{\sigma(x)},$$
+z = \frac{\mu(x) - f^{\ast} - \xi}{\sigma(x)},
+$$
 
 valid whenever $\sigma(x) > 0$.
 Here $\Phi$ and $\phi$ denote the cumulative distribution function and probability density function of the standard normal distribution $\mathcal{N}(0, 1)$.

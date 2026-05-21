@@ -76,16 +76,16 @@ The prediction step asks what the state should look like before seeing the new s
 Algorithm: nowcasting a latent state with the Kalman filter
 Input: observations y_t, transition Phi, loading Psi, covariances Q and R
 Output: filtered means, filtered covariances, innovations, likelihood
-Initialize s_hat_{0|0} and P_{0|0}
+Initialize s_hat[0|0] and P[0|0]
 for t = 1, ..., T:
-    predict state:      s_hat_{t|t-1} = Phi s_hat_{t-1|t-1}
-    predict covariance: P_{t|t-1} = Phi P_{t-1|t-1} Phi' + Q
-    innovation:         nu_t = y_t - Psi s_hat_{t|t-1}
-    innovation var:     S_t = Psi P_{t|t-1} Psi' + R
-    gain:               K_t = P_{t|t-1} Psi' S_t^{-1}
-    update state:       s_hat_{t|t} = s_hat_{t|t-1} + K_t nu_t
-    update covariance:  P_{t|t} = P_{t|t-1} - K_t Psi P_{t|t-1}
-    symmetrize:         P_{t|t} <- 0.5 (P_{t|t} + P_{t|t}')
+    predict state:      s_hat[t|t-1] = Phi s_hat[t-1|t-1]
+    predict covariance: P[t|t-1] = Phi P[t-1|t-1] Phi' + Q
+    innovation:         nu_t = y_t - Psi s_hat[t|t-1]
+    innovation var:     S_t = Psi P[t|t-1] Psi' + R
+    gain:               K_t = P[t|t-1] Psi' S_t^(-1)
+    update state:       s_hat[t|t] = s_hat[t|t-1] + K_t nu_t
+    update covariance:  P[t|t] = P[t|t-1] - K_t Psi P[t|t-1]
+    symmetrize:         P[t|t] <- 0.5 (P[t|t] + P[t|t]')
     add log p(nu_t; 0, S_t) to the likelihood
 ```
 
@@ -109,7 +109,7 @@ The table compares filtered state means with the simulated hidden states.
 
 **Filter diagnostics**
 
-| State          | RMSE   | Mean abs error   | Mean posterior std   |   90% band coverage |
+| State          | RMSE error | Mean abs error   | Mean posterior std   |   90% band coverage |
 |:---------------|:-------|:-----------------|:---------------------|--------------------:|
 | s1             | 0.2297 | 0.1754           | 0.2114               |                0.86 |
 | s2             | 0.2447 | 0.2106           | 0.2286               |                0.92 |

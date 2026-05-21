@@ -19,37 +19,51 @@ prices are $p_s$ and $p_b$.
 
 For $i=1,2$, the budget constraint is
 
-$$c_i+p_s s_i' + p_b b_i'
-=\omega_i(p_s+d_z)+\eta_{iz},\qquad \omega_2=1-\omega_1.$$
+$$
+c_i+p_s s_i' + p_b b_i'
+=\omega_i(p_s+d_z)+\eta_{iz},\qquad \omega_2=1-\omega_1.
+$$
 
 Asset markets clear through
 
-$$s_1'+s_2'=1,\qquad b_1'+b_2'=0,$$
+$$
+s_1'+s_2'=1,\qquad b_1'+b_2'=0,
+$$
 
 with constraints
 
-$$s_i'\geq 0,\qquad b_i'\geq \bar K^b.$$
+$$
+s_i'\geq 0,\qquad b_i'\geq \bar K^b.
+$$
 
 The Kuhn-Tucker conditions for equity and bond positions are, where $E_z[\cdot]$
 denotes the expectation over next-period shocks $z'$ conditional on current shock $z$,
 
-$$1=\beta E_z\left[
+$$
+1=\beta E_z\left[
 g_{z'}^{1-\gamma}\left(\frac{c_i'}{c_i}\right)^{-\gamma}
-\frac{p_s(z',\omega_1')+d_{z'}}{p_s}\right]+\mu_i^s,$$
+\frac{p_s(z',\omega_1')+d_{z'}}{p_s}\right]+\mu_i^s,
+$$
 
-$$1=\beta E_z\left[
+$$
+1=\beta E_z\left[
 g_{z'}^{-\gamma}\left(\frac{c_i'}{c_i}\right)^{-\gamma}
-\frac{1}{p_b}\right]+\mu_i^b,$$
+\frac{1}{p_b}\right]+\mu_i^b,
+$$
 
-$$\mu_i^s\geq0,\quad \mu_i^s s_i'=0,\qquad
-\mu_i^b\geq0,\quad \mu_i^b(b_i'-\bar K^b)=0.$$
+$$
+\mu_i^s\geq0,\quad \mu_i^s s_i'=0,\qquad
+\mu_i^b\geq0,\quad \mu_i^b(b_i'-\bar K^b)=0.
+$$
 
 The future wealth share is not an exogenous Markov transition. It must be
 consistent with today's portfolio choice and tomorrow's asset prices:
 
-$$\omega_1'(z')=
+$$
+\omega_1'(z')=
 \frac{s_1'[p_s(z',\omega_1'(z'))+d_{z'}]+b_1'/g_{z'}}
-{p_s(z',\omega_1'(z'))+d_{z'}}.$$
+{p_s(z',\omega_1'(z'))+d_{z'}}.
+$$
 
 ## Model Setup
 

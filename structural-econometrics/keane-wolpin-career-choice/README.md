@@ -214,10 +214,10 @@ Input:
 Build reachable state sets:
     S_0 = {s_0}
     for t = 0, 1, ..., T-1:
-        initialize S_{t+1} as empty
+        initialize S[t+1] as empty
         for each state s in S_t:
             for each feasible action d in D(s,t):
-                add g(s,d) to S_{t+1}
+                add g(s,d) to S[t+1]
 
 Terminal values:
     for each state s in S_T:
@@ -229,8 +229,8 @@ Exact benchmark:
         for each state s in S_t:
             for each feasible action d in D(s,t):
                 s_next = g(s,d)
-                Q_t(d,s) = u_d(s,t) + beta * E_{t+1}(s_next)
-            E_t(s) = sigma_e * log sum_{d in D(s,t)}
+                Q_t(d,s) = u_d(s,t) + beta * E[t+1](s_next)
+            E_t(s) = sigma_e * log sum[d in D(s,t)]
                      exp(Q_t(d,s) / sigma_e) + sigma_e * EulerGamma
             store Q_t(d,s) for policy comparisons
 
@@ -245,18 +245,18 @@ Approximate Emax recursion:
         for each sampled state s_i:
             for each feasible action d in D(s_i,t):
                 s_next = g(s_i,d)
-                Q_i(d) = u_d(s_i,t) + beta * Ehat_{t+1}(s_next)
-            Y_i = sigma_e * log sum_{d in D(s_i,t)}
+                Q_i(d) = u_d(s_i,t) + beta * Ehat[t+1](s_next)
+            Y_i = sigma_e * log sum[d in D(s_i,t)]
                   exp(Q_i(d) / sigma_e) + sigma_e * EulerGamma
 
         form Phi_t with row i equal to phi(s_i,t)'
-        solve b_hat_t = (Phi_t' Phi_t + lambda I)^{-1} Phi_t' Y_t
+        solve b_hat_t = (Phi_t' Phi_t + lambda I)^(-1) Phi_t' Y_t
 
         for each reachable state s in S_t:
             Ehat_t(s) = phi(s,t)' b_hat_t
             for each feasible action d in D(s,t):
                 s_next = g(s,d)
-                Qhat_t(d,s) = u_d(s,t) + beta * Ehat_{t+1}(s_next)
+                Qhat_t(d,s) = u_d(s,t) + beta * Ehat[t+1](s_next)
             store Qhat_t(d,s)
             store P_t(d | s) as the softmax of Qhat_t(d,s) / sigma_e
 

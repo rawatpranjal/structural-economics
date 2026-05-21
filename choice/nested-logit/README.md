@@ -13,26 +13,46 @@ The computation starts from shares, prices, nests, and instruments. Berry invers
 Products $j=1,\ldots,J$ appear in markets $t=1,\ldots,T$. Product $j$ belongs
 to nest $g(j)$, and $s_{0t}$ is the outside-good share. Mean utility combines a
 common inside-good term, sugar content, price, and unobserved product quality:
-$$\delta_{jt}=\beta_0+\beta_{\text{sugar}}\text{sugar}_j-\alpha p_{jt}+\xi_j, \qquad \alpha>0 .$$
+
+$$
+\delta_{jt}=\beta_0+\beta_{\text{sugar}}\text{sugar}_j-\alpha p_{jt}+\xi_j, \qquad \alpha>0 .
+$$
 
 The inclusive-value denominator aggregates the products inside one nest:
-$$D_{gt}=\sum_{k:g(k)=g}\exp\left(\frac{\delta_{kt}}{1-\sigma}\right), \qquad 0\leq \sigma<1 .$$
+
+$$
+D_{gt}=\sum_{k:g(k)=g}\exp\left(\frac{\delta_{kt}}{1-\sigma}\right), \qquad 0\leq \sigma<1 .
+$$
 
 Total share factors into a conditional share inside the nest and the nest's
 overall market share (where $h$ indexes nests in the denominator sum):
-$$s_{j|g,t}= \frac{\exp\left(\delta_{jt}/(1-\sigma)\right)}{D_{g(j)t}}, \qquad s_{gt}= \frac{D_{gt}^{1-\sigma}}{1+\sum_h D_{ht}^{1-\sigma}}, \qquad s_{jt}=s_{j|g,t}s_{g(j)t}.$$
+
+$$
+s_{j|g,t}= \frac{\exp\left(\delta_{jt}/(1-\sigma)\right)}{D_{g(j)t}}, \qquad s_{gt}= \frac{D_{gt}^{1-\sigma}}{1+\sum_h D_{ht}^{1-\sigma}}, \qquad s_{jt}=s_{j|g,t}s_{g(j)t}.
+$$
 
 The Berry inversion turns observed shares into a linear estimating equation:
-$$\ln s_{jt}-\ln s_{0t} = \beta_0+\beta_{\text{sugar}}\text{sugar}_j-\alpha p_{jt} +\sigma\ln s_{j|g,t}+\xi_j .$$
+
+$$
+\ln s_{jt}-\ln s_{0t} = \beta_0+\beta_{\text{sugar}}\text{sugar}_j-\alpha p_{jt} +\sigma\ln s_{j|g,t}+\xi_j .
+$$
+
 Both $p_{jt}$ and $\ln s_{j|g,t}$ are endogenous in this regression.
 
 After estimation, the substitution object is the elasticity matrix. Rows are
 products whose shares change; columns are products whose prices change. For
 market $t$,
-$$\eta_{jk,t}=\frac{\partial\ln s_{jt}}{\partial\ln p_{kt}}= \begin{cases} -\alpha p_{jt}\left[\dfrac{1}{1-\sigma} -\dfrac{\sigma}{1-\sigma}s_{j|g,t}-s_{jt}\right], & j=k,\\[1.0em] \alpha p_{kt}\left[\dfrac{\sigma}{1-\sigma}s_{k|g,t}+s_{kt}\right], & j\neq k,\ g(j)=g(k),\\[1.0em] \alpha p_{kt}s_{kt}, & g(j)\neq g(k). \end{cases}$$
+
+$$
+\eta_{jk,t}=\frac{\partial\ln s_{jt}}{\partial\ln p_{kt}}= \begin{cases} -\alpha p_{jt}\left[\dfrac{1}{1-\sigma} -\dfrac{\sigma}{1-\sigma}s_{j|g,t}-s_{jt}\right], & j=k,\\[1.0em] \alpha p_{kt}\left[\dfrac{\sigma}{1-\sigma}s_{k|g,t}+s_{kt}\right], & j\neq k,\ g(j)=g(k),\\[1.0em] \alpha p_{kt}s_{kt}, & g(j)\neq g(k). \end{cases}
+$$
+
 Diversion ratios convert elasticities into the share loss from product $k$ that
 goes to product $j$:
-$$\mathcal{D}_{j\leftarrow k}= -\frac{\partial s_{jt}/\partial p_{kt}}{\partial s_{kt}/\partial p_{kt}} = \frac{\eta_{jk,t}s_{jt}}{|\eta_{kk,t}|s_{kt}} .$$
+
+$$
+\mathcal{D}_{j\leftarrow k}= -\frac{\partial s_{jt}/\partial p_{kt}}{\partial s_{kt}/\partial p_{kt}} = \frac{\eta_{jk,t}s_{jt}}{|\eta_{kk,t}|s_{kt}} .
+$$
 
 ## Model Setup
 
@@ -58,12 +78,12 @@ Algorithm: nested-logit IV demand
 Input: markets t, products j, nests g(j), shares s_jt, outside shares s_0t
 Output: IV estimates, elasticity matrix, and diversion ratios
 
-1. For each market, compute within-nest shares s_{j|g,t} from observed shares.
-2. Form y_jt = log(s_jt) - log(s_0t) and w_jt = log(s_{j|g,t}).
+1. For each market, compute within-nest shares s[j|g,t] from observed shares.
+2. Form y_jt = log(s_jt) - log(s_0t) and w_jt = log(s[j|g,t]).
 3. First stage: project price p_jt and w_jt on sugar and instruments Z_jt.
 4. Second stage: regress y_jt on sugar, fitted price, and fitted w_jt.
 5. Read alpha from the negative price coefficient and sigma from w_jt.
-6. Compute eta_jk,t and calD_{j<-k}; compare plain logit, fitted nested logit,
+6. Compute eta_jk,t and calD[j<-k]; compare plain logit, fitted nested logit,
    and the true synthetic nested-logit benchmark.
 ```
 

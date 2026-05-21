@@ -140,7 +140,13 @@
 
 ### Finding 5: Objective equation omits L2 regularization term present in code
 
-- **Claim source (verbatim):** "The Structural Reinforcement Learning objective is a Monte Carlo estimate of expected lifetime utility: $$J(\theta) = \mathbb{E}[\sum_{t=0}^{T-1}\beta^t u(c_t)]$$" — `README.md:29-32`
+- **Claim source (verbatim):** "The Structural Reinforcement Learning objective is a Monte Carlo estimate of expected lifetime utility:
+
+$$
+J(\theta) = \mathbb{E}[\sum_{t=0}^{T-1}\beta^t u(c_t)]
+$$
+
+" — `README.md:29-32`
 - **Code evidence (verbatim):**
   ```python
   objective_value = jnp.mean(returns) - 1.0e-5 * jnp.mean(theta**2)

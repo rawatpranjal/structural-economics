@@ -16,21 +16,29 @@ Let $x_t$ be mileage and $a_t \in \{\mathrm{replace}, \mathrm{keep}\}$. Flow pay
 
 The conditional value functions solve
 
-$$v(x, a) = u(x, a) + \beta\, \mathbb{E}[\, \gamma + \log \textstyle\sum_{a'} \exp v(x', a') \mid x, a \,],$$
+$$
+v(x, a) = u(x, a) + \beta \mathbb{E}[ \gamma + \log \textstyle\sum_{a'} \exp v(x', a') \mid x, a ],
+$$
 
 Here $\gamma \approx 0.5772$ is the Euler-Mascheroni constant, equal to the expected value of a Type-I extreme value draw.
 
 and the structural CCP is the softmax of conditional values:
 
-$$P(\mathrm{replace} \mid x) = \frac{\exp v(x, \mathrm{replace})}{\exp v(x, \mathrm{replace}) + \exp v(x, \mathrm{keep})}.$$
+$$
+P(\mathrm{replace} \mid x) = \frac{\exp v(x, \mathrm{replace})}{\exp v(x, \mathrm{replace}) + \exp v(x, \mathrm{keep})}.
+$$
 
 This is already a soft-Q system. If $Q(x,a)$ denotes the same object as $v(x,a)$, the NFXP fixed point applies the expectation under the known transition matrix. The matrix version is
 
-$$Q(x,a)=u(x,a)+\beta\sum_{x'}F_a(x'\mid x)[\gamma+\log\textstyle\sum_{a'}\exp Q(x',a')].$$
+$$
+Q(x,a)=u(x,a)+\beta\sum_{x'}F_a(x'\mid x)[\gamma+\log\textstyle\sum_{a'}\exp Q(x',a')].
+$$
 
 Soft Q-learning treats $v$ as an action-value $Q(x, a)$ and updates it from observed $(x_t, a_t, x_{t+1})$ triples:
 
-$$Q(x_t, a_t) \leftarrow Q(x_t, a_t) + \alpha_t [\, u(x_t, a_t) + \beta(\gamma + \log \textstyle\sum_{a'} \exp Q(x_{t+1}, a')) - Q(x_t, a_t) \,].$$
+$$
+Q(x_t, a_t) \leftarrow Q(x_t, a_t) + \alpha_t [ u(x_t, a_t) + \beta(\gamma + \log \textstyle\sum_{a'} \exp Q(x_{t+1}, a')) - Q(x_t, a_t) ].
+$$
 
 The sampled next state $x_{t+1}$ is a noisy draw from the same transition distribution that NFXP averages over exactly. Repeated visits make the stochastic update approximate the transition-matrix expectation. Here $\alpha_t$ is a step-size sequence that shrinks with the per-state visit count (Robbins-Monro schedule).
 
@@ -59,12 +67,12 @@ Soft Q-learning sees one realized next mileage at a time. Each panel row $(x_t,a
 
 ```text
 Algorithm: soft Q-learning from observed bus transitions
-Input: panel (x_t, a_t, x_{t+1}), flow payoffs u(x, a), epoch budget E
+Input: panel (x_t, a_t, x[t+1]), flow payoffs u(x, a), epoch budget E
 Output: action-value Q(x, a) and replacement hazard P(replace | x)
 Initialize Q(x, a) <- 0 for all (x, a)
 for epoch = 1, ..., E:
-    for each transition (x_t, a_t, x_{t+1}) in random order:
-        target <- u(x_t, a_t) + beta * (gamma + log-sum-exp Q(x_{t+1}, .))
+    for each transition (x_t, a_t, x[t+1]) in random order:
+        target <- u(x_t, a_t) + beta * (gamma + log-sum-exp Q(x[t+1], .))
         Q(x_t, a_t) += alpha_t * (target - Q(x_t, a_t))
 P(replace | x) <- exp Q(x, replace) / [exp Q(x, replace) + exp Q(x, keep)]
 ```

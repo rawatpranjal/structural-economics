@@ -35,26 +35,26 @@ The household chooses a consumption flow $c \geq 0$ to maximise the expected pre
 Cash income arrives at rate $w z_j$ and asset holdings earn $r a$, so the asset state drifts at
 
 $$
-\dot a \,=\, s_j(a) \,=\, w z_j + r a - c_j(a),
-\qquad a \,\geq\, \underline a .
+\dot a = s_j(a) = w z_j + r a - c_j(a),
+\qquad a \geq \underline a .
 $$
 
 Standard dynamic-programming arguments produce the Hamilton-Jacobi-Bellman equation with Poisson income switching:
 
 $$
-\rho V_j(a) \,=\, \max_{c \,>\, 0}  \Big\lbrace
-\underbrace{u(c)}_{\text{flow utility}}
-\,+\, \underbrace{V_j'(a)  (w z_j + r a - c)}_{\text{drift in } a}
-\,+\, \underbrace{\sum_{k} Q_{jk}  V_k(a)}_{\text{income jump}}
+\rho V_j(a) = \max_{c > 0}  \Big\lbrace
+\underbrace{u(c)}_{\text{flow utility}} +
+\underbrace{V_j'(a)  (w z_j + r a - c)}_{\text{drift in } a} +
+\underbrace{\sum_{k} Q_{jk}  V_k(a)}_{\text{income jump}}
 \Big\rbrace .
 $$
 
 The interior first-order condition gives the consumption rule by inverting marginal utility at the marginal value of assets:
 
 $$
-u'(c_j(a)) \,=\, V_j'(a)
+u'(c_j(a)) = V_j'(a)
 \quad\Longrightarrow\quad
-c_j(a) \,=\, [V_j'(a)]^{-1/\sigma} .
+c_j(a) = [V_j'(a)]^{-1/\sigma} .
 $$
 
 The borrowing limit $a \geq \underline a$ is a state constraint enforced via the Kuhn-Tucker condition $s_j(\underline a) \geq 0$, which prevents the unconstrained drift from pushing assets through the floor.
@@ -66,12 +66,11 @@ Under the optimal rule $c_j(a)$ and its drift $s_j(a)$, the cross-sectional dens
 
 $$
 \frac{\partial g_j}{\partial t}(a, t)
-\,=\,
--\frac{\partial}{\partial a}\big[s_j(a)  g_j(a, t)\big]
-\,+\, \sum_{k} Q_{kj}  g_k(a, t) .
+= -\frac{\partial}{\partial a}\big[s_j(a)  g_j(a, t)\big] +
+\sum_{k} Q_{kj}  g_k(a, t) .
 $$
 
-The first term is the divergence of the deterministic flux $s_j\, g_j$, and the second term is the net inflow from income switching.
+The first term is the divergence of the deterministic flux $s_j g_j$, and the second term is the net inflow from income switching.
 The stationary density solves the time-invariant version with the normalisation $\int (\sum_j g_j)  da = 1$, and the discretised form is the linear system $\mathbf{A}^{\top} g = 0$ where $\mathbf{A}$ is the same upwind generator that the HJB assembles.
 The two equations are therefore dual under one transposition: the same matrix that propagates values backward propagates densities forward, and the same numerical effort discretises both.
 
@@ -80,14 +79,14 @@ Each household reacts to $r$ as exogenous through the HJB.
 The population's behaviour generates aggregate capital supply
 
 $$
-K^{s}(r) \,=\, \int_{\underline a}^{\bar a} a\, \sum_{j} g_j(a; r)  da ,
+K^{s}(r) = \int_{\underline a}^{\bar a} a \sum_{j} g_j(a; r)  da ,
 $$
 
 where the dependence on $r$ runs through the consumption rule, the drift, and hence the stationary density.
 A stationary mean-field-game equilibrium is a price $r^{\ast}$ such that the field is consistent with the aggregate it induces:
 
 $$
-K^{s}(r^{\ast}) \,=\, K^{d}(r^{\ast}) .
+K^{s}(r^{\ast}) = K^{d}(r^{\ast}) .
 $$
 
 This single equation closes the HJB-KFE pair, and the triple (HJB at $r^{\ast}$, KFE under the induced drift, closure $K^{s} = K^{d}$) is the Lasry-Lions mean-field game in stationary form.
@@ -140,8 +139,8 @@ Place a uniform asset grid $a_1 < a_2 < \cdots < a_I$ on $[\underline a, \bar a]
 The resulting upwind generator on the joint state space is the block matrix
 
 $$
-\mathbf{A} \,=\, \mathrm{diag}(A_{1}, A_{2}, \dots, A_{N})
-\,+\, \mathbf{Q} \otimes \mathbf{I}_{I} ,
+\mathbf{A} = \mathrm{diag}(A_{1}, A_{2}, \dots, A_{N}) +
+\mathbf{Q} \otimes \mathbf{I}_{I} ,
 $$
 
 where each asset block $A_j$ is tridiagonal in $a$ at the current consumption rule and the income-switching block adds the Poisson jumps from $Q$ at every asset level.
@@ -149,7 +148,7 @@ The HJB is then advanced by an implicit pseudo-time step,
 
 $$
 \big[(1/\Delta + \rho)  \mathbf{I} - \mathbf{A}\big]  V^{n+1}
-\,=\, u(c^{n}) + V^{n} / \Delta ,
+= u(c^{n}) + V^{n} / \Delta ,
 $$
 
 which is unconditionally stable because the left-hand matrix is strictly diagonally dominant with positive diagonal.

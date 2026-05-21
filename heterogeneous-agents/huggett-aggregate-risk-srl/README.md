@@ -16,21 +16,29 @@ The household enters period $t$ with bond holdings $b_t \ge \underline b$,
 	idiosyncratic income state $y_t$, aggregate income state $z_t$, and net
 	interest rate $r_t$. Current resources are
 
-	$$x_t = \exp(z_t)y_t + (1+r_t)b_t.$$
+$$
+x_t = \exp(z_t)y_t + (1+r_t)b_t.
+$$
 
 	The tabular policy is a feasible next-asset rule:
 
-	$$b_{t+1} = g_\theta(b_t,y_t,z_t,r_t) \in [\underline b, x_t - c_{\min}].$$
+$$
+b_{t+1} = g_\theta(b_t,y_t,z_t,r_t) \in [\underline b, x_t - c_{\min}].
+$$
 
 	Consumption and period utility are
 
-	$$c_t = x_t - g_\theta(b_t,y_t,z_t,r_t), \qquad u(c_t) = \frac{c_t^{1-\sigma}-1}{1-\sigma}.$$
+$$
+c_t = x_t - g_\theta(b_t,y_t,z_t,r_t), \qquad u(c_t) = \frac{c_t^{1-\sigma}-1}{1-\sigma}.
+$$
 
 	The Structural Reinforcement Learning objective is a Monte Carlo estimate of
 	expected lifetime utility, with a small ridge penalty on the policy
 	parameters to keep the tabular logits bounded:
 
-	$$J(\theta) = \mathbb{E}\left[\sum_{t=0}^{T-1}\beta^t u(c_t)\right] - \kappa\,\overline{\theta^2}, \qquad \kappa = 10^{-5}.$$
+$$
+J(\theta) = \mathbb{E}\left[\sum_{t=0}^{T-1}\beta^t u(c_t)\right] - \kappa\overline{\theta^2}, \qquad \kappa = 10^{-5}.
+$$
 
 	The penalty coefficient $\kappa$ is small relative to per-period utility, so
 	it regularizes the parameters without materially distorting the policy.
@@ -38,19 +46,25 @@ The household enters period $t$ with bond holdings $b_t \ge \underline b$,
 	For a candidate interest-rate grid point $r^\ell$, the current distribution
 	$\mu_t(b,y)$ implies aggregate desired bond holdings
 
-	$$B_t(r^\ell;\theta) = \sum_{b,y}\mu_t(b,y)g_\theta(b,y,z_t,r^\ell).$$
+$$
+B_t(r^\ell;\theta) = \sum_{b,y}\mu_t(b,y)g_\theta(b,y,z_t,r^\ell).
+$$
 
 	Zero net bond supply means $B_t(r_t;\theta)=0$. During training the
 	implementation uses a differentiable weighted root over the rate grid:
 
-	$$\omega_t^\ell = \frac{\exp[-(B_t(r^\ell;\theta)/\tau)^2]}{\sum_m \exp[-(B_t(r^m;\theta)/\tau)^2]}, \qquad r_t^{\mathrm{soft}} = \sum_\ell \omega_t^\ell r^\ell.$$
+$$
+\omega_t^\ell = \frac{\exp[-(B_t(r^\ell;\theta)/\tau)^2]}{\sum_m \exp[-(B_t(r^m;\theta)/\tau)^2]}, \qquad r_t^{\mathrm{soft}} = \sum_\ell \omega_t^\ell r^\ell.
+$$
 
 	For the reported equilibrium path, the tutorial uses the paper-style
 	interpolated market-clearing rate. If two adjacent grid points bracket zero,
 	the rate is
 
-	$$r_t = (1-\lambda_t)r^\ell + \lambda_t r^{\ell+1}, \qquad
-	\lambda_t = \frac{-B_t(r^\ell;\theta)}{B_t(r^{\ell+1};\theta)-B_t(r^\ell;\theta)}.$$
+$$
+r_t = (1-\lambda_t)r^\ell + \lambda_t r^{\ell+1}, \qquad
+	\lambda_t = \frac{-B_t(r^\ell;\theta)}{B_t(r^{\ell+1};\theta)-B_t(r^\ell;\theta)}.
+$$
 
 	Given a policy and a realized aggregate state, the cross-sectional distribution
 is advanced by a non-stochastic histogram update. Each mass point is split

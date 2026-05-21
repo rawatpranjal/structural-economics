@@ -155,7 +155,7 @@ The parameter table records the normalizations and spillover regimes. The diagno
 
 **Equilibrium diagnostics by scenario**
 
-| Scenario             |   alpha |   beta |   gamma2/gamma1 |   Max trade residual |   Max utility residual |   Common utility |   HHI |   Largest share | Solver    |
+| Scenario             |   Productivity dispersion ($\alpha$) |   Trade elasticity ($\beta$) |   Amenity ratio ($\gamma_2/\gamma_1$) |   Max trade residual |   Max utility residual |   Common utility |   HHI index |   Largest share | Solver    |
 |:---------------------|--------:|-------:|----------------:|---------------------:|-----------------------:|-----------------:|------:|----------------:|:----------|
 | Dispersion dominant  |    0.03 |  -0.12 |            0.45 |             7.11e-15 |               3.33e-16 |           1.8638 | 0.099 |           0.151 | converged |
 | Agglomeration strong |    0.12 |  -0.02 |            2.45 |             3.38e-12 |               3.05e-16 |           1.2623 | 0.297 |           0.436 | converged |

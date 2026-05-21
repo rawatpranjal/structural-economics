@@ -96,7 +96,7 @@ For t = 0, 1, ..., T - 1:
        vacant cells e in E_t where group g_i would have exposure at least tau.
   6. If C_i(t) is nonempty, draw e from C_i(t), move g_i from i to e,
        and update X_t and E_t before visiting the next agent.
-  7. Record X_{t+1}, S(t+1), and the number of moves.
+  7. Record X[t+1], S(t+1), and the number of moves.
   8. Stop if no one moves or if t + 1 = T.
 ```
 

@@ -12,15 +12,19 @@ The price satisfies an Euler equation with a conditional expectation. We solve a
 
 **Endowment process.** Let $x_t=\log y_t$ follow
 
-$$x_{t+1}=\rho x_t+\varepsilon_{t+1}, \qquad
-\varepsilon_{t+1}\sim \mathcal{N}(0,\sigma^2),\qquad |\rho|<1.$$
+$$
+x_{t+1}=\rho x_t+\varepsilon_{t+1}, \qquad
+\varepsilon_{t+1}\sim \mathcal{N}(0,\sigma^2),\qquad |\rho|<1.
+$$
 
 The process is stationary with variance $\sigma^2/(1-\rho^2)$.
 Persistence $\rho$ controls how fast dividends move back toward the mean.
 
 **Preferences.** The representative household has CRRA utility
 
-$$u(c)=\frac{c^{1-\gamma}}{1-\gamma}, \qquad u'(c)=c^{-\gamma},\qquad \gamma>0,$$
+$$
+u(c)=\frac{c^{1-\gamma}}{1-\gamma}, \qquad u'(c)=c^{-\gamma},\qquad \gamma>0,
+$$
 
 The log case is $u(c)=\log c$ as $\gamma\to 1$.
 
@@ -28,34 +32,46 @@ The log case is $u(c)=\log c$ as $\gamma\to 1$.
 A claim pays $y_{t+1}$ plus resale value $p(y_{t+1})$.
 Its price satisfies
 
-$$p(y_t)=\mathbb{E}_t\left[M_{t+1}(y_{t+1}+p(y_{t+1}))\right],
-\qquad M_{t+1}=\beta\left(\frac{y_{t+1}}{y_t}\right)^{-\gamma}.$$
+$$
+p(y_t)=\mathbb{E}_t\left[M_{t+1}(y_{t+1}+p(y_{t+1}))\right],
+\qquad M_{t+1}=\beta\left(\frac{y_{t+1}}{y_t}\right)^{-\gamma}.
+$$
 
 Equivalently,
 
-$$p(y_t)=\beta\,\mathbb{E}_t\left[
-\frac{u'(y_{t+1})}{u'(y_t)}(p(y_{t+1})+y_{t+1})\right].$$
+$$
+p(y_t)=\beta\mathbb{E}_t\left[
+\frac{u'(y_{t+1})}{u'(y_t)}(p(y_{t+1})+y_{t+1})\right].
+$$
 
 **Scaled price.** Define the marginal-utility-scaled price
 
-$$f(y)\equiv u'(y) p(y).$$
+$$
+f(y)\equiv u'(y) p(y).
+$$
 
 Multiplying the Euler equation by $u'(y_t)$ gives
 
-$$f(y)=\beta\,\mathbb{E}\left[f(y')+u'(y') y'\,\big|\,y\right].$$
+$$
+f(y)=\beta\mathbb{E}\left[f(y')+u'(y') y'\big|y\right].
+$$
 
 Here $y'$ denotes next-period endowment ($y_{t+1}$); primes denote next-period values throughout.
 
 This is a linear fixed point in $f$.
 The price and price-dividend ratio recover from
 
-$$p(y)=\frac{f(y)}{u'(y)},\qquad \frac{p(y)}{y}=\frac{f(y)}{y\,u'(y)}.$$
+$$
+p(y)=\frac{f(y)}{u'(y)},\qquad \frac{p(y)}{y}=\frac{f(y)}{yu'(y)}.
+$$
 
 **Log-utility benchmark.** When $\gamma=1$, $u'(y)y=1$.
 The recursion is $f=\beta(f+1)$ at every $y$.
 It implies the constant ratio
 
-$$\frac{p(y)}{y}=\frac{\beta}{1-\beta}.$$
+$$
+\frac{p(y)}{y}=\frac{\beta}{1-\beta}.
+$$
 
 The flat ratio gives a direct check on the numerical solution.
 
@@ -68,7 +84,7 @@ The flat ratio gives a direct check on the numerical solution.
 | $\sigma$ | 0.10 | Innovation standard deviation in log dividends |
 | Stationary $\mathrm{sd}(\log y)$ | 0.2294 | $\sigma/\sqrt{1-\rho^2}$ |
 | $\gamma$ | 2.0 | Baseline CRRA risk aversion |
-| Coarse grid | 120 log-endowment nodes on $[\pm 5\,\mathrm{sd}(\log y)]$ | Tutorial solution |
+| Coarse grid | 120 log-endowment nodes on $[\pm 5\mathrm{sd}(\log y)]$ | Tutorial solution |
 | Quadrature | 21 Gauss-Hermite nodes for $\varepsilon$ | Conditional expectation |
 | Benchmark | 900 grid nodes, 45 quadrature nodes | Fine-grid check |
 | Stopping rule | $\|f_{n+1}-f_n\|_\infty < 10^{-9}$ | Fixed-point tolerance |
@@ -79,7 +95,9 @@ The flat ratio gives a direct check on the numerical solution.
 
 The update operator is
 
-$$(Tf)(y)=\beta\,\mathbb{E}\left[f(y')+u'(y')y'\,\big|\,y\right]$$
+$$
+(Tf)(y)=\beta\mathbb{E}\left[f(y')+u'(y')y'\big|y\right]
+$$
 
 This operator is a $\beta$-contraction. The run stops when sup-norm changes fall below $10^{-9}$.
 
@@ -92,21 +110,21 @@ Inputs   beta, rho, sigma, gamma; log-endowment grid X = {x_i};
            tolerance epsilon
 Outputs  scaled price f(x_i), price p(y_i), price-dividend ratio p/y
 
-Precompute   x'_{ij} <- rho * x_i + eps_j                  # next-state nodes
-             y'_{ij} <- exp(x'_{ij})
-             d_{ij}  <- (y'_{ij})^{1 - gamma}              # forcing term u'(y') y'
+Precompute   x'[ij] <- rho * x_i + eps_j                  # next-state nodes
+             y'[ij] <- exp(x'[ij])
+             d[ij]  <- (y'[ij])^(1 - gamma)              # forcing term u'(y') y'
 Initialise   f_0(x_i) <- 0
 for n = 0, 1, 2, ...:
     for each x_i:
-        f_hat_{ij}  <- interp(f_n, X, x'_{ij})              # off-grid continuation
-        f_{n+1}(x_i) <- beta * sum_j w_j * (f_hat_{ij} + d_{ij})
-    err <- max_i | f_{n+1}(x_i) - f_n(x_i) |
+        f_hat[ij]  <- interp(f_n, X, x'[ij])              # off-grid continuation
+        f[n+1](x_i) <- beta * sum_j w_j * (f_hat[ij] + d[ij])
+    err <- max_i | f[n+1](x_i) - f_n(x_i) |
 stop when err < epsilon
-p(y_i)     <- f(x_i) * (y_i)^{gamma}
+p(y_i)     <- f(x_i) * (y_i)^(gamma)
 p(y_i)/y_i <- p(y_i) / y_i
 ```
 
-A fine grid with 900 state nodes and 45 quadrature nodes checks interpolation and quadrature error. The baseline $\gamma=2.0$ solution converges in **405 iterations** to sup-norm residual **9.76e-10**. On the central $\pm 3\,\mathrm{sd}(\log y)$ region, the maximum relative error is **0.011%**.
+A fine grid with 900 state nodes and 45 quadrature nodes checks interpolation and quadrature error. The baseline $\gamma=2.0$ solution converges in **405 iterations** to sup-norm residual **9.76e-10**. On the central $\pm 3\mathrm{sd}(\log y)$ region, the maximum relative error is **0.011%**.
 
 ## Results
 

@@ -13,33 +13,43 @@ The object of interest is the zero-investment boundary. It can bind far from the
 Let $K_t$ be beginning-of-period capital, $z_t$ productivity, $c_t$ consumption,
 and $K_{t+1}$ next-period capital. Output is $Y_t=z_tK_t^\alpha$ and
 
-$$\log z_{t+1}=\rho \log z_t+\varepsilon_{t+1},
-\qquad \varepsilon_{t+1}\sim N(0,\sigma_\varepsilon^2).$$
+$$
+\log z_{t+1}=\rho \log z_t+\varepsilon_{t+1},
+\qquad \varepsilon_{t+1}\sim N(0,\sigma_\varepsilon^2).
+$$
 
 The Bellman equation is
 
-$$V(K,z)=\max_{K'\in \Gamma(K,z)}\Bigg[
+$$
+V(K,z)=\max_{K'\in \Gamma(K,z)}\Bigg[
 \frac{\left[zK^\alpha+(1-\delta)K-K'\right]^{1-\sigma}}{1-\sigma}
-+\beta \sum_{z'} P(z,z')V(K',z')\Bigg].$$
++\beta \sum_{z'} P(z,z')V(K',z')\Bigg].
+$$
 
 Here $P(z,z')$ is the transition probability from productivity state $z$ to next-period state $z'$, obtained from the Tauchen discretization of the log-AR(1).
 
 The standard RBC choice set is
 
-$$\Gamma^{std}(K,z)=\{K'\geq 0:
-zK^\alpha+(1-\delta)K-K'>0\}.$$
+$$
+\Gamma^{std}(K,z)=\{K'\geq 0:
+zK^\alpha+(1-\delta)K-K'>0\}.
+$$
 
 Irreversibility adds
 
-$$I_t\equiv K_{t+1}-(1-\delta)K_t\geq 0,
+$$
+I_t\equiv K_{t+1}-(1-\delta)K_t\geq 0,
 \qquad
 \Gamma^{irr}(K,z)=\{K'\geq (1-\delta)K:
-zK^\alpha+(1-\delta)K-K'>0\}.$$
+zK^\alpha+(1-\delta)K-K'>0\}.
+$$
 
 Let $\lambda_t$ denote the multiplier on irreversible investment.
 The kink is summarized by
 
-$$\lambda_t\geq 0,\qquad I_t\geq 0,\qquad \lambda_t I_t=0.$$
+$$
+\lambda_t\geq 0,\qquad I_t\geq 0,\qquad \lambda_t I_t=0.
+$$
 
 At the deterministic steady state the constraint is slack because
 $I_{ss}=\delta K_{ss}>0$.

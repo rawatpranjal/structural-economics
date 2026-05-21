@@ -15,19 +15,25 @@ $z_t$ idiosyncratic labor efficiency. With prices $(r,w)$ and a no-borrowing
 constraint $\underline a=0$, the household chooses next-period assets
 $a_{t+1}=a'$ and consumes
 
-$$c_t = (1+r)a_t + w z_t - a_{t+1},\qquad c_t>0.$$
+$$
+c_t = (1+r)a_t + w z_t - a_{t+1},\qquad c_t>0.
+$$
 
 Preferences are time-separable CRRA,
 
-$$U_0 = \mathbb{E}_0\sum_{t=0}^{\infty}\beta^t u(c_t),\qquad
-u(c)=\frac{c^{1-\sigma}}{1-\sigma},$$
+$$
+U_0 = \mathbb{E}_0\sum_{t=0}^{\infty}\beta^t u(c_t),\qquad
+u(c)=\frac{c^{1-\sigma}}{1-\sigma},
+$$
 
 with $\beta\in(0,1)$ and $\sigma>0$.
 
 Log productivity is a Gaussian AR(1),
 
-$$\log z_{t+1} = \rho\log z_t + \varepsilon_{t+1},\qquad
-\varepsilon_{t+1}\sim\mathcal{N}(0,\sigma_\varepsilon^2),$$
+$$
+\log z_{t+1} = \rho\log z_t + \varepsilon_{t+1},\qquad
+\varepsilon_{t+1}\sim\mathcal{N}(0,\sigma_\varepsilon^2),
+$$
 
 approximated by an $N$-state Rouwenhorst chain. The grid is $\{z_j\}$, and
 $P_{jk}=\Pr(z_{t+1}=z_k\mid z_t=z_j)$. The chain matches the AR(1) variance
@@ -52,17 +58,21 @@ $$
 $$
 
 Here $i$ indexes nodes of the asset grid $\{a_i\}$. Aggregate household assets are
-$K^s(r) = \sum_{i,j} a_i\,\mu(a_i,z_j)$.
+$K^s(r) = \sum_{i,j} a_i\mu(a_i,z_j)$.
 
 **Firm.** Cobb-Douglas technology $Y = K^{\alpha} L^{1-\alpha}$ with capital
 share $\alpha$ and depreciation $\delta$ delivers competitive factor prices
 
-$$r(K) = \alpha(\tfrac{K}{L})^{\alpha-1}-\delta,\qquad
-w(K) = (1-\alpha)(\tfrac{K}{L})^{\alpha}.$$
+$$
+r(K) = \alpha(\tfrac{K}{L})^{\alpha-1}-\delta,\qquad
+w(K) = (1-\alpha)(\tfrac{K}{L})^{\alpha}.
+$$
 
 With aggregate efficient labor normalized to $L=1$, capital demand at $r$ is
 
-$$K^d(r) = (\tfrac{r+\delta}{\alpha})^{1/(\alpha-1)}.$$
+$$
+K^d(r) = (\tfrac{r+\delta}{\alpha})^{1/(\alpha-1)}.
+$$
 
 **Stationary equilibrium.** A stationary equilibrium contains price $r^{\ast}$,
 wage $w^{\ast}$, policy $g_a$, and distribution $\mu$. The household problem is
@@ -70,7 +80,9 @@ solved at $(r^{\ast},w^{\ast})$. The distribution is invariant under
 $(g_a,P)$. The capital market clears, $K^s(r^{\ast}) = K^d(r^{\ast})$, with
 household capital supply
 
-$$K^s(r^{\ast}) = \sum_{i,j} a_i\,\mu(a_i,z_j).$$
+$$
+K^s(r^{\ast}) = \sum_{i,j} a_i\mu(a_i,z_j).
+$$
 
 Bisection stops once the relative gap falls below tolerance, so the run delivers
 $K^s(r^{\ast}) \approx K^d(r^{\ast})$ rather than exact equality. The diagnostics

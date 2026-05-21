@@ -3,7 +3,7 @@
 
 The household saves against labor-income risk under a borrowing limit. The
 method iterates the marginal continuation value
-$W_a(a) = R\\,\\mathbb{E}_y\\,u'(c(a,y))$. The Euler equation then recovers the
+$W_a(a) = R\ \\mathbb{E}_y\ u'(c(a,y))$. The Euler equation then recovers the
 household policy at each asset-income state.
 """
 
@@ -456,10 +456,10 @@ def main() -> None:
              linewidth=1.2, alpha=0.85, label=r"$W_a(a)$, fine-grid ref")
     ax2.plot(asset_grid, R * u_prime_local(eei["consumption"][:, low]),
              linestyle=":", linewidth=1.2, color="steelblue", alpha=0.85,
-             label=r"$R\,u'(c(a, y_1))$")
+             label=r"$R u'(c(a, y_1))$")
     ax2.plot(asset_grid, R * u_prime_local(eei["consumption"][:, high]),
              linestyle=":", linewidth=1.2, color="indianred", alpha=0.85,
-             label=r"$R\,u'(c(a, y_{n_y}))$")
+             label=r"$R u'(c(a, y_{n_y}))$")
     ax2.set_xlabel("Assets $a$")
     ax2.set_ylabel(r"Marginal continuation value")
     ax2.set_title("The Iterated Object: $W_a(a)$")

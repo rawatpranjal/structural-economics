@@ -13,34 +13,44 @@ The steady state gives the long-run benchmark. A global RBC grid traces the savi
 Let $K_t$ be aggregate capital at the start of period $t$, $z_t$ aggregate
 TFP, $c_t$ consumption, and $K_{t+1}$ next-period capital. Preferences are
 
-$$\mathbb{E}_0 \sum_{t=0}^{\infty} \beta^t
-\frac{c_t^{1-\sigma}}{1-\sigma}, \qquad \sigma>0,$$
+$$
+\mathbb{E}_0 \sum_{t=0}^{\infty} \beta^t
+\frac{c_t^{1-\sigma}}{1-\sigma}, \qquad \sigma>0,
+$$
 
 with Cobb-Douglas output $Y_t=z_t K_t^\alpha$. Productivity follows
 
-$$\log z_{t+1}=\rho \log z_t+\varepsilon_{t+1},
-\qquad \varepsilon_{t+1}\sim N(0,\sigma_\varepsilon^2).$$
+$$
+\log z_{t+1}=\rho \log z_t+\varepsilon_{t+1},
+\qquad \varepsilon_{t+1}\sim N(0,\sigma_\varepsilon^2).
+$$
 
 The government rebate means aggregate feasibility is the usual RBC resource
 constraint,
 
-$$c_t + K_{t+1} = z_t K_t^\alpha + (1-\delta)K_t.$$
+$$
+c_t + K_{t+1} = z_t K_t^\alpha + (1-\delta)K_t.
+$$
 
 The tax appears in the household Euler equation:
 
-$$c_t^{-\sigma} =
+$$
+c_t^{-\sigma} =
 \beta \mathbb{E}_t\left[
 c_{t+1}^{-\sigma}
 \left((1-\tau_k)\alpha z_{t+1}K_{t+1}^{\alpha-1}+1-\delta\right)
-\right].$$
+\right].
+$$
 
 Thus the wedge changes the return to saving but not the goods available to the
 economy in a given period.
 
 At $z=1$, the exact deterministic steady state is
 
-$$K_{ss}(\tau_k)=
-\left(\frac{(1-\tau_k)\alpha}{1/\beta-1+\delta}\right)^{1/(1-\alpha)},$$
+$$
+K_{ss}(\tau_k)=
+\left(\frac{(1-\tau_k)\alpha}{1/\beta-1+\delta}\right)^{1/(1-\alpha)},
+$$
 
 with $Y_{ss}=K_{ss}^{\alpha}$, $C_{ss}=Y_{ss}-\delta K_{ss}$, and
 tax revenue $T_{ss}=\tau_k \alpha Y_{ss}$.
@@ -75,7 +85,7 @@ Initialize V_0(z,K)
 repeat:
     for each state (z_i,K_m):
         choose K' on the grid to maximize u(c) + beta * sum_j P_ij V_n(z_j,K')
-        record V_{n+1}, g_K, and g_c
+        record V[n+1], g_K, and g_c
 until the sup-norm value update is below epsilon
 repeat Euler refinement:
     for each state (z_i,K_m):

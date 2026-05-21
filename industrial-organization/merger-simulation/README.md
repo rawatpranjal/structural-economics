@@ -21,15 +21,21 @@ The three layers stack on the same observed market.
 Let firms be indexed by $f=1,\ldots,F$ with market shares $s_f$ summing to one.
 The Herfindahl-Hirschman Index is
 
-$$\text{HHI}=10{,}000\sum_{f=1}^{F}s_f^2.$$
+$$
+\text{HHI}=10{,}000\sum_{f=1}^{F}s_f^2.
+$$
 
 The associated effective number of equal-sized firms is
 
-$$N_{\text{eff}}=\frac{1}{\sum_f s_f^2}=\frac{10{,}000}{\text{HHI}}.$$
+$$
+N_{\text{eff}}=\frac{1}{\sum_f s_f^2}=\frac{10{,}000}{\text{HHI}}.
+$$
 
 If firms $a$ and $b$ merge while quantities are held fixed,
 
-$$\Delta\text{HHI}=10{,}000\left[(s_a+s_b)^2-s_a^2-s_b^2\right]=20{,}000\,s_a s_b.$$
+$$
+\Delta\text{HHI}=10{,}000\left[(s_a+s_b)^2-s_a^2-s_b^2\right]=20{,}000s_a s_b.
+$$
 
 Worked example. Take three firms with shares $(0.5, 0.3, 0.2)$. The HHI is
 $10{,}000(0.25+0.09+0.04)=3{,}800$. The effective firm count is
@@ -46,18 +52,24 @@ There are $J$ inside products. Product $j$ has price $p_j$, marginal cost $c_j$,
 quantity or share $q_j(p)$, and owner $f(j)$. The ownership matrix records
 which products belong to the same firm:
 
-$$\Omega_{jk}=\mathbf 1\{f(j)=f(k)\}.$$
+$$
+\Omega_{jk}=\mathbf 1\{f(j)=f(k)\}.
+$$
 
 Worked example. Take $J=4$ products with pre-merger owners $f^{\text{pre}}=(1,2,3,4)$,
 so each product is its own single-product firm:
 
-$$\Omega^{\text{pre}}=\begin{pmatrix}1&0&0&0\\0&1&0&0\\0&0&1&0\\0&0&0&1\end{pmatrix}.$$
+$$
+\Omega^{\text{pre}}=\begin{pmatrix}1&0&0&0\\0&1&0&0\\0&0&1&0\\0&0&0&1\end{pmatrix}.
+$$
 
 Now firm 1 buys firm 2. The post-merger owners are $f^{\text{post}}=(1,1,3,4)$.
 Products 1 and 2 share an owner. The off-diagonal entries that link them switch
 on:
 
-$$\Omega^{\text{post}}=\begin{pmatrix}1&1&0&0\\1&1&0&0\\0&0&1&0\\0&0&0&1\end{pmatrix}.$$
+$$
+\Omega^{\text{post}}=\begin{pmatrix}1&1&0&0\\1&1&0&0\\0&0&1&0\\0&0&0&1\end{pmatrix}.
+$$
 
 Those two new ones in the upper-left block are the entire merger as the model
 sees it. Every price effect that follows is the consequence of switching them
@@ -65,11 +77,15 @@ on.
 
 A multi-product Bertrand firm chooses each price to satisfy
 
-$$0=q_j(p)+\sum_{k=1}^J \Omega_{jk}(p_k-c_k)\frac{\partial q_k(p)}{\partial p_j}, \qquad j=1,\ldots,J.$$
+$$
+0=q_j(p)+\sum_{k=1}^J \Omega_{jk}(p_k-c_k)\frac{\partial q_k(p)}{\partial p_j}, \qquad j=1,\ldots,J.
+$$
 
 With $\Delta_{kj}(p)=\partial q_k(p)/\partial p_j$, the vector form is
 
-$$q(p)+\underbrace{(\Omega\circ \Delta(p)^\top)}_{\text{within-firm price externality}}(p-c)=0.$$
+$$
+q(p)+\underbrace{(\Omega\circ \Delta(p)^\top)}_{\text{within-firm price externality}}(p-c)=0.
+$$
 
 Here $\circ$ is the element-wise (Hadamard) product. Multiplying by $\Omega$
 knocks out cross-firm price externalities. Only co-owned products show up in
@@ -90,30 +106,40 @@ as closely as one coefficient allows.
 
 Logit shares are
 
-$$s_j^{L}(p)=\frac{\exp(\xi_j+\alpha p_j)}{1+\sum_{\ell=1}^J \exp(\xi_\ell+\alpha p_\ell)}, \qquad \alpha<0,$$
+$$
+s_j^{L}(p)=\frac{\exp(\xi_j+\alpha p_j)}{1+\sum_{\ell=1}^J \exp(\xi_\ell+\alpha p_\ell)}, \qquad \alpha<0,
+$$
 
 where $\xi_j$ is the mean indirect utility of product $j$ from non-price
 characteristics. The closed-form Jacobian is
 
-$$\Delta^{L}_{jk}=\alpha\,s_j(\mathbf 1\{j=k\}-s_k).$$
+$$
+\Delta^{L}_{jk}=\alphas_j(\mathbf 1\{j=k\}-s_k).
+$$
 
 Opened element by element for $J=4$ this reads
 
-$$\Delta^{L}=\alpha\begin{pmatrix}s_1(1-s_1)&-s_1 s_2&-s_1 s_3&-s_1 s_4\\-s_1 s_2&s_2(1-s_2)&-s_2 s_3&-s_2 s_4\\-s_1 s_3&-s_2 s_3&s_3(1-s_3)&-s_3 s_4\\-s_1 s_4&-s_2 s_4&-s_3 s_4&s_4(1-s_4)\end{pmatrix}.$$
+$$
+\Delta^{L}=\alpha\begin{pmatrix}s_1(1-s_1)&-s_1 s_2&-s_1 s_3&-s_1 s_4\\-s_1 s_2&s_2(1-s_2)&-s_2 s_3&-s_2 s_4\\-s_1 s_3&-s_2 s_3&s_3(1-s_3)&-s_3 s_4\\-s_1 s_4&-s_2 s_4&-s_3 s_4&s_4(1-s_4)\end{pmatrix}.
+$$
 
 The diagonal carries the own-price effect. Off-diagonals carry cross-price
 effects. The whole matrix scales with $\alpha$.
 
 Linear demand is
 
-$$q_j^{A}(p)=a_j-\sum_{k=1}^J B_{jk}p_k, \qquad \Delta^{A}=-B,$$
+$$
+q_j^{A}(p)=a_j-\sum_{k=1}^J B_{jk}p_k, \qquad \Delta^{A}=-B,
+$$
 
 so $\Delta^{A}$ does not depend on $p$. Here $a_j$ is the demand intercept and
 $B_{jk}$ is the price-response matrix.
 
 Log-linear demand is
 
-$$\log q_j^{E}(p)=a_j^E+\sum_{k=1}^J E_{jk}\log p_k, \qquad \Delta^{E}_{jk}=q_j\,E_{jk}/p_k,$$
+$$
+\log q_j^{E}(p)=a_j^E+\sum_{k=1}^J E_{jk}\log p_k, \qquad \Delta^{E}_{jk}=q_jE_{jk}/p_k,
+$$
 
 so the elasticities $E_{jk}$ are constant and the slopes scale with quantities
 and inverse prices.
@@ -122,18 +148,24 @@ and inverse prices.
 
 The local diversion ratio from product $j$ to product $k$ is
 
-$$D_{j\to k}=-\frac{\partial q_k(p)/\partial p_j}{\partial q_j(p)/\partial p_j}, \qquad j\neq k.$$
+$$
+D_{j\to k}=-\frac{\partial q_k(p)/\partial p_j}{\partial q_j(p)/\partial p_j}, \qquad j\neq k.
+$$
 
 Under simple logit it collapses to $D_{j\to k}=s_k/(1-s_j)$ and depends only on
 shares and the outside option.
 
 For products that become newly co-owned after the merger,
 
-$$\text{UPP}_j=\sum_{k:\Omega^{\text{post}}_{jk}=1,\ \Omega^{\text{pre}}_{jk}=0} D_{j\to k}(p_k-c_k),$$
+$$
+\text{UPP}_j=\sum_{k:\Omega^{\text{post}}_{jk}=1,\ \Omega^{\text{pre}}_{jk}=0} D_{j\to k}(p_k-c_k),
+$$
 
 with
 
-$$\text{GUPPI}_j=\frac{\text{UPP}_j}{p_j}, \qquad \text{CMCR}_j=\frac{\text{UPP}_j}{c_j}.$$
+$$
+\text{GUPPI}_j=\frac{\text{UPP}_j}{p_j}, \qquad \text{CMCR}_j=\frac{\text{UPP}_j}{c_j}.
+$$
 
 GUPPI is a first-order screen evaluated at observed prices. It says how much
 upward pricing pressure the merger generates locally. CMCR reports the
@@ -185,7 +217,7 @@ HHI squares the ownership shares. The largest firm dominates the index. Two smal
 Inputs:  firm shares s = (s_1, ..., s_F), candidate merger pair (a, b)
 Outputs: HHI, N_eff, delta-HHI, structural classification
 
-1. HHI       = 10000 * sum_{f=1..F} s_f^2
+1. HHI       = 10000 * sum[f=1..F] s_f^2
 2. N_eff     = 10000 / HHI
 3. delta-HHI = 20000 * s_a * s_b
 4. classify HHI:  < 1000        -> Unconcentrated
@@ -206,7 +238,7 @@ Outputs: alpha, xi, mc, post-merger prices p^post and shares s^post
 1. c_1   = p_1 * (1 - m_1)
 2. alpha = -1 / [(1 - s_1) * (p_1 - c_1)]                  # single-product FOC
 3. xi_j  = log(s_j / s_0) - alpha * p_j,    s_0 = 1 - sum_j s_j
-4. mc    = p + (Omega^pre .* Delta(p)^T)^{-1} s            # multi-product FOC inversion
+4. mc    = p + (Omega^pre .* Delta(p)^T)^(-1) s            # multi-product FOC inversion
 5. build Omega^post from f^post
 6. solve  s(p) + (Omega^post .* Delta(p)^T) (p - mc) = 0   # fsolve, warm-start p^0 = 1.1 * p
 7. (optional)  mc' = mc with merging-product entries scaled by (1 - eps); resolve
@@ -224,10 +256,10 @@ Outputs: per-system screens, post-merger prices, welfare, efficiency frontier
 
 1. for each demand system d in {L (logit), A (linear), E (log-linear)}:
      a. fit theta_d so that q_d(p; theta_d) = s
-     b. mc_d   = p + (Omega^pre .* Delta_d(p)^T)^{-1} q_d(p)         # FOC inversion
+     b. mc_d   = p + (Omega^pre .* Delta_d(p)^T)^(-1) q_d(p)         # FOC inversion
      c. D_d[j, k] = -Delta_d[k, j] / Delta_d[j, j],   j != k         # diversion
      d. for each j newly co-owned:
-          UPP_j   = sum_{k newly co-owned} D_d[j, k] * (p_k - mc_d,k)
+          UPP_j   = sum[k newly co-owned] D_d[j, k] * (p_k - mc_d,k)
           GUPPI_j = UPP_j / p_j,    CMCR_j = UPP_j / mc_d,j
      e. solve  q_d(p^post) + (Omega^post .* Delta_d(p^post)^T)
                               * (p^post - mc_d) = 0                 # fsolve
@@ -256,7 +288,7 @@ For symmetric firms, HHI is exactly $10{,}000/N$. Most of the index movement hap
 
 <img src="figures/hhi-vs-nfirms.png" alt="HHI as a function of the number of equal-sized firms" width="80%">
 
-The merger bars are pure index arithmetic. The same formula, $20{,}000\,s_a s_b$, makes a 40-30 merger far larger than a merger of two small firms. That scale is why agencies reach for HHI before estimating demand.
+The merger bars are pure index arithmetic. The same formula, $20{,}000s_a s_b$, makes a 40-30 merger far larger than a merger of two small firms. That scale is why agencies reach for HHI before estimating demand.
 
 <img src="figures/delta-hhi.png" alt="HHI before and after merging the two largest firms" width="80%">
 
@@ -264,7 +296,7 @@ The effective firm count exposes asymmetry. A 70-10-10-10 market has four firms.
 
 **HHI for example market structures**
 
-| Market Structure                |   N Firms |   Top Share (%) |   HHI |   Effective N | Classification          |
+| Market Structure                |   N Firms |   Top Share (%) |   HHI index |   Effective N | Classification          |
 |:--------------------------------|----------:|----------------:|------:|--------------:|:------------------------|
 | Perfect competition (100 firms) |       100 |               1 |   100 |        100    | Unconcentrated          |
 | 10 equal firms                  |        10 |              10 |  1000 |         10    | Moderately Concentrated |

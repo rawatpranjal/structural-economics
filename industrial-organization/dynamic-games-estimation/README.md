@@ -17,7 +17,9 @@ $q_j$ is rival quality. Both qualities lie on the four-rung ladder
 $\{0,1,2,3\}$. Firm $i$ chooses $a_i\in\{0,1\}$, where one means invest.
 Flow payoff is
 
-$$\pi_i(\omega,a_i;\theta) = \theta_q q_i - \theta_c a_i + \theta_g \max\{q_j-q_i,0\} a_i .$$
+$$
+\pi_i(\omega,a_i;\theta) = \theta_q q_i - \theta_c a_i + \theta_g \max\{q_j-q_i,0\} a_i .
+$$
 
 The gap term raises the investment payoff when the rival leads.
 
@@ -27,24 +29,32 @@ $\hat P$ and an expected flow payoff $\bar\pi_\theta(\omega;\hat p)$. Integratin
 out the logit action shock adds the expected shock value to the policy-weighted
 payoff, so $\bar\pi_\theta$ is
 
-$$\bar\pi_\theta(\omega;\hat p) = (1-\hat p) \pi_i(\omega,0;\theta) + \hat p\,\pi_i(\omega,1;\theta) + H(\hat p) + \gamma,$$
+$$
+\bar\pi_\theta(\omega;\hat p) = (1-\hat p) \pi_i(\omega,0;\theta) + \hat p\pi_i(\omega,1;\theta) + H(\hat p) + \gamma,
+$$
 
 where $H(\hat p) = -\hat p\log\hat p-(1-\hat p)\log(1-\hat p)$ is the Bernoulli
 entropy of the investment rate and $\gamma$ is the Euler-Mascheroni constant.
 The $H(\hat p)+\gamma$ term is the expected value of the Type-I extreme value
 shock under the first-stage policy. The value under that policy is
 
-$$W_\theta = \bar\pi_\theta(\hat p) + \beta \hat P W_\theta.$$
+$$
+W_\theta = \bar\pi_\theta(\hat p) + \beta \hat P W_\theta.
+$$
 
 Choice-specific values use the rival's first-stage CCP and $W_\theta$:
 
-$$v_\theta(a_i,\omega) = \pi_i(\omega,a_i;\theta) + \beta E_{\hat p_j}\left[W_\theta(\omega')\mid \omega,a_i\right].$$
+$$
+v_\theta(a_i,\omega) = \pi_i(\omega,a_i;\theta) + \beta E_{\hat p_j}\left[W_\theta(\omega')\mid \omega,a_i\right].
+$$
 
 The second-stage pseudo likelihood scores observed investment choices, where
 $d_{it}\in\{0,1\}$ is the observed investment indicator for firm $i$ at period
 $t$ and $\Lambda(\cdot)$ is the logistic CDF:
 
-$$\ell(\theta)=\sum_{i,t} d_{it}\log \Lambda[v_\theta(1,\omega_{it})-v_\theta(0,\omega_{it})] +(1-d_{it})\log\{1-\Lambda[v_\theta(1,\omega_{it})-v_\theta(0,\omega_{it})]\}.$$
+$$
+\ell(\theta)=\sum_{i,t} d_{it}\log \Lambda[v_\theta(1,\omega_{it})-v_\theta(0,\omega_{it})] +(1-d_{it})\log\{1-\Lambda[v_\theta(1,\omega_{it})-v_\theta(0,\omega_{it})]\}.
+$$
 
 ## Model Setup
 

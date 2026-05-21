@@ -36,15 +36,15 @@
 - **Original claim (verbatim, buggy):** The Equations section used `$\sigma$` for both the DGP scaling vector and the HP-cycle standard deviation without distinguishing notation.
 - **Current run.py evidence (verbatim):**
   ```
-  y_t=\mu+\sigma^{y}\odot s_t.
+  y_t=\mu+\sigma^(y)\odot s_t.
   ```
   `run.py:250`
   ```
-  The vector $s_t$ is a standardized latent state and $\sigma^{y}$ is the 4-vector of series standard deviations (3.0, 1.5, 1.5, 3.0). It is a separate quantity from the HP-cycle standard deviation $\sigma^{c}_j = \mathrm{sd}(c_{j,t})$ defined below; the superscripts $y$ and $c$ keep the DGP scaling and the cycle moment distinct.
+  The vector s_t is a standardized latent state and \sigma^(y) is the 4-vector of series standard deviations (3.0, 1.5, 1.5, 3.0). It is a separate quantity from the HP-cycle standard deviation \sigma^(c)_j = \mathrm{sd}(c[j,t]) defined below; the superscripts y and c keep the DGP scaling and the cycle moment distinct.
   ```
   `run.py:253`
   ```
-  \sigma^{c}_j=\mathrm{sd}(c_{j,t}),\qquad
+  \sigma^(c)_j=\mathrm{sd}(c[j,t]),\qquad
   ```
   `run.py:270`
 - **README evidence (verbatim):** `\sigma^{y}` at `README.md:28`; `\sigma^{c}_j` at `README.md:48`; prose distinguishing the two at `README.md:31`. HOLDS.

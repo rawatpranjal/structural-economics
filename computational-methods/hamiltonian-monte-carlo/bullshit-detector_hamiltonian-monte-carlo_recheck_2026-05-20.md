@@ -121,7 +121,13 @@
 
 ### Finding 6: Acceptance formula — HOLDS
 
-- **Claim source (verbatim):** "$$\alpha(\theta_t, r;\, \theta^{\star}, r^{\star}) = \min\Big\lbrace 1,\, \exp\big(H(\theta_t, r) - H(\theta^{\star}, r^{\star})\big) \Big\rbrace$$" — `README.md:122-124`
+- **Claim source (verbatim):** "
+
+$$
+\alpha(\theta_t, r; \theta^{\star}, r^{\star}) = \min\Big\lbrace 1, \exp\big(H(\theta_t, r) - H(\theta^{\star}, r^{\star})\big) \Big\rbrace
+$$
+
+" — `README.md:122-124`
 - **Code evidence:** `run.py:153-158`:
   ```python
   H_current = -log_target(q_current) + 0.5 * float(np.sum(p_current ** 2))

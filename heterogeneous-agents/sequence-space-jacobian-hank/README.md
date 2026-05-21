@@ -18,26 +18,26 @@ taxes), the budget constraint and the intra- and inter-temporal first-order
 conditions are
 
 $$
-c_t + a_{t+1} = (1 + r_t)  a_t + w_t\, e\, n_t + e\, T_t, \qquad a_{t+1} \geq 0,
+c_t + a_{t+1} = (1 + r_t)  a_t + w_t e n_t + e T_t, \qquad a_{t+1} \geq 0,
 $$
 
 $$
-v_{\varphi}  n_t^{1/\varphi} = w_t\, e\, c_t^{-1/\eta},
+v_{\varphi}  n_t^{1/\varphi} = w_t e c_t^{-1/\eta},
 \qquad
-c_t^{-1/\eta} = \beta\, \mathbb{E}_t\lbrack (1 + r_{t+1})  c_{t+1}^{-1/\eta} \rbrack,
+c_t^{-1/\eta} = \beta \mathbb{E}_t\lbrack (1 + r_{t+1})  c_{t+1}^{-1/\eta} \rbrack,
 $$
 
 where $\eta$ is the elasticity of intertemporal substitution and $\varphi$ is
 the Frisch elasticity of labor supply.
 
-**Firm block.** A representative final-good firm produces $Y_t = Z_t\, L_t$
+**Firm block.** A representative final-good firm produces $Y_t = Z_t L_t$
 from labor with constant returns. Labor demand $L_t = Y_t / Z_t$ follows from
 the production function. Real marginal cost and firm profits are
 
 $$
 mc_t = w_t / Z_t,
 \qquad
-\mathrm{Div}_t = Y_t - w_t\, L_t = Y_t\, (1 - mc_t).
+\mathrm{Div}_t = Y_t - w_t L_t = Y_t (1 - mc_t).
 $$
 
 Monopolistic intermediate firms set prices subject to Rotemberg adjustment
@@ -45,7 +45,7 @@ costs. To first order in deviations from the zero-inflation steady state
 $mc^{\ast} = 1 / \mu^{\ast}$, the New Keynesian Phillips curve is
 
 $$
-\pi_t = \frac{1}{1 + r^{\ast}}  \pi_{t+1} + \kappa\, (mc_t - 1/\mu^{\ast}),
+\pi_t = \frac{1}{1 + r^{\ast}}  \pi_{t+1} + \kappa (mc_t - 1/\mu^{\ast}),
 $$
 
 where the discount factor $1/(1 + r^{\ast})$ comes from real-rate discounting
@@ -64,18 +64,18 @@ i^{\ast}_t = i^{\ast} + v_t,
 $$
 
 Government debt $B$ is constant and the fiscal block balances the budget with
-a lump-sum tax $\mathrm{Tax}_t = r_t\, B$. The per-skill transfer is
+a lump-sum tax $\mathrm{Tax}_t = r_t B$. The per-skill transfer is
 
 $$
-T_t = \mathrm{Div}_t - \mathrm{Tax}_t = Y_t\,(1 - w_t / Z_t) - r_t\, B.
+T_t = \mathrm{Div}_t - \mathrm{Tax}_t = Y_t(1 - w_t / Z_t) - r_t B.
 $$
 
 **Sequence-space equilibrium map.** Stack T periods of unknowns
 $U = (\pi, w, Y)$ and shocks $Z = v$. Three target equations -- NKPC residual,
 asset-market clearing $A_t = B$, and goods-market clearing $Y_t = C_t$ -- close
 the system; the labor market then clears by Walras' law. Linearizing,
-$H_U\, \mathrm{d}U + H_Z\, \mathrm{d}Z = 0$, so
-$\mathrm{d}U = -H_U^{-1} H_Z\, \mathrm{d}Z$.
+$H_U \mathrm{d}U + H_Z \mathrm{d}Z = 0$, so
+$\mathrm{d}U = -H_U^{-1} H_Z \mathrm{d}Z$.
 
 **Household-block Jacobian.** Nine matrices of shape $(T, T)$ collect the
 partial derivatives of the three household aggregates with respect to the
@@ -86,7 +86,7 @@ J^{Y, x}_{t, s} = \frac{\partial Y_t}{\partial x_s}, \qquad
 Y \in \lbrace C, A, N^E \rbrace, \quad x \in \lbrace r, w, T \rbrace,
 $$
 
-where $N^E_t = \int e\, n_t(a, e)  \mathrm{d}\mu_t$ is aggregate effective
+where $N^E_t = \int e n_t(a, e)  \mathrm{d}\mu_t$ is aggregate effective
 labor supply. Building these matrices via the fake-news algorithm is the
 algorithmic content of SSJ.
 
@@ -144,7 +144,7 @@ during a forward distribution sweep:
 Algorithm: fake-news household-block Jacobian
 Inputs    steady-state Va_bar, policies c_bar, n_bar, a'_bar; distribution
           D_bar; horizon T; input x in {r, w, T}
-Output    J^{C, x}[t, s], J^{A, x}[t, s], J^{NE, x}[t, s] for t, s = 0..T-1
+Output    J^(C, x)[t, s], J^(A, x)[t, s], J^(NE, x)[t, s] for t, s = 0..T-1
 
 # Step 1: one-shot perturbation, O(|state|)
 out0 = egm_step(Va_bar, x = x_bar + eps, other inputs at steady state)
@@ -160,19 +160,19 @@ for s = 0..T-1:
     delta_D <- 0
     for t = 0..T-1:
         (dc_t, dn_t, da_t) = (dc[s - t], dn[s - t], da[s - t]) if t <= s else 0
-        J^{C, x}[t, s]  = <dc_t, D_bar> + <c_bar, delta_D>
-        J^{A, x}[t, s]  = <da_t, D_bar> + <a'_bar, delta_D>
-        J^{NE, x}[t, s] = <e dn_t, D_bar> + <e n_bar, delta_D>
+        J^(C, x)[t, s]  = <dc_t, D_bar> + <c_bar, delta_D>
+        J^(A, x)[t, s]  = <da_t, D_bar> + <a'_bar, delta_D>
+        J^(NE, x)[t, s] = <e dn_t, D_bar> + <e n_bar, delta_D>
         delta_D <- bar Lambda delta_D + Tau(da_t) D_bar
 ```
 
 The two-step structure mirrors Auclert, Bardóczy, Rognlie, and Straub (2021):
 anticipation curves are translation-invariant, so they are computed once by a
-single $O(T\,|state|)$ backward iteration. The forward distribution sweep
+single $O(T|state|)$ backward iteration. The forward distribution sweep
 above then runs $T$ separate passes of length $T$, restarting $delta_D$ for
-each pulse date, so the sweep costs $O(T^2\,|state|)$ in total. The full SSJ
+each pulse date, so the sweep costs $O(T^2|state|)$ in total. The full SSJ
 library uses an additional Toeplitz trick that drops the overall cost to
-$O(T\,|state|)$; the algorithm above is the simplest version that still gives
+$O(T|state|)$; the algorithm above is the simplest version that still gives
 the correct Jacobians.
 
 **Firm, NKPC, fiscal, and monetary blocks.** All four are closed-form

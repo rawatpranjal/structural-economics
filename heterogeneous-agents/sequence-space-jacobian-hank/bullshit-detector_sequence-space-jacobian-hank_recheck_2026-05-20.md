@@ -34,7 +34,7 @@
 ### Finding 2: Forward-sweep complexity prose -- RESOLVED
 
 - **Original claim (verbatim):** "anticipation curves are translation-invariant, so they are computed once and then convolved with the time-varying input path during the forward sweep." (implied O(T|state|) total)
-- **Fixed prose (verbatim):** "The forward distribution sweep above then runs $T$ separate passes of length $T$, restarting $delta_D$ for each pulse date, so the sweep costs $O(T^2\,|state|)$ in total." -- `README.md:172-173` (recheck); `run.py:1155` contains `"O(T^2"`.
+- **Fixed prose (verbatim):** "The forward distribution sweep above then runs $T$ separate passes of length $T$, restarting $delta_D$ for each pulse date, so the sweep costs $O(T^2|state|)$ in total." -- `README.md:172-173` (recheck); `run.py:1155` contains `"O(T^2"`.
 - **Code evidence:** `grep -n "O(T^2" run.py` returns line 1155.
 - **Category:** HOLDS
 - **Violated-invariant test:** `test_finding2_violated_invariant` FAILS (fix applied).

@@ -99,7 +99,7 @@
 
 - **Claim source 1 (verbatim):** "Modified policy iteration applies the policy contraction $T_{\pi}$ a total of $k$ times per outer step and shrinks the error roughly by $\beta^{k+1}$." — `README.md:252` (Takeaway)
 - **Claim source 2 (verbatim):** "MPI with $k = 5$ inner sweeps drops faster because each outer step composes the policy contraction $T_{\pi}$ a total of $k+1$ times." — `README.md:219` (Results/Convergence)
-- **Claim source 3 (verbatim):** "$V_{n+1} = T_{\pi_{n+1}}^{\,k} V_n$" — `README.md:84` (Equations)
+- **Claim source 3 (verbatim):** "$V_{n+1} = T_{\pi_{n+1}}^{k} V_n$" — `README.md:84` (Equations)
 - **Code evidence:** Code does `bellman_step` (one T application) + `k_inner` eval sweeps = k+1 total T-like applications. The convergence prose (README:219) is consistent with the code. The Equations section (README:84) and Takeaway (README:252) state k, not k+1.
 - **Category:** DATA DRIFT
 - **Severity:** LOW
@@ -138,6 +138,6 @@
 
 2. **Finding 2 (DATA DRIFT):** Write a test that traces `v_eval` immediately after line 137 and checks whether it equals `v_mpi` (pseudocode expectation) or `v_imp` (code reality). Assert `np.allclose(v_eval_init, v_mpi)` FAILS on current code.
 
-3. **Finding 3 (DATA DRIFT):** Grep-based test: assert that the string "T_{\pi_{n+1}}^{\,k+1}" or equivalent appears in both the Equations section and the Takeaway section of the generated README. FAILS on current README.
+3. **Finding 3 (DATA DRIFT):** Grep-based test: assert that the string "T_{\pi_{n+1}}^{k+1}" or equivalent appears in both the Equations section and the Takeaway section of the generated README. FAILS on current README.
 
 4. After user decides on resolution for Finding 1, hand off to `writing-plans` to draft the fix. Then `executing-plans` to apply. Re-run `python run.py` and confirm iteration counts are unchanged (since k=5 was used for results, not k=1). Re-run this skill to confirm all findings now read HOLDS.

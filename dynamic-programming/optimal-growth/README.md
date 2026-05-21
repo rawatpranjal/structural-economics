@@ -14,49 +14,65 @@ Capital $k_t$ produces output $y_t = A k_t^{\alpha}$ with $A>0$ and
 $\alpha\in(0,1)$. Capital fully depreciates each period, so the resource
 constraint is
 
-$$c_t + k_{t+1} = A k_t^{\alpha},
-\qquad c_t > 0, k_{t+1} \ge 0.$$
+$$
+c_t + k_{t+1} = A k_t^{\alpha},
+\qquad c_t > 0, k_{t+1} \ge 0.
+$$
 
 The planner maximizes discounted log utility,
 
-$$\sum_{t=0}^{\infty} \beta^{t} \log c_t,
-\qquad \beta \in (0,1),$$
+$$
+\sum_{t=0}^{\infty} \beta^{t} \log c_t,
+\qquad \beta \in (0,1),
+$$
 
 with state $k$ summarizing the entire future. The Bellman equation is
 
-$$V(k) = \max_{0 < k' < A k^{\alpha}}
-\{\, \log(A k^{\alpha}-k') + \beta\, V(k') \,\}.$$
+$$
+V(k) = \max_{0 < k' < A k^{\alpha}}
+\{ \log(A k^{\alpha}-k') + \beta V(k') \}.
+$$
 
 Let $g(k)$ denote the optimal $k'$ and $c^{\ast}(k) = A k^{\alpha} - g(k)$ the
 implied consumption. The first-order and envelope conditions deliver the
 Euler equation
 
-$$u'(c_t) = \beta\, f'(k_{t+1})  u'(c_{t+1}),
-\qquad f'(k) = \alpha A k^{\alpha-1}.$$
+$$
+u'(c_t) = \beta f'(k_{t+1})  u'(c_{t+1}),
+\qquad f'(k) = \alpha A k^{\alpha-1}.
+$$
 
 For log utility and Cobb-Douglas production, conjecture $g(k) = s A k^{\alpha}$
 with constant saving rate $s$. Substituting into the Euler equation gives
 $s = \alpha\beta$, so
 
-$$g(k) = \alpha\beta\, A\, k^{\alpha},
+$$
+g(k) = \alpha\beta A k^{\alpha},
 \qquad
-c^{\ast}(k) = (1-\alpha\beta)  A\, k^{\alpha}.$$
+c^{\ast}(k) = (1-\alpha\beta)  A k^{\alpha}.
+$$
 
 The value function is affine in $\log k$,
 
-$$V(k) = E + B\, \log k,
+$$
+V(k) = E + B \log k,
 \qquad
-B = \frac{\alpha}{1-\alpha\beta},$$
+B = \frac{\alpha}{1-\alpha\beta},
+$$
 
 with intercept
 
-$$E = \frac{1}{1-\beta}\left[\log(A(1-\alpha\beta)) +
-\frac{\beta\alpha}{1-\alpha\beta} \log(A\,\alpha\beta) \right].$$
+$$
+E = \frac{1}{1-\beta}\left[\log(A(1-\alpha\beta)) +
+\frac{\beta\alpha}{1-\alpha\beta} \log(A\alpha\beta) \right].
+$$
 
 The steady state solves $k = g(k)$, equivalently $\beta f'(k_{ss}) = 1$:
 
-$$k_{ss} = (\alpha\beta A)^{1/(1-\alpha)},
-\qquad c_{ss} = A k_{ss}^{\alpha} - k_{ss}.$$
+$$
+k_{ss} = (\alpha\beta A)^{1/(1-\alpha)},
+\qquad c_{ss} = A k_{ss}^{\alpha} - k_{ss}.
+$$
 
 ## Model Setup
 
@@ -67,24 +83,26 @@ $$k_{ss} = (\alpha\beta A)^{1/(1-\alpha)},
 | $\beta$ | 0.9 | Discount factor; pins down impatience and the saving rate |
 | $k_{ss}$ | 9.9519 | Closed-form steady-state capital $(\alpha\beta A)^{1/(1-\alpha)}$ |
 | $c_{ss}$ | 26.9071 | Steady-state consumption $A k_{ss}^{\alpha} - k_{ss}$ |
-| $k$ domain | $[0.01,  24.88]$ | Capital range; upper bound is $2.5\,k_{ss}$ |
+| $k$ domain | $[0.01,  24.88]$ | Capital range; upper bound is $2.5k_{ss}$ |
 | $N_k$ | 500 | Uniform state grid for $k$ |
 | $N_{k'}$ | 500 | Inner choice grid for $k'$ at each Bellman update |
 | Tolerance $\varepsilon$ | 1e-06 | Sup-norm convergence threshold |
 | $T_{sim}$ | 50 | Simulation horizon |
-| $k_0$ | $0.1\, k_{ss}\approx0.9952$ | Initial capital for the transition path |
+| $k_0$ | $0.1 k_{ss}\approx0.9952$ | Initial capital for the transition path |
 
 ## Solution Method
 
 Define the Bellman operator on bounded continuous functions of capital,
 
-$$(TV)(k) = \max_{0 < k' < A k^{\alpha}}\{\, \log(A k^{\alpha} - k') + \beta\, V(k') \,\}.$$
+$$
+(TV)(k) = \max_{0 < k' < A k^{\alpha}}\{ \log(A k^{\alpha} - k') + \beta V(k') \}.
+$$
 
 VFI starts from an initial value on the capital grid. At each $k_i$, the code searches over feasible $k'$ values. The feasible range is $k' \in [k_{min},  A k_i^{\alpha})$ where $k_{min}=0.01$ is the lower bound on next-period capital. It chooses the $k'$ with the highest current utility plus interpolated continuation value. The loop stops when the sup-norm change in $V$ is below $\varepsilon$.
 
 ```text
 Algorithm: Optimal-growth VFI with continuous k'
-Input : capital grid {k_i}_{i=1..N_k}, choice grid size N_{k'},
+Input : capital grid {k_i}[i=1..N_k], choice grid size N[k'],
         k_min (lower bound on k'; = 0.01), primitives (A, alpha, beta),
         utility u(c) = log c, tolerance epsilon
 Output: value V*(k_i), capital policy g(k_i)
@@ -93,13 +111,13 @@ Output: value V*(k_i), capital policy g(k_i)
       for each state k_i :
           y_i    <- A * k_i^alpha
           kp_max <- min(0.9999 * y_i, k_max)        # 0.9999 keeps c > 0 at the top node
-          kp     <- N_{k'} points uniform on [k_min, kp_max]
+          kp     <- N[k'] points uniform on [k_min, kp_max]
           c      <- y_i - kp                         # period consumption
           V_cont <- interp(V_n, kp)                  # off-grid continuation
           obj    <- log(c) + beta * V_cont
-          V_{n+1}(k_i) <- max(obj)
+          V[n+1](k_i) <- max(obj)
           g(k_i)       <- argmax(obj)
-      err <- max_i | V_{n+1}(k_i) - V_n(k_i) |
+      err <- max_i | V[n+1](k_i) - V_n(k_i) |
       stop when err < epsilon
 ```
 
@@ -115,7 +133,7 @@ The policy crosses the $45^{\circ}$ line at $k_{ss}$. Below $k_{ss}$, the planne
 
 <img src="figures/policy-function.png" alt="Capital policy $g(k)$ versus the closed-form rule $\alpha\beta A k^{\alpha}$" width="80%">
 
-Starting from $0.1\,k_{ss}$, capital rises toward the steady state. It rises fastest when capital is scarce. Consumption also rises because the saving share is constant. The maximum capital-path error is **2.39e-02**.
+Starting from $0.1k_{ss}$, capital rises toward the steady state. It rises fastest when capital is scarce. Consumption also rises because the saving share is constant. The maximum capital-path error is **2.39e-02**.
 
 <img src="figures/simulation.png" alt="Capital and consumption transitions starting from $k_0=0.9952$" width="80%">
 

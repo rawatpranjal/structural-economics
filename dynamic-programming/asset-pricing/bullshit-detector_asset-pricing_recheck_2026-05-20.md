@@ -33,7 +33,7 @@
 
 ### Finding 1 (original): convergence statistics persisted to CSV — RESOLVED
 
-- **Original claim source (verbatim):** "The baseline $\gamma=2.0$ solution converges in **405 iterations** to sup-norm residual **9.76e-10**. On the central $\pm 3\,\mathrm{sd}(\log y)$ region, the maximum relative error is **0.011%**." — `README.md:109`
+- **Original claim source (verbatim):** "The baseline $\gamma=2.0$ solution converges in **405 iterations** to sup-norm residual **9.76e-10**. On the central $\pm 3\mathrm{sd}(\log y)$ region, the maximum relative error is **0.011%**." — `README.md:109`
 
 - **Original finding:** DATA DRIFT — numbers embedded in README via f-strings only; no committed artifact held them.
 
