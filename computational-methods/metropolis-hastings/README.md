@@ -10,146 +10,146 @@ The second method is random-walk Metropolis-Hastings on a two-component Gaussian
 
 ## Equations
 
-Let $\theta \in \Theta$ denote a parameter (scalar or vector) and let $D$ denote observed data.
-Bayes' rule combines a likelihood $L(D \mid \theta)$ with a prior density $p_0(\theta)$ into a posterior density
+Let $`\theta \in \Theta`$ denote a parameter (scalar or vector) and let $`D`$ denote observed data.
+Bayes' rule combines a likelihood $`L(D \mid \theta)`$ with a prior density $`p_0(\theta)`$ into a posterior density
 
-$$
+```math
 p(\theta \mid D) = \frac{\overbrace{L(D \mid \theta)}^{\text{likelihood}}  \overbrace{p_0(\theta)}^{\text{prior}}}{\underbrace{\int_{\Theta} L(D \mid \theta')  p_0(\theta')  d\theta'}_{\text{marginal likelihood } m(D)}}.
-$$
+```
 
-The numerator $L(D \mid \theta)  p_0(\theta)$ is the posterior kernel, the only thing the sampler needs.
-The denominator is the marginal likelihood $m(D)$, an integral over $\Theta$ that is usually intractable.
+The numerator $`L(D \mid \theta)  p_0(\theta)`$ is the posterior kernel, the only thing the sampler needs.
+The denominator is the marginal likelihood $`m(D)`$, an integral over $`\Theta`$ that is usually intractable.
 That intractability is the whole reason MCMC exists: the sampler in Method 2 evaluates the kernel and never the marginal likelihood, because the kernel ratio cancels the unknown normalizing constant.
 Closed-form posteriors arise when the prior is conjugate to the likelihood (Method 1).
 Otherwise we sample (Method 2).
 
 ### Method 1: Beta-Binomial conjugate posterior
 
-The Beta-Binomial model has scalar parameter $\theta \in (0, 1)$ interpreted as the probability of a binary outcome.
-The prior is a Beta distribution with shape parameters $\alpha > 0$ and $\beta > 0$:
+The Beta-Binomial model has scalar parameter $`\theta \in (0, 1)`$ interpreted as the probability of a binary outcome.
+The prior is a Beta distribution with shape parameters $`\alpha > 0`$ and $`\beta > 0`$:
 
-$$
+```math
 \theta \sim \mathrm{Beta}(\alpha, \beta),
 \qquad
 p_0(\theta) = \frac{\theta^{\alpha - 1} (1 - \theta)^{\beta - 1}}{B(\alpha, \beta)},
 \qquad
 B(\alpha, \beta) = \int_0^1 u^{\alpha - 1} (1 - u)^{\beta - 1}  du.
-$$
+```
 
-The Beta function $B(\alpha, \beta)$ is the normalizing constant of the prior; it equals $\Gamma(\alpha)\Gamma(\beta) / \Gamma(\alpha + \beta)$ in terms of the Gamma function but we never need that form explicitly.
-The data are $n \ge 1$ independent Bernoulli trials with $k \in \lbrace 0, 1, \ldots, n \rbrace$ successes, so $D = (y_1, \ldots, y_n)$ with $y_i \in \lbrace 0, 1 \rbrace$ and $k = \sum_i y_i$.
+The Beta function $`B(\alpha, \beta)`$ is the normalizing constant of the prior; it equals $`\Gamma(\alpha)\Gamma(\beta) / \Gamma(\alpha + \beta)`$ in terms of the Gamma function but we never need that form explicitly.
+The data are $`n \ge 1`$ independent Bernoulli trials with $`k \in \lbrace 0, 1, \ldots, n \rbrace`$ successes, so $`D = (y_1, \ldots, y_n)`$ with $`y_i \in \lbrace 0, 1 \rbrace`$ and $`k = \sum_i y_i`$.
 The likelihood is the binomial mass function
 
-$$
+```math
 L(D \mid \theta) = \binom{n}{k}  \theta^k (1 - \theta)^{n - k}.
-$$
+```
 
-Multiplying prior and likelihood, the kernel collects all $\theta$-dependent factors and the binomial coefficient and Beta-function denominators are absorbed into the normalizing constant:
+Multiplying prior and likelihood, the kernel collects all $`\theta`$-dependent factors and the binomial coefficient and Beta-function denominators are absorbed into the normalizing constant:
 
-$$
+```math
 p(\theta \mid D) \propto \theta^{\alpha - 1} (1 - \theta)^{\beta - 1} \cdot \theta^k (1 - \theta)^{n - k}
 = \theta^{\alpha + k - 1} (1 - \theta)^{\beta + n - k - 1}.
-$$
+```
 
 The kernel has Beta form, so the posterior is itself Beta with updated parameters:
 
-$$
+```math
 \theta \mid D \sim \mathrm{Beta}(\alpha + k,  \beta + n - k).
-$$
+```
 
-Writing $\alpha_{\mathrm{post}} = \alpha + k$ and $\beta_{\mathrm{post}} = \beta + n - k$, the posterior moments are available in closed form.
+Writing $`\alpha_{\mathrm{post}} = \alpha + k`$ and $`\beta_{\mathrm{post}} = \beta + n - k`$, the posterior moments are available in closed form.
 The posterior mean is
 
-$$
+```math
 \mathbb{E}[\theta \mid D] = \frac{\alpha_{\mathrm{post}}}{\alpha_{\mathrm{post}} + \beta_{\mathrm{post}}} = \underbrace{\frac{\alpha + \beta}{\alpha + \beta + n}}_{\text{prior weight}} \cdot \underbrace{\frac{\alpha}{\alpha + \beta}}_{\text{prior mean}} + \underbrace{\frac{n}{\alpha + \beta + n}}_{\text{data weight}} \cdot \underbrace{\frac{k}{n}}_{\text{sample fraction}}.
-$$
+```
 
 Written this way the posterior mean is a convex combination of the prior mean and the sample fraction, with weights summing to one.
-The prior weight $(\alpha + \beta)/(\alpha + \beta + n)$ shrinks toward zero as the sample size grows, so a Bayesian with a flat prior and a large dataset reports essentially the sample fraction.
+The prior weight $`(\alpha + \beta)/(\alpha + \beta + n)`$ shrinks toward zero as the sample size grows, so a Bayesian with a flat prior and a large dataset reports essentially the sample fraction.
 This is the same shrinkage logic that drives the Gaussian-process posterior in [`numerical-methods/bayesian-optimization/`](../../numerical-methods/bayesian-optimization/): in both models the posterior mean is a weighted average of a prior anchor and a data-driven estimate, weighted by their respective precisions.
 The posterior variance is
 
-$$
+```math
 \mathrm{Var}[\theta \mid D] = \frac{\alpha_{\mathrm{post}}  \beta_{\mathrm{post}}}{(\alpha_{\mathrm{post}} + \beta_{\mathrm{post}})^2 (\alpha_{\mathrm{post}} + \beta_{\mathrm{post}} + 1)}.
-$$
+```
 
-The tail probability $P(\theta > t \mid D)$ for $t \in (0, 1)$ is one minus the regularized incomplete Beta function
+The tail probability $`P(\theta > t \mid D)`$ for $`t \in (0, 1)`$ is one minus the regularized incomplete Beta function
 
-$$
+```math
 P(\theta > t \mid D) = 1 - I_t(\alpha_{\mathrm{post}}, \beta_{\mathrm{post}}),
 \qquad
 I_t(a, b) = \frac{1}{B(a, b)} \int_0^t u^{a - 1} (1 - u)^{b - 1}  du.
-$$
+```
 
 These three moments are computed in code without any Monte-Carlo simulation, which is what makes Method 1 the controlled sanity check for Method 2 below.
 The same Bayesian update machinery, in a different geometry, drives the Gaussian-process posterior in [`numerical-methods/bayesian-optimization/`](../../numerical-methods/bayesian-optimization/): there the prior is over an unknown function and conditioning a joint Gaussian replaces the Beta-Binomial conjugacy.
 
 #### Worked example
 
-To make the update concrete on a tiny dataset, take an uninformative prior $\alpha = \beta = 1$ (the uniform $\mathrm{Beta}(1, 1)$) and observe $k = 3$ successes in $n = 4$ trials.
-The posterior is $\mathrm{Beta}(1 + 3,  1 + 4 - 3) = \mathrm{Beta}(4, 2)$ with mean $4/6 = 0.667$.
-The prior mean is $1/2$ and the sample fraction is $3/4 = 0.75$; the posterior mean lies between them, leaning toward the sample fraction because the data weight $4/6$ dominates the prior weight $2/6$.
+To make the update concrete on a tiny dataset, take an uninformative prior $`\alpha = \beta = 1`$ (the uniform $`\mathrm{Beta}(1, 1)`$) and observe $`k = 3`$ successes in $`n = 4`$ trials.
+The posterior is $`\mathrm{Beta}(1 + 3,  1 + 4 - 3) = \mathrm{Beta}(4, 2)`$ with mean $`4/6 = 0.667`$.
+The prior mean is $`1/2`$ and the sample fraction is $`3/4 = 0.75`$; the posterior mean lies between them, leaning toward the sample fraction because the data weight $`4/6`$ dominates the prior weight $`2/6`$.
 
-On the calibration used in the rest of this tutorial ($\alpha = 2$, $\beta = 2$, $n = 20$, $k = 14$) the posterior is $\mathrm{Beta}(16, 8)$ with mean $0.6667$ and variance $0.00889$.
+On the calibration used in the rest of this tutorial ($`\alpha = 2`$, $`\beta = 2`$, $`n = 20`$, $`k = 14`$) the posterior is $`\mathrm{Beta}(16, 8)`$ with mean $`0.6667`$ and variance $`0.00889`$.
 
 ### Method 2: Random-walk Metropolis-Hastings on a mixture posterior
 
-The second target is a posterior over $\theta = (\theta_1, \theta_2) \in \mathbb{R}^2$ given by a two-component Gaussian mixture:
+The second target is a posterior over $`\theta = (\theta_1, \theta_2) \in \mathbb{R}^2`$ given by a two-component Gaussian mixture:
 
-$$
+```math
 \pi(\theta \mid D) = \omega \phi(\theta;  \mu_1, \Sigma) + (1 - \omega)  \phi(\theta;  \mu_2, \Sigma),
-$$
+```
 
-where $\omega \in (0, 1)$ is the mixing weight, $\mu_1, \mu_2 \in \mathbb{R}^2$ are the component means, $\Sigma \in \mathbb{R}^{2 \times 2}$ is the shared component covariance, and the bivariate normal density is
+where $`\omega \in (0, 1)`$ is the mixing weight, $`\mu_1, \mu_2 \in \mathbb{R}^2`$ are the component means, $`\Sigma \in \mathbb{R}^{2 \times 2}`$ is the shared component covariance, and the bivariate normal density is
 
-$$
+```math
 \phi(\theta;  \mu, \Sigma) = \frac{1}{2 \pi \sqrt{\lvert \Sigma \rvert}}  \exp\left(-\tfrac{1}{2} (\theta - \mu)^{\top} \Sigma^{-1} (\theta - \mu)\right).
-$$
+```
 
 The two components stand in for two structural regimes that fit the same data.
-There is no closed-form posterior moment generator: the moments depend on the mixture and we cannot integrate against $\pi$ analytically.
+There is no closed-form posterior moment generator: the moments depend on the mixture and we cannot integrate against $`\pi`$ analytically.
 
-Random-walk Metropolis-Hastings constructs a Markov chain $(\theta_t)_{t \ge 0}$ whose stationary distribution is $\pi(\theta \mid D)$ using only pointwise evaluations of the kernel.
-Given current state $\theta_t \in \mathbb{R}^d$ (with $d = 2$ here), a Gaussian random-walk proposal draws
+Random-walk Metropolis-Hastings constructs a Markov chain $`(\theta_t)_{t \ge 0}`$ whose stationary distribution is $`\pi(\theta \mid D)`$ using only pointwise evaluations of the kernel.
+Given current state $`\theta_t \in \mathbb{R}^d`$ (with $`d = 2`$ here), a Gaussian random-walk proposal draws
 
-$$
+```math
 \theta^{\star} = \theta_t + s \eta_t,
 \qquad
 \eta_t \sim \mathcal{N}(0, I_d),
 \qquad
 \eta_t \in \mathbb{R}^d,
-$$
+```
 
-where $s > 0$ is the proposal scale and $I_d$ is the $d \times d$ identity matrix.
-Because the proposal density $q(\theta^{\star} \mid \theta_t)$ is symmetric, the Metropolis-Hastings acceptance probability simplifies to the kernel ratio capped at one:
+where $`s > 0`$ is the proposal scale and $`I_d`$ is the $`d \times d`$ identity matrix.
+Because the proposal density $`q(\theta^{\star} \mid \theta_t)`$ is symmetric, the Metropolis-Hastings acceptance probability simplifies to the kernel ratio capped at one:
 
-$$
+```math
 \alpha(\theta_t, \theta^{\star}) =
 \min\bigg\lbrace 1,  \underbrace{\frac{\pi(\theta^{\star} \mid D)}{\pi(\theta_t \mid D)}}_{\text{kernel ratio, marginal cancels}} \bigg\rbrace.
-$$
+```
 
-The marginal likelihood $m(D)$ appears in both the numerator and denominator of the kernel ratio and cancels exactly, which is why the sampler never needs to evaluate the partition function.
-This rule satisfies detailed balance: for any pair $(\theta, \theta')$ the joint density of "current state and proposal" is symmetric under swapping the two, since
+The marginal likelihood $`m(D)`$ appears in both the numerator and denominator of the kernel ratio and cancels exactly, which is why the sampler never needs to evaluate the partition function.
+This rule satisfies detailed balance: for any pair $`(\theta, \theta')`$ the joint density of "current state and proposal" is symmetric under swapping the two, since
 
-$$
+```math
 \pi(\theta)  q(\theta' \mid \theta)  \alpha(\theta, \theta')
 = \pi(\theta')  q(\theta \mid \theta')  \alpha(\theta', \theta).
-$$
+```
 
-Detailed balance implies that $\pi$ is the stationary distribution of the resulting chain.
-The acceptance ratio depends only on the kernel ratio, so the marginal likelihood $m(D)$ cancels.
+Detailed balance implies that $`\pi`$ is the stationary distribution of the resulting chain.
+The acceptance ratio depends only on the kernel ratio, so the marginal likelihood $`m(D)`$ cancels.
 That is the load-bearing reason MH works without ever computing the partition function.
-The same algorithm applies to the conjugate model above with the bound $\theta \in (0, 1)$ enforced by rejecting proposals outside the unit interval; running it there is how we verify the sampler before applying it to the harder mixture target.
+The same algorithm applies to the conjugate model above with the bound $`\theta \in (0, 1)`$ enforced by rejecting proposals outside the unit interval; running it there is how we verify the sampler before applying it to the harder mixture target.
 
-For curved or strongly correlated posteriors the random walk mixes slowly and effective sample size per evaluation is small; the gradient-based proposal in [`computational-methods/hamiltonian-monte-carlo/`](../../computational-methods/hamiltonian-monte-carlo/) is the fix when $\nabla \log \pi$ is available.
+For curved or strongly correlated posteriors the random walk mixes slowly and effective sample size per evaluation is small; the gradient-based proposal in [`computational-methods/hamiltonian-monte-carlo/`](../../computational-methods/hamiltonian-monte-carlo/) is the fix when $`\nabla \log \pi`$ is available.
 
-Retained draws from the chain approximate posterior averages of any integrable function $g : \Theta \to \mathbb{R}$:
+Retained draws from the chain approximate posterior averages of any integrable function $`g : \Theta \to \mathbb{R}`$:
 
-$$
+```math
 \mathbb{E}[g(\theta) \mid D] \approx \frac{1}{T - T_{\mathrm{burn}}}  \sum_{t = T_{\mathrm{burn}} + 1}^{T} g(\theta_t).
-$$
+```
 
-The approximation is exact in the limit $T \to \infty$.
+The approximation is exact in the limit $`T \to \infty`$.
 On a finite run it is only as good as the chain's mixing, which on multimodal targets is governed by how often the chain crosses between modes.
 
 ## Model Setup
@@ -157,20 +157,20 @@ On a finite run it is only as good as the chain's mixing, which on multimodal ta
 | Object | Value | Role |
 |--------|-------|------|
 | **Method 1 Beta-Binomial** | | |
-| Prior $\mathrm{Beta}(\alpha, \beta)$ | (2, 2) | Weak symmetric prior |
-| Sample size $n$ | 20 | Binomial trials |
-| Successes $k$ | 14 | Observed |
-| Closed-form posterior | $\mathrm{Beta}(16, 8)$ | Analytical |
-| Posterior mean | 0.6667 | $\alpha_{\mathrm{post}} / (\alpha_{\mathrm{post}} + \beta_{\mathrm{post}})$ |
+| Prior $`\mathrm{Beta}(\alpha, \beta)`$ | (2, 2) | Weak symmetric prior |
+| Sample size $`n`$ | 20 | Binomial trials |
+| Successes $`k`$ | 14 | Observed |
+| Closed-form posterior | $`\mathrm{Beta}(16, 8)`$ | Analytical |
+| Posterior mean | 0.6667 | $`\alpha_{\mathrm{post}} / (\alpha_{\mathrm{post}} + \beta_{\mathrm{post}})`$ |
 | Posterior variance | 0.00889 | Analytical |
-| MH proposal scale | 0.10 | Bounded random walk on $(0, 1)$ |
+| MH proposal scale | 0.10 | Bounded random walk on $`(0, 1)`$ |
 | MH draws | 20,000 total | 19,000 retained after burn-in of 1,000 |
 | **Method 2 mixture** | | |
 | Posterior interpretation | Two empirically plausible structural regimes | |
-| $\mu_1$ | (1.5, 1.5) | First-regime mean |
-| $\mu_2$ | (-1.5, -1.5) | Second-regime mean |
-| $\Sigma$ | [[1.0, 0.5], [0.5, 1.0]] | Within-regime covariance |
-| Mixing probability $\omega$ | 0.5 | Regime weight |
+| $`\mu_1`$ | (1.5, 1.5) | First-regime mean |
+| $`\mu_2`$ | (-1.5, -1.5) | Second-regime mean |
+| $`\Sigma`$ | [[1.0, 0.5], [0.5, 1.0]] | Within-regime covariance |
+| Mixing probability $`\omega`$ | 0.5 | Regime weight |
 | MH draws | 12,000 | After burn-in of 1,000 |
 | MH starting point | (10.0, -10.0) | Far from both modes |
 | MH proposal steps | [0.15, 0.6, 2.0] | Tuning sweep |
@@ -181,7 +181,7 @@ The two methods share the same Metropolis-Hastings machinery on top of different
 
 ### Method 1: Conjugate Beta-Binomial
 
-Beta-Binomial conjugacy gives the posterior in one line of algebra: a Beta prior with parameters $(\alpha, \beta)$ combined with $k$ successes in $n$ trials returns a $\mathrm{Beta}(\alpha + k,  \beta + n - k)$ posterior. The posterior moments follow from the Beta family and need no simulation.
+Beta-Binomial conjugacy gives the posterior in one line of algebra: a Beta prior with parameters $`(\alpha, \beta)`$ combined with $`k`$ successes in $`n`$ trials returns a $`\mathrm{Beta}(\alpha + k,  \beta + n - k)`$ posterior. The posterior moments follow from the Beta family and need no simulation.
 
 ```text
 Algorithm: Conjugate update for the Beta-Binomial model
@@ -193,7 +193,7 @@ Output: posterior parameters and analytical moments
   variance   = alpha_post * beta_post /               ((alpha_post + beta_post)^2 * (alpha_post + beta_post + 1))
 ```
 
-We run a one-dimensional random-walk Metropolis-Hastings chain on the same posterior as a sanity check. The proposal is a Gaussian step bounded to the unit interval by rejecting any move outside $(0, 1)$. After 1,000 burn-in draws and 19,000 retained draws, the chain's empirical mean and variance should match the closed-form values to within a few percent. If they do not, either the proposal scale is too small to mix or the acceptance rule is implemented wrong. Either way, no further conclusions from the same sampler are trustworthy.
+We run a one-dimensional random-walk Metropolis-Hastings chain on the same posterior as a sanity check. The proposal is a Gaussian step bounded to the unit interval by rejecting any move outside $`(0, 1)`$. After 1,000 burn-in draws and 19,000 retained draws, the chain's empirical mean and variance should match the closed-form values to within a few percent. If they do not, either the proposal scale is too small to mix or the acceptance rule is implemented wrong. Either way, no further conclusions from the same sampler are trustworthy.
 
 ### Method 2: Random-walk Metropolis-Hastings on a mixture posterior
 
@@ -213,15 +213,15 @@ Output: draws from pi(theta | D), plus mode-crossing summaries
 4. Report acceptance, mode switches, posterior mean error, and ESS
 ```
 
-Proposal scale $s$ controls local move size. Tiny steps accept often but cross modes slowly. Large steps cross low-density regions more often, but many proposals are rejected. The known mixture mean lets the code measure finite-chain error.
+Proposal scale $`s`$ controls local move size. Tiny steps accept often but cross modes slowly. Large steps cross low-density regions more often, but many proposals are rejected. The known mixture mean lets the code measure finite-chain error.
 
-For high-dimensional Gaussian targets the asymptotically optimal acceptance rate is roughly 0.23 (Roberts, Gelman, and Gilks 1997). That result is why tuning advice for $s$ usually targets acceptance between 0.2 and 0.5. On bimodal targets like this one, the rule is a guide but not a guarantee, because what limits the chain is mode-jumping rather than local mixing.
+For high-dimensional Gaussian targets the asymptotically optimal acceptance rate is roughly 0.23 (Roberts, Gelman, and Gilks 1997). That result is why tuning advice for $`s`$ usually targets acceptance between 0.2 and 0.5. On bimodal targets like this one, the rule is a guide but not a guarantee, because what limits the chain is mode-jumping rather than local mixing.
 
-Two diagnostics measure these chain qualities. Effective sample size turns the autocorrelated chain into an equivalent count of independent draws. Let $\rho_t = \mathrm{Corr}(\theta_s, \theta_{s+t})$ denote the stationary lag-$t$ autocorrelation of a coordinate of the chain. The integrated autocorrelation time is $\tau = 1 + 2 \sum_{t \ge 1} \rho_t$ and the effective sample size for a chain of length $T$ is $\mathrm{ESS} = T / \tau$. We estimate $\tau$ from the sample autocorrelations and truncate the sum at the first nonpositive lag, the standard initial-positive-sequence estimator. Mode switches count how often the chain crosses between regimes. Together these checks say whether posterior averages weight the structural regimes correctly or report a regime artifact.
+Two diagnostics measure these chain qualities. Effective sample size turns the autocorrelated chain into an equivalent count of independent draws. Let $`\rho_t = \mathrm{Corr}(\theta_s, \theta_{s+t})`$ denote the stationary lag-$`t`$ autocorrelation of a coordinate of the chain. The integrated autocorrelation time is $`\tau = 1 + 2 \sum_{t \ge 1} \rho_t`$ and the effective sample size for a chain of length $`T`$ is $`\mathrm{ESS} = T / \tau`$. We estimate $`\tau`$ from the sample autocorrelations and truncate the sum at the first nonpositive lag, the standard initial-positive-sequence estimator. Mode switches count how often the chain crosses between regimes. Together these checks say whether posterior averages weight the structural regimes correctly or report a regime artifact.
 
 ## Results
 
-The Beta-Binomial calibration uses prior $\mathrm{Beta}(2, 2)$ and data 14 successes in 20 trials. The closed-form posterior is $\mathrm{Beta}(16, 8)$ with mean 0.6667 and variance 0.00889. The Metropolis-Hastings histogram overlays the analytical posterior tightly. Empirical mean is 0.6661 (error 0.0005). Empirical variance is 0.00901 (error 0.00012). Acceptance rate is 0.695, within the rule-of-thumb band for one-dimensional random-walk MH. The match is the licence to trust the same sampler on a target where no closed form exists.
+The Beta-Binomial calibration uses prior $`\mathrm{Beta}(2, 2)`$ and data 14 successes in 20 trials. The closed-form posterior is $`\mathrm{Beta}(16, 8)`$ with mean 0.6667 and variance 0.00889. The Metropolis-Hastings histogram overlays the analytical posterior tightly. Empirical mean is 0.6661 (error 0.0005). Empirical variance is 0.00901 (error 0.00012). Acceptance rate is 0.695, within the rule-of-thumb band for one-dimensional random-walk MH. The match is the licence to trust the same sampler on a target where no closed form exists.
 
 <img src="figures/conjugate-posterior.png" alt="Beta-Binomial conjugate posterior with overlaid Metropolis-Hastings histogram" width="80%">
 

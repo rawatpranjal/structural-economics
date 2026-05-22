@@ -4,31 +4,31 @@
 
 Prices and budgets change across shopping trips. Each trip leaves one chosen bundle, so the data show choices under different budget sets. The economic question is whether one stable utility function could have chosen all bundles.
 
-The object is a finite revealed-preference relation. If bundle $x_j$ was affordable when $x_i$ was chosen, the data reveal $x_i$ as weakly preferred to $x_j$. A violation appears when chained comparisons return to a bundle that was strictly cheaper at a later budget.
+The object is a finite revealed-preference relation. If bundle $`x_j`$ was affordable when $`x_i`$ was chosen, the data reveal $`x_i`$ as weakly preferred to $`x_j`$. A violation appears when chained comparisons return to a bundle that was strictly cheaper at a later budget.
 
 The computation builds that relation, closes it transitively, and checks the GARP contradiction. The run compares a rational Cobb-Douglas sample with one corrupted sample.
 
 ## Equations
 
-Let $\mathcal{D}=\lbrace(p_t,x_t)\rbrace_{t=1}^T$ denote the observed data. Price vectors are positive, and bundles are nonnegative. Expenditure at observation $t$ is $m_t=p_t\cdot x_t$.
+Let $`\mathcal{D}=\lbrace(p_t,x_t)\rbrace_{t=1}^T`$ denote the observed data. Price vectors are positive, and bundles are nonnegative. Expenditure at observation $`t`$ is $`m_t=p_t\cdot x_t`$.
 
-Direct revealed preference is written as $iRj$.
+Direct revealed preference is written as $`iRj`$.
 
-$$
+```math
 m_i \geq p_i\cdot x_j .
-$$
+```
 
-The bundle $x_j$ was affordable when $x_i$ was chosen.
+The bundle $`x_j`$ was affordable when $`x_i`$ was chosen.
 
-Let $R^{\ast}$ denote the transitive closure of $R$. GARP rules out this pair of statements.
+Let $`R^{\ast}`$ denote the transitive closure of $`R`$. GARP rules out this pair of statements.
 
-$$
+```math
 iR^{\ast}j
 \quad\text{and}\quad
 m_j > p_j\cdot x_i .
-$$
+```
 
-The first statement says $x_i$ is revealed at least as good as $x_j$ through a chain of budgets. The second says that, at budget $j$, $x_i$ was strictly cheaper than the bundle actually chosen.
+The first statement says $`x_i`$ is revealed at least as good as $`x_j`$ through a chain of budgets. The second says that, at budget $`j`$, $`x_i`$ was strictly cheaper than the bundle actually chosen.
 
 Afriat's theorem makes this finite test enough. If GARP holds, the data are rationalizable by a monotone concave utility function.
 
@@ -36,15 +36,15 @@ Afriat's theorem makes this finite test enough. If GARP holds, the data are rati
 
 | Object | Value | Role in the exercise |
 |---|---|---|
-| Observations $T$ | 10 | Budget-choice pairs in the two worked examples |
-| Goods $L$ | 3 | Three-good bundles, with figures projected onto goods 1 and 2 |
+| Observations $`T`$ | 10 | Budget-choice pairs in the two worked examples |
+| Goods $`L`$ | 3 | Three-good bundles, with figures projected onto goods 1 and 2 |
 | Cobb-Douglas weights | 0.337, 0.328, 0.335 | Ground-truth rational benchmark |
 | Corrupted sample | 2 violations | Two chosen bundles are swapped until GARP fails |
 | Rational benchmark | 0 violations | Utility-maximizing Cobb-Douglas choices should always pass GARP |
 
 ## Solution Method
 
-The code checks GARP with the graph version of the revealed-preference test. Nodes are observed budgets and bundles. An edge $i\to j$ means bundle $x_j$ was affordable when $x_i$ was chosen. Warshall's algorithm then fills in every indirect comparison, and the violation scan reads off the GARP contradictions. The test returns a pass or fail decision; it does not construct the Afriat inequalities or a utility function.
+The code checks GARP with the graph version of the revealed-preference test. Nodes are observed budgets and bundles. An edge $`i\to j`$ means bundle $`x_j`$ was affordable when $`x_i`$ was chosen. Warshall's algorithm then fills in every indirect comparison, and the violation scan reads off the GARP contradictions. The test returns a pass or fail decision; it does not construct the Afriat inequalities or a utility function.
 
 ```text
 Input: prices p_t and chosen bundles x_t for t=1,...,T
@@ -77,7 +77,7 @@ After two bundles are swapped, the same price variation now creates a strict rev
 
 <img src="figures/budget-lines-inconsistent.png" alt="Budget lines and chosen bundles for the GARP-violating sample." width="80%">
 
-The graph view shows the test directly. An arrow from $i$ to $j$ means $x_j$ was affordable when $x_i$ was chosen. The right panel adds indirect comparisons. Red arrows mark strict GARP contradictions.
+The graph view shows the test directly. An arrow from $`i`$ to $`j`$ means $`x_j`$ was affordable when $`x_i`$ was chosen. The right panel adds indirect comparisons. Red arrows mark strict GARP contradictions.
 
 The rational sample has many revealed-preference links, especially after transitive closure. None returns to a strictly cheaper rejected bundle.
 

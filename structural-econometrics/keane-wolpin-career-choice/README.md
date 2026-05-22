@@ -10,19 +10,19 @@ The computational object is the Emax function. Exact backward induction is strai
 
 ## Equations
 
-At age $t$, the state is
+At age $`t`$, the state is
 
-$$
+```math
 s_t = (E_t, X^b_t, X^w_t),
-$$
+```
 
-where $E_t$ is completed schooling and $X^b_t$, $X^w_t$ are occupation-specific
+where $`E_t`$ is completed schooling and $`X^b_t`$, $`X^w_t`$ are occupation-specific
 experience stocks. The action set is
 
-$$
+```math
 d_t \in D(s_t,t)
 \subseteq \lbrace \mathrm{school}, \mathrm{blue}, \mathrm{white}, \mathrm{home} \rbrace.
-$$
+```
 
 The state records accumulated human capital before the current choice.
 
@@ -31,24 +31,24 @@ school age; blue-collar work, white-collar work, and home are always feasible.
 
 The transition is deterministic conditional on the choice:
 
-$$
+```math
 \begin{aligned}
 g(s,\mathrm{school}) &= (\min \lbrace E+1,\bar E \rbrace, X^b, X^w),\\
 g(s,\mathrm{blue}) &= (E, X^b+1, X^w),\\
 g(s,\mathrm{white}) &= (E, X^b, X^w+1),\\
 g(s,\mathrm{home}) &= (E, X^b, X^w).
 \end{aligned}
-$$
+```
 
-Here $\bar E$ is the maximum completed schooling.
+Here $`\bar E`$ is the maximum completed schooling.
 
 School raises completed education, work raises occupation-specific experience,
 and home leaves measured human capital unchanged.
 
-Let age be $\alpha_t=16+t$ and college years be $C(E)=\max \lbrace E-12,0 \rbrace$.
+Let age be $`\alpha_t=16+t`$ and college years be $`C(E)=\max \lbrace E-12,0 \rbrace`$.
 The wage offers and deterministic flow payoffs used by the recursion are
 
-$$
+```math
 \begin{aligned}
 \log w_b(s) &=
 0.46 + 0.050E + 0.175\sqrt{X^b+1}
@@ -66,83 +66,83 @@ u_{\mathrm{white}}(s,t) &=
 u_{\mathrm{home}}(s,t) &=
 1.04-0.018\max \lbrace \alpha_t-20,0 \rbrace +0.020(X^b+X^w).
 \end{aligned}
-$$
+```
 
 The terminal value prices the best post-horizon use of accumulated human
 capital:
 
-$$
+```math
 \mathbb{E}_T(s)=4\max \lbrace
 u_{\mathrm{blue}}(s,T-1),
 u_{\mathrm{white}}(s,T-1),
 u_{\mathrm{home}}(s,T-1)
 \rbrace.
-$$
+```
 
 The deterministic part of the choice-specific value is
 
-$$
+```math
 v_t(d,s) =
 \underbrace{u_d(s,t)}_{\text{current school payoff, wage payoff, or home payoff}} +
 \underbrace{\beta \mathbb{E}_{t+1}(g(s,d))}_{\text{discounted continuation value}}.
-$$
+```
 
 Current payoffs and continuation values are the two objects backward induction
 needs.
 
-With Type-I extreme value taste shocks of scale $\sigma_\epsilon$, the Emax
+With Type-I extreme value taste shocks of scale $`\sigma_\epsilon`$, the Emax
 function is
 
-$$
+```math
 \mathbb{E}_t(s) =
 \underbrace{\sigma_\epsilon
 \log \sum_{d \in D(s,t)} \exp(v_t(d,s)/\sigma_\epsilon)}_{\text{expected max over feasible discrete choices}} +
 \underbrace{\sigma_\epsilon \gamma_E}_{\text{mean of the extreme-value shock}}.
-$$
+```
 
 The log-sum-exp term integrates over the Type-I extreme-value taste shocks.
-Here $\gamma_E$ is Euler's constant.
+Here $`\gamma_E`$ is Euler's constant.
 
 The same objects imply logit conditional choice probabilities:
 
-$$
+```math
 P_t(d \mid s)=
 \frac{\exp(v_t(d,s)/\sigma_\epsilon)}
 {\sum_{j \in D(s,t)} \exp(v_t(j,s)/\sigma_\epsilon)}.
-$$
+```
 
 The exact recursion evaluates this expression at every reachable state. The
 Keane-Wolpin approximation evaluates it only on a sampled set
-$S_t^{sample}=\lbrace s_{t,1},\dots,s_{t,M_t} \rbrace$, then fits the regression
+$`S_t^{sample}=\lbrace s_{t,1},\dots,s_{t,M_t} \rbrace`$, then fits the regression
 
-$$
+```math
 Y_{t,i} = \mathbb{E}_t(s_{t,i}), \qquad
 Y_{t,i} = \phi(s_{t,i},t)' b_t + \eta_{t,i}.
-$$
+```
 
 Sampled exact Emax values become the training targets for the continuation-value
 approximation.
 
 In this tutorial the basis vector is
 
-$$
+```math
 \phi(s,t)=
 (1, E, X^b, X^w, X^b+X^w, E^2, (X^b)^2, (X^w)^2,
 E X^b, E X^w, X^b X^w, t),
-$$
+```
 
 written above in raw state units for readability. In code each input is
 first normalized to a comparable scale before the polynomial terms are
-formed: schooling as $(E-E_0)/(\bar E-E_0)$, each experience stock divided
+formed: schooling as $`(E-E_0)/(\bar E-E_0)`$, each experience stock divided
 by the horizon, and age divided by the maximum age. The fitted coefficient
-vector $\widehat b_t$ therefore lives in normalized units, so evaluating the
+vector $`\widehat b_t`$ therefore lives in normalized units, so evaluating the
 surface requires applying the same normalization to any new state.
 
 The fitted continuation surface is
 
-$$
+```math
 \widehat{\mathbb{E}}_t(s)=\phi(s,t)'\widehat b_t.
-$$
+```
 
 This is the computational shortcut: unsampled states inherit continuation
 values from the fitted Emax surface rather than from fresh exact integrations.
@@ -151,56 +151,56 @@ values from the fitted Emax surface rather than from fresh exact integrations.
 
 | Symbol | Calibration | Meaning |
 |---|---:|---|
-| $t$ | ages 16-29 | Finite-horizon decision age |
-| $s_t=(E_t,X^b_t,X^w_t)$ | starts at $(10,0,0)$ | Schooling, blue-collar experience, white-collar experience |
-| $D(s,t)$ | $\lbrace \mathrm{school},\mathrm{blue},\mathrm{white},\mathrm{home} \rbrace$ subject to feasibility | Discrete choice set |
-| $g(s,d)$ | deterministic | Human-capital transition after choice $d$ |
-| $\beta$ | 0.94 | Discount factor in the Emax recursion |
-| $\sigma_\epsilon$ | 0.22 | Type-I extreme value scale for choice shocks |
-| $\gamma_E$ | 0.5772 | Euler's constant in the Emax formula |
-| $\sigma_w$ | 0.18 | Log wage shock used in simulated wage paths |
-| $\bar E$ | 18 years | Maximum completed schooling in the state grid |
+| $`t`$ | ages 16-29 | Finite-horizon decision age |
+| $`s_t=(E_t,X^b_t,X^w_t)`$ | starts at $`(10,0,0)`$ | Schooling, blue-collar experience, white-collar experience |
+| $`D(s,t)`$ | $`\lbrace \mathrm{school},\mathrm{blue},\mathrm{white},\mathrm{home} \rbrace`$ subject to feasibility | Discrete choice set |
+| $`g(s,d)`$ | deterministic | Human-capital transition after choice $`d`$ |
+| $`\beta`$ | 0.94 | Discount factor in the Emax recursion |
+| $`\sigma_\epsilon`$ | 0.22 | Type-I extreme value scale for choice shocks |
+| $`\gamma_E`$ | 0.5772 | Euler's constant in the Emax formula |
+| $`\sigma_w`$ | 0.18 | Log wage shock used in simulated wage paths |
+| $`\bar E`$ | 18 years | Maximum completed schooling in the state grid |
 | Max school age | 23 | Last age at which school is feasible |
 | Terminal multiplier | 4.0 | Weight on post-horizon human capital value |
-| $\phi(s,t)$ | 12 polynomial terms | Basis for the sampled Emax regression |
-| $M_t$ | up to 260 sampled states | Exact Emax evaluations used to fit $\widehat b_t$ |
-| $\lambda$ | $10^{-6}$ | Ridge penalty in the sampled Emax regression |
-| $N_s$ | 2,310 pre-terminal states | Reachable state count in the exact benchmark |
+| $`\phi(s,t)`$ | 12 polynomial terms | Basis for the sampled Emax regression |
+| $`M_t`$ | up to 260 sampled states | Exact Emax evaluations used to fit $`\widehat b_t`$ |
+| $`\lambda`$ | $`10^{-6}`$ | Ridge penalty in the sampled Emax regression |
+| $`N_s`$ | 2,310 pre-terminal states | Reachable state count in the exact benchmark |
 | Synthetic panel | 6,000 workers | Simulated from the approximate conditional choice probabilities |
 
 ## Solution Method
 
 Reachable states are generated forward from the initial state:
 
-$$
+```math
 S_0=\lbrace (E_0,0,0) \rbrace,\qquad
 S_{t+1}=\lbrace g(s,d): s \in S_t,\ d \in D(s,t) \rbrace.
-$$
+```
 
 The exact benchmark is the finite-horizon recursion
 
-$$
+```math
 v_t(d,s)=u_d(s,t)+\beta \mathbb{E}_{t+1}(g(s,d)),
 \qquad
 \mathbb{E}_t(s)=\sigma_\epsilon \log \sum_{d\in D(s,t)}
 \exp(v_t(d,s)/\sigma_\epsilon)+\sigma_\epsilon\gamma_E.
-$$
+```
 
 The exact recursion stores both the Emax value and the deterministic
-choice-specific values $v_t(d,s)$ at every reachable state.
+choice-specific values $`v_t(d,s)`$ at every reachable state.
 
 The approximate solver keeps the same recursion but estimates
-$\mathbb{E}_t(s)$ from sampled states. At each age, stack the sampled targets
-in $Y_t$ and the basis functions in $\Phi_t$. The regression step is
+$`\mathbb{E}_t(s)`$ from sampled states. At each age, stack the sampled targets
+in $`Y_t`$ and the basis functions in $`\Phi_t`$. The regression step is
 
-$$
+```math
 \widehat b_t=(\Phi_t'\Phi_t+\lambda I)^{-1}\Phi_t'Y_t,
 \qquad
 \widehat{\mathbb{E}}_t(s)=\phi(s,t)'\widehat b_t.
-$$
+```
 
-For unsampled states, $\widehat{\mathbb{E}}_t(s)$ replaces a fresh exact Emax
-integration. The small ridge term $\lambda$ only stabilizes the least-squares
+For unsampled states, $`\widehat{\mathbb{E}}_t(s)`$ replaces a fresh exact Emax
+integration. The small ridge term $`\lambda`$ only stabilizes the least-squares
 fit when an early age has few reachable states.
 
 ```text

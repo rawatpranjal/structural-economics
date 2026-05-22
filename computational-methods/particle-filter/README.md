@@ -4,93 +4,93 @@
 
 A policy analyst observes a noisy activity indicator and wants a current estimate of the hidden state. The state may combine persistent demand pressure and real activity.
 
-The object is the filtered distribution $p(s_t \mid y_{1:t})$. Its mean is the nowcast used in later likelihood or policy calculations. The whole distribution matters because uncertainty, not only the point estimate, determines how much the next signal should move the state.
+The object is the filtered distribution $`p(s_t \mid y_{1:t})`$. Its mean is the nowcast used in later likelihood or policy calculations. The whole distribution matters because uncertainty, not only the point estimate, determines how much the next signal should move the state.
 
 Filtering is a predict-update problem. The transition equation carries yesterday's distribution forward. The likelihood of the new signal then reweights that prediction. A Kalman filter does this exactly in the linear Gaussian case. A particle filter does the same Bayesian recursion with simulated states, so it also applies when analytic filtering is unavailable.
 
 ## Equations
 
-Let $s_t$ collect two latent economic states, and let $y_t$ be the observed
+Let $`s_t`$ collect two latent economic states, and let $`y_t`$ be the observed
 signal. The state-space model is:
 
-$$
+```math
 y_t = \Psi s_t + u_t, \qquad s_t = \Phi s_{t-1} + \epsilon_t.
-$$
+```
 
-Here $u_t$ is measurement noise and $\epsilon_t$ is process noise.
+Here $`u_t`$ is measurement noise and $`\epsilon_t`$ is process noise.
 
 Particles approximate the filtered distribution with weighted simulated states.
 The filtering recursion has two steps. Prediction integrates over yesterday's
 filtered distribution:
 
-$$
+```math
 p(s_t \mid y_{1:t-1}) =
 \int p(s_t \mid s_{t-1})p(s_{t-1} \mid y_{1:t-1})ds_{t-1}.
-$$
+```
 
 Updating multiplies that prior by the likelihood of the new signal:
 
-$$
+```math
 p(s_t \mid y_{1:t}) =
 \frac{p(y_t \mid s_t)p(s_t \mid y_{1:t-1})}
 {p(y_t \mid y_{1:t-1})}.
-$$
+```
 
 The denominator is also the likelihood increment:
 
-$$
+```math
 p(y_t \mid y_{1:t-1}) =
 \int p(y_t \mid s_t)p(s_t \mid y_{1:t-1})ds_t.
-$$
+```
 
 Particles replace those integrals with simulated draws and importance weights.
-For a proposal density $q$, a proposed particle receives unnormalized weight:
+For a proposal density $`q`$, a proposed particle receives unnormalized weight:
 
-$$
+```math
 \widetilde w_t^{(i)} =
 \frac{p(y_t \mid s_t^{(i)})p(s_t^{(i)} \mid s_{t-1}^{(i)})}
 {q(s_t^{(i)} \mid s_{t-1}^{(i)}, y_t)}.
-$$
+```
 
 Normalized weights approximate the posterior:
 
-$$
+```math
 \widehat p(s_t \mid y_{1:t}) =
 \sum_{i=1}^{N} w_t^{(i)} \delta_{s_t^{(i)}}.
-$$
+```
 
 The bootstrap particle filter propagates particles from:
 
-$$
+```math
 q_B(s_t \mid s_{t-1}^{(i)},y_t) =
 p(s_t \mid s_{t-1}^{(i)})
-$$
+```
 
 so its weights are just the observation likelihood:
 
-$$
+```math
 w_t^{(i)} \propto p(y_t \mid s_t^{(i)}).
-$$
+```
 
 The conditionally optimal proposal uses the current observation:
 
-$$
+```math
 q_O(s_t \mid s_{t-1}^{(i)},y_t) =
 p(s_t \mid s_{t-1}^{(i)}, y_t).
-$$
+```
 
 In this linear Gaussian example, the optimal proposal is available in closed
 form. It draws particles from states that are already plausible after seeing
-$y_t$, then weights the ancestor by the predictive likelihood of the signal.
+$`y_t`$, then weights the ancestor by the predictive likelihood of the signal.
 
 Effective sample size summarizes weight concentration:
 
-$$
+```math
 ESS_t = \frac{1}{\sum_i (w_t^{(i)})^2}.
-$$
+```
 
 When signals are sharp, most bootstrap particles land far from the observed
-$y_t$. Their likelihood weights are nearly zero, ESS collapses, and resampling
+$`y_t`$. Their likelihood weights are nearly zero, ESS collapses, and resampling
 copies a small number of particles many times. The optimal proposal reduces
 that problem by using the signal before drawing the new state.
 
@@ -98,10 +98,10 @@ that problem by using the signal before drawing the new state.
 
 | Object | Value |
 |--------|-------|
-| Hidden state $s_t$ | Two persistent economic components |
-| Observed signal $y_t$ | Noisy linear indicator of the state |
-| Observation matrix $\Psi$ | [1.0, 0.9] |
-| Transition matrix $\Phi$ | diag(0.4, 0.5) |
+| Hidden state $`s_t`$ | Two persistent economic components |
+| Observed signal $`y_t`$ | Noisy linear indicator of the state |
+| Observation matrix $`\Psi`$ | [1.0, 0.9] |
+| Transition matrix $`\Phi`$ | diag(0.4, 0.5) |
 | Measurement std | 0.10 |
 | Process std | (0.30, 0.25) |
 | Baseline particles | 500 |
@@ -110,9 +110,9 @@ that problem by using the signal before drawing the new state.
 
 ## Solution Method
 
-Read the algorithm as the same Bayesian update that the Kalman filter performs, but represented by points and weights. At the start of a period, yesterday's resampled particles represent $p(s_{t-1} \mid y_{1:t-1})$. The proposal moves them into candidate states for period $t$. The weights then turn those candidates into an approximation to $p(s_t \mid y_{1:t})$.
+Read the algorithm as the same Bayesian update that the Kalman filter performs, but represented by points and weights. At the start of a period, yesterday's resampled particles represent $`p(s_{t-1} \mid y_{1:t-1})`$. The proposal moves them into candidate states for period $`t`$. The weights then turn those candidates into an approximation to $`p(s_t \mid y_{1:t})`$.
 
-The bootstrap proposal is simple because it only uses the transition law. It is also fragile when the signal is precise: many simulated states receive tiny likelihood weights. The optimal proposal is more work per particle, but it uses $y_t$ before drawing the state. That timing keeps proposed states close to the part of the state space the signal supports.
+The bootstrap proposal is simple because it only uses the transition law. It is also fragile when the signal is precise: many simulated states receive tiny likelihood weights. The optimal proposal is more work per particle, but it uses $`y_t`$ before drawing the state. That timing keeps proposed states close to the part of the state space the signal supports.
 
 ```text
 Algorithm: particle filtering with resampling

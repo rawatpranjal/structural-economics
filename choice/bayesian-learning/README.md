@@ -4,79 +4,79 @@
 
 Suppose a firm can invest in a project, but project quality is hidden. Each signal is red or blue. A red signal raises the chance that the project is good. A blue signal lowers it.
 
-The object is the posterior belief $p_t=\Pr(H \mid s_1,\ldots,s_t)$. It summarizes the signal history for both learning and investment timing. Extreme beliefs lead to investment or rejection. Middle beliefs can justify waiting.
+The object is the posterior belief $`p_t=\Pr(H \mid s_1,\ldots,s_t)`$. It summarizes the signal history for both learning and investment timing. Extreme beliefs lead to investment or rejection. Middle beliefs can justify waiting.
 
-The computation updates $p_t$ with Bayes' rule and solves a finite-horizon Bellman problem. Backward induction maps each belief into invest, reject, or continue regions.
+The computation updates $`p_t`$ with Bayes' rule and solves a finite-horizon Bellman problem. Backward induction maps each belief into invest, reject, or continue regions.
 
 ## Equations
 
-Let $\theta\in\lbrace H,L\rbrace$ denote the unknown state and let $s_t\in\lbrace R,B\rbrace$ denote
-the period-$t$ signal. The maintained signal probabilities are
+Let $`\theta\in\lbrace H,L\rbrace`$ denote the unknown state and let $`s_t\in\lbrace R,B\rbrace`$ denote
+the period-$`t`$ signal. The maintained signal probabilities are
 
-$$
+```math
 \Pr(R\mid H)=p_H,\qquad \Pr(R\mid L)=p_L,\qquad p_H>p_L.
-$$
+```
 
-The posterior after observing $s_{t+1}$ is
+The posterior after observing $`s_{t+1}`$ is
 
-$$
+```math
 p_{t+1}
 =\frac{f_H(s_{t+1})p_t}
 {f_H(s_{t+1})p_t+f_L(s_{t+1})(1-p_t)},
-$$
+```
 
-where $f_\theta(s)=\Pr(s\mid \theta)$.
+where $`f_\theta(s)=\Pr(s\mid \theta)`$.
 
 Equivalently, posterior odds evolve additively in log likelihood ratios:
 
-$$
+```math
 \log\frac{p_{t+1}}{1-p_{t+1}}
 =\log\frac{p_t}{1-p_t}
 +\log\frac{f_H(s_{t+1})}{f_L(s_{t+1})}.
-$$
+```
 
-After $T$ signals, if $k_T$ of them are red, the sufficient statistic is
+After $`T`$ signals, if $`k_T`$ of them are red, the sufficient statistic is
 
-$$
+```math
 \Lambda_T
 =k_T\log\frac{p_H}{p_L}
 +(T-k_T)\log\frac{1-p_H}{1-p_L}.
-$$
+```
 
-For the stopping problem, investing gives payoff $\pi_H$ in state $H$ and
-$\pi_L$ in state $L$; rejecting gives zero. At belief $p$, the current action
+For the stopping problem, investing gives payoff $`\pi_H`$ in state $`H`$ and
+$`\pi_L`$ in state $`L`$; rejecting gives zero. At belief $`p`$, the current action
 value is
 
-$$
+```math
 A(p)=\max[p\pi_H+(1-p)\pi_L,\ 0].
-$$
+```
 
 With one more signal available, the continuation value is
 
-$$
+```math
 C_t(p)=\Pr(R\mid p)V_{t+1}(p_R')+\Pr(B\mid p)V_{t+1}(p_B'),
-$$
+```
 
-where $\Pr(R\mid p)=pp_H+(1-p) p_L$ is the predictive probability of a red signal at belief $p$, $\Pr(B\mid p)=1-\Pr(R\mid p)$, and $p_R'$ and $p_B'$ are the Bayes-updated beliefs after a red or blue signal. The finite-horizon recursion is
+where $`\Pr(R\mid p)=pp_H+(1-p) p_L`$ is the predictive probability of a red signal at belief $`p`$, $`\Pr(B\mid p)=1-\Pr(R\mid p)`$, and $`p_R'`$ and $`p_B'`$ are the Bayes-updated beliefs after a red or blue signal. The finite-horizon recursion is
 
-$$
+```math
 V_t(p)=\max[A(p),\ C_t(p)].
-$$
+```
 
 ## Model Setup
 
-The signal process is symmetric around an uninformative prior. A red signal is evidence for $H$. A blue signal is evidence for $L$.
+The signal process is symmetric around an uninformative prior. A red signal is evidence for $`H`$. A blue signal is evidence for $`L`$.
 
 | Object | Value | Role |
 |-----------|-------|-------------|
-| $p_H$ | 0.7 | Probability of a red signal in state $H$ |
-| $p_L$ | 0.3 | Probability of a red signal in state $L$ |
-| Prior $p_0$ | 0.5 | Initial belief $\Pr(H)$ |
+| $`p_H`$ | 0.7 | Probability of a red signal in state $`H`$ |
+| $`p_L`$ | 0.3 | Probability of a red signal in state $`L`$ |
+| Prior $`p_0`$ | 0.5 | Initial belief $`\Pr(H)`$ |
 | Signal horizon | 50 | Draws used for belief paths |
 | Stopping horizon | 30 | Periods used for the backward-induction boundary |
 | Simulated paths | 200 per state | Monte Carlo paths shown against exact means |
-| Investment payoff in $H$ | 1.0 | Payoff if the project is good |
-| Investment payoff in $L$ | -0.5 | Payoff if the project is bad |
+| Investment payoff in $`H`$ | 1.0 | Payoff if the project is good |
+| Investment payoff in $`L`$ | -0.5 | Payoff if the project is bad |
 | Reject payoff | 0.0 | Outside option after stopping |
 
 ## Solution Method

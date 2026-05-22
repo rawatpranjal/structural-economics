@@ -14,75 +14,75 @@ The problem is to recover heterogeneous risk preferences from certainty-equivale
 
 ### The CPT certainty equivalent
 
-A binary lottery is the pair $G = (x_1, p; x_2)$, which pays $x_1$ with probability $p$ and $x_2$ with probability $1 - p$.
-The convention $x_1 > x_2$ makes $x_1$ the better outcome regardless of sign, so $G$ can be a gain-only, loss-only, or mixed lottery.
-Cumulative prospect theory values $G$ by attaching a probability weight $w(p)$ to the better outcome and $1 - w(p)$ to the worse one, then mapping each outcome through a value function $v$.
+A binary lottery is the pair $`G = (x_1, p; x_2)`$, which pays $`x_1`$ with probability $`p`$ and $`x_2`$ with probability $`1 - p`$.
+The convention $`x_1 > x_2`$ makes $`x_1`$ the better outcome regardless of sign, so $`G`$ can be a gain-only, loss-only, or mixed lottery.
+Cumulative prospect theory values $`G`$ by attaching a probability weight $`w(p)`$ to the better outcome and $`1 - w(p)`$ to the worse one, then mapping each outcome through a value function $`v`$.
 
-$$
+```math
 v(G) = v(x_1)  w(p) + v(x_2)  [1 - w(p)].
-$$
+```
 
-The certainty equivalent is the sure amount that delivers the same value as $G$.
+The certainty equivalent is the sure amount that delivers the same value as $`G`$.
 
-$$
+```math
 \widehat{ce}(G) = v^{-1}(v(G)).
-$$
+```
 
 ### Value function with loss aversion
 
 The value function is sign-dependent power utility (Tversky-Kahneman 1992).
 
-$$
+```math
 v(x) = \begin{cases} x^{\alpha}, & x \geq 0, \\ -\lambda (-x)^{\alpha}, & x < 0. \end{cases}
-$$
+```
 
-The curvature parameter $\alpha > 0$ governs concavity over gains and convexity over losses, with $\alpha = 1$ giving linear utility and risk-neutral behaviour. The loss-aversion factor $\lambda \geq 1$ scales the disutility of losses relative to the utility of equivalent-magnitude gains, so $\lambda = 1$ means no loss aversion and $\lambda = 2$ means a $-\$10$ loss feels twice as bad as a $\$10$ gain feels good. The original Tversky-Kahneman estimate is $\lambda \approx 2.25$.
+The curvature parameter $`\alpha > 0`$ governs concavity over gains and convexity over losses, with $`\alpha = 1`$ giving linear utility and risk-neutral behaviour. The loss-aversion factor $`\lambda \geq 1`$ scales the disutility of losses relative to the utility of equivalent-magnitude gains, so $`\lambda = 1`$ means no loss aversion and $`\lambda = 2`$ means a $`-\$10`$ loss feels twice as bad as a $`\$10`$ gain feels good. The original Tversky-Kahneman estimate is $`\lambda \approx 2.25`$.
 
-In a single-domain lottery $\lambda$ cancels out of $\widehat{ce}$ because every outcome carries the same multiplicative factor. Mixed lotteries with $x_1 > 0 > x_2$ break the cancellation and identify $\lambda$.
+In a single-domain lottery $`\lambda`$ cancels out of $`\widehat{ce}`$ because every outcome carries the same multiplicative factor. Mixed lotteries with $`x_1 > 0 > x_2`$ break the cancellation and identify $`\lambda`$.
 
 ### Probability weighting
 
 The weighting function is the Goldstein-Einhorn two-parameter form.
 
-$$
+```math
 w(p) = \frac{\delta p^{\gamma}}{\delta p^{\gamma} + (1 - p)^{\gamma}}, \qquad \delta, \gamma \geq 0.
-$$
+```
 
-The slope parameter $\gamma$ controls curvature, and $\gamma < 1$ produces the inverted-S shape that overweights small probabilities and underweights large ones. The elevation parameter $\delta$ shifts the curve vertically, with $\delta > 1$ raising every decision weight uniformly above the linear benchmark. Linear weighting, the expected-utility case, corresponds to $\gamma = \delta = 1$.
+The slope parameter $`\gamma`$ controls curvature, and $`\gamma < 1`$ produces the inverted-S shape that overweights small probabilities and underweights large ones. The elevation parameter $`\delta`$ shifts the curve vertically, with $`\delta > 1`$ raising every decision weight uniformly above the linear benchmark. Linear weighting, the expected-utility case, corresponds to $`\gamma = \delta = 1`$.
 
 ### Heteroskedastic observation noise
 
-Subject $i$ reports a certainty equivalent for each lottery $g$. The observation is the model-predicted value plus a Gaussian shock whose standard deviation scales with the lottery's payoff range.
+Subject $`i`$ reports a certainty equivalent for each lottery $`g`$. The observation is the model-predicted value plus a Gaussian shock whose standard deviation scales with the lottery's payoff range.
 
-$$
+```math
 ce_{ig} = \widehat{ce}_g(\theta_i) + \varepsilon_{ig}, \qquad
 \varepsilon_{ig} \sim \mathcal{N}(0, \sigma_{ig}^2), \qquad
 \sigma_{ig} = \xi_i  (x_{1g} - x_{2g}).
-$$
+```
 
-The subject-level scale $\xi_i$ is profiled out by closed-form maximum likelihood once the preference parameters are fixed.
+The subject-level scale $`\xi_i`$ is profiled out by closed-form maximum likelihood once the preference parameters are fixed.
 
 ### The finite-mixture model
 
-The population contains $C$ latent preference types. Type $c$ has parameter vector $\theta_c = (\alpha_c, \lambda_c, \gamma_c, \delta_c)$ and population proportion $\pi_c$, with $\sum_c \pi_c = 1$. Each subject's likelihood contribution averages over the types.
+The population contains $`C`$ latent preference types. Type $`c`$ has parameter vector $`\theta_c = (\alpha_c, \lambda_c, \gamma_c, \delta_c)`$ and population proportion $`\pi_c`$, with $`\sum_c \pi_c = 1`$. Each subject's likelihood contribution averages over the types.
 
-$$
+```math
 L_i(\Psi) = \sum_{c=1}^{C} \pi_c  f(ce_i \mid \theta_c, \xi_i),
-$$
+```
 
-where $f(ce_i \mid \theta_c, \xi_i) = \prod_{g=1}^{G_i} \phi_{\sigma_{ig}}(ce_{ig} - \widehat{ce}_g(\theta_c))$ is the product of Gaussian densities across subject $i$'s lotteries, $\phi_\sigma$ is the density of $\mathcal{N}(0, \sigma^2)$, and $\Psi = (\theta_1, \ldots, \theta_C, \pi_1, \ldots, \pi_{C-1}, \xi_1, \ldots, \xi_N)$ collects all parameters. The sample log-likelihood is
+where $`f(ce_i \mid \theta_c, \xi_i) = \prod_{g=1}^{G_i} \phi_{\sigma_{ig}}(ce_{ig} - \widehat{ce}_g(\theta_c))`$ is the product of Gaussian densities across subject $`i`$'s lotteries, $`\phi_\sigma`$ is the density of $`\mathcal{N}(0, \sigma^2)`$, and $`\Psi = (\theta_1, \ldots, \theta_C, \pi_1, \ldots, \pi_{C-1}, \xi_1, \ldots, \xi_N)`$ collects all parameters. The sample log-likelihood is
 
-$$
+```math
 \ln L(\Psi) = \sum_{i=1}^{N} \ln \sum_{c=1}^{C} \pi_c  f(ce_i \mid \theta_c, \xi_i).
-$$
+```
 
-Bayesian updating gives the posterior probability that subject $i$ belongs to type $c$.
+Bayesian updating gives the posterior probability that subject $`i`$ belongs to type $`c`$.
 
-$$
+```math
 \tau_{ic} = \frac{\pi_c  f(ce_i \mid \theta_c, \xi_i)}{\sum_{c'=1}^{C} \pi_{c'}  f(ce_i \mid \theta_{c'}, \xi_i)}.
-$$
+```
 
-The normalised entropy criterion $\mathrm{NEC} = -\frac{1}{N \ln C} \sum_{i, c} \tau_{ic} \ln \tau_{ic}$ summarises classification sharpness; values near zero mean each subject is assigned almost without ambiguity to a single type.
+The normalised entropy criterion $`\mathrm{NEC} = -\frac{1}{N \ln C} \sum_{i, c} \tau_{ic} \ln \tau_{ic}`$ summarises classification sharpness; values near zero mean each subject is assigned almost without ambiguity to a single type.
 
 ## Model Setup
 
@@ -94,12 +94,12 @@ The lottery design extends the Bruhin-Fehr-Duda-Epper Zurich 2003 cells to three
 | Lotteries per subject | 85 | 35 gain, 35 loss, 15 mixed |
 | Total observations | 17000 | One certainty equivalent per (subject, lottery) cell |
 | True types | 3 | EUT, mild CPT, strong CPT |
-| True mixing $\pi$ | $(0.20,  0.50,  0.30)$ | Population proportions |
-| True type-1 $(\alpha, \lambda, \gamma, \delta)$ | $(0.95,  1.00,  1.00,  1.00)$ | EUT type |
-| True type-2 $(\alpha, \lambda, \gamma, \delta)$ | $(0.85,  1.50,  0.65,  0.85)$ | Mild CPT |
-| True type-3 $(\alpha, \lambda, \gamma, \delta)$ | $(0.70,  2.50,  0.40,  0.95)$ | Strong CPT, loss aversion close to TK92's 2.25 |
-| Subject noise $\xi_i$ | Uniform(0.05, 0.20) | Heteroskedastic Gaussian errors |
-| EM tolerance | $10^{-4}$ | Stopping rule on log-likelihood improvement |
+| True mixing $`\pi`$ | $`(0.20,  0.50,  0.30)`$ | Population proportions |
+| True type-1 $`(\alpha, \lambda, \gamma, \delta)`$ | $`(0.95,  1.00,  1.00,  1.00)`$ | EUT type |
+| True type-2 $`(\alpha, \lambda, \gamma, \delta)`$ | $`(0.85,  1.50,  0.65,  0.85)`$ | Mild CPT |
+| True type-3 $`(\alpha, \lambda, \gamma, \delta)`$ | $`(0.70,  2.50,  0.40,  0.95)`$ | Strong CPT, loss aversion close to TK92's 2.25 |
+| Subject noise $`\xi_i`$ | Uniform(0.05, 0.20) | Heteroskedastic Gaussian errors |
+| EM tolerance | $`10^{-4}`$ | Stopping rule on log-likelihood improvement |
 
 ## Solution Method
 
@@ -107,7 +107,7 @@ Three estimators are applied to the same simulated data. They differ only in how
 
 ### Method 1: Single-type CPT MLE
 
-Method 1 fits one global $(\alpha, \lambda, \gamma, \delta)$ to every subject by maximum likelihood. The individual noise scale $\xi_i$ is profiled subject by subject in closed form: given the residuals from the predicted certainty equivalents, $\hat\xi_i$ is the root-mean-squared standardised residual. The optimisation is a smooth nonlinear program in four parameters with bound constraints. When the data are heterogeneous, Method 1 averages incompatible types and produces a $\hat\lambda$ between the EUT value of 1 and the strong-CPT value of 2.5, describing no actual subject well.
+Method 1 fits one global $`(\alpha, \lambda, \gamma, \delta)`$ to every subject by maximum likelihood. The individual noise scale $`\xi_i`$ is profiled subject by subject in closed form: given the residuals from the predicted certainty equivalents, $`\hat\xi_i`$ is the root-mean-squared standardised residual. The optimisation is a smooth nonlinear program in four parameters with bound constraints. When the data are heterogeneous, Method 1 averages incompatible types and produces a $`\hat\lambda`$ between the EUT value of 1 and the strong-CPT value of 2.5, describing no actual subject well.
 
 ```text
 Algorithm: Single-type CPT MLE
@@ -125,7 +125,7 @@ Method 1's failure mode is mis-specification: it cannot recover that the populat
 
 ### Method 2: Finite-mixture EM with C = 2
 
-Method 2 introduces two latent types and uses the EM algorithm of Dempster, Laird, and Rubin (1977). The E-step computes posterior membership probabilities given current parameters. The M-step updates mixing proportions to the posterior means and re-fits each type's parameters by weighted maximum likelihood. Each subject's noise scale $\xi_i$ is profiled under the subject's maximum-posterior type, following the implementation in BFDE. Textbook EM raises the log-likelihood at every iteration, but the $\xi_i$ update here uses the maximum-posterior type rather than a type-weighted expectation. That is an approximation, also used in the BFDE implementation, which does not formally guarantee monotone improvement; in practice the log-likelihood still rises at every iteration on this design.
+Method 2 introduces two latent types and uses the EM algorithm of Dempster, Laird, and Rubin (1977). The E-step computes posterior membership probabilities given current parameters. The M-step updates mixing proportions to the posterior means and re-fits each type's parameters by weighted maximum likelihood. Each subject's noise scale $`\xi_i`$ is profiled under the subject's maximum-posterior type, following the implementation in BFDE. Textbook EM raises the log-likelihood at every iteration, but the $`\xi_i`$ update here uses the maximum-posterior type rather than a type-weighted expectation. That is an approximation, also used in the BFDE implementation, which does not formally guarantee monotone improvement; in practice the log-likelihood still rises at every iteration on this design.
 
 ```text
 Algorithm: Finite-mixture EM
@@ -151,17 +151,17 @@ Method 2 fails when the true number of types exceeds two. It pools the strong-di
 
 ### Method 3: Finite-mixture EM with C = 3 (BFDE headline)
 
-Method 3 uses the same EM algorithm with three components. Initial values are seeded from the BFDE headline pattern, augmented with type-specific loss aversion: an EUT type with $\lambda = 1$, a mild-CPT type with $\lambda = 1.5$, and a strong-CPT type with $\lambda = 2.5$. Bayesian information criterion across $C \in \lbrace 1, 2, 3, 4\rbrace$ selects $C = 3$. Mixed lotteries are essential for identifying the type-specific $\lambda$; without them the three types still differ on $(\alpha, \gamma, \delta)$ but $\lambda$ remains unidentified.
+Method 3 uses the same EM algorithm with three components. Initial values are seeded from the BFDE headline pattern, augmented with type-specific loss aversion: an EUT type with $`\lambda = 1`$, a mild-CPT type with $`\lambda = 1.5`$, and a strong-CPT type with $`\lambda = 2.5`$. Bayesian information criterion across $`C \in \lbrace 1, 2, 3, 4\rbrace`$ selects $`C = 3`$. Mixed lotteries are essential for identifying the type-specific $`\lambda`$; without them the three types still differ on $`(\alpha, \gamma, \delta)`$ but $`\lambda`$ remains unidentified.
 
 In this tutorial the C = 3 initial values coincide with the true data-generating parameters, so the recovery reported below is an oracle start: it shows EM converges and stays at the truth, not that EM finds the truth from a cold start. A realistic application would warm-start from BFDE headline values that differ from the unknown truth and would need restarts to guard against local maxima.
 
-Method 3 can fail through label switching (component permutations give the same likelihood) and through bad initial values (EM converges to local maxima in mixture problems). The label-switching fix is to reorder components by $\gamma$ after convergence; the local-maxima problem is mitigated by warm starts from the BFDE headline parameters.
+Method 3 can fail through label switching (component permutations give the same likelihood) and through bad initial values (EM converges to local maxima in mixture problems). The label-switching fix is to reorder components by $`\gamma`$ after convergence; the local-maxima problem is mitigated by warm starts from the BFDE headline parameters.
 
 ## Results
 
-The left panel shows the recovered weighting curves. The EUT type's curve sits on the diagonal $w(p) = p$ within sampling noise. The two CPT types both show the inverted-S signature: above the diagonal at low probabilities and below it at high probabilities, with the strong-CPT crossing near $p = 0.4$. Dotted lines mark the true curves; solid lines mark the EM estimates.
+The left panel shows the recovered weighting curves. The EUT type's curve sits on the diagonal $`w(p) = p`$ within sampling noise. The two CPT types both show the inverted-S signature: above the diagonal at low probabilities and below it at high probabilities, with the strong-CPT crossing near $`p = 0.4`$. Dotted lines mark the true curves; solid lines mark the EM estimates.
 
-The right panel shows the value function. The strong-CPT type's curve drops steeply below zero because $\lambda = 2.5$ amplifies the disutility of losses, while the EUT type's curve is symmetric around zero with $\lambda = 1$. The slope discontinuity at $x = 0$ is what mixed lotteries identify.
+The right panel shows the value function. The strong-CPT type's curve drops steeply below zero because $`\lambda = 2.5`$ amplifies the disutility of losses, while the EUT type's curve is symmetric around zero with $`\lambda = 1`$. The slope discontinuity at $`x = 0`$ is what mixed lotteries identify.
 
 <img src="figures/weighting-and-value-functions.png" alt="Recovered probability weighting and value function by type" width="80%">
 
@@ -169,7 +169,7 @@ The classification posterior is sharp. The maximum posterior exceeds 0.95 on 100
 
 <img src="figures/classification-posterior.png" alt="Histogram of maximum posterior membership probability across subjects" width="80%">
 
-Bayesian information criterion across $C \in \lbrace1, 2, 3, 4\rbrace$ selects $C = 3$ on this simulated sample, replicating the BFDE Table III pattern. The first step from $C = 1$ to $C = 2$ delivers a large BIC drop because the data clearly demand at least two types. The second step from $C = 2$ to $C = 3$ delivers a smaller but decisive drop because the strong-CPT type is genuinely distinct from the mild-CPT type. The fourth component, by contrast, raises BIC: it captures only noise and the parsimony penalty correctly rejects it.
+Bayesian information criterion across $`C \in \lbrace1, 2, 3, 4\rbrace`$ selects $`C = 3`$ on this simulated sample, replicating the BFDE Table III pattern. The first step from $`C = 1`$ to $`C = 2`$ delivers a large BIC drop because the data clearly demand at least two types. The second step from $`C = 2`$ to $`C = 3`$ delivers a smaller but decisive drop because the strong-CPT type is genuinely distinct from the mild-CPT type. The fourth component, by contrast, raises BIC: it captures only noise and the parsimony penalty correctly rejects it.
 
 <img src="figures/model-selection-bic.png" alt="BIC across mixture sizes" width="80%">
 
@@ -177,7 +177,7 @@ The median relative risk premium is positive at high probabilities and negative 
 
 <img src="figures/relative-risk-premia.png" alt="Median relative risk premia by lottery probability" width="80%">
 
-The type-parameters table compares the true generating values to the Method 3 estimates after EM convergence and label-switch reordering. The recovered curvature, loss aversion, slope, elevation, and mixing proportions all lie within sampling noise of the truth at $N = 200$ subjects and 85 lotteries each. Loss aversion is sharply different across types: $\hat\lambda$ is essentially 1 for the EUT type, near 1.5 for the mild-CPT type, and 2.53 for the strong-CPT type. The strong-CPT estimate is in the same neighbourhood as the Tversky-Kahneman 1992 benchmark of $\lambda \approx 2.25$. Without the mixed lotteries this separation would not be possible.
+The type-parameters table compares the true generating values to the Method 3 estimates after EM convergence and label-switch reordering. The recovered curvature, loss aversion, slope, elevation, and mixing proportions all lie within sampling noise of the truth at $`N = 200`$ subjects and 85 lotteries each. Loss aversion is sharply different across types: $`\hat\lambda`$ is essentially 1 for the EUT type, near 1.5 for the mild-CPT type, and 2.53 for the strong-CPT type. The strong-CPT estimate is in the same neighbourhood as the Tversky-Kahneman 1992 benchmark of $`\lambda \approx 2.25`$. Without the mixed lotteries this separation would not be possible.
 
 **Recovered type parameters and mixing proportions under Method 3**
 
@@ -187,7 +187,7 @@ The type-parameters table compares the true generating values to the Method 3 es
 | Mild CPT   |         0.85 |             0.856 |           1.5 |              1.487 |         0.65 |             0.643 |         0.85 |             0.847 |          0.5 |              0.52 |
 | Strong CPT |         0.7  |             0.701 |           2.5 |              2.533 |         0.4  |             0.398 |         0.95 |             0.95  |          0.3 |              0.28 |
 
-The model-selection table puts BIC and normalised entropy criterion next to the log-likelihood for each mixture size. Normalised entropy stays close to zero at $C = 3$, confirming sharp classification at the chosen model size.
+The model-selection table puts BIC and normalised entropy criterion next to the log-likelihood for each mixture size. Normalised entropy stays close to zero at $`C = 3`$, confirming sharp classification at the chosen model size.
 
 **Model selection across mixture sizes**
 
@@ -202,9 +202,9 @@ The model-selection table puts BIC and normalised entropy criterion next to the 
 
 Risk-taking heterogeneity is a structural object, not statistical noise. Finite-mixture EM recovers it cleanly: subjects fall into a small number of latent types, each characterised by a distinct curvature, loss-aversion factor, and probability-weighting pair, with mixing proportions that are themselves estimable.
 
-Single-type CPT estimation is structurally mis-specified when the population contains distinct types. The fitted parameters describe a non-existent average subject. The bias toward the population mean is largest for $\lambda$ and $\gamma$, the two parameters most sensitive to mixing.
+Single-type CPT estimation is structurally mis-specified when the population contains distinct types. The fitted parameters describe a non-existent average subject. The bias toward the population mean is largest for $`\lambda`$ and $`\gamma`$, the two parameters most sensitive to mixing.
 
-Loss aversion is identifiable only with mixed lotteries. BFDE drop $\lambda$ from their published specification because their data has none. Adding even a handful of mixed cells recovers $\lambda$ sharply by type, and the recovered value for the strong-CPT minority lands in the same range as the Tversky-Kahneman 1992 benchmark of $\lambda \approx 2.25$.
+Loss aversion is identifiable only with mixed lotteries. BFDE drop $`\lambda`$ from their published specification because their data has none. Adding even a handful of mixed cells recovers $`\lambda`$ sharply by type, and the recovered value for the strong-CPT minority lands in the same range as the Tversky-Kahneman 1992 benchmark of $`\lambda \approx 2.25`$.
 
 ## References
 

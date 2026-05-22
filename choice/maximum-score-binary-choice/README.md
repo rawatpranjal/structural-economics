@@ -12,25 +12,25 @@ Maximum score searches for the index that classifies the most choices correctly.
 
 The simulated decision is a participation rule:
 
-$$
+```math
 y_i = 1\lbrace x^B_i+\beta x^C_i+\varepsilon_i \geq 0\rbrace.
-$$
+```
 
-Here $x^B_i$ is the benefit shifter, $x^C_i$ is the cost shifter, and $\varepsilon_i$ is an idiosyncratic error term.
-A negative $\beta$ means higher costs lower participation.
+Here $`x^B_i`$ is the benefit shifter, $`x^C_i`$ is the cost shifter, and $`\varepsilon_i`$ is an idiosyncratic error term.
+A negative $`\beta`$ means higher costs lower participation.
 Only the index direction is identified.
-The coefficient on $x^B_i$ is normalized to one.
+The coefficient on $`x^B_i`$ is normalized to one.
 Manski's maximum-score estimator solves
 
-$$
+```math
 \hat\beta = \arg\max_b \frac{1}{n}\sum_i \left[y_i 1\lbrace x^B_i+b x^C_i\geq 0\rbrace + (1-y_i)1\lbrace x^B_i+b x^C_i<0\rbrace\right].
-$$
+```
 
 Smoothing replaces the hard indicator with a normal CDF:
 
-$$
+```math
 S_h(b)=\frac{1}{n}\sum_i \left[y_i \Phi((x^B_i+b x^C_i)/h) +(1-y_i)\lbrace1-\Phi((x^B_i+b x^C_i)/h)\rbrace\right].
-$$
+```
 
 ## Model Setup
 
@@ -38,7 +38,7 @@ $$
 |--------|-------|------|
 | Observations | 2,500 | Simulated participation decisions |
 | Normalized coefficient | 1 | Benefit shifter weight |
-| True $\beta$ | -0.85 | Cost shifter weight |
+| True $`\beta`$ | -0.85 | Cost shifter weight |
 | Error distribution | heteroskedastic logistic | Median zero, logit likelihood misspecified |
 | Grid points | 501 | Direct search over nonsmooth objective |
 | Smoothing bandwidth | 0.25 | Smooth boundary approximation |

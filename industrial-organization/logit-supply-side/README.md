@@ -10,56 +10,56 @@ Accounting costs are missing, so the model infers costs from demand and firm opt
 
 ## Equations
 
-Markets are indexed by $t$. Products are indexed by $j$.
+Markets are indexed by $`t`$. Products are indexed by $`j`$.
 Mean utility collects characteristics, price, and unobserved quality:
 
-$$
+```math
 \delta_{jt} =\beta_0+\beta_{\text{sugar}}x^{\text{sugar}}_{jt} +\beta_{\text{fiber}}x^{\text{fiber}}_{jt} -\alpha p_{jt}+\xi_{jt}.
-$$
+```
 
 Simple logit shares satisfy
 
-$$
+```math
 s_{jt}=\frac{\exp(\delta_{jt})}{1+\sum_k \exp(\delta_{kt})}, \qquad s_{0t}=\frac{1}{1+\sum_k \exp(\delta_{kt})}.
-$$
+```
 
 Berry's inversion turns observed shares into a linear estimating equation:
 
-$$
+```math
 \log s_{jt}-\log s_{0t} =\beta_0+\beta_{\text{sugar}}x^{\text{sugar}}_{jt} +\beta_{\text{fiber}}x^{\text{fiber}}_{jt} -\alpha p_{jt}+\xi_{jt}.
-$$
+```
 
-Identification needs price variation excluded from $\xi_{jt}$. The cost shifter
+Identification needs price variation excluded from $`\xi_{jt}`$. The cost shifter
 plays that role in the simulation.
 
 The supply inversion uses the logit derivative matrix:
 
-$$
+```math
 \frac{\partial s_k}{\partial p_j} =\begin{cases} {}-\alpha s_j(1-s_j), & k=j,\\ \alpha s_k s_j, & k\neq j. \end{cases}
-$$
+```
 
-In the supply equations, $p$ and $s$ are vectors collecting prices and shares across all products in a market.
-Firm $f$ chooses prices for its products. Product $j$'s FOC is
+In the supply equations, $`p`$ and $`s`$ are vectors collecting prices and shares across all products in a market.
+Firm $`f`$ chooses prices for its products. Product $`j`$'s FOC is
 
-$$
+```math
 0=s_j(p)+\sum_k \mathbf{1}\lbrace f(j)=f(k)\rbrace (p_k-c_k) \frac{\partial s_k(p)}{\partial p_j}.
-$$
+```
 
-Here $c_k$ denotes the marginal cost of product $k$.
-Let $O_{jk}=1$ when products $j$ and $k$ share an owner. Define the pricing
+Here $`c_k`$ denotes the marginal cost of product $`k`$.
+Let $`O_{jk}=1`$ when products $`j`$ and $`k`$ share an owner. Define the pricing
 matrix
 
-$$
+```math
 \Omega_{jk}=-O_{jk}\frac{\partial s_k}{\partial p_j}.
-$$
+```
 
-The markup vector $m=p-c$ solves
+The markup vector $`m=p-c`$ solves
 
-$$
+```math
 \Omega m=s.
-$$
+```
 
-The recovered cost vector is then $c=p-m$. Ownership matters because a firm
+The recovered cost vector is then $`c=p-m`$. Ownership matters because a firm
 internalizes lost sales across its own products.
 
 ## Model Setup
@@ -68,10 +68,10 @@ The simulation fixes true demand parameters and marginal costs. This makes deman
 
 | Parameter | Value | Description |
 |-----------|-------|-------------|
-| $\alpha$ | 1.5 | Price sensitivity |
-| $\beta_{\text{sugar}}$ | 0.3 | Sugar taste |
-| $\beta_{\text{fiber}}$ | 0.5 | Fiber taste |
-| $\beta_0$ | 1.0 | Base utility |
+| $`\alpha`$ | 1.5 | Price sensitivity |
+| $`\beta_{\text{sugar}}`$ | 0.3 | Sugar taste |
+| $`\beta_{\text{fiber}}`$ | 0.5 | Fiber taste |
+| $`\beta_0`$ | 1.0 | Base utility |
 | Products | 5 | Choco-Bombs, Fiber-Bran, Store-Frosted, Honey-Os, Nutri-Crunch |
 | Markets | 100 | Cross-sectional variation in costs |
 | Firms | 3 | Firms 1 and 2 own 2 products each (multi-product) |

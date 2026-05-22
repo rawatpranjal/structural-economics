@@ -4,74 +4,74 @@
 
 A firm can install machines before it learns that productivity will be low. It can stop new investment. Installed capital only leaves through depreciation.
 
-The model is a stochastic RBC economy with capital $K$ and productivity $z$. The household chooses $K'$ after observing $z$. Irreversible investment imposes $K' \geq (1-\delta)K$, or $I\geq 0$.
+The model is a stochastic RBC economy with capital $`K`$ and productivity $`z`$. The household chooses $`K'`$ after observing $`z`$. Irreversible investment imposes $`K' \geq (1-\delta)K`$, or $`I\geq 0`$.
 
 The object of interest is the zero-investment boundary. It can bind far from the steady state. Global value function iteration keeps that boundary on the grid. The solution can then show the binding region and the overhang path.
 
 ## Equations
 
-Let $K_t$ be beginning-of-period capital, $z_t$ productivity, $c_t$ consumption,
-and $K_{t+1}$ next-period capital. Output is $Y_t=z_tK_t^\alpha$ and
+Let $`K_t`$ be beginning-of-period capital, $`z_t`$ productivity, $`c_t`$ consumption,
+and $`K_{t+1}`$ next-period capital. Output is $`Y_t=z_tK_t^\alpha`$ and
 
-$$
+```math
 \log z_{t+1}=\rho \log z_t+\varepsilon_{t+1},
 \qquad \varepsilon_{t+1}\sim N(0,\sigma_\varepsilon^2).
-$$
+```
 
 The Bellman equation is
 
-$$
+```math
 V(K,z)=\max_{K'\in \Gamma(K,z)}\Bigg[
 \frac{\left[zK^\alpha+(1-\delta)K-K'\right]^{1-\sigma}}{1-\sigma}
 +\beta \sum_{z'} P(z,z')V(K',z')\Bigg].
-$$
+```
 
-Here $P(z,z')$ is the transition probability from productivity state $z$ to next-period state $z'$, obtained from the Tauchen discretization of the log-AR(1).
+Here $`P(z,z')`$ is the transition probability from productivity state $`z`$ to next-period state $`z'`$, obtained from the Tauchen discretization of the log-AR(1).
 
 The standard RBC choice set is
 
-$$
+```math
 \Gamma^{std}(K,z)=\lbrace K'\geq 0:
 zK^\alpha+(1-\delta)K-K'>0\rbrace.
-$$
+```
 
 Irreversibility adds
 
-$$
+```math
 I_t\equiv K_{t+1}-(1-\delta)K_t\geq 0,
 \qquad
 \Gamma^{irr}(K,z)=\lbrace K'\geq (1-\delta)K:
 zK^\alpha+(1-\delta)K-K'>0\rbrace.
-$$
+```
 
-Let $\lambda_t$ denote the multiplier on irreversible investment.
+Let $`\lambda_t`$ denote the multiplier on irreversible investment.
 The kink is summarized by
 
-$$
+```math
 \lambda_t\geq 0,\qquad I_t\geq 0,\qquad \lambda_t I_t=0.
-$$
+```
 
 At the deterministic steady state the constraint is slack because
-$I_{ss}=\delta K_{ss}>0$.
-With the calibration below, $K_{ss}=37.989$, $Y_{ss}=3.704$, $C_{ss}=2.754$, and $I_{ss}=0.950$.
+$`I_{ss}=\delta K_{ss}>0`$.
+With the calibration below, $`K_{ss}=37.989`$, $`Y_{ss}=3.704`$, $`C_{ss}=2.754`$, and $`I_{ss}=0.950`$.
 
 ## Model Setup
 
 | Parameter | Value | Description |
 |-----------|-------|-------------|
-| $\beta$ | 0.99 | Discount factor |
-| $\alpha$ | 0.36 | Capital share |
-| $\sigma$ | 2.0 | CRRA coefficient |
-| $\delta$ | 0.025 | Depreciation rate |
-| $\rho$ | 0.9 | Persistence of log productivity |
-| $\sigma_\varepsilon$ | 0.05 | Innovation std for log productivity |
-| Capital grid | 72 points on [20.89, 60.78] | State grid and candidate $K'$ grid |
+| $`\beta`$ | 0.99 | Discount factor |
+| $`\alpha`$ | 0.36 | Capital share |
+| $`\sigma`$ | 2.0 | CRRA coefficient |
+| $`\delta`$ | 0.025 | Depreciation rate |
+| $`\rho`$ | 0.9 | Persistence of log productivity |
+| $`\sigma_\varepsilon`$ | 0.05 | Innovation std for log productivity |
+| Capital grid | 72 points on [20.89, 60.78] | State grid and candidate $`K'`$ grid |
 | TFP grid | 7 Tauchen states | Common shock grid for both models |
-| Overhang experiment | $K_0=1.25K_{ss}$ plus a low-$z$ episode | A stress path, not a stationary moment |
+| Overhang experiment | $`K_0=1.25K_{ss}`$ plus a low-$`z`$ episode | A stress path, not a stationary moment |
 
 ## Solution Method
 
-The computation uses global value function iteration. It solves the standard and irreversible models on the same grids. The point $K'=(1-\delta)K$ is the feasible lower bound under irreversibility. The code evaluates that off-grid boundary for both models so neither solution loses accuracy at the kink; for the standard model it can only win when the optimum is at or above $I=0$. The binding indicator is recorded for the irreversible model, where the boundary choice means the investment floor is active.
+The computation uses global value function iteration. It solves the standard and irreversible models on the same grids. The point $`K'=(1-\delta)K`$ is the feasible lower bound under irreversibility. The code evaluates that off-grid boundary for both models so neither solution loses accuracy at the kink; for the standard model it can only win when the optimum is at or above $`I=0`$. The binding indicator is recorded for the irreversible model, where the boundary choice means the investment floor is active.
 
 ```text
 Algorithm: global VFI with an irreversible-investment boundary
@@ -95,7 +95,7 @@ The irreversible model converged in **49** VFI iterations. The standard comparis
 
 ## Results
 
-The policy comparison locates the constraint. At low productivity and high capital, the standard model chooses negative investment. The irreversible policy flattens at $I=0$.
+The policy comparison locates the constraint. At low productivity and high capital, the standard model chooses negative investment. The irreversible policy flattens at $`I=0`$.
 
 <img src="figures/policy-functions.png" alt="Investment and consumption policies for standard and irreversible RBC models" width="80%">
 
@@ -111,7 +111,7 @@ The value loss is largest where the boundary binds. Near the steady state, norma
 
 <img src="figures/value-difference.png" alt="Value-function difference between irreversible and standard RBC models" width="80%">
 
-The stationary simulation starts at $K_{ss}$ and uses common productivity draws. The binding frequency is low in this calibration. That does not make the constraint irrelevant for high-capital recessions.
+The stationary simulation starts at $`K_{ss}`$ and uses common productivity draws. The binding frequency is low in this calibration. That does not make the constraint irrelevant for high-capital recessions.
 
 **Stationary Simulation Moments**
 

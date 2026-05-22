@@ -10,36 +10,36 @@ The task becomes a finite graph problem. Nodes are observations, edges carry bud
 
 ## Equations
 
-There are $T$ observations. Observation $i$ records a price vector
-$p_i \in \mathbb{R}^G_+$ and chosen bundle $x_i \in \mathbb{R}^G_+$.
+There are $`T`$ observations. Observation $`i`$ records a price vector
+$`p_i \in \mathbb{R}^G_+`$ and chosen bundle $`x_i \in \mathbb{R}^G_+`$.
 Let
 
-$$
+```math
 E_{ij}=p_i \cdot x_j
-$$
+```
 
-be the cost of bundle $j$ at observation $i$ prices. Choosing $x_i$ when
-$x_j$ was affordable, $E_{ii} \ge E_{ij}$, directly reveals
-$x_i \succeq^D x_j$. For strict comparisons, define the relative budget slack
+be the cost of bundle $`j`$ at observation $`i`$ prices. Choosing $`x_i`$ when
+$`x_j`$ was affordable, $`E_{ii} \ge E_{ij}`$, directly reveals
+$`x_i \succeq^D x_j`$. For strict comparisons, define the relative budget slack
 on a direct revealed-preference edge as
 
-$$
+```math
 w_{ij} = \frac{E_{ii} - E_{ij}}{E_{ii}}.
-$$
+```
 
-The graph keeps edges with $w_{ij}>0$. For a directed cycle
-$C=(i_1,\ldots,i_m,i_1)$, average slack is
+The graph keeps edges with $`w_{ij}>0`$. For a directed cycle
+$`C=(i_1,\ldots,i_m,i_1)`$, average slack is
 
-$$
+```math
 \bar w(C)=\frac{1}{m}\sum_{\ell=1}^{m} w_{i_\ell,i_{\ell+1}}.
-$$
+```
 
 The Money Pump Index is the largest average slack over all directed cycles in
 the revealed-preference graph:
 
-$$
+```math
 \mathrm{MPI} = \max_C \bar w(C).
-$$
+```
 
 ## Model Setup
 
@@ -53,7 +53,7 @@ $$
 
 ## Solution Method
 
-After the budget comparisons, the data are a directed graph. Each observation is a node. An edge $i \to j$ exists when bundle $j$ was strictly cheaper at prices $i$. The edge weight is the saved budget share. Karp's dynamic program computes the maximum mean weight cycle.
+After the budget comparisons, the data are a directed graph. Each observation is a node. An edge $`i \to j`$ exists when bundle $`j`$ was strictly cheaper at prices $`i`$. The edge weight is the saved budget share. Karp's dynamic program computes the maximum mean weight cycle.
 
 ```text
 Inputs: prices p_i, bundles x_i, tolerance eps

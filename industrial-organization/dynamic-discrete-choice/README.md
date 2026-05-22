@@ -12,84 +12,84 @@ Computation is needed because each trial parameter vector implies a dynamic prog
 
 ## Equations
 
-Let $x_t \in X$ denote mileage at the start of period $t$. The action
-$a_t=1$ replaces the engine and $a_t=0$ keeps it. Replacement flow utility is
+Let $`x_t \in X`$ denote mileage at the start of period $`t`$. The action
+$`a_t=1`$ replaces the engine and $`a_t=0`$ keeps it. Replacement flow utility is
 normalized to zero:
 
-$$
+```math
 u(x,1) = 0,
-$$
+```
 
 and the keep payoff is
 
-$$
+```math
 u(x,0) = \theta_0 + \theta_1 x, \qquad \theta_1 < 0.
-$$
+```
 
-The transition matrix $F_a(x' \mid x)$ gives next period's mileage. Replacement
-uses $F_1$ and is close to the transition from a new engine. Keeping uses $F_0$
+The transition matrix $`F_a(x' \mid x)`$ gives next period's mileage. Replacement
+uses $`F_1`$ and is close to the transition from a new engine. Keeping uses $`F_0`$
 and lets mileage drift upward.
 
 With additive Type-I extreme value shocks, the conditional value functions
 satisfy
 
-$$
+```math
 v_a(x) = u(x,a) + \beta \sum_{x'} F_a(x' \mid x)
 \left[\log\left(\exp(v_1(x')) + \exp(v_0(x'))\right) + \gamma\right],
-$$
+```
 
-where $\gamma$ is Euler's constant. The replacement probability is
+where $`\gamma`$ is Euler's constant. The replacement probability is
 
-$$
+```math
 P_\theta(1 \mid x) =
 \frac{\exp(v_1(x))}{\exp(v_1(x))+\exp(v_0(x))}.
-$$
+```
 
-For panel observations $(x_{it}, d_{it})$, where $d_{it}=1$ means replacement,
+For panel observations $`(x_{it}, d_{it})`$, where $`d_{it}=1`$ means replacement,
 the full-solution likelihood is
 
-$$
+```math
 \ell(\theta)=\sum_{i,t}
 d_{it}\log P_\theta(1 \mid x_{it}) +
 (1-d_{it})\log[1-P_\theta(1 \mid x_{it})].
-$$
+```
 
-The CCP estimator starts from a first-stage estimate $\hat p(x)$ of
-$\Pr(a=1 \mid x)$. Given $\hat p$, form the policy transition
+The CCP estimator starts from a first-stage estimate $`\hat p(x)`$ of
+$`\Pr(a=1 \mid x)`$. Given $`\hat p`$, form the policy transition
 
-$$
+```math
 \hat F(x' \mid x)=\hat p(x)F_1(x' \mid x)+[1-\hat p(x)]F_0(x' \mid x).
-$$
+```
 
-For any candidate $\theta$, the Hotz-Miller ex ante value solves the linear
+For any candidate $`\theta`$, the Hotz-Miller ex ante value solves the linear
 system
 
-$$
+```math
 W_\theta =
 \bar u_\theta(\hat p)+\beta \hat F W_\theta,
-$$
+```
 
-where $\bar u_\theta(\hat p)$ includes the keep payoff and the logit entropy
-terms implied by $\hat p$.
+where $`\bar u_\theta(\hat p)`$ includes the keep payoff and the logit entropy
+terms implied by $`\hat p`$.
 
 The model-implied replacement probability is then
 
-$$
+```math
 P_\theta^{HM}(1 \mid x)
 =\Lambda\left(\beta F_1 W_\theta
 -\theta_0-\theta_1 x-\beta F_0 W_\theta\right),
-$$
+```
 
-with $\Lambda(z)=1/(1+\exp(-z))$.
+with $`\Lambda(z)=1/(1+\exp(-z))`$.
 
-The MPEC estimator chooses $\theta$ and the conditional values $v$ jointly:
+The MPEC estimator chooses $`\theta`$ and the conditional values $`v`$ jointly:
 
-$$
+```math
 \max_{\theta,v}\ \ell(\theta,v)
 \quad\text{subject to}\quad
 v_a(x) = u(x,a;\theta) + \beta \sum_{x'} F_a(x' \mid x)
 \left[\log\sum_{j\in\lbrace0,1\rbrace}\exp(v_j(x'))+\gamma\right]
-$$
+```
 
 for every action and mileage state. The likelihood still uses the logit choice
 formula.
@@ -101,20 +101,20 @@ the objective.
 
 | Parameter | Value | Description |
 |-----------|-------|-------------|
-| $\beta$ | 0.9 | Discount factor |
-| $\theta_0$ | 2.00 | Keep-engine payoff intercept |
-| $\theta_1$ | -0.15 | Mileage cost slope |
-| Mileage states | 61 | Grid for $x \in [0,15]$ |
+| $`\beta`$ | 0.9 | Discount factor |
+| $`\theta_0`$ | 2.00 | Keep-engine payoff intercept |
+| $`\theta_1`$ | -0.15 | Mileage cost slope |
+| Mileage states | 61 | Grid for $`x \in [0,15]`$ |
 | Transition law | Exponential increments | Replacement resets to the low-mileage transition |
 | Buses | 1500 | Simulated panel units |
 | Periods | 35 | Observations per bus |
-| Ground truth | Known | Data are simulated from $\theta=(2.00,-0.15)$ |
+| Ground truth | Known | Data are simulated from $`\theta=(2.00,-0.15)`$ |
 
 ## Solution Method
 
 The three estimators organize the same economic restrictions differently. NFXP solves the Bellman fixed point inside every likelihood evaluation. CCP estimation uses a first-stage replacement hazard to turn continuation values into a linear policy-evaluation problem. MPEC gives the optimizer the values directly and enforces the Bellman equations as constraints.
 
-The nested fixed-point estimator treats the dynamic program as part of the likelihood. Every candidate $\theta$ implies a replacement hazard only after the conditional value functions have been solved.
+The nested fixed-point estimator treats the dynamic program as part of the likelihood. Every candidate $`\theta`$ implies a replacement hazard only after the conditional value functions have been solved.
 
 ```text
 Algorithm: nested fixed-point likelihood for replacement

@@ -10,62 +10,62 @@ The Bellman equation has no closed-form stochastic policy. We solve it on a glob
 
 ## Equations
 
-**Technology and resources.** Capital $k_t$, labor $l_t\in(0,1)$, and TFP $z_t$
+**Technology and resources.** Capital $`k_t`$, labor $`l_t\in(0,1)`$, and TFP $`z_t`$
 produce output through Cobb-Douglas technology:
 
-$$
+```math
 y_t = z_tk_t^{\alpha} l_t^{1-\alpha},\qquad \alpha\in(0,1),
-$$
+```
 
 The resource constraint is
 
-$$
+```math
 c_t + k_{t+1} = z_tk_t^{\alpha} l_t^{1-\alpha} + (1-\delta) k_t,
-$$
+```
 
-with $c_t>0$ and $k_{t+1}\geq 0$. Investment is $i_t = k_{t+1} - (1-\delta) k_t$.
+with $`c_t>0`$ and $`k_{t+1}\geq 0`$. Investment is $`i_t = k_{t+1} - (1-\delta) k_t`$.
 
 **Preferences.** Period utility uses log consumption and log leisure:
 
-$$
+```math
 u(c,l)=\log c+\phi\log(1-l),\qquad \phi>0,
-$$
+```
 
 The household maximizes
-$\mathbb{E}_0\sum_{t=0}^{\infty}\beta^t u(c_t,l_t)$.
+$`\mathbb{E}_0\sum_{t=0}^{\infty}\beta^t u(c_t,l_t)`$.
 
-**TFP process.** Productivity takes two values $z_t\in\lbrace z_L,z_H\rbrace=\lbrace0.95,1.05\rbrace$
+**TFP process.** Productivity takes two values $`z_t\in\lbrace z_L,z_H\rbrace=\lbrace0.95,1.05\rbrace`$
 with persistent symmetric transitions:
 
-$$
+```math
 P_{ij}=\Pr(z_{t+1}=z_j\mid z_t=z_i),\qquad
 P=\begin{pmatrix}0.95 & 0.05\\ 0.05 & 0.95\end{pmatrix}.
-$$
+```
 
-**Bellman equation.** Conditioning on the current state $(k,z_i)$, the household
+**Bellman equation.** Conditioning on the current state $`(k,z_i)`$, the household
 solves:
 
-$$
+```math
 V(k,z_i)=\max_{k', l\in(0,1)}[\log c+\phi\log(1-l)+\beta\sum_{j}P_{ij} V(k',z_j)],
-$$
+```
 
-subject to $c=z_i k^{\alpha} l^{1-\alpha}+(1-\delta)k-k'>0$. The policy
-functions are $g_k(k,z)=k'$ and $g_l(k,z)=l$.
+subject to $`c=z_i k^{\alpha} l^{1-\alpha}+(1-\delta)k-k'>0`$. The policy
+functions are $`g_k(k,z)=k'`$ and $`g_l(k,z)=l`$.
 
-**Deterministic $z=1$ benchmark.** Setting $z\equiv 1$ in the stochastic
+**Deterministic $`z=1`$ benchmark.** Setting $`z\equiv 1`$ in the stochastic
 Bellman, the Euler condition for capital pins down the steady-state
 capital-labor ratio,
 
-$$
+```math
 \frac{k_{ss}}{l_{ss}}=(\frac{1/\beta-1+\delta}{\alpha})^{1/(\alpha-1)},
-$$
+```
 
 and the labor first-order condition pins down hours
 
-$$
+```math
 l_{ss}=\frac{w_{ss}}{w_{ss}+\phi(c_{ss}/l_{ss})},\qquad
 w_{ss}=(1-\alpha)(k_{ss}/l_{ss})^{\alpha}.
-$$
+```
 
 The stochastic policy fluctuates around this benchmark.
 
@@ -73,18 +73,18 @@ The stochastic policy fluctuates around this benchmark.
 
 | Object | Value | Role |
 |---|---:|---|
-| $\beta$ | 0.99 | Discount factor (quarterly) |
-| $\delta$ | 0.0233 | Depreciation rate |
-| $\alpha$ | 0.3333 | Capital share in Cobb-Douglas |
-| $\phi$ | 1.74 | Leisure weight in utility |
-| $z\in\lbrace z_L,z_H\rbrace$ | $\lbrace0.95,1.05\rbrace$ | Two-state aggregate TFP |
-| $P_{ii}$ | 0.95 | Probability of staying in the same TFP state |
-| $k_{ss}$ | 10.4980 | Deterministic steady-state capital at $z=1$ |
-| $l_{ss}$ | 0.3330 | Deterministic steady-state hours |
-| $c_{ss}$ | 0.8073 | Deterministic steady-state consumption |
-| $i_{ss}$ | 0.2446 | Deterministic steady-state investment |
-| Capital grid | $[9.0,12.0]$, 50 pts | State and $k'$ choice grid |
-| Labor grid | $[0.2,0.6]$, 50 pts | $l$ candidates |
+| $`\beta`$ | 0.99 | Discount factor (quarterly) |
+| $`\delta`$ | 0.0233 | Depreciation rate |
+| $`\alpha`$ | 0.3333 | Capital share in Cobb-Douglas |
+| $`\phi`$ | 1.74 | Leisure weight in utility |
+| $`z\in\lbrace z_L,z_H\rbrace`$ | $`\lbrace0.95,1.05\rbrace`$ | Two-state aggregate TFP |
+| $`P_{ii}`$ | 0.95 | Probability of staying in the same TFP state |
+| $`k_{ss}`$ | 10.4980 | Deterministic steady-state capital at $`z=1`$ |
+| $`l_{ss}`$ | 0.3330 | Deterministic steady-state hours |
+| $`c_{ss}`$ | 0.8073 | Deterministic steady-state consumption |
+| $`i_{ss}`$ | 0.2446 | Deterministic steady-state investment |
+| Capital grid | $`[9.0,12.0]`$, 50 pts | State and $`k'`$ choice grid |
+| Labor grid | $`[0.2,0.6]`$, 50 pts | $`l`$ candidates |
 | Fine benchmark | 200 capital, 100 labor pts | Audit only |
 | Tolerance | 1e-05 | Sup-norm stopping rule for VFI |
 | Simulation | 5000 periods after 500 burn-in | Stationary moments |
@@ -93,11 +93,11 @@ The stochastic policy fluctuates around this benchmark.
 
 **Bellman update.** The Bellman operator
 
-$$
+```math
 (TV)(k,z_i)=\max_{(l,k')}[\log c(k,z_i,l,k')+\phi\log(1-l)+\beta\sum_{j}P_{ij}V(k',z_j)]
-$$
+```
 
-is a $\beta$-contraction. VFI applies it until the value function changes by less than the tolerance. For each state, the code evaluates every labor and next-capital pair. It masks negative consumption and takes a joint argmax. The selected indices define the two policy rules.
+is a $`\beta`$-contraction. VFI applies it until the value function changes by less than the tolerance. For each state, the code evaluates every labor and next-capital pair. It masks negative consumption and takes a joint argmax. The selected indices define the two policy rules.
 
 **Pseudocode.**
 

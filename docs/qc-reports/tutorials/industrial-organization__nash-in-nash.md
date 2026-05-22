@@ -11,7 +11,7 @@ The tutorial is economics-first, reproducible, and coherent with its generated a
 | Dimension | Status | Notes |
 |---|---|---|
 | Crux and intuition | Pass | The tutorial centers the economic object: a failed hospital-insurer link changes network value, enrollment, outside options, and the transfer implied by Nash-in-Nash bargaining. |
-| Pseudocode and method clarity | Pass | The Solution Method gives symbolic, problem-specific pseudocode for bilateral and merged-system disagreement networks, using the same $G^{-hd}$, $G^{-Hd}$, $q_d(G)$, $\Delta_{hd}$, $S_{hd}$, and $w_{hd}$ notation as the Equations section. |
+| Pseudocode and method clarity | Pass | The Solution Method gives symbolic, problem-specific pseudocode for bilateral and merged-system disagreement networks, using the same $`G^{-hd}`$, $`G^{-Hd}`$, $`q_d(G)`$, $`\Delta_{hd}`$, $`S_{hd}`$, and $`w_{hd}`$ notation as the Equations section. |
 | Results and writeup coherence | Pass | The claims match `run.py`, the generated figures, and both CSV tables. Visible figure captions are absent; exposition appears in the surrounding Results text and the image alt text is concise. |
 | Reproducibility | Pass | Static QC, repro QC, and catalog validation all exited 0. Repro reported no changed artifacts for this tutorial. |
 | Root catalog row | Minor issue | The title still links to `industrial-organization/nash-in-nash/`, and the thumbnail opens the useful full `figures/negotiated-prices.png` figure. The thumbnail file is nonblank but is 200 x 86, not the repo-standard 200 x 150. |

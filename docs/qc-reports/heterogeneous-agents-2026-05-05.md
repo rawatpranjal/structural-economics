@@ -55,7 +55,7 @@ Reviewer notes (paraphrased):
   Bellman grid question to avoid the costly inner maximization) and ties the
   method to economics.
 - **envelope-equation-iteration**: motivates EEI as a fixed point on
-  marginal continuation values $W_a(a)$ rather than value levels - frames the
+  marginal continuation values $`W_a(a)`$ rather than value levels - frames the
   envelope condition as an updating equation, not just a theorem.
 - **huggett-incomplete-markets**: continuous-time HJB/KFE makes dual
   equilibrium objects (drift and density) transparent; upwind selection step

@@ -10,48 +10,48 @@ Bayes' rule gives a benchmark for each task. Repeated choices need EM because th
 
 ## Equations
 
-Let $H$ denote the high-red urn and $L$ the low-red urn. A task draws $n$ balls
-and observes $k$ red balls. Let $p_H$ and $p_L$ denote the red-ball probability
-under urns $H$ and $L$. The likelihood-ratio statistic is
+Let $`H`$ denote the high-red urn and $`L`$ the low-red urn. A task draws $`n`$ balls
+and observes $`k`$ red balls. Let $`p_H`$ and $`p_L`$ denote the red-ball probability
+under urns $`H`$ and $`L`$. The likelihood-ratio statistic is
 
-$$
+```math
 \Lambda(k,n) =
 \log \frac{\Pr(k\mid H,n)}{\Pr(k\mid L,n)} =
 k\log\frac{p_H}{p_L} + (n-k)\log\frac{1-p_H}{1-p_L}.
-$$
+```
 
-With prior $\pi_0=\Pr(H)$, Bayes' rule is
+With prior $`\pi_0=\Pr(H)`$, Bayes' rule is
 
-$$
+```math
 \Pr(H\mid k,n) =
 \frac{1}{1+\exp[-\lbrace\log(\pi_0/(1-\pi_0))+\Lambda(k,n)\rbrace]}.
-$$
+```
 
-Rule $m$ maps the sufficient statistic and counts into a choice probability
-$q_m(k,n)$. With subject $i$'s choices $d_{it}\in\lbrace0,1\rbrace$ (where $t$ indexes tasks), the panel likelihood
-under rule $m$ is
+Rule $`m`$ maps the sufficient statistic and counts into a choice probability
+$`q_m(k,n)`$. With subject $`i`$'s choices $`d_{it}\in\lbrace0,1\rbrace`$ (where $`t`$ indexes tasks), the panel likelihood
+under rule $`m`$ is
 
-$$
+```math
 L_{im} =
 \prod_t q_m(k_t,n_t)^{d_{it}}
 [1-q_m(k_t,n_t)]^{1-d_{it}}.
-$$
+```
 
 The finite-mixture likelihood is
 
-$$
+```math
 \ell(w)=\sum_i \log\left[\sum_m w_m L_{im}\right],
 \qquad \sum_m w_m=1,\quad w_m\geq 0.
-$$
+```
 
-The posterior probability that subject $i$ follows rule $m$ is
+The posterior probability that subject $`i`$ follows rule $`m`$ is
 
-$$
+```math
 \tau_{im} =
 \frac{w_m L_{im}}{\sum_h w_h L_{ih}}.
-$$
+```
 
-Here $h$ is a summation index ranging over the same rule set as $m$.
+Here $`h`$ is a summation index ranging over the same rule set as $`m`$.
 
 ## Model Setup
 
@@ -59,9 +59,9 @@ Here $h$ is a summation index ranging over the same rule set as $m$.
 |--------|-------|------|
 | Subjects | 600 | Repeated-choice panel units |
 | Tasks per subject | 60 | Variation used to classify latent rules |
-| Prior high urn | 0.45 | Baseline probability of state $H$ |
-| Red probability under $H$ | 0.72 | Signal distribution for high urn |
-| Red probability under $L$ | 0.32 | Signal distribution for low urn |
+| Prior high urn | 0.45 | Baseline probability of state $`H`$ |
+| Red probability under $`H`$ | 0.72 | Signal distribution for high urn |
+| Red probability under $`L`$ | 0.32 | Signal distribution for low urn |
 | Draw counts | 3, 4, 5, 6, 7, 8, 9, 12 | Signal-size variation separates Bayes and cutoff rules |
 | Bayes-conservative separating tasks | 6 | Tasks with posterior between the two decision cutoffs |
 | Tremble rate | 0.06 | Symmetric error around each deterministic rule |

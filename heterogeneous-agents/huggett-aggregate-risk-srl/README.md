@@ -12,70 +12,70 @@ This artifact was generated with the `quick` profile. Selection reason: auto sel
 
 ## Equations
 
-The household enters period $t$ with bond holdings $b_t \ge \underline b$,
-	idiosyncratic income state $y_t$, aggregate income state $z_t$, and net
-	interest rate $r_t$. Current resources are
+The household enters period $`t`$ with bond holdings $`b_t \ge \underline b`$,
+	idiosyncratic income state $`y_t`$, aggregate income state $`z_t`$, and net
+	interest rate $`r_t`$. Current resources are
 
-$$
+```math
 x_t = \exp(z_t)y_t + (1+r_t)b_t.
-$$
+```
 
 	The tabular policy is a feasible next-asset rule:
 
-$$
+```math
 b_{t+1} = g_\theta(b_t,y_t,z_t,r_t) \in [\underline b, x_t - c_{\min}].
-$$
+```
 
 	Consumption and period utility are
 
-$$
+```math
 c_t = x_t - g_\theta(b_t,y_t,z_t,r_t), \qquad u(c_t) = \frac{c_t^{1-\sigma}-1}{1-\sigma}.
-$$
+```
 
 	The Structural Reinforcement Learning objective is a Monte Carlo estimate of
 	expected lifetime utility, with a small ridge penalty on the policy
 	parameters to keep the tabular logits bounded:
 
-$$
+```math
 J(\theta) = \mathbb{E}\left[\sum_{t=0}^{T-1}\beta^t u(c_t)\right] - \kappa\overline{\theta^2}, \qquad \kappa = 10^{-5}.
-$$
+```
 
-	The penalty coefficient $\kappa$ is small relative to per-period utility, so
+	The penalty coefficient $`\kappa`$ is small relative to per-period utility, so
 	it regularizes the parameters without materially distorting the policy.
 
-	For a candidate interest-rate grid point $r^\ell$, the current distribution
-	$\mu_t(b,y)$ implies aggregate desired bond holdings
+	For a candidate interest-rate grid point $`r^\ell`$, the current distribution
+	$`\mu_t(b,y)`$ implies aggregate desired bond holdings
 
-$$
+```math
 B_t(r^\ell;\theta) = \sum_{b,y}\mu_t(b,y)g_\theta(b,y,z_t,r^\ell).
-$$
+```
 
-	Zero net bond supply means $B_t(r_t;\theta)=0$. During training the
+	Zero net bond supply means $`B_t(r_t;\theta)=0`$. During training the
 	implementation uses a differentiable weighted root over the rate grid:
 
-$$
+```math
 \omega_t^\ell = \frac{\exp[-(B_t(r^\ell;\theta)/\tau)^2]}{\sum_m \exp[-(B_t(r^m;\theta)/\tau)^2]}, \qquad r_t^{\mathrm{soft}} = \sum_\ell \omega_t^\ell r^\ell.
-$$
+```
 
 	For the reported equilibrium path, the tutorial uses the paper-style
 	interpolated market-clearing rate. If two adjacent grid points bracket zero,
 	the rate is
 
-$$
+```math
 r_t = (1-\lambda_t)r^\ell + \lambda_t r^{\ell+1}, \qquad
 	\lambda_t = \frac{-B_t(r^\ell;\theta)}{B_t(r^{\ell+1};\theta)-B_t(r^\ell;\theta)}.
-$$
+```
 
 	Given a policy and a realized aggregate state, the cross-sectional distribution
 is advanced by a non-stochastic histogram update. Each mass point is split
 linearly between the two nearest asset-grid points after applying
-$g_\theta$, then multiplied by the idiosyncratic transition matrix.
+$`g_\theta`$, then multiplied by the idiosyncratic transition matrix.
 
 ## Model Setup
 
-The calibration follows the published SRL Huggett experiment. The period is a year, $\beta=0.96$, and CRRA curvature is $\sigma=2$. Idiosyncratic log income has persistence 0.6 and innovation volatility 0.2. Aggregate log income has persistence 0.9 and volatility 0.02. The borrowing limit is $\underline b=-1$, and net bond supply is zero. Both income processes are discretized by Rouwenhorst, which preserves persistence accurately at the small state counts used here.
+The calibration follows the published SRL Huggett experiment. The period is a year, $`\beta=0.96`$, and CRRA curvature is $`\sigma=2`$. Idiosyncratic log income has persistence 0.6 and innovation volatility 0.2. Aggregate log income has persistence 0.9 and volatility 0.02. The borrowing limit is $`\underline b=-1`$, and net bond supply is zero. Both income processes are discretized by Rouwenhorst, which preserves persistence accurately at the small state counts used here.
 
-The published benchmark uses 200 bond points up to $b=50$, 3 idiosyncratic income states, 30 aggregate states, and 20 interest-rate points on $[0.01,0.06]$. The lifetime objective is truncated at 170 periods. The structural policy-gradient step uses 512 simulated aggregate paths per update, 50 warm-up epochs, an initial learning rate of $10^{-3}$, exponential learning-rate decay of 0.5, and a convergence threshold of $3\times 10^{-4}$. The hyperparameter table in the Results section lists the active-run values alongside this benchmark.
+The published benchmark uses 200 bond points up to $`b=50`$, 3 idiosyncratic income states, 30 aggregate states, and 20 interest-rate points on $`[0.01,0.06]`$. The lifetime objective is truncated at 170 periods. The structural policy-gradient step uses 512 simulated aggregate paths per update, 50 warm-up epochs, an initial learning rate of $`10^{-3}`$, exponential learning-rate decay of 0.5, and a convergence threshold of $`3\times 10^{-4}`$. The hyperparameter table in the Results section lists the active-run values alongside this benchmark.
 
 ## Solution Method
 

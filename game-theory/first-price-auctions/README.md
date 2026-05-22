@@ -10,49 +10,49 @@ The computation checks whether that rule is optimal type by type. Given rival st
 
 ## Equations
 
-An auction has $n$ risk-neutral bidders. Bidder $i$ observes a private value
-$v_i \sim U[0,1]$, independently across bidders, and submits one sealed bid.
+An auction has $`n`$ risk-neutral bidders. Bidder $`i`$ observes a private value
+$`v_i \sim U[0,1]`$, independently across bidders, and submits one sealed bid.
 The highest bid wins, and the winner pays its own bid. A symmetric Bayesian
-Nash strategy is an increasing bid function $b(v)$, where $v \in [0,1]$ is a bidder's type.
+Nash strategy is an increasing bid function $`b(v)`$, where $`v \in [0,1]`$ is a bidder's type.
 
 Under uniform values, the equilibrium bid is
 
-$$
+```math
 b^{\ast}(v)=\frac{n-1}{n}v.
-$$
+```
 
-The rule shades value by $v/n$.
+The rule shades value by $`v/n`$.
 
-To check optimality, fix a type $v$. Let that bidder choose a dollar bid
-$\hat b$ while opponents use $b^{\ast}$. The rival value threshold beaten by
-$\hat b$ is
+To check optimality, fix a type $`v`$. Let that bidder choose a dollar bid
+$`\hat b`$ while opponents use $`b^{\ast}`$. The rival value threshold beaten by
+$`\hat b`$ is
 
-$$
+```math
 x(\hat b)=\min\left(\frac{n}{n-1}\hat b,\ 1\right).
-$$
+```
 
 The probability of winning is
 
-$$
+```math
 \Pr(\text{win}\mid \hat b)=x(\hat b)^{n-1},
-$$
+```
 
 Expected payoff is
 
-$$
+```math
 \pi(v,\hat b)=(v-\hat b)x(\hat b)^{n-1}.
-$$
+```
 
 ## Model Setup
 
 | Object | Value | Role |
 |---|---:|---|
-| Value distribution | $U[0,1]$ | Independent private values |
+| Value distribution | $`U[0,1]`$ | Independent private values |
 | Risk preferences | Risk neutral | Payoff is value minus payment when winning |
 | Bidder counts | 2, 3, 5, 10 | More or fewer rivals |
-| Deviation grid | 2,001 bids per value | Best-response check for each $v$ |
+| Deviation grid | 2,001 bids per value | Best-response check for each $`v`$ |
 | Check values | 19 values in [0.05, 0.95] | Types used for residuals |
-| Focal deviation plot | $n=3$, $v=0.8$ | Payoff shape for one bidder type |
+| Focal deviation plot | $`n=3`$, $`v=0.8`$ | Payoff shape for one bidder type |
 
 ## Solution Method
 
@@ -104,7 +104,7 @@ Residuals measure grid error. Some exact bids lie between grid points.
 
 ## Takeaway
 
-First-price auctions reward bid shading. In the uniform symmetric benchmark, the equilibrium bid is $((n-1)/n)v$.
+First-price auctions reward bid shading. In the uniform symmetric benchmark, the equilibrium bid is $`((n-1)/n)v`$.
 
 The useful computational check is type by type. Hold rival strategies fixed and verify that no bid on the grid improves payoff.
 

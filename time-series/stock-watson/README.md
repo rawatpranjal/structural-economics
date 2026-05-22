@@ -10,59 +10,59 @@ The panel has 100 series and 200 months. A forecast regression cannot use every 
 
 ## Equations
 
-Let $X_t=(X_{1t},\ldots,X_{Nt})'$ collect the macro panel at date $t$. The
+Let $`X_t=(X_{1t},\ldots,X_{Nt})'`$ collect the macro panel at date $`t`$. The
 static factor model writes each indicator as common movement plus series noise:
 
-$$
+```math
 X_{it}=\lambda_i'F_t+e_{it}, \qquad i=1,\ldots,N,\quad t=1,\ldots,T.
-$$
+```
 
-Here $F_t\in\mathbb{R}^r$ is the common macro factor. The loading
-$\lambda_i\in\mathbb{R}^r$ measures exposure. The error $e_{it}$ is
-series-specific noise. In this simulated panel, $r=1$ and
+Here $`F_t\in\mathbb{R}^r`$ is the common macro factor. The loading
+$`\lambda_i\in\mathbb{R}^r`$ measures exposure. The error $`e_{it}`$ is
+series-specific noise. In this simulated panel, $`r=1`$ and
 
-$$
+```math
 F_t=\rho_F F_{t-1}+\eta_t,\qquad \eta_t\sim N(0,1), \qquad \lambda_i\sim N(1,0.5^2), \qquad e_{it}\sim N(0,\sigma_{e,i}^2).
-$$
+```
 
 Each series is standardized before PCA:
 
-$$
+```math
 Z_{it}=\frac{X_{it}-\bar X_i}{s_i}.
-$$
+```
 
-Here $\bar X_i$ and $s_i$ are the sample mean and standard deviation of series $i$. PCA uses the eigenvectors with the largest eigenvalues of $T^{-1}Z'Z$. The
+Here $`\bar X_i`$ and $`s_i`$ are the sample mean and standard deviation of series $`i`$. PCA uses the eigenvectors with the largest eigenvalues of $`T^{-1}Z'Z`$. The
 estimated factor projects each date's standardized panel onto those directions:
 
-$$
+```math
 \hat F_t=(Z_t'v_1,\ldots,Z_t'v_r)'.
-$$
+```
 
-Here $Z_t=(Z_{1t},\ldots,Z_{Nt})'$ is the standardized panel vector at date $t$. Factors are identified only up to scale, sign, and rotation. The plots align
+Here $`Z_t=(Z_{1t},\ldots,Z_{Nt})'`$ is the standardized panel vector at date $`t`$. Factors are identified only up to scale, sign, and rotation. The plots align
 signs and compare standardized factors. The forecast regression adds the
 estimated factor to own lags of a target series:
 
-$$
+```math
 y_{t+h} =\alpha+\sum_{\ell=1}^{p}\beta_\ell y_{t-\ell+1} +\gamma'\hat F_t+\varepsilon_{t+h}.
-$$
+```
 
-The AR benchmark sets $\gamma=0$. A true-factor benchmark replaces $\hat F_t$
-with the simulated $F_t$.
+The AR benchmark sets $`\gamma=0`$. A true-factor benchmark replaces $`\hat F_t`$
+with the simulated $`F_t`$.
 
 ## Model Setup
 
 | Parameter | Value | Description |
 |-----------|-------|-------------|
-| $N$ | 100 | Number of series (cross-section) |
-| $T$ | 200 | Number of time periods |
-| $r$ | 1 | True number of factors |
-| $\rho_F$ | 0.8 | Factor AR(1) persistence |
-| $\lambda_i$ | $\sim N(1, 0.25)$ | Factor loadings |
-| $\sigma_{e,i}$ | $\sim U(0.5, 1.5)$ | Idiosyncratic std. deviations |
-| AR lags ($p$) | 2 | Lags in forecasting equation |
-| Horizon ($h$) | 1 | Forecast horizon |
+| $`N`$ | 100 | Number of series (cross-section) |
+| $`T`$ | 200 | Number of time periods |
+| $`r`$ | 1 | True number of factors |
+| $`\rho_F`$ | 0.8 | Factor AR(1) persistence |
+| $`\lambda_i`$ | $`\sim N(1, 0.25)`$ | Factor loadings |
+| $`\sigma_{e,i}`$ | $`\sim U(0.5, 1.5)`$ | Idiosyncratic std. deviations |
+| AR lags ($`p`$) | 2 | Lags in forecasting equation |
+| Horizon ($`h`$) | 1 | Forecast horizon |
 | Initial training share | 60% of the usable evaluation window | Expanding-window forecast start |
-| Target series | $X_{1t}$ | Representative observed macro variable |
+| Target series | $`X_{1t}`$ | Representative observed macro variable |
 
 ## Solution Method
 

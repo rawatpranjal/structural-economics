@@ -6,58 +6,58 @@ Schelling starts with a simple city. Two groups fill a checkerboard. Some cells 
 
 Agents do not choose segregation as a social outcome. They choose acceptable local neighborhoods. Their moves change the choices that other agents face next.
 
-This tutorial keeps the classic model. We simulate a 50 x 50 city. We sweep the minimum same-group neighbor share $\tau$. We track the segregation index $S(t)$ until the city stops moving.
+This tutorial keeps the classic model. We simulate a 50 x 50 city. We sweep the minimum same-group neighbor share $`\tau`$. We track the segregation index $`S(t)`$ until the city stops moving.
 
 ## Equations
 
-Use $G$ for the city grid. Track the whole checkerboard as the state. Do not
-collapse the city to one aggregate stock. Write cell $i$ at iteration $t$ as
-$X_t(i)$. Empty cells have $X_t(i)=0$. Occupied cells have group
-$g_i(t)=X_t(i)$ with $g_i(t)\in\lbrace A,B\rbrace$.
+Use $`G`$ for the city grid. Track the whole checkerboard as the state. Do not
+collapse the city to one aggregate stock. Write cell $`i`$ at iteration $`t`$ as
+$`X_t(i)`$. Empty cells have $`X_t(i)=0`$. Occupied cells have group
+$`g_i(t)=X_t(i)`$ with $`g_i(t)\in\lbrace A,B\rbrace`$.
 
-For each occupied cell, $N_i$ gives the local Moore neighborhood. It includes
+For each occupied cell, $`N_i`$ gives the local Moore neighborhood. It includes
 horizontal, vertical, and diagonal cells. It has at most eight cells. Empty
 cells can receive movers. Empty cells do not enter the local group composition.
 Count occupied neighbors as
 
-$$
+```math
 O_i(t)=\sum_{j\in N_i} \mathbf{1}[X_t(j)\neq 0].
-$$
+```
 
 Count same-group neighbors as
 
-$$
+```math
 m_i(t)=\sum_{j\in N_i} \mathbf{1}[X_t(j)=g_i(t)].
-$$
+```
 
-When $O_i(t)>0$, define the local same-group share as
+When $`O_i(t)>0`$, define the local same-group share as
 
-$$
+```math
 s_i(t)=\frac{m_i(t)}{O_i(t)}.
-$$
+```
 
-When an occupied cell has no occupied neighbors, set $s_i(t)=1$. This convention
-treats isolation as acceptable. The threshold $\tau$ gives the minimum
+When an occupied cell has no occupied neighbors, set $`s_i(t)=1`$. This convention
+treats isolation as acceptable. The threshold $`\tau`$ gives the minimum
 acceptable same-group share. An agent stays content when
 
-$$
+```math
 s_i(t)\geq \tau.
-$$
+```
 
-If $s_i(t)<\tau$, the agent becomes dissatisfied. Let $E_t$ collect the vacant
+If $`s_i(t)<\tau`$, the agent becomes dissatisfied. Let $`E_t`$ collect the vacant
 cells. The agent can move only to a vacant cell that satisfies the same
 threshold for that agent's group. Agents do not choose a global segregation
 target. They search for an acceptable local neighborhood.
 
 Measure aggregate segregation by average local exposure:
 
-$$
+```math
 S(t)=\frac{1}{M}\sum_{i:X_t(i)\neq 0} s_i(t),
-$$
+```
 
-where $M$ counts occupied cells. Moves keep $M$ fixed because each move swaps
+where $`M`$ counts occupied cells. Moves keep $`M`$ fixed because each move swaps
 one occupied cell with one vacancy. A random initial city with equal group sizes
-puts $S(t)$ near one half. Large values of $S(t)$ mean that the typical person
+puts $`S(t)`$ near one half. Large values of $`S(t)`$ mean that the typical person
 mostly sees same-group neighbors. Each decision still uses only the local rule
 above.
 
@@ -67,15 +67,15 @@ The calibration keeps Schelling's checkerboard simple. These numbers are not est
 
 | Symbol | Value | Role |
 |---|---|---|
-| $G$ | 50 x 50 cells | City grid |
-| $E_t$ | 10% of cells initially vacant | Empty cells that permit movement |
-| $g_i(t)$ | $A$ or $B$ | Occupant group in cell $i$ at iteration $t$ |
-| $N_i$ | Moore neighborhood, up to 8 cells | Local reference group |
-| $O_i(t)$ | occupied neighbors in $N_i$ | Denominator for local exposure |
-| $s_i(t)$ | between 0 and 1 | Same-group neighbor share for cell $i$ |
-| $\tau$ | 0.20 to 0.50 | Local tolerance threshold |
-| $S(t)$ | average of $s_i(t)$ | Aggregate segregation index |
-| $T$ | 100 iterations | Stop rule cap |
+| $`G`$ | 50 x 50 cells | City grid |
+| $`E_t`$ | 10% of cells initially vacant | Empty cells that permit movement |
+| $`g_i(t)`$ | $`A`$ or $`B`$ | Occupant group in cell $`i`$ at iteration $`t`$ |
+| $`N_i`$ | Moore neighborhood, up to 8 cells | Local reference group |
+| $`O_i(t)`$ | occupied neighbors in $`N_i`$ | Denominator for local exposure |
+| $`s_i(t)`$ | between 0 and 1 | Same-group neighbor share for cell $`i`$ |
+| $`\tau`$ | 0.20 to 0.50 | Local tolerance threshold |
+| $`S(t)`$ | average of $`s_i(t)`$ | Aggregate segregation index |
+| $`T`$ | 100 iterations | Stop rule cap |
 | Replications | 5 per threshold | Simulation noise check |
 
 ## Solution Method
@@ -104,11 +104,11 @@ A random visit order matters. One move changes nearby neighborhoods. That depend
 
 ## Results
 
-The animation follows one run at $\tau=0.35$. Blue cells mark one group. Orange cells mark the other group. Light cells mark empty locations. Each frame saves the city after one wave of relocation decisions. The city starts close to a random mix. Dissatisfied agents move into acceptable locations. Same-group clusters then reinforce themselves.
+The animation follows one run at $`\tau=0.35`$. Blue cells mark one group. Orange cells mark the other group. Light cells mark empty locations. Each frame saves the city after one wave of relocation decisions. The city starts close to a random mix. Dissatisfied agents move into acceptable locations. Same-group clusters then reinforce themselves.
 
 <img src="figures/schelling-tau-035.gif" alt="Animated Schelling checkerboard at tau 0.35" width="80%">
 
-The path plot tracks $S(t)$ for four thresholds. The key parameter is $\tau$. It sets the local tolerance threshold. At low thresholds, the city settles with little sorting. Near the one-third region, the same rule raises same-group exposure sharply. Small neighborhoods make this region important. One extra same-group neighbor can move an agent across the threshold. The plateaus come from integer neighbor counts on a finite checkerboard.
+The path plot tracks $`S(t)`$ for four thresholds. The key parameter is $`\tau`$. It sets the local tolerance threshold. At low thresholds, the city settles with little sorting. Near the one-third region, the same rule raises same-group exposure sharply. Small neighborhoods make this region important. One extra same-group neighbor can move an agent across the threshold. The plateaus come from integer neighbor counts on a finite checkerboard.
 
 <img src="figures/segregation-paths.png" alt="Segregation-index paths for selected thresholds" width="80%">
 
@@ -120,7 +120,7 @@ Most movement happens early. Enough relocation can stabilize many neighborhoods.
 
 <img src="figures/move-counts.png" alt="Moved agents by iteration" width="80%">
 
-The final city at $\tau=0.35$ shows same-group clusters. Each agent still used only local neighbor composition.
+The final city at $`\tau=0.35`$ shows same-group clusters. Each agent still used only local neighbor composition.
 
 <img src="figures/final-city-tau-035.png" alt="Final checkerboard city for tau 0.35" width="80%">
 

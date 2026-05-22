@@ -10,61 +10,61 @@ Inputs respond to productivity before output is observed. The computation uses a
 
 ## Equations
 
-Let $i$ index firms and $t$ index years. Output, labor, capital, and materials
-are logs. They are denoted by $y_{it}$, $l_{it}$, $k_{it}$, and $m_{it}$. The
+Let $`i`$ index firms and $`t`$ index years. Output, labor, capital, and materials
+are logs. They are denoted by $`y_{it}`$, $`l_{it}`$, $`k_{it}`$, and $`m_{it}`$. The
 plant technology is Cobb-Douglas:
 
-$$
+```math
 y_{it} = \beta_l l_{it}+\beta_k k_{it}+\beta_m m_{it} +\omega_{it}+\varepsilon_{it}.
-$$
+```
 
-The firm observes productivity $\omega_{it}$ before choosing flexible inputs.
-This timing makes $l_{it}$ and $m_{it}$ correlated with $\omega_{it}$. Naive
+The firm observes productivity $`\omega_{it}`$ before choosing flexible inputs.
+This timing makes $`l_{it}`$ and $`m_{it}`$ correlated with $`\omega_{it}`$. Naive
 OLS therefore has a nonzero input-error covariance.
 
-The proxy variable is investment $I_{it}$. Investment follows a policy that is
+The proxy variable is investment $`I_{it}`$. Investment follows a policy that is
 monotone in productivity given capital:
 
-$$
+```math
 I_{it}=h(k_{it},\omega_{it})+\nu_{it}, \qquad \frac{\partial h(k,\omega)}{\partial \omega}>0.
-$$
+```
 
 The estimator builds a productivity control from this monotonicity. A polynomial
 in capital is fit to investment, and the residual is the part of investment
 that moves with productivity:
 
-$$
+```math
 \tilde \omega_{it}=I_{it}-\widehat{\mathrm{poly}}(k_{it}).
-$$
+```
 
-The residual is monotone in $\omega_{it}$ given capital, so it controls for the
+The residual is monotone in $`\omega_{it}`$ given capital, so it controls for the
 productivity component that is correlated with the flexible inputs. The
 regression is
 
-$$
+```math
 y_{it} = \beta_l l_{it}+\beta_k k_{it}+\beta_m m_{it} +\rho \tilde\omega_{it}+u_{it}.
-$$
+```
 
-Here $\rho$ is the coefficient on the productivity control $\tilde\omega_{it}$.
-Because $\tilde\omega_{it}$ holds productivity orthogonal to capital, the
-control identifies the flexible-input elasticities $\beta_l$ and $\beta_m$. It
-does not separately identify the capital elasticity $\beta_k$: capital is a
+Here $`\rho`$ is the coefficient on the productivity control $`\tilde\omega_{it}`$.
+Because $`\tilde\omega_{it}`$ holds productivity orthogonal to capital, the
+control identifies the flexible-input elasticities $`\beta_l`$ and $`\beta_m`$. It
+does not separately identify the capital elasticity $`\beta_k`$: capital is a
 predetermined state, and its productivity-correlated variation is absorbed by
-the control. Recovering $\beta_k$ cleanly needs the Olley-Pakes second stage,
+the control. Recovering $`\beta_k`$ cleanly needs the Olley-Pakes second stage,
 which this tutorial does not run.
 
 Markup recovery uses materials as the variable input. For Cobb-Douglas
-production, the materials elasticity is $\theta^m=\beta_m$. Let
+production, the materials elasticity is $`\theta^m=\beta_m`$. Let
 
-$$
+```math
 \alpha^m_{it} = \frac{\text{materials expenditure}_{it}}{\text{revenue}_{it}}
-$$
+```
 
 be the materials revenue share. Cost minimization implies the gross markup
 
-$$
+```math
 \mu_{it}=\frac{\theta^m}{\alpha^m_{it}}.
-$$
+```
 
 ## Model Setup
 
@@ -72,10 +72,10 @@ $$
 |--------|-------|----------------------|
 | Firm-year panel | 320 firms, 6 years | Lets input choices respond to persistent productivity |
 | Technology | Cobb-Douglas in labor, capital, materials | Gives known output elasticities for the benchmark |
-| True elasticities | $\beta_l=0.32$, $\beta_k=0.24$, $\beta_m=0.44$ | Ground truth for the coefficient comparison |
+| True elasticities | $`\beta_l=0.32`$, $`\beta_k=0.24`$, $`\beta_m=0.44`$ | Ground truth for the coefficient comparison |
 | Productivity | Persistent AR(1), observed by firms | Source of simultaneity in flexible inputs |
 | Proxy variable | Investment, monotone in productivity conditional on capital | Control for the unobserved productivity state |
-| Markup measure | $\theta^m / \alpha^m_{it}$ | Maps the materials elasticity into firm-year markups |
+| Markup measure | $`\theta^m / \alpha^m_{it}`$ | Maps the materials elasticity into firm-year markups |
 
 ## Solution Method
 
@@ -115,7 +115,7 @@ The simulated truth lets us check the markup gradient. More productive firms hav
 
 <img src="figures/productivity-markups.png" alt="Estimated markups rise with productivity in the simulated panel" width="80%">
 
-The coefficient table is read through the markup formula. Materials is the main row because $\theta^m$ is divided by the materials revenue share.
+The coefficient table is read through the markup formula. Materials is the main row because $`\theta^m`$ is divided by the materials revenue share.
 
 **Production function estimates**
 

@@ -12,33 +12,33 @@ The computational need is recursive inference. After each signal, the filter upd
 
 ## Equations
 
-Let $s_t$ collect two latent components of economic activity. The researcher
-observes a scalar indicator $y_t$ that loads on both components and adds
+Let $`s_t`$ collect two latent components of economic activity. The researcher
+observes a scalar indicator $`y_t`$ that loads on both components and adds
 measurement noise:
 
-$$
+```math
 y_t = \Psi s_t + u_t, \qquad u_t \sim N(0, R).
-$$
+```
 
 The hidden state follows a linear transition equation:
 
-$$
+```math
 s_t = \Phi s_{t-1} + \epsilon_t, \qquad \epsilon_t \sim N(0, Q).
-$$
+```
 
-Given data through $t-1$, the filter predicts the next state and its covariance:
+Given data through $`t-1`$, the filter predicts the next state and its covariance:
 
-$$
+```math
 \begin{aligned}
 \hat{s}_{t|t-1} &= \Phi \hat{s}_{t-1|t-1}, \\
 P_{t|t-1} &= \Phi P_{t-1|t-1}\Phi' + Q.
 \end{aligned}
-$$
+```
 
 The new signal produces a forecast surprise, a signal variance, and a Kalman
 gain:
 
-$$
+```math
 \begin{aligned}
 \nu_t &= y_t - \Psi\hat{s}_{t|t-1}, \\
 S_t &= \Psi P_{t|t-1}\Psi' + R, \\
@@ -46,29 +46,29 @@ K_t &= P_{t|t-1}\Psi'(\Psi P_{t|t-1}\Psi' + R)^{-1}, \\
 \hat{s}_{t|t} &= \hat{s}_{t|t-1} + K_t\nu_t, \\
 P_{t|t} &= P_{t|t-1} - K_t\Psi P_{t|t-1}.
 \end{aligned}
-$$
+```
 
-The likelihood contribution is the Gaussian density of $\nu_t$ under variance
-$S_t$. The same scalar density is what maximum-likelihood estimation uses when
+The likelihood contribution is the Gaussian density of $`\nu_t`$ under variance
+$`S_t`$. The same scalar density is what maximum-likelihood estimation uses when
 the state-space parameters are unknown.
 
 ## Model Setup
 
 | Object | Value |
 |--------|-------|
-| Latent state $s_t=(s_{1t}, s_{2t})$ | two activity components |
-| Observed signal $y_t$ | noisy indicator of current activity |
-| Loading matrix $\Psi$ | [1.0, 0.9] |
-| Transition matrix $\Phi$ | diag(0.4, 0.5) |
+| Latent state $`s_t=(s_{1t}, s_{2t})`$ | two activity components |
+| Observed signal $`y_t`$ | noisy indicator of current activity |
+| Loading matrix $`\Psi`$ | [1.0, 0.9] |
+| Transition matrix $`\Phi`$ | diag(0.4, 0.5) |
 | Measurement std | 0.10 |
 | Process std | (0.30, 0.25) |
 | Periods | 50 |
-| Initial state mean $s_{0 \mid 0}$ | $(0,0)$ |
-| Initial state covariance $P_{0 \mid 0}$ | $0_{2\times 2}$ (zero matrix) |
+| Initial state mean $`s_{0 \mid 0}`$ | $`(0,0)`$ |
+| Initial state covariance $`P_{0 \mid 0}`$ | $`0_{2\times 2}`$ (zero matrix) |
 
 ## Solution Method
 
-The simulation draws the true latent path and the noisy observed indicator. The filter starts from zero and makes a one-period forecast. It compares the forecasted indicator with observed $y_t$. The Kalman gain moves the state estimate toward that surprise.
+The simulation draws the true latent path and the noisy observed indicator. The filter starts from zero and makes a one-period forecast. It compares the forecasted indicator with observed $`y_t`$. The Kalman gain moves the state estimate toward that surprise.
 
 The prediction step asks what the state should look like before seeing the new signal. The update step asks how surprising the signal is relative to that prediction. A precise signal or an uncertain prior produces a larger gain; a noisy signal produces a smaller gain. The same forecast error also contributes the likelihood increment used for estimation.
 
@@ -89,7 +89,7 @@ for t = 1, ..., T:
     add log p(nu_t; 0, S_t) to the likelihood
 ```
 
-The covariance update is symmetric in exact arithmetic; the explicit symmetrization step replaces $P_{t|t}$ with $0.5(P_{t|t} + P_{t|t}')$ to cancel floating-point drift and keep the matrix numerically symmetric. The filter starts from $P_{0|0} = 0$, treating the initial state as known with certainty, so the early-period posteriors understate uncertainty relative to a diffuse prior.
+The covariance update is symmetric in exact arithmetic; the explicit symmetrization step replaces $`P_{t|t}`$ with $`0.5(P_{t|t} + P_{t|t}')`$ to cancel floating-point drift and keep the matrix numerically symmetric. The filter starts from $`P_{0|0} = 0`$, treating the initial state as known with certainty, so the early-period posteriors understate uncertainty relative to a diffuse prior.
 
 ## Results
 

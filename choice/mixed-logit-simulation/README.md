@@ -10,65 +10,65 @@ The key economic issue is substitution. A plain logit can match average shares a
 
 ## Equations
 
-Consumer $i$ chooses product $j$ with utility
+Consumer $`i`$ chooses product $`j`$ with utility
 
-$$
+```math
 u_{ij} =
 \alpha_i p_{ij} + \beta_i q_{ij} + \varepsilon_{ij},
 \qquad
 \varepsilon_{ij}\sim\text{Type I EV}.
-$$
+```
 
 Random coefficients are
 
-$$
+```math
 \alpha_i = \bar\alpha + \sigma_\alpha \nu_{i\alpha},
 \qquad
 \beta_i = \bar\beta + \sigma_\beta \nu_{i\beta},
 \qquad
 \nu_i\sim N(0,I).
-$$
+```
 
-Conditional on a draw $\nu_r$, the logit probability is
+Conditional on a draw $`\nu_r`$, the logit probability is
 
-$$
+```math
 \begin{aligned}
 P_{ij}(\theta,\nu_r)
 &=
 \frac{\exp(\alpha_r p_{ij}+\beta_r q_{ij})}
 {\sum_{k=1}^J \exp(\alpha_r p_{ik}+\beta_r q_{ik})}.
 \end{aligned}
-$$
+```
 
-Here $\alpha_r = \bar\alpha + \sigma_\alpha\nu_{r\alpha}$ and $\beta_r = \bar\beta + \sigma_\beta\nu_{r\beta}$ are the draw-specific taste coefficients.
+Here $`\alpha_r = \bar\alpha + \sigma_\alpha\nu_{r\alpha}`$ and $`\beta_r = \bar\beta + \sigma_\beta\nu_{r\beta}`$ are the draw-specific taste coefficients.
 
 The mixed-logit probability integrates over random tastes. The code approximates
-that integral with fixed simulation draws. Here $\phi$ is the $N(0,I)$ density. The exact integral
-$\int P_{ij}(\theta,\nu)\phi(\nu)d\nu$ has no closed form here because the
+that integral with fixed simulation draws. Here $`\phi`$ is the $`N(0,I)`$ density. The exact integral
+$`\int P_{ij}(\theta,\nu)\phi(\nu)d\nu`$ has no closed form here because the
 logit probability is nonlinear in the random coefficients. The code draws
-$\nu_1,\ldots,\nu_R$ once and replaces the integral with the same finite
-average at every candidate $\theta$:
+$`\nu_1,\ldots,\nu_R`$ once and replaces the integral with the same finite
+average at every candidate $`\theta`$:
 
-$$
+```math
 \begin{aligned}
 \widehat P_{ij}(\theta)
 &=
 \frac{1}{R}\sum_{r=1}^R P_{ij}(\theta,\nu_r).
 \end{aligned}
-$$
+```
 
 Simulated maximum likelihood picks the parameter vector that assigns high
-probability to the observed choices $y_i$ after averaging over simulated taste
+probability to the observed choices $`y_i`$ after averaging over simulated taste
 heterogeneity:
 
-$$
+```math
 \begin{aligned}
 \hat\theta
 &=
 \arg\max_\theta
 \sum_{i=1}^N \log \widehat P_{i y_i}(\theta).
 \end{aligned}
-$$
+```
 
 ## Model Setup
 
@@ -77,10 +77,10 @@ $$
 | Products | 4 | Differentiated alternatives in each choice set |
 | Choice occasions | 1,500 | Synthetic individual-level choices |
 | Simulation draws | 120 | Fixed normal draws for simulated likelihood |
-| True $\bar\alpha$ | -1.00 | Mean price taste |
-| True $\bar\beta$ | 1.10 | Mean quality taste |
-| True $\sigma_\alpha$ | 0.36 | Heterogeneity in price sensitivity |
-| True $\sigma_\beta$ | 0.55 | Heterogeneity in quality taste |
+| True $`\bar\alpha`$ | -1.00 | Mean price taste |
+| True $`\bar\beta`$ | 1.10 | Mean quality taste |
+| True $`\sigma_\alpha`$ | 0.36 | Heterogeneity in price sensitivity |
+| True $`\sigma_\beta`$ | 0.55 | Heterogeneity in quality taste |
 
 **Numerical settings**
 
@@ -93,100 +93,100 @@ $$
 | SD bounds | [0.03, 1.30] | Effective sigma range; the bound is enforced on log-sigma for both random coefficients |
 | Probability floor | 1e-14 | Prevents log zero during likelihood evaluation |
 | Max iterations | 220 | L-BFGS-B iteration cap |
-| Profile grid | 21 x 21 | Grid over $\sigma_\alpha$ and $\sigma_\beta$ for the likelihood surface |
+| Profile grid | 21 x 21 | Grid over $`\sigma_\alpha`$ and $`\sigma_\beta`$ for the likelihood surface |
 
 ## Solution Method
 
-The estimator uses common random numbers. Draws are made once and then held fixed while the optimizer moves $\theta$. This turns the population integral into the same finite average at every trial parameter vector. Without common draws, fresh simulation noise would move the likelihood surface while the optimizer is trying to climb it.
+The estimator uses common random numbers. Draws are made once and then held fixed while the optimizer moves $`\theta`$. This turns the population integral into the same finite average at every trial parameter vector. Without common draws, fresh simulation noise would move the likelihood surface while the optimizer is trying to climb it.
 
 The standard deviations are optimized in logs. The optimizer can move freely over log standard deviations, while the model sees positive values after exponentiation. The bounds are not an economic restriction in this example. They keep the teaching likelihood away from numerically irrelevant regions.
 
-### Algorithm 1. Simulated likelihood at a trial $\theta$
+### Algorithm 1. Simulated likelihood at a trial $`\theta`$
 
-**Inputs.** Observed choices and characteristics $\lbrace y_i,p_{ij},q_{ij}\rbrace_{i=1,j=1}^{N,J}$, fixed draws $\nu_r=(\nu_{r\alpha},\nu_{r\beta})$ for $r=1,\ldots,R$, a trial parameter vector $\theta=(\bar\alpha,\bar\beta,\ell_\alpha,\ell_\beta)$, and probability floor $\eta>0$.
+**Inputs.** Observed choices and characteristics $`\lbrace y_i,p_{ij},q_{ij}\rbrace_{i=1,j=1}^{N,J}`$, fixed draws $`\nu_r=(\nu_{r\alpha},\nu_{r\beta})`$ for $`r=1,\ldots,R`$, a trial parameter vector $`\theta=(\bar\alpha,\bar\beta,\ell_\alpha,\ell_\beta)`$, and probability floor $`\eta>0`$.
 
-**Output.** The simulated objective $Q_R(\theta)$.
+**Output.** The simulated objective $`Q_R(\theta)`$.
 
 1. Convert log standard deviations into positive standard deviations:
 
-$$
+```math
 \sigma_\alpha=\exp(\ell_\alpha),
 \qquad
 \sigma_\beta=\exp(\ell_\beta).
-$$
+```
 
-2. For each draw $r$, construct simulated tastes:
+2. For each draw $`r`$, construct simulated tastes:
 
-$$
+```math
 \alpha_r=\bar\alpha+\sigma_\alpha\nu_{r\alpha},
 \qquad
 \beta_r=\bar\beta+\sigma_\beta\nu_{r\beta}.
-$$
+```
 
-3. For each consumer-product pair $(i,j)$, compute the draw-specific logit probability:
+3. For each consumer-product pair $`(i,j)`$, compute the draw-specific logit probability:
 
-$$
+```math
 P_{ij}(\theta,\nu_r)=
 \frac{\exp(\alpha_r p_{ij}+\beta_r q_{ij})}
 {\sum_{k=1}^J \exp(\alpha_r p_{ik}+\beta_r q_{ik})}.
-$$
+```
 
 4. Average those probabilities over the fixed simulation draws:
 
-$$
+```math
 \widehat P_{ij}(\theta)=\frac{1}{R}\sum_{r=1}^R P_{ij}(\theta,\nu_r).
-$$
+```
 
-5. Score the observed choice $y_i$ with the simulated probability $\widehat P_{i y_i}(\theta)$.
+5. Score the observed choice $`y_i`$ with the simulated probability $`\widehat P_{i y_i}(\theta)`$.
 
 6. Return the simulated log likelihood and the minimized objective:
 
-$$
+```math
 \ell_R(\theta)=
 \sum_{i=1}^N \log \max\lbrace\widehat P_{i y_i}(\theta),\eta\rbrace,
 \qquad
 Q_R(\theta)=-\ell_R(\theta)/N.
-$$
+```
 
 ### Algorithm 2. Optimization and price substitution
 
-**Inputs.** Starting value $\theta_0$, bounds $B$, common draws $\lbrace\nu_r\rbrace_{r=1}^R$, data $\lbrace y_i,p_{ij},q_{ij}\rbrace$, and price step $\Delta p$.
+**Inputs.** Starting value $`\theta_0`$, bounds $`B`$, common draws $`\lbrace\nu_r\rbrace_{r=1}^R`$, data $`\lbrace y_i,p_{ij},q_{ij}\rbrace`$, and price step $`\Delta p`$.
 
-**Outputs.** Estimate $\hat\theta$, fitted shares $\hat s_j$, and substitution matrix $D$.
+**Outputs.** Estimate $`\hat\theta`$, fitted shares $`\hat s_j`$, and substitution matrix $`D`$.
 
-1. Start L-BFGS-B at $\theta_0$ within bounds $B$.
+1. Start L-BFGS-B at $`\theta_0`$ within bounds $`B`$.
 
-2. At each candidate $\theta^m\in B$, evaluate $Q_R(\theta^m)$ using Algorithm 1.
+2. At each candidate $`\theta^m\in B`$, evaluate $`Q_R(\theta^m)`$ using Algorithm 1.
 
 3. Continue until the optimizer stops and set
 
-$$
+```math
 \hat\theta=\arg\min_{\theta\in B} Q_R(\theta),
-$$
+```
 
-which is the same as maximizing $\ell_R(\theta)$.
+which is the same as maximizing $`\ell_R(\theta)`$.
 
 4. Compute fitted shares from the estimated simulated probabilities:
 
-$$
+```math
 \hat s_j=\frac{1}{N}\sum_{i=1}^N \widehat P_{ij}(\hat\theta).
-$$
+```
 
-5. For each shocked product $k$, raise $p_{ik}$ by $\Delta p$ for every consumer.
+5. For each shocked product $`k`$, raise $`p_{ik}`$ by $`\Delta p`$ for every consumer.
 
-6. Recompute shares $\hat s_j^{+k}$ using the same $\hat\theta$ and the same draws $\nu_r$.
+6. Recompute shares $`\hat s_j^{+k}`$ using the same $`\hat\theta`$ and the same draws $`\nu_r`$.
 
-7. Fill column $k$ of the substitution matrix:
+7. Fill column $`k`$ of the substitution matrix:
 
-$$
+```math
 D_{jk}=
 \frac{\hat s_j^{+k}-\hat s_j}{\hat s_k-\hat s_k^{+k}}
 \quad\text{for }j\neq k,
 \qquad
 D_{kk}=-1.
-$$
+```
 
-8. Repeat steps 5-7 for every shocked product $k=1,\ldots,J$.
+8. Repeat steps 5-7 for every shocked product $`k=1,\ldots,J`$.
 
 The homogeneous logit is estimated on the same data. Its likelihood is easier because it does not integrate over tastes. The comparison is useful because the homogeneous model can fit mean shares while still forcing diversion to follow existing market shares.
 

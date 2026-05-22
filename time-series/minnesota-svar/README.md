@@ -12,53 +12,53 @@ The Minnesota prior is ridge-like shrinkage for dynamic systems. It puts prior m
 
 ## Equations
 
-Let $y_t=(x_t,\pi_t,i_t)'$ collect the output gap, inflation, and the policy
+Let $`y_t=(x_t,\pi_t,i_t)'`$ collect the output gap, inflation, and the policy
 rate. The reduced-form VAR is
 
-$$
+```math
 y_t = c + A_1 y_{t-1} + A_2 y_{t-2} + \cdots + A_p y_{t-p} + u_t,
 \qquad u_t \sim N(0,\Sigma_u).
-$$
+```
 
-Stack the observations equation by equation. Let $X$ contain an intercept and
-the $p$ lagged values of $y_t$. For equation $i$,
+Stack the observations equation by equation. Let $`X`$ contain an intercept and
+the $`p`$ lagged values of $`y_t`$. For equation $`i`$,
 
-$$
+```math
 y_i = X\beta_i + e_i,
 \qquad
 e_i \sim N(0,\sigma_i^2 I_T).
-$$
+```
 
-Conditional on the residual scale $\sigma_i^2$, the Gaussian likelihood is
+Conditional on the residual scale $`\sigma_i^2`$, the Gaussian likelihood is
 
-$$
+```math
 p(y_i \mid \beta_i,\sigma_i^2)
 \propto
 \exp\left[-\frac{1}{2\sigma_i^2}(y_i-X\beta_i)'(y_i-X\beta_i)
 \right].
-$$
+```
 
 The Minnesota prior is Gaussian:
 
-$$
+```math
 \beta_i \sim N(b_i^0,V_i^0).
-$$
+```
 
-For variable $j$ and lag $\ell$, the prior mean is persistent only for the own
+For variable $`j`$ and lag $`\ell`$, the prior mean is persistent only for the own
 first lag:
 
-$$
+```math
 b_{i,j,\ell}^0 =
 \begin{cases}
 \rho_0, & i=j \ \mathrm{and}\ \ell=1,\\
 0, & \mathrm{otherwise}.
 \end{cases}
-$$
+```
 
 The prior variance is larger for own lags and smaller for cross lags and distant
 lags:
 
-$$
+```math
 v_{i,j,\ell} =
 \left(\frac{\lambda}{\ell^d}\right)^2
 \left(\frac{\sigma_i}{\sigma_j}\right)^2
@@ -66,48 +66,48 @@ v_{i,j,\ell} =
 \qquad
 \theta_{ij}=1 \ \mathrm{for}\ i=j,\quad
 \theta_{ij}=\theta \ \mathrm{for}\ i\ne j.
-$$
+```
 
-Here $\lambda$ is the overall tightness, $d$ is the lag-decay exponent, and $\theta$ is the base cross-variable tightness.
+Here $`\lambda`$ is the overall tightness, $`d`$ is the lag-decay exponent, and $`\theta`$ is the base cross-variable tightness.
 
-This tutorial plugs in $\hat\sigma_i^2$ from OLS residuals. Conditional on that
+This tutorial plugs in $`\hat\sigma_i^2`$ from OLS residuals. Conditional on that
 plug-in scale, conjugacy gives a Gaussian posterior:
 
-$$
+```math
 V_i^{-1} =
 \frac{X'X}{\hat\sigma_i^2} + (V_i^0)^{-1}.
-$$
+```
 
-$$
+```math
 b_i =
 V_i\left(
 \frac{X'y_i}{\hat\sigma_i^2} + (V_i^0)^{-1}b_i^0
 \right).
-$$
+```
 
 Coefficient uncertainty comes from the posterior covariance:
 
-$$
+```math
 \mathrm{sd}(\beta_{im}\mid y_i) =
 \sqrt{(V_i)_{mm}},
 \qquad
 \beta_{im}\approx b_{im}\pm 1.96\sqrt{(V_i)_{mm}}.
-$$
+```
 
 Recursive SVAR identification factors the BVAR reduced-form covariance as
 
-$$
+```math
 \Sigma_u = PP',
 \qquad
 u_t=P\varepsilon_t,\qquad
 E[\varepsilon_t\varepsilon_t']=I.
-$$
+```
 
 This factorization is not unique. A recursive SVAR chooses the lower-triangular
-Cholesky factor $P$ after fixing an ordering. With ordering output gap,
+Cholesky factor $`P`$ after fixing an ordering. With ordering output gap,
 inflation, policy rate,
 
-$$
+```math
 \begin{bmatrix}
 u_{y,t}\\
 u_{\pi,t}\\
@@ -123,29 +123,29 @@ p_{31} & p_{32} & p_{33}
 \varepsilon_{\pi,t}\\
 \varepsilon_{i,t}
 \end{bmatrix}.
-$$
+```
 
 The policy shock is the third structural innovation. It has zero impact effect
-on output and inflation because the third column of $P$ is zero in those rows.
+on output and inflation because the third column of $`P`$ is zero in those rows.
 It can still affect output and inflation after one or more quarters through the
 lag matrices. The policy rate can react on impact to output and inflation shocks
-through $p_{31}$ and $p_{32}$.
+through $`p_{31}`$ and $`p_{32}`$.
 
-The plotted shock is scaled to move the policy rate by $\tau=0.25$ on impact:
+The plotted shock is scaled to move the policy rate by $`\tau=0.25`$ on impact:
 
-$$
+```math
 q =
 \tau \frac{P e_3}{e_3'P e_3}.
-$$
+```
 
 Impulse responses then propagate the scaled impact vector through the posterior
 mean VAR dynamics:
 
-$$
+```math
 \psi_0=q,
 \qquad
 \psi_h=A_1\psi_{h-1}+A_2\psi_{h-2}+\cdots+A_p\psi_{h-p}.
-$$
+```
 
 ## Model Setup
 
@@ -153,7 +153,7 @@ $$
 |---|---:|---|
 | Variables | 3 | Output gap, inflation, and policy rate |
 | Simulated quarters | 132 | Short macro panel after burn-in |
-| VAR lag order $p$ | 4 | Quarterly dynamics with one year of lags |
+| VAR lag order $`p`$ | 4 | Quarterly dynamics with one year of lags |
 | Training observations | 88 | Sample used to estimate each VAR |
 | Test observations | 40 | Held-out quarters for one-step forecasts |
 | Coefficients per equation | 13 | Intercept plus lagged variables |
@@ -258,8 +258,8 @@ The identification table separates estimated VAR objects from the extra restrict
 
 | Object                  | Meaning                                 | Assumption                                              |
 |:------------------------|:----------------------------------------|:--------------------------------------------------------|
-| Reduced-form innovation | Forecast error $u_t$ from the VAR       | Estimated covariance can be non-diagonal                |
-| Structural shock        | Orthogonal shock $\varepsilon_t$        | Unit variance and no cross-shock correlation            |
+| Reduced-form innovation | Forecast error $`u_t`$ from the VAR       | Estimated covariance can be non-diagonal                |
+| Structural shock        | Orthogonal shock $`\varepsilon_t`$        | Unit variance and no cross-shock correlation            |
 | Recursive ordering      | Output gap, inflation, then policy rate | Policy can react within quarter to output and inflation |
 | Policy shock            | Third Cholesky innovation               | No impact effect on output or inflation                 |
 | Shock scale             | Impact rise in policy rate              | Normalized to 0.25 rate points                          |

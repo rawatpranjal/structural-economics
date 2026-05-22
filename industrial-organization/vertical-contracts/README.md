@@ -10,63 +10,63 @@ Exact enumeration checks every feasible seven-product subset. One extra Mars ite
 
 ## Equations
 
-Let $\mathcal{J}$ be the product catalog and let $K$ be the number of vending
-slots. Product $j$ has demand intercept $a_j$, marginal cost $c_j$, and
-manufacturer label $m(j)$. Retail demand is separable:
+Let $`\mathcal{J}`$ be the product catalog and let $`K`$ be the number of vending
+slots. Product $`j`$ has demand intercept $`a_j`$, marginal cost $`c_j`$, and
+manufacturer label $`m(j)`$. Retail demand is separable:
 
-$$
+```math
 q_j(p_j)=\max\lbrace a_j-bp_j,0\rbrace.
-$$
+```
 
-Here $b$ is the common demand slope. Given wholesale price $w_j$, the retailer sets the product price by
+Here $`b`$ is the common demand slope. Given wholesale price $`w_j`$, the retailer sets the product price by
 
-$$
+```math
 p_j^{\ast}(w_j)
 =\arg\max_{p_j\geq w_j} (p_j-w_j)q_j(p_j).
-$$
+```
 
-For an interior product, the unconstrained optimum is $(a_j+bw_j)/(2b)$. The
+For an interior product, the unconstrained optimum is $`(a_j+bw_j)/(2b)`$. The
 retailer never prices below a small markup over wholesale, so the price used
 is
 
-$$
+```math
 p_j^{\ast}(w_j)=\max\lbrace (a_j+bw_j)/(2b),\ w_j+\epsilon\rbrace,
 \quad \epsilon=0.05.
-$$
+```
 
-The margin floor $\epsilon=0.05$ is a numerical guard; it never binds under
+The margin floor $`\epsilon=0.05`$ is a numerical guard; it never binds under
 the calibration in this tutorial.
 
-Contract $C$ maps assortment $A$ into wholesale prices and fixed transfers.
-The upstream side pays $F_j^C(A)$ to the retailer. The retailer chooses
+Contract $`C`$ maps assortment $`A`$ into wholesale prices and fixed transfers.
+The upstream side pays $`F_j^C(A)`$ to the retailer. The retailer chooses
 
-$$
+```math
 A_C^{\ast}
 =\arg\max_{A\subset\mathcal{J}:\ |A|=K}
 \sum_{j\in A}\left[(p_j^{\ast}-w_j^C(A))q_j(p_j^{\ast})+F_j^C(A)\right].
-$$
+```
 
-Write $\Pi^D_C(A)$ for the sum inside the argmax, the retailer's total payoff under contract $C$.
+Write $`\Pi^D_C(A)`$ for the sum inside the argmax, the retailer's total payoff under contract $`C`$.
 
 The upstream payoff reported in the results is
 
-$$
+```math
 \Pi_C^U(A)=
 \sum_{j\in A}\left[(w_j^C(A)-c_j)q_j(p_j^{\ast})-F_j^C(A)\right].
-$$
+```
 
 In the all-unit discount case, Mars products can receive a lower wholesale
-price. The discount applies only if the assortment contains at least $\tau$
-Mars products, with $\tau=4$ in this tutorial:
+price. The discount applies only if the assortment contains at least $`\tau`$
+Mars products, with $`\tau=4`$ in this tutorial:
 
-$$
+```math
 w_j^C(A)=c_j+\mu-d\mathbf{1}\lbrace m(j)=\text{Mars}\rbrace\mathbf{1}\lbrace M(A)\geq\tau\rbrace,
 \quad
 M(A)=\sum_{j\in A}\mathbf{1}\lbrace m(j)=\text{Mars}\rbrace.
-$$
+```
 
 Slotting fees instead leave wholesale margins unchanged and work through
-$F_j^C(A)$.
+$`F_j^C(A)`$.
 
 ## Model Setup
 
@@ -76,9 +76,9 @@ One machine can hold seven of twelve products. Mars controls five products, and 
 |--------|-------|
 | Products | 12 candy and snack alternatives |
 | Machine capacity | 7 slots |
-| Demand | Product-specific intercepts with common slope $b=4$ |
-| Wholesale-only contract | Per-unit margin $\mu=0.42$, no fixed transfers |
-| All-unit discount | Mars margin falls by $d=0.18$ once the shelf holds at least $\tau=4$ Mars products |
+| Demand | Product-specific intercepts with common slope $`b=4`$ |
+| Wholesale-only contract | Per-unit margin $`\mu=0.42`$, no fixed transfers |
+| All-unit discount | Mars margin falls by $`d=0.18`$ once the shelf holds at least $`\tau=4`$ Mars products |
 | Slotting-fee contract | Fixed payments of 1.10 for Mars products and 0.35 for rival products |
 
 ## Solution Method

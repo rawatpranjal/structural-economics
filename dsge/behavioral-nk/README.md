@@ -10,80 +10,80 @@ The computation is small. Coefficient matching solves a current AR(1) policy wed
 
 ## Equations
 
-All variables are deviations from steady state. Let $x_t$ be the output gap,
-$\pi_t$ inflation, $i_t$ the policy rate, $r^n_t$ the natural real rate, and
-$v_t$ a policy-rate wedge. The behavioral New Keynesian block is
+All variables are deviations from steady state. Let $`x_t`$ be the output gap,
+$`\pi_t`$ inflation, $`i_t`$ the policy rate, $`r^n_t`$ the natural real rate, and
+$`v_t`$ a policy-rate wedge. The behavioral New Keynesian block is
 
-$$
+```math
 x_t = M\mathbb{E}_t x_{t+1} - \sigma(i_t-\mathbb{E}_t\pi_{t+1}-r^n_t),
-$$
+```
 
-$$
+```math
 \pi_t = \beta M_f\mathbb{E}_t\pi_{t+1} + \kappa x_t + u_t,
-$$
+```
 
-$$
+```math
 i_t = \phi_\pi \pi_t + \phi_x x_t + v_t.
-$$
+```
 
-Here $u_t$ is a cost-push shock, set to zero in both experiments run here.
+Here $`u_t`$ is a cost-push shock, set to zero in both experiments run here.
 
-The only change from the rational model is the pair $(M,M_f)$. The parameter
-$M$ multiplies expected future output in the IS curve. The parameter $M_f$
+The only change from the rational model is the pair $`(M,M_f)`$. The parameter
+$`M`$ multiplies expected future output in the IS curve. The parameter $`M_f`$
 multiplies expected future inflation in the Phillips curve. They do not change
 the static Taylor rule. They change how strongly future variables enter current
 private decisions.
 
-The rational benchmark uses $M=M_f=1$. The behavioral benchmark uses
-$M=M_f=0.85$.
+The rational benchmark uses $`M=M_f=1`$. The behavioral benchmark uses
+$`M=M_f=0.85`$.
 
 For the current monetary-policy experiment,
 
-$$
+```math
 v_t=\rho_v v_{t-1}+\varepsilon^v_t.
-$$
+```
 
-The forward-guidance experiment instead sets $v_H=\varepsilon^v_H$ for one future
-quarter $H$ and sets all other policy wedges to zero.
+The forward-guidance experiment instead sets $`v_H=\varepsilon^v_H`$ for one future
+quarter $`H`$ and sets all other policy wedges to zero.
 
 ## Model Setup
 
 | Primitive | Value | Role |
 |---|---:|---|
-| $\sigma$ | 1 | Interest sensitivity in the IS curve |
-| $\beta$ | 0.99 | Quarterly discount factor |
-| $\kappa$ | 0.1 | Slope of the Phillips curve |
-| $\phi_\pi$ | 1.5 | Taylor-rule response to inflation |
-| $\phi_x$ | 0.125 | Taylor-rule response to the output gap |
-| $\rho_v$ | 0.5 | Persistence of the current policy wedge |
+| $`\sigma`$ | 1 | Interest sensitivity in the IS curve |
+| $`\beta`$ | 0.99 | Quarterly discount factor |
+| $`\kappa`$ | 0.1 | Slope of the Phillips curve |
+| $`\phi_\pi`$ | 1.5 | Taylor-rule response to inflation |
+| $`\phi_x`$ | 0.125 | Taylor-rule response to the output gap |
+| $`\rho_v`$ | 0.5 | Persistence of the current policy wedge |
 | Shock innovation | 0.010 | One-percentage-point policy wedge |
-| Rational attention | 1.000 | $M=M_f=1$ |
-| Behavioral attention | 0.850 | $M=M_f=0.85$ |
+| Rational attention | 1.000 | $`M=M_f=1`$ |
+| Behavioral attention | 0.850 | $`M=M_f=0.85`$ |
 | IRF horizon | 32 quarters | Length of the current-shock paths |
 | News horizon | 20 quarters | Furthest date of the future policy wedge |
 
 ## Solution Method
 
-Let the active current shock be $s_t=v_t$ with $\mathbb{E}_t s_{t+1}=\rho_v s_t$. Guess linear responses:
+Let the active current shock be $`s_t=v_t`$ with $`\mathbb{E}_t s_{t+1}=\rho_v s_t`$. Guess linear responses:
 
-$$
+```math
 x_t=\psi_x s_t,\qquad \pi_t=\psi_\pi s_t,\qquad i_t=\psi_i s_t.
-$$
+```
 
 Plug the guess into the IS curve and Phillips curve. The Taylor rule then gives this 2 by 2 system:
 
-$$
+```math
 \begin{bmatrix}
 1-M\rho_v+\sigma\phi_x & \sigma(\phi_\pi-\rho_v) \\
 -\kappa & 1-\beta M_f\rho_v
 \end{bmatrix}
 \begin{bmatrix}\psi_x \\ \psi_\pi\end{bmatrix} =
 \begin{bmatrix}-\sigma \\ 0\end{bmatrix}.
-$$
+```
 
-After solving for $\psi_x$ and $\psi_\pi$, compute $\psi_i=\phi_\pi\psi_\pi+\phi_x\psi_x+1$.
+After solving for $`\psi_x`$ and $`\psi_\pi`$, compute $`\psi_i=\phi_\pi\psi_\pi+\phi_x\psi_x+1`$.
 
-Forward guidance uses a different state. The state is the date of the announced wedge. Start from $x_{H+1}=\pi_{H+1}=0$. Then step backward:
+Forward guidance uses a different state. The state is the date of the announced wedge. Start from $`x_{H+1}=\pi_{H+1}=0`$. Then step backward:
 
 ```text
 Algorithm: current and future policy wedges
@@ -120,7 +120,7 @@ The table reports percent or percentage-point responses. The first columns use t
 
 ## Takeaway
 
-Cognitive discounting changes the expectation channel. It does not change the static Taylor rule. When $M$ and $M_f$ fall below one, future output and inflation matter less for today's choices. Current monetary shocks have slightly smaller cumulative effects. Distant forward-guidance shocks lose much more of their current bite.
+Cognitive discounting changes the expectation channel. It does not change the static Taylor rule. When $`M`$ and $`M_f`$ fall below one, future output and inflation matter less for today's choices. Current monetary shocks have slightly smaller cumulative effects. Distant forward-guidance shocks lose much more of their current bite.
 
 ## References
 

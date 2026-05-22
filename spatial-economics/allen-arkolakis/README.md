@@ -10,67 +10,67 @@ The tutorial compares a dispersed regime with an agglomerated regime. The compar
 
 ## Equations
 
-The model has a finite set of locations. I write this set as $i \in \lbrace 1,\ldots,N\rbrace$. I use $j$ when the same set is viewed as destinations.
+The model has a finite set of locations. I write this set as $`i \in \lbrace 1,\ldots,N\rbrace`$. I use $`j`$ when the same set is viewed as destinations.
 
-At location $i$, $L_i$ is labor, $w_i$ is the wage, $A_i$ is productivity, and $u_i$ is the amenity. Trade costs are iceberg costs. Delivering one unit from $i$ to $j$ requires shipping $T_{ij}$ units from origin $i$. By convention $T_{ii} = 1$ within a location and $T_{ij} \geq 1$ otherwise. The same $T_{ij}$ both raises the destination price index and shrinks the revenue origin $i$ collects from $j$.
+At location $`i`$, $`L_i`$ is labor, $`w_i`$ is the wage, $`A_i`$ is productivity, and $`u_i`$ is the amenity. Trade costs are iceberg costs. Delivering one unit from $`i`$ to $`j`$ requires shipping $`T_{ij}`$ units from origin $`i`$. By convention $`T_{ii} = 1`$ within a location and $`T_{ij} \geq 1`$ otherwise. The same $`T_{ij}`$ both raises the destination price index and shrinks the revenue origin $`i`$ collects from $`j`$.
 
-The paper uses a continuum of locations. This tutorial uses a finite grid. That change turns integrals into sums over $i \in \lbrace 1,\ldots,N\rbrace$.
+The paper uses a continuum of locations. This tutorial uses a finite grid. That change turns integrals into sums over $`i \in \lbrace 1,\ldots,N\rbrace`$.
 
 Productivity and amenities both start from fundamentals. They also respond to local labor:
 
-$$
+```math
 A_i = \bar A_i L_i^\alpha
-$$
+```
 
-$$
+```math
 u_i = \bar u_i L_i^\beta
-$$
+```
 
-$\alpha$ is the productivity spillover. It is positive here. A larger $L_i$ raises $A_i$.
+$`\alpha`$ is the productivity spillover. It is positive here. A larger $`L_i`$ raises $`A_i`$.
 
-$\beta$ is the congestion parameter. It is negative here. A larger $L_i$ lowers $u_i$.
+$`\beta`$ is the congestion parameter. It is negative here. A larger $`L_i`$ lowers $`u_i`$.
 
 The two spillovers pull in opposite directions. Their relative strength decides whether the model concentrates labor or spreads it out.
 
-Consumers have Dixit-Stiglitz CES preferences over varieties from every origin. The elasticity of substitution across varieties is $\sigma > 1$. The CES price index at destination $j$ is
+Consumers have Dixit-Stiglitz CES preferences over varieties from every origin. The elasticity of substitution across varieties is $`\sigma > 1`$. The CES price index at destination $`j`$ is
 
-$$
+```math
 P_j^{1-\sigma} =
 \sum_i T_{ij}^{1-\sigma} A_i^{\sigma-1} w_i^{1-\sigma}.
-$$
+```
 
-The spending share $\pi_{ij}$ is destination $j$'s spending on goods from origin $i$:
+The spending share $`\pi_{ij}`$ is destination $`j`$'s spending on goods from origin $`i`$:
 
-$$
+```math
 \pi_{ij} =
 \frac{T_{ij}^{1-\sigma} A_i^{\sigma-1} w_i^{1-\sigma}}
 {\sum_k T_{kj}^{1-\sigma} A_k^{\sigma-1} w_k^{1-\sigma}}.
-$$
+```
 
-This is the standard Krugman gravity share. CES demand against producers priced at $w_i / A_i$ and shipped at $T_{ij}$ implies destinations spend a larger share on origins that are cheaper or closer.
+This is the standard Krugman gravity share. CES demand against producers priced at $`w_i / A_i`$ and shipped at $`T_{ij}`$ implies destinations spend a larger share on origins that are cheaper or closer.
 
-Each destination $j$ spends its labor income $w_j L_j$ across origins in shares $\pi_{ij}$. Origin $i$'s total revenue is the sum $\sum_j \pi_{ij} w_j L_j$. With labor as the only factor and zero profits under free entry, that revenue equals the local wage bill at $i$:
+Each destination $`j`$ spends its labor income $`w_j L_j`$ across origins in shares $`\pi_{ij}`$. Origin $`i`$'s total revenue is the sum $`\sum_j \pi_{ij} w_j L_j`$. With labor as the only factor and zero profits under free entry, that revenue equals the local wage bill at $`i`$:
 
-$$
+```math
 w_i L_i =
 \sum_j \pi_{ij} w_j L_j.
-$$
+```
 
 Mobility says workers are indifferent across inhabited locations:
 
-$$
+```math
 \frac{w_i u_i}{P_i} = V.
-$$
+```
 
-Workers compare $w_i u_i / P_i$ across locations and move toward higher values. The common level $V$ is pinned down residually by the labor adding-up constraint below.
+Workers compare $`w_i u_i / P_i`$ across locations and move toward higher values. The common level $`V`$ is pinned down residually by the labor adding-up constraint below.
 
-$$
+```math
 \sum_i L_i = 1
-$$
+```
 
-$$
+```math
 N^{-1}\sum_i \log w_i = 0.
-$$
+```
 
 The first normalization sets total labor to one. The second normalization sets the geometric mean wage to one, fixing units.
 
@@ -80,14 +80,14 @@ The tutorial solves balanced trade and mobility directly. This matches the finit
 
 | Symbol | Value | Role |
 |--------|-------|------|
-| $N$ | 15 | Location count |
-| $x_i$ | equally spaced in $[-1,1]$ | Grid position |
-| $\sigma$ | 5.0 | Substitution elasticity |
-| $T_{ij}$ | $\exp(0.8\lvert x_i-x_j\rvert)$ | Iceberg trade cost |
-| $\bar A_i$ | central bump | Productivity fundamental |
-| $\bar u_i$ | 1 | Amenity fundamental |
-| $\alpha,\beta$ baseline | 0.03, -0.12 | Dispersion regime |
-| $\alpha,\beta$ strong agglomeration | 0.12, -0.02 | Agglomeration regime |
+| $`N`$ | 15 | Location count |
+| $`x_i`$ | equally spaced in $`[-1,1]`$ | Grid position |
+| $`\sigma`$ | 5.0 | Substitution elasticity |
+| $`T_{ij}`$ | $`\exp(0.8\lvert x_i-x_j\rvert)`$ | Iceberg trade cost |
+| $`\bar A_i`$ | central bump | Productivity fundamental |
+| $`\bar u_i`$ | 1 | Amenity fundamental |
+| $`\alpha,\beta`$ baseline | 0.03, -0.12 | Dispersion regime |
+| $`\alpha,\beta`$ strong agglomeration | 0.12, -0.02 | Agglomeration regime |
 | Total labor | 1 | Labor normalization |
 | Wage normalization | geometric mean wage one | Wage units |
 
@@ -128,7 +128,7 @@ The heatmap fixes geography. Purchasing power moves across locations. Central co
 
 <img src="figures/access-surface.png" alt="Trade costs plus market access" width="80%">
 
-Allen and Arkolakis define two composite parameters that decide which regime the model lives in. $\gamma_1 = 1 - (\sigma-1)\alpha - \sigma\beta$ collects the dispersion forces. $\gamma_2 = 1 + \sigma\alpha + (\sigma-1)\beta$ collects the agglomeration forces. Equilibrium is unique when $\gamma_2/\gamma_1 < 1$ and can have multiple equilibria when $\gamma_2/\gamma_1 > 1$. The diagnostic table further down prints this ratio for both scenarios. The figure just below shows the multiple-equilibrium case directly.
+Allen and Arkolakis define two composite parameters that decide which regime the model lives in. $`\gamma_1 = 1 - (\sigma-1)\alpha - \sigma\beta`$ collects the dispersion forces. $`\gamma_2 = 1 + \sigma\alpha + (\sigma-1)\beta`$ collects the agglomeration forces. Equilibrium is unique when $`\gamma_2/\gamma_1 < 1`$ and can have multiple equilibria when $`\gamma_2/\gamma_1 > 1`$. The diagnostic table further down prints this ratio for both scenarios. The figure just below shows the multiple-equilibrium case directly.
 
 The relocation iteration is diagnostic only. It solves wages for a provisional population and computes real utility gaps. It then shifts workers toward high-utility locations.
 
@@ -142,20 +142,20 @@ The parameter table records the normalizations and spillover regimes. The diagno
 
 | Symbol                       | Value                                                                                         | Meaning                  |
 |:-----------------------------|:----------------------------------------------------------------------------------------------|:-------------------------|
-| $N$                          | 15                                                                                            | Location count           |
-| $x_i$                        | 15 equally spaced points in [-1, 1]                                                           | Grid position            |
-| $\sigma$                     | 5.0                                                                                           | Substitution elasticity  |
-| $T_{ij}$                     | $\exp(0.8\lvert x_i-x_j\rvert)$                                                               | Iceberg trade cost       |
-| $\bar A_i$                   | central log-productivity bump                                                                 | Productivity fundamental |
-| $\bar u_i$                   | 1 for every location                                                                          | Amenity fundamental      |
-| $\alpha, \beta$              | Dispersion dominant: alpha=0.03, beta=-0.12, Agglomeration strong: alpha=0.12, beta=-0.02     | Spillover parameters     |
-| $\gamma_1, \gamma_2$         | Dispersion dominant: gamma1=1.48, gamma2=0.67, Agglomeration strong: gamma1=0.62, gamma2=1.52 | Stability terms          |
-| $\sum_i L_i$                 | 1                                                                                             | Labor normalization      |
-| $\frac{1}{N}\sum_i \log w_i$ | 0                                                                                             | Wage normalization       |
+| $`N`$                          | 15                                                                                            | Location count           |
+| $`x_i`$                        | 15 equally spaced points in [-1, 1]                                                           | Grid position            |
+| $`\sigma`$                     | 5.0                                                                                           | Substitution elasticity  |
+| $`T_{ij}`$                     | $`\exp(0.8\lvert x_i-x_j\rvert)`$                                                               | Iceberg trade cost       |
+| $`\bar A_i`$                   | central log-productivity bump                                                                 | Productivity fundamental |
+| $`\bar u_i`$                   | 1 for every location                                                                          | Amenity fundamental      |
+| $`\alpha, \beta`$              | Dispersion dominant: alpha=0.03, beta=-0.12, Agglomeration strong: alpha=0.12, beta=-0.02     | Spillover parameters     |
+| $`\gamma_1, \gamma_2`$         | Dispersion dominant: gamma1=1.48, gamma2=0.67, Agglomeration strong: gamma1=0.62, gamma2=1.52 | Stability terms          |
+| $`\sum_i L_i`$                 | 1                                                                                             | Labor normalization      |
+| $`\frac{1}{N}\sum_i \log w_i`$ | 0                                                                                             | Wage normalization       |
 
 **Equilibrium diagnostics by scenario**
 
-| Scenario             |   Productivity dispersion ($\alpha$) |   Trade elasticity ($\beta$) |   Amenity ratio ($\gamma_2/\gamma_1$) |   Max trade residual |   Max utility residual |   Common utility |   HHI index |   Largest share | Solver    |
+| Scenario             |   Productivity dispersion ($`\alpha`$) |   Trade elasticity ($`\beta`$) |   Amenity ratio ($`\gamma_2/\gamma_1`$) |   Max trade residual |   Max utility residual |   Common utility |   HHI index |   Largest share | Solver    |
 |:---------------------|--------:|-------:|----------------:|---------------------:|-----------------------:|-----------------:|------:|----------------:|:----------|
 | Dispersion dominant  |    0.03 |  -0.12 |            0.45 |             7.11e-15 |               3.33e-16 |           1.8638 | 0.099 |           0.151 | converged |
 | Agglomeration strong |    0.12 |  -0.02 |            2.45 |             3.38e-12 |               3.05e-16 |           1.2623 | 0.297 |           0.436 | converged |

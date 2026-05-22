@@ -10,56 +10,56 @@ The computation asks two questions. Which cells have zero profitable one-player 
 
 ## Equations
 
-A finite two-player game has a row player with actions $i \in I$ and a column
-player with actions $j \in J$. The matrices $A$ and $B$ record row and column
-payoffs. At pure profile $(i,j)$, the players receive $(A_{ij},B_{ij})$.
+A finite two-player game has a row player with actions $`i \in I`$ and a column
+player with actions $`j \in J`$. The matrices $`A`$ and $`B`$ record row and column
+payoffs. At pure profile $`(i,j)`$, the players receive $`(A_{ij},B_{ij})`$.
 
-The row player's one-step deviation gain at $(i,j)$ is
+The row player's one-step deviation gain at $`(i,j)`$ is
 
-$$
+```math
 d_1(i,j)=\max_{i' \in I} A_{i'j}-A_{ij},
-$$
+```
 
 and the column player's gain is
 
-$$
+```math
 d_2(i,j)=\max_{j' \in J} B_{ij'}-B_{ij}.
-$$
+```
 
-The combined deviation gain at $(i,j)$ is the larger of the two,
+The combined deviation gain at $`(i,j)`$ is the larger of the two,
 
-$$
+```math
 d(i,j)=\max\lbrace d_1(i,j), d_2(i,j) \rbrace.
-$$
+```
 
-The heat maps color each cell by $d(i,j)$, and the pseudocode tests
-$d(i,j)=0$.
+The heat maps color each cell by $`d(i,j)`$, and the pseudocode tests
+$`d(i,j)=0`$.
 
-A pure Nash equilibrium is a profile $(i^{\ast}, j^{\ast})$ with
+A pure Nash equilibrium is a profile $`(i^{\ast}, j^{\ast})`$ with
 
-$$
+```math
 d_1(i^{\ast},j^{\ast})=d_2(i^{\ast},j^{\ast})=0,
-$$
+```
 
 Equivalently, the two best-response inequalities are
 
-$$
+```math
 A_{i^{\ast}j^{\ast}} \geq A_{ij^{\ast}} \quad \forall i \in I,
 \qquad
 B_{i^{\ast}j^{\ast}} \geq B_{i^{\ast}j} \quad \forall j \in J.
-$$
+```
 
-For a 2x2 game, let the row player use mixed strategy $x=(p,1-p)$ and the
-column player use $y=(q,1-q)$. An interior mixed equilibrium requires both
+For a 2x2 game, let the row player use mixed strategy $`x=(p,1-p)`$ and the
+column player use $`y=(q,1-q)`$. An interior mixed equilibrium requires both
 players to be indifferent across the actions used with positive probability:
 
-$$
+```math
 A_{11}q + A_{12}(1-q) = A_{21}q + A_{22}(1-q),
 \qquad
 B_{11}p + B_{21}(1-p) = B_{12}p + B_{22}(1-p).
-$$
+```
 
-The candidate is an equilibrium only if $p,q \in [0,1]$. The reported mixed
+The candidate is an equilibrium only if $`p,q \in [0,1]`$. The reported mixed
 residual is the maximum absolute gap left in these two indifference equations.
 
 ## Model Setup

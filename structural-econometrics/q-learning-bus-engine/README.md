@@ -4,7 +4,7 @@
 
 A bus depot decides each period whether to keep a high-mileage engine or pay a lump-sum replacement cost. Higher mileage raises operating costs. The trade-off tilts toward replacement.
 
-The target object is the replacement hazard $P(\mathrm{replace} \mid x)$ at each mileage level. Rust's nested fixed-point estimator computes it by iterating the structural Bellman equation. NFXP needs the mileage transition matrix as an input.
+The target object is the replacement hazard $`P(\mathrm{replace} \mid x)`$ at each mileage level. Rust's nested fixed-point estimator computes it by iterating the structural Bellman equation. NFXP needs the mileage transition matrix as an input.
 
 The bridge to reinforcement learning is direct. Rust's conditional value for a state and action is a soft action-value function. The Type-I extreme value shocks turn the continuation value into a log-sum-exp, which is the same soft Bellman operator used in entropy-regularized Q-learning.
 
@@ -12,58 +12,58 @@ Soft Q-learning replaces the matrix with the simulated bus panel. The agent sees
 
 ## Equations
 
-Let $x_t$ be mileage and $a_t \in \lbrace\mathrm{replace}, \mathrm{keep}\rbrace$. Flow payoffs are $u(x, \mathrm{replace}) = 0$ and $u(x, \mathrm{keep}) = \theta_0 + \theta_1 x$, with Type-I extreme value choice shocks $\varepsilon_t$.
+Let $`x_t`$ be mileage and $`a_t \in \lbrace\mathrm{replace}, \mathrm{keep}\rbrace`$. Flow payoffs are $`u(x, \mathrm{replace}) = 0`$ and $`u(x, \mathrm{keep}) = \theta_0 + \theta_1 x`$, with Type-I extreme value choice shocks $`\varepsilon_t`$.
 
 The conditional value functions solve
 
-$$
+```math
 v(x, a) = u(x, a) + \beta \mathbb{E}[ \gamma + \log \textstyle\sum_{a'} \exp v(x', a') \mid x, a ],
-$$
+```
 
-Here $\gamma \approx 0.5772$ is the Euler-Mascheroni constant, equal to the expected value of a Type-I extreme value draw.
+Here $`\gamma \approx 0.5772`$ is the Euler-Mascheroni constant, equal to the expected value of a Type-I extreme value draw.
 
 and the structural CCP is the softmax of conditional values:
 
-$$
+```math
 P(\mathrm{replace} \mid x) = \frac{\exp v(x, \mathrm{replace})}{\exp v(x, \mathrm{replace}) + \exp v(x, \mathrm{keep})}.
-$$
+```
 
-This is already a soft-Q system. If $Q(x,a)$ denotes the same object as $v(x,a)$, the NFXP fixed point applies the expectation under the known transition matrix. The matrix version is
+This is already a soft-Q system. If $`Q(x,a)`$ denotes the same object as $`v(x,a)`$, the NFXP fixed point applies the expectation under the known transition matrix. The matrix version is
 
-$$
+```math
 Q(x,a)=u(x,a)+\beta\sum_{x'}F_a(x'\mid x)[\gamma+\log\textstyle\sum_{a'}\exp Q(x',a')].
-$$
+```
 
-Soft Q-learning treats $v$ as an action-value $Q(x, a)$ and updates it from observed $(x_t, a_t, x_{t+1})$ triples:
+Soft Q-learning treats $`v`$ as an action-value $`Q(x, a)`$ and updates it from observed $`(x_t, a_t, x_{t+1})`$ triples:
 
-$$
+```math
 Q(x_t, a_t) \leftarrow Q(x_t, a_t) + \alpha_t [ u(x_t, a_t) + \beta(\gamma + \log \textstyle\sum_{a'} \exp Q(x_{t+1}, a')) - Q(x_t, a_t) ].
-$$
+```
 
-The sampled next state $x_{t+1}$ is a noisy draw from the same transition distribution that NFXP averages over exactly. Repeated visits make the stochastic update approximate the transition-matrix expectation. Here $\alpha_t$ is a step-size sequence that shrinks with the per-state visit count (Robbins-Monro schedule).
+The sampled next state $`x_{t+1}`$ is a noisy draw from the same transition distribution that NFXP averages over exactly. Repeated visits make the stochastic update approximate the transition-matrix expectation. Here $`\alpha_t`$ is a step-size sequence that shrinks with the per-state visit count (Robbins-Monro schedule).
 
 ## Model Setup
 
 | Object | Value |
 |--------|-------|
-| Mileage state $x$ | 61 grid points on $[0, 15]$ in steps of 0.25 |
-| Action $a$ | $\lbrace\mathrm{replace}, \mathrm{keep}\rbrace$ |
-| Discount $\beta$ | 0.9 |
-| Replacement-payoff intercept $\theta_0$ | 2.00 |
-| Mileage-cost slope $\theta_1$ | -0.15 |
+| Mileage state $`x`$ | 61 grid points on $`[0, 15]`$ in steps of 0.25 |
+| Action $`a`$ | $`\lbrace\mathrm{replace}, \mathrm{keep}\rbrace`$ |
+| Discount $`\beta`$ | 0.9 |
+| Replacement-payoff intercept $`\theta_0`$ | 2.00 |
+| Mileage-cost slope $`\theta_1`$ | -0.15 |
 | Buses | 1500 |
 | Periods per bus | 35 |
 | Observed transitions | 51,000 |
 | Q-learning epochs per seed | 30 |
 | Q-learning seeds (averaged) | 4 |
 | DQN epochs | 80 |
-| Benchmark | NFXP fixed point under known $F_{\mathrm{replace}}$, $F_{\mathrm{keep}}$ |
+| Benchmark | NFXP fixed point under known $`F_{\mathrm{replace}}`$, $`F_{\mathrm{keep}}`$ |
 
 ## Solution Method
 
 NFXP and soft Q-learning differ in how they evaluate the same continuation value. NFXP has the full mileage transition matrices. For each state-action pair, it averages the log-sum-exp continuation over every possible next mileage state. The replacement hazard is the softmax of the converged conditional values.
 
-Soft Q-learning sees one realized next mileage at a time. Each panel row $(x_t,a_t,x_{t+1})$ gives a sampled Bellman target. Averaging happens through repeated stochastic updates rather than through a matrix multiplication. The table version used here keeps one number $Q(x,a)$ for every mileage grid point and action, so it is closest to Rust's finite-state calculation.
+Soft Q-learning sees one realized next mileage at a time. Each panel row $`(x_t,a_t,x_{t+1})`$ gives a sampled Bellman target. Averaging happens through repeated stochastic updates rather than through a matrix multiplication. The table version used here keeps one number $`Q(x,a)`$ for every mileage grid point and action, so it is closest to Rust's finite-state calculation.
 
 ```text
 Algorithm: soft Q-learning from observed bus transitions
@@ -77,7 +77,7 @@ for epoch = 1, ..., E:
 P(replace | x) <- exp Q(x, replace) / [exp Q(x, replace) + exp Q(x, keep)]
 ```
 
-The deep-RL appendix changes only the function approximation. Instead of a table with one entry per mileage grid point, it fits a small two-hidden-layer MLP $Q_\theta(x, \cdot)$ that maps mileage to the two action values. DQN can smooth and extrapolate across states, but it also introduces optimizer, target-network, and tuning choices that the table does not need. The target still uses the same soft-Bellman log-sum-exp.
+The deep-RL appendix changes only the function approximation. Instead of a table with one entry per mileage grid point, it fits a small two-hidden-layer MLP $`Q_\theta(x, \cdot)`$ that maps mileage to the two action values. DQN can smooth and extrapolate across states, but it also introduces optimizer, target-network, and tuning choices that the table does not need. The target still uses the same soft-Bellman log-sum-exp.
 
 ```text
 Algorithm: soft DQN on the same observed panel

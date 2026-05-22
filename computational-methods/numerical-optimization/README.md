@@ -10,48 +10,48 @@ A single local optimizer can report the basin reached from its starting value. R
 
 ## Equations
 
-Let $\theta=(\theta_1,\theta_2)$ denote the structural parameter vector. The
+Let $`\theta=(\theta_1,\theta_2)`$ denote the structural parameter vector. The
 target density is a stylized latent-regime likelihood. Each regime has its own
 mean, while the researcher observes only the mixture:
 
-$$
+```math
 \begin{aligned}
 p(\theta)
 &= \omega \phi(\theta; \mu_1, \Sigma) \\
 &\quad + (1-\omega)\phi(\theta; \mu_2, \Sigma).
 \end{aligned}
-$$
+```
 
 The estimator minimizes the negative log likelihood:
 
-$$
+```math
 \min_{\theta \in \mathbb{R}^2} f(\theta),
 \qquad
 f(\theta) = -\log p(\theta).
-$$
+```
 
 Newton's method uses local curvature around the current guess:
 
-$$
+```math
 \theta_{n+1} = \theta_n - H_f(\theta_n)^{-1}\nabla f(\theta_n).
-$$
+```
 
-Here $H_f(\theta)$ denotes the Hessian matrix of $f$ at $\theta$.
+Here $`H_f(\theta)`$ denotes the Hessian matrix of $`f`$ at $`\theta`$.
 
 ## Model Setup
 
 | Object | Value |
 |--------|-------|
-| $\mu_1$ | (1.50, 1.50) |
-| $\mu_2$ | (-1.50, -1.50) |
-| $\Sigma$ | [[1.0, 0.5], [0.5, 1.0]] |
-| Mixing probability $\omega$ | 0.5 |
+| $`\mu_1`$ | (1.50, 1.50) |
+| $`\mu_2`$ | (-1.50, -1.50) |
+| $`\Sigma`$ | [[1.0, 0.5], [0.5, 1.0]] |
+| Mixing probability $`\omega`$ | 0.5 |
 | Local-method start | (3.00, -2.50) |
-| Global search box | $[-5,5]^2$ |
+| Global search box | $`[-5,5]^2`$ |
 
 ## Solution Method
 
-All methods minimize the same criterion $f(\theta)$. The local methods start from the same off-diagonal value. Their paths show how different search rules choose a basin. Dual annealing searches the full box before local polishing. The BFGS restart grid maps the basin reached from each start.
+All methods minimize the same criterion $`f(\theta)`$. The local methods start from the same off-diagonal value. Their paths show how different search rules choose a basin. Dual annealing searches the full box before local polishing. The BFGS restart grid maps the basin reached from each start.
 
 ```text
 Algorithm: optimizer diagnostics for a latent-regime likelihood

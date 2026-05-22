@@ -10,42 +10,42 @@ The example simulates many correlated policy-concept indicators. A few signals a
 
 ## Equations
 
-Let $r_t$ be the policy-rate level and let $\Delta r_t$ be the rate change at
-meeting $t$. The information set contains a lagged policy rate and a vector
-$x_t$ of standardized policy-concept indicators.
+Let $`r_t`$ be the policy-rate level and let $`\Delta r_t`$ be the rate change at
+meeting $`t`$. The information set contains a lagged policy rate and a vector
+$`x_t`$ of standardized policy-concept indicators.
 
-$$
+```math
 \Delta r_t = \phi r_{t-1} + x_t'\beta + u_t.
-$$
+```
 
-Here $\phi$ is the autoregressive coefficient on the lagged policy rate.
+Here $`\phi`$ is the autoregressive coefficient on the lagged policy rate.
 
 The systematic policy component is
 
-$$
+```math
 m_t = \phi r_{t-1} + x_t'\beta,
-$$
+```
 
 and the policy shock is the residual
 
-$$
+```math
 u_t = \Delta r_t - m_t.
-$$
+```
 
-The forecast uses a linear rule $f_t=b_0+z_t'b$, where
-$z_t=(r_{t-1},x_t')'$. Ridge estimates the coefficients by
+The forecast uses a linear rule $`f_t=b_0+z_t'b`$, where
+$`z_t=(r_{t-1},x_t')'`$. Ridge estimates the coefficients by
 
-$$
+```math
 \hat b_{\mathrm{ridge}} = \arg\min_b \frac{1}{n}\sum_{t=1}^n (\Delta r_t-b_0-z_t'b)^2 +\lambda\sum_{j=1}^p b_j^2.
-$$
+```
 
 Lasso replaces the quadratic penalty with an absolute-value penalty.
 
-$$
+```math
 \hat b_{\mathrm{lasso}} = \arg\min_b \frac{1}{n}\sum_{t=1}^n (\Delta r_t-b_0-z_t'b)^2 +\lambda\sum_{j=1}^p |b_j|.
-$$
+```
 
-The tuning parameter $\lambda$ is chosen on a blocked validation sample. Ridge
+The tuning parameter $`\lambda`$ is chosen on a blocked validation sample. Ridge
 keeps many small correlated signals. Lasso can set coefficients exactly to
 zero, so it produces a compressed selected set.
 
@@ -58,11 +58,11 @@ zero, so it produces a compressed selected set.
 | Indicators per group | 24 | Noisy text-like signals per concept |
 | Total indicators | 120 | Wide predictor block used by ridge and lasso |
 | Training meetings | 125 | First block used to tune penalties |
-| Validation meetings | 55 | Middle block used to choose $\lambda$ |
+| Validation meetings | 55 | Middle block used to choose $`\lambda`$ |
 | Test meetings | 79 | Final block used for reported forecast losses |
 | True shock sd | 0.20 | Innovation in the policy rule |
-| Ridge $\lambda$ | 0.0381 | Validation-selected shrinkage |
-| Lasso $\lambda$ | 0.0079 | Validation-selected sparsity |
+| Ridge $`\lambda`$ | 0.0381 | Validation-selected shrinkage |
+| Lasso $`\lambda`$ | 0.0079 | Validation-selected sparsity |
 
 ## Solution Method
 

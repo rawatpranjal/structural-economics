@@ -13,110 +13,110 @@ The objective here is the same two-segment monopoly profit used in [`numerical-m
 ## Equations
 
 A monopolist faces a population of consumers split between two segments.
-Segment $L$ has linear demand with intercept $A_L > 0$ and slope $b_L > 0$.
-Segment $H$ has linear demand with intercept $A_H > 0$ and slope $b_H > 0$.
+Segment $`L`$ has linear demand with intercept $`A_L > 0`$ and slope $`b_L > 0`$.
+Segment $`H`$ has linear demand with intercept $`A_H > 0`$ and slope $`b_H > 0`$.
 
-$$
+```math
 D_L(p) = \max\lbrace 0,  A_L - b_L p \rbrace,
 \qquad
 D_H(p) = \max\lbrace 0,  A_H - b_H p \rbrace.
-$$
+```
 
-With low-segment share $\lambda \in (0, 1)$ and constant marginal cost $c \ge 0$, the mixture profit is
+With low-segment share $`\lambda \in (0, 1)`$ and constant marginal cost $`c \ge 0`$, the mixture profit is
 
-$$
+```math
 \pi(p) = (p - c) \left[\lambda D_L(p) + (1 - \lambda)  D_H(p)\right].
-$$
+```
 
-The objective is piecewise quadratic in $p$ with a strict local maximum at the both-segments peak $p_L^{\ast}$ and a global maximum at the high-only peak $p_H^{\ast}$.
-On the calibration used here, $p_L^{\ast} \approx 1.603$ with $\pi \approx 4.14$, and $p_H^{\ast} = 4.25$ with $\pi \approx 5.625$.
+The objective is piecewise quadratic in $`p`$ with a strict local maximum at the both-segments peak $`p_L^{\ast}`$ and a global maximum at the high-only peak $`p_H^{\ast}`$.
+On the calibration used here, $`p_L^{\ast} \approx 1.603`$ with $`\pi \approx 4.14`$, and $`p_H^{\ast} = 4.25`$ with $`\pi \approx 5.625`$.
 
-Bayesian optimization treats $\pi$ as an unknown function on a bracket $\mathcal{X} = [p_{\mathrm{lo}}, p_{\mathrm{hi}}]$.
-It places a probabilistic prior on $\pi$, updates that prior to a posterior conditional on the evaluations collected so far, and selects the next evaluation by maximizing an acquisition function on the posterior.
+Bayesian optimization treats $`\pi`$ as an unknown function on a bracket $`\mathcal{X} = [p_{\mathrm{lo}}, p_{\mathrm{hi}}]`$.
+It places a probabilistic prior on $`\pi`$, updates that prior to a posterior conditional on the evaluations collected so far, and selects the next evaluation by maximizing an acquisition function on the posterior.
 This is the same Bayesian update that produces a Beta posterior from a Beta-Binomial conjugate model in [`computational-methods/metropolis-hastings/`](../../computational-methods/metropolis-hastings/); here the prior is over an unknown function rather than a scalar probability, and conjugacy is replaced by the closed form for conditioning a joint Gaussian.
 
 ### Method 1: Gaussian-process surrogate
 
-A Gaussian process $\mathcal{GP}(m, k)$ is a distribution over functions $f : \mathcal{X} \to \mathbb{R}$ such that for any finite set of inputs $X = (x_1, \ldots, x_n) \in \mathcal{X}^n$ the vector of function values $f(X) = (f(x_1), \ldots, f(x_n)) \in \mathbb{R}^n$ is jointly Gaussian with mean $m(X) = (m(x_1), \ldots, m(x_n))$ and covariance matrix $K(X, X) \in \mathbb{R}^{n \times n}$ with entries $K_{ij} = k(x_i, x_j)$.
-The process is fully specified by its mean function $m : \mathcal{X} \to \mathbb{R}$ and its covariance kernel $k : \mathcal{X} \times \mathcal{X} \to \mathbb{R}$.
-We use a constant-mean prior, $f \sim \mathcal{GP}(m, k)$ with $m(x) \equiv \bar{y}$ fixed to the sample mean of the observed targets, and the squared-exponential kernel
+A Gaussian process $`\mathcal{GP}(m, k)`$ is a distribution over functions $`f : \mathcal{X} \to \mathbb{R}`$ such that for any finite set of inputs $`X = (x_1, \ldots, x_n) \in \mathcal{X}^n`$ the vector of function values $`f(X) = (f(x_1), \ldots, f(x_n)) \in \mathbb{R}^n`$ is jointly Gaussian with mean $`m(X) = (m(x_1), \ldots, m(x_n))`$ and covariance matrix $`K(X, X) \in \mathbb{R}^{n \times n}`$ with entries $`K_{ij} = k(x_i, x_j)`$.
+The process is fully specified by its mean function $`m : \mathcal{X} \to \mathbb{R}`$ and its covariance kernel $`k : \mathcal{X} \times \mathcal{X} \to \mathbb{R}`$.
+We use a constant-mean prior, $`f \sim \mathcal{GP}(m, k)`$ with $`m(x) \equiv \bar{y}`$ fixed to the sample mean of the observed targets, and the squared-exponential kernel
 
-$$
+```math
 k(x, x') = \sigma_f^2 \exp\left(-\tfrac{(x - x')^2}{2 \ell^2}\right).
-$$
+```
 
-Here $\sigma_f > 0$ is the prior signal standard deviation and $\ell > 0$ is the length scale, which controls how quickly the kernel decays with distance.
-A small $\ell$ gives a wiggly prior; a large $\ell$ gives a smooth prior.
+Here $`\sigma_f > 0`$ is the prior signal standard deviation and $`\ell > 0`$ is the length scale, which controls how quickly the kernel decays with distance.
+A small $`\ell`$ gives a wiggly prior; a large $`\ell`$ gives a smooth prior.
 
-Suppose we have observed evaluations $y_i = f(x_i) + \varepsilon_i$ for $i = 1, \ldots, n$, where the observation noise $\varepsilon_i \sim \mathcal{N}(0, \sigma_n^2)$ is independent and $\sigma_n > 0$ is the noise standard deviation.
-Stack the targets into $y = (y_1, \ldots, y_n)^{\top} \in \mathbb{R}^n$.
-Because the joint distribution of $(y, f(x_\ast))$ at any new input $x_\ast \in \mathcal{X}$ is Gaussian by construction, the conditional distribution $f(x_\ast) \mid (X, y)$ is also Gaussian, with closed-form posterior mean $\mu(x_\ast)$ and variance $\sigma^2(x_\ast)$:
+Suppose we have observed evaluations $`y_i = f(x_i) + \varepsilon_i`$ for $`i = 1, \ldots, n`$, where the observation noise $`\varepsilon_i \sim \mathcal{N}(0, \sigma_n^2)`$ is independent and $`\sigma_n > 0`$ is the noise standard deviation.
+Stack the targets into $`y = (y_1, \ldots, y_n)^{\top} \in \mathbb{R}^n`$.
+Because the joint distribution of $`(y, f(x_\ast))`$ at any new input $`x_\ast \in \mathcal{X}`$ is Gaussian by construction, the conditional distribution $`f(x_\ast) \mid (X, y)`$ is also Gaussian, with closed-form posterior mean $`\mu(x_\ast)`$ and variance $`\sigma^2(x_\ast)`$:
 
-$$
+```math
 \mu(x_{\ast}) = m(x_{\ast}) + \underbrace{k(x_{\ast}, X)}_{\text{similarity to training inputs}} \underbrace{\left[K(X, X) + \sigma_n^2 I\right]^{-1} (y - m(X))}_{\text{noise-corrected training residual}},
-$$
+```
 
-$$
+```math
 \sigma^2(x_{\ast}) = \underbrace{k(x_{\ast}, x_{\ast})}_{\text{prior variance at } x_{\ast}} - \underbrace{k(x_{\ast}, X) \left[K(X, X) + \sigma_n^2 I\right]^{-1} k(X, x_{\ast})}_{\text{variance explained by the data}}.
-$$
+```
 
-The vector $k(x_\ast, X) \in \mathbb{R}^n$ collects the kernel values $(k(x_\ast, x_1), \ldots, k(x_\ast, x_n))$ and $I$ is the $n \times n$ identity matrix.
-Read the posterior mean as a kernel-weighted regression around the constant mean $m(x_\ast)$: the row vector $k(x_\ast, X)$ gives the similarity of the candidate to each evaluated point, and the precision-weighted residual $[K + \sigma_n^2 I]^{-1} (y - m(X))$ tells the formula how to combine those similarities.
-Read the posterior variance as "prior variance minus what the data already explain", which is the GP analogue of the Bayesian shrinkage identity $\mathrm{Var}(\theta) = \mathrm{Var}(\mathbb{E}[\theta \mid D]) + \mathbb{E}[\mathrm{Var}(\theta \mid D)]$.
+The vector $`k(x_\ast, X) \in \mathbb{R}^n`$ collects the kernel values $`(k(x_\ast, x_1), \ldots, k(x_\ast, x_n))`$ and $`I`$ is the $`n \times n`$ identity matrix.
+Read the posterior mean as a kernel-weighted regression around the constant mean $`m(x_\ast)`$: the row vector $`k(x_\ast, X)`$ gives the similarity of the candidate to each evaluated point, and the precision-weighted residual $`[K + \sigma_n^2 I]^{-1} (y - m(X))`$ tells the formula how to combine those similarities.
+Read the posterior variance as "prior variance minus what the data already explain", which is the GP analogue of the Bayesian shrinkage identity $`\mathrm{Var}(\theta) = \mathrm{Var}(\mathbb{E}[\theta \mid D]) + \mathbb{E}[\mathrm{Var}(\theta \mid D)]`$.
 The subtracted term cannot exceed the prior, so the posterior variance is always nonnegative and shrinks toward zero as the candidate moves close to an evaluated point.
 The variance collapsing at evaluated points is what makes Expected Improvement avoid re-querying the same input, and it is the reason posterior variance is the right signal for "where would another evaluation be informative".
 
 ### Method 2: Expected Improvement acquisition
 
-Let $f^{\ast} = \max_{i \le n} y_i$ denote the best observed value so far.
-Expected Improvement scores a candidate $x \in \mathcal{X}$ by the expected positive gain over $f^{\ast}$, with expectation taken under the GP posterior at $x$:
+Let $`f^{\ast} = \max_{i \le n} y_i`$ denote the best observed value so far.
+Expected Improvement scores a candidate $`x \in \mathcal{X}`$ by the expected positive gain over $`f^{\ast}`$, with expectation taken under the GP posterior at $`x`$:
 
-$$
+```math
 \mathrm{EI}(x) = \mathbb{E}\left[\max\lbrace f(x) - f^{\ast} - \xi,  0 \rbrace \mid X, y \right].
-$$
+```
 
-The parameter $\xi \ge 0$ is an exploration tilt, in units of the objective: it requires a posterior improvement of at least $\xi$ before contributing to the score.
-Since $f(x) \mid X, y \sim \mathcal{N}(\mu(x), \sigma^2(x))$, the expectation is a truncated-Gaussian integral with the closed form
+The parameter $`\xi \ge 0`$ is an exploration tilt, in units of the objective: it requires a posterior improvement of at least $`\xi`$ before contributing to the score.
+Since $`f(x) \mid X, y \sim \mathcal{N}(\mu(x), \sigma^2(x))`$, the expectation is a truncated-Gaussian integral with the closed form
 
-$$
+```math
 \mathrm{EI}(x) = \underbrace{(\mu(x) - f^{\ast} - \xi)  \Phi(z)}_{\text{exploitation: bet on posterior mean}} + \underbrace{\sigma(x)  \phi(z)}_{\text{exploration: bet on posterior spread}},
 \qquad
 z = \frac{\mu(x) - f^{\ast} - \xi}{\sigma(x)},
-$$
+```
 
-valid whenever $\sigma(x) > 0$.
-Here $\Phi$ and $\phi$ denote the cumulative distribution function and probability density function of the standard normal distribution $\mathcal{N}(0, 1)$.
+valid whenever $`\sigma(x) > 0`$.
+Here $`\Phi`$ and $`\phi`$ denote the cumulative distribution function and probability density function of the standard normal distribution $`\mathcal{N}(0, 1)`$.
 
 #### Worked example
 
-Suppose after a handful of evaluations the GP at a candidate $x$ has posterior mean $\mu(x) = 5.2$ and standard deviation $\sigma(x) = 0.5$, and the best observation so far is $f^{\ast} = 4.5$.
-With $\xi = 0$, the standardized improvement is $z = (5.2 - 4.5)/0.5 = 1.4$.
-The closed form gives $\mathrm{EI}(x) = 0.7 \cdot \Phi(1.4) + 0.5 \cdot \phi(1.4) \approx 0.7 \cdot 0.919 + 0.5 \cdot 0.150 \approx 0.72$.
-The exploitation term dominates because the posterior mean already sits well above $f^{\ast}$; the candidate is mostly an exploit pick.
+Suppose after a handful of evaluations the GP at a candidate $`x`$ has posterior mean $`\mu(x) = 5.2`$ and standard deviation $`\sigma(x) = 0.5`$, and the best observation so far is $`f^{\ast} = 4.5`$.
+With $`\xi = 0`$, the standardized improvement is $`z = (5.2 - 4.5)/0.5 = 1.4`$.
+The closed form gives $`\mathrm{EI}(x) = 0.7 \cdot \Phi(1.4) + 0.5 \cdot \phi(1.4) \approx 0.7 \cdot 0.919 + 0.5 \cdot 0.150 \approx 0.72`$.
+The exploitation term dominates because the posterior mean already sits well above $`f^{\ast}`$; the candidate is mostly an exploit pick.
 The split into exploitation plus exploration is why Expected Improvement works without a hand-tuned trade-off.
 The first term is large where the posterior mean already exceeds the best observation, so it pulls the search toward known promising regions.
 The second term is large where the posterior standard deviation is high, which only happens away from evaluated points, so it pulls the search toward unexplored regions.
-Expected Improvement vanishes at evaluated points because $\sigma(x_i) = 0$ there, so the loop never re-evaluates the same input.
-The Bayesian-optimization loop alternates between fitting the GP and maximizing $\mathrm{EI}$ to pick the next evaluation, repeating until the evaluation budget is exhausted.
+Expected Improvement vanishes at evaluated points because $`\sigma(x_i) = 0`$ there, so the loop never re-evaluates the same input.
+The Bayesian-optimization loop alternates between fitting the GP and maximizing $`\mathrm{EI}`$ to pick the next evaluation, repeating until the evaluation budget is exhausted.
 
 ## Model Setup
 
 | Symbol | Value | Role |
 |--------|-------|------|
-| $A_L$, $b_L$ | 10.0, 5.0 | Low-valuation linear demand |
-| $A_H$, $b_H$ | 8.0, 1.0 | High-valuation linear demand |
-| $c$ | 0.5 | Marginal cost |
-| $\lambda$ | 0.6 | Share of low-valuation consumers |
-| Search bracket | $[0.501,  8.0]$ | Outer bounds for every method |
-| Low peak | $p_L^{\ast} = 1.6029$, $\pi = 4.1360$ | Local maximum |
-| High peak | $p_H^{\ast} = 4.2500$, $\pi = 5.6250$ | Global maximum |
+| $`A_L`$, $`b_L`$ | 10.0, 5.0 | Low-valuation linear demand |
+| $`A_H`$, $`b_H`$ | 8.0, 1.0 | High-valuation linear demand |
+| $`c`$ | 0.5 | Marginal cost |
+| $`\lambda`$ | 0.6 | Share of low-valuation consumers |
+| Search bracket | $`[0.501,  8.0]`$ | Outer bounds for every method |
+| Low peak | $`p_L^{\ast} = 1.6029`$, $`\pi = 4.1360`$ | Local maximum |
+| High peak | $`p_H^{\ast} = 4.2500`$, $`\pi = 5.6250`$ | Global maximum |
 | Initial design | 5 uniform draws, seed 0 | Seed observations for the GP |
 | BO iterations | 25 | Acquisition-driven evaluations |
 | Total BO budget | 30 | Per acquisition rule |
-| Kernel signal std $\sigma_f$ | 2.00 | Squared-exponential kernel |
-| Kernel noise std $\sigma_n$ | 1e-03 | Almost-deterministic profit |
-| Length-scale grid | $[0.30,  2.50]$, 12 points | Tuned by log marginal likelihood |
-| EI exploration $\xi$ | 0.00 | Posterior-improvement tilt |
+| Kernel signal std $`\sigma_f`$ | 2.00 | Squared-exponential kernel |
+| Kernel noise std $`\sigma_n`$ | 1e-03 | Almost-deterministic profit |
+| Length-scale grid | $`[0.30,  2.50]`$, 12 points | Tuned by log marginal likelihood |
+| EI exploration $`\xi`$ | 0.00 | Posterior-improvement tilt |
 
 ## Solution Method
 
@@ -124,7 +124,7 @@ Bayesian optimization is a single loop. Fit a Gaussian-process surrogate to the 
 
 ### Method 1: Gaussian-process surrogate
 
-The Gaussian process places a prior on the unknown profit function. After $n$ evaluations $(X, y)$ the posterior at any candidate price $x_\ast$ is Gaussian with closed-form mean and variance. The closed form requires one Cholesky factor of the $n \times n$ kernel matrix, so the cost is $O(n^3)$ in evaluations and $O(n^2)$ per prediction. For budgets of tens to hundreds of evaluations this is negligible.
+The Gaussian process places a prior on the unknown profit function. After $`n`$ evaluations $`(X, y)`$ the posterior at any candidate price $`x_\ast`$ is Gaussian with closed-form mean and variance. The closed form requires one Cholesky factor of the $`n \times n`$ kernel matrix, so the cost is $`O(n^3)`$ in evaluations and $`O(n^2)`$ per prediction. For budgets of tens to hundreds of evaluations this is negligible.
 
 ```text
 Algorithm: GP posterior at candidates X_star
@@ -139,7 +139,7 @@ Output: posterior mean mu(X_star), posterior std sigma(X_star)
   variance  = k(X_star, X_star) - sum(v^2, axis=0)
 ```
 
-The length scale $\ell$ is the key hyperparameter. A small $\ell$ produces a wiggly surrogate that fits each observation tightly but extrapolates poorly. A large $\ell$ produces a smooth surrogate that may miss narrow basins. We refit $\ell$ at each step by maximizing the log marginal likelihood over a coarse grid. This is the cleanest empirical-Bayes choice and avoids the optimizer-inside-optimizer problem of joint hyperparameter and acquisition maximization.
+The length scale $`\ell`$ is the key hyperparameter. A small $`\ell`$ produces a wiggly surrogate that fits each observation tightly but extrapolates poorly. A large $`\ell`$ produces a smooth surrogate that may miss narrow basins. We refit $`\ell`$ at each step by maximizing the log marginal likelihood over a coarse grid. This is the cleanest empirical-Bayes choice and avoids the optimizer-inside-optimizer problem of joint hyperparameter and acquisition maximization.
 
 ### Method 2: Expected Improvement acquisition
 
@@ -179,11 +179,11 @@ Bayesian optimization is not magic. It pays for sample efficiency with stronger 
 
 ## Results
 
-The profit surface is reproduced from [`numerical-methods/global-search-multistart/`](../../numerical-methods/global-search-multistart/). It has a local peak at $p_L^{\ast} = 1.603$ with profit $\pi = 4.136$. Above the kink at $p_L^{\max} = 2.00$ only the high-valuation segment is active. The high-only regime has its own peak at $p_H^{\ast} = 4.25$ with profit $\pi = 5.625$, which is the global maximum on this calibration.
+The profit surface is reproduced from [`numerical-methods/global-search-multistart/`](../../numerical-methods/global-search-multistart/). It has a local peak at $`p_L^{\ast} = 1.603`$ with profit $`\pi = 4.136`$. Above the kink at $`p_L^{\max} = 2.00`$ only the high-valuation segment is active. The high-only regime has its own peak at $`p_H^{\ast} = 4.25`$ with profit $`\pi = 5.625`$, which is the global maximum on this calibration.
 
 <img src="figures/profit-surface.png" alt="Two-segment monopoly profit with low-price and high-price peaks marked" width="80%">
 
-The four panels show the Gaussian-process posterior at 5, 10, 20, and 30 evaluations. With 5 uniform draws the posterior mean is flat between observations and the uncertainty band is wide. Expected Improvement immediately probes regions of high mean and high variance, which on this surface means evaluating points near the high-price peak. By iteration 20 the posterior mean tracks the true profit closely in both basins, and by iteration 30 Expected Improvement has localized around $p_H^{\ast} = 4.25$ with very small posterior variance.
+The four panels show the Gaussian-process posterior at 5, 10, 20, and 30 evaluations. With 5 uniform draws the posterior mean is flat between observations and the uncertainty band is wide. Expected Improvement immediately probes regions of high mean and high variance, which on this surface means evaluating points near the high-price peak. By iteration 20 the posterior mean tracks the true profit closely in both basins, and by iteration 30 Expected Improvement has localized around $`p_H^{\ast} = 4.25`$ with very small posterior variance.
 
 <img src="figures/bo-iterations.png" alt="GP posterior, evaluated points, and EI-chosen next pick at four iteration snapshots" width="80%">
 
@@ -193,7 +193,7 @@ The convergence plot is the head-to-head against the same three baselines as [`n
 
 The comparison table is normalized on the same objective and bracket. All four methods recover the global peak. The Bayesian-optimization budget is roughly 34x smaller than simulated annealing, 17x smaller than random search, and 10x smaller than multi-start.
 
-**Method comparison at $\lambda = 0.6$, $c = 0.5$, segment intercepts $(10, 8)$**
+**Method comparison at $`\lambda = 0.6`$, $`c = 0.5`$, segment intercepts $`(10, 8)`$**
 
 | Method                     | Setting                         |   Estimated optimum |   Profit |   Function evaluations |   Evaluations to global |
 |:---------------------------|:--------------------------------|--------------------:|---------:|-----------------------:|------------------------:|
@@ -243,7 +243,7 @@ The iteration log records every Bayesian-optimization evaluation with Expected I
 
 Bayesian optimization is the right tool when evaluations are expensive. On the two-segment monopoly profit it recovers the global peak in roughly thirty evaluations, where simulated annealing needs over a thousand and random search several hundred. Sample efficiency is the entire pitch.
 
-Bayesian optimization is the wrong tool when evaluations are cheap. The Gaussian-process posterior costs $O(n^3)$ in evaluations because of the kernel-matrix Cholesky factor. On a problem where one evaluation takes milliseconds, multi-start L-BFGS-B or simulated annealing dominates Bayesian optimization on wall-clock time even though it uses far more evaluations.
+Bayesian optimization is the wrong tool when evaluations are cheap. The Gaussian-process posterior costs $`O(n^3)`$ in evaluations because of the kernel-matrix Cholesky factor. On a problem where one evaluation takes milliseconds, multi-start L-BFGS-B or simulated annealing dominates Bayesian optimization on wall-clock time even though it uses far more evaluations.
 
 Bayesian optimization is fragile in high dimensions and on non-stationary surfaces. The squared-exponential kernel assumes a single length scale across the whole input space. Many structural objectives have one length scale near a flat plateau and a much shorter one near a sharp peak. Beyond about twenty dimensions the curse of dimensionality erodes the sample-efficiency gain, and the right tool is usually a structured surrogate or a trust-region method.
 

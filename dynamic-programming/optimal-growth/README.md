@@ -2,103 +2,103 @@
 
 ## Overview
 
-A planner allocates output between consumption today and capital tomorrow. Capital produces future output, so saving has a return that falls with $k$. The economy settles where impatience balances the marginal product of capital.
+A planner allocates output between consumption today and capital tomorrow. Capital produces future output, so saving has a return that falls with $`k`$. The economy settles where impatience balances the marginal product of capital.
 
-The object is the policy rule $g(k)$ for next-period capital. Given $g(k)$, consumption is $c^{\ast}(k)=A k^{\alpha}-g(k)$, where $A>0$ is total factor productivity and $\alpha\in(0,1)$ is the capital share.
+The object is the policy rule $`g(k)`$ for next-period capital. Given $`g(k)`$, consumption is $`c^{\ast}(k)=A k^{\alpha}-g(k)`$, where $`A>0`$ is total factor productivity and $`\alpha\in(0,1)`$ is the capital share.
 
-The log Cobb-Douglas case has the closed-form saving rate $\alpha\beta$, where $\beta\in(0,1)$ is the discount factor. Value function iteration solves the Bellman equation on a grid. Here the closed form audits the computed value and policy point by point.
+The log Cobb-Douglas case has the closed-form saving rate $`\alpha\beta`$, where $`\beta\in(0,1)`$ is the discount factor. Value function iteration solves the Bellman equation on a grid. Here the closed form audits the computed value and policy point by point.
 
 ## Equations
 
-Capital $k_t$ produces output $y_t = A k_t^{\alpha}$ with $A>0$ and
-$\alpha\in(0,1)$. Capital fully depreciates each period, so the resource
+Capital $`k_t`$ produces output $`y_t = A k_t^{\alpha}`$ with $`A>0`$ and
+$`\alpha\in(0,1)`$. Capital fully depreciates each period, so the resource
 constraint is
 
-$$
+```math
 c_t + k_{t+1} = A k_t^{\alpha},
 \qquad c_t > 0, k_{t+1} \ge 0.
-$$
+```
 
 The planner maximizes discounted log utility,
 
-$$
+```math
 \sum_{t=0}^{\infty} \beta^{t} \log c_t,
 \qquad \beta \in (0,1),
-$$
+```
 
-with state $k$ summarizing the entire future. The Bellman equation is
+with state $`k`$ summarizing the entire future. The Bellman equation is
 
-$$
+```math
 V(k) = \max_{0 < k' < A k^{\alpha}}
 \lbrace \log(A k^{\alpha}-k') + \beta V(k') \rbrace.
-$$
+```
 
-Let $g(k)$ denote the optimal $k'$ and $c^{\ast}(k) = A k^{\alpha} - g(k)$ the
+Let $`g(k)`$ denote the optimal $`k'`$ and $`c^{\ast}(k) = A k^{\alpha} - g(k)`$ the
 implied consumption. The first-order and envelope conditions deliver the
 Euler equation
 
-$$
+```math
 u'(c_t) = \beta f'(k_{t+1})  u'(c_{t+1}),
 \qquad f'(k) = \alpha A k^{\alpha-1}.
-$$
+```
 
-For log utility and Cobb-Douglas production, conjecture $g(k) = s A k^{\alpha}$
-with constant saving rate $s$. Substituting into the Euler equation gives
-$s = \alpha\beta$, so
+For log utility and Cobb-Douglas production, conjecture $`g(k) = s A k^{\alpha}`$
+with constant saving rate $`s`$. Substituting into the Euler equation gives
+$`s = \alpha\beta`$, so
 
-$$
+```math
 g(k) = \alpha\beta A k^{\alpha},
 \qquad
 c^{\ast}(k) = (1-\alpha\beta)  A k^{\alpha}.
-$$
+```
 
-The value function is affine in $\log k$,
+The value function is affine in $`\log k`$,
 
-$$
+```math
 V(k) = E + B \log k,
 \qquad
 B = \frac{\alpha}{1-\alpha\beta},
-$$
+```
 
 with intercept
 
-$$
+```math
 E = \frac{1}{1-\beta}\left[\log(A(1-\alpha\beta)) +
 \frac{\beta\alpha}{1-\alpha\beta} \log(A\alpha\beta) \right].
-$$
+```
 
-The steady state solves $k = g(k)$, equivalently $\beta f'(k_{ss}) = 1$:
+The steady state solves $`k = g(k)`$, equivalently $`\beta f'(k_{ss}) = 1`$:
 
-$$
+```math
 k_{ss} = (\alpha\beta A)^{1/(1-\alpha)},
 \qquad c_{ss} = A k_{ss}^{\alpha} - k_{ss}.
-$$
+```
 
 ## Model Setup
 
 | Symbol | Value | Role |
 |--------|-------|------|
-| $\alpha$ | 0.3 | Capital share in $A k^{\alpha}$ |
-| $A$ | 18.5 | Total factor productivity |
-| $\beta$ | 0.9 | Discount factor; pins down impatience and the saving rate |
-| $k_{ss}$ | 9.9519 | Closed-form steady-state capital $(\alpha\beta A)^{1/(1-\alpha)}$ |
-| $c_{ss}$ | 26.9071 | Steady-state consumption $A k_{ss}^{\alpha} - k_{ss}$ |
-| $k$ domain | $[0.01,  24.88]$ | Capital range; upper bound is $2.5k_{ss}$ |
-| $N_k$ | 500 | Uniform state grid for $k$ |
-| $N_{k'}$ | 500 | Inner choice grid for $k'$ at each Bellman update |
-| Tolerance $\varepsilon$ | 1e-06 | Sup-norm convergence threshold |
-| $T_{sim}$ | 50 | Simulation horizon |
-| $k_0$ | $0.1 k_{ss}\approx0.9952$ | Initial capital for the transition path |
+| $`\alpha`$ | 0.3 | Capital share in $`A k^{\alpha}`$ |
+| $`A`$ | 18.5 | Total factor productivity |
+| $`\beta`$ | 0.9 | Discount factor; pins down impatience and the saving rate |
+| $`k_{ss}`$ | 9.9519 | Closed-form steady-state capital $`(\alpha\beta A)^{1/(1-\alpha)}`$ |
+| $`c_{ss}`$ | 26.9071 | Steady-state consumption $`A k_{ss}^{\alpha} - k_{ss}`$ |
+| $`k`$ domain | $`[0.01,  24.88]`$ | Capital range; upper bound is $`2.5k_{ss}`$ |
+| $`N_k`$ | 500 | Uniform state grid for $`k`$ |
+| $`N_{k'}`$ | 500 | Inner choice grid for $`k'`$ at each Bellman update |
+| Tolerance $`\varepsilon`$ | 1e-06 | Sup-norm convergence threshold |
+| $`T_{sim}`$ | 50 | Simulation horizon |
+| $`k_0`$ | $`0.1 k_{ss}\approx0.9952`$ | Initial capital for the transition path |
 
 ## Solution Method
 
 Define the Bellman operator on bounded continuous functions of capital,
 
-$$
+```math
 (TV)(k) = \max_{0 < k' < A k^{\alpha}}\lbrace \log(A k^{\alpha} - k') + \beta V(k') \rbrace.
-$$
+```
 
-VFI starts from an initial value on the capital grid. At each $k_i$, the code searches over feasible $k'$ values. The feasible range is $k' \in [k_{min},  A k_i^{\alpha})$ where $k_{min}=0.01$ is the lower bound on next-period capital. It chooses the $k'$ with the highest current utility plus interpolated continuation value. The loop stops when the sup-norm change in $V$ is below $\varepsilon$.
+VFI starts from an initial value on the capital grid. At each $`k_i`$, the code searches over feasible $`k'`$ values. The feasible range is $`k' \in [k_{min},  A k_i^{\alpha})`$ where $`k_{min}=0.01`$ is the lower bound on next-period capital. It chooses the $`k'`$ with the highest current utility plus interpolated continuation value. The loop stops when the sup-norm change in $`V`$ is below $`\varepsilon`$.
 
 ```text
 Algorithm: Optimal-growth VFI with continuous k'
@@ -125,19 +125,19 @@ The iteration converges in **143 steps** with sup-norm residual **9.32e-07**. Th
 
 ## Results
 
-The value function rises and bends because capital has diminishing returns. The numerical curve matches $E+B\log k$ except near the lowest grid points. Outside the bottom decile, the largest value gap is **1.91e-05**.
+The value function rises and bends because capital has diminishing returns. The numerical curve matches $`E+B\log k`$ except near the lowest grid points. Outside the bottom decile, the largest value gap is **1.91e-05**.
 
-<img src="figures/value-function.png" alt="Numerical value function plotted against the closed-form $E + B\log k$" width="80%">
+<img src="figures/value-function.png" alt="Numerical value function plotted against the closed-form $`E + B\log k`$" width="80%">
 
-The policy crosses the $45^{\circ}$ line at $k_{ss}$. Below $k_{ss}$, the planner accumulates capital. Above $k_{ss}$, the planner runs capital down. The log case saves the constant share $\alpha\beta = 0.27$ of output. The largest policy gap outside the bottom decile is **2.87e-02**.
+The policy crosses the $`45^{\circ}`$ line at $`k_{ss}`$. Below $`k_{ss}`$, the planner accumulates capital. Above $`k_{ss}`$, the planner runs capital down. The log case saves the constant share $`\alpha\beta = 0.27`$ of output. The largest policy gap outside the bottom decile is **2.87e-02**.
 
-<img src="figures/policy-function.png" alt="Capital policy $g(k)$ versus the closed-form rule $\alpha\beta A k^{\alpha}$" width="80%">
+<img src="figures/policy-function.png" alt="Capital policy $`g(k)`$ versus the closed-form rule $`\alpha\beta A k^{\alpha}`$" width="80%">
 
-Starting from $0.1k_{ss}$, capital rises toward the steady state. It rises fastest when capital is scarce. Consumption also rises because the saving share is constant. The maximum capital-path error is **2.39e-02**.
+Starting from $`0.1k_{ss}`$, capital rises toward the steady state. It rises fastest when capital is scarce. Consumption also rises because the saving share is constant. The maximum capital-path error is **2.39e-02**.
 
-<img src="figures/simulation.png" alt="Capital and consumption transitions starting from $k_0=0.9952$" width="80%">
+<img src="figures/simulation.png" alt="Capital and consumption transitions starting from $`k_0=0.9952`$" width="80%">
 
-The table checks eight representative capital states. Value errors are tiny at each selected state. Policy errors are larger because $k'$ is chosen on a finite grid.
+The table checks eight representative capital states. Value errors are tiny at each selected state. Policy errors are larger because $`k'`$ is chosen on a finite grid.
 
 **Numerical vs closed-form solution at selected capital states**
 
@@ -154,7 +154,7 @@ The table checks eight representative capital states. Value errors are tiny at e
 
 ## Takeaway
 
-The one-capital growth problem makes saving productive. In the log Cobb-Douglas case, the exact policy saves $\alpha\beta = 0.27$ of output. VFI recovers that rule to grid accuracy. The example shows how to audit a Bellman solver when an exact benchmark exists.
+The one-capital growth problem makes saving productive. In the log Cobb-Douglas case, the exact policy saves $`\alpha\beta = 0.27`$ of output. VFI recovers that rule to grid accuracy. The example shows how to audit a Bellman solver when an exact benchmark exists.
 
 ## References
 

@@ -12,63 +12,63 @@ The computation compares every chosen bundle under every observed price vector. 
 
 The data are a finite sequence of price-bundle pairs
 
-$$
+```math
 \mathcal{D} = \lbrace (p^t, x^t) \rbrace_{t=1}^{T},
-$$
+```
 
-where the price vector $p^t$ is strictly positive and the chosen bundle $x^t$ is nonnegative, both of dimension $L$. Own expenditure at observation $t$ is $m_t = p^t \cdot x^t$.
+where the price vector $`p^t`$ is strictly positive and the chosen bundle $`x^t`$ is nonnegative, both of dimension $`L`$. Own expenditure at observation $`t`$ is $`m_t = p^t \cdot x^t`$.
 
-For price-regime comparisons, where $s,t\in\lbrace1,...,T\rbrace$ each index an observation, define the cross-cost matrix
+For price-regime comparisons, where $`s,t\in\lbrace1,...,T\rbrace`$ each index an observation, define the cross-cost matrix
 
-$$
+```math
 C_{st}=p^s\cdot x^t .
-$$
+```
 
 Use this matrix to define direct weak preference between price vectors:
 
-$$
+```math
 sR_p^D t
 \quad\Longleftrightarrow\quad
 C_{st}\le C_{tt}=m_t .
-$$
+```
 
-This means schedule $s$ makes bundle $t$ no more expensive than schedule $t$ did.
+This means schedule $`s`$ makes bundle $`t`$ no more expensive than schedule $`t`$ did.
 
 The strict relation is
 
-$$
+```math
 sP_p^D t
 \quad\Longleftrightarrow\quad
 C_{st}<C_{tt}.
-$$
+```
 
-Let $R_p$ be the transitive closure of $R_p^D$. GAPP holds when there is no
-pair $(s,t)$ such that
+Let $`R_p`$ be the transitive closure of $`R_p^D`$. GAPP holds when there is no
+pair $`(s,t)`$ such that
 
-$$
+```math
 sR_p t
 \quad\text{and}\quad
 tP_p^D s .
-$$
+```
 
-The first relation says the data rank schedule $s$ at least as good as schedule
-$t$ after allowing indirect comparisons. The second relation says the direct
-reverse comparison strictly favors $t$ over $s$. Together they form the
+The first relation says the data rank schedule $`s`$ at least as good as schedule
+$`t`$ after allowing indirect comparisons. The second relation says the direct
+reverse comparison strictly favors $`t`$ over $`s`$. Together they form the
 price-regime analogue of a revealed-preference cycle.
 
 ## Model Setup
 
 | Object | Value | Interpretation |
 |---|---:|---|
-| Observations $T$ | 3 | Each case has three price-quantity observations |
-| Goods $L$ | 3 | Bundles are finite consumption vectors |
+| Observations $`T`$ | 3 | Each case has three price-quantity observations |
+| Goods $`L`$ | 3 | Bundles are finite consumption vectors |
 | Deterministic cases | 4 | Examples separate bundle GARP from price GAPP |
 | Main example | Case A | Bundle GARP passes while price GAPP fails |
 | Main GAPP violations | 2 | Strict reverse edges close a price-schedule cycle |
 
 ## Solution Method
 
-The computational object is a directed graph. Each node is an observed price vector. An edge from $s$ to $t$ means schedule $s$ made bundle $t$ weakly cheaper. Direct edges are not enough because indirect comparisons can matter. A Boolean transitive closure gives exact reachability on the finite data.
+The computational object is a directed graph. Each node is an observed price vector. An edge from $`s`$ to $`t`$ means schedule $`s`$ made bundle $`t`$ weakly cheaper. Direct edges are not enough because indirect comparisons can matter. A Boolean transitive closure gives exact reachability on the finite data.
 
 ```text
 Algorithm: GAPP test for price-regime rankings
@@ -99,7 +99,7 @@ Case A is the main example. Bundle choices pass GARP there, but the price schedu
 | C      | Bundle-inconsistent, price-rational | fail   | pass   |                   4 |                  0 |
 | D      | Both restrictions fail              | fail   | fail   |                   2 |                  2 |
 
-The heat map shows the cross-cost ratio $C_{st}/C_{tt}$. Rows are candidate price vectors. Columns are observed bundles. Entries below one mark cheaper counterfactual prices for the same bundle.
+The heat map shows the cross-cost ratio $`C_{st}/C_{tt}`$. Rows are candidate price vectors. Columns are observed bundles. Entries below one mark cheaper counterfactual prices for the same bundle.
 
 <img src="figures/price-cost-ratios.png" alt="Cost ratios used to reveal preferences over price vectors." width="80%">
 

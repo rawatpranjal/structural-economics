@@ -4,57 +4,57 @@
 
 Suppose a household receives low income this year. Saving depends on whether low income is likely to persist. The same issue appears when productivity shocks guide investment.
 
-The object is a persistent log income or productivity shock. We model it as a Gaussian AR(1) with persistence $\rho$ and innovation scale $\sigma_\epsilon$.
+The object is a persistent log income or productivity shock. We model it as a Gaussian AR(1) with persistence $`\rho`$ and innovation scale $`\sigma_\epsilon`$.
 
 A Bellman equation needs finite shock states. It also needs a transition matrix for next-period expectations. The tutorial compares Tauchen and Rouwenhorst by their variance and persistence errors.
 
 ## Equations
 
-A household with assets $a$ faces shock $z_i$. It chooses next assets $a'$.
+A household with assets $`a`$ faces shock $`z_i`$. It chooses next assets $`a'`$.
 The continuation value averages over next-period shock states:
 
-$$
+```math
 V(a,z_i) = \max_{a' \in \mathcal{A}}
 [ u(Ra+\exp(z_i)-a') + \beta \sum_{j=1}^N P_{ij} V(a',z_j) ].
-$$
+```
 
-Here $R$ is the gross return factor, $\beta \in (0,1)$ is the discount factor,
-and $u(\cdot)$ is a concave increasing utility function. $\mathcal{A}$ is the
+Here $`R`$ is the gross return factor, $`\beta \in (0,1)`$ is the discount factor,
+and $`u(\cdot)`$ is a concave increasing utility function. $`\mathcal{A}`$ is the
 feasible asset set.
 
-The finite object is the grid $\lbrace z_1,\dots,z_N\rbrace$ and transition matrix $P$.
+The finite object is the grid $`\lbrace z_1,\dots,z_N\rbrace`$ and transition matrix $`P`$.
 The continuous target is the Gaussian AR(1)
 
-$$
+```math
 z_{t+1} = \rho z_t + \sigma_\epsilon \varepsilon_{t+1},
 \qquad \varepsilon_{t+1} \sim \mathcal{N}(0,1).
-$$
+```
 
-The AR(1) has unconditional law $z_t \sim \mathcal{N}(0,\sigma_z^2)$ with
+The AR(1) has unconditional law $`z_t \sim \mathcal{N}(0,\sigma_z^2)`$ with
 
-$$
+```math
 \sigma_z^2 = \frac{\sigma_\epsilon^2}{1-\rho^2},
 \qquad \rho_k \equiv \mathrm{Corr}(z_t, z_{t+k}) = \rho^k.
-$$
+```
 
-For $\rho=0.95$ and $\sigma_\epsilon=0.02$, the standard deviation is
-$\sigma_z = 0.0641$. The shock half-life is
-$\ln 2 / (-\ln \rho) \approx 14$ periods.
+For $`\rho=0.95`$ and $`\sigma_\epsilon=0.02`$, the standard deviation is
+$`\sigma_z = 0.0641`$. The shock half-life is
+$`\ln 2 / (-\ln \rho) \approx 14`$ periods.
 
 A finite chain replaces the conditional Gaussian law with
-$P\in\mathbb{R}^{N\times N}$. Each row gives probabilities
-$P_{ij}=\Pr(z_{t+1}=z_j\mid z_t=z_i)$. The conditional expectation becomes
+$`P\in\mathbb{R}^{N\times N}`$. Each row gives probabilities
+$`P_{ij}=\Pr(z_{t+1}=z_j\mid z_t=z_i)`$. The conditional expectation becomes
 
-$$
+```math
 \mathbb{E}[V(a',z_{t+1})\mid z_t=z_i]
 = \sum_{j=1}^N P_{ij} V(a', z_j).
-$$
+```
 
-The chain has an invariant distribution $\pi$ satisfying $\pi=\pi P$ and
-$\sum_i \pi_i = 1$. Two diagnostics matter:
+The chain has an invariant distribution $`\pi`$ satisfying $`\pi=\pi P`$ and
+$`\sum_i \pi_i = 1`$. Two diagnostics matter:
 
-1. Does the chain match $\sigma_z$?
-2. Does the chain match $\rho$?
+1. Does the chain match $`\sigma_z`$?
+2. Does the chain match $`\rho`$?
 
 Variance controls risk exposure. Persistence controls expected continuation
 values after good and bad shocks.
@@ -65,13 +65,13 @@ The calibration is a small annual log-income or log-productivity process. It is 
 
 | Parameter | Value | Description |
 |-----------|-------|-------------|
-| $\rho$ | 0.95 | AR(1) persistence |
-| $\sigma_\epsilon$ | 0.02 | Innovation standard deviation |
-| $\sigma_z$ | 0.0641 | Implied unconditional standard deviation |
-| $N$ | 7 | Main comparison grid size |
+| $`\rho`$ | 0.95 | AR(1) persistence |
+| $`\sigma_\epsilon`$ | 0.02 | Innovation standard deviation |
+| $`\sigma_z`$ | 0.0641 | Implied unconditional standard deviation |
+| $`N`$ | 7 | Main comparison grid size |
 | Grid sweep | [3, 5, 7, 9, 15] | Grid sizes for moment checks |
-| Tauchen half-width $m$ | 3 | Grid bound in unconditional std deviations |
-| $T_{sim}$ | 180 | Simulation horizon |
+| Tauchen half-width $`m`$ | 3 | Grid bound in unconditional std deviations |
+| $`T_{sim}`$ | 180 | Simulation horizon |
 
 ## Solution Method
 
@@ -79,7 +79,7 @@ Choose a small grid and transition matrix that keep variance and persistence. Ta
 
 ### Tauchen (1986): integrate Gaussian mass between cell midpoints
 
-Tauchen places an evenly spaced grid over $[-m\sigma_z,  m\sigma_z]$. For each $z_i$, $z_{t+1}$ is normal with mean $\rho z_i$. $P_{ij}$ is the conditional mass assigned to the cell around $z_j$, computed using the standard normal CDF $\Phi(\cdot)$. Endpoint cells collect remaining tail mass.
+Tauchen places an evenly spaced grid over $`[-m\sigma_z,  m\sigma_z]`$. For each $`z_i`$, $`z_{t+1}`$ is normal with mean $`\rho z_i`$. $`P_{ij}`$ is the conditional mass assigned to the cell around $`z_j`$, computed using the standard normal CDF $`\Phi(\cdot)`$. Endpoint cells collect remaining tail mass.
 
 ```text
 Algorithm 1: Tauchen
@@ -95,13 +95,13 @@ Output: grid {z_j}, transition P, invariant pi
   solve pi = pi P,   sum_j pi_j = 1
 ```
 
-The benefit is transparency. The grid support is visible. The cost appears with high $\rho$ and small $N$. Mass from near-tail states spills past endpoints. The last cell absorbs that mass and becomes too sticky. A wider support protects tails. A narrower support protects the center. Neither choice fixes a coarse grid.
+The benefit is transparency. The grid support is visible. The cost appears with high $`\rho`$ and small $`N`$. Mass from near-tail states spills past endpoints. The last cell absorbs that mass and becomes too sticky. A wider support protects tails. A narrower support protects the center. Neither choice fixes a coarse grid.
 
 ### Rouwenhorst (1995): match the moments by construction
 
-Rouwenhorst builds $P_N$ from a two-state base. The base uses $p=(1+\rho)/2$. The recursion preserves autocorrelation as states are added. The grid is scaled to match $\sigma_z^2$.
+Rouwenhorst builds $`P_N`$ from a two-state base. The base uses $`p=(1+\rho)/2`$. The recursion preserves autocorrelation as states are added. The grid is scaled to match $`\sigma_z^2`$.
 
-By construction, the chain matches $\rho$ and $\sigma_z^2$ for any $N \ge 2$. It has no quadrature error in those moments. The tradeoff is distributional shape. On small grids, its invariant distribution is binomial, not Gaussian.
+By construction, the chain matches $`\rho`$ and $`\sigma_z^2`$ for any $`N \ge 2`$. It has no quadrature error in those moments. The tradeoff is distributional shape. On small grids, its invariant distribution is binomial, not Gaussian.
 
 ```text
 Algorithm 2: Rouwenhorst
@@ -132,15 +132,15 @@ Stationary mass shows where each chain puts probability. The dashed curve is the
 
 <img src="figures/stationary-mass.png" alt="Stationary mass for Tauchen and Rouwenhorst" width="80%">
 
-Moment errors show the main diagnostic. The zero line is the AR(1) target. Rouwenhorst stays on zero because the recursion enforces variance and persistence. Tauchen approaches the targets as $N$ grows. With $N=3$, Tauchen is almost absorbing, so persistence is near one. At $\rho=0.95$, small persistence errors affect each continuation value.
+Moment errors show the main diagnostic. The zero line is the AR(1) target. Rouwenhorst stays on zero because the recursion enforces variance and persistence. Tauchen approaches the targets as $`N`$ grows. With $`N=3`$, Tauchen is almost absorbing, so persistence is near one. At $`\rho=0.95`$, small persistence errors affect each continuation value.
 
 <img src="figures/moment-accuracy.png" alt="Moment errors by grid size" width="80%">
 
-Simulated paths make the transition matrix visible. The finite chains receive the same innovation ranks as the AR(1) path. They move on coarse grids, so they cannot match the continuous path point by point. The useful check is the rhythm of persistence. Rouwenhorst tracks slow drift more cleanly at $N=7$.
+Simulated paths make the transition matrix visible. The finite chains receive the same innovation ranks as the AR(1) path. They move on coarse grids, so they cannot match the continuous path point by point. The useful check is the rhythm of persistence. Rouwenhorst tracks slow drift more cleanly at $`N=7`$.
 
 <img src="figures/simulated-paths.png" alt="Simulated AR(1) and finite-chain paths" width="80%">
 
-Numerical detail behind the moment-error figure. The 7-state Tauchen chain implies persistence 0.9622 against a target of 0.95. Rouwenhorst matches the target at every $N$.
+Numerical detail behind the moment-error figure. The 7-state Tauchen chain implies persistence 0.9622 against a target of 0.95. Rouwenhorst matches the target at every $`N`$.
 
 **Moment accuracy across discretization methods**
 
@@ -159,7 +159,7 @@ Numerical detail behind the moment-error figure. The 7-state Tauchen chain impli
 
 ## Takeaway
 
-Discretization is part of the economic model. With persistent shocks and small $N$, Rouwenhorst is the safer default. It matches $\sigma_z$ and $\rho$ by construction. Tauchen is transparent and can approximate the Gaussian shape well on finer grids. At $\rho=0.95$ and $N=7$, Tauchen overstates persistence enough to change continuation values. Choose the chain by the moments that matter in the Bellman equation.
+Discretization is part of the economic model. With persistent shocks and small $`N`$, Rouwenhorst is the safer default. It matches $`\sigma_z`$ and $`\rho`$ by construction. Tauchen is transparent and can approximate the Gaussian shape well on finer grids. At $`\rho=0.95`$ and $`N=7`$, Tauchen overstates persistence enough to change continuation values. Choose the chain by the moments that matter in the Bellman equation.
 
 ## References
 

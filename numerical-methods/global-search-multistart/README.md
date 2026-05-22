@@ -11,56 +11,56 @@ The lesson is reporting discipline. An optimizer that converges has answered a l
 ## Equations
 
 A monopolist faces a population of consumers split between two segments.
-Segment $L$ has linear demand with intercept $A_L$ and slope $b_L$.
-Segment $H$ has linear demand with intercept $A_H$ and slope $b_H$.
+Segment $`L`$ has linear demand with intercept $`A_L`$ and slope $`b_L`$.
+Segment $`H`$ has linear demand with intercept $`A_H`$ and slope $`b_H`$.
 
-$$
+```math
 D_L(p) = \max\lbrace 0,  A_L - b_L p \rbrace,
 \qquad
 D_H(p) = \max\lbrace 0,  A_H - b_H p \rbrace.
-$$
+```
 
 Each segment quits the market at its own choke price.
-The low-valuation segment exits at $p_L^{\max} = A_L / b_L$.
-The high-valuation segment exits at the larger price $p_H^{\max} = A_H / b_H$.
+The low-valuation segment exits at $`p_L^{\max} = A_L / b_L`$.
+The high-valuation segment exits at the larger price $`p_H^{\max} = A_H / b_H`$.
 
-The population mixture weight $\lambda \in (0, 1)$ records the share of low-valuation consumers.
+The population mixture weight $`\lambda \in (0, 1)`$ records the share of low-valuation consumers.
 Profit is the weighted sum of segment revenues minus the marginal-cost wedge.
 
-$$
+```math
 \pi(p) = (p - c) \left[\lambda D_L(p) + (1 - \lambda)  D_H(p)\right].
-$$
+```
 
-The objective is piecewise quadratic in $p$.
-On $[c,  p_L^{\max}]$ both segments are active.
-On $(p_L^{\max},  p_H^{\max}]$ only the high-valuation segment is active.
-The two regimes are smoothly stitched at the kink $p_L^{\max}$.
+The objective is piecewise quadratic in $`p`$.
+On $`[c,  p_L^{\max}]`$ both segments are active.
+On $`(p_L^{\max},  p_H^{\max}]`$ only the high-valuation segment is active.
+The two regimes are smoothly stitched at the kink $`p_L^{\max}`$.
 
-In the both-segments regime the first-order condition is linear in $p$.
+In the both-segments regime the first-order condition is linear in $`p`$.
 
-$$
+```math
 \pi'(p) = \lambda (A_L - 2 b_L p) + (1 - \lambda)(A_H - 2 b_H p) + (\lambda b_L + (1 - \lambda) b_H)  c.
-$$
+```
 
 In the high-only regime profit is the standard quadratic with a single interior maximizer.
 
-$$
+```math
 p_H^{\ast} = \frac{A_H + b_H c}{2 b_H}.
-$$
+```
 
-At the calibration $A_L = 10$, $b_L = 5$, $A_H = 8$, $b_H = 1$, $c = 0.5$, $\lambda = 0.6$, both regimes have an interior maximizer.
+At the calibration $`A_L = 10`$, $`b_L = 5`$, $`A_H = 8`$, $`b_H = 1`$, $`c = 0.5`$, $`\lambda = 0.6`$, both regimes have an interior maximizer.
 
-$$
+```math
 p_L^{\ast} \approx 1.603,
 \qquad
 \pi(p_L^{\ast}) \approx 4.14.
-$$
+```
 
-$$
+```math
 p_H^{\ast} = 4.25,
 \qquad
 \pi(p_H^{\ast}) \approx 5.625.
-$$
+```
 
 The high-price peak is global on this calibration.
 The low-price peak is a strict local maximum.
@@ -72,26 +72,26 @@ The next four subsections describe one method at a time.
 
 ### Multi-start L-BFGS-B
 
-Multi-start L-BFGS-B draws $N$ initial prices uniformly on the bracket and runs the local optimiser from each.
+Multi-start L-BFGS-B draws $`N`$ initial prices uniformly on the bracket and runs the local optimiser from each.
 
-$$
+```math
 \hat p_{\mathrm{multi}}^{(N)} = \arg\max_{k \in \lbrace 1, \ldots, N\rbrace} \pi\left(\mathrm{LBFGSB}(p_0^{(k)})\right),
 \qquad p_0^{(k)} \sim \mathrm{Uniform}[p_{\mathrm{lo}}, p_{\mathrm{hi}}].
-$$
+```
 
-The probability of finding the global optimum is one minus the probability that all $N$ starts land in the low basin.
+The probability of finding the global optimum is one minus the probability that all $`N`$ starts land in the low basin.
 Reporting that probability is the diagnostic for whether the start budget is large enough.
 
 ### Random search
 
-Random search drops the local optimiser entirely and uses a single sample of $N$ uniform draws.
+Random search drops the local optimiser entirely and uses a single sample of $`N`$ uniform draws.
 
-$$
+```math
 \hat p_{\mathrm{rand}}^{(N)} = \arg\max_{k \in \lbrace 1, \ldots, N\rbrace} \pi(p^{(k)}),
 \qquad p^{(k)} \sim \mathrm{Uniform}[p_{\mathrm{lo}}, p_{\mathrm{hi}}].
-$$
+```
 
-Random search is cheaper per evaluation than multi-start L-BFGS-B but converges only at rate $1/\sqrt{N}$.
+Random search is cheaper per evaluation than multi-start L-BFGS-B but converges only at rate $`1/\sqrt{N}`$.
 
 ### Nelder-Mead
 
@@ -109,18 +109,18 @@ The result is a stochastic global search that does not need a starting point ins
 
 | Symbol | Value | Role |
 |--------|-------|------|
-| $A_L$, $b_L$ | 10.0, 5.0 | Low-valuation linear demand |
-| $A_H$, $b_H$ | 8.0, 1.0 | High-valuation linear demand |
-| $c$ | 0.5 | Marginal cost |
-| $\lambda$ | 0.6 | Share of low-valuation consumers |
-| Search bracket | $[0.501,  8.0]$ | Outer bounds for every method |
-| Low choke price | $p_L^{\max} = 2.00$ | Low-valuation segment quits |
-| Low peak | $p_L^{\ast} = 1.6029$, $\pi = 4.1360$ | Local maximum |
-| High peak | $p_H^{\ast} = 4.2500$, $\pi = 5.6250$ | Global maximum |
-| Multi-start budget $N$ | 50 | Number of L-BFGS-B starts |
-| Random-search budget $N$ | 500 | Uniform draws |
+| $`A_L`$, $`b_L`$ | 10.0, 5.0 | Low-valuation linear demand |
+| $`A_H`$, $`b_H`$ | 8.0, 1.0 | High-valuation linear demand |
+| $`c`$ | 0.5 | Marginal cost |
+| $`\lambda`$ | 0.6 | Share of low-valuation consumers |
+| Search bracket | $`[0.501,  8.0]`$ | Outer bounds for every method |
+| Low choke price | $`p_L^{\max} = 2.00`$ | Low-valuation segment quits |
+| Low peak | $`p_L^{\ast} = 1.6029`$, $`\pi = 4.1360`$ | Local maximum |
+| High peak | $`p_H^{\ast} = 4.2500`$, $`\pi = 5.6250`$ | Global maximum |
+| Multi-start budget $`N`$ | 50 | Number of L-BFGS-B starts |
+| Random-search budget $`N`$ | 500 | Uniform draws |
 | Random seed | 42 | For reproducibility |
-| Single-start $p_0$ | 1.7 | Used by methods 1 and 4 |
+| Single-start $`p_0`$ | 1.7 | Used by methods 1 and 4 |
 
 ## Solution Method
 
@@ -143,7 +143,7 @@ Single-start L-BFGS-B has no global guarantee. On a nonconcave objective it conv
 
 ### Method 2: Multi-start L-BFGS-B
 
-Multi-start runs the local optimizer from many initial points and keeps the best result. The economic intuition is a survey of basins: each start lands somewhere, and many starts together map out which basins exist. The probability of missing the global is exponentially small in $N$ when basin-of-attraction probabilities are non-degenerate. The cost is linear in $N$ with the same per-run cost as a single start.
+Multi-start runs the local optimizer from many initial points and keeps the best result. The economic intuition is a survey of basins: each start lands somewhere, and many starts together map out which basins exist. The probability of missing the global is exponentially small in $`N`$ when basin-of-attraction probabilities are non-degenerate. The cost is linear in $`N`$ with the same per-run cost as a single start.
 
 ```text
 Algorithm: Multi-start L-BFGS-B
@@ -159,7 +159,7 @@ Multi-start can still miss the global if every start happens to land in the same
 
 ### Method 3: Random search
 
-Random search drops the local optimizer entirely. It evaluates the objective at $N$ uniform draws and returns the argmax of the sample. The expected error scales as $1/\sqrt{N}$ on a unimodal problem. On a nonconcave problem the rate degrades in proportion to the volume share of the global basin. Random search is the cheapest exploratory tool. It is also the most bluntly empirical: nothing in its output certifies optimality.
+Random search drops the local optimizer entirely. It evaluates the objective at $`N`$ uniform draws and returns the argmax of the sample. The expected error scales as $`1/\sqrt{N}`$ on a unimodal problem. On a nonconcave problem the rate degrades in proportion to the volume share of the global basin. Random search is the cheapest exploratory tool. It is also the most bluntly empirical: nothing in its output certifies optimality.
 
 ```text
 Algorithm: Random search
@@ -170,7 +170,7 @@ Output: x_hat
   return the point with the largest value
 ```
 
-Random search misses the peak with non-zero probability. Increasing $N$ shrinks the miss probability but at $1/\sqrt{N}$ in distance terms. Random search is a useful sanity check on the answer of a more expensive method, not a substitute for it.
+Random search misses the peak with non-zero probability. Increasing $`N`$ shrinks the miss probability but at $`1/\sqrt{N}`$ in distance terms. Random search is a useful sanity check on the answer of a more expensive method, not a substitute for it.
 
 ### Method 4: Nelder-Mead
 
@@ -205,25 +205,25 @@ Simulated annealing is expensive and stochastic. Different seeds can return diff
 
 ## Results
 
-The profit surface has a local peak at $p_L^{\ast} = 1.603$ where both segments are active. Above the kink at $p_L^{\max} = 2.00$ only the high-valuation segment is active. The high-only regime has its own peak at $p_H^{\ast} = 4.25$, which is the global maximum on this calibration. The gap between the two peaks is $1.489$ in profit, which is large enough to matter for any policy that depends on it.
+The profit surface has a local peak at $`p_L^{\ast} = 1.603`$ where both segments are active. Above the kink at $`p_L^{\max} = 2.00`$ only the high-valuation segment is active. The high-only regime has its own peak at $`p_H^{\ast} = 4.25`$, which is the global maximum on this calibration. The gap between the two peaks is $`1.489`$ in profit, which is large enough to matter for any policy that depends on it.
 
 <img src="figures/profit-surface.png" alt="Two-segment monopoly profit with low-price and high-price peaks marked" width="80%">
 
-The basin map sweeps 200 evenly spaced starting prices and records where each L-BFGS-B run lands. Only starts in the narrow window $[1.52,  1.97]$ converge to the low peak. Every start below that window also converges to the high peak: the gradient at a low price is strongly positive, so the quasi-Newton step overshoots the low peak and descends into the global basin. The L-BFGS-B basin boundary near $p \approx 1.52$ is an artifact of the solver dynamics and sits below the economic kink $p_L^{\max} = 2.00$, not at it. The basin volumes are 6.5 percent low and 93.5 percent high on this bracket. A single start drawn uniformly from the bracket has roughly 94 percent chance of landing in the global basin, so the low peak is the harder one to discover by chance.
+The basin map sweeps 200 evenly spaced starting prices and records where each L-BFGS-B run lands. Only starts in the narrow window $`[1.52,  1.97]`$ converge to the low peak. Every start below that window also converges to the high peak: the gradient at a low price is strongly positive, so the quasi-Newton step overshoots the low peak and descends into the global basin. The L-BFGS-B basin boundary near $`p \approx 1.52`$ is an artifact of the solver dynamics and sits below the economic kink $`p_L^{\max} = 2.00`$, not at it. The basin volumes are 6.5 percent low and 93.5 percent high on this bracket. A single start drawn uniformly from the bracket has roughly 94 percent chance of landing in the global basin, so the low peak is the harder one to discover by chance.
 
 <img src="figures/basin-map.png" alt="L-BFGS-B converged price vs starting price; only a narrow window of low starts reaches the low peak, the rest overshoot into the global basin" width="80%">
 
-The left panel plots the best profit across $N$ multi-start runs, averaged over 30 seeds. With one start the mean best profit is between the local and global peaks, reflecting that some seeds find the wrong basin. As $N$ grows the mean best converges to the global peak and the percentile band collapses. The right panel records the empirical probability that at least one of the $N$ starts lands in the global basin. At $N = 50$ that probability is essentially one and the diagnostic is trustworthy.
+The left panel plots the best profit across $`N`$ multi-start runs, averaged over 30 seeds. With one start the mean best profit is between the local and global peaks, reflecting that some seeds find the wrong basin. As $`N`$ grows the mean best converges to the global peak and the percentile band collapses. The right panel records the empirical probability that at least one of the $`N`$ starts lands in the global basin. At $`N = 50`$ that probability is essentially one and the diagnostic is trustworthy.
 
 <img src="figures/best-objective-by-starts.png" alt="Best profit and probability of finding the global peak as the number of multi-start runs grows" width="80%">
 
-All four method outputs are plotted on the same profit surface. Both single-start methods land at the low-price local peak from $p_0 = 1.7$. Their reported profits are $\pi = 4.136$ for L-BFGS-B and $\pi = 4.136$ for Nelder-Mead. Multi-start L-BFGS-B and simulated annealing both find the global peak at $p_H^{\ast} = 4.250$ with profit $\pi = 5.625$. The gap between local and global on this calibration is $1.489$, a 36 percent profit improvement that single-start methods miss silently.
+All four method outputs are plotted on the same profit surface. Both single-start methods land at the low-price local peak from $`p_0 = 1.7`$. Their reported profits are $`\pi = 4.136`$ for L-BFGS-B and $`\pi = 4.136`$ for Nelder-Mead. Multi-start L-BFGS-B and simulated annealing both find the global peak at $`p_H^{\ast} = 4.250`$ with profit $`\pi = 5.625`$. The gap between local and global on this calibration is $`1.489`$, a 36 percent profit improvement that single-start methods miss silently.
 
 <img src="figures/optimizer-paths.png" alt="Final answer of each of the five methods overlaid on the profit surface" width="80%">
 
-The table compares the five methods on the same calibration. Single-start L-BFGS-B and Nelder-Mead converge to the local peak at $p \approx 1.603$ from $p_0 = 1.7$ and miss the global. Multi-start L-BFGS-B, random search, and simulated annealing all return the global peak. Function evaluations differ by orders of magnitude: simulated annealing is the most expensive, multi-start scales linearly with the number of starts, and a single L-BFGS-B run is by far the cheapest, but cheapest is not the same as right.
+The table compares the five methods on the same calibration. Single-start L-BFGS-B and Nelder-Mead converge to the local peak at $`p \approx 1.603`$ from $`p_0 = 1.7`$ and miss the global. Multi-start L-BFGS-B, random search, and simulated annealing all return the global peak. Function evaluations differ by orders of magnitude: simulated annealing is the most expensive, multi-start scales linearly with the number of starts, and a single L-BFGS-B run is by far the cheapest, but cheapest is not the same as right.
 
-**Method comparison at $\lambda = 0.6$, $c = 0.5$, segment intercepts $(10, 8)$**
+**Method comparison at $`\lambda = 0.6`$, $`c = 0.5`$, segment intercepts $`(10, 8)`$**
 
 | Method                | Setting                     |   Estimated optimum |   Profit |   Function evaluations | Found global?   |
 |:----------------------|:----------------------------|--------------------:|---------:|-----------------------:|:----------------|
@@ -305,7 +305,7 @@ Optimizer convergence is not the same as global optimality. On a nonconcave prof
 
 Multi-start L-BFGS-B is the practical default for nonconcave problems with smooth interiors. Drawing fifty starts uniformly across the search bracket maps out the basins of attraction. The basin counts and the gap between the best basin and the runner-up are the diagnostic.
 
-Random search is the cheapest sanity check. It cannot certify a global optimum either, but it bounds it from below at $1/\sqrt{N}$ in distance. When random search and multi-start agree, the answer is more credible.
+Random search is the cheapest sanity check. It cannot certify a global optimum either, but it bounds it from below at $`1/\sqrt{N}`$ in distance. When random search and multi-start agree, the answer is more credible.
 
 Simulated annealing trades cost for global guarantees. It is the right tool when the objective is rough or has many basins. Different seeds can disagree, and the discipline is to report the worst seed alongside the best.
 
