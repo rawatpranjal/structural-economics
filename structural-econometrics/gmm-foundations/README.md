@@ -2,13 +2,11 @@
 
 ## Overview
 
-An applied researcher wants to estimate a structural parameter from data. The parameter satisfies a vector of moment conditions in the population. The model implies more moments than parameters, so the estimator must combine them. Two questions then arise. Which moments should the researcher target? How should those moments be weighted in the criterion?
+GMM estimates a structural parameter by minimising a weighted distance between sample moments and their population counterparts. When the model implies more moments than parameters, the researcher must choose which moments to target and how to weight them.
 
-This tutorial answers both questions in the simplest possible setting. The economic object is a single location parameter that shifts a non-symmetric error distribution. The reader sees moment conditions, the GMM criterion, and the asymptotic variance formula on the same page. Hansen's two-step procedure then replaces an arbitrary weighting with the inverse moment covariance, and a Monte Carlo measures the resulting efficiency gain.
+The setting here is a scalar location parameter that shifts a non-symmetric error distribution. Hansen's two-step procedure replaces an arbitrary weighting matrix with the inverse moment covariance. A Monte Carlo measures the efficiency gain.
 
-The dense tutorials in the catalog assume this material. The Method-of-Simulated-Moments criterion in [`computational-methods/simulation-based-estimation/`](../../computational-methods/simulation-based-estimation/) and the SMM step in [`agent-based-models/brock-hommes-asset-pricing/`](../../agent-based-models/brock-hommes-asset-pricing/) both apply a weighting matrix that this prelim derives. The adversarial estimator in [`structural-econometrics/adversarial-estimation/`](../../structural-econometrics/adversarial-estimation/) is compared to optimally-weighted SMM, with the comparison anchored here.
-
-The reader takes away three things. The moment-condition definition of GMM with a representative example. The asymptotic variance formula and Hansen's two-step weighting derivation. A working intuition for when adding moments helps and when it hurts.
+Dense tutorials in the catalog assume this material. The Method-of-Simulated-Moments criterion in [`computational-methods/simulation-based-estimation/`](../../computational-methods/simulation-based-estimation/) and the SMM step in [`agent-based-models/brock-hommes-asset-pricing/`](../../agent-based-models/brock-hommes-asset-pricing/) both apply a weighting matrix derived here. The adversarial estimator in [`structural-econometrics/adversarial-estimation/`](../../structural-econometrics/adversarial-estimation/) is benchmarked against optimally-weighted SMM, with the comparison anchored here.
 
 ## Preliminary readings
 
@@ -22,7 +20,7 @@ Let $`x_1, \ldots, x_n`$ be an i.i.d. sample from a distribution indexed by an u
 \mathbb{E}[g(\theta_0, x)] = 0.
 ```
 
-The dimension $`q`$ counts moments and the dimension $`p`$ counts parameters. The model is *just-identified* when $`q = p`$ and *over-identified* when $`q > p`$. Over-identification is the case of interest: with more moments than parameters, no $`\theta`$ matches every moment exactly in a finite sample, and the estimator must trade them off.
+Here $`q`$ counts moments and $`p`$ counts parameters. The model is *just-identified* when $`q = p`$. It is *over-identified* when $`q > p`$. Over-identification is the case of interest. No $`\theta`$ matches every moment exactly in a finite sample, so the estimator must trade them off.
 
 The sample analogue of the moment condition is the empirical mean
 
@@ -38,7 +36,7 @@ Q(\theta) = \bar g(\theta)^{\top} W \, \bar g(\theta),
 \hat\theta = \arg\min_{\theta} Q(\theta).
 ```
 
-Different choices of $`W`$ produce different estimators with the same point of consistency but different finite-sample precision. The job of two-step weighting is to pick the $`W`$ that minimises asymptotic variance.
+Different $`W`$ yield consistent estimators with different finite-sample precision. Two-step weighting picks the $`W`$ that minimises asymptotic variance.
 
 Under standard regularity conditions the GMM estimator is asymptotically normal,
 
@@ -48,17 +46,17 @@ Under standard regularity conditions the GMM estimator is asymptotically normal,
 \right),
 ```
 
-where $`G = \mathbb{E}[\partial g(\theta_0, x) / \partial \theta^{\top}] \in \mathbb{R}^{q \times p}`$ is the moment Jacobian and $`\Omega = \mathrm{Var}[g(\theta_0, x)] \in \mathbb{R}^{q \times q}`$ is the moment covariance. The Jacobian carries identifying information. The covariance carries informativeness.
+where $`G = \mathbb{E}[\partial g(\theta_0, x) / \partial \theta^{\top}] \in \mathbb{R}^{q \times p}`$ is the moment Jacobian and $`\Omega = \mathrm{Var}[g(\theta_0, x)] \in \mathbb{R}^{q \times q}`$ is the moment covariance.
 
-The sandwich variance is minimised when $`W \propto \Omega^{-1}`$, and the efficient asymptotic variance collapses to
+The sandwich variance is minimised when $`W \propto \Omega^{-1}`$. The efficient asymptotic variance collapses to
 
 ```math
 \mathrm{AVar}(\hat\theta_{\mathrm{eff}}) = (G^{\top} \Omega^{-1} G)^{-1}.
 ```
 
-Adding a moment that lies in the span of existing moments leaves $`G^{\top} \Omega^{-1} G`$ unchanged after the optimal reweighting and so brings zero efficiency gain. Adding a moment with information orthogonal to existing ones shrinks the asymptotic variance strictly. The Results section exhibits both regimes.
+A moment in the span of existing ones leaves $`G^{\top} \Omega^{-1} G`$ unchanged after optimal reweighting, so it brings zero efficiency gain. A moment with information orthogonal to existing ones shrinks the asymptotic variance strictly.
 
-Hansen's two-step procedure makes the optimal weighting feasible without prior knowledge of $`\Omega`$. A first-step estimator $`\hat\theta^{(1)}`$ uses an arbitrary positive-definite weight, typically $`W = I_q`$. The first-step moment vectors then estimate the covariance,
+Hansen's two-step procedure makes optimal weighting feasible without prior knowledge of $`\Omega`$. A first-step estimator $`\hat\theta^{(1)}`$ uses an arbitrary positive-definite weight, typically $`W = I_q`$. First-step moment vectors estimate the covariance,
 
 ```math
 \hat\Omega = \frac{1}{n} \sum_{i=1}^{n}
@@ -66,15 +64,15 @@ g(\hat\theta^{(1)}, x_i) \, g(\hat\theta^{(1)}, x_i)^{\top}
 \;-\; \bar g(\hat\theta^{(1)}) \, \bar g(\hat\theta^{(1)})^{\top}.
 ```
 
-The second-step estimator re-minimises the criterion with $`W = \hat\Omega^{-1}`$, and the asymptotic variance attains the efficient bound.
+The second-step estimator re-minimises the criterion with $`W = \hat\Omega^{-1}`$. The asymptotic variance attains the efficient bound.
 
-The simulated method of moments replaces population moments by simulated moments when the analytic moment is unavailable. Let $`\tilde m(\theta)`$ denote the moment computed on simulated data at parameter $`\theta`$ and let $`m_{\mathrm{data}}`$ denote the same moment on observed data. The SMM moment vector is
+The simulated method of moments replaces population moments by simulated moments when the analytic moment is unavailable. Let $`\tilde m(\theta)`$ denote the moment computed on simulated data at $`\theta`$, and $`m_{\mathrm{data}}`$ the same moment on observed data. The SMM moment vector is
 
 ```math
 \hat m(\theta) = \tilde m(\theta) - m_{\mathrm{data}},
 ```
 
-and the SMM estimator minimises $`\hat m(\theta)^{\top} W \hat m(\theta)`$. The weighting matrix that minimises SMM asymptotic variance is the same $`\Omega^{-1}`$ derived above, up to a simulation-noise inflation factor. The dense tutorials [`computational-methods/simulation-based-estimation/`](../../computational-methods/simulation-based-estimation/) and [`agent-based-models/brock-hommes-asset-pricing/`](../../agent-based-models/brock-hommes-asset-pricing/) build on this identity.
+and the SMM estimator minimises $`\hat m(\theta)^{\top} W \hat m(\theta)`$. The optimal SMM weighting is the same $`\Omega^{-1}`$ derived above, up to a simulation-noise inflation factor. The dense tutorials [`computational-methods/simulation-based-estimation/`](../../computational-methods/simulation-based-estimation/) and [`agent-based-models/brock-hommes-asset-pricing/`](../../agent-based-models/brock-hommes-asset-pricing/) build on this identity.
 
 The J statistic tests over-identification. At the second-step estimator under optimal weighting,
 
@@ -82,7 +80,7 @@ The J statistic tests over-identification. At the second-step estimator under op
 J = n \cdot Q(\hat\theta) = n \, \bar g(\hat\theta)^{\top} \hat\Omega^{-1} \bar g(\hat\theta).
 ```
 
-Under correct specification $`J \to_d \chi^2_{q - p}`$. A large $`J`$ relative to the chi-square reference indicates that at least one moment condition is violated in the population, so the model is misspecified rather than estimated poorly.
+Under correct specification $`J \to_d \chi^2_{q - p}`$. A large $`J`$ relative to the chi-square reference flags a violated moment condition, so the model is misspecified rather than estimated poorly.
 
 ## Model Setup
 
@@ -94,7 +92,7 @@ x_i = \theta + \varepsilon_i,
 \varepsilon_i \sim 0.85 \cdot \mathcal{N}(-0.30, 0.70^2) \;+\; 0.15 \cdot \mathcal{N}(1.70, 1.20^2).
 ```
 
-The mixture weights and means are pinned so the error has zero population mean. The positive third central moment makes the higher moments informative beyond the first one. The single unknown parameter is $`\theta_0 = 1`$.
+The mixture weights and means are chosen so the error has zero population mean. The positive third central moment makes higher moments informative beyond the first. The unknown parameter is $`\theta_0 = 1`$.
 
 | Object | Symbol | Role |
 |---|---|---|
@@ -116,13 +114,13 @@ The three moment specifications differ in $`q`$:
 | 2 moments | mean residual, centred squared residual minus population variance | over-identified by 1 |
 | 5 moments | mean, variance, third central moment, 0.05-quantile check, 0.95-quantile check | over-identified by 4 |
 
-The quantile moments use the standard check-function identity $`\mathbb{E}[\mathbf{1}\{\varepsilon \le q_{\alpha}\} - \alpha] = 0`$, evaluated at the population quantiles of the error. The population quantiles are computed once on a four-million-draw reference sample so the same moment set is comparable across Monte Carlo replications.
+The quantile moments use the check-function identity $`\mathbb{E}[\mathbf{1}\{\varepsilon \le q_{\alpha}\} - \alpha] = 0`$, evaluated at the population quantiles of the error. Population quantiles are computed once on a four-million-draw reference sample so the moment set is comparable across replications.
 
-The misspecified data-generating process adds a state-dependent shift $`0.20 \cdot (\varepsilon_i^2 - \mathrm{Var}(\varepsilon))`$ to the error, which preserves the first moment but violates the second-through-fifth moment conditions. This is the input to the J-statistic exhibit.
+The misspecified DGP adds a state-dependent shift $`0.20 \cdot (\varepsilon_i^2 - \mathrm{Var}(\varepsilon))`$ to the error. This preserves the first moment but violates moments two through five. It feeds the J-statistic exhibit.
 
 ## Solution Method
 
-The numerical recipe has three pieces. A Nelder-Mead minimiser searches over the scalar $`\theta`$. The criterion $`Q(\theta) = \bar g(\theta)^{\top} W \bar g(\theta)`$ is recomputed at each candidate $`\theta`$. The weighting matrix $`W`$ is set in two passes for the over-identified specifications.
+A Nelder-Mead minimiser searches over the scalar $`\theta`$. The criterion $`Q(\theta) = \bar g(\theta)^{\top} W \bar g(\theta)`$ is recomputed at each candidate $`\theta`$. The weighting matrix $`W`$ is set in two passes for the over-identified specifications.
 
 ```text
 Algorithm: two-step GMM for the location model
@@ -139,35 +137,35 @@ Output   theta_hat, W_optimal
 7. Return theta_hat, W_optimal.
 ```
 
-The ridge term $`10^{-10} \cdot I_q`$ guards against an ill-conditioned $`\hat\Omega`$ when two moments are nearly collinear in the sample. The economic content sits in steps 4 and 6: step 4 estimates which moments are informative relative to one another, and step 6 reweights so the criterion penalises a mismatch in an informative moment more than a mismatch in a redundant one.
+The ridge term $`10^{-10} \cdot I_q`$ guards against ill-conditioned $`\hat\Omega`$ when two moments are nearly collinear. Steps 4 and 6 carry the content: step 4 measures relative informativeness across moments, and step 6 reweights so a mismatch in an informative moment costs more than a mismatch in a redundant one.
 
-The Monte Carlo wraps the algorithm in an outer loop over $`M = 400`$ samples. The same sequence of seeds produces deterministic Monte Carlo arrays. For each moment set the loop records the identity-weighted and optimally-weighted estimates. For the five-moment specification the loop also records the J statistic, evaluated at the second-step estimator under $`W_{\mathrm{opt}}`$. A second Monte Carlo with a misspecified data-generating process repeats the J-statistic exhibit under the alternative.
+The Monte Carlo wraps the algorithm in an outer loop over $`M = 400`$ samples with deterministic seeds. For each moment set the loop records identity-weighted and optimally-weighted estimates. For the five-moment specification it also records the J statistic at the second-step estimator under $`W_{\mathrm{opt}}`$. A second Monte Carlo with a misspecified DGP repeats the J-statistic exhibit under the alternative.
 
 ## Results
 
-The sampling-distribution figure puts the three moment specifications side by side, with histograms of $`\hat\theta`$ under identity weighting and under optimal weighting. All three histograms centre on the truth, so consistency is not at issue. The dispersion tells the efficiency story.
+The sampling-distribution figure puts the three moment specifications side by side. Histograms show $`\hat\theta`$ under identity and optimal weighting. All centre on the truth, so consistency is not at issue. Dispersion tells the efficiency story.
 
 <img src="figures/sampling-distribution.png" alt="Sampling distribution of theta-hat by moment count and weighting choice" width="95%">
 
-The one-moment case is just-identified, so identity and optimal weightings coincide. The two-moment case shows a visible narrowing under optimal weighting: variance falls from 0.00242 to 0.00151, roughly a 38% reduction. The five-moment case shows a much sharper contrast in the other direction. Identity weighting on five moments is worse than identity weighting on one moment, because the third moment and the two quantile checks have very different scales and the criterion is dominated by whichever residual happens to be largest in magnitude. Optimal weighting on the same five moments brings the variance back down to 0.00201, comfortably below the five-moment-identity figure but slightly above the two-moment-optimal figure. The lesson is two-sided: adding moments without reweighting hurts, and adding moments with reweighting helps relative to no reweighting at the same moment count, but the finite-sample noise in $`\hat\Omega`$ can prevent the variance from being strictly monotone across moment counts.
+Optimal weighting on two moments cuts variance by 38%, from 0.00242 to 0.00151. The one-moment case is just-identified, so identity and optimal weightings coincide. The five-moment case shows a sharper contrast in the other direction. Identity weighting on five moments is worse than identity weighting on one. The third moment and the two quantile checks have very different scales, so the criterion is dominated by whichever residual is largest in magnitude. Optimal weighting on the same five moments brings variance back down to 0.00201, below the five-moment-identity figure but above the two-moment-optimal figure. The lesson is two-sided. Adding moments without reweighting hurts. Adding moments with reweighting helps at fixed moment count, but finite-sample noise in $`\hat\Omega`$ can break strict monotonicity across moment counts.
 
-The efficiency-gain figure summarises the same numbers as a curve. The horizontal axis is the moment count. The vertical axis is the Monte Carlo variance of $`\hat\theta`$.
+The efficiency-gain figure plots Monte Carlo variance of $`\hat\theta`$ against moment count.
 
 <img src="figures/efficiency-gain.png" alt="Monte Carlo variance against moment count for identity and optimal weighting" width="80%">
 
-The blue curve under identity weighting is non-monotone in the moment count and rises sharply between two and five moments. The red curve under optimal weighting lies strictly below the blue curve at every moment count. The classical asymptotic statement is that optimal weighting is variance-non-increasing in the moment set as long as $`\hat\Omega`$ is consistent. The finite-sample picture is more nuanced. Estimating $`\hat\Omega`$ from the same data introduces noise that grows with $`q`$, and at small samples the red curve can tick up between adjacent moment counts even though it stays below the identity counterpart. The headline result is the gap between the two curves: *at any over-identified moment set, optimally-weighted GMM is more efficient than identity-weighted GMM, and the gap widens with the moment count.* Asymptotic monotonicity within the optimal curve is a stronger claim that needs more data than $`n = 500`$ here.
+*At any over-identified moment set, optimally-weighted GMM beats identity-weighted GMM, and the gap widens with the moment count.* The blue identity curve is non-monotone in $`q`$ and rises sharply between two and five moments. The red optimal curve lies strictly below the blue curve everywhere. Asymptotically, optimal weighting is variance-non-increasing in the moment set whenever $`\hat\Omega`$ is consistent. In finite samples the picture is nuanced. Estimating $`\hat\Omega`$ from the same data injects noise that grows with $`q`$. The red curve can tick up between adjacent moment counts at $`n = 500`$ even while staying below identity.
 
 The J-statistic figure tests the moment conditions themselves. Under correct specification the five-moment $`J`$ should follow a chi-square with $`q - p = 4`$ degrees of freedom. Under misspecification it should drift to the right.
 
 <img src="figures/j-statistic.png" alt="J statistic histogram under correct and misspecified data" width="80%">
 
-The blue histogram is close to the chi-square reference. The mean of $`J`$ under correct specification is 4.16, close to the chi-square mean of 4. The red histogram under the misspecified data shifts hard to the right, with a mean near 35. A researcher would reject the model at any conventional level. The J statistic is the natural diagnostic to read alongside any two-step GMM estimate. A small criterion at the second step is reassuring; a large $`J`$ relative to $`\chi^2_{q - p}`$ flags a moment condition that the model cannot match in the population.
+The misspecified histogram shifts hard to the right, mean near 35; a researcher rejects at any conventional level. The blue histogram tracks the chi-square reference, with mean 4.16 against a chi-square mean of 4. Read $`J`$ alongside any two-step GMM estimate. A small second-step criterion is reassuring. A large $`J`$ relative to $`\chi^2_{q - p}`$ flags a moment condition the model cannot match.
 
 ## Takeaway
 
-GMM is a recipe for converting moment conditions into a point estimate. The two-step procedure makes the optimal weighting matrix feasible without prior knowledge of the moment covariance. Adding moments helps only when each new moment carries identifying information orthogonal to existing ones. The J statistic turns the criterion value into a specification test for over-identified models.
+GMM converts moment conditions into a point estimate. Two-step weighting makes the optimal matrix feasible without prior knowledge of the moment covariance. Adding moments helps only when each new moment carries information orthogonal to existing ones. The J statistic turns the criterion value into a specification test for over-identified models.
 
-The same machinery extends to settings where moments are not analytic. The simulated method of moments replaces $`\bar g(\theta)`$ with a simulated counterpart and inherits the same optimal-weighting derivation; that extension is the subject of [`computational-methods/simulation-based-estimation/`](../../computational-methods/simulation-based-estimation/) and [`agent-based-models/brock-hommes-asset-pricing/`](../../agent-based-models/brock-hommes-asset-pricing/). Conditional moments built from instruments give the IV-GMM estimator that underpins much of modern empirical micro and macro.
+The machinery extends to settings where moments are not analytic. SMM replaces $`\bar g(\theta)`$ with a simulated counterpart and inherits the same optimal-weighting derivation. That extension is the subject of [`computational-methods/simulation-based-estimation/`](../../computational-methods/simulation-based-estimation/) and [`agent-based-models/brock-hommes-asset-pricing/`](../../agent-based-models/brock-hommes-asset-pricing/). Conditional moments built from instruments give the IV-GMM estimator that underpins modern empirical micro and macro.
 
 ## References
 
