@@ -10,83 +10,83 @@ This tutorial follows the canonical one-asset HANK setup from Auclert, Bardóczy
 
 ## Equations
 
-**Household problem.** Each household has assets $a \geq 0$ and idiosyncratic
-skill $e$ on a finite grid with transition matrix $P(e' \mid e)$. With
-consumption $c$, hours $n$, real return $r_t$, real wage $w_t$, and a per-skill
-transfer $e \cdot T_t$ (skill-proportional rebate of firm dividends net of
+**Household problem.** Each household has assets $`a \geq 0`$ and idiosyncratic
+skill $`e`$ on a finite grid with transition matrix $`P(e' \mid e)`$. With
+consumption $`c`$, hours $`n`$, real return $`r_t`$, real wage $`w_t`$, and a per-skill
+transfer $`e \cdot T_t`$ (skill-proportional rebate of firm dividends net of
 taxes), the budget constraint and the intra- and inter-temporal first-order
 conditions are
 
-$$
+```math
 c_t + a_{t+1} = (1 + r_t)  a_t + w_t e n_t + e T_t, \qquad a_{t+1} \geq 0,
-$$
+```
 
-$$
+```math
 v_{\varphi}  n_t^{1/\varphi} = w_t e c_t^{-1/\eta},
 \qquad
 c_t^{-1/\eta} = \beta \mathbb{E}_t\lbrack (1 + r_{t+1})  c_{t+1}^{-1/\eta} \rbrack,
-$$
+```
 
-where $\eta$ is the elasticity of intertemporal substitution and $\varphi$ is
+where $`\eta`$ is the elasticity of intertemporal substitution and $`\varphi`$ is
 the Frisch elasticity of labor supply.
 
-**Firm block.** A representative final-good firm produces $Y_t = Z_t L_t$
-from labor with constant returns. Labor demand $L_t = Y_t / Z_t$ follows from
+**Firm block.** A representative final-good firm produces $`Y_t = Z_t L_t`$
+from labor with constant returns. Labor demand $`L_t = Y_t / Z_t`$ follows from
 the production function. Real marginal cost and firm profits are
 
-$$
+```math
 mc_t = w_t / Z_t,
 \qquad
 \mathrm{Div}_t = Y_t - w_t L_t = Y_t (1 - mc_t).
-$$
+```
 
 Monopolistic intermediate firms set prices subject to Rotemberg adjustment
 costs. To first order in deviations from the zero-inflation steady state
-$mc^{\ast} = 1 / \mu^{\ast}$, the New Keynesian Phillips curve is
+$`mc^{\ast} = 1 / \mu^{\ast}`$, the New Keynesian Phillips curve is
 
-$$
+```math
 \pi_t = \frac{1}{1 + r^{\ast}}  \pi_{t+1} + \kappa (mc_t - 1/\mu^{\ast}),
-$$
+```
 
-where the discount factor $1/(1 + r^{\ast})$ comes from real-rate discounting
+where the discount factor $`1/(1 + r^{\ast})`$ comes from real-rate discounting
 of next-period price-setting profits (the exact Rotemberg first-order form
 matches the canonical sequence-jacobian notebook).
 
 **Monetary and fiscal blocks.** The central bank sets the nominal rate one
-period in advance via a Taylor rule on lagged inflation, with $i^{\ast}_t$ a
+period in advance via a Taylor rule on lagged inflation, with $`i^{\ast}_t`$ a
 shock to the rate target. The current real return is the predetermined
 nominal rate deflated by current inflation:
 
-$$
+```math
 i^{\ast}_t = i^{\ast} + v_t,
 \qquad
 1 + r_t = (1 + i^{\ast}_{t-1} + \phi_{\pi}  \pi_{t-1}) / (1 + \pi_t).
-$$
+```
 
-Government debt $B$ is constant and the fiscal block balances the budget with
-a lump-sum tax $\mathrm{Tax}_t = r_t B$. The per-skill transfer is
+Government debt $`B`$ is constant and the fiscal block balances the budget with
+a lump-sum tax $`\mathrm{Tax}_t = r_t B`$. The per-skill transfer is
 
-$$
+```math
 T_t = \mathrm{Div}_t - \mathrm{Tax}_t = Y_t(1 - w_t / Z_t) - r_t B.
-$$
+```
 
 **Sequence-space equilibrium map.** Stack T periods of unknowns
-$U = (\pi, w, Y)$ and shocks $Z = v$. Three target equations -- NKPC residual,
-asset-market clearing $A_t = B$, and goods-market clearing $Y_t = C_t$ -- close
+$`U = (\pi, w, Y)`$ and shocks $`Z = v`$. Three target equations -- NKPC residual,
+asset-market clearing $`A_t = B`$, and goods-market clearing $`Y_t = C_t`$ -- close
 the system; the labor market then clears by Walras' law. Linearizing,
-$H_U \mathrm{d}U + H_Z \mathrm{d}Z = 0$, so
-$\mathrm{d}U = -H_U^{-1} H_Z \mathrm{d}Z$.
+$`H_U \mathrm{d}U + H_Z \mathrm{d}Z = 0`$, so
+$`\mathrm{d}U = -H_U^{-1} H_Z \mathrm{d}Z`$.
 
-**Household-block Jacobian.** Nine matrices of shape $(T, T)$ collect the
+**Household-block Jacobian.** Nine matrices of shape $`(T, T)`$ collect the
 partial derivatives of the three household aggregates with respect to the
 three inputs,
 
-$$
+```math
 J^{Y, x}_{t, s} = \frac{\partial Y_t}{\partial x_s}, \qquad
 Y \in \lbrace C, A, N^E \rbrace, \quad x \in \lbrace r, w, T \rbrace,
-$$
+```
 
-where $N^E_t = \int e n_t(a, e)  \mathrm{d}\mu_t$ is aggregate effective
+where $`N^E_t = \int e n_t(a, e)  \mathrm{d}\mu_t`$ is aggregate effective
 labor supply. Building these matrices via the fake-news algorithm is the
 algorithmic content of SSJ.
 
@@ -97,26 +97,26 @@ sequence-space HANK notebook of Auclert et al. (2021).
 
 | Object | Symbol | Value | Role |
 |---|---|---:|---|
-| Elasticity of intertemporal substitution | $\eta$ | 0.50 | Relative risk aversion $= 1/\eta = 2$ |
-| Frisch elasticity | $\varphi$ | 0.50 | Labor-supply curvature |
-| Discount factor | $\beta$ | 0.9822 | Calibrated so $A^\ast = B$ |
-| Labor disutility | $v_\varphi$ | 0.7862 | Calibrated so $N^E_\ast = 1$ |
-| Markup | $\mu^{\ast}$ | 1.20 | 20 percent steady-state markup |
-| TFP | $Z$ | 1.00 | Normalized |
-| NKPC slope | $\kappa$ | 0.10 | On real marginal cost |
-| Taylor inflation | $\phi_\pi$ | 1.50 | |
-| Shock persistence | $\rho_v$ | 0.61 | AR(1) on monetary innovation |
-| Skill persistence | $\rho_e$ | 0.966 | AR(1) on log skill |
-| Skill innovation std | $\sigma_e$ | 0.50 | Unconditional std target |
-| Government debt | $B$ | 5.6 | Bond supply, household wealth target |
-| Skill grid | $n_e$ | 7 | Rouwenhorst |
-| Asset grid | $n_a$ | 200 | Exponential on $[0.0, 150.0]$ |
-| Sequence horizon | $T$ | 300 | Quarters |
-| Monetary shock | $\varepsilon_0$ | 0.00250 | 100 bp annualized tightening |
+| Elasticity of intertemporal substitution | $`\eta`$ | 0.50 | Relative risk aversion $`= 1/\eta = 2`$ |
+| Frisch elasticity | $`\varphi`$ | 0.50 | Labor-supply curvature |
+| Discount factor | $`\beta`$ | 0.9822 | Calibrated so $`A^\ast = B`$ |
+| Labor disutility | $`v_\varphi`$ | 0.7862 | Calibrated so $`N^E_\ast = 1`$ |
+| Markup | $`\mu^{\ast}`$ | 1.20 | 20 percent steady-state markup |
+| TFP | $`Z`$ | 1.00 | Normalized |
+| NKPC slope | $`\kappa`$ | 0.10 | On real marginal cost |
+| Taylor inflation | $`\phi_\pi`$ | 1.50 | |
+| Shock persistence | $`\rho_v`$ | 0.61 | AR(1) on monetary innovation |
+| Skill persistence | $`\rho_e`$ | 0.966 | AR(1) on log skill |
+| Skill innovation std | $`\sigma_e`$ | 0.50 | Unconditional std target |
+| Government debt | $`B`$ | 5.6 | Bond supply, household wealth target |
+| Skill grid | $`n_e`$ | 7 | Rouwenhorst |
+| Asset grid | $`n_a`$ | 200 | Exponential on $`[0.0, 150.0]`$ |
+| Sequence horizon | $`T`$ | 300 | Quarters |
+| Monetary shock | $`\varepsilon_0`$ | 0.00250 | 100 bp annualized tightening |
 
-**Steady-state values.** Real return $r^\ast = 0.0050$ quarterly (~2.0 percent annual). Output $Y^\ast = 1.000$, real wage $w^\ast = 0.8333$, profits $\mathrm{Div}^\ast = 0.1667$, fiscal transfer $T^\ast = 0.1387$. Aggregate consumption $C^\ast = 1.0000$, asset holdings $A^\ast = 5.6000$
-clear the bond market against $B = 5.6$, and effective labor supply
-$N^E_\ast = 1.0000$ matches steady-state labor demand.
+**Steady-state values.** Real return $`r^\ast = 0.0050`$ quarterly (~2.0 percent annual). Output $`Y^\ast = 1.000`$, real wage $`w^\ast = 0.8333`$, profits $`\mathrm{Div}^\ast = 0.1667`$, fiscal transfer $`T^\ast = 0.1387`$. Aggregate consumption $`C^\ast = 1.0000`$, asset holdings $`A^\ast = 5.6000`$
+clear the bond market against $`B = 5.6`$, and effective labor supply
+$`N^E_\ast = 1.0000`$ matches steady-state labor demand.
 
 ## Solution Method
 
@@ -124,14 +124,14 @@ The block decomposition makes the problem tractable. The household block is
 the heavy piece because its inputs and outputs are sequences of aggregates.
 
 **Steady-state household block.** Endogenous grid points solve the joint
-$(c, n)$ policy by FOC inversion, with a Newton subsolver for the borrowing-
+$`(c, n)`$ policy by FOC inversion, with a Newton subsolver for the borrowing-
 constrained region. The stationary distribution follows from forward-iterating
 the Young (2010) lottery on the saving policy. A joint Broyden iteration on
-$(\beta, v_\varphi)$ matches the asset target $A^{\ast} = B$ and the
-labor-supply target $N^E_\ast = 1$.
+$`(\beta, v_\varphi)`$ matches the asset target $`A^{\ast} = B`$ and the
+labor-supply target $`N^E_\ast = 1`$.
 
-**Fake-news household Jacobian.** Each Jacobian column $J^{Y, x}_{:, s}$ is
-the path of aggregate $Y$ in response to a unit pulse to input $x$ at date $s$.
+**Fake-news household Jacobian.** Each Jacobian column $`J^{Y, x}_{:, s}`$ is
+the path of aggregate $`Y`$ in response to a unit pulse to input $`x`$ at date $`s`$.
 The fake-news algorithm builds the anticipation curves once via backward
 iteration of EGM and then convolves them with the time-varying input path
 during a forward distribution sweep:
@@ -164,27 +164,27 @@ for s = 0..T-1:
 
 The two-step structure mirrors Auclert, Bardóczy, Rognlie, and Straub (2021):
 anticipation curves are translation-invariant, so they are computed once by a
-single $O(T|state|)$ backward iteration. The forward distribution sweep
-above then runs $T$ separate passes of length $T$, restarting $delta_D$ for
-each pulse date, so the sweep costs $O(T^2|state|)$ in total. The full SSJ
+single $`O(T|state|)`$ backward iteration. The forward distribution sweep
+above then runs $`T`$ separate passes of length $`T`$, restarting $`delta_D`$ for
+each pulse date, so the sweep costs $`O(T^2|state|)`$ in total. The full SSJ
 library uses an additional Toeplitz trick that drops the overall cost to
-$O(T|state|)$; the algorithm above is the simplest version that still gives
+$`O(T|state|)`$; the algorithm above is the simplest version that still gives
 the correct Jacobians.
 
 **Firm, NKPC, fiscal, and monetary blocks.** All four are closed-form
-$T \times T$ matrices once we substitute $L = Y / Z$ and impose the budget
-identities. The aggregate system has unknowns $U = (\pi, w, Y)$ stacked over
-$T$ periods and three targets per period (NKPC, asset-market, goods-market
+$`T \times T`$ matrices once we substitute $`L = Y / Z`$ and impose the budget
+identities. The aggregate system has unknowns $`U = (\pi, w, Y)`$ stacked over
+$`T`$ periods and three targets per period (NKPC, asset-market, goods-market
 clearing). The labor market then clears by Walras' law. The resulting
-$3 T \times 3 T$ system is solved by a single dense linear solve.
+$`3 T \times 3 T`$ system is solved by a single dense linear solve.
 
 **Convergence.** The household EGM converged in
 424 iterations to a sup-norm residual of
-9.82e-10. The joint $(\beta, v_\varphi)$ calibration
-converged in a few Broyden steps to the targets $A^{\ast} = B$ and
-$N^E_\ast = 1$. The Jacobian construction took 35.9 seconds at
-$T = 300$. The aggregate condition number of $H_U$ is order
-$10^{3}$, well within double-precision range.
+9.82e-10. The joint $`(\beta, v_\varphi)`$ calibration
+converged in a few Broyden steps to the targets $`A^{\ast} = B`$ and
+$`N^E_\ast = 1`$. The Jacobian construction took 35.9 seconds at
+$`T = 300`$. The aggregate condition number of $`H_U`$ is order
+$`10^{3}`$, well within double-precision range.
 
 ## Results
 
@@ -196,9 +196,9 @@ Splitting the household-block consumption response by steady-state wealth quinti
 
 <img src="figures/quintile-irf.png" alt="Consumption IRF decomposed by wealth quintile" width="80%">
 
-Each curve is the date-0 consumption response to a unit interest rate pulse anticipated to arrive at a future date $s$. Curves at longer lags are smaller and smoother because anticipation is filtered through the household's Euler equation: high-MPC households at the constraint barely respond to far-future news, while wealthy households respond similarly to news at any horizon below their planning window. Each curve is the skill-averaged date-0 policy perturbation $dc(a)$ for a unit $r$ pulse at lag $s$ -- the raw anticipation curve before it is integrated against the steady-state distribution to form a Jacobian entry.
+Each curve is the date-0 consumption response to a unit interest rate pulse anticipated to arrive at a future date $`s`$. Curves at longer lags are smaller and smoother because anticipation is filtered through the household's Euler equation: high-MPC households at the constraint barely respond to far-future news, while wealthy households respond similarly to news at any horizon below their planning window. Each curve is the skill-averaged date-0 policy perturbation $`dc(a)`$ for a unit $`r`$ pulse at lag $`s`$ -- the raw anticipation curve before it is integrated against the steady-state distribution to form a Jacobian entry.
 
-<img src="figures/anticipation-curves.png" alt="Anticipation curves: date-0 consumption response to a future $r$ pulse" width="80%">
+<img src="figures/anticipation-curves.png" alt="Anticipation curves: date-0 consumption response to a future $`r`$ pulse" width="80%">
 
 Left: the steady-state consumption policy is concave in assets and shifted up by skill. Right: the stationary distribution has a sharp mode near the borrowing constraint and a long right tail. The constrained mass governs the magnitude of MPC heterogeneity, which is what gives HANK its IRF amplification.
 
@@ -238,11 +238,11 @@ The sequence-space solve gives joint impulse responses of output, inflation, the
 
 Sequence-space Jacobians turn HANK with aggregate shocks into a tractable linear-algebra problem. The household block is the compute-heavy piece, but the fake-news algorithm builds its Jacobian from one backward iteration plus a forward propagation, sidestepping the repeated perfect-foresight resolves that earlier approaches like Krusell-Smith required.
 
-Block composition pays for itself: firm, NKPC, fiscal, and monetary blocks are closed-form $T \times T$ matrices and stack against the household block without recomputing anything. The aggregate IRF is then a single dense solve.
+Block composition pays for itself: firm, NKPC, fiscal, and monetary blocks are closed-form $`T \times T`$ matrices and stack against the household block without recomputing anything. The aggregate IRF is then a single dense solve.
 
 The HANK-vs-RA comparison shows what the heterogeneity is doing economically. At this calibration, the aggregate output and consumption responses are of similar size to the RA NK benchmark, but the cross-section is dramatic: lower wealth quintiles cut consumption several times as much as the upper quintiles. The amplification at the level of inflation and the real rate is also larger in HANK. The same SSJ scaffolding extends to two-asset HANK, sticky wages, estimation by likelihood, and richer fiscal blocks; those extensions and a more aggressive amplification calibration (e.g., shareholder-only dividend rebates) are in the [`sequence-jacobian`](https://github.com/shade-econ/sequence-jacobian) package, which is the natural next stop.
 
-**Numerical match with the canonical package.** Running the same calibration through the canonical [`sequence-jacobian`](https://github.com/shade-econ/sequence-jacobian) package (notebook grid $n_E = 7$, $n_A = 500$) for a $+100$ bp tightening with $\rho_v = 0.61$ gives $\beta^{\ast} = 0.98224$, $v_\varphi^{\ast} = 0.7864$, peak output $-0.1908$ percent, peak consumption $-0.1908$ percent, peak inflation $-0.690$ percent annualized, and peak real return $+0.694$ percent annualized. This tutorial returns $\beta^{\ast} = 0.98223$, $v_\varphi^{\ast} = 0.7862$, peak output and consumption both $-0.190$ percent, peak inflation $-0.688$ percent, and peak real return $+0.688$ percent. The two implementations agree to roughly three significant figures; the remaining gap reflects the $n_A = 200$ grid used here versus the $n_A = 500$ grid used in the canonical notebook.
+**Numerical match with the canonical package.** Running the same calibration through the canonical [`sequence-jacobian`](https://github.com/shade-econ/sequence-jacobian) package (notebook grid $`n_E = 7`$, $`n_A = 500`$) for a $`+100`$ bp tightening with $`\rho_v = 0.61`$ gives $`\beta^{\ast} = 0.98224`$, $`v_\varphi^{\ast} = 0.7864`$, peak output $`-0.1908`$ percent, peak consumption $`-0.1908`$ percent, peak inflation $`-0.690`$ percent annualized, and peak real return $`+0.694`$ percent annualized. This tutorial returns $`\beta^{\ast} = 0.98223`$, $`v_\varphi^{\ast} = 0.7862`$, peak output and consumption both $`-0.190`$ percent, peak inflation $`-0.688`$ percent, and peak real return $`+0.688`$ percent. The two implementations agree to roughly three significant figures; the remaining gap reflects the $`n_A = 200`$ grid used here versus the $`n_A = 500`$ grid used in the canonical notebook.
 
 ## References
 

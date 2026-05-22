@@ -12,67 +12,67 @@ The tutorial uses equilibrium structure to undo that shading. It estimates the b
 
 ## Equations
 
-There are $n$ risk-neutral bidders. Values are independent private values
-$v_i \sim F_v$ with density $f_v$. Each bidder submits a sealed bid. The highest
+There are $`n`$ risk-neutral bidders. Values are independent private values
+$`v_i \sim F_v`$ with density $`f_v`$. Each bidder submits a sealed bid. The highest
 bid wins, and the winner pays its own bid.
 
-In a symmetric monotone Bayesian Nash equilibrium, type $v$ submits
+In a symmetric monotone Bayesian Nash equilibrium, type $`v`$ submits
 
-$$
+```math
 b=s(v).
-$$
+```
 
-To derive the equilibrium condition, let a bidder with true value $v$ deviate
-by bidding $s(x)$, as if its type were $x$.
+To derive the equilibrium condition, let a bidder with true value $`v`$ deviate
+by bidding $`s(x)`$, as if its type were $`x`$.
 
-Because $s(\cdot)$ is increasing, the bid $s(x)$ beats a rival exactly when the
-rival's value is below $x$. With $n-1$ rivals,
+Because $`s(\cdot)`$ is increasing, the bid $`s(x)`$ beats a rival exactly when the
+rival's value is below $`x`$. With $`n-1`$ rivals,
 
-$$
+```math
 \Pr(\text{win}\mid x)=F_v(x)^{n-1}.
-$$
+```
 
-If the bidder wins, surplus is $v-s(x)$. Expected payoff from the deviation is
+If the bidder wins, surplus is $`v-s(x)`$. Expected payoff from the deviation is
 
-$$
+```math
 \pi(v,x) = (v-s(x))F_v(x)^{n-1}.
-$$
+```
 
-Differentiate with respect to $x$:
+Differentiate with respect to $`x`$:
 
-$$
+```math
 \frac{\partial \pi(v,x)}{\partial x} =
 (v-s(x))(n-1)F_v(x)^{n-2}f_v(x) - s'(x)F_v(x)^{n-1}.
-$$
+```
 
-In equilibrium, the best deviation for type $v$ is $x=v$. The first-order
+In equilibrium, the best deviation for type $`v`$ is $`x=v`$. The first-order
 condition is therefore
 
-$$
+```math
 s'(v)F_v(v) = (n-1)(v-s(v))f_v(v).
-$$
+```
 
-Solving for $v$ gives the value behind an equilibrium bid:
+Solving for $`v`$ gives the value behind an equilibrium bid:
 
-$$
+```math
 v = s(v) + \frac{s'(v)F_v(v)}{(n-1)f_v(v)}.
-$$
+```
 
-The econometrician observes bids, not values. Let $G$ and $g$ be the CDF and
+The econometrician observes bids, not values. Let $`G`$ and $`g`$ be the CDF and
 density of bids. Monotonicity gives
 
-$$
+```math
 G(b)=F_v(v),
 \qquad
 g(b)=\frac{f_v(v)}{s'(v)}.
-$$
+```
 
-Substitute these bid objects into the value formula. For $b_i=s(v_i)$, the GPV
+Substitute these bid objects into the value formula. For $`b_i=s(v_i)`$, the GPV
 inversion is
 
-$$
+```math
 \hat v_i = b_i + \frac{\hat G(b_i)}{(n-1)\hat g(b_i)}.
-$$
+```
 
 The density estimate is least stable near the bid support boundaries, so the
 exercise trims low and high bid quantiles before evaluating recovery.
@@ -91,7 +91,7 @@ exercise trims low and high bid quantiles before evaluating recovery.
 
 ## Solution Method
 
-Let $N$ be the number of observed bids. The estimator uses empirical ranks for $\hat G$ and a kernel density estimate for $\hat g$.
+Let $`N`$ be the number of observed bids. The estimator uses empirical ranks for $`\hat G`$ and a kernel density estimate for $`\hat g`$.
 
 ```text
 Input: bids {b_i}[i=1]^N, bidder count n, trim q

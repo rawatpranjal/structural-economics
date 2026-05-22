@@ -12,62 +12,62 @@ The computation solves the integrated channel and the separated game. Backward i
 
 Demand follows
 
-$$
+```math
 q(p)=a-bp,\qquad p\leq \bar p\equiv a/b,
-$$
+```
 
-where $p$ is the retail price. The choke price is $\bar p$. Costs are $c_M$
-upstream and $c_R$ downstream.
+where $`p`$ is the retail price. The choke price is $`\bar p`$. Costs are $`c_M`$
+upstream and $`c_R`$ downstream.
 
 The integrated channel solves
 
-$$
+```math
 \Pi^I(p)=(p-c_M-c_R)q(p),
-$$
+```
 
 so the joint-profit price is
 
-$$
+```math
 p^I=\frac{\bar p+c_M+c_R}{2}.
-$$
+```
 
-Under a linear wholesale price $w$, the retailer solves
+Under a linear wholesale price $`w`$, the retailer solves
 
-$$
+```math
 \max_p\ (p-w-c_R)q(p).
-$$
+```
 
 Its best response is
 
-$$
+```math
 p_R(w)=\frac{\bar p+w+c_R}{2}.
-$$
+```
 
-The manufacturer chooses $w$ while anticipating that response:
+The manufacturer chooses $`w`$ while anticipating that response:
 
-$$
+```math
 \max_w\ (w-c_M)q(p_R(w)),
-$$
+```
 
 which gives
 
-$$
+```math
 w^{DM}=\frac{\bar p-c_R+c_M}{2}.
-$$
+```
 
-Because $w^{DM}>c_M$, the retailer acts as if marginal cost is too high.
+Because $`w^{DM}>c_M`$, the retailer acts as if marginal cost is too high.
 
 A two-part tariff sets
 
-$$
+```math
 w^{TPT}=c_M
-$$
+```
 
 and uses the fixed fee
 
-$$
+```math
 F=(p^I-c_M-c_R)q(p^I)
-$$
+```
 
 to transfer operating profit upstream.
 
@@ -79,11 +79,11 @@ The calibration is small enough to solve analytically. Each number uses the same
 
 | Parameter | Value | Description |
 |-----------|-------|-------------|
-| $a$ | 20.0 | Demand intercept |
-| $b$ | 2.0 | Demand slope |
-| $\bar p=a/b$ | 10.0 | Choke price |
-| $c_M$ | 2.0 | Manufacturer marginal cost |
-| $c_R$ | 1.0 | Retail service cost |
+| $`a`$ | 20.0 | Demand intercept |
+| $`b`$ | 2.0 | Demand slope |
+| $`\bar p=a/b`$ | 10.0 | Choke price |
+| $`c_M`$ | 2.0 | Manufacturer marginal cost |
+| $`c_R`$ | 1.0 | Retail service cost |
 | Contracts | 3 | Integrated benchmark, linear wholesale, two-part tariff |
 
 ## Solution Method
@@ -113,11 +113,11 @@ The comparison treats the fixed fee as a transfer. It changes the profit split, 
 
 ## Results
 
-The integrated channel charges $6.50$ and sells 7.0 units. Linear wholesale pricing raises the retail price to $8.25$ and cuts quantity to 3.5. The two-part tariff returns price and quantity to the integrated line.
+The integrated channel charges $`6.50`$ and sells 7.0 units. Linear wholesale pricing raises the retail price to $`8.25`$ and cuts quantity to 3.5. The two-part tariff returns price and quantity to the integrated line.
 
 <img src="figures/price-quantity.png" alt="Price and quantity by vertical contract" width="80%">
 
-The wholesale-price sweep varies only $w$. The retailer's best response price rises with $w$. At $w^{DM}$, quantity falls below the integrated benchmark.
+The wholesale-price sweep varies only $`w`$. The retailer's best response price rises with $`w`$. At $`w^{DM}`$, quantity falls below the integrated benchmark.
 
 <img src="figures/wholesale-pass-through.png" alt="Retail pass-through as wholesale price changes" width="80%">
 
@@ -133,7 +133,7 @@ The table reports the same comparison in numbers. Channel profit and consumer su
 
 ## Takeaway
 
-Double marginalization comes from the retailer's perceived marginal cost. A high wholesale price raises that cost and lowers quantity. A two-part tariff sets $w=c_M$, so the retailer chooses the integrated price. The fixed fee then allocates profit.
+Double marginalization comes from the retailer's perceived marginal cost. A high wholesale price raises that cost and lowers quantity. A two-part tariff sets $`w=c_M`$, so the retailer chooses the integrated price. The fixed fee then allocates profit.
 
 ## References
 

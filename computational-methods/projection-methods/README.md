@@ -4,7 +4,7 @@
 
 A planner starts each period with capital. Output can be consumed today or saved as next-period capital.
 
-The object is the policy $g(k)$ from current capital to capital tomorrow. Here the exact policy is known.
+The object is the policy $`g(k)`$ from current capital to capital tomorrow. Here the exact policy is known.
 
 Chebyshev collocation approximates that policy with a few coefficients. Euler residuals check whether the fitted rule respects the marginal tradeoff.
 
@@ -13,58 +13,58 @@ Chebyshev collocation approximates that policy with a few coefficients. Euler re
 Capital evolves through a full-depreciation Cobb-Douglas technology. The planner
 chooses next-period capital, so consumption is the part of output not saved:
 
-$$
+```math
 V(k) = \max_{k'} [\log(c) + \beta V(k')],
 \qquad
 c = A k^\alpha - k'.
-$$
+```
 
 The Euler equation equates marginal utility today with discounted marginal
 product tomorrow:
 
-$$
+```math
 \frac{1}{c_t} =
 \beta \frac{\alpha A k_{t+1}^{\alpha-1}}{c_{t+1}}.
-$$
+```
 
 Projection approximates the saving rule with Chebyshev basis functions:
 
-$$
+```math
 \log g(k;\theta) =
 \sum_{j=0}^{n-1} \theta_j T_j(x(k)),
 \qquad
 x(k) \in [-1,1].
-$$
+```
 
 The collocation equations set the log Euler residual to zero at selected
-capital nodes $k_i$:
+capital nodes $`k_i`$:
 
-$$
+```math
 R_i(\theta) =
 \log\left[
 \beta \alpha A g(k_i;\theta)^{\alpha-1}
 \frac{c(k_i;\theta)}{c(g(k_i;\theta);\theta)}
 \right] = 0.
-$$
+```
 
-Here $c(k;\theta) \equiv Ak^\alpha - g(k;\theta)$ is the consumption implied by the projected saving rule.
+Here $`c(k;\theta) \equiv Ak^\alpha - g(k;\theta)`$ is the consumption implied by the projected saving rule.
 
-For this calibration, the exact policy is $g^{\ast}(k)=\alpha\beta A k^\alpha$.
+For this calibration, the exact policy is $`g^{\ast}(k)=\alpha\beta A k^\alpha`$.
 
 ## Model Setup
 
 | Object | Value |
 |--------|-------|
-| Discount factor $\beta$ | 0.95 |
-| Capital share $\alpha$ | 0.36 |
-| Productivity $A$ | 1.0 |
+| Discount factor $`\beta`$ | 0.95 |
+| Capital share $`\alpha`$ | 0.36 |
+| Productivity $`A`$ | 1.0 |
 | Steady-state capital | 0.1870 |
 | Approximation interval | [0.0468, 0.3273] |
 | Main basis terms | 8 |
 
 ## Solution Method
 
-Scale capital from [k_min, k_max] to [-1, 1]. The policy is log-linear in Chebyshev terms, then exponentiated so $g(k;\theta)>0$.
+Scale capital from [k_min, k_max] to [-1, 1]. The policy is log-linear in Chebyshev terms, then exponentiated so $`g(k;\theta)>0`$.
 
 Choose coefficients so Euler residuals are zero at Chebyshev nodes. The nodes cluster near the boundaries of the capital interval.
 

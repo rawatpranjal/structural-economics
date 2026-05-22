@@ -10,77 +10,77 @@ This tutorial keeps the environment small enough to run locally. The computation
 
 ## Equations
 
-There are two risk-neutral bidders and one item. Bidder $i$ has value
-$v_i \sim U[0,1]$. A direct mechanism asks each bidder to report a value
-$b_i$. Given the report vector $b=(b_1,b_2)$, the mechanism returns allocation
-probabilities $x_i(b)$ and payments $p_i(b)$.
+There are two risk-neutral bidders and one item. Bidder $`i`$ has value
+$`v_i \sim U[0,1]`$. A direct mechanism asks each bidder to report a value
+$`b_i`$. Given the report vector $`b=(b_1,b_2)`$, the mechanism returns allocation
+probabilities $`x_i(b)`$ and payments $`p_i(b)`$.
 
 Feasibility means the item is not allocated more than once:
 
-$$
+```math
 0 \leq x_i(b) \leq 1,
 \qquad
 x_1(b)+x_2(b) \leq 1.
-$$
+```
 
 The neural network enforces this by applying a softmax to three outcomes:
 bidder 1 wins, bidder 2 wins, or no sale. Payments are also bounded by the
 allocated report in this tutorial, so truthful individual rationality is built
 into the parameterization.
 
-If bidder $i$ has true value $v_i$ but the report profile is $b$, utility is
+If bidder $`i`$ has true value $`v_i`$ but the report profile is $`b`$, utility is
 
-$$
+```math
 u_i(v_i,b;\theta)=v_i x_i(b;\theta)-p_i(b;\theta).
-$$
+```
 
-Here $\theta$ denotes the neural network parameter vector.
+Here $`\theta`$ denotes the neural network parameter vector.
 
 The seller wants revenue, but the mechanism is useful only if bidders want to
 tell the truth. Dominant-strategy incentive compatibility says that truthful
 reporting must weakly dominate every one-player misreport:
 
-$$
+```math
 u_i(v_i,(v_i,b_{-i});\theta) \geq
 u_i(v_i,(b_i',b_{-i});\theta)
 \quad \forall i,v_i,b_i',b_{-i}.
-$$
+```
 
 Regret turns that many-inequality condition into one diagnostic number. At a
-value profile $v$, bidder $i$'s ex post regret is the best gain from lying:
+value profile $`v`$, bidder $`i`$'s ex post regret is the best gain from lying:
 
-$$
+```math
 R_i(v;\theta) =
 \max_{b_i' \in [0,1]}
 \lbrace u_i(v_i,(b_i',v_{-i});\theta)
 {}- u_i(v_i,v;\theta)\rbrace.
-$$
+```
 
-If $R_i(v;\theta)=0$, the bidder cannot improve at that profile. Duetting et
-al. train on a sample of value profiles $v^1,\ldots,v^L$, so the constraint is
+If $`R_i(v;\theta)=0`$, the bidder cannot improve at that profile. Duetting et
+al. train on a sample of value profiles $`v^1,\ldots,v^L`$, so the constraint is
 the empirical average regret:
 
-$$
+```math
 \mathrm{rgt}_i(\theta) =
 \frac{1}{L}\sum_{\ell=1}^{L} R_i(v^{\ell};\theta).
-$$
+```
 
 Revenue on the same sample is
 
-$$
+```math
 \widehat{\mathrm{Rev}}(\theta) =
 \frac{1}{L}\sum_{\ell=1}^{L}\sum_{i=1}^{2}
 p_i(v^{\ell};\theta).
-$$
+```
 
 The ideal learning problem is therefore revenue maximization subject to
 truthfulness constraints:
 
-$$
+```math
 \max_{\theta} \widehat{\mathrm{Rev}}(\theta)
 \quad \mathrm{subject\ to}\quad
 \mathrm{rgt}_i(\theta)=0,\ i=1,2.
-$$
+```
 
 This is why the loss is not just negative revenue. Pure revenue maximization
 would let the network exploit bidders by making truthful reporting unattractive.
@@ -89,14 +89,14 @@ manipulate.
 
 The code uses an augmented Lagrangian:
 
-$$
+```math
 \mathcal{L}(\theta,\lambda,\rho) =
 {}-\widehat{\mathrm{Rev}}(\theta)
 {}+ \sum_{i=1}^{2} \lambda_i \mathrm{rgt}_i(\theta)
 {}+ \frac{\rho}{2}\sum_{i=1}^{2}\mathrm{rgt}_i(\theta)^2.
-$$
+```
 
-Here $\lambda_i$ is the Lagrange multiplier for bidder $i$'s regret constraint and $\rho$ is the penalty weight.
+Here $`\lambda_i`$ is the Lagrange multiplier for bidder $`i`$'s regret constraint and $`\rho`$ is the penalty weight.
 
 The first term rewards revenue. The multiplier term prices each bidder's
 regret violation. The quadratic term makes large violations increasingly
@@ -105,11 +105,11 @@ regret remains positive.
 
 The one-item uniform benchmark gives a clean audit. Myerson's virtual value is
 
-$$
+```math
 \phi(v)=v-\frac{1-F(v)}{f(v)}=2v-1,
-$$
+```
 
-so the optimal reserve is $r^{\ast}=1/2$. The exact auction sells to the
+so the optimal reserve is $`r^{\ast}=1/2`$. The exact auction sells to the
 highest bidder only when the highest value exceeds this reserve.
 
 ## Model Setup
@@ -120,8 +120,8 @@ The paper studies flexible multi-bidder, multi-item settings. This tutorial uses
 |---|---:|---|
 | Bidders | 2 | Strategic agents |
 | Items | 1 | Single allocation probability plus no-sale option |
-| Values | IID $U[0,1]$ | Private values known only to bidders |
-| Myerson reserve $r^{\ast}$ | 0.50 | Exact optimal reserve for uniform values |
+| Values | IID $`U[0,1]`$ | Private values known only to bidders |
+| Myerson reserve $`r^{\ast}`$ | 0.50 | Exact optimal reserve for uniform values |
 | Myerson revenue | 0.4167 | Analytical benchmark |
 | Plain second-price revenue | 0.3333 | No-reserve benchmark |
 | Neural net | 2-32-32-5 tanh MLP | Allocation logits and payment fractions |
@@ -202,7 +202,7 @@ The neural auction is evaluated on fresh value draws and a finer misreport grid 
 
 The Duetting et al. idea is to learn an auction as a constrained prediction problem. Revenue is the objective. Regret is the incentive-compatibility check.
 
-In the single-item uniform benchmark, Myerson gives the exact answer: sell to the highest value above reserve $r^{\ast}=1/2$ and charge the larger of the reserve and the second value. The neural auction recovers the same broad shape, but the audit still reports nonzero grid regret. That is the main lesson: learned mechanisms need incentive audits, not only revenue comparisons.
+In the single-item uniform benchmark, Myerson gives the exact answer: sell to the highest value above reserve $`r^{\ast}=1/2`$ and charge the larger of the reserve and the second value. The neural auction recovers the same broad shape, but the audit still reports nonzero grid regret. That is the main lesson: learned mechanisms need incentive audits, not only revenue comparisons.
 
 ## References
 

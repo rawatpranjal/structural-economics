@@ -17,75 +17,75 @@ whether labor is fixed or chosen.
 
 ### A. Common setup
 
-Let $A_t$ denote total factor productivity, $K_{t-1}$ predetermined capital,
-$C_t$ consumption, $I_t$ investment, $Y_t$ output, and (when present) $N_t$
+Let $`A_t`$ denote total factor productivity, $`K_{t-1}`$ predetermined capital,
+$`C_t`$ consumption, $`I_t`$ investment, $`Y_t`$ output, and (when present) $`N_t`$
 hours worked. Production is Cobb-Douglas and the resource constraint splits
 output into consumption and investment:
 
-$$
+```math
 Y_t = A_t K_{t-1}^\alpha N_t^{1-\alpha}, \qquad Y_t = C_t + I_t,
-$$
+```
 
-$$
+```math
 K_t = I_t + (1-\delta)K_{t-1}.
-$$
+```
 
 TFP follows an AR(1) in logs:
 
-$$
+```math
 \log A_t = \rho \log A_{t-1} + \varepsilon_t, \qquad \varepsilon_t \sim N(0, \sigma_\varepsilon^2).
-$$
+```
 
 The household has CRRA utility over consumption. With endogenous labor it also
 dislikes hours:
 
-$$
+```math
 \mathbb{E}_0\sum_{t=0}^{\infty} \beta^t \left[\frac{C_t^{1-\sigma}}{1-\sigma} - \psi \frac{N_t^{1+\chi}}{1+\chi}\right].
-$$
+```
 
-The labor-disutility weight $\psi$ disappears in Case A because $N_t$ is fixed
+The labor-disutility weight $`\psi`$ disappears in Case A because $`N_t`$ is fixed
 at one. The consumption Euler equation is
 
-$$
+```math
 C_t^{-\sigma} = \beta\mathbb{E}_t\left[ C_{t+1}^{-\sigma} \left(\alpha A_{t+1} K_t^{\alpha-1} N_{t+1}^{1-\alpha} + 1 - \delta\right)\right].
-$$
+```
 
 When labor is endogenous, the intratemporal labor-supply condition adds
 
-$$
+```math
 \psi N_t^\chi = (1-\alpha)\frac{Y_t}{N_t} C_t^{-\sigma}.
-$$
+```
 
 ### B. Steady state
 
-At the deterministic steady state ($A=1$, $\varepsilon=0$),
+At the deterministic steady state ($`A=1`$, $`\varepsilon=0`$),
 
-$$
+```math
 \alpha (K/N)^{\alpha-1} = \frac{1}{\beta} - 1 + \delta, \qquad I = \delta K, \qquad C = Y - I.
-$$
+```
 
-Case A pins $N = 1$. Case B picks $N = \bar N$ as a calibration target and
-recovers $\psi$ from the steady-state labor-supply condition. The Case A
-calibration gives $K/Y = 9.40$, $C/Y = 0.76$. The
-Case B calibration with $\bar N = 0.333$ gives $K/Y = 9.40$,
-$C/Y = 0.76$, and a labor weight $\psi = 7.883$.
+Case A pins $`N = 1`$. Case B picks $`N = \bar N`$ as a calibration target and
+recovers $`\psi`$ from the steady-state labor-supply condition. The Case A
+calibration gives $`K/Y = 9.40`$, $`C/Y = 0.76`$. The
+Case B calibration with $`\bar N = 0.333`$ gives $`K/Y = 9.40`$,
+$`C/Y = 0.76`$, and a labor weight $`\psi = 7.883`$.
 
 ### C. Linearized system in log deviations
 
-Let a hat denote a log deviation from steady state, so $\hat x_t = \log(X_t/X)$.
+Let a hat denote a log deviation from steady state, so $`\hat x_t = \log(X_t/X)`$.
 Linearizing the equilibrium conditions gives a system of the form
 
-$$
+```math
 A\mathbb{E}_t s_{t+1} = Bs_t,
-$$
+```
 
-with $s_t$ stacking the predetermined and jump variables. Predetermined
+with $`s_t`$ stacking the predetermined and jump variables. Predetermined
 variables enter at their lagged value. Jump variables can move freely on impact.
 
-Case A. The state vector is $s_t = (\hat k_{t-1}, \hat a_t, \hat c_t)$. Two
+Case A. The state vector is $`s_t = (\hat k_{t-1}, \hat a_t, \hat c_t)`$. Two
 predetermined entries (capital and TFP), one jump (consumption).
 
-Case B. The state vector is $s_t = (\hat k_{t-1}, \hat a_t, \hat c_t, \hat n_t)$.
+Case B. The state vector is $`s_t = (\hat k_{t-1}, \hat a_t, \hat c_t, \hat n_t)`$.
 Two predetermined entries, two jumps. The fourth equation is the labor-supply
 condition.
 
@@ -99,33 +99,33 @@ Two cases share most primitives. Case B adds the labor-disutility parameters.
 
 | Primitive | Value | Role |
 |---|---:|---|
-| $\alpha$ | 0.33 | Capital share in production |
-| $\beta$ | 0.99 | Quarterly discount factor |
-| $\delta$ | 0.025 | Quarterly depreciation |
-| $\rho$ | 0.95 | Persistence of log TFP |
-| $\sigma$ | 1.0 | CRRA coefficient (log utility) |
-| $\sigma_\varepsilon$ | 0.010 | Innovation s.d. of log TFP |
-| Shock | 1.0% | One-s.d. innovation at $t = 0$ |
+| $`\alpha`$ | 0.33 | Capital share in production |
+| $`\beta`$ | 0.99 | Quarterly discount factor |
+| $`\delta`$ | 0.025 | Quarterly depreciation |
+| $`\rho`$ | 0.95 | Persistence of log TFP |
+| $`\sigma`$ | 1.0 | CRRA coefficient (log utility) |
+| $`\sigma_\varepsilon`$ | 0.010 | Innovation s.d. of log TFP |
+| Shock | 1.0% | One-s.d. innovation at $`t = 0`$ |
 | IRF horizon | 40 quarters | Periods plotted |
 
 **Case B labor block.**
 
 | Primitive | Value | Role |
 |---|---:|---|
-| $\chi$ | 1.0 | Inverse Frisch elasticity |
-| $\bar N$ | 0.333 | Steady-state hours target |
-| $\psi$ | 7.883 | Labor-disutility weight (calibrated) |
+| $`\chi`$ | 1.0 | Inverse Frisch elasticity |
+| $`\bar N`$ | 0.333 | Steady-state hours target |
+| $`\psi`$ | 7.883 | Labor-disutility weight (calibrated) |
 
 **Steady states.**
 
 | Object | Case A (fixed labor) | Case B (endogenous labor) |
 |---|---:|---:|
-| $K$ | 28.348 | 9.449 |
-| $Y$ | 3.015 | 1.005 |
-| $C$ | 2.307 | 0.769 |
-| $N$ | 1.000 | 0.333 |
-| $K/Y$ | 9.401 | 9.401 |
-| $C/Y$ | 0.765 | 0.765 |
+| $`K`$ | 28.348 | 9.449 |
+| $`Y`$ | 3.015 | 1.005 |
+| $`C`$ | 2.307 | 0.769 |
+| $`N`$ | 1.000 | 0.333 |
+| $`K/Y`$ | 9.401 | 9.401 |
+| $`C/Y`$ | 0.765 | 0.765 |
 
 ## Solution Method
 
@@ -133,7 +133,7 @@ Two methods run in sequence. Both return a linear policy that maps states into j
 
 ### Method 1: Method of undetermined coefficients (fixed labor, 3x3)
 
-Capital is the only true state. Consumption is the one jump variable. We guess a linear capital decision rule. Then we substitute it into the linearized resource constraint and Euler equation. Coefficients on $\hat k_{t-1}$ and $\hat a_t$ have to match on both sides. That gives two equations in two unknowns. The match is exact algebra. Klein QZ on the same system reproduces $(p, q)$ to machine precision and confirms Blanchard-Kahn.
+Capital is the only true state. Consumption is the one jump variable. We guess a linear capital decision rule. Then we substitute it into the linearized resource constraint and Euler equation. Coefficients on $`\hat k_{t-1}`$ and $`\hat a_t`$ have to match on both sides. That gives two equations in two unknowns. The match is exact algebra. Klein QZ on the same system reproduces $`(p, q)`$ to machine precision and confirms Blanchard-Kahn.
 
 ```text
 Inputs:  alpha, beta, delta, rho, sigma; steady state K/Y, C/Y
@@ -159,7 +159,7 @@ The undetermined-coefficients residual is 2.9e-15. Klein QZ agrees with the hand
 
 ### Method 2: Klein QZ on the augmented 4x4 system (endogenous labor)
 
-Adding labor pushes the system past comfortable hand algebra. The state vector becomes $s_t = (\hat k_{t-1}, \hat a_t, \hat c_t, \hat n_t)'$ with two predetermined entries on top and two jumps below. Klein QZ computes the ordered generalized Schur decomposition of $(B, A)$, places the stable roots first, and reads off the state transition $F$ and the jump rule $P$ from the Schur partition. Blanchard-Kahn determinacy holds when the number of stable roots equals the number of predetermined states.
+Adding labor pushes the system past comfortable hand algebra. The state vector becomes $`s_t = (\hat k_{t-1}, \hat a_t, \hat c_t, \hat n_t)'`$ with two predetermined entries on top and two jumps below. Klein QZ computes the ordered generalized Schur decomposition of $`(B, A)`$, places the stable roots first, and reads off the state transition $`F`$ and the jump rule $`P`$ from the Schur partition. Blanchard-Kahn determinacy holds when the number of stable roots equals the number of predetermined states.
 
 ```text
 Inputs:  alpha, beta, delta, rho, sigma, chi; steady state with calibrated psi
@@ -181,7 +181,7 @@ Outputs: state transition F (2x2), jump rule P (2x2)
 8. Recover output and investment from production and capital accumulation.
 ```
 
-Blanchard-Kahn passes: Blanchard-Kahn satisfied. The capital rule is $\hat k_t = 0.9531\hat k_{t-1} + 0.1078\hat a_t$. The labor rule is $\hat n_t = -0.1677\hat k_{t-1} + 0.4612\hat a_t$. Hours rise with productivity and fall with inherited capital. Each linear solution is then checked against the exact nonlinear perfect-foresight transition for the same shock path.
+Blanchard-Kahn passes: Blanchard-Kahn satisfied. The capital rule is $`\hat k_t = 0.9531\hat k_{t-1} + 0.1078\hat a_t`$. The labor rule is $`\hat n_t = -0.1677\hat k_{t-1} + 0.4612\hat a_t`$. Hours rise with productivity and fall with inherited capital. Each linear solution is then checked against the exact nonlinear perfect-foresight transition for the same shock path.
 
 ## Results
 

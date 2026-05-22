@@ -18,29 +18,29 @@ The three layers stack on the same observed market.
 
 ### A. Concentration screens
 
-Let firms be indexed by $f=1,\ldots,F$ with market shares $s_f$ summing to one.
+Let firms be indexed by $`f=1,\ldots,F`$ with market shares $`s_f`$ summing to one.
 The Herfindahl-Hirschman Index is
 
-$$
+```math
 \text{HHI}=10{,}000\sum_{f=1}^{F}s_f^2.
-$$
+```
 
 The associated effective number of equal-sized firms is
 
-$$
+```math
 N_{\text{eff}}=\frac{1}{\sum_f s_f^2}=\frac{10{,}000}{\text{HHI}}.
-$$
+```
 
-If firms $a$ and $b$ merge while quantities are held fixed,
+If firms $`a`$ and $`b`$ merge while quantities are held fixed,
 
-$$
+```math
 \Delta\text{HHI}=10{,}000\left[(s_a+s_b)^2-s_a^2-s_b^2\right]=20{,}000s_a s_b.
-$$
+```
 
-Worked example. Take three firms with shares $(0.5, 0.3, 0.2)$. The HHI is
-$10{,}000(0.25+0.09+0.04)=3{,}800$. The effective firm count is
-$10{,}000/3{,}800\approx 2.63$, well under the three nominal firms. A merger of
-firms 1 and 2 raises HHI by $20{,}000\cdot 0.5\cdot 0.3=3{,}000$ to $6{,}800$.
+Worked example. Take three firms with shares $`(0.5, 0.3, 0.2)`$. The HHI is
+$`10{,}000(0.25+0.09+0.04)=3{,}800`$. The effective firm count is
+$`10{,}000/3{,}800\approx 2.63`$, well under the three nominal firms. A merger of
+firms 1 and 2 raises HHI by $`20{,}000\cdot 0.5\cdot 0.3=3{,}000`$ to $`6{,}800`$.
 That moves the market well into the highly-concentrated band.
 
 The 2023 DOJ/FTC Merger Guidelines treat HHI above 1,800 as highly concentrated.
@@ -48,28 +48,28 @@ A delta-HHI above 100 is significant for the structural presumption.
 
 ### B. Bertrand-Nash pricing with multi-product firms
 
-There are $J$ inside products. Product $j$ has price $p_j$, marginal cost $c_j$,
-quantity or share $q_j(p)$, and owner $f(j)$. The ownership matrix records
+There are $`J`$ inside products. Product $`j`$ has price $`p_j`$, marginal cost $`c_j`$,
+quantity or share $`q_j(p)`$, and owner $`f(j)`$. The ownership matrix records
 which products belong to the same firm:
 
-$$
+```math
 \Omega_{jk}=\mathbf{1}\lbrace f(j)=f(k)\rbrace.
-$$
+```
 
-Worked example. Take $J=4$ products with pre-merger owners $f^{\text{pre}}=(1,2,3,4)$,
+Worked example. Take $`J=4`$ products with pre-merger owners $`f^{\text{pre}}=(1,2,3,4)`$,
 so each product is its own single-product firm:
 
-$$
+```math
 \Omega^{\text{pre}}=\begin{pmatrix}1&0&0&0\\0&1&0&0\\0&0&1&0\\0&0&0&1\end{pmatrix}.
-$$
+```
 
-Now firm 1 buys firm 2. The post-merger owners are $f^{\text{post}}=(1,1,3,4)$.
+Now firm 1 buys firm 2. The post-merger owners are $`f^{\text{post}}=(1,1,3,4)`$.
 Products 1 and 2 share an owner. The off-diagonal entries that link them switch
 on:
 
-$$
+```math
 \Omega^{\text{post}}=\begin{pmatrix}1&1&0&0\\1&1&0&0\\0&0&1&0\\0&0&0&1\end{pmatrix}.
-$$
+```
 
 Those two new ones in the upper-left block are the entire merger as the model
 sees it. Every price effect that follows is the consequence of switching them
@@ -77,19 +77,19 @@ on.
 
 A multi-product Bertrand firm chooses each price to satisfy
 
-$$
+```math
 0=q_j(p)+\sum_{k=1}^J \Omega_{jk}(p_k-c_k)\frac{\partial q_k(p)}{\partial p_j}, \qquad j=1,\ldots,J.
-$$
+```
 
-With $\Delta_{kj}(p)=\partial q_k(p)/\partial p_j$, the vector form is
+With $`\Delta_{kj}(p)=\partial q_k(p)/\partial p_j`$, the vector form is
 
-$$
+```math
 q(p)+\underbrace{(\Omega\circ \Delta(p)^\top)}_{\text{within-firm price externality}}(p-c)=0.
-$$
+```
 
-Here $\circ$ is the element-wise (Hadamard) product. Multiplying by $\Omega$
+Here $`\circ`$ is the element-wise (Hadamard) product. Multiplying by $`\Omega`$
 knocks out cross-firm price externalities. Only co-owned products show up in
-any one firm's markup equation. The merger flips entries of $\Omega$ from zero
+any one firm's markup equation. The merger flips entries of $`\Omega`$ from zero
 to one. The FOCs then solve for new prices.
 
 ### C. Three demand systems
@@ -97,75 +97,75 @@ to one. The FOCs then solve for new prices.
 The same observed market can give very different counterfactual prices once we
 change the demand curvature. We calibrate three demand systems. Each one matches
 the observed shares and prices by construction. Linear and log-linear demand
-carry a full $J\times J$ slope matrix, so they also reproduce the entire
+carry a full $`J\times J`$ slope matrix, so they also reproduce the entire
 observed margin vector exactly. Logit demand has a single price coefficient
-$\alpha$. We pin it down from the average single-product margin condition and
+$`\alpha`$. We pin it down from the average single-product margin condition and
 recover marginal costs from the pre-merger FOC, so the logit FOC residual is
 zero at calibration while its implied margins track the observed margins only
 as closely as one coefficient allows.
 
 Logit shares are
 
-$$
+```math
 s_j^{L}(p)=\frac{\exp(\xi_j+\alpha p_j)}{1+\sum_{\ell=1}^J \exp(\xi_\ell+\alpha p_\ell)}, \qquad \alpha<0,
-$$
+```
 
-where $\xi_j$ is the mean indirect utility of product $j$ from non-price
+where $`\xi_j`$ is the mean indirect utility of product $`j`$ from non-price
 characteristics. The closed-form Jacobian is
 
-$$
+```math
 \Delta^{L}_{jk}=\alpha s_j(\mathbf{1}\lbrace j=k\rbrace-s_k).
-$$
+```
 
-Opened element by element for $J=4$ this reads
+Opened element by element for $`J=4`$ this reads
 
-$$
+```math
 \Delta^{L}=\alpha\begin{pmatrix}s_1(1-s_1)&-s_1 s_2&-s_1 s_3&-s_1 s_4\\-s_1 s_2&s_2(1-s_2)&-s_2 s_3&-s_2 s_4\\-s_1 s_3&-s_2 s_3&s_3(1-s_3)&-s_3 s_4\\-s_1 s_4&-s_2 s_4&-s_3 s_4&s_4(1-s_4)\end{pmatrix}.
-$$
+```
 
 The diagonal carries the own-price effect. Off-diagonals carry cross-price
-effects. The whole matrix scales with $\alpha$.
+effects. The whole matrix scales with $`\alpha`$.
 
 Linear demand is
 
-$$
+```math
 q_j^{A}(p)=a_j-\sum_{k=1}^J B_{jk}p_k, \qquad \Delta^{A}=-B,
-$$
+```
 
-so $\Delta^{A}$ does not depend on $p$. Here $a_j$ is the demand intercept and
-$B_{jk}$ is the price-response matrix.
+so $`\Delta^{A}`$ does not depend on $`p`$. Here $`a_j`$ is the demand intercept and
+$`B_{jk}`$ is the price-response matrix.
 
 Log-linear demand is
 
-$$
+```math
 \log q_j^{E}(p)=a_j^E+\sum_{k=1}^J E_{jk}\log p_k, \qquad \Delta^{E}_{jk}=q_jE_{jk}/p_k,
-$$
+```
 
-so the elasticities $E_{jk}$ are constant and the slopes scale with quantities
+so the elasticities $`E_{jk}`$ are constant and the slopes scale with quantities
 and inverse prices.
 
 ### D. Diversion ratios and screening metrics
 
-The local diversion ratio from product $j$ to product $k$ is
+The local diversion ratio from product $`j`$ to product $`k`$ is
 
-$$
+```math
 D_{j\to k}=-\frac{\partial q_k(p)/\partial p_j}{\partial q_j(p)/\partial p_j}, \qquad j\neq k.
-$$
+```
 
-Under simple logit it collapses to $D_{j\to k}=s_k/(1-s_j)$ and depends only on
+Under simple logit it collapses to $`D_{j\to k}=s_k/(1-s_j)`$ and depends only on
 shares and the outside option.
 
 For products that become newly co-owned after the merger,
 
-$$
+```math
 \text{UPP}_j=\sum_{k:\Omega^{\text{post}}_{jk}=1,\ \Omega^{\text{pre}}_{jk}=0} D_{j\to k}(p_k-c_k),
-$$
+```
 
 with
 
-$$
+```math
 \text{GUPPI}_j=\frac{\text{UPP}_j}{p_j}, \qquad \text{CMCR}_j=\frac{\text{UPP}_j}{c_j}.
-$$
+```
 
 GUPPI is a first-order screen evaluated at observed prices. It says how much
 upward pricing pressure the merger generates locally. CMCR reports the
@@ -186,7 +186,7 @@ Two market setups run in sequence. The first is a small four-product market. We 
 | Outside share | 0.10 | No-purchase option |
 | Prices | [1.00, 1.00, 1.00, 1.00] | Pre-merger prices |
 | Margin (product 1) | 0.50 | Pins down the logit price coefficient |
-| $\alpha$ | -2.3529 | Calibrated price sensitivity |
+| $`\alpha`$ | -2.3529 | Calibrated price sensitivity |
 | Marginal costs | [0.50, 0.50, 0.39, 0.39] | Recovered from the pre-merger FOCs |
 | Scenarios | merger 1+2; merger 1+2 with 10% cost reduction | Ownership and cost experiments |
 
@@ -194,12 +194,12 @@ Two market setups run in sequence. The first is a small four-product market. We 
 
 | Parameter | Value | Description |
 |-----------|-------|-------------|
-| Products $J$ | 6 | 3 firms, 2 products each |
+| Products $`J`$ | 6 | 3 firms, 2 products each |
 | Shares | [0.12, 0.10, 0.15, 0.13, 0.08, 0.07] | Pre-merger inside shares |
 | Prices | [1.00, 1.20, 0.90, 1.10, 1.30, 1.40] | Pre-merger prices |
 | Margins | [0.40, 0.35, 0.45, 0.40, 0.30, 0.28] | Price-cost margins by product |
 | Outside share | 0.35 | Outside option in the logit demand system |
-| $\alpha$ (logit) | -2.7556 | Calibrated price coefficient |
+| $`\alpha`$ (logit) | -2.7556 | Calibrated price coefficient |
 | Linear cross-slope ratio | 0.10 | Cross-slope relative to geometric mean own-slope |
 | Log-linear cross elasticity | 0.15 | Maintained symmetric cross-price elasticity |
 | Merger | Firm 1 buys Firm 2 | Products 1-4 move under common ownership |
@@ -284,11 +284,11 @@ FOC residuals after calibration: four-product baseline 5.6e-17; six-product exte
 
 A sales table tells us how concentrated ownership already is. It also tells us how much a candidate merger would shift the index. The HHI-vs-firms curve below puts symmetric and asymmetric markets on the same scale. The delta-HHI bars show how merger arithmetic depends on the absolute size of the merging shares.
 
-For symmetric firms, HHI is exactly $10{,}000/N$. Most of the index movement happens between monopoly and five equal firms. The highly-concentrated threshold of 1,800 lines up with about 5.6 equal-sized firms.
+For symmetric firms, HHI is exactly $`10{,}000/N`$. Most of the index movement happens between monopoly and five equal firms. The highly-concentrated threshold of 1,800 lines up with about 5.6 equal-sized firms.
 
 <img src="figures/hhi-vs-nfirms.png" alt="HHI as a function of the number of equal-sized firms" width="80%">
 
-The merger bars are pure index arithmetic. The same formula, $20{,}000s_a s_b$, makes a 40-30 merger far larger than a merger of two small firms. That scale is why agencies reach for HHI before estimating demand.
+The merger bars are pure index arithmetic. The same formula, $`20{,}000s_a s_b`$, makes a 40-30 merger far larger than a merger of two small firms. That scale is why agencies reach for HHI before estimating demand.
 
 <img src="figures/delta-hhi.png" alt="HHI before and after merging the two largest firms" width="80%">
 

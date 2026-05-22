@@ -10,73 +10,73 @@ The computation enumerates each disagreement network. It recomputes logit demand
 
 ## Equations
 
-Let $d$ index insurers and $h$ index hospitals. Insurer $d$ has network $G_d$.
-In the full agreement network $G$, each insurer carries both hospitals.
+Let $`d`$ index insurers and $`h`$ index hospitals. Insurer $`d`$ has network $`G_d`$.
+In the full agreement network $`G`$, each insurer carries both hospitals.
 
 Demand is a logit over insurers and an outside option:
 
-$$
+```math
 q_d(G) =
 M \frac{\exp(v_d(G_d) / \sigma_\varepsilon)}
 {1 + \sum_{\ell=1}^{D} \exp(v_\ell(G_\ell) / \sigma_\varepsilon)} .
-$$
+```
 
-Here $D$ is the number of insurers. The deterministic utility of an insurer is
+Here $`D`$ is the number of insurers. The deterministic utility of an insurer is
 
-$$
+```math
 v_d(G_d) = Q(G_d) - P_d,
-$$
+```
 
-where $P_d$ is the premium. The network value is
+where $`P_d`$ is the premium. The network value is
 
-$$
+```math
 Q(\emptyset)=0,\qquad
 Q(G_d)=\max_{h \in G_d} a_h + \eta(|G_d|-1)
 \quad\text{when }G_d\neq\emptyset .
-$$
+```
 
-Here $a_h$ is hospital quality. The term $\eta$ is the value of a second
+Here $`a_h`$ is hospital quality. The term $`\eta`$ is the value of a second
 in-network hospital.
 
-Let $m_d=P_d-c_d^D$ be the insurer margin before hospital transfers. If link
-$(h,d)$ fails, the disagreement network is $G^{-hd}$.
+Let $`m_d=P_d-c_d^D`$ be the insurer margin before hospital transfers. If link
+$`(h,d)`$ fails, the disagreement network is $`G^{-hd}`$.
 
-The gross incremental value of hospital $h$ to insurer $d$ is
+The gross incremental value of hospital $`h`$ to insurer $`d`$ is
 
-$$
+```math
 \Delta_{hd}=m_d\left[q_d(G)-q_d(G^{-hd})\right].
-$$
+```
 
-The bilateral surplus net of hospital cost $c_h^H$ is
+The bilateral surplus net of hospital cost $`c_h^H`$ is
 
-$$
+```math
 S_{hd}=\Delta_{hd}-c_h^H q_d(G).
-$$
+```
 
-The Nash bargain over the per-enrollee hospital transfer $w_{hd}$ solves
+The Nash bargain over the per-enrollee hospital transfer $`w_{hd}`$ solves
 
-$$
+```math
 \max_{w_{hd}}
 \left[(w_{hd}-c_h^H)q_d(G)\right]^\tau
 \times
 \left[\Delta_{hd}-w_{hd}q_d(G)\right]^{1-\tau},
-$$
+```
 
 so the transfer is
 
-$$
+```math
 w_{hd}=c_h^H + \tau \frac{S_{hd}}{q_d(G)}
       =(1-\tau)c_h^H+\tau\frac{\Delta_{hd}}{q_d(G)} .
-$$
+```
 
-For a merged hospital system $H$, the relevant disagreement removes all system
-hospitals from insurer $d$. With $C_H=\sum_h c_h^H$,
+For a merged hospital system $`H`$, the relevant disagreement removes all system
+hospitals from insurer $`d`$. With $`C_H=\sum_h c_h^H`$,
 
-$$
+```math
 W_{Hd}=C_H+\tau\frac{
 m_d[q_d(G)-q_d(G^{-Hd})]-C_Hq_d(G)
 }{q_d(G)}
-$$
+```
 
 is the system-level per-enrollee transfer.
 
@@ -86,14 +86,14 @@ is the system-level per-enrollee transfer.
 |---|---:|---|
 | Hospitals | 2 | Upstream negotiators |
 | Insurers | 2 | Downstream plans selling to consumers |
-| Market size $M$ | 1000 | Potential enrollees |
-| Bargaining weight $\tau$ | 0.50 | Hospital share of bilateral surplus |
-| Hospital qualities $a_h$ | 20.0, 18.0 | Network utility shifters |
-| Hospital costs $c_h^H$ | 1.0, 1.2 | Cost per enrolled member |
-| Insurer premiums $P_d$ | 8.0, 8.5 | Fixed downstream prices |
-| Insurer costs $c_d^D$ | 1.0, 1.0 | Non-hospital marginal costs |
-| Second-hospital value $\eta$ | 3.0 | Extra network value beyond the best hospital |
-| Logit scale $\sigma_\varepsilon$ | 5.0 | Controls substitution across insurers |
+| Market size $`M`$ | 1000 | Potential enrollees |
+| Bargaining weight $`\tau`$ | 0.50 | Hospital share of bilateral surplus |
+| Hospital qualities $`a_h`$ | 20.0, 18.0 | Network utility shifters |
+| Hospital costs $`c_h^H`$ | 1.0, 1.2 | Cost per enrolled member |
+| Insurer premiums $`P_d`$ | 8.0, 8.5 | Fixed downstream prices |
+| Insurer costs $`c_d^D`$ | 1.0, 1.0 | Non-hospital marginal costs |
+| Second-hospital value $`\eta`$ | 3.0 | Extra network value beyond the best hospital |
+| Logit scale $`\sigma_\varepsilon`$ | 5.0 | Controls substitution across insurers |
 
 ## Solution Method
 
@@ -124,9 +124,9 @@ The left panel reports per-enrollee transfers and hospital costs. The right pane
 
 <img src="figures/negotiated-prices.png" alt="Bilateral hospital-insurer transfers and disagreement demand losses" width="80%">
 
-Changing $\tau$ holds demand fixed and changes only the surplus split. Hospital profit rises with the bargaining weight. Insurer profit falls because more network value is paid upstream.
+Changing $`\tau`$ holds demand fixed and changes only the surplus split. Hospital profit rises with the bargaining weight. Insurer profit falls because more network value is paid upstream.
 
-The vertical line marks the baseline calibration. The networks are the same at every $\tau$, so full-agreement and disagreement demand are held fixed; only the surplus split changes across $\tau$.
+The vertical line marks the baseline calibration. The networks are the same at every $`\tau`$, so full-agreement and disagreement demand are held fixed; only the surplus split changes across $`\tau`$.
 
 <img src="figures/profits-vs-bargaining.png" alt="Surplus division as the hospital bargaining weight changes" width="80%">
 

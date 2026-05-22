@@ -10,40 +10,40 @@ The unknown is a symmetric entry probability. It must equal the logit response t
 
 ## Equations
 
-Each player chooses $E$ (Enter) or $O$ (Stay Out). Let $p_i$ be player $i$'s
-entry probability. If the rival enters with probability $q$, the payoff gap is:
+Each player chooses $`E`$ (Enter) or $`O`$ (Stay Out). Let $`p_i`$ be player $`i`$'s
+entry probability. If the rival enters with probability $`q`$, the payoff gap is:
 
-$$
+```math
 \Delta(q) =
 \mathbb{E}[u_i(E,a_{-i})]-\mathbb{E}[u_i(O,a_{-i})] =
 2(1-q)-q =
 2-3q.
-$$
+```
 
-The exact symmetric mixed Nash equilibrium sets $\Delta(q)=0$:
+The exact symmetric mixed Nash equilibrium sets $`\Delta(q)=0`$:
 
-$$
+```math
 p^{N} = \frac{2}{3}.
-$$
+```
 
 Logit QRE smooths the exact best response:
 
-$$
+```math
 \begin{aligned}
 QBR(q;\lambda)
 &= \frac{\exp(\lambda \Delta(q))}{1+\exp(\lambda \Delta(q))} \\
 &= [1+\exp(-\lambda(2-3q))]^{-1}.
 \end{aligned}
-$$
+```
 
 A symmetric logit-QRE is a fixed point:
 
-$$
+```math
 p = QBR(p;\lambda).
-$$
+```
 
-At $\lambda=0$, both actions receive probability one half. As $\lambda$ rises,
-$p(\lambda)$ moves toward the mixed Nash probability $p^{N}=2/3$.
+At $`\lambda=0`$, both actions receive probability one half. As $`\lambda`$ rises,
+$`p(\lambda)`$ moves toward the mixed Nash probability $`p^{N}=2/3`$.
 
 ## Model Setup
 
@@ -56,13 +56,13 @@ These payoffs create excess entry pressure when the rival is unlikely to enter.
 
 | Object | Value | Role |
 |---|---:|---|
-| Symmetric mixed Nash $p^N$ | 0.6667 | Exact benchmark for symmetric entry |
+| Symmetric mixed Nash $`p^N`$ | 0.6667 | Exact benchmark for symmetric entry |
 | Precision grid | 0 to 32 | Strength of payoff sensitivity |
-| Focal fixed-point plot | $\lambda=4.0$ | One logit response map |
+| Focal fixed-point plot | $`\lambda=4.0`$ | One logit response map |
 
 ## Solution Method
 
-The symmetric QRE reduces to a one-dimensional root search. For candidate probability $p$, define $G_\lambda(p)=p-QBR(p;\lambda)$. A fixed point sets this residual to zero. Bisection is enough because $G_\lambda$ rises on $[0,1]$ and changes sign across the bracket.
+The symmetric QRE reduces to a one-dimensional root search. For candidate probability $`p`$, define $`G_\lambda(p)=p-QBR(p;\lambda)`$. A fixed point sets this residual to zero. Bisection is enough because $`G_\lambda`$ rises on $`[0,1]`$ and changes sign across the bracket.
 
 ```text
 Algorithm: symmetric logit-QRE path in the entry game
@@ -83,7 +83,7 @@ At zero precision, firms enter with probability one half. As precision rises, en
 
 <img src="figures/qre-path.png" alt="Symmetric logit-QRE entry probability and exact mixed Nash benchmark" width="80%">
 
-At $\lambda=4.0$, the response curve slopes down. A higher rival entry probability lowers the payoff from entry. The QRE is the crossing with the 45-degree line.
+At $`\lambda=4.0`$, the response curve slopes down. A higher rival entry probability lowers the payoff from entry. The QRE is the crossing with the 45-degree line.
 
 <img src="figures/fixed-point-map.png" alt="Noisy best-response map and symmetric QRE fixed point" width="80%">
 

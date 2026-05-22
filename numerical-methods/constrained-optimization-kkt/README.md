@@ -12,35 +12,35 @@ The main lesson is that the value of the objective is not enough to judge a cons
 
 ## Equations
 
-The planner picks an allocation vector $x \in \mathbb{R}^3$.
-Each entry $x_j$ is the budget share assigned to project $j$.
-Utility is quadratic in $x$.
+The planner picks an allocation vector $`x \in \mathbb{R}^3`$.
+Each entry $`x_j`$ is the budget share assigned to project $`j`$.
+Utility is quadratic in $`x`$.
 
-$$
+```math
 u(x) = a^\top x - \tfrac{1}{2}  x^\top B x.
-$$
+```
 
-$a \in \mathbb{R}^3$ is the vector of marginal returns at zero allocation.
-$B$ is a symmetric positive-definite matrix.
-A positive-definite $B$ makes $u$ strictly concave, so the constrained maximum is unique.
-The diagonal entries of $B$ measure each project's curvature.
+$`a \in \mathbb{R}^3`$ is the vector of marginal returns at zero allocation.
+$`B`$ is a symmetric positive-definite matrix.
+A positive-definite $`B`$ makes $`u`$ strictly concave, so the constrained maximum is unique.
+The diagonal entries of $`B`$ measure each project's curvature.
 
 Two constraints bind the choice.
 The first is a budget cap on total spending.
 The second is a separate non-negativity bound on each project.
 
-$$
+```math
 \sum_{j=1}^{3} x_j \leq I,
 \qquad x_j \geq 0,\quad j = 1, 2, 3.
-$$
+```
 
 The Lagrangian builds in both constraints.
-$\lambda$ is the multiplier on the budget cap.
-$\mu = (\mu_1, \mu_2, \mu_3)$ are the multipliers on the three non-negativity bounds.
+$`\lambda`$ is the multiplier on the budget cap.
+$`\mu = (\mu_1, \mu_2, \mu_3)`$ are the multipliers on the three non-negativity bounds.
 
-$$
+```math
 \mathcal{L}(x, \lambda, \mu) = a^\top x - \tfrac{1}{2}  x^\top B x - \lambda \left(\sum_j x_j - I \right) + \mu^\top x.
-$$
+```
 
 A Karush-Kuhn-Tucker (KKT) point is the constrained optimum.
 The KKT conditions split into four blocks.
@@ -49,130 +49,130 @@ Each block has a clean economic reading.
 The first block is stationarity.
 It equates the gradient of utility with the shadow-price vector.
 
-$$
+```math
 a - B x - \lambda \mathbf{1} + \mu = 0.
-$$
+```
 
 The second block is primal feasibility.
 It is just the constraint set written out again.
 
-$$
+```math
 \sum_j x_j \leq I,
 \qquad x_j \geq 0.
-$$
+```
 
 The third block is dual feasibility.
 It says every shadow price is non-negative.
 
-$$
+```math
 \lambda \geq 0,
 \qquad \mu_j \geq 0.
-$$
+```
 
 The fourth block is complementary slackness.
 It says either a constraint binds or its multiplier is zero, never both.
 
-$$
+```math
 \lambda \left(I - \sum_j x_j \right) = 0,
 \qquad \mu_j x_j = 0.
-$$
+```
 
-The baseline calibration is $a = (4, 3, 0.5)$, $B = I_3$, and $I = 3$.
-The unconstrained maximum is $a$ itself.
-Its sum is $7.5$, which exceeds the budget of $3$.
+The baseline calibration is $`a = (4, 3, 0.5)`$, $`B = I_3`$, and $`I = 3`$.
+The unconstrained maximum is $`a`$ itself.
+Its sum is $`7.5`$, which exceeds the budget of $`3`$.
 The budget therefore binds at the constrained optimum.
 A second active-set check shows that project 3 also hits its non-negativity bound.
 With those two constraints active, the closed form is direct.
 
-$$
+```math
 x^{\ast} = (2,  1,  0),
 \qquad
 \lambda^{\ast} = 2,
 \qquad
 \mu^{\ast} = (0,  0,  1.5).
-$$
+```
 
-The non-zero multiplier $\mu_3^{\ast} = 1.5$ is the shadow price of the non-negativity bound on project 3.
-It is the utility a vanishingly small relaxation of $x_3 \geq 0$ would buy.
+The non-zero multiplier $`\mu_3^{\ast} = 1.5`$ is the shadow price of the non-negativity bound on project 3.
+It is the utility a vanishingly small relaxation of $`x_3 \geq 0`$ would buy.
 
 The next four subsections describe a baseline and three methods.
 
 ### Baseline failure: drop the non-negativity bounds
 
 A common shortcut keeps only the budget equality and drops the non-negativity bounds.
-The Lagrangian is then linear in $x$ and $\lambda$.
+The Lagrangian is then linear in $`x`$ and $`\lambda`$.
 
-$$
+```math
 x = a - \lambda \mathbf{1},
 \qquad
 \lambda = \frac{\sum_j a_j - I}{n}.
-$$
+```
 
-At the calibration this gives $\lambda = 1.5$ and $x = (2.5, 1.5, -1)$.
+At the calibration this gives $`\lambda = 1.5`$ and $`x = (2.5, 1.5, -1)`$.
 Project 3 receives a negative allocation, which has no economic meaning.
 The three methods below all enforce the non-negativity bounds and recover the correct optimum.
 
 ### Method 1: Projected gradient
 
-Projected gradient takes a gradient step on $u$ and then projects the result onto the simplex $\Delta_I = \lbrace x : x \geq 0,  \sum_j x_j = I \rbrace$.
+Projected gradient takes a gradient step on $`u`$ and then projects the result onto the simplex $`\Delta_I = \lbrace x : x \geq 0,  \sum_j x_j = I \rbrace`$.
 
-$$
+```math
 x_{k+1} = \Pi_{\Delta_I}\left(x_k + \alpha (a - B x_k)\right).
-$$
+```
 
-Here $\alpha$ is the step size and $\Pi_{\Delta_I}$ is Euclidean projection onto the simplex.
-The step size must satisfy $\alpha \leq 1/L$ where $L$ is the operator norm of $B$; with $B = I_3$ the bound is $\alpha \leq 1$.
+Here $`\alpha`$ is the step size and $`\Pi_{\Delta_I}`$ is Euclidean projection onto the simplex.
+The step size must satisfy $`\alpha \leq 1/L`$ where $`L`$ is the operator norm of $`B`$; with $`B = I_3`$ the bound is $`\alpha \leq 1`$.
 
 ### Method 2: Log barrier
 
-Log barrier replaces the non-negativity inequalities with a smooth penalty controlled by a parameter $t > 0$.
+Log barrier replaces the non-negativity inequalities with a smooth penalty controlled by a parameter $`t > 0`$.
 
-$$
+```math
 \min_x -u(x) - t \sum_j \log x_j
 \qquad \text{subject to} \quad \sum_j x_j = I.
-$$
+```
 
-The barrier penalises iterates that approach the boundary $x_j = 0$.
-As $t$ shrinks the optimum of the smoothed problem traces a central path that converges to the true optimum $x^{\ast}$ in the limit $t \to 0$.
+The barrier penalises iterates that approach the boundary $`x_j = 0`$.
+As $`t`$ shrinks the optimum of the smoothed problem traces a central path that converges to the true optimum $`x^{\ast}`$ in the limit $`t \to 0`$.
 
 The first-order condition for the barrier subproblem is one equation per project plus the budget equality.
 
-$$
+```math
 a_j - x_j - \lambda + \frac{t}{x_j} = 0,
 \qquad \sum_j x_j = I.
-$$
+```
 
-For diagonal $B = I_3$ each project's component solves a quadratic in $x_j$.
+For diagonal $`B = I_3`$ each project's component solves a quadratic in $`x_j`$.
 
-$$
+```math
 x_j(\lambda;  t) = \frac{(a_j - \lambda) + \sqrt{(a_j - \lambda)^2 + 4 t}}{2}.
-$$
+```
 
-The budget multiplier $\lambda$ is the unique scalar that makes $\sum_j x_j(\lambda;  t)$ equal $I$, and a single one-dimensional root finder solves for it.
-The duality gap of the barrier problem is exactly $n \cdot t$, which is the per-project complementarity slack along the central path.
+The budget multiplier $`\lambda`$ is the unique scalar that makes $`\sum_j x_j(\lambda;  t)`$ equal $`I`$, and a single one-dimensional root finder solves for it.
+The duality gap of the barrier problem is exactly $`n \cdot t`$, which is the per-project complementarity slack along the central path.
 
 ### Method 3: SLSQP
 
 SLSQP calls `scipy.optimize.minimize` and treats the problem as sequential quadratic programming.
 Each step linearises the constraints around the current iterate and solves a small quadratic-programming (QP) subproblem.
 The QP uses a BFGS approximation of the Hessian of the Lagrangian; the QP solution becomes the search direction; a line search along that direction picks the next iterate.
-Multipliers are recovered after the fact from the stationarity equation by averaging $a_j - (B x)_j$ over the active set and solving for the bound multipliers on the inactive set.
+Multipliers are recovered after the fact from the stationarity equation by averaging $`a_j - (B x)_j`$ over the active set and solving for the bound multipliers on the inactive set.
 
 ## Model Setup
 
 | Symbol | Value | Role |
 |--------|-------|------|
-| $a$ | $(4.0,  3.0,  0.5)$ | Marginal returns at zero allocation |
-| $B$ | $I_3$ | Curvature of utility, diagonal positive definite |
-| $I$ | 3.0 | Total budget |
-| $n$ | 3 | Number of projects |
-| $x^{\ast}$ | $(2.0,  1.0,  0.0)$ | Closed-form optimal allocation |
-| $\lambda^{\ast}$ | 2.0 | Closed-form budget shadow price |
-| $\mu^{\ast}$ | $(0.0,  0.0,  1.5)$ | Closed-form bound multipliers |
-| $u^{\ast}$ | 8.5000 | Utility at the closed-form optimum |
-| Step $\alpha$ | 0.25 | Projected gradient step size |
-| Barrier sequence | $10$ down to $10^{-8}$ | Decreasing log-barrier parameters |
-| Tolerance $\eta$ | 1e-12 | Stopping rule on iterate change |
+| $`a`$ | $`(4.0,  3.0,  0.5)`$ | Marginal returns at zero allocation |
+| $`B`$ | $`I_3`$ | Curvature of utility, diagonal positive definite |
+| $`I`$ | 3.0 | Total budget |
+| $`n`$ | 3 | Number of projects |
+| $`x^{\ast}`$ | $`(2.0,  1.0,  0.0)`$ | Closed-form optimal allocation |
+| $`\lambda^{\ast}`$ | 2.0 | Closed-form budget shadow price |
+| $`\mu^{\ast}`$ | $`(0.0,  0.0,  1.5)`$ | Closed-form bound multipliers |
+| $`u^{\ast}`$ | 8.5000 | Utility at the closed-form optimum |
+| Step $`\alpha`$ | 0.25 | Projected gradient step size |
+| Barrier sequence | $`10`$ down to $`10^{-8}`$ | Decreasing log-barrier parameters |
+| Tolerance $`\eta`$ | 1e-12 | Stopping rule on iterate change |
 
 ## Solution Method
 
@@ -190,15 +190,15 @@ Output: x_hat, lambda_hat
   x_hat      <- a - lambda_hat * ones(n)   # negative entries possible
 ```
 
-At the baseline calibration the answer is $x = (2.5, 1.5, -1)$. Project 3 receives a negative allocation. Stationarity is satisfied for the smaller problem the analyst wrote down. Primal feasibility is the part that breaks. Reading off the utility value of this answer gives a number that exceeds the true optimum, which is the easiest way to publish a wrong result.
+At the baseline calibration the answer is $`x = (2.5, 1.5, -1)`$. Project 3 receives a negative allocation. Stationarity is satisfied for the smaller problem the analyst wrote down. Primal feasibility is the part that breaks. Reading off the utility value of this answer gives a number that exceeds the true optimum, which is the easiest way to publish a wrong result.
 
 ### Method 1: Projected gradient on the simplex
 
-Projected gradient walks the iterate uphill in utility, then snaps it back to the feasible simplex. Each step has two pieces. The gradient piece is $y = x_k + \alpha (a - B x_k)$, which moves in the direction of steepest utility increase. The projection piece is $\Pi_{\Delta_I}(y)$, which finds the closest point in the budget simplex to $y$ in Euclidean distance. The composition keeps every iterate feasible, including non-negativity.
+Projected gradient walks the iterate uphill in utility, then snaps it back to the feasible simplex. Each step has two pieces. The gradient piece is $`y = x_k + \alpha (a - B x_k)`$, which moves in the direction of steepest utility increase. The projection piece is $`\Pi_{\Delta_I}(y)`$, which finds the closest point in the budget simplex to $`y`$ in Euclidean distance. The composition keeps every iterate feasible, including non-negativity.
 
-The simplex projection is closed form. Sort the components of $y$ in descending order. Find the largest index $\rho$ for which a running average is positive. Subtract a single scalar shift from $y$ and clip negatives to zero. The whole projection costs one sort plus a linear scan over $\rho$.
+The simplex projection is closed form. Sort the components of $`y`$ in descending order. Find the largest index $`\rho`$ for which a running average is positive. Subtract a single scalar shift from $`y`$ and clip negatives to zero. The whole projection costs one sort plus a linear scan over $`\rho`$.
 
-Convergence is linear in the gap to the optimum. The contraction rate is roughly $1 - \alpha \mu / L$, with $\mu$ the smallest eigenvalue of $B$ and $L$ the largest. On the calibration $B = I_3$ the eigenvalues coincide and the rate is $1 - \alpha$. The method needs only a gradient and the projection routine, which makes it the easiest constrained method to implement from scratch.
+Convergence is linear in the gap to the optimum. The contraction rate is roughly $`1 - \alpha \mu / L`$, with $`\mu`$ the smallest eigenvalue of $`B`$ and $`L`$ the largest. On the calibration $`B = I_3`$ the eigenvalues coincide and the rate is $`1 - \alpha`$. The method needs only a gradient and the projection routine, which makes it the easiest constrained method to implement from scratch.
 
 ```text
 Algorithm: Projected gradient on the budget simplex
@@ -218,15 +218,15 @@ Output: x_k
       return max(y - theta, 0) componentwise
 ```
 
-Projected gradient does not fail on this calibration. Its weak spot is the step size. A step larger than $1/L$ pushes the iterate so far that the projection wastes the work. A step well below $1/L$ slows convergence with no benefit. When the gradient is unavailable a finite-difference approximation works but adds noise that the linear convergence rate does not absorb well.
+Projected gradient does not fail on this calibration. Its weak spot is the step size. A step larger than $`1/L`$ pushes the iterate so far that the projection wastes the work. A step well below $`1/L`$ slows convergence with no benefit. When the gradient is unavailable a finite-difference approximation works but adds noise that the linear convergence rate does not absorb well.
 
 ### Method 2: Interior-point log barrier
 
-The log barrier replaces each hard non-negativity bound with a smooth penalty. The penalised objective is $-u(x) - t \sum_j \log x_j$, minimised subject to the budget equality. The penalty pushes iterates away from the boundary $x_j = 0$ because $\log x_j$ heads to $-\infty$ there. As the barrier parameter $t$ shrinks the penalty weakens and the optimum approaches the boundary.
+The log barrier replaces each hard non-negativity bound with a smooth penalty. The penalised objective is $`-u(x) - t \sum_j \log x_j`$, minimised subject to the budget equality. The penalty pushes iterates away from the boundary $`x_j = 0`$ because $`\log x_j`$ heads to $`-\infty`$ there. As the barrier parameter $`t`$ shrinks the penalty weakens and the optimum approaches the boundary.
 
-Geometrically the optima of the smoothed problems trace a curve called the central path. The path starts deep in the interior at large $t$ and ends at $x^{\ast}$ as $t \to 0$. The duality gap along the path is exactly $n \cdot t$, which is the per-project complementarity slack. Choosing a geometrically decreasing schedule for $t$ gives geometric convergence to the constrained optimum.
+Geometrically the optima of the smoothed problems trace a curve called the central path. The path starts deep in the interior at large $`t`$ and ends at $`x^{\ast}`$ as $`t \to 0`$. The duality gap along the path is exactly $`n \cdot t`$, which is the per-project complementarity slack. Choosing a geometrically decreasing schedule for $`t`$ gives geometric convergence to the constrained optimum.
 
-Each subproblem in $t$ has a closed form when $B$ is diagonal. The first-order condition for project $j$ is a quadratic in $x_j$ given the budget multiplier $\lambda$. Solving it gives $x_j(\lambda; t)$ as an explicit function. The budget multiplier itself is then a single scalar root of $\sum_j x_j(\lambda; t) = I$, found by Brent's method on a wide bracket.
+Each subproblem in $`t`$ has a closed form when $`B`$ is diagonal. The first-order condition for project $`j`$ is a quadratic in $`x_j`$ given the budget multiplier $`\lambda`$. Solving it gives $`x_j(\lambda; t)`$ as an explicit function. The budget multiplier itself is then a single scalar root of $`\sum_j x_j(\lambda; t) = I`$, found by Brent's method on a wide bracket.
 
 ```text
 Algorithm: Interior-point log barrier
@@ -239,13 +239,13 @@ Output: x_K close to the constrained optimum
       x_k <- (x_1(lambda; t_k), ..., x_n(lambda; t_k))
 ```
 
-The barrier needs a strictly interior starting point. A start with any $x_j = 0$ makes the log infinite, so it cannot be evaluated. The barrier schedule itself matters too. Shrinking $t$ too fast makes the budget multiplier jump and the root finder fails. A common choice is $t_{k+1} = t_k / 10$ once a few steps have stabilised the multiplier.
+The barrier needs a strictly interior starting point. A start with any $`x_j = 0`$ makes the log infinite, so it cannot be evaluated. The barrier schedule itself matters too. Shrinking $`t`$ too fast makes the budget multiplier jump and the root finder fails. A common choice is $`t_{k+1} = t_k / 10`$ once a few steps have stabilised the multiplier.
 
 ### Method 3: SLSQP via scipy.optimize.minimize
 
 SLSQP stands for Sequential Least-SQuares Programming. It is a quasi-Newton method designed for constrained problems with smooth equalities and inequalities. At each iterate it linearises the constraints and forms a small quadratic-programming subproblem. The QP uses a BFGS approximation of the Hessian of the Lagrangian. Solving the QP gives a search direction. A line search along the direction picks the next iterate.
 
-The QP at iterate $x_k$ has the form: minimise a quadratic in the step $d$ subject to linear constraints in $d$. The quadratic coefficients come from the BFGS approximation of the Lagrangian Hessian, which is updated from gradient differences across iterations. The constraints are linearisations of the original equality and inequality constraints. An active-set routine inside the QP solver decides which inequalities bind. Convergence near a non-degenerate optimum is locally quadratic.
+The QP at iterate $`x_k`$ has the form: minimise a quadratic in the step $`d`$ subject to linear constraints in $`d`$. The quadratic coefficients come from the BFGS approximation of the Lagrangian Hessian, which is updated from gradient differences across iterations. The constraints are linearisations of the original equality and inequality constraints. An active-set routine inside the QP solver decides which inequalities bind. Convergence near a non-degenerate optimum is locally quadratic.
 
 SLSQP is the practical default for small problems that mix equality and inequality constraints. It accepts analytical or finite-difference Jacobians, returns an iteration count, and converges in just a handful of QP solves on a problem this size.
 
@@ -270,17 +270,17 @@ SLSQP is sensitive to the analytical Jacobian of the constraints. A wrong Jacobi
 
 ## Results
 
-The feasible region is the budget triangle. Each vertex puts the entire budget on one project. The closed-form optimum sits on the hypotenuse where the project-3 bound is active. Projected gradient starts at $x_0 = (0.5,  0.5,  2.0)$, where project 3 is heavily over-funded. The first projection lands on the budget hyperplane and subsequent steps slide along it toward $x^{\ast}$. The run converges in **95** iterations and every iterate is feasible.
+The feasible region is the budget triangle. Each vertex puts the entire budget on one project. The closed-form optimum sits on the hypotenuse where the project-3 bound is active. Projected gradient starts at $`x_0 = (0.5,  0.5,  2.0)`$, where project 3 is heavily over-funded. The first projection lands on the budget hyperplane and subsequent steps slide along it toward $`x^{\ast}`$. The run converges in **95** iterations and every iterate is feasible.
 
 <img src="figures/simplex-paths.png" alt="Projected gradient path on the budget simplex; project 3 is implicit" width="80%">
 
-The barrier path enters the feasible region from the centre and bends toward $x^{\ast}$ as $t$ decreases. Each diamond is the optimum of the barrier subproblem at one $t$. The path stays strictly interior at every $t > 0$ and reaches the boundary only in the limit. After 9 barrier values the iterate lies within 8.90e-09 of the closed form in Euclidean distance.
+The barrier path enters the feasible region from the centre and bends toward $`x^{\ast}`$ as $`t`$ decreases. Each diamond is the optimum of the barrier subproblem at one $`t`$. The path stays strictly interior at every $`t > 0`$ and reaches the boundary only in the limit. After 9 barrier values the iterate lies within 8.90e-09 of the closed form in Euclidean distance.
 
 <img src="figures/barrier-path.png" alt="Interior-point central path traced by the barrier subproblem optima as t shrinks" width="80%">
 
 Each method drives different KKT residuals to zero in different orders. Projected gradient has primal feasibility at machine precision from the first iterate because the projection enforces it. Stationarity falls steadily as the iterate approaches the active-set boundary. Complementarity tracks the gap on the bound that should bind.
 
-The interior-point method reduces all three residuals together as the barrier shrinks. The complementarity curve here uses the exact barrier multipliers $\mu_t = t / x_t$, so it equals exactly $n t$ at every point on the central path. The KKT table below instead reports the barrier row through the same heuristic multiplier recovery used for the other methods, so its complementarity entry differs from $n t$ by the factor $n$. Reaching machine-precision feasibility takes 9 barrier values.
+The interior-point method reduces all three residuals together as the barrier shrinks. The complementarity curve here uses the exact barrier multipliers $`\mu_t = t / x_t`$, so it equals exactly $`n t`$ at every point on the central path. The KKT table below instead reports the barrier row through the same heuristic multiplier recovery used for the other methods, so its complementarity entry differs from $`n t`$ by the factor $`n`$. Reaching machine-precision feasibility takes 9 barrier values.
 
 <img src="figures/kkt-residuals.png" alt="KKT residuals across iterations for projected gradient (left) and along the central path for the interior-point method (right)" width="80%">
 
@@ -290,7 +290,7 @@ The budget multiplier is positive because the budget binds. The bound multiplier
 
 The table collects the baseline failure and the three constrained methods alongside the closed form. The budget-only baseline maximises utility while ignoring the bound and reports a higher number than the feasible optimum. All three real methods reach the closed-form allocation. The infeasible baseline shows in one row that an objective value alone is not a verdict.
 
-**Solution comparison at $a = (4, 3, 0.5)$, $B = I_3$, $I = 3$**
+**Solution comparison at $`a = (4, 3, 0.5)`$, $`B = I_3`$, $`I = 3`$**
 
 | Method                                    |   Project 1 |   Project 2 |   Project 3 |   Total spend |   Utility | Iterations       | Feasible?   |
 |:------------------------------------------|------------:|------------:|------------:|--------------:|----------:|:-----------------|:------------|
@@ -311,28 +311,28 @@ The KKT diagnostic table separates four kinds of error. Stationarity is small fo
 | Method 2: Interior-point log barrier      |             3.54e-09 |                   0 |                        0 |                1e-08    | budget; project 3 bound        |
 | Method 3: SLSQP                           |             4.44e-16 |                   0 |                        0 |                9.99e-16 | budget; project 3 bound        |
 
-The shadow-price table lists the binding and slack constraints with their multipliers and economic meaning. Two constraints bind at the optimum. The budget multiplier $\lambda^{\ast} = 2$ is the marginal utility of an extra unit of budget. The project-3 bound multiplier $\mu_3^{\ast} = 1.5$ is the utility cost of zero allocation, equal to the gap between the unconstrained marginal return $a_3 = 0.5$ and the budget shadow price.
+The shadow-price table lists the binding and slack constraints with their multipliers and economic meaning. Two constraints bind at the optimum. The budget multiplier $`\lambda^{\ast} = 2`$ is the marginal utility of an extra unit of budget. The project-3 bound multiplier $`\mu_3^{\ast} = 1.5`$ is the utility cost of zero allocation, equal to the gap between the unconstrained marginal return $`a_3 = 0.5`$ and the budget shadow price.
 
 **Closed-form shadow prices and constraint status at the optimum**
 
 | Constraint                   |   Multiplier | Status   | Economic interpretation                                    |
 |:-----------------------------|-------------:|:---------|:-----------------------------------------------------------|
-| Budget $\sum_j x_j \leq I$   |          2   | binding  | Utility gain from one extra unit of budget                 |
-| Project 1 bound $x_1 \geq 0$ |          0   | slack    | Project 1 receives interior allocation; bound has no value |
-| Project 2 bound $x_2 \geq 0$ |          0   | slack    | Project 2 receives interior allocation; bound has no value |
-| Project 3 bound $x_3 \geq 0$ |          1.5 | binding  | Utility loss avoided by holding project 3 at zero          |
+| Budget $`\sum_j x_j \leq I`$   |          2   | binding  | Utility gain from one extra unit of budget                 |
+| Project 1 bound $`x_1 \geq 0`$ |          0   | slack    | Project 1 receives interior allocation; bound has no value |
+| Project 2 bound $`x_2 \geq 0`$ |          0   | slack    | Project 2 receives interior allocation; bound has no value |
+| Project 3 bound $`x_3 \geq 0`$ |          1.5 | binding  | Utility loss avoided by holding project 3 at zero          |
 
 ## Takeaway
 
 A high objective value is not enough to declare a constrained problem solved. The budget-only Lagrangian beats the true optimum on utility but assigns a negative allocation to one project. Primal feasibility catches the failure. Stationarity does not.
 
-Projected gradient is the simplest method that always returns a feasible answer. Each iterate is a budget-respecting allocation with non-negative entries. Convergence is linear and depends on the conditioning of $B$ and on the step size. The simplex projection is closed form and cheap.
+Projected gradient is the simplest method that always returns a feasible answer. Each iterate is a budget-respecting allocation with non-negative entries. Convergence is linear and depends on the conditioning of $`B`$ and on the step size. The simplex projection is closed form and cheap.
 
-The interior-point log barrier replaces the bounds with a smooth penalty. Iterates trace a central path that stays strictly interior until the barrier parameter shrinks to zero. The duality gap along the path is exactly $n \cdot t$, which makes the convergence diagnostic obvious. The method extends cleanly to many-project problems with many bounds.
+The interior-point log barrier replaces the bounds with a smooth penalty. Iterates trace a central path that stays strictly interior until the barrier parameter shrinks to zero. The duality gap along the path is exactly $`n \cdot t`$, which makes the convergence diagnostic obvious. The method extends cleanly to many-project problems with many bounds.
 
 SLSQP is the practical default for small problems that mix equalities and inequalities. It builds a quadratic-programming subproblem at each iterate and refines a BFGS Hessian as it goes. Convergence is locally quadratic and Lagrange multipliers can be recovered from stationarity afterwards.
 
-Shadow prices are the economic part of the answer. The binding budget multiplier $\lambda^{\ast}$ is the marginal utility of one extra unit of budget. The binding bound multiplier $\mu_3^{\ast}$ is the utility loss avoided by holding project 3 at zero. It equals the wedge between project 3's return $a_3$ and the budget shadow price $\lambda^{\ast}$.
+Shadow prices are the economic part of the answer. The binding budget multiplier $`\lambda^{\ast}`$ is the marginal utility of one extra unit of budget. The binding bound multiplier $`\mu_3^{\ast}`$ is the utility loss avoided by holding project 3 at zero. It equals the wedge between project 3's return $`a_3`$ and the budget shadow price $`\lambda^{\ast}`$.
 
 ## References
 

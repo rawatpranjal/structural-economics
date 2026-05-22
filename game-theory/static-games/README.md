@@ -10,49 +10,49 @@ The linear game has a closed-form Nash quantity. Best-response iteration treats 
 
 ## Equations
 
-Two firms choose quantities $q_1$ and $q_2$ simultaneously. Total output is
-$Q=q_1+q_2$, inverse demand is
+Two firms choose quantities $`q_1`$ and $`q_2`$ simultaneously. Total output is
+$`Q=q_1+q_2`$, inverse demand is
 
-$$
+```math
 P(Q)=a-bQ,
-$$
+```
 
-and firm $i$ has constant marginal cost $c$. Given $q_j$, firm $i$ solves
+and firm $`i`$ has constant marginal cost $`c`$. Given $`q_j`$, firm $`i`$ solves
 
-$$
+```math
 \max_{q_i \geq 0}\ (a-b(q_i+q_j)-c)q_i.
-$$
+```
 
-The interior first-order condition gives $(a-c-bq_j)/(2b)$, and clipping at
-the non-negativity constraint $q_i \geq 0$ gives the best response
+The interior first-order condition gives $`(a-c-bq_j)/(2b)`$, and clipping at
+the non-negativity constraint $`q_i \geq 0`$ gives the best response
 
-$$
+```math
 BR_i(q_j)=\max\lbrace 0,\ \tfrac{a-c-bq_j}{2b} \rbrace.
-$$
+```
 
-A symmetric Nash equilibrium satisfies $q_i=q_j=q^{\ast}$ and
-$q^{\ast}=BR_i(q^{\ast})$, so
+A symmetric Nash equilibrium satisfies $`q_i=q_j=q^{\ast}`$ and
+$`q^{\ast}=BR_i(q^{\ast})`$, so
 
-$$
+```math
 q^{\ast}=\frac{a-c}{3b},\qquad
 P^{\ast}=a-2bq^{\ast}.
-$$
+```
 
 ## Model Setup
 
 | Object | Value | Meaning |
 |---|---:|---|
-| $a$ | 10.0 | Demand intercept |
-| $b$ | 1.0 | Demand slope |
-| $c$ | 2.0 | Marginal cost |
-| $q^{\ast}$ | 2.667 | Nash output per firm |
-| $P^{\ast}$ | 4.667 | Nash price |
-| $\pi^{\ast}$ | 7.111 | Nash profit per firm |
-| Damping $\lambda$ | 0.65 | Weight on each new best response |
+| $`a`$ | 10.0 | Demand intercept |
+| $`b`$ | 1.0 | Demand slope |
+| $`c`$ | 2.0 | Marginal cost |
+| $`q^{\ast}`$ | 2.667 | Nash output per firm |
+| $`P^{\ast}`$ | 4.667 | Nash price |
+| $`\pi^{\ast}`$ | 7.111 | Nash profit per firm |
+| Damping $`\lambda`$ | 0.65 | Weight on each new best response |
 
 ## Solution Method
 
-The first-order conditions solve the linear game directly. The numerical check keeps the same economic object. It searches for a fixed point of the map $BR(q_1,q_2)=(BR_1(q_2),BR_2(q_1))$.
+The first-order conditions solve the linear game directly. The numerical check keeps the same economic object. It searches for a fixed point of the map $`BR(q_1,q_2)=(BR_1(q_2),BR_2(q_1))`$.
 
 ```text
 Algorithm: damped Cournot best-response iteration

@@ -12,49 +12,49 @@ A likelihood needs continuation values because today's investment changes tomorr
 
 ## Equations
 
-The firm-view state is $\omega=(q_i,q_j)$, where $q_i$ is own quality and
-$q_j$ is rival quality. Both qualities lie on the four-rung ladder
-$\lbrace0,1,2,3\rbrace$. Firm $i$ chooses $a_i\in\lbrace0,1\rbrace$, where one means invest.
+The firm-view state is $`\omega=(q_i,q_j)`$, where $`q_i`$ is own quality and
+$`q_j`$ is rival quality. Both qualities lie on the four-rung ladder
+$`\lbrace0,1,2,3\rbrace`$. Firm $`i`$ chooses $`a_i\in\lbrace0,1\rbrace`$, where one means invest.
 Flow payoff is
 
-$$
+```math
 \pi_i(\omega,a_i;\theta) = \theta_q q_i - \theta_c a_i + \theta_g \max\lbrace q_j-q_i,0\rbrace a_i .
-$$
+```
 
 The gap term raises the investment payoff when the rival leads.
 
 First-stage CCPs estimate the state-specific investment rate
-$p(\omega)=\Pr(a_i=1\mid \omega)$. Holding CCPs fixed gives a policy transition
-$\hat P$ and an expected flow payoff $\bar\pi_\theta(\omega;\hat p)$. Integrating
+$`p(\omega)=\Pr(a_i=1\mid \omega)`$. Holding CCPs fixed gives a policy transition
+$`\hat P`$ and an expected flow payoff $`\bar\pi_\theta(\omega;\hat p)`$. Integrating
 out the logit action shock adds the expected shock value to the policy-weighted
-payoff, so $\bar\pi_\theta$ is
+payoff, so $`\bar\pi_\theta`$ is
 
-$$
+```math
 \bar\pi_\theta(\omega;\hat p) = (1-\hat p) \pi_i(\omega,0;\theta) + \hat p\pi_i(\omega,1;\theta) + H(\hat p) + \gamma,
-$$
+```
 
-where $H(\hat p) = -\hat p\log\hat p-(1-\hat p)\log(1-\hat p)$ is the Bernoulli
-entropy of the investment rate and $\gamma$ is the Euler-Mascheroni constant.
-The $H(\hat p)+\gamma$ term is the expected value of the Type-I extreme value
+where $`H(\hat p) = -\hat p\log\hat p-(1-\hat p)\log(1-\hat p)`$ is the Bernoulli
+entropy of the investment rate and $`\gamma`$ is the Euler-Mascheroni constant.
+The $`H(\hat p)+\gamma`$ term is the expected value of the Type-I extreme value
 shock under the first-stage policy. The value under that policy is
 
-$$
+```math
 W_\theta = \bar\pi_\theta(\hat p) + \beta \hat P W_\theta.
-$$
+```
 
-Choice-specific values use the rival's first-stage CCP and $W_\theta$:
+Choice-specific values use the rival's first-stage CCP and $`W_\theta`$:
 
-$$
+```math
 v_\theta(a_i,\omega) = \pi_i(\omega,a_i;\theta) + \beta E_{\hat p_j}\left[W_\theta(\omega')\mid \omega,a_i\right].
-$$
+```
 
 The second-stage pseudo likelihood scores observed investment choices, where
-$d_{it}\in\lbrace0,1\rbrace$ is the observed investment indicator for firm $i$ at period
-$t$ and $\Lambda(\cdot)$ is the logistic CDF:
+$`d_{it}\in\lbrace0,1\rbrace`$ is the observed investment indicator for firm $`i`$ at period
+$`t`$ and $`\Lambda(\cdot)`$ is the logistic CDF:
 
-$$
+```math
 \ell(\theta)=\sum_{i,t} d_{it}\log \Lambda[v_\theta(1,\omega_{it})-v_\theta(0,\omega_{it})] +(1-d_{it})\log\lbrace1-\Lambda[v_\theta(1,\omega_{it})-v_\theta(0,\omega_{it})]\rbrace.
-$$
+```
 
 ## Model Setup
 
@@ -63,9 +63,9 @@ $$
 | Firms | 2 | Symmetric competitors observed as own-rival state pairs |
 | Quality rungs | 0 to 3 | Product-quality ladder used as the dynamic state |
 | Discount factor | 0.90 | Weight on future market position |
-| True $\theta_q$ | 0.70 | Value of own quality |
-| True $\theta_g$ | 0.40 | Catch-up incentive when the rival leads |
-| True $\theta_c$ | 1.00 | Investment cost |
+| True $`\theta_q`$ | 0.70 | Value of own quality |
+| True $`\theta_g`$ | 0.40 | Catch-up incentive when the rival leads |
+| True $`\theta_c`$ | 1.00 | Investment cost |
 | Markets | 1,000 | Independent simulated two-firm markets |
 | Periods | 30 | Panel length used for first-stage CCPs |
 

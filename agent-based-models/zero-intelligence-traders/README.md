@@ -10,105 +10,105 @@ The tutorial then adds a small ZIP-style adaptive rule. Adaptation pulls quotes 
 
 ## Equations
 
-Buyer $i$ has value $v_i$ for one unit. Seller $j$ has cost $c_j$ for one unit.
-At event $t$, the active bid book and ask book are
+Buyer $`i`$ has value $`v_i`$ for one unit. Seller $`j`$ has cost $`c_j`$ for one unit.
+At event $`t`$, the active bid book and ask book are
 
-$$
+```math
 B_t=\lbrace b_i(t): i\in \mathcal{B}_t\rbrace
 \qquad\text{and}\qquad
 A_t=\lbrace a_j(t): j\in \mathcal{A}_t\rbrace.
-$$
+```
 
 ZIC buyers and sellers draw feasible quotes:
 
-$$
+```math
 b_i(t)\sim U[0,v_i],
 \qquad
 a_j(t)\sim U[c_j,\bar p].
-$$
+```
 
 A trade clears when the best bid crosses the best ask:
 
-$$
+```math
 \max B_t \geq \min A_t.
-$$
+```
 
 The transaction price splits the spread:
 
-$$
+```math
 p_t=\frac{1}{2}\left(\max B_t+\min A_t\right).
-$$
+```
 
-The surplus from matching buyer $i$ with seller $j$ is
+The surplus from matching buyer $`i`$ with seller $`j`$ is
 
-$$
+```math
 \Delta S_t=v_i-c_j.
-$$
+```
 
 Sort values from high to low and costs from low to high. The efficient quantity
 and maximum surplus are
 
-$$
+```math
 Q^{\ast}=\sum_q \mathbf{1}[v_{(q)}-c_{(q)}>0],
 \qquad
 S^{\ast}=\sum_{q=1}^{Q^{\ast}}\left(v_{(q)}-c_{(q)}\right).
-$$
+```
 
 The competitive price band is
 
-$$
+```math
 P^{\ast}=
 \left[
 \max\lbrace c_{(Q^{\ast})},v_{(Q^{\ast}+1)}\rbrace,
 \min\lbrace v_{(Q^{\ast})},c_{(Q^{\ast}+1)}\rbrace
 \right],
-$$
+```
 
 with the next-unit term omitted when that side has no next unit. Allocative
 efficiency and price dispersion are
 
-$$
+```math
 \mathrm{AE}=\frac{\sum_t \Delta S_t}{S^{\ast}},
 \qquad
 \sigma_p=\sqrt{\frac{1}{T_p}\sum_{t:p_t\ \mathrm{exists}}(p_t-\bar p_T)^2}.
-$$
+```
 
-Here $T_p$ is the number of realized transactions and $\bar p_T$ is the mean transaction price (distinct from $\bar p$, the maximum ask support defined above).
+Here $`T_p`$ is the number of realized transactions and $`\bar p_T`$ is the mean transaction price (distinct from $`\bar p`$, the maximum ask support defined above).
 
-ZIP-style buyers and sellers maintain feasible quote targets $z_i^B(t)$ and
-$z_j^S(t)$. After an accepted price $p_t$, active adaptive agents update by
+ZIP-style buyers and sellers maintain feasible quote targets $`z_i^B(t)`$ and
+$`z_j^S(t)`$. After an accepted price $`p_t`$, active adaptive agents update by
 
-$$
+```math
 z_i^B(t+1)=(1-\lambda)z_i^B(t)+\lambda \min\lbrace v_i,p_t+\kappa\rbrace,
-$$
+```
 
 and
 
-$$
+```math
 z_j^S(t+1)=(1-\lambda)z_j^S(t)+\lambda \max\lbrace c_j,p_t-\kappa\rbrace.
-$$
+```
 
 Quotes are noisy draws around these targets, clipped so buyers still satisfy
-$b_i(t)\leq v_i$ and sellers still satisfy $a_j(t)\geq c_j$.
+$`b_i(t)\leq v_i`$ and sellers still satisfy $`a_j(t)\geq c_j`$.
 
 ## Model Setup
 
 | Symbol | Value | Role |
 |---|---:|---|
-| $N_B$ | 10 | Baseline buyers |
-| $N_S$ | 10 | Baseline sellers |
-| $v_i$ | 105, 100, ..., 60 | Stepped buyer values |
-| $c_j$ | 30, 36, ..., 84 | Stepped seller costs |
-| $b_i(t)$ | $[0,v_i]$ | Feasible buyer bid |
-| $a_j(t)$ | $[c_j,125]$ | Feasible seller ask |
-| $\bar p$ | 125 | Maximum ask support |
-| $Q^{\ast}$ | 7 | Efficient quantity |
-| $S^{\ast}$ | 294.00 | Maximum competitive surplus |
-| $P^{\ast}$ | [70.00, 72.00] | Competitive price band |
-| $\mathrm{AE}$ | 99.3% | Realized surplus share in the baseline ZIC run |
-| $\sigma_p$ | 12.01 | Baseline transaction-price dispersion |
-| $\lambda$ | 0.35 | ZIP target learning rate |
-| $\kappa$ | 1.25 | ZIP target spread around the last accepted price |
+| $`N_B`$ | 10 | Baseline buyers |
+| $`N_S`$ | 10 | Baseline sellers |
+| $`v_i`$ | 105, 100, ..., 60 | Stepped buyer values |
+| $`c_j`$ | 30, 36, ..., 84 | Stepped seller costs |
+| $`b_i(t)`$ | $`[0,v_i]`$ | Feasible buyer bid |
+| $`a_j(t)`$ | $`[c_j,125]`$ | Feasible seller ask |
+| $`\bar p`$ | 125 | Maximum ask support |
+| $`Q^{\ast}`$ | 7 | Efficient quantity |
+| $`S^{\ast}`$ | 294.00 | Maximum competitive surplus |
+| $`P^{\ast}`$ | [70.00, 72.00] | Competitive price band |
+| $`\mathrm{AE}`$ | 99.3% | Realized surplus share in the baseline ZIC run |
+| $`\sigma_p`$ | 12.01 | Baseline transaction-price dispersion |
+| $`\lambda`$ | 0.35 | ZIP target learning rate |
+| $`\kappa`$ | 1.25 | ZIP target spread around the last accepted price |
 | ZIP quote noise | 0.90 | Small feasible perturbation around the adaptive target |
 
 ## Solution Method
@@ -156,7 +156,7 @@ For each mix in {all ZIC, one ZIP pair, all ZIP}:
 
 ## Results
 
-The baseline induced-value schedule has $Q^{\ast}=7$ and $S^{\ast}=294.00$. The competitive price band is [70.00, 72.00]. This is the object the random market is trying to approximate without optimization or forecasting.
+The baseline induced-value schedule has $`Q^{\ast}=7`$ and $`S^{\ast}=294.00`$. The competitive price band is [70.00, 72.00]. This is the object the random market is trying to approximate without optimization or forecasting.
 
 <img src="figures/demand-supply-schedule.png" alt="Stepped buyer values, seller costs, efficient quantity, and competitive price band." width="80%">
 

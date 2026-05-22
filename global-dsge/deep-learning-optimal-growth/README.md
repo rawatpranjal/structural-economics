@@ -10,107 +10,107 @@ This tutorial uses an Euler-residual loss. The neural net proposes a feasible sa
 
 ## Equations
 
-Capital fully depreciates each period. With state $k_t$, output is
+Capital fully depreciates each period. With state $`k_t`$, output is
 
-$$
+```math
 y_t = A k_t^{\alpha}, \qquad 0<\alpha<1,
-$$
+```
 
 Feasibility requires
 
-$$
+```math
 c_t + k_{t+1} = A k_t^{\alpha},
 \qquad c_t>0, k_{t+1}>0.
-$$
+```
 
 The planner maximizes
 
-$$
+```math
 \sum_{t=0}^{\infty}\beta^t \log c_t,
 \qquad 0<\beta<1.
-$$
+```
 
 The Euler equation is
 
-$$
+```math
 \frac{1}{c_t} =
 \beta \frac{\alpha A k_{t+1}^{\alpha-1}}{c_{t+1}}.
-$$
+```
 
 The code evaluates the Euler equation as this log residual:
 
-$$
+```math
 r(k;\theta) =
 \log\left[
 \beta \alpha A k'(k;\theta)^{\alpha-1}
 \frac{c(k;\theta)}{c(k'(k;\theta);\theta)}
 \right].
-$$
+```
 
-The residual is zero when the Euler equation holds. Training chooses parameters that make this residual small. Here $k'(k;\theta)$ and $c(k;\theta)$ denote the neural capital policy and consumption defined by the saving share below.
+The residual is zero when the Euler equation holds. Training chooses parameters that make this residual small. Here $`k'(k;\theta)`$ and $`c(k;\theta)`$ denote the neural capital policy and consumption defined by the saving share below.
 
 The population risk is
 
-$$
+```math
 \Xi(\theta) = E\left[r(k;\theta)^2\right].
-$$
+```
 
-The program replaces that expectation with simulated capital draws. With draws $k_1,\ldots,k_n$, it solves the empirical problem
+The program replaces that expectation with simulated capital draws. With draws $`k_1,\ldots,k_n`$, it solves the empirical problem
 
-$$
+```math
 \Xi_n(\theta) = \frac{1}{n}\sum_{i=1}^{n} r(k_i;\theta)^2,
 \qquad
 \hat{\theta} = \arg\min_{\theta} \Xi_n(\theta).
-$$
+```
 
 The objective the code actually minimizes adds a light stability guard to
-$\Xi_n(\theta)$; that guard is zero during normal training and is described in
+$`\Xi_n(\theta)`$; that guard is zero during normal training and is described in
 the Solution Method section.
 
 The neural policy first chooses a saving share:
 
-$$
+```math
 s(k;\theta) =
 s_{\min} + (s_{\max}-s_{\min})
 \sigma\left(N_{\theta}(\log(k/k_{ss}))\right),
-$$
+```
 
-Here $\sigma(z)=1/(1+e^{-z})$ is the sigmoid function, $N_\theta$ is a neural network with parameters $\theta$ (a 1-16-16-1 tanh MLP), and $k_{ss}$ is the steady-state capital defined below.
+Here $`\sigma(z)=1/(1+e^{-z})`$ is the sigmoid function, $`N_\theta`$ is a neural network with parameters $`\theta`$ (a 1-16-16-1 tanh MLP), and $`k_{ss}`$ is the steady-state capital defined below.
 
 It then imposes feasibility by construction:
 
-$$
+```math
 k'(k;\theta)=s(k;\theta)A k^{\alpha},
 \qquad
 c(k;\theta)=(1-s(k;\theta))A k^{\alpha}.
-$$
+```
 
 This special case has an exact policy:
 
-$$
+```math
 k'(k)=\alpha\beta A k^{\alpha},
 \qquad
 c(k)=(1-\alpha\beta)A k^{\alpha},
-$$
+```
 
 The steady state is
 
-$$
+```math
 k_{ss}=(\alpha\beta A)^{1/(1-\alpha)}.
-$$
+```
 
 ## Model Setup
 
 | Symbol | Value | Role |
 |--------|-------|------|
-| $\alpha$ | 0.36 | Capital share in $A k^{\alpha}$ |
-| $\beta$ | 0.95 | Discount factor |
-| $A$ | 2.0 | Total factor productivity |
-| $k_{ss}$ | 0.5524 | Closed-form steady-state capital |
-| $c_{ss}$ | 1.0629 | Closed-form steady-state consumption |
-| Training states | [0.138, 1.381] | Uniform random draws around $k_{ss}$ |
-| Neural net | 1-16-16-1 tanh MLP | Maps $\log(k/k_{ss})$ to a saving share |
-| Saving-share bounds | [0.02, 0.95] | Keep $c$ and $k'$ feasible |
+| $`\alpha`$ | 0.36 | Capital share in $`A k^{\alpha}`$ |
+| $`\beta`$ | 0.95 | Discount factor |
+| $`A`$ | 2.0 | Total factor productivity |
+| $`k_{ss}`$ | 0.5524 | Closed-form steady-state capital |
+| $`c_{ss}`$ | 1.0629 | Closed-form steady-state consumption |
+| Training states | [0.138, 1.381] | Uniform random draws around $`k_{ss}`$ |
+| Neural net | 1-16-16-1 tanh MLP | Maps $`\log(k/k_{ss})`$ to a saving share |
+| Saving-share bounds | [0.02, 0.95] | Keep $`c`$ and $`k'`$ feasible |
 | Batch size | 256 | States per gradient step |
 | Gradient steps | 6000 | Adam updates using JAX autodiff |
 
@@ -162,11 +162,11 @@ Audit k'(k; theta) on a holdout grid against the exact rule
 
 The minimized objective is the squared Euler residual plus a light stability guard. The stability guard is a one-sided penalty, weighted by 1e-3, that activates only when the predicted next capital leaves a band slightly wider than the training interval. During normal training the predicted capital stays inside that band, so the guard is zero and the objective is the pure empirical risk; the guard only keeps early gradient steps from drifting into infeasible capital.
 
-The audit is not part of the training loss. It exists because this Brock-Mirman case has the closed-form rule $k'=\alpha\beta A k^\alpha$. The comparison shows what the residual-trained neural policy learned.
+The audit is not part of the training loss. It exists because this Brock-Mirman case has the closed-form rule $`k'=\alpha\beta A k^\alpha`$. The comparison shows what the residual-trained neural policy learned.
 
 ## Results
 
-The trained policy is almost the exact constant-saving rule. The x-axis uses capital relative to the steady state. The main object is the saving rule away from $k_{ss}$. The exact and neural policy functions lie nearly on top of each other.
+The trained policy is almost the exact constant-saving rule. The x-axis uses capital relative to the steady state. The main object is the saving rule away from $`k_{ss}`$. The exact and neural policy functions lie nearly on top of each other.
 
 <img src="figures/policy-comparison.png" alt="Neural and closed-form capital policy" width="80%">
 
@@ -194,7 +194,7 @@ The table reports the holdout audit on the plotted grid. Policy errors are in ca
 |---------------:|-------------:|--------------------:|-------------------:|---------------------:|----------------------:|--------------------:|-----------------:|
 |      0.0758802 |  2.31559e-08 |         4.43835e-05 |        0.000162423 |          0.000282804 |           0.000116169 |            0.342023 |             6000 |
 
-The estimated policy is nearly identical to the exact Brock-Mirman policy. The learned saving share is nearly flat. Its mean is 0.3420. The exact saving share is $\alpha\beta=0.3420$.
+The estimated policy is nearly identical to the exact Brock-Mirman policy. The learned saving share is nearly flat. Its mean is 0.3420. The exact saving share is $`\alpha\beta=0.3420`$.
 
 The policy figure is the main evidence. The table records the diagnostics behind the plot.
 

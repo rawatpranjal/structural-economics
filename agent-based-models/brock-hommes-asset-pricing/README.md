@@ -10,81 +10,81 @@ The simulation compares low, medium, and high intensity of choice. A small SMM e
 
 ## Equations
 
-The risky asset pays a constant dividend $d$. The gross risk-free return is
-$R = 1+r$. Let $p_t$ be the risky asset price and let $p^{\ast}$ be the
-constant fundamental price. Let $x_t = p_t - p^{\ast}$ be the deviation from
-that fundamental. The two forecasting rules are fundamentalist ($F$) and trend
-follower ($T$). Rule $h$ has forecast $f_{h,t}$, share $n_{h,t}$, smoothed
-score $U_{h,t}$, profit score $\pi_{h,t}$, and cost $c_h$. The shock
-$\epsilon_t$ is noise-trader supply.
+The risky asset pays a constant dividend $`d`$. The gross risk-free return is
+$`R = 1+r`$. Let $`p_t`$ be the risky asset price and let $`p^{\ast}`$ be the
+constant fundamental price. Let $`x_t = p_t - p^{\ast}`$ be the deviation from
+that fundamental. The two forecasting rules are fundamentalist ($`F`$) and trend
+follower ($`T`$). Rule $`h`$ has forecast $`f_{h,t}`$, share $`n_{h,t}`$, smoothed
+score $`U_{h,t}`$, profit score $`\pi_{h,t}`$, and cost $`c_h`$. The shock
+$`\epsilon_t`$ is noise-trader supply.
 
 If dividends are constant and all traders expect the same future price, the
 no-arbitrage price is also constant. It equals the present value of the dividend
 stream:
 
-$$
+```math
 p^{\ast} = \frac{d}{R-1}.
-$$
+```
 
-The model studies deviations from that benchmark. A positive $x_t$ means the
-asset is priced above the dividend fundamental. A negative $x_t$ means it is
+The model studies deviations from that benchmark. A positive $`x_t`$ means the
+asset is priced above the dividend fundamental. A negative $`x_t`$ means it is
 priced below it.
 
 Fundamentalists forecast that the deviation will disappear:
 
-$$
+```math
 f_{F,t} = 0,
-$$
+```
 
 Trend followers forecast that recent price movements will continue:
 
-$$
+```math
 \tilde f_{T,t} = x_{t-1} + g(x_{t-1} - x_{t-2}),
-$$
+```
 
-$$
+```math
 f_{T,t} = \bar x \tanh(\tilde f_{T,t} / \bar x).
-$$
+```
 
-The hyperbolic tangent bounds the trend forecast by $\bar x$. This keeps the
+The hyperbolic tangent bounds the trend forecast by $`\bar x`$. This keeps the
 experiment focused on bounded bubbles rather than numerical explosion.
 
 Market clearing sets today's deviation equal to a weighted average of beliefs,
 scaled by the risk-free return, plus noise-trader supply:
 
-$$
+```math
 x_t = \frac{n_{F,t-1} f_{F,t} + n_{T,t-1} f_{T,t}}{R} + \epsilon_t.
-$$
+```
 
-The realized excess return in deviation form is $e_t = x_t - R x_{t-1}$.
-Rule $h$ forecasted excess return $f_{h,t} - R x_{t-1}$. A rule earns a
+The realized excess return in deviation form is $`e_t = x_t - R x_{t-1}`$.
+Rule $`h`$ forecasted excess return $`f_{h,t} - R x_{t-1}`$. A rule earns a
 high profit score when its forecasted position has the same sign as the
 realized excess return:
 
-$$
+```math
 \pi_{h,t} =
 \frac{e_t (f_{h,t} - R x_{t-1})}{a\sigma^2} - c_h.
-$$
+```
 
-Here $a > 0$ is the coefficient of absolute risk aversion and $\sigma^2$ is the
-variance of excess returns; the model calibrates $a\sigma^2$ as a single combined
+Here $`a > 0`$ is the coefficient of absolute risk aversion and $`\sigma^2`$ is the
+variance of excess returns; the model calibrates $`a\sigma^2`$ as a single combined
 risk-scaling constant.
 
 Scores are smoothed,
 
-$$
+```math
 U_{h,t} = \lambda U_{h,t-1} + (1-\lambda)\pi_{h,t},
-$$
+```
 
 and next-period rule shares follow logit choice:
 
-$$
+```math
 n_{h,t} =
 \frac{\exp(\beta U_{h,t})}{\exp(\beta U_{F,t}) + \exp(\beta U_{T,t})}.
-$$
+```
 
-The parameter $\beta$ is the intensity of choice. As $\beta \to 0$, shares stay
-near one half. As $\beta$ rises, small score gaps produce large reallocations
+The parameter $`\beta`$ is the intensity of choice. As $`\beta \to 0`$, shares stay
+near one half. As $`\beta`$ rises, small score gaps produce large reallocations
 across forecasting rules.
 
 ## Model Setup
@@ -93,22 +93,22 @@ The calibration is intentionally small. The point is to make strategy switching 
 
 | Object | Symbol | Value | Role |
 |---|---:|---:|---|
-| Gross risk-free return | $R$ | 1.01 | Discounting benchmark |
-| Dividend | $d$ | 0.20 | Constant cash flow |
-| Fundamental price | $p^{\ast}$ | 20.00 | RE steady state |
-| Trend gain | $g$ | 1.40 | Extrapolation strength |
-| Forecast bound | $\bar x$ | 0.35 | Finite trend forecast |
-| Shock scale | $\sigma_\epsilon$ | 0.02 | Noise-trader supply shock |
-| Score memory | $\lambda$ | 0.80 | Profit-score persistence |
-| Risk scale | $a\sigma^2$ | 0.04 | Combined risk-aversion and return-variance scaling |
-| Fundamentalist cost | $c_F$ | 0.000 | Zero cost for the fundamental rule |
-| Trend cost | $c_T$ | 0.001 | Small information or trading cost |
-| Initial deviation lag | $x_0$ | 0.10 | Starting price deviation |
-| Initial deviation | $x_1$ | 0.12 | Starting price deviation |
-| Simulation horizon | $T_{sim}$ | 700 | Price periods |
-| Burn-in | $T_0$ | 100 | Moments discard early periods |
+| Gross risk-free return | $`R`$ | 1.01 | Discounting benchmark |
+| Dividend | $`d`$ | 0.20 | Constant cash flow |
+| Fundamental price | $`p^{\ast}`$ | 20.00 | RE steady state |
+| Trend gain | $`g`$ | 1.40 | Extrapolation strength |
+| Forecast bound | $`\bar x`$ | 0.35 | Finite trend forecast |
+| Shock scale | $`\sigma_\epsilon`$ | 0.02 | Noise-trader supply shock |
+| Score memory | $`\lambda`$ | 0.80 | Profit-score persistence |
+| Risk scale | $`a\sigma^2`$ | 0.04 | Combined risk-aversion and return-variance scaling |
+| Fundamentalist cost | $`c_F`$ | 0.000 | Zero cost for the fundamental rule |
+| Trend cost | $`c_T`$ | 0.001 | Small information or trading cost |
+| Initial deviation lag | $`x_0`$ | 0.10 | Starting price deviation |
+| Initial deviation | $`x_1`$ | 0.12 | Starting price deviation |
+| Simulation horizon | $`T_{sim}`$ | 700 | Price periods |
+| Burn-in | $`T_0`$ | 100 | Moments discard early periods |
 
-The plotted intensity values are $\beta = 2$, $\beta = 20$, and $\beta = 50$. The SMM exercise sets the true value to $\beta_0 = 30$ and searches over even candidates from 2 to 60.
+The plotted intensity values are $`\beta = 2`$, $`\beta = 20`$, and $`\beta = 50`$. The SMM exercise sets the true value to $`\beta_0 = 30`$ and searches over even candidates from 2 to 60.
 
 ## Solution Method
 
@@ -171,7 +171,7 @@ The pseudo-data are generated at the true switching intensity. The SMM grid uses
 
 ## Takeaway
 
-Brock-Hommes makes a simple point with useful reach: logit choice is not only a static demand formula. Once agents use it to chase profitable forecasting rules, the rational-expectations fundamental can become a locally fragile benchmark. Low intensity leaves the market close to $p^{\ast}$; high intensity turns recent forecast profits into endogenous bubbles, reversals, and clustered volatility.
+Brock-Hommes makes a simple point with useful reach: logit choice is not only a static demand formula. Once agents use it to chase profitable forecasting rules, the rational-expectations fundamental can become a locally fragile benchmark. Low intensity leaves the market close to $`p^{\ast}`$; high intensity turns recent forecast profits into endogenous bubbles, reversals, and clustered volatility.
 
 ## References
 

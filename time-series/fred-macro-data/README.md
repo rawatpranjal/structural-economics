@@ -12,51 +12,51 @@ The computational need is detrending. HP filtering puts each series into a cycle
 
 Let
 
-$$
+```math
 y_t = (g_t,\pi_t,u_t,i_t)'
-$$
+```
 
 collect GDP growth, CPI inflation, unemployment, and the federal funds rate,
 all measured in percentage points. The synthetic data are generated from a
 stationary vector process
 
-$$
+```math
 s_t = \rho \odot s_{t-1} + \sqrt{1-\rho^2}\odot \varepsilon_t,
 \qquad
 \varepsilon_t \sim N(0,C),
 \qquad
 y_t=\mu+\sigma^{y}\odot s_t.
-$$
+```
 
-The vector $s_t$ is a standardized latent state and $\sigma^{y}$ is the 4-vector of series standard deviations (3.0, 1.5, 1.5, 3.0). It is a separate quantity from the HP-cycle standard deviation $\sigma^{c}_j = \mathrm{sd}(c_{j,t})$ defined below; the superscripts $y$ and $c$ keep the DGP scaling and the cycle moment distinct.
-Here $\odot$ is element-by-element multiplication. The correlation matrix $C$
+The vector $`s_t`$ is a standardized latent state and $`\sigma^{y}`$ is the 4-vector of series standard deviations (3.0, 1.5, 1.5, 3.0). It is a separate quantity from the HP-cycle standard deviation $`\sigma^{c}_j = \mathrm{sd}(c_{j,t})`$ defined below; the superscripts $`y`$ and $`c`$ keep the DGP scaling and the cycle moment distinct.
+Here $`\odot`$ is element-by-element multiplication. The correlation matrix $`C`$
 sets the contemporaneous macro relationships in the example. The parameter
-$\rho_j$ controls how slowly each series adjusts after an innovation.
+$`\rho_j`$ controls how slowly each series adjusts after an innovation.
 
-For each observed series $y_{j,t}$, the HP filter chooses a trend $\tau_{j,t}$
+For each observed series $`y_{j,t}`$, the HP filter chooses a trend $`\tau_{j,t}`$
 by solving
 
-$$
+```math
 \min_{\tau_j}
 \sum_{t=1}^{T} (y_{j,t}-\tau_{j,t})^2 + \lambda\sum_{t=2}^{T-1}
 [(\tau_{j,t+1}-\tau_{j,t})-(\tau_{j,t}-\tau_{j,t-1})]^2.
-$$
+```
 
-The cycle is $c_{j,t}=y_{j,t}-\tau_{j,t}$. The reported moments are
+The cycle is $`c_{j,t}=y_{j,t}-\tau_{j,t}`$. The reported moments are
 
-$$
+```math
 \sigma^{c}_j=\mathrm{sd}(c_{j,t}),\qquad
 r_{j,g}=\mathrm{corr}(c_{j,t},c_{g,t}),\qquad
 a_j=\mathrm{corr}(c_{j,t},c_{j,t-1}).
-$$
+```
 
 The Okun diagnostic is the finite-sample regression
 
-$$
+```math
 c_{u,t}=\alpha_O+\beta_O c_{g,t}+e_t,
-$$
+```
 
-where $c_{g,t}$ is the GDP-growth cycle and $c_{u,t}$ is the unemployment
+where $`c_{g,t}`$ is the GDP-growth cycle and $`c_{u,t}`$ is the unemployment
 cycle.
 
 ## Model Setup
@@ -65,9 +65,9 @@ cycle.
 
 | Object | Value | Role |
 |---|---:|---|
-| $T$ | 200 | Main sample, 50 years of quarters |
-| $T_B$ | 5000 | Long simulation used only as a benchmark |
-| $\lambda$ | 1600 | HP smoothing parameter for quarterly data |
+| $`T`$ | 200 | Main sample, 50 years of quarters |
+| $`T_B`$ | 5000 | Long simulation used only as a benchmark |
+| $`\lambda`$ | 1600 | HP smoothing parameter for quarterly data |
 
 **Series-level primitives**
 
@@ -78,7 +78,7 @@ cycle.
 | Unemployment | 5.5 | 1.5 | 0.85 | Labor-market slack |
 | Fed funds | 4.0 | 3.0 | 0.80 | Short-rate policy indicator |
 
-**Innovation correlation matrix $C$**
+**Innovation correlation matrix $`C`$**
 
 | | GDP | CPI | Unemployment | Fed funds |
 |---|---:|---:|---:|---:|

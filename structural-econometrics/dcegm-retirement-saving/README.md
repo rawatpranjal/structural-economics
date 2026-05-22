@@ -12,34 +12,34 @@ The staging is branch first, envelope second. On each branch, the household is s
 
 ## Equations
 
-At age $t$, the household enters with assets $a_t$ and retirement status
-$m_t \in \lbrace 0,1 \rbrace$. Status $m_t=0$ means still active, and $m_t=1$ means already
+At age $`t`$, the household enters with assets $`a_t`$ and retirement status
+$`m_t \in \lbrace 0,1 \rbrace`$. Status $`m_t=0`$ means still active, and $`m_t=1`$ means already
 retired. An active household can choose work or retire:
 
-$$
+```math
 d_t \in D(m_t), \qquad
 D(0)=\lbrace \mathrm{work},\mathrm{retire} \rbrace, \qquad
 D(1)=\lbrace \mathrm{retire} \rbrace.
-$$
+```
 
 The next retirement status is absorbing:
 
-$$
+```math
 m'(\mathrm{work})=0, \qquad m'(\mathrm{retire})=1.
-$$
+```
 
 Preferences are CRRA, and the terminal value is a bequest value:
 
-$$
+```math
 u(c)=\frac{c^{1-\gamma}-1}{1-\gamma}, \qquad
 u'(c)=c^{-\gamma}, \qquad
 V_T^m(a)=\omega_B u(a+\bar b).
-$$
+```
 
-Let calendar age be $\alpha_t=55+t$. The branch income and nonconsumption
+Let calendar age be $`\alpha_t=55+t`$. The branch income and nonconsumption
 utility terms are
 
-$$
+```math
 \begin{aligned}
 y_t(\mathrm{work}) &=
 1.42-0.012(\alpha_t-55)
@@ -50,20 +50,20 @@ y_t(\mathrm{retire}) &= \bar y^R,\\
 \quad +0.010\max \lbrace \alpha_t-62,0 \rbrace^2\right],\\
 \psi_t(\mathrm{retire}) &= \chi_R.
 \end{aligned}
-$$
+```
 
 The budget constraint is
 
-$$
+```math
 c_t + a_{t+1} = R a_t + y_t(d_t),
 \qquad a_{t+1} \geq \underline a .
-$$
+```
 
-Resources are split between current consumption and next assets. Throughout the branch problems below, $a^{+}$ denotes the same next-period assets as $a_{t+1}$ in the budget constraint, written without a time subscript to mark it as the free variable of the branch maximization.
+Resources are split between current consumption and next assets. Throughout the branch problems below, $`a^{+}`$ denotes the same next-period assets as $`a_{t+1}`$ in the budget constraint, written without a time subscript to mark it as the free variable of the branch maximization.
 
-For any branch $d$, define the branch value
+For any branch $`d`$, define the branch value
 
-$$
+```math
 V_t^d(a) =
 \max_{a^{+} \geq \underline a}
 \left[
@@ -71,33 +71,33 @@ V_t^d(a) =
 \underbrace{\psi_t(d)}_{\text{work cost or retirement amenity}} +
 \underbrace{\beta V_{t+1}^{m'(d)}(a^{+})}_{\text{continuation value under next status}}
 \right].
-$$
+```
 
 This branch Bellman equation solves work and retirement as separate
 continuous-saving problems.
 
 The branch objects are
 
-$$
+```math
 \begin{aligned}
 c_t^d(a,a^{+}) &= R a + y_t(d) - a^{+}, \\
 \widetilde V_t^d(a,a^{+}) &=
 u(c_t^d(a,a^{+}))+\psi_t(d)+\beta V_{t+1}^{m'(d)}(a^{+}).
 \end{aligned}
-$$
+```
 
 The branch maximization is over feasible next assets with positive
 consumption, so infeasible choices are discarded.
 
 The active and retired value functions are then
 
-$$
+```math
 V_t^1(a) =
 V_t^{\mathrm{retire}}(a),
 \qquad
 V_t^0(a)=
 \max \lbrace V_t^{\mathrm{work}}(a), V_t^{\mathrm{retire}}(a) \rbrace.
-$$
+```
 
 The upper envelope chooses retirement where the retirement branch value exceeds
 the work branch value.
@@ -107,97 +107,97 @@ retirement kink instead of forcing the value function to be globally concave.
 
 On a fixed branch, the continuous saving problem has the Euler equation
 
-$$
+```math
 u'(c_t^d(a^{+})) =
 \beta R
 \frac{\partial V_{t+1}^{m'(d)}(a^{+})}{\partial a^{+}}.
-$$
+```
 
-Write $a_i^{+}$ for a candidate next-period asset point on the exogenous grid.
-Write $\mu_{t+1}^{m'(d)}(a_i^{+})$ for the next-period marginal value evaluated
+Write $`a_i^{+}`$ for a candidate next-period asset point on the exogenous grid.
+Write $`\mu_{t+1}^{m'(d)}(a_i^{+})`$ for the next-period marginal value evaluated
 at that candidate asset.
 
-$$
+```math
 \mu_{t+1}^{m'(d)}(a_i^{+}) =
 \frac{\partial V_{t+1}^{m'(d)}(a_i^{+})}{\partial a^{+}}.
-$$
+```
 
 EGM works backward from next assets: choose a grid point for tomorrow's assets,
 compute the marginal value of arriving there, then invert marginal utility to
 recover today's consumption.
 
-$$
+```math
 c_{t,i}^d =
 (\beta R \mu_{t+1}^{m'(d)}(a_i^{+}))^{-1/\gamma}.
-$$
+```
 
 The endogenous current asset attached to that next-asset point is
 
-$$
+```math
 a_{t,i}^{\mathrm{endo},d} =
 \frac{c_{t,i}^d + a_i^{+} - y_t(d)}{R}.
-$$
+```
 
 Each branch produces its own endogenous grid and value curve:
 
-Here $a^{+} = a_i^{+}$ is fixed at each grid point, so $\widetilde V_t^d(a_{t,i}^{\mathrm{endo},d})$ is shorthand for $\widetilde V_t^d(a_{t,i}^{\mathrm{endo},d}, a_i^{+})$.
+Here $`a^{+} = a_i^{+}`$ is fixed at each grid point, so $`\widetilde V_t^d(a_{t,i}^{\mathrm{endo},d})`$ is shorthand for $`\widetilde V_t^d(a_{t,i}^{\mathrm{endo},d}, a_i^{+})`$.
 
-$$
+```math
 \widetilde V_t^d(a_{t,i}^{\mathrm{endo},d}) =
 u(c_{t,i}^d)+\psi_t(d)+\beta V_{t+1}^{m'(d)}(a_i^{+}).
-$$
+```
 
 After sorting and dropping repeated endogenous assets, DC-EGM interpolates the
 branch curve back to the common current-asset grid:
 
-$$
+```math
 g_t^d(a)=\mathrm{interp}\left(a; 
 a_{t,i}^{\mathrm{endo},d}, a_i^{+}\right),
 \qquad
 V_t^d(a)=\mathrm{interp}\left(a; 
 a_{t,i}^{\mathrm{endo},d}, \widetilde V_t^d(a_{t,i}^{\mathrm{endo},d})\right).
-$$
+```
 
 For current assets below the first endogenous grid point, the borrowing
 constraint binds:
 
-$$
+```math
 g_t^d(a)=\underline a,\qquad
 c_t^d(a)=R a+y_t(d)-\underline a.
-$$
+```
 
-In the constraint-binding region, $c_t^d(a)$ abbreviates $c_t^d(a,\underline a)$ with $a^{+}=\underline a$; elsewhere, $c_t^d(a)$ abbreviates $c_t^d(a,g_t^d(a))$ with $a^{+}$ at the optimal next asset.
+In the constraint-binding region, $`c_t^d(a)`$ abbreviates $`c_t^d(a,\underline a)`$ with $`a^{+}=\underline a`$; elsewhere, $`c_t^d(a)`$ abbreviates $`c_t^d(a,g_t^d(a))`$ with $`a^{+}`$ at the optimal next asset.
 
 The final active policies copy the winning branch:
 
-$$
+```math
 \begin{aligned}
 d_t^{\ast}(a) &=
 \arg\max_{d \in \lbrace \mathrm{work},\mathrm{retire} \rbrace} V_t^d(a),\\
 g_t^0(a) &= g_t^{d_t^{\ast}(a)}(a),\\
 c_t^0(a) &= c_t^{d_t^{\ast}(a)}(a).
 \end{aligned}
-$$
+```
 
 ## Model Setup
 
 | Symbol | Calibration | Meaning |
 |---|---:|---|
-| $t$ | ages 55-70 | Finite-horizon retirement window |
-| $a_t$ | grid on [0.0, 22.0] | Assets at the start of age $t$ |
-| $m_t$ | $0$ active, $1$ retired | Absorbing retirement status |
-| $d_t$ | $\mathrm{work}$ or $\mathrm{retire}$ | Discrete labor-supply choice |
-| $c_t$ | residual from budget | Consumption after choosing next assets |
-| $a_i^{+}$ | 420 points | Exogenous next-asset grid used by DC-EGM |
-| $a^{\mathrm{endo},d}_{t,i}$ | branch-specific | Current asset implied by Euler inversion on branch $d$ |
-| $\beta$ | 0.96 | Discount factor |
-| $R=1+r$ | 1.02 | Gross asset return |
-| $\gamma$ | 2.0 | CRRA curvature |
-| $y_t(\mathrm{retire})$ | 0.78 | Pension income after retirement |
-| $\psi_t(\mathrm{retire})$ | 0.00 | Retirement amenity relative to work cost |
-| $\omega_B$ | 1.15 | Terminal bequest weight |
-| $\bar b$ | 1.0 | Bequest utility floor |
-| $\underline a$ | 0.0 | Borrowing limit on next assets |
+| $`t`$ | ages 55-70 | Finite-horizon retirement window |
+| $`a_t`$ | grid on [0.0, 22.0] | Assets at the start of age $`t`$ |
+| $`m_t`$ | $`0`$ active, $`1`$ retired | Absorbing retirement status |
+| $`d_t`$ | $`\mathrm{work}`$ or $`\mathrm{retire}`$ | Discrete labor-supply choice |
+| $`c_t`$ | residual from budget | Consumption after choosing next assets |
+| $`a_i^{+}`$ | 420 points | Exogenous next-asset grid used by DC-EGM |
+| $`a^{\mathrm{endo},d}_{t,i}`$ | branch-specific | Current asset implied by Euler inversion on branch $`d`$ |
+| $`\beta`$ | 0.96 | Discount factor |
+| $`R=1+r`$ | 1.02 | Gross asset return |
+| $`\gamma`$ | 2.0 | CRRA curvature |
+| $`y_t(\mathrm{retire})`$ | 0.78 | Pension income after retirement |
+| $`\psi_t(\mathrm{retire})`$ | 0.00 | Retirement amenity relative to work cost |
+| $`\omega_B`$ | 1.15 | Terminal bequest weight |
+| $`\bar b`$ | 1.0 | Bequest utility floor |
+| $`\underline a`$ | 0.0 | Borrowing limit on next assets |
 | Brute-force audit grid | 150 assets | Smaller benchmark grid for exhaustive search |
 | Synthetic panel | 8,000 households | Initial assets lognormal with median 2.8 (arithmetic mean 3.06) |
 
@@ -212,20 +212,20 @@ instead inverts the Euler equation on each feasible branch, maps tomorrow's
 asset grid back to today's assets, and only then compares work against
 retirement.
 
-For each branch $d$, DC-EGM constructs points
+For each branch $`d`$, DC-EGM constructs points
 
-$$
+```math
 (a_{t,i}^{\mathrm{endo},d}, c_{t,i}^d, a_i^{+}, \widetilde V_t^d(a_{t,i}^{\mathrm{endo},d})).
-$$
+```
 
 Interpolation converts those branch-specific points into functions on the
 common current-asset grid. The active policy is then
 
-$$
+```math
 d_t^{\ast}(a)=
 \mathrm{work} \quad \text{if } V_t^{\mathrm{work}}(a) \geq V_t^{\mathrm{retire}}(a),
 \quad \text{and } \mathrm{retire} \text{ otherwise}.
-$$
+```
 
 The selected consumption and saving policies are copied from the winning branch.
 

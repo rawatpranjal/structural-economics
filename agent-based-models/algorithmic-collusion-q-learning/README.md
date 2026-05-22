@@ -10,77 +10,77 @@ This tutorial is deliberately smaller than the Calvano, Calzolari, Denicolo, and
 
 ## Equations
 
-There are two firms, indexed by $i = 1,2$. Firm $i$ chooses price $p_i$ and has
-constant marginal cost $c$. Product quality is $a$, the outside-option value is
-$a_0$, and $\mu$ controls product differentiation. The inside utility index is
+There are two firms, indexed by $`i = 1,2`$. Firm $`i`$ chooses price $`p_i`$ and has
+constant marginal cost $`c`$. Product quality is $`a`$, the outside-option value is
+$`a_0`$, and $`\mu`$ controls product differentiation. The inside utility index is
 
-$$
+```math
 u_i = \frac{\lbrace a - p_i\rbrace}{\lbrace\mu\rbrace}, \qquad u_0 = \frac{\lbrace a_0\rbrace}{\lbrace\mu\rbrace}.
-$$
+```
 
 The braces mark the numerator and denominator of each utility index. A lower
-price raises $u_i$; a larger $\mu$ makes a given price difference matter less.
+price raises $`u_i`$; a larger $`\mu`$ makes a given price difference matter less.
 Logit demand is
 
-$$
+```math
 s_i(p) = \frac{\exp(u_i)}{\exp(u_0) + \sum_{j=1}^2 \exp(u_j)}.
-$$
+```
 
-The numerator is product $i$'s exponentiated utility. The denominator is the
+The numerator is product $`i`$'s exponentiated utility. The denominator is the
 outside-good term plus the exponentiated utilities of the two inside goods.
 
 Current profit is
 
-$$
+```math
 \pi_i(p) = (p_i - c)s_i(p).
-$$
+```
 
 The own-price derivative of the logit share is
 
-$$
+```math
 \frac{\partial s_i}{\partial p_i} = -\frac{s_i(p)(1-s_i(p))}{\mu}.
-$$
+```
 
-The static Bertrand-Nash price sets $\partial \pi_i / \partial p_i = 0$:
+The static Bertrand-Nash price sets $`\partial \pi_i / \partial p_i = 0`$:
 
-$$
+```math
 \frac{\partial \pi_i}{\partial p_i} = s_i(p) + (p_i-c)\frac{\partial s_i}{\partial p_i} = s_i(p)[1 - \frac{(p_i-c)(1-s_i(p))}{\mu}] = 0.
-$$
+```
 
-Since $s_i(p)>0$, the Bertrand first-order condition is
+Since $`s_i(p)>0`$, the Bertrand first-order condition is
 
-$$
+```math
 1 - \frac{(p_i - c)(1 - s_i(p))}{\mu} = 0.
-$$
+```
 
-The joint monopolist maximizes $\Pi(p)=\pi_1(p)+\pi_2(p)$. Its condition for
-product $i$ keeps the Bertrand own-profit term and adds the cross-product term:
+The joint monopolist maximizes $`\Pi(p)=\pi_1(p)+\pi_2(p)`$. Its condition for
+product $`i`$ keeps the Bertrand own-profit term and adds the cross-product term:
 
-$$
+```math
 1 - \frac{(p_i - c)(1 - s_i(p))}{\mu} + \frac{(p_j - c)s_j(p)}{\mu} = 0,\quad j \ne i.
-$$
+```
 
-The price grid uses the static benchmarks. Let $p_B$ be the Bertrand price,
-$p_M$ be the monopoly price, and $\Delta$ be the grid step. The action set is
+The price grid uses the static benchmarks. Let $`p_B`$ be the Bertrand price,
+$`p_M`$ be the monopoly price, and $`\Delta`$ be the grid step. The action set is
 
-$$
+```math
 \mathcal{P} = \lbrace p_B-\Delta\rbrace \cup \lbrace p_B, p_B+\Delta,\dots,p_M\rbrace \cup \lbrace p_M+\Delta\rbrace.
-$$
+```
 
 The Q-learning state is the previous-period price-index pair
-$s_t = (a_{1,t-1}, a_{2,t-1})$ (here $s_t$ is the Q-learning state pair, distinct from the demand share $s_i(p)$ defined above). Firm $i$'s action is its current price-grid
-index $a_{i,t}$ (where $a_{i,t}$ is a price-grid index, not the product quality parameter $a$ defined above). After observing current profit and next state $s_{t+1}$,
+$`s_t = (a_{1,t-1}, a_{2,t-1})`$ (here $`s_t`$ is the Q-learning state pair, distinct from the demand share $`s_i(p)`$ defined above). Firm $`i`$'s action is its current price-grid
+index $`a_{i,t}`$ (where $`a_{i,t}`$ is a price-grid index, not the product quality parameter $`a`$ defined above). After observing current profit and next state $`s_{t+1}`$,
 the tabular update is
 
-$$
+```math
 Q_i(s_t, a_{i,t}) \leftarrow (1-\alpha) Q_i(s_t, a_{i,t}) + \alpha [\pi_i(p_t) + \delta \max_a Q_i(s_{t+1}, a)].
-$$
+```
 
 The reported collusion index is
 
-$$
+```math
 \mathrm{CI} = \frac{\bar p_{\mathrm{learned}} - p_{\mathrm{Bertrand}}}{p_{\mathrm{Monopoly}} - p_{\mathrm{Bertrand}}}.
-$$
+```
 
 ## Model Setup
 
@@ -88,19 +88,19 @@ The grid is centered on the static economic benchmarks. First solve the Bertrand
 
 | Object | Value | Role |
 |---|---:|---|
-| Firms $n$ | 2 | Symmetric sellers |
-| Product value $a$ | 2.00 | Inside-good quality |
-| Outside value $a_0$ | 0.00 | Outside option utility |
-| Differentiation $\mu$ | 0.25 | Smaller values make products closer substitutes |
-| Marginal cost $c$ | 1.00 | Constant production cost |
+| Firms $`n`$ | 2 | Symmetric sellers |
+| Product value $`a`$ | 2.00 | Inside-good quality |
+| Outside value $`a_0`$ | 0.00 | Outside option utility |
+| Differentiation $`\mu`$ | 0.25 | Smaller values make products closer substitutes |
+| Marginal cost $`c`$ | 1.00 | Constant production cost |
 | Bertrand price | 1.473 | Static competitive benchmark |
 | Monopoly price | 1.925 | Joint-profit benchmark |
 | Price grid size | 15 | Discrete action count per firm |
 | Training seed | 202 | Fixed calibrated run |
 | Training steps | 250,000 | Q-learning updates |
-| Discount factor $\delta$ | 0.95 | Value of future profit |
-| Learning rate $\alpha$ | 0.15 | Q-table update weight |
-| Exploration decay $\beta$ | 4e-06 | $\Pr(\text{explore at }t)=\exp(-\beta t)$ |
+| Discount factor $`\delta`$ | 0.95 | Value of future profit |
+| Learning rate $`\alpha`$ | 0.15 | Q-table update weight |
+| Exploration decay $`\beta`$ | 4e-06 | $`\Pr(\text{explore at }t)=\exp(-\beta t)`$ |
 
 These are replication-style hyperparameters, but the computational budget is intentionally compact. The page reports one fixed run rather than a multi-seed robustness table.
 

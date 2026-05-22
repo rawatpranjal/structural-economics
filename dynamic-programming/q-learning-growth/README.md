@@ -4,47 +4,47 @@
 
 A planner allocates output between consumption and productive capital. Productivity moves stochastically each period. The saving choice carries today's shock into tomorrow's capital stock.
 
-The target object is the optimal saving rule $k'(k, z)$. Log utility, Cobb-Douglas production, and full depreciation pin down a closed form, $k'(k, z) = \alpha\beta z A k^{\alpha}$. The closed form audits any numerical solver.
+The target object is the optimal saving rule $`k'(k, z)`$. Log utility, Cobb-Douglas production, and full depreciation pin down a closed form, $`k'(k, z) = \alpha\beta z A k^{\alpha}`$. The closed form audits any numerical solver.
 
 Value iteration solves the Bellman equation through the productivity transition matrix. Q-learning replaces the matrix with sampled transitions. The same saving rule emerges from interaction alone.
 
 ## Equations
 
-Let $k_t$ be capital and $z_t$ a productivity shock. Output is $y_t = z_t A k_t^{\alpha}$, the resource constraint is $c_t + k_{t+1} = y_t$, and productivity follows $\log z_{t+1} = \rho \log z_t + \sigma \varepsilon_{t+1}$ with $\varepsilon_{t+1} \sim N(0, 1)$.
+Let $`k_t`$ be capital and $`z_t`$ a productivity shock. Output is $`y_t = z_t A k_t^{\alpha}`$, the resource constraint is $`c_t + k_{t+1} = y_t`$, and productivity follows $`\log z_{t+1} = \rho \log z_t + \sigma \varepsilon_{t+1}`$ with $`\varepsilon_{t+1} \sim N(0, 1)`$.
 
 The planner's value function solves the Bellman equation:
 
-$$
+```math
 V(k, z) = \max_{k' \in [0, y]} \lbrace \log(z A k^{\alpha} - k') + \beta \mathbb{E}[V(k', z') \mid z] \rbrace.
-$$
+```
 
-Tabular Q-learning stores an action-value $Q(s, a)$ for each state-action pair and updates it from observed transitions:
+Tabular Q-learning stores an action-value $`Q(s, a)`$ for each state-action pair and updates it from observed transitions:
 
-$$
+```math
 Q(s, a) \leftarrow Q(s, a) + \alpha_t [ r + \beta \max_{a'} Q(s', a') - Q(s, a) ].
-$$
+```
 
-Here $\alpha_t$ is the step size (learning rate) for update $t$.
+Here $`\alpha_t`$ is the step size (learning rate) for update $`t`$.
 
-Exploration draws each transition uniformly over feasible state-action pairs $(s, a)$, so every region of the grid receives updates regardless of the on-policy distribution. The greedy policy is read off the table as $a^{\ast}(s) = \arg\max_a Q(s, a)$.
+Exploration draws each transition uniformly over feasible state-action pairs $`(s, a)`$, so every region of the grid receives updates regardless of the on-policy distribution. The greedy policy is read off the table as $`a^{\ast}(s) = \arg\max_a Q(s, a)`$.
 
 ## Model Setup
 
 | Object | Value |
 |--------|-------|
-| Capital state $k$ | 41 grid points on $[0.20, 1.80] \cdot k_{ss}$ |
-| Action $k'$ | 21 grid points on the same capital range |
-| Productivity $z$ | 7-state Rouwenhorst chain |
-| Capital share $\alpha$ | 0.36 |
-| Discount $\beta$ | 0.95 |
-| Productivity persistence $\rho$ | 0.70 |
-| Innovation std $\sigma$ | 0.10 |
-| TFP parameter $A$ | 1.0 |
+| Capital state $`k`$ | 41 grid points on $`[0.20, 1.80] \cdot k_{ss}`$ |
+| Action $`k'`$ | 21 grid points on the same capital range |
+| Productivity $`z`$ | 7-state Rouwenhorst chain |
+| Capital share $`\alpha`$ | 0.36 |
+| Discount $`\beta`$ | 0.95 |
+| Productivity persistence $`\rho`$ | 0.70 |
+| Innovation std $`\sigma`$ | 0.10 |
+| TFP parameter $`A`$ | 1.0 |
 | Q-learning steps per seed | 1,500,000 |
 | Q-learning seeds (averaged) | 4 |
 | DQN training steps | 250,000 |
-| Benchmark | $k'(k, z) = \alpha\beta z A k^{\alpha}$ |
-| Steady-state capital $k_{ss}$ | 0.187 |
+| Benchmark | $`k'(k, z) = \alpha\beta z A k^{\alpha}`$ |
+| Steady-state capital $`k_{ss}`$ | 0.187 |
 
 ## Solution Method
 
@@ -52,7 +52,7 @@ Value iteration sweeps the discrete Bellman operator until the value function st
 
 Tabular Q-learning sees one transition at a time. Each step samples a state and a feasible action uniformly at random. The productivity Markov chain delivers the next state. The Bellman temporal-difference error corrects the action-value estimate.
 
-Uniform sampling makes coverage of the grid independent of the steady-state distribution. A Robbins-Monro step size $1 / n_{s,a}^{0.6}$ decays with visit counts. Independent runs are averaged to dampen the action-argmax variance left on individual seeds.
+Uniform sampling makes coverage of the grid independent of the steady-state distribution. A Robbins-Monro step size $`1 / n_{s,a}^{0.6}`$ decays with visit counts. Independent runs are averaged to dampen the action-argmax variance left on individual seeds.
 
 ```text
 Algorithm: tabular Q-learning with uniform exploration
@@ -67,7 +67,7 @@ for t = 1, ..., T:
     Q(s_t, a_t) += alpha_t * (r_t + beta * max_a Q(s[t+1], a) - Q(s_t, a_t))
 ```
 
-The deep-RL appendix replaces the table with a small two-layer MLP $Q_\theta(k, z, \cdot)$. A replay buffer stores recent transitions. The loss is a Huber penalty against a slow-moving target network.
+The deep-RL appendix replaces the table with a small two-layer MLP $`Q_\theta(k, z, \cdot)`$. A replay buffer stores recent transitions. The loss is a Huber penalty against a slow-moving target network.
 
 ```text
 Algorithm: deep Q-network on continuous (k, z)
@@ -92,7 +92,7 @@ Policy error against the closed form falls as the agent visits more states. The 
 
 <img src="figures/learning-curve.png" alt="Policy RMSE versus number of Q-learning steps" width="80%">
 
-The learned value surface is monotone in capital and increasing in productivity. White contours mark the closed-form saving rule. The iso-policy curves rise with $z$.
+The learned value surface is monotone in capital and increasing in productivity. White contours mark the closed-form saving rule. The iso-policy curves rise with $`z`$.
 
 <img src="figures/value-surface.png" alt="Q-learning value surface with closed-form policy contours" width="80%">
 

@@ -2,64 +2,64 @@
 
 ## Overview
 
-Value function iteration stores $V$ at a finite grid and reads it off-grid every step. Three classical interpolators are the workhorses: piecewise linear, natural cubic spline, and PCHIP (piecewise cubic Hermite interpolating polynomial).
+Value function iteration stores $`V`$ at a finite grid and reads it off-grid every step. Three classical interpolators are the workhorses: piecewise linear, natural cubic spline, and PCHIP (piecewise cubic Hermite interpolating polynomial).
 
-This tutorial fits each one to two targets. The first target is the closed-form cake-eating value function $V(W)$, which is smooth and monotone. The second is a stylized consumption policy with a borrowing-constraint kink. The level is continuous but the slope drops sharply at $a_{\text{kink}}$.
+This tutorial fits each one to two targets. The first target is the closed-form cake-eating value function $`V(W)`$, which is smooth and monotone. The second is a stylized consumption policy with a borrowing-constraint kink. The level is continuous but the slope drops sharply at $`a_{\text{kink}}`$.
 
 Cubic splines shine on the smooth target. They ring on the kinked one. Linear interpolation and PCHIP do not.
 
 ## Equations
 
-The general problem is to recover an unknown function $f : [x_0, x_N] \to \mathbb{R}$ from values $\lbrace(x_i, y_i)\rbrace_{i=0}^{N}$ at a finite set of nodes.
-An interpolant $\hat f$ matches the data ($\hat f(x_i) = y_i$ for every $i$) and provides a rule for evaluating $\hat f(x)$ at any $x$ between nodes.
+The general problem is to recover an unknown function $`f : [x_0, x_N] \to \mathbb{R}`$ from values $`\lbrace(x_i, y_i)\rbrace_{i=0}^{N}`$ at a finite set of nodes.
+An interpolant $`\hat f`$ matches the data ($`\hat f(x_i) = y_i`$ for every $`i`$) and provides a rule for evaluating $`\hat f(x)`$ at any $`x`$ between nodes.
 
 ### The test instances
 
 Two targets stress different smoothness regimes.
 The first target is the closed-form log-utility cake-eating value function on a smooth interior.
 
-$$
+```math
 V(W) = \frac{\log((1-\beta) W)}{1-\beta} + \frac{\beta \log \beta}{(1-\beta)^2}.
-$$
+```
 
-The second target is a stylised consumption policy with a borrowing constraint at $a_{\text{kink}}$.
+The second target is a stylised consumption policy with a borrowing constraint at $`a_{\text{kink}}`$.
 
-$$
+```math
 c(a) =
 \begin{cases}
 (1 + r)  a + y, & a \leq a_{\text{kink}} \\
 c(a_{\text{kink}}) + (1 + r)  \mathrm{MPC}  (a - a_{\text{kink}}), & a > a_{\text{kink}}.
 \end{cases}
-$$
+```
 
 Below the kink the agent is constrained and consumes everything.
-Above the kink they save with marginal propensity to consume $\mathrm{MPC} < 1$.
+Above the kink they save with marginal propensity to consume $`\mathrm{MPC} < 1`$.
 The function is continuous in level.
-The slope drops from $(1 + r)$ to $(1 + r) \mathrm{MPC}$ at $a_{\text{kink}}$.
+The slope drops from $`(1 + r)`$ to $`(1 + r) \mathrm{MPC}`$ at $`a_{\text{kink}}`$.
 
 The next three subsections describe one method at a time.
 
 ### Method 1: Piecewise linear
 
 Piecewise linear interpolation connects adjacent nodes with straight segments.
-For a query $x$ in $[x_i, x_{i+1}]$ the interpolant is the convex combination of the bracketing values.
+For a query $`x`$ in $`[x_i, x_{i+1}]`$ the interpolant is the convex combination of the bracketing values.
 
-$$
+```math
 \hat{f}(x) = \frac{x_{i+1} - x}{x_{i+1} - x_i}  f(x_i) + \frac{x - x_i}{x_{i+1} - x_i}  f(x_{i+1}).
-$$
+```
 
-The interpolant is $C^0$ but generally not differentiable at the nodes.
+The interpolant is $`C^0`$ but generally not differentiable at the nodes.
 
 ### Method 2: Natural cubic spline
 
-The natural cubic spline fits a piecewise cubic with $\hat{f}, \hat{f}', \hat{f}''$ continuous everywhere and $\hat{f}''(x_0) = \hat{f}''(x_N) = 0$.
+The natural cubic spline fits a piecewise cubic with $`\hat{f}, \hat{f}', \hat{f}''`$ continuous everywhere and $`\hat{f}''(x_0) = \hat{f}''(x_N) = 0`$.
 The coefficients solve a tridiagonal linear system for the second derivatives at interior nodes.
-The result is $C^2$ and is the smoothest interpolant in the integrated-squared-second-derivative sense.
+The result is $`C^2`$ and is the smoothest interpolant in the integrated-squared-second-derivative sense.
 
 ### Method 3: PCHIP
 
 PCHIP fits a piecewise cubic Hermite polynomial whose endpoint slopes are chosen by a monotonicity-preserving rule (Fritsch-Carlson 1980).
-The result is $C^1$ and never overshoots a monotone target.
+The result is $`C^1`$ and never overshoots a monotone target.
 The trade against the cubic spline is between curvature and shape preservation.
 Cubic splines bend smoothly but can ring near a kink.
 PCHIP holds the shape but drops one order of smoothness.
@@ -68,19 +68,19 @@ PCHIP holds the shape but drops one order of smoothness.
 
 | Symbol | Value | Role |
 |--------|-------|------|
-| $\beta$ | 0.9 | Discount factor in the cake-eating target |
-| Smooth domain $[W_\min, W_\max]$ | $[0.05,  1.0]$ | Wealth range for the smooth target |
-| Kinked domain $[a_\min, a_\max]$ | $[0.05,  5.0]$ | Asset range for the kinked target |
-| $a_{\text{kink}}$ | 0.5 | Borrowing-constraint kink in the policy |
-| $r$ | 0.04 | Interest rate in the consumption policy |
-| $y$ | 0.5 | Endowment (income) in the consumption policy |
-| $\mathrm{MPC}$ | 0.1 | Marginal propensity to consume above the kink |
-| Display node count $N$ | 10 | Nodes per fit in the target-vs-fit figure |
+| $`\beta`$ | 0.9 | Discount factor in the cake-eating target |
+| Smooth domain $`[W_\min, W_\max]`$ | $`[0.05,  1.0]`$ | Wealth range for the smooth target |
+| Kinked domain $`[a_\min, a_\max]`$ | $`[0.05,  5.0]`$ | Asset range for the kinked target |
+| $`a_{\text{kink}}`$ | 0.5 | Borrowing-constraint kink in the policy |
+| $`r`$ | 0.04 | Interest rate in the consumption policy |
+| $`y`$ | 0.5 | Endowment (income) in the consumption policy |
+| $`\mathrm{MPC}`$ | 0.1 | Marginal propensity to consume above the kink |
+| Display node count $`N`$ | 10 | Nodes per fit in the target-vs-fit figure |
 | Convergence sweep | [np.int64(5), np.int64(10), np.int64(20), np.int64(40), np.int64(80)] | Node counts for the smooth-target sup-norm sweep |
 
 ## Solution Method
 
-Each method takes nodes $(x_i, y_i)$ and returns a function on $[x_0, x_N]$.
+Each method takes nodes $`(x_i, y_i)`$ and returns a function on $`[x_0, x_N]`$.
 
 **Piecewise linear.** Connect adjacent nodes with straight segments. The convex-combination formula evaluates the segment containing the query point.
 
@@ -93,7 +93,7 @@ Output: y_hat
   y_hat <- (1 - w) y_i + w y[i+1]
 ```
 
-**Natural cubic spline.** Fit a piecewise cubic with $C^2$ continuity and zero second derivatives at the endpoints.
+**Natural cubic spline.** Fit a piecewise cubic with $`C^2`$ continuity and zero second derivatives at the endpoints.
 
 ```text
 Algorithm: Natural cubic spline
@@ -125,25 +125,25 @@ The linear branch reuses `lib.interpolate.linear_interp`. The cubic and PCHIP br
 
 At 10 nodes the three methods agree closely on the smooth value function.
 
-On the kinked policy the cubic spline rings near $a_{\text{kink}}$: $C^2$ smoothness forces it to oscillate around the slope discontinuity.
+On the kinked policy the cubic spline rings near $`a_{\text{kink}}`$: $`C^2`$ smoothness forces it to oscillate around the slope discontinuity.
 
 Piecewise linear and PCHIP track the kink without overshoot, at the cost of a corner where the slope changes.
 
 <img src="figures/target-vs-fit.png" alt="Three approximations against the smooth (left) and kinked (right) targets at the same node count" width="80%">
 
-On the smooth target all three errors concentrate near $W = 0$, where curvature is largest. PCHIP is uniformly smallest, ahead of the cubic spline at this node count.
+On the smooth target all three errors concentrate near $`W = 0`$, where curvature is largest. PCHIP is uniformly smallest, ahead of the cubic spline at this node count.
 
-On the kinked target the cubic-spline error oscillates above and below zero around $a_{\text{kink}}$ (sup-error **4.57e-02**).
+On the kinked target the cubic-spline error oscillates above and below zero around $`a_{\text{kink}}`$ (sup-error **4.57e-02**).
 
 PCHIP eliminates the ringing at the same node count (sup-error **2.90e-02**).
 
 Piecewise linear under-shoots in the same interval (sup-error **7.63e-02**) but stays monotone.
 
-<img src="figures/error-curves.png" alt="Pointwise error of each method on the smooth and kinked targets at $N=10$ nodes" width="80%">
+<img src="figures/error-curves.png" alt="Pointwise error of each method on the smooth and kinked targets at $`N=10`$ nodes" width="80%">
 
 The log-log sup-norm slopes on the smooth target are **-1.5** for piecewise linear, **-1.7** for the cubic spline, and **-2.0** for PCHIP.
 
-All three fall short of their textbook asymptotic rates. The cake-eating value function $V(W)$ has a logarithmic singularity as $W \to 0$, so curvature blows up near the left edge of the domain. That near-singular region keeps every method below its smooth-function rate at these node counts; the cubic spline does not reach the $-4$ slope a fully smooth target would give.
+All three fall short of their textbook asymptotic rates. The cake-eating value function $`V(W)`$ has a logarithmic singularity as $`W \to 0`$, so curvature blows up near the left edge of the domain. That near-singular region keeps every method below its smooth-function rate at these node counts; the cubic spline does not reach the $`-4`$ slope a fully smooth target would give.
 
 On a kinked target the smoothness advantage disappears entirely, and PCHIP becomes the right default because it preserves shape.
 
@@ -151,7 +151,7 @@ On a kinked target the smoothness advantage disappears entirely, and PCHIP becom
 
 At a fixed budget of 10 nodes the table summarises sup-norm and L2 errors for each method on both targets. PCHIP (shape-preserving) is the lowest-error choice on the smooth target; PCHIP (shape-preserving) is the lowest-error choice on the kinked one.
 
-**Sup-norm and L2 errors at $N = 10$ nodes for each method on the smooth and kinked targets**
+**Sup-norm and L2 errors at $`N = 10`$ nodes for each method on the smooth and kinked targets**
 
 | Method                   |   Smooth sup-error |   Smooth L2 error |   Kinked sup-error |   Kinked L2 error |
 |:-------------------------|-------------------:|------------------:|-------------------:|------------------:|

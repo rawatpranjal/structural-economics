@@ -4,73 +4,73 @@
 
 A supplier may invest in tooling useful only for one buyer. The asset raises joint surplus. After the asset is sunk, bargaining may leave the supplier with too little of the return. The supplier then invests for private surplus.
 
-The object is a governance choice. Asset specificity $s\in[0,1]$ measures how hard the asset is to redeploy. The choices are spot exchange, a long-term contract, and vertical integration. Each form changes investment incentives and governance cost.
+The object is a governance choice. Asset specificity $`s\in[0,1]`$ measures how hard the asset is to redeploy. The choices are spot exchange, a long-term contract, and vertical integration. Each form changes investment incentives and governance cost.
 
-For each $s$, the code computes investment and surplus under each form. A grid search then selects the surplus-maximizing boundary choice. The output is a set of specificity thresholds.
+For each $`s`$, the code computes investment and surplus under each form. A grid search then selects the surplus-maximizing boundary choice. The output is a set of specificity thresholds.
 
 ## Equations
 
-Let $s$ denote asset specificity.
-Let $g\in\mathcal{G}$ index spot exchange, a long-term contract, and vertical
+Let $`s`$ denote asset specificity.
+Let $`g\in\mathcal{G}`$ index spot exchange, a long-term contract, and vertical
 integration.
-Relationship-specific investment $x$ creates gross value
+Relationship-specific investment $`x`$ creates gross value
 
-$$
+```math
 V(x) = \theta x - \frac{1}{2}x^2
-$$
+```
 
-First-best investment solves $V'(x)=0$, so
+First-best investment solves $`V'(x)=0`$, so
 
-$$
+```math
 x^{\ast} = \theta
-$$
+```
 
-Regime $g$ lets the investor capture share $b_g(s)$ of revenue $\theta x$.
+Regime $`g`$ lets the investor capture share $`b_g(s)`$ of revenue $`\theta x`$.
 The private first-order condition is
 
-$$
+```math
 b_g(s)\theta - x = 0,
-$$
+```
 
 which gives
 
-$$
+```math
 x_g(s) = b_g(s)\theta
-$$
+```
 
-Total surplus subtracts governance cost $F_g(s)$:
+Total surplus subtracts governance cost $`F_g(s)`$:
 
-$$
+```math
 W_g(s) = \theta x_g(s) - \frac{1}{2}x_g(s)^2 - F_g(s)
-$$
+```
 
 The incentive schedules are
 
-$$
+```math
 b_{\text{spot}}(s)=0.72-0.55s,\quad
 b_{\text{contract}}(s)=0.72-0.25s,\quad
 b_{\text{integration}}(s)=0.74-0.03s.
-$$
+```
 
 Governance costs are
 
-$$
+```math
 F_{\text{spot}}(s)=0.02+0.04s,\quad
 F_{\text{contract}}(s)=0.38+0.03s,\quad
 F_{\text{integration}}(s)=1.05-0.35s.
-$$
+```
 
 The selected governance form is
 
-$$
+```math
 g^{\ast}(s)=\arg\max_{g\in\mathcal{G}} W_g(s).
-$$
+```
 
 The first-best surplus benchmark is
 
-$$
+```math
 W^{\ast}=\frac{1}{2}\theta^2
-$$
+```
 
 ## Model Setup
 
@@ -78,17 +78,17 @@ The calibration is illustrative. Higher specificity weakens market incentives. C
 
 | Object | Interpretation |
 |--------|----------------|
-| $s\in[0,1]$ | Asset specificity, with higher $s$ meaning weaker redeployability outside the relationship |
-| $\theta=4$ | Marginal productivity scale, so the first-best investment is $x^{\ast}=4$ |
-| $b_g(s)$ | Share of revenue $\theta x$ captured by the investor under governance $g$ |
-| $F_g(s)$ | Drafting, monitoring, bureaucracy, and adaptation cost under governance $g$ |
+| $`s\in[0,1]`$ | Asset specificity, with higher $`s`$ meaning weaker redeployability outside the relationship |
+| $`\theta=4`$ | Marginal productivity scale, so the first-best investment is $`x^{\ast}=4`$ |
+| $`b_g(s)`$ | Share of revenue $`\theta x`$ captured by the investor under governance $`g`$ |
+| $`F_g(s)`$ | Drafting, monitoring, bureaucracy, and adaptation cost under governance $`g`$ |
 | Spot contract | Low fixed governance cost, but incentives fall sharply as specificity rises |
 | Long-term contract | More protection against hold-up, with moderate contracting cost |
 | Vertical integration | Stronger residual control rights, with higher internal governance cost |
 
 ## Solution Method
 
-Given $b_g(s)$, private investment has the closed form $x_g(s)=b_g(s)\theta$. The only numerical step is a grid comparison over $s$. At each point, the code evaluates $W_g(s)$ for the three governance forms. It keeps the form with the largest surplus.
+Given $`b_g(s)`$, private investment has the closed form $`x_g(s)=b_g(s)\theta`$. The only numerical step is a grid comparison over $`s`$. At each point, the code evaluates $`W_g(s)`$ for the three governance forms. It keeps the form with the largest surplus.
 
 ```text
 Inputs: specificity grid S, regimes G, productivity theta,
@@ -107,7 +107,7 @@ For each s in S:
 Outputs: investment schedules, surplus schedules, and governance regions
 ```
 
-In this calibration, spot exchange wins for $s\lesssim 0.21$. Long-term contracts win for $0.21\lesssim s\lesssim 0.37$. Vertical integration wins for $s\gtrsim 0.37$. These thresholds come from surplus comparisons.
+In this calibration, spot exchange wins for $`s\lesssim 0.21`$. Long-term contracts win for $`0.21\lesssim s\lesssim 0.37`$. Vertical integration wins for $`s\gtrsim 0.37`$. These thresholds come from surplus comparisons.
 
 ## Results
 

@@ -60,12 +60,12 @@ scan() {
   fi
 }
 
-scan "thin-space \\,"               '\\,'
-scan "escaped curly in math"        '\\\{|\\\}'
-scan "fragile \\big{ family"        '\\(big|Big|bigg|Bigg)\\?\{|\\(big|Big|bigg|Bigg)\\?\}'
+# Bare-dollar math is forbidden everywhere; the catalog uses code-fence
+# math syntax (`$`expr`$` inline, ```math fence for display). This is
+# the only authoritative check; the others below are KaTeX-genuine
+# pattern hits that still apply inside fenced math.
+scan "bare \$...\$ or \$\$...\$\$ math"  '(^|[^\\\`])\$[^$\`]+\$|^\$\$|\$\$$'
 scan "unbraced math-font macro"     '\\(mathbb|mathbf|mathcal|mathrm|mathfrak|mathit|mathsf|mathtt)[[:space:]]+[A-Za-z0-9]'
-scan "inline \$\$ (not own line)"   '^[^$]*[^[:space:]]+\$\$|\$\$[^$]*[^[:space:]]+$'
-scan "markdown link inside math"    '\$\$[^$]*\]\([^)]*\)[^$]*\$\$'
 
 echo
 if (( total == 0 )); then

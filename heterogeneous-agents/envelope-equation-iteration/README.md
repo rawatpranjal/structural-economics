@@ -4,57 +4,57 @@
 
 A CRRA household faces IID labor income and cannot borrow. Wealth is a buffer against low income. The policy says how assets shape consumption and saving.
 
-The object is the marginal continuation value $W_a(a)$. It measures the value of one more dollar before next period's income draw. EEI updates this curve directly with the envelope condition.
+The object is the marginal continuation value $`W_a(a)`$. It measures the value of one more dollar before next period's income draw. EEI updates this curve directly with the envelope condition.
 
 The computational need is to update this curve without solving for the whole value function. The Euler equation then recovers consumption at each asset-income state.
 
 ## Equations
 
-The household enters with assets $a$ and IID income $y_j$.
-Income has probabilities $\pi_j$ over $\lbrace y_1,\dots,y_{n_y}\rbrace$.
-With gross return $R = 1+r$, the Bellman equation is
+The household enters with assets $`a`$ and IID income $`y_j`$.
+Income has probabilities $`\pi_j`$ over $`\lbrace y_1,\dots,y_{n_y}\rbrace`$.
+With gross return $`R = 1+r`$, the Bellman equation is
 
-$$
+```math
 V(a,y_j) = \max_{a' \geq \underline a} 
 \lbrace u(R a + y_j - a') + \beta W(a') \rbrace,
 \qquad
 W(a') = \sum_{\ell=1}^{n_y}\pi_\ellV(a',y_\ell),
-$$
+```
 
-The policy is $g(a,y_j)$.
-Consumption is $c(a,y_j) = R a + y_j - g(a,y_j)$.
+The policy is $`g(a,y_j)`$.
+Consumption is $`c(a,y_j) = R a + y_j - g(a,y_j)`$.
 
 Preferences are CRRA:
 
-$$
+```math
 u(c) = \frac{c^{1-\gamma}-1}{1-\gamma},
 \qquad
 u'(c) = c^{-\gamma},
 \qquad
 (u')^{-1}(\mu) = \mu^{-1/\gamma}.
-$$
+```
 
-At an interior optimum, the Euler equation uses only $W_a(a')$:
+At an interior optimum, the Euler equation uses only $`W_a(a')`$:
 
-$$
+```math
 u'(c(a,y_j)) = \beta W_a(g(a,y_j)).
-$$
+```
 
 The envelope condition updates that object from the policy:
 
-$$
+```math
 W_a(a) = \sum_{\ell=1}^{n_y}\pi_\ellV_a(a,y_\ell) =
 R\sum_{\ell=1}^{n_y}\pi_\ellu'(c(a,y_\ell)).
-$$
+```
 
 These two equations close the system without using the value level.
 
-The borrowing limit binds when the household wants $a' < \underline a$.
-Then $g(a,y_j) = \underline a$ and the Euler inequality is
+The borrowing limit binds when the household wants $`a' < \underline a`$.
+Then $`g(a,y_j) = \underline a`$ and the Euler inequality is
 
-$$
+```math
 u'(R a + y_j - \underline a) \geq \beta W_a(\underline a),
-$$
+```
 
 This case produces high MPCs near zero assets.
 
@@ -62,16 +62,16 @@ This case produces high MPCs near zero assets.
 
 | Object | Value | Role |
 |---|---:|---|
-| CRRA $\gamma$ | 2.0 | Curvature; sets the precautionary motive and the slope of $W_a$ |
-| Discount factor $\beta$ | 0.95 | Annual time preference |
-| Net rate $r$ | 0.03 | Exogenous risk-free return |
-| Patience-return product $\beta R$ | 0.9785 | $<1$ rules out an unbounded asset target |
-| Income mean $\mu_y$ | 1.0 | Normalisation |
-| Income s.d. $\sigma_y$ | 0.2 | Width of the IID labor-income shock |
-| Income states $n_y$ | 5 | Width-fitted equal-spaced normal grid |
-| Borrowing limit $\underline a$ | 0.0 | Hard zero; binds with positive mass |
-| Upper grid bound $\bar a$ | 50.0 | Wide enough to contain the simulated tail |
-| EEI asset grid | 50 pts | Power-spaced; denser at $\underline a$ |
+| CRRA $`\gamma`$ | 2.0 | Curvature; sets the precautionary motive and the slope of $`W_a`$ |
+| Discount factor $`\beta`$ | 0.95 | Annual time preference |
+| Net rate $`r`$ | 0.03 | Exogenous risk-free return |
+| Patience-return product $`\beta R`$ | 0.9785 | $`<1`$ rules out an unbounded asset target |
+| Income mean $`\mu_y`$ | 1.0 | Normalisation |
+| Income s.d. $`\sigma_y`$ | 0.2 | Width of the IID labor-income shock |
+| Income states $`n_y`$ | 5 | Width-fitted equal-spaced normal grid |
+| Borrowing limit $`\underline a`$ | 0.0 | Hard zero; binds with positive mass |
+| Upper grid bound $`\bar a`$ | 50.0 | Wide enough to contain the simulated tail |
+| EEI asset grid | 50 pts | Power-spaced; denser at $`\underline a`$ |
 | Reference asset grid | 600 pts | Audit grid for the EEI policy |
 | Convergence tolerance | 1e-06 | Sup-norm on the consumption iterates |
 | Simulation | 50,000 households, 500 periods | Forward-iterated cross section |
@@ -79,18 +79,18 @@ This case produces high MPCs near zero assets.
 ## Solution Method
 
 EEI starts from a consumption policy.
-The envelope step computes $W_a(a_i)$ by averaging marginal utilities across income states.
-The Euler step solves for current consumption at each $(a_i,y_j)$.
+The envelope step computes $`W_a(a_i)`$ by averaging marginal utilities across income states.
+The Euler step solves for current consumption at each $`(a_i,y_j)`$.
 
 The Euler step solves a scalar root at each state.
-It finds $c \in (0, Ra + y_j - \underline a)$ such that
+It finds $`c \in (0, Ra + y_j - \underline a)`$ such that
 
-$$
+```math
 u'(c) = \beta W_a(R a + y_j - c).
-$$
+```
 
 The borrowing check comes first.
-If the household wants to borrow, the solver sets $a'=\underline a$.
+If the household wants to borrow, the solver sets $`a'=\underline a`$.
 Otherwise bisection solves the interior Euler equation.
 
 This update carries only one curve across iterations.
@@ -127,7 +127,7 @@ until err < eps
 
 The run keeps a 50-point EEI grid.
 It also solves EGP and grid VFI on that grid.
-A 600-point EGP solve checks the policy on $a \leq 20$.
+A 600-point EGP solve checks the policy on $`a \leq 20`$.
 
 EEI converged in **149 iterations**.
 The maximum consumption gap against the fine-grid policy is 1.09e-02.
@@ -135,11 +135,11 @@ The same gap for next assets is 1.09e-02.
 
 ## Results
 
-The consumption policy is increasing and concave in assets. Income shifts it because IID income enters cash on hand. Near the borrowing limit, consumption tracks available cash. The fine-grid EGP reference stays within 1.09e-02 on $a \leq 20$.
+The consumption policy is increasing and concave in assets. Income shifts it because IID income enters cash on hand. Near the borrowing limit, consumption tracks available cash. The fine-grid EGP reference stays within 1.09e-02 on $`a \leq 20`$.
 
 <img src="figures/consumption-policy.png" alt="EEI consumption policy with fine-grid reference" width="80%">
 
-$W_a(a)$ is steep near zero assets. One more dollar is most valuable when the buffer is empty. The curve flattens as wealth rises. The envelope condition averages the state-specific marginal utilities.
+$`W_a(a)`$ is steep near zero assets. One more dollar is most valuable when the buffer is empty. The curve flattens as wealth rises. The envelope condition averages the state-specific marginal utilities.
 
 <img src="figures/value-derivative.png" alt="Marginal continuation value with state-specific decomposition" width="80%">
 
@@ -174,7 +174,7 @@ The table reports the main economic moments and policy checks. The fine-grid row
 
 ## Takeaway
 
-EEI is a fixed point for the same buffer-stock household. It iterates $W_a(a)$ instead of the value level. Low-wealth households consume more of a transfer. High-wealth households smooth toward the perfect-foresight MPC $\kappa^{\ast}\approx0.041$. Here $\kappa^{\ast} = R(\beta R)^{-1/\gamma}-1$ is the MPC in the perfect-foresight limit.
+EEI is a fixed point for the same buffer-stock household. It iterates $`W_a(a)`$ instead of the value level. Low-wealth households consume more of a transfer. High-wealth households smooth toward the perfect-foresight MPC $`\kappa^{\ast}\approx0.041`$. Here $`\kappa^{\ast} = R(\beta R)^{-1/\gamma}-1`$ is the MPC in the perfect-foresight limit.
 
 The computational lesson is simple. The envelope condition can be an update rule. EGP replaces the inner bisection with one analytic marginal-utility inverse per state, so each iteration does less work than the EEI Euler step. All three methods agree up to the fine-grid gap.
 

@@ -10,115 +10,115 @@ The tutorial implements vanilla CFR on the asymmetric game and gives it three di
 
 ## Equations
 
-The auction has two bidders indexed by $i \in \lbrace 1, 2 \rbrace$. Bidder $i$ draws a
-private value $v_i$ from a known distribution $F_i$, independently across bidders.
-Each bidder submits one sealed bid $b_i$ on a finite bid grid $B$, the highest bid
+The auction has two bidders indexed by $`i \in \lbrace 1, 2 \rbrace`$. Bidder $`i`$ draws a
+private value $`v_i`$ from a known distribution $`F_i`$, independently across bidders.
+Each bidder submits one sealed bid $`b_i`$ on a finite bid grid $`B`$, the highest bid
 wins, the winner pays its own bid, and ties are broken uniformly at random.
 
-A behavioral strategy $\sigma_i(b \mid v)$ is a probability distribution over bids
-for each type $v$. The information set $I_v$ for bidder $i$ is the set of game
-histories at which the bidder has observed type $v$. There is one information set
+A behavioral strategy $`\sigma_i(b \mid v)`$ is a probability distribution over bids
+for each type $`v`$. The information set $`I_v`$ for bidder $`i`$ is the set of game
+histories at which the bidder has observed type $`v`$. There is one information set
 per type.
 
-The expected payoff to bidder $i$ from bidding $b$ at type $v$ against the
-opponent strategy $\sigma_{-i}$ is
+The expected payoff to bidder $`i`$ from bidding $`b`$ at type $`v`$ against the
+opponent strategy $`\sigma_{-i}`$ is
 
-$$
+```math
 u_i(v, b; \sigma_{-i}) = (v - b) \cdot \Pr(\text{win} \mid b, \sigma_{-i}).
-$$
+```
 
 The win probability uses the marginal opponent bid distribution
-$q_{-i}(b') = \sum_{v'} P(v') \sigma_{-i}(b' \mid v')$ and the uniform tie-break
-$\Pr(\text{win} \mid b) = \sum_{b' < b} q_{-i}(b') + \tfrac{1}{2} q_{-i}(b)$.
+$`q_{-i}(b') = \sum_{v'} P(v') \sigma_{-i}(b' \mid v')`$ and the uniform tie-break
+$`\Pr(\text{win} \mid b) = \sum_{b' < b} q_{-i}(b') + \tfrac{1}{2} q_{-i}(b)`$.
 
-The counterfactual value at information set $I_v$ for action $b$ multiplies the
-expected payoff by the chance reach probability $P(v)$:
+The counterfactual value at information set $`I_v`$ for action $`b`$ multiplies the
+expected payoff by the chance reach probability $`P(v)`$:
 
-$$
+```math
 v_i^{\sigma}(I_v, b) = P(v) \cdot u_i(v, b; \sigma_{-i}).
-$$
+```
 
-The instantaneous regret at iteration $t$ is the gap between the value of
-deviating to $b$ and the value of the current mixed strategy:
+The instantaneous regret at iteration $`t`$ is the gap between the value of
+deviating to $`b`$ and the value of the current mixed strategy:
 
-$$
+```math
 r_i^{t}(I_v, b) = v_i^{\sigma^{t}}(I_v, b) - \sum_{b'} \sigma_i^{t}(b' \mid v) \cdot v_i^{\sigma^{t}}(I_v, b').
-$$
+```
 
 Cumulative regret accumulates these one-shot gaps:
 
-$$
+```math
 R_i^{T}(I_v, b) = \sum_{t = 1}^{T} r_i^{t}(I_v, b).
-$$
+```
 
 The next strategy is regret matching, which puts mass on each bid in proportion
 to its positive cumulative regret:
 
-$$
+```math
 \sigma_i^{T+1}(b \mid v) = \frac{\max(R_i^{T}(I_v, b), 0)}{\sum_{b'} \max(R_i^{T}(I_v, b'), 0)},
-$$
+```
 
 with a uniform fallback when every cumulative regret is non-positive. The output
 of the algorithm is the time-averaged strategy
 
-$$
+```math
 \bar{\sigma}_i^{T}(b \mid v) = \frac{1}{T} \sum_{t = 1}^{T} \sigma_i^{t}(b \mid v).
-$$
+```
 
-The exploitability of a strategy profile $\sigma$ is the sum across players of
+The exploitability of a strategy profile $`\sigma`$ is the sum across players of
 the most a single bidder could gain by switching to the best response:
 
-$$
+```math
 \varepsilon(\sigma) = \sum_{i = 1}^{2} \left(\max_{\sigma'_i} U_i(\sigma'_i, \sigma_{-i}) - U_i(\sigma_i, \sigma_{-i})\right),
-$$
+```
 
-where $U_i(\sigma) = \sum_v P(v) \sum_b \sigma_i(b \mid v) \cdot u_i(v, b; \sigma_{-i})$
+where $`U_i(\sigma) = \sum_v P(v) \sum_b \sigma_i(b \mid v) \cdot u_i(v, b; \sigma_{-i})`$
 is the ex-ante expected payoff. Exploitability equals zero exactly at a Bayesian
 Nash equilibrium of the discretized game. The best response in the maximization
-is computed by picking, at each type, the bid on $B$ with the highest expected
+is computed by picking, at each type, the bid on $`B`$ with the highest expected
 payoff.
 
 The continuous-game BNE itself can be written down as an ODE system on the
-inverse bid functions $\phi_i(b)$, which give the type of bidder $i$ that bids
-$b$ in equilibrium. Bidder $i$ with value $v$ chooses $b$ to maximize the
-expected payoff $(v - b) F_j(\phi_j(b))$. The first-order condition with the
-equilibrium identity $v = \phi_i(b)$ rearranges to the MMRS system
+inverse bid functions $`\phi_i(b)`$, which give the type of bidder $`i`$ that bids
+$`b`$ in equilibrium. Bidder $`i`$ with value $`v`$ chooses $`b`$ to maximize the
+expected payoff $`(v - b) F_j(\phi_j(b))`$. The first-order condition with the
+equilibrium identity $`v = \phi_i(b)`$ rearranges to the MMRS system
 
-$$
+```math
 \phi_j'(b) = \frac{F_j(\phi_j(b))}{f_j(\phi_j(b)) \cdot (\phi_i(b) - b)}, \quad i = 3 - j.
-$$
+```
 
-For uniform value distributions on $[0, M_i]$, $F_i / f_i = v$ identically, so
-the system simplifies to $\phi_1'(b) = \phi_1 / (\phi_2 - b)$ and
-$\phi_2'(b) = \phi_2 / (\phi_1 - b)$. The boundary conditions are
-$\phi_1(0) = \phi_2(0) = 0$ and $\phi_1(\bar{b}) = 1$, $\phi_2(\bar{b}) = 2$,
-where the common upper bid $\bar{b}$ is an unknown that the boundary-value
-problem pins down. Near $b = 0$ both denominators vanish, so the system is
+For uniform value distributions on $`[0, M_i]`$, $`F_i / f_i = v`$ identically, so
+the system simplifies to $`\phi_1'(b) = \phi_1 / (\phi_2 - b)`$ and
+$`\phi_2'(b) = \phi_2 / (\phi_1 - b)`$. The boundary conditions are
+$`\phi_1(0) = \phi_2(0) = 0`$ and $`\phi_1(\bar{b}) = 1`$, $`\phi_2(\bar{b}) = 2`$,
+where the common upper bid $`\bar{b}`$ is an unknown that the boundary-value
+problem pins down. Near $`b = 0`$ both denominators vanish, so the system is
 singular at the lower boundary. A series expansion shows that the system admits
 the asymptotic
 
-$$
+```math
 \phi_1(b) = 2b - \alpha b^3 + O(b^5), \qquad \phi_2(b) = 2b + \alpha b^3 + O(b^5),
-$$
+```
 
-with a single free coefficient $\alpha$. The leading slope is fixed at two by
+with a single free coefficient $`\alpha`$. The leading slope is fixed at two by
 the ODE, but the cubic correction is a one-parameter family that pins down the
-asymmetry. Shooting forward from a small $b_0$ with this asymptotic initial
-condition and bisecting $\alpha$ on the constraint $\phi_2(\bar{b}) = 2$
-produces $\alpha = 3/2$ and $\bar{b} = 2/3$ for our distributions. The
-continuous BNE bid function $b_i(v)$ is the inverse of $\phi_i(b)$.
+asymmetry. Shooting forward from a small $`b_0`$ with this asymptotic initial
+condition and bisecting $`\alpha`$ on the constraint $`\phi_2(\bar{b}) = 2`$
+produces $`\alpha = 3/2`$ and $`\bar{b} = 2/3`$ for our distributions. The
+continuous BNE bid function $`b_i(v)`$ is the inverse of $`\phi_i(b)`$.
 
 ## Model Setup
 
 | Object | Value | Role |
 |---|---:|---|
-| Weak bidder values | $v_1 \sim U[0, 1]$ | Smaller-support distribution |
-| Strong bidder values | $v_2 \sim U[0, 2]$ | Larger-support distribution |
+| Weak bidder values | $`v_1 \sim U[0, 1]`$ | Smaller-support distribution |
+| Strong bidder values | $`v_2 \sim U[0, 2]`$ | Larger-support distribution |
 | Type grid | 21 nodes per bidder | Each type is one information set |
-| Bid grid | 41 nodes on $[0, 1]$ | Shared discrete action set |
+| Bid grid | 41 nodes on $`[0, 1]`$ | Shared discrete action set |
 | Iterations | 5,000 | Simultaneous regret updates |
 | Tie-break | Uniform | Splits ties evenly across bidders |
-| Symmetric check | $v_1, v_2 \sim U[0, 1]$ | Compares to $b^{\ast}(v) = v / 2$ |
+| Symmetric check | $`v_1, v_2 \sim U[0, 1]`$ | Compares to $`b^{\ast}(v) = v / 2`$ |
 
 ## Solution Method
 
@@ -128,7 +128,7 @@ The tightest theoretical guarantee that the time-averaged strategy converges to 
 
 ### Worked example
 
-To see CFR step by step, work one iteration on a tiny bid grid $B = \lbrace 0, 0.5 \rbrace$ for the weak bidder's high-value type $v = 1$, against an opponent who plays uniformly over those two bids at every type. The marginal opponent bid distribution is $q = (0.5, 0.5)$. Win probabilities under uniform tie-break are $w(0) = 0.25$ and $w(0.5) = 0.75$. Expected payoffs at $v = 1$ are $(1 - 0) \cdot 0.25 = 0.25$ at the low bid and $(1 - 0.5) \cdot 0.75 = 0.375$ at the high bid. The uniform current strategy mixes these into a strategy-mixture value of $0.3125$. Regret for the low bid is $0.25 - 0.3125 = -0.0625$ and regret for the high bid is $0.375 - 0.3125 = +0.0625$. Regret matching on $\max(R, 0)$ then sets the next strategy at this information set to put all weight on the high bid, which is exactly the symmetric BNE bid for type $v = 1$. The full algorithm repeats this calculation independently at every type for both bidders; the time-averaged strategy across many iterations on a finer bid grid is what converges to the asymmetric BNE.
+To see CFR step by step, work one iteration on a tiny bid grid $`B = \lbrace 0, 0.5 \rbrace`$ for the weak bidder's high-value type $`v = 1`$, against an opponent who plays uniformly over those two bids at every type. The marginal opponent bid distribution is $`q = (0.5, 0.5)`$. Win probabilities under uniform tie-break are $`w(0) = 0.25`$ and $`w(0.5) = 0.75`$. Expected payoffs at $`v = 1`$ are $`(1 - 0) \cdot 0.25 = 0.25`$ at the low bid and $`(1 - 0.5) \cdot 0.75 = 0.375`$ at the high bid. The uniform current strategy mixes these into a strategy-mixture value of $`0.3125`$. Regret for the low bid is $`0.25 - 0.3125 = -0.0625`$ and regret for the high bid is $`0.375 - 0.3125 = +0.0625`$. Regret matching on $`\max(R, 0)`$ then sets the next strategy at this information set to put all weight on the high bid, which is exactly the symmetric BNE bid for type $`v = 1`$. The full algorithm repeats this calculation independently at every type for both bidders; the time-averaged strategy across many iterations on a finer bid grid is what converges to the asymmetric BNE.
 
 ### Algorithm
 
@@ -151,7 +151,7 @@ Outputs: time-averaged strategies sigma_bar_1, sigma_bar_2
 3. Return sigma_bar_i(b | v) = S_i(v, b) / sum[b'] S_i(v, b').
 ```
 
-The exploitability $\varepsilon(\bar{\sigma})$ from the Equations section is the convergence diagnostic. It is logged at a logarithmic grid of iteration counts so the decay shows up cleanly on a log-log plot.
+The exploitability $`\varepsilon(\bar{\sigma})`$ from the Equations section is the convergence diagnostic. It is logged at a logarithmic grid of iteration counts so the decay shows up cleanly on a log-log plot.
 
 ## Results
 
@@ -167,17 +167,17 @@ Setting both value distributions to uniform on the unit interval recovers a case
 
 <img src="figures/bid-functions-symmetric.png" alt="Symmetric uniform sanity check" width="80%">
 
-Symmetric residual benchmarks the CFR average against the $v / 2$ closed form when both bidders draw from $U[0, 1]$. Asymmetric residuals benchmark the CFR average against the BNE bid function obtained by solving the MMRS boundary-value problem with `scipy.integrate.solve_ivp` plus bisection on $\bar{b}$. Asymmetric exploitability is the sum of best-response payoff gains at the average strategy on the discretized asymmetric game.
+Symmetric residual benchmarks the CFR average against the $`v / 2`$ closed form when both bidders draw from $`U[0, 1]`$. Asymmetric residuals benchmark the CFR average against the BNE bid function obtained by solving the MMRS boundary-value problem with `scipy.integrate.solve_ivp` plus bisection on $`\bar{b}`$. Asymmetric exploitability is the sum of best-response payoff gains at the average strategy on the discretized asymmetric game.
 
 **Run summary**
 
 | Quantity                                                           | Value     |
 |:-------------------------------------------------------------------|:----------|
-| Symmetric residual (max CFR bid error vs $v / 2$)                  | 9.741e-03 |
+| Symmetric residual (max CFR bid error vs $`v / 2`$)                  | 9.741e-03 |
 | Asymmetric residual: weak bidder (max CFR bid error vs MMRS BNE)   | 2.768e-02 |
 | Asymmetric residual: strong bidder (max CFR bid error vs MMRS BNE) | 1.760e-02 |
-| MMRS upper bid $\bar{b}$                                           | 0.6667    |
-| MMRS shooting coefficient $\alpha$                                 | 1.5000    |
+| MMRS upper bid $`\bar{b}`$                                           | 0.6667    |
+| MMRS shooting coefficient $`\alpha`$                                 | 1.5000    |
 | Asymmetric exploitability (final iteration)                        | 3.624e-04 |
 | CFR iterations                                                     | 5,000     |
 

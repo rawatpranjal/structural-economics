@@ -10,39 +10,39 @@ Grid search over next assets is slow inside household blocks. EGP avoids that se
 
 ## Equations
 
-The household enters the period with assets $a$ and income $y_j$. Income is IID
-on $\lbrace y_1,\dots,y_{n_y}\rbrace$ with probabilities $\pi_j$. With gross return
-$R=1+r$, the household chooses next-period assets $a'=g(a,y_j)$. Consumption is
-the residual, and the borrowing limit is $\underline a$:
+The household enters the period with assets $`a`$ and income $`y_j`$. Income is IID
+on $`\lbrace y_1,\dots,y_{n_y}\rbrace`$ with probabilities $`\pi_j`$. With gross return
+$`R=1+r`$, the household chooses next-period assets $`a'=g(a,y_j)`$. Consumption is
+the residual, and the borrowing limit is $`\underline a`$:
 
-$$
+```math
 V(a,y_j) = \max_{a'\geq \underline a}
   [u(R a + y_j - a') + \beta\sum_{\ell=1}^{n_y}\pi_\ell V(a',y_\ell) ],
 \qquad c(a,y_j) = R a + y_j - g(a,y_j).
-$$
+```
 
-Because income is IID, the continuation $\mathbb{E}V(a',y')$ depends only on
-$a'$. Preferences are CRRA, so marginal utility has an analytic inverse:
+Because income is IID, the continuation $`\mathbb{E}V(a',y')`$ depends only on
+$`a'`$. Preferences are CRRA, so marginal utility has an analytic inverse:
 
-$$
+```math
 u'(c) = c^{-\gamma}, \qquad (u')^{-1}(\mu) = \mu^{-1/\gamma}.
-$$
+```
 
 At an interior optimum the Euler equation equates today's marginal utility
 with the discounted marginal benefit of saving,
 
-$$
+```math
 \underbrace{u'(c(a,y_j))}_{\text{cost of saving today}} =
 \beta R
 \underbrace{\sum_{\ell=1}^{n_y}\pi_\ellu'(c(g(a,y_j),y_\ell))}_{\text{expected marginal utility tomorrow}}.
-$$
+```
 
-When the borrowing limit binds, $g(a,y_j)=\underline a$. The Euler condition
+When the borrowing limit binds, $`g(a,y_j)=\underline a`$. The Euler condition
 holds as an inequality:
 
-$$
+```math
 u'(c(a,y_j)) \geq \beta R \sum_\ell \pi_\ell u'(c(\underline a,y_\ell)).
-$$
+```
 
 This constraint margin creates high MPCs at low wealth. A small transfer relaxes
 the constraint before it mainly raises saving.
@@ -51,32 +51,32 @@ the constraint before it mainly raises saving.
 
 | Object | Value | Role |
 |---|---:|---|
-| CRRA $\gamma$ | 2.0 | Curvature; sets the strength of precautionary motive and shapes MPCs |
-| Discount factor $\beta$ | 0.95 | Annual time preference |
-| Net rate $r$ | 0.03 | Exogenous risk-free return |
-| Patience-return product $\beta R$ | 0.9785 | Carroll (1997) needs growth impatience $G_c < R$, i.e. $(\beta R)^{1/\gamma} < R$; here $\beta R<1$ makes that hold, giving a finite target |
-| Income mean $\mu_y$ | 1.0 | Normalization |
-| Income s.d. $\sigma_y$ | 0.2 | Width of the IID labor-income shock |
-| Income states $n_y$ | 5 | Width-fitted equal-spaced normal grid |
-| Borrowing limit $\underline a$ | 0.0 | Hard zero; binds with positive mass |
-| Upper grid bound $\bar a$ | 20.0 | Set wide enough to contain the simulated tail |
-| EGP asset grid | 120 pts | Exponential, denser at $\underline a$ |
+| CRRA $`\gamma`$ | 2.0 | Curvature; sets the strength of precautionary motive and shapes MPCs |
+| Discount factor $`\beta`$ | 0.95 | Annual time preference |
+| Net rate $`r`$ | 0.03 | Exogenous risk-free return |
+| Patience-return product $`\beta R`$ | 0.9785 | Carroll (1997) needs growth impatience $`G_c < R`$, i.e. $`(\beta R)^{1/\gamma} < R`$; here $`\beta R<1`$ makes that hold, giving a finite target |
+| Income mean $`\mu_y`$ | 1.0 | Normalization |
+| Income s.d. $`\sigma_y`$ | 0.2 | Width of the IID labor-income shock |
+| Income states $`n_y`$ | 5 | Width-fitted equal-spaced normal grid |
+| Borrowing limit $`\underline a`$ | 0.0 | Hard zero; binds with positive mass |
+| Upper grid bound $`\bar a`$ | 20.0 | Set wide enough to contain the simulated tail |
+| EGP asset grid | 120 pts | Exponential, denser at $`\underline a`$ |
 | Audit grid | 900 pts | Fine-grid reference for the discretization check |
 | Convergence tolerance | 1e-06 | Sup-norm on consumption iterates |
-| Simulation | 50,000 households, 550 periods | Forward-iterated cross section under $g(a,y_j)$ |
+| Simulation | 50,000 households, 550 periods | Forward-iterated cross section under $`g(a,y_j)`$ |
 
 ## Solution Method
 
-EGP places the grid on candidate next assets. For each $a_i'$, the current
+EGP places the grid on candidate next assets. For each $`a_i'`$, the current
 policy guess gives expected marginal utility tomorrow. Euler inversion turns
-that expectation into current consumption $c_i$. The budget identity then gives
-the current asset that would choose $a_i'$:
+that expectation into current consumption $`c_i`$. The budget identity then gives
+the current asset that would choose $`a_i'`$:
 
-$$
+```math
 c_i = (u')^{-1}(\beta R \sum_{\ell} \pi_\ell u'(c_n(a_i', y_\ell))),
 \qquad
 a^{\text{endo}}_{ij} = \frac{c_i + a_i' - y_j}{R}.
-$$
+```
 
 Each income state produces a monotone endogenous grid. Linear interpolation maps
 it back to the exogenous current-asset grid. Points below the first endogenous
@@ -116,7 +116,7 @@ until err < eps
 **103 EGP iterations**. The final consumption
 sup-norm residual is 9.77e-07. A 900-point
 grid gives a reference policy on the same calibration. On
-$a \leq 5$, the consumption and saving gaps are both
+$`a \leq 5`$, the consumption and saving gaps are both
 4.26e-04. The fine grid is only an accuracy check.
 
 ## Results
@@ -129,15 +129,15 @@ Net saving separates low and high income states. Low-income households draw down
 
 <img src="figures/savings-policy.png" alt="Net saving policy with fine-grid EGP reference" width="80%">
 
-The endogenous grid shows the asset level that makes each candidate $a_i'$ optimal after the lowest income draw. The curve lies above the 45-degree line because low-income households want to draw down assets. The first endogenous point, $a^{\mathrm{endo}}_{1,1}=0.261$, marks the constraint threshold.
+The endogenous grid shows the asset level that makes each candidate $`a_i'`$ optimal after the lowest income draw. The curve lies above the 45-degree line because low-income households want to draw down assets. The first endogenous point, $`a^{\mathrm{endo}}_{1,1}=0.261`$, marks the constraint threshold.
 
 <img src="figures/endogenous-grid.png" alt="Endogenous current asset grid for the low income state" width="80%">
 
-Forward simulation gives a right-skewed wealth distribution. Mean assets are 0.39, and 5.1\% of households are at the borrowing limit. The scale is modest because income is IID and $\beta R<1$.
+Forward simulation gives a right-skewed wealth distribution. Mean assets are 0.39, and 5.1\% of households are at the borrowing limit. The scale is modest because income is IID and $`\beta R<1`$.
 
 <img src="figures/wealth-distribution.png" alt="Simulated terminal wealth distribution" width="80%">
 
-The MPC distribution is high near the constraint and low for wealthy households. The average MPC out of a 0.10 transfer is 0.228. The dotted line marks the perfect-foresight limit, $\kappa^{\ast}\approx0.040$. Here $\kappa^{\ast}=1-(\beta R)^{1/\gamma}/R$ is the perfect-foresight MPC limit for CRRA utility, where $(\beta R)^{1/\gamma}$ is the perfect-foresight consumption growth factor $G_c$.
+The MPC distribution is high near the constraint and low for wealthy households. The average MPC out of a 0.10 transfer is 0.228. The dotted line marks the perfect-foresight limit, $`\kappa^{\ast}\approx0.040`$. Here $`\kappa^{\ast}=1-(\beta R)^{1/\gamma}/R`$ is the perfect-foresight MPC limit for CRRA utility, where $`(\beta R)^{1/\gamma}`$ is the perfect-foresight consumption growth factor $`G_c`$.
 
 <img src="figures/mpc-distribution.png" alt="Distribution of marginal propensities to consume" width="80%">
 

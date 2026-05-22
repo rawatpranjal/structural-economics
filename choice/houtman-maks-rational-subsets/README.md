@@ -10,39 +10,39 @@ Finding the core requires search over subsets of observations. This tutorial bui
 
 ## Equations
 
-There are $T$ observations. Observation $t$ has prices $p_t \in \mathbb{R}_{+}^{J}$ and chosen bundle $x_t \in \mathbb{R}_{+}^{J}$. Expenditure is $m_t=p_t \cdot x_t$.
+There are $`T`$ observations. Observation $`t`$ has prices $`p_t \in \mathbb{R}_{+}^{J}`$ and chosen bundle $`x_t \in \mathbb{R}_{+}^{J}`$. Expenditure is $`m_t=p_t \cdot x_t`$.
 
-Choice $t$ directly weakly reveals $x_t$ preferred to $x_s$ when $x_s$ was affordable at prices $p_t$:
+Choice $`t`$ directly weakly reveals $`x_t`$ preferred to $`x_s`$ when $`x_s`$ was affordable at prices $`p_t`$:
 
-$$
+```math
 x_t R^D x_s \quad \Longleftrightarrow \quad p_t \cdot x_t \geq p_t \cdot x_s.
-$$
+```
 
-The direct relation is strict when the inequality is strict. Let $R$ be the transitive closure of $R^D$. GARP holds on a subset $S$ if there is no pair $t,s \in S$ such that
+The direct relation is strict when the inequality is strict. Let $`R`$ be the transitive closure of $`R^D`$. GARP holds on a subset $`S`$ if there is no pair $`t,s \in S`$ such that
 
-$$
+```math
 x_t R x_s \quad \text{and} \quad p_s \cdot x_s > p_s \cdot x_t.
-$$
+```
 
-Let $\mathrm{GARP}(S)=1$ when these restrictions hold after keeping only observations in $S$. The Houtman-Maks index is
+Let $`\mathrm{GARP}(S)=1`$ when these restrictions hold after keeping only observations in $`S`$. The Houtman-Maks index is
 
-$$
+```math
 HM = \max_{S \subseteq \lbrace1,\ldots,T\rbrace} |S| \quad \text{s.t.} \quad \mathrm{GARP}(S)=1.
-$$
+```
 
 The minimum number of observations needed to restore GARP is
 
-$$
+```math
 T - HM.
-$$
+```
 
 ## Model Setup
 
 | Object | Value | Interpretation |
 |---|---:|---|
-| Observations $T$ | 12 | Shopping trips with prices and chosen bundles |
-| Goods $J$ | 3 | Small multi-good demand environment |
-| Data-generating preferences | Cobb-Douglas shares $(0.45,0.35,0.20)$ | Choices before the swap |
+| Observations $`T`$ | 12 | Shopping trips with prices and chosen bundles |
+| Goods $`J`$ | 3 | Small multi-good demand environment |
+| Data-generating preferences | Cobb-Douglas shares $`(0.45,0.35,0.20)`$ | Choices before the swap |
 | Synthetic corruption | bundles in rows 3 and 4 swapped | Known source of the GARP failure |
 | Full-sample GARP violations | 9 | Contradictions after taking transitive closure |
 | Exact Houtman-Maks index | 11 | Largest rationalizable subset size |

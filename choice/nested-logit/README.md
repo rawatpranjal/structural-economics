@@ -4,55 +4,55 @@
 
 A supermarket raises the price of Choco-Bombs. Fewer shoppers choose it. Some switch to Store-Frosted, and some leave the cereal category.
 
-The object is the diversion pattern. Nested logit groups Choco-Bombs with Store-Frosted and groups the two healthier cereals. The nesting parameter $\sigma$ controls how much substitution stays inside a group.
+The object is the diversion pattern. Nested logit groups Choco-Bombs with Store-Frosted and groups the two healthier cereals. The nesting parameter $`\sigma`$ controls how much substitution stays inside a group.
 
-The computation starts from shares, prices, nests, and instruments. Berry inversion gives a linear equation. 2SLS estimates price sensitivity and $\sigma$. Elasticities and diversion ratios then show where lost Choco-Bombs demand goes.
+The computation starts from shares, prices, nests, and instruments. Berry inversion gives a linear equation. 2SLS estimates price sensitivity and $`\sigma`$. Elasticities and diversion ratios then show where lost Choco-Bombs demand goes.
 
 ## Equations
 
-Products $j=1,\ldots,J$ appear in markets $t=1,\ldots,T$. Product $j$ belongs
-to nest $g(j)$, and $s_{0t}$ is the outside-good share. Mean utility combines a
+Products $`j=1,\ldots,J`$ appear in markets $`t=1,\ldots,T`$. Product $`j`$ belongs
+to nest $`g(j)`$, and $`s_{0t}`$ is the outside-good share. Mean utility combines a
 common inside-good term, sugar content, price, and unobserved product quality:
 
-$$
+```math
 \delta_{jt}=\beta_0+\beta_{\text{sugar}}\text{sugar}_j-\alpha p_{jt}+\xi_j, \qquad \alpha>0 .
-$$
+```
 
 The inclusive-value denominator aggregates the products inside one nest:
 
-$$
+```math
 D_{gt}=\sum_{k:g(k)=g}\exp\left(\frac{\delta_{kt}}{1-\sigma}\right), \qquad 0\leq \sigma<1 .
-$$
+```
 
 Total share factors into a conditional share inside the nest and the nest's
-overall market share (where $h$ indexes nests in the denominator sum):
+overall market share (where $`h`$ indexes nests in the denominator sum):
 
-$$
+```math
 s_{j|g,t}= \frac{\exp\left(\delta_{jt}/(1-\sigma)\right)}{D_{g(j)t}}, \qquad s_{gt}= \frac{D_{gt}^{1-\sigma}}{1+\sum_h D_{ht}^{1-\sigma}}, \qquad s_{jt}=s_{j|g,t}s_{g(j)t}.
-$$
+```
 
 The Berry inversion turns observed shares into a linear estimating equation:
 
-$$
+```math
 \ln s_{jt}-\ln s_{0t} = \beta_0+\beta_{\text{sugar}}\text{sugar}_j-\alpha p_{jt} +\sigma\ln s_{j|g,t}+\xi_j .
-$$
+```
 
-Both $p_{jt}$ and $\ln s_{j|g,t}$ are endogenous in this regression.
+Both $`p_{jt}`$ and $`\ln s_{j|g,t}`$ are endogenous in this regression.
 
 After estimation, the substitution object is the elasticity matrix. Rows are
 products whose shares change; columns are products whose prices change. For
-market $t$,
+market $`t`$,
 
-$$
+```math
 \eta_{jk,t}=\frac{\partial\ln s_{jt}}{\partial\ln p_{kt}}= \begin{cases} -\alpha p_{jt}\left[\dfrac{1}{1-\sigma} -\dfrac{\sigma}{1-\sigma}s_{j|g,t}-s_{jt}\right], & j=k,\\[1.0em] \alpha p_{kt}\left[\dfrac{\sigma}{1-\sigma}s_{k|g,t}+s_{kt}\right], & j\neq k,\ g(j)=g(k),\\[1.0em] \alpha p_{kt}s_{kt}, & g(j)\neq g(k). \end{cases}
-$$
+```
 
-Diversion ratios convert elasticities into the share loss from product $k$ that
-goes to product $j$:
+Diversion ratios convert elasticities into the share loss from product $`k`$ that
+goes to product $`j`$:
 
-$$
+```math
 \mathcal{D}_{j\leftarrow k}= -\frac{\partial s_{jt}/\partial p_{kt}}{\partial s_{kt}/\partial p_{kt}} = \frac{\eta_{jk,t}s_{jt}}{|\eta_{kk,t}|s_{kt}} .
-$$
+```
 
 ## Model Setup
 
@@ -60,13 +60,13 @@ The synthetic panel has a small cereal category across many markets. Prices move
 
 | Object | Value | Role |
 |---|---:|---|
-| Markets $T$ | 50 | Cross-market price and cost variation |
-| Inside products $J$ | 4 | Two sugary and two healthy cereals |
+| Markets $`T`$ | 50 | Cross-market price and cost variation |
+| Inside products $`J`$ | 4 | Two sugary and two healthy cereals |
 | Outside good | Included | Pins down the Berry share ratio |
-| True $\alpha$ | 1.5 | Price sensitivity in the data-generating model |
-| True $\beta_{\text{sugar}}$ | 0.3 | Taste for sugar content |
-| True $\beta_0$ | 1.0 | Common inside-good utility shifter |
-| True $\sigma$ | 0.7 | Extra same-nest substitution |
+| True $`\alpha`$ | 1.5 | Price sensitivity in the data-generating model |
+| True $`\beta_{\text{sugar}}`$ | 0.3 | Taste for sugar content |
+| True $`\beta_0`$ | 1.0 | Common inside-good utility shifter |
+| True $`\sigma`$ | 0.7 | Extra same-nest substitution |
 | Nests | Sugary, healthy | Maintained grouping used by nested logit |
 
 ## Solution Method
@@ -87,16 +87,16 @@ Output: IV estimates, elasticity matrix, and diversion ratios
    and the true synthetic nested-logit benchmark.
 ```
 
-The instruments match the two endogenous variables. Own and rival cost variation moves prices. Same-nest rival cost and same-nest rival sugar predict $\ln s_{j|g,t}$.
+The instruments match the two endogenous variables. Own and rival cost variation moves prices. Same-nest rival cost and same-nest rival sugar predict $`\ln s_{j|g,t}`$.
 
 | Instrument | Targets | Rationale |
 |---|---|---|
 | Cost shifter | Price | Moves marginal cost without entering utility directly |
 | Rival sugar, all products | Price | Total rival sugar varies by market because recipes shift across markets |
-| Same-nest rival cost | $\ln s_{j\mid g,t}$ | A close substitute's cost shock moves its price and so its conditional share |
-| Same-nest rival sugar | $\ln s_{j\mid g,t}$ | Recipe shifts for close substitutes move their attractiveness across markets |
+| Same-nest rival cost | $`\ln s_{j\mid g,t}`$ | A close substitute's cost shock moves its price and so its conditional share |
+| Same-nest rival sugar | $`\ln s_{j\mid g,t}`$ | Recipe shifts for close substitutes move their attractiveness across markets |
 
-Each instrument carries genuine cross-market variation. Sugar content shifts by market through small recipe shocks, and same-nest rivals carry idiosyncratic cost shocks. Two excluded instruments target $\ln s_{j\mid g,t}$, so the order condition holds for both endogenous regressors.
+Each instrument carries genuine cross-market variation. Sugar content shifts by market through small recipe shocks, and same-nest rivals carry idiosyncratic cost shocks. Two excluded instruments target $`\ln s_{j\mid g,t}`$, so the order condition holds for both endogenous regressors.
 
 ## Results
 
@@ -112,7 +112,7 @@ Diversion ratios convert elasticities back into share derivatives. Plain logit s
 
 <img src="figures/diversion-ratios.png" alt="Product diversion ratios from a Choco-Bombs price increase." width="80%">
 
-The table checks how closely estimation recovers the parameters used to generate the synthetic shares. Plain logit cannot estimate $\sigma$ and biases $\alpha$ because it ignores the within-nest term. Nested logit, identified by instruments that vary across markets, recovers $\sigma$ and $\alpha$ close to their true values. Small gaps remain as finite-sample bias: with 50 markets the estimates scatter around the truth rather than land on it exactly.
+The table checks how closely estimation recovers the parameters used to generate the synthetic shares. Plain logit cannot estimate $`\sigma`$ and biases $`\alpha`$ because it ignores the within-nest term. Nested logit, identified by instruments that vary across markets, recovers $`\sigma`$ and $`\alpha`$ close to their true values. Small gaps remain as finite-sample bias: with 50 markets the estimates scatter around the truth rather than land on it exactly.
 
 **Parameter estimates: true values vs plain logit vs nested logit**
 

@@ -10,69 +10,69 @@ The steady state gives the long-run benchmark. A global RBC grid traces the savi
 
 ## Equations
 
-Let $K_t$ be aggregate capital at the start of period $t$, $z_t$ aggregate
-TFP, $c_t$ consumption, and $K_{t+1}$ next-period capital. Preferences are
+Let $`K_t`$ be aggregate capital at the start of period $`t`$, $`z_t`$ aggregate
+TFP, $`c_t`$ consumption, and $`K_{t+1}`$ next-period capital. Preferences are
 
-$$
+```math
 \mathbb{E}_0 \sum_{t=0}^{\infty} \beta^t
 \frac{c_t^{1-\sigma}}{1-\sigma}, \qquad \sigma>0,
-$$
+```
 
-with Cobb-Douglas output $Y_t=z_t K_t^\alpha$. Productivity follows
+with Cobb-Douglas output $`Y_t=z_t K_t^\alpha`$. Productivity follows
 
-$$
+```math
 \log z_{t+1}=\rho \log z_t+\varepsilon_{t+1},
 \qquad \varepsilon_{t+1}\sim N(0,\sigma_\varepsilon^2).
-$$
+```
 
 The government rebate means aggregate feasibility is the usual RBC resource
 constraint,
 
-$$
+```math
 c_t + K_{t+1} = z_t K_t^\alpha + (1-\delta)K_t.
-$$
+```
 
 The tax appears in the household Euler equation:
 
-$$
+```math
 c_t^{-\sigma} =
 \beta \mathbb{E}_t\left[
 c_{t+1}^{-\sigma}
 \left((1-\tau_k)\alpha z_{t+1}K_{t+1}^{\alpha-1}+1-\delta\right)
 \right].
-$$
+```
 
 Thus the wedge changes the return to saving but not the goods available to the
 economy in a given period.
 
-At $z=1$, the exact deterministic steady state is
+At $`z=1`$, the exact deterministic steady state is
 
-$$
+```math
 K_{ss}(\tau_k)=
 \left(\frac{(1-\tau_k)\alpha}{1/\beta-1+\delta}\right)^{1/(1-\alpha)},
-$$
+```
 
-with $Y_{ss}=K_{ss}^{\alpha}$, $C_{ss}=Y_{ss}-\delta K_{ss}$, and
-tax revenue $T_{ss}=\tau_k \alpha Y_{ss}$.
+with $`Y_{ss}=K_{ss}^{\alpha}`$, $`C_{ss}=Y_{ss}-\delta K_{ss}`$, and
+tax revenue $`T_{ss}=\tau_k \alpha Y_{ss}`$.
 
 ## Model Setup
 
 | Parameter | Value | Description |
 |-----------|-------|-------------|
-| $\beta$  | 0.99 | Discount factor |
-| $\alpha$ | 0.36 | Capital share |
-| $\sigma$ | 2.0 | CRRA coefficient |
-| $\delta$ | 0.025 | Depreciation rate |
-| $\rho$   | 0.95 | TFP persistence |
-| $\sigma_\varepsilon$ | 0.01 | TFP innovation standard deviation |
-| $\tau_k$ | [0.0, 0.1, 0.2, 0.3, 0.4] | Permanent tax rates compared |
-| Capital grid | 40 points around each $K_{ss}(\tau_k)$ | State and $K'$ choice grid |
+| $`\beta`$  | 0.99 | Discount factor |
+| $`\alpha`$ | 0.36 | Capital share |
+| $`\sigma`$ | 2.0 | CRRA coefficient |
+| $`\delta`$ | 0.025 | Depreciation rate |
+| $`\rho`$   | 0.95 | TFP persistence |
+| $`\sigma_\varepsilon`$ | 0.01 | TFP innovation standard deviation |
+| $`\tau_k`$ | [0.0, 0.1, 0.2, 0.3, 0.4] | Permanent tax rates compared |
+| Capital grid | 40 points around each $`K_{ss}(\tau_k)`$ | State and $`K'`$ choice grid |
 | TFP grid | 5 Tauchen states | Approximation to log productivity |
 | Simulation periods | 5000 | Same shock seed for every tax regime, with 500 burn-in periods |
 
 ## Solution Method
 
-Given a tax rate, the solver recovers a saving rule on the $(z,K)$ grid. A Bellman pass gives a feasible global policy. Euler refinement then applies the after-tax return $(1-\tau_k)MPK$ to consumption and saving.
+Given a tax rate, the solver recovers a saving rule on the $`(z,K)`$ grid. A Bellman pass gives a feasible global policy. Euler refinement then applies the after-tax return $`(1-\tau_k)MPK`$ to consumption and saving.
 
 ```text
 Algorithm: global saving rule with a capital-tax wedge
@@ -100,9 +100,9 @@ Simulate all tax regimes on the same productivity path
 
 ## Results
 
-At $\tau_k=30\%$, deterministic capital is 42.7% below the no-tax value. Output is 18.2% lower, and consumption is 9.7% lower. Consumption falls less because lower capital also reduces replacement investment. The simulations use one productivity path for all tax rates.
+At $`\tau_k=30\%`$, deterministic capital is 42.7% below the no-tax value. Output is 18.2% lower, and consumption is 9.7% lower. Consumption falls less because lower capital also reduces replacement investment. The simulations use one productivity path for all tax rates.
 
-The first comparison uses the exact steady-state formula. Capital falls with $(1-\tau_k)^{1/(1-\alpha)}$, so the tax rate is magnified by the capital share. Output and consumption move less than capital, but the economy operates from a lower productive base.
+The first comparison uses the exact steady-state formula. Capital falls with $`(1-\tau_k)^{1/(1-\alpha)}`$, so the tax rate is magnified by the capital share. Output and consumption move less than capital, but the economy operates from a lower productive base.
 
 <img src="figures/steady-state-tax.png" alt="Exact steady-state levels and losses by capital tax rate" width="80%">
 
@@ -132,7 +132,7 @@ The table separates the closed-form steady state from the simulated mean. Simula
 
 ## Takeaway
 
-The rebate balances the government budget while the intertemporal wedge remains. Once the household prices saving with $(1-\tau_k)MPK$, the economy carries less capital into every productivity state. The steady state gives the clean long-run comparison. The global policy functions show the same force away from steady state.
+The rebate balances the government budget while the intertemporal wedge remains. Once the household prices saving with $`(1-\tau_k)MPK`$, the economy carries less capital into every productivity state. The steady state gives the clean long-run comparison. The global policy functions show the same force away from steady state.
 
 ## References
 

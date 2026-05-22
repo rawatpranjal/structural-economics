@@ -10,28 +10,28 @@ The model is easy to simulate for any parameter vector. Simulation-based estimat
 
 ## Equations
 
-Worker $i$ receives a log wage offer,
+Worker $`i`$ receives a log wage offer,
 
-$$
+```math
 \log w_i = \mu + \sigma z_i,\qquad z_i \sim N(0,1),
-$$
+```
 
 and accepts with probability
 
-$$
+```math
 \Pr(d_i = 1 \mid w_i; \theta) =
 \frac{1}{1 + \exp[-(\log w_i - r)/s]}.
-$$
+```
 
-The structural parameter vector is $\theta = (\mu, \sigma, r)$. Offer mean is $\mu$, offer dispersion is $\sigma$, reservation log wage is $r$. The scale $s$ fixes how sharply acceptance changes near $r$.
+The structural parameter vector is $`\theta = (\mu, \sigma, r)`$. Offer mean is $`\mu`$, offer dispersion is $`\sigma`$, reservation log wage is $`r`$. The scale $`s`$ fixes how sharply acceptance changes near $`r`$.
 
-All three estimators share the same simulator $S(\theta, \varepsilon)$ driven by a fixed vector of common shocks $\varepsilon_{sim}$. They differ in which summary statistic the simulator must reproduce, and in whether the answer is a point estimate or a distribution over $\theta$.
+All three estimators share the same simulator $`S(\theta, \varepsilon)`$ driven by a fixed vector of common shocks $`\varepsilon_{sim}`$. They differ in which summary statistic the simulator must reproduce, and in whether the answer is a point estimate or a distribution over $`\theta`$.
 
 ### Method 1: Method of Simulated Moments
 
-Let $m_{obs} \in \mathbb{R}^{5}$ collect five economic moments computed on the observed sample,
+Let $`m_{obs} \in \mathbb{R}^{5}`$ collect five economic moments computed on the observed sample,
 
-$$
+```math
 m_{obs} =
 (
 \underbrace{\Pr(d = 1)}_{\text{acceptance rate}},\
@@ -40,101 +40,101 @@ m_{obs} =
 \underbrace{\mathbb{E}[\log w \mid d = 1]}_{\text{accepted mean}},\
 \underbrace{\mathrm{SD}[\log w \mid d = 1]}_{\text{accepted sd}}
 ).
-$$
+```
 
-Write $m_{sim}(\theta) = m(S(\theta, \varepsilon_{sim}))$ for the same moments computed on simulated data. MSM minimizes the scaled quadratic criterion
+Write $`m_{sim}(\theta) = m(S(\theta, \varepsilon_{sim}))`$ for the same moments computed on simulated data. MSM minimizes the scaled quadratic criterion
 
-$$
+```math
 \hat\theta_{MSM} = \arg\min_\theta
 \underbrace{[m_{sim}(\theta) - m_{obs}]^{\prime}}_{\text{moment gap, simulated vs observed}}\
 \underbrace{W_m}_{\text{scale matrix}}\
 \underbrace{[m_{sim}(\theta) - m_{obs}]}_{\text{moment gap}}
 \equiv Q_{MSM}(\theta),
-$$
+```
 
-with the diagonal weight $W_m = \mathrm{diag}(1 / \max(|m_{obs}|, 0.1))^{2}$.
-The criterion is a weighted sum of squared moment gaps, so $W_m$ is what makes a 1% gap in the acceptance rate comparable to a 0.01 gap in the offer mean.
+with the diagonal weight $`W_m = \mathrm{diag}(1 / \max(|m_{obs}|, 0.1))^{2}`$.
+The criterion is a weighted sum of squared moment gaps, so $`W_m`$ is what makes a 1% gap in the acceptance rate comparable to a 0.01 gap in the offer mean.
 Scaling each gap by the magnitude of the observed moment is the simplest such normalization; in production code one would replace it by the inverse of the moment covariance estimated by bootstrap.
 
 ### Method 2: Indirect Inference
 
-Let $b(\cdot)$ be a vector of auxiliary statistics: the OLS coefficients of the linear probability regression $d_i = b_0 + b_1 \log w_i$, augmented with offer-distribution moments and the acceptance rate. Write $b_{obs} = b(\text{observed sample})$ and $b_{sim}(\theta) = b(S(\theta, \varepsilon_{sim}))$. Indirect inference minimizes
+Let $`b(\cdot)`$ be a vector of auxiliary statistics: the OLS coefficients of the linear probability regression $`d_i = b_0 + b_1 \log w_i`$, augmented with offer-distribution moments and the acceptance rate. Write $`b_{obs} = b(\text{observed sample})`$ and $`b_{sim}(\theta) = b(S(\theta, \varepsilon_{sim}))`$. Indirect inference minimizes
 
-$$
+```math
 \hat\theta_{II} = \arg\min_\theta
 \underbrace{
 [b_{sim}(\theta) - b_{obs}]^{\prime}  W_b
 [b_{sim}(\theta) - b_{obs}]
 }_{Q_{II}(\theta)},
-$$
+```
 
-with the same scaling form, $W_b = \mathrm{diag}(1 / \max(|b_{obs}|, 0.1))^{2}$. The auxiliary model is misspecified by design; its coefficients are just summary statistics.
+with the same scaling form, $`W_b = \mathrm{diag}(1 / \max(|b_{obs}|, 0.1))^{2}`$. The auxiliary model is misspecified by design; its coefficients are just summary statistics.
 
 ### Method 3: Approximate Bayesian Computation (ABC-SMC)
 
 ABC replaces the likelihood by a tolerance ball around the observed moments. Define the scaled Euclidean distance
 
-$$
+```math
 \rho(\theta) = \sqrt{Q_{MSM}(\theta)},
-$$
+```
 
-so the MSM criterion is $\rho^2$. Place a uniform prior on the same rectangle that bounds MSM and II,
+so the MSM criterion is $`\rho^2`$. Place a uniform prior on the same rectangle that bounds MSM and II,
 
-$$
+```math
 \pi(\theta) = U(2.4, 3.6) \times U(0.2, 0.8) \times U(2.5, 3.8).
-$$
+```
 
-For a tolerance $\varepsilon > 0$ the ABC posterior is
+For a tolerance $`\varepsilon > 0`$ the ABC posterior is
 
-$$
+```math
 \pi_\varepsilon(\theta \mid m_{obs}) \propto \underbrace{\pi(\theta)}_{\text{prior}}  \underbrace{\Pr[\rho(\theta) \le \varepsilon]}_{\text{ABC pseudo-likelihood}}.
-$$
+```
 
-The pseudo-likelihood replaces the unknown true likelihood by the probability that a fresh simulation lands within $\varepsilon$ of the observed moments.
+The pseudo-likelihood replaces the unknown true likelihood by the probability that a fresh simulation lands within $`\varepsilon`$ of the observed moments.
 That trade is the entire point of ABC: any model that can be simulated has a usable Bayesian update, even when its density is not available.
-As $\varepsilon \to 0$ the pseudo-likelihood concentrates on parameters whose simulator matches $m_{obs}$ exactly, so the posterior concentrates on $\arg\min_\theta \rho^2 = \hat\theta_{MSM}$ and ABC and MSM target the same point in the noise-free limit.
+As $`\varepsilon \to 0`$ the pseudo-likelihood concentrates on parameters whose simulator matches $`m_{obs}`$ exactly, so the posterior concentrates on $`\arg\min_\theta \rho^2 = \hat\theta_{MSM}`$ and ABC and MSM target the same point in the noise-free limit.
 ABC adds the spread around that point that MSM's point estimate alone cannot report.
 
-ABC-SMC approaches $\pi_0$ through a sequence $\varepsilon_0 > \varepsilon_1 > \cdots > \varepsilon_{T-1}$ of shrinking tolerances. Round $t$ maintains $N$ weighted particles $\lbrace (\theta_t^{(i)}, w_t^{(i)}) \rbrace_{i=1}^{N}$ that approximate $\pi_{\varepsilon_t}$. The schedule is adaptive: $\varepsilon_t$ is the $\alpha$-quantile of the distances at round $t-1$, with $\alpha = 0.5$.
+ABC-SMC approaches $`\pi_0`$ through a sequence $`\varepsilon_0 > \varepsilon_1 > \cdots > \varepsilon_{T-1}`$ of shrinking tolerances. Round $`t`$ maintains $`N`$ weighted particles $`\lbrace (\theta_t^{(i)}, w_t^{(i)}) \rbrace_{i=1}^{N}`$ that approximate $`\pi_{\varepsilon_t}`$. The schedule is adaptive: $`\varepsilon_t`$ is the $`\alpha`$-quantile of the distances at round $`t-1`$, with $`\alpha = 0.5`$.
 
-Particles in round $t \ge 1$ are drawn by sampling a parent $\theta_{t-1}^{(j)}$ with probability $w_{t-1}^{(j)}$, perturbing it with a Gaussian kernel
+Particles in round $`t \ge 1`$ are drawn by sampling a parent $`\theta_{t-1}^{(j)}`$ with probability $`w_{t-1}^{(j)}`$, perturbing it with a Gaussian kernel
 
-$$
+```math
 K_t(\theta \mid \theta^{\prime}) = \mathcal{N}(\theta^{\prime},  2 \widehat{\mathrm{Cov}}_{t-1}),
-$$
+```
 
-and keeping the proposal only if $\rho(\theta) \le \varepsilon_t$. The factor two in the covariance is the Beaumont-Cornuet-Marin-Robert (2009) twice-empirical-covariance rule. The importance weight corrects for the proposal,
+and keeping the proposal only if $`\rho(\theta) \le \varepsilon_t`$. The factor two in the covariance is the Beaumont-Cornuet-Marin-Robert (2009) twice-empirical-covariance rule. The importance weight corrects for the proposal,
 
-$$
+```math
 w_t^{(i)} \propto \frac{\pi(\theta_t^{(i)})}{\sum_{j=1}^{N} w_{t-1}^{(j)}  K_t(\theta_t^{(i)} \mid \theta_{t-1}^{(j)})}.
-$$
+```
 
-Under the uniform prior $\pi$ is constant on the support, so the numerator drops out and the weight is just the inverse of the kernel-mixture density evaluated at $\theta_t^{(i)}$.
+Under the uniform prior $`\pi`$ is constant on the support, so the numerator drops out and the weight is just the inverse of the kernel-mixture density evaluated at $`\theta_t^{(i)}`$.
 
 ## Model Setup
 
 | Object | Value | Role |
 |--------|-------|------|
-| True $\mu$ | 3.00 | Mean of the latent log offer distribution |
-| True $\sigma$ | 0.45 | Dispersion of latent log offers |
-| True $r$ | 3.15 | Latent reservation log wage |
-| Choice scale $s$ | 0.18 | Smoothness of acceptance rule |
+| True $`\mu`$ | 3.00 | Mean of the latent log offer distribution |
+| True $`\sigma`$ | 0.45 | Dispersion of latent log offers |
+| True $`r`$ | 3.15 | Latent reservation log wage |
+| Choice scale $`s`$ | 0.18 | Smoothness of acceptance rule |
 | Observed sample | 5,000 | Synthetic data generated once from the model |
 | Simulation draws | 30,000 | Common random numbers used in all three criteria |
 | MSM targets | 5 | Acceptance rate and offer-wage moments |
 | II targets | 6 | Auxiliary acceptance coefficients and moments |
-| ABC particles $N$ | 1,000 | Particles maintained at each ABC-SMC round |
-| ABC rounds $T$ | 6 | Number of shrinking-tolerance rounds |
-| ABC quantile $\alpha$ | 0.50 | Adaptive tolerance is the $\alpha$-quantile of previous distances |
-| ABC prior $\pi$ | $U(2.4, 3.6) \times U(0.2, 0.8) \times U(2.5, 3.8)$ | Uniform on $(\mu, \sigma, r)$ |
+| ABC particles $`N`$ | 1,000 | Particles maintained at each ABC-SMC round |
+| ABC rounds $`T`$ | 6 | Number of shrinking-tolerance rounds |
+| ABC quantile $`\alpha`$ | 0.50 | Adaptive tolerance is the $`\alpha`$-quantile of previous distances |
+| ABC prior $`\pi`$ | $`U(2.4, 3.6) \times U(0.2, 0.8) \times U(2.5, 3.8)`$ | Uniform on $`(\mu, \sigma, r)`$ |
 
 ## Solution Method
 
-The three estimators share the simulator $S(\theta, \varepsilon)$ and the same fixed shocks $\varepsilon_{sim}$. Common random numbers keep the criterion from changing because of fresh Monte Carlo noise. The three differ in what summary the simulator must reproduce and in whether the answer is a point or a distribution.
+The three estimators share the simulator $`S(\theta, \varepsilon)`$ and the same fixed shocks $`\varepsilon_{sim}`$. Common random numbers keep the criterion from changing because of fresh Monte Carlo noise. The three differ in what summary the simulator must reproduce and in whether the answer is a point or a distribution.
 
 ### Method 1: Method of Simulated Moments
 
-Pick $\theta$ so that the simulator reproduces the five economic moments. The criterion scales each residual by the magnitude of the matching observed moment, so each moment contributes on a comparable order. Nelder-Mead minimizes the scaled quadratic distance from a fixed starting point.
+Pick $`\theta`$ so that the simulator reproduces the five economic moments. The criterion scales each residual by the magnitude of the matching observed moment, so each moment contributes on a comparable order. Nelder-Mead minimizes the scaled quadratic distance from a fixed starting point.
 
 ```text
 Algorithm: MSM
@@ -149,7 +149,7 @@ Failure mode: identification depends on the moments. If they are not informative
 
 ### Method 2: Indirect Inference
 
-Pick $\theta$ so that the simulator reproduces the fitted coefficients of an auxiliary regression of acceptance on log wages. The auxiliary regression is not the structural model; its coefficients are summary statistics. The slope captures threshold variation that pins down the reservation wage.
+Pick $`\theta`$ so that the simulator reproduces the fitted coefficients of an auxiliary regression of acceptance on log wages. The auxiliary regression is not the structural model; its coefficients are summary statistics. The slope captures threshold variation that pins down the reservation wage.
 
 ```text
 Algorithm: Indirect Inference
@@ -164,7 +164,7 @@ Failure mode: a weak auxiliary model gives weak identification. Drop the linear-
 
 ### Method 3: Approximate Bayesian Computation (ABC-SMC)
 
-Sample $\theta$ from the prior, keep draws whose simulated moments are close to the observed moments, then iteratively tighten the closeness threshold and reweight the survivors. The output is a posterior over $\theta$, not a single point. Tolerance shrinks adaptively as the $\alpha$-quantile of the previous round's distances, with $\alpha = 0.5$.
+Sample $`\theta`$ from the prior, keep draws whose simulated moments are close to the observed moments, then iteratively tighten the closeness threshold and reweight the survivors. The output is a posterior over $`\theta`$, not a single point. Tolerance shrinks adaptively as the $`\alpha`$-quantile of the previous round's distances, with $`\alpha = 0.5`$.
 
 ```text
 Algorithm: ABC-SMC (adaptive tolerance schedule)
@@ -269,7 +269,7 @@ The method-comparison table puts parameter recoveries, loss values, work, and wa
 
 Simulation-based estimation is useful when the structural model is easier to simulate than to evaluate by likelihood. MSM matches economic moments chosen by the researcher. Indirect inference matches fitted statistics from an auxiliary acceptance model. Approximate Bayesian computation samples from level sets of the same scaled distance and reports the spread of acceptable parameters, not just the argmin.
 
-The three estimators are one family. All three pick a summary statistic, simulate, evaluate the distance between simulated and observed summaries, and search over $\theta$. MSM and indirect inference return the point that minimizes the distance. ABC samples from level sets of the same distance with a tolerance that shrinks toward zero.
+The three estimators are one family. All three pick a summary statistic, simulate, evaluate the distance between simulated and observed summaries, and search over $`\theta`$. MSM and indirect inference return the point that minimizes the distance. ABC samples from level sets of the same distance with a tolerance that shrinks toward zero.
 
 The split is not really frequentist versus Bayesian. ABC quantifies the curvature of the criterion around its minimum, which is the question classical standard errors answer with a Hessian approximation. When the simulator is cheap and the prior is honest, ABC gives the most informative answer of the three.
 

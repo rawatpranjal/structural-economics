@@ -10,38 +10,38 @@ The computation uses Afriat inequalities. The supporting slopes are fixed to one
 
 ## Equations
 
-There are two goods and $T$ budget-choice observations. Observation $t$ has
-prices $p_t=(p_{1t},p_{2t})\in\mathbb{R}_{++}^{2}$ and chosen bundle
-$x_t=(x_{1t},x_{2t})\in\mathbb{R}_{+}^{2}$. Expenditure is $m_t=p_t\cdot x_t$.
+There are two goods and $`T`$ budget-choice observations. Observation $`t`$ has
+prices $`p_t=(p_{1t},p_{2t})\in\mathbb{R}_{++}^{2}`$ and chosen bundle
+$`x_t=(x_{1t},x_{2t})\in\mathbb{R}_{+}^{2}`$. Expenditure is $`m_t=p_t\cdot x_t`$.
 
-Afriat recovery asks for ordinal utility scores $u_t$ and positive supporting
-slopes $\lambda_t$ such that
+Afriat recovery asks for ordinal utility scores $`u_t`$ and positive supporting
+slopes $`\lambda_t`$ such that
 
-$$
+```math
 u_i-u_j \leq \lambda_j p_j\cdot(x_i-x_j)
 \qquad \text{for all } i,j=1,\ldots,T .
-$$
+```
 
 When these inequalities are feasible, one rationalizing utility index is
 
-$$
+```math
 \widehat U(y)=\min_{j=1,\ldots,T}
 \left[u_j+\lambda_j p_j\cdot(y-x_j)\right].
-$$
+```
 
 This utility is the lower envelope of affine supporting functions. It is
-concave, monotone when prices and $\lambda_j$ are positive, and satisfies
-$\widehat U(x_t)=u_t$ at the observed choices.
+concave, monotone when prices and $`\lambda_j`$ are positive, and satisfies
+$`\widehat U(x_t)=u_t`$ at the observed choices.
 
-For a target observation $k$, the recovered upper-contour set is
+For a target observation $`k`$, the recovered upper-contour set is
 
-$$
+```math
 \widehat U(y)\geq u_k .
-$$
+```
 
-Writing $y=(y_1,y_2)$, its lower boundary can be computed pointwise:
+Writing $`y=(y_1,y_2)`$, its lower boundary can be computed pointwise:
 
-$$
+```math
 y_2(y_1) =
 \max_{j=1,\ldots,T}
 \left[
@@ -52,21 +52,21 @@ u_k-u_j-\lambda_j p_{1j}(y_1-x_{1j})
 \lambda_j p_{2j}
 }
 \right].
-$$
+```
 
 The data-generating benchmark, used only for comparison, is
 
-$$
+```math
 U^0(x)=x_1^{\alpha}x_2^{1-\alpha},\qquad \alpha=0.60 .
-$$
+```
 
 ## Model Setup
 
 | Object | Value | Role in the exercise |
 |---|---:|---|
-| Observations $T$ | 18 | Price-bundle pairs observed by the analyst |
+| Observations $`T`$ | 18 | Price-bundle pairs observed by the analyst |
 | Goods | 2 | Makes the recovered contour visible |
-| True $\alpha$ | 0.60 | Cobb-Douglas benchmark, hidden from recovery |
+| True $`\alpha`$ | 0.60 | Cobb-Douglas benchmark, hidden from recovery |
 | Income range | [5.07, 13.33] | Moves budget lines outward or inward |
 | Price range | [0.57, 1.96] | Rotates the observed budgets |
 | GARP violations | 0 | Screen before utility recovery |
@@ -99,19 +99,19 @@ Each line is an observed budget set. Each dot is the chosen bundle. Prices rotat
 
 <img src="figures/budget-lines.png" alt="Observed budget lines and chosen bundles with the target observation starred" width="80%">
 
-The blue curve is not a Cobb-Douglas estimate. It is one concave contour through the target choice. It also rationalizes every observed bundle. The dashed curve is the true simulation contour. It is shown only as a benchmark. On the plotted overlap, the median recovered-to-true $x_2$ ratio is **0.86**. The largest absolute contour gap is **9.89** units of good 2.
+The blue curve is not a Cobb-Douglas estimate. It is one concave contour through the target choice. It also rationalizes every observed bundle. The dashed curve is the true simulation contour. It is shown only as a benchmark. On the plotted overlap, the median recovered-to-true $`x_2`$ ratio is **0.86**. The largest absolute contour gap is **9.89** units of good 2.
 
 <img src="figures/indifference-curve.png" alt="Recovered Afriat contour and the held-out Cobb-Douglas contour" width="80%">
 
-Afriat numbers are a finite-data certificate. The scores $u_t$ rank observed bundles while respecting budget comparisons. The $\lambda_t$ values give supporting slopes in utility units. The simulated sample lets us compare the recovered ordering with true utility. The correlation is **0.973**.
+Afriat numbers are a finite-data certificate. The scores $`u_t`$ rank observed bundles while respecting budget comparisons. The $`\lambda_t`$ values give supporting slopes in utility units. The simulated sample lets us compare the recovered ordering with true utility. The correlation is **0.973**.
 
 <img src="figures/afriat-numbers.png" alt="Afriat utility levels and marginal utility normalizations" width="80%">
 
-The last column checks that recovered utility equals $u_t$ at each observed bundle. The true-utility column is a simulation diagnostic, not an input.
+The last column checks that recovered utility equals $`u_t`$ at each observed bundle. The true-utility column is a simulation diagnostic, not an input.
 
 **Afriat numbers and fit diagnostics**
 
-|   Observation |   Expenditure |    Utility ($u_t$) |   Multiplier ($\lambda_t$) |   True U normalized |   Fit error |
+|   Observation |   Expenditure |    Utility ($`u_t`$) |   Multiplier ($`\lambda_t`$) |   True U normalized |   Fit error |
 |--------------:|--------------:|-------:|-----------:|--------------------:|------------:|
 |             1 |          6.3  | 0.3738 |     0.1587 |              0.5457 |    0        |
 |             2 |          9.76 | 0.7013 |     0.1025 |              0.7205 |    0        |

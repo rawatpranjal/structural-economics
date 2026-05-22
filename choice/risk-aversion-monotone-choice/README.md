@@ -10,53 +10,53 @@ Finite samples can make that curve fall in one row. We estimate CRRA risk aversi
 
 ## Equations
 
-At row $j$, the high payoff probability is $p_j$. The subject chooses between a
-safer lottery $A$ and a riskier lottery $B$:
+At row $`j`$, the high payoff probability is $`p_j`$. The subject chooses between a
+safer lottery $`A`$ and a riskier lottery $`B`$:
 
-$$
+```math
 A(p)=(2.00 \text{ with } p,\ 1.60 \text{ otherwise}),\qquad
 B(p)=(3.85 \text{ with } p,\ 0.10 \text{ otherwise}).
-$$
+```
 
 For CRRA utility,
 
-$$
+```math
 u(c;\rho)=\frac{c^{1-\rho}-1}{1-\rho},
 \qquad \rho\neq 1.
-$$
+```
 
 The expected utility index for choosing the risky lottery is
 
-$$
+```math
 \Delta EU(p;\rho)=E[u(B(p);\rho)]-E[u(A(p);\rho)].
-$$
+```
 
 The fixed scale choice model is
 
-$$
+```math
 \Pr(d=1\mid p;\rho) =
 \lambda + (1-2\lambda)\frac{1}{1+\exp[-s\Delta EU(p;\rho)]}.
-$$
+```
 
-The monotone row logit estimates one logit $\alpha_j$ per row from binomial
-counts $y_j$ out of $N_j$ choices:
+The monotone row logit estimates one logit $`\alpha_j`$ per row from binomial
+counts $`y_j`$ out of $`N_j`$ choices:
 
-$$
+```math
 \ell(\alpha)=\sum_j y_j\log\Lambda(\alpha_j) + (N_j-y_j)\log[1-\Lambda(\alpha_j)].
-$$
+```
 
-Here $\Lambda(\alpha_j)=1/(1+\exp(-\alpha_j))$ is the logistic function.
+Here $`\Lambda(\alpha_j)=1/(1+\exp(-\alpha_j))`$ is the logistic function.
 
 The shape restriction is
 
-$$
+```math
 \alpha_{j+1}\geq \alpha_j
 \quad \text{for all adjacent rows }j.
-$$
+```
 
-Since $\Lambda$ is monotone, probability ordering follows from logit ordering.
+Since $`\Lambda`$ is monotone, probability ordering follows from logit ordering.
 This gives
-$\Pr(d=1\mid p_{j+1})\geq \Pr(d=1\mid p_j)$.
+$`\Pr(d=1\mid p_{j+1})\geq \Pr(d=1\mid p_j)`$.
 
 ## Model Setup
 
@@ -67,12 +67,12 @@ $\Pr(d=1\mid p_{j+1})\geq \Pr(d=1\mid p_j)$.
 | True risk aversion | 0.45 | Data-generating CRRA curvature |
 | True scale | 5.00 | Maps utility differences into stochastic choice |
 | Lapse rate | 0.02 | Symmetric lower and upper error floor |
-| Fixed scale estimator | scale = 5.00 | Recovers $\rho$ from the payoff index |
-| Shape restriction | nondecreasing | Risky-choice probability cannot fall as $p$ rises |
+| Fixed scale estimator | scale = 5.00 | Recovers $`\rho`$ from the payoff index |
+| Shape restriction | nondecreasing | Risky-choice probability cannot fall as $`p`$ rises |
 
 ## Solution Method
 
-The CRRA logit is the structural fit. It searches over $\rho$ after the stochastic scale is fixed.
+The CRRA logit is the structural fit. It searches over $`\rho`$ after the stochastic scale is fixed.
 
 The monotone logit is the flexible fit. It maximizes the binomial likelihood subject to ordered row logits.
 
@@ -89,7 +89,7 @@ Output: fitted risky choice curves and model comparisons
 
 ## Results
 
-At low high payoff probabilities, few subjects choose the risky lottery. The observed share falls from $p=0.20$ to $p=0.30$. The unconstrained fit repeats that step. The monotone fit pools the two rows.
+At low high payoff probabilities, few subjects choose the risky lottery. The observed share falls from $`p=0.20`$ to $`p=0.30`$. The unconstrained fit repeats that step. The monotone fit pools the two rows.
 
 The constrained curve removes the sample reversal.
 
@@ -101,7 +101,7 @@ The fixed scale turns the ladder into a likelihood for rho.
 
 <img src="figures/rho-likelihood.png" alt="Likelihood over CRRA risk aversion" width="80%">
 
-For the true $\rho$, the expected utility difference rises with the high payoff probability. It crosses zero where the risky lottery first gives higher expected utility. The monotone fit uses only this ordering implication.
+For the true $`\rho`$, the expected utility difference rises with the high payoff probability. It crosses zero where the risky lottery first gives higher expected utility. The monotone fit uses only this ordering implication.
 
 The risky lottery becomes more attractive as the high payoff probability rises.
 

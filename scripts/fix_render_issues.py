@@ -1,12 +1,36 @@
 #!/usr/bin/env python3
-"""One-shot mechanical fixer for two recurring rendering bugs.
+"""Mechanical fixer for catalog Markdown math.
 
-1. Removes all `\\,` (thin space) macros from active Markdown.
-2. Reformats inline `$$...$$` so `$$` always sits alone on its line,
-   with blank lines before and after the block.
+Pipeline:
 
-Only touches `.md` files under the repo root, skipping `.git/` and `_legacy/`.
-Run once, inspect diff, then commit.
+1. `reformat_dollar_blocks` -- canonicalize `$$...$$` so each `$$` sits
+   alone on its line with surrounding blank lines. Required before the
+   migration pass can see the canonical opening/closing form.
+2. `migrate_to_code_fence` -- migrate every `$expr$` inline math to
+   ``$`expr`$`` and every `$$...$$` display block to a ```` ```math ````
+   fence. Code-fence math syntax bypasses GitHub's markdown sanitizer,
+   which is the root cause of every recurring render bug previously
+   patched in this script. The pass is idempotent: already-migrated
+   sites are detected by the `$\\`` opening and the `\\`$` closing and
+   passed through verbatim.
+3. `brace_math_font_macros` -- wrap single-token arguments to math-font
+   macros (`\\mathbb A` -> `\\mathbb{A}`). KaTeX requires braces even
+   inside fenced math.
+4. `strip_pseudocode_latex` -- strip LaTeX subscripts/superscripts and
+   stray `$` from prose-language code fences (independent of math
+   migration, kept for pseudocode hygiene).
+
+The earlier sanitizer-survival passes (`strip_thin_space`,
+`fix_escaped_curly_in_math`, `fix_glued_greek`,
+`drop_single_token_subscript_braces`) were deleted with the migration.
+They patched damage caused by GitHub's pre-extraction sanitizer; once
+math lives inside code-fence syntax the sanitizer cannot touch it, and
+running those rewrites on fenced math would corrupt legitimate LaTeX
+(e.g. `\\,` is a real KaTeX thin space inside ```math fences).
+
+Only touches `.md` files under the repo root, skipping `.git/` and
+`_legacy/`. `.py` files are intentionally excluded: their `$...$`
+strings drive matplotlib's mathtext renderer and must stay raw.
 """
 from __future__ import annotations
 
@@ -27,11 +51,6 @@ def active_markdown_files() -> list[Path]:
     return sorted(out)
 
 
-def strip_thin_space(text: str) -> str:
-    """Delete every `\\,` in the file. CLAUDE.md forbids it outright now."""
-    return text.replace("\\,", "")
-
-
 def reformat_dollar_blocks(text: str) -> str:
     """Rewrite every `$$...$$` block so `$$` sits alone on its line."""
     lines = text.split("\n")
@@ -50,24 +69,19 @@ def reformat_dollar_blocks(text: str) -> str:
             out.append(line)
             i += 1
             continue
-        # Ignore `$$` that lives inside an inline code span.
         bare = re.sub(r"`[^`]*`", "", line)
         if "$$" not in bare:
             out.append(line)
             i += 1
             continue
-        # Collect a full $$...$$ block, possibly multi-line.
-        # Find positions of $$ in this line.
         first = line.find("$$")
         before = line[:first]
-        # Walk forward to find closing $$ (may be on a later line).
         body_parts: list[str] = []
         after_first = line[first + 2 :]
         rest = after_first
         line_idx = i
         end_line_idx = None
         end_after = ""
-        # search for closing $$ starting from after the opening
         while True:
             close_idx = rest.find("$$")
             if close_idx != -1:
@@ -78,36 +92,27 @@ def reformat_dollar_blocks(text: str) -> str:
             body_parts.append(rest)
             line_idx += 1
             if line_idx >= len(lines):
-                # Unterminated; bail out, emit original
                 out.extend(lines[i:])
                 return "\n".join(out)
             rest = lines[line_idx]
-        # Now body_parts is the math content as joined newline-separated chunks.
         body = "\n".join(body_parts).strip("\n")
-        # Emit: (before, blank, $$, body, $$, blank, end_after)
         before_stripped = before.rstrip()
         if before_stripped:
             out.append(before_stripped)
-        # Ensure blank line before $$
         if out and out[-1].strip():
             out.append("")
         out.append("$$")
         for bl in body.split("\n"):
             out.append(bl)
         out.append("$$")
-        # Ensure blank line after $$ (will be enforced by checking next emit).
         end_after_stripped = end_after.lstrip()
-        # Move past the consumed lines
         i = end_line_idx + 1
         if end_after_stripped:
-            # If trailing prose remains, drop a blank then emit it.
             out.append("")
             out.append(end_after_stripped)
         else:
-            # Ensure following line is blank
             if i < len(lines) and lines[i].strip():
                 out.append("")
-    # Collapse runs of 3+ blank lines to 2
     cleaned: list[str] = []
     blank_run = 0
     for ln in out:
@@ -119,6 +124,154 @@ def reformat_dollar_blocks(text: str) -> str:
             blank_run = 0
             cleaned.append(ln)
     return "\n".join(cleaned)
+
+
+def migrate_to_code_fence(text: str) -> str:
+    """Migrate bare `$expr$` to ``$`expr`$`` and `$$...$$` blocks to
+    ```math fences. Idempotent on already-migrated content."""
+    lines = text.split("\n")
+    out: list[str] = []
+    in_fence = False
+    in_display = False
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        stripped = line.strip()
+
+        if not in_display and stripped.startswith("```"):
+            in_fence = not in_fence
+            out.append(line)
+            i += 1
+            continue
+
+        if in_fence:
+            out.append(line)
+            i += 1
+            continue
+
+        if stripped == "$$":
+            indent = line[: len(line) - len(line.lstrip())]
+            if not in_display:
+                out.append(f"{indent}```math")
+                in_display = True
+            else:
+                out.append(f"{indent}```")
+                in_display = False
+            i += 1
+            continue
+
+        if in_display:
+            out.append(line)
+            i += 1
+            continue
+
+        single = re.match(r"^(\s*)\$\$(.+?)\$\$\s*$", line)
+        if single:
+            indent, expr = single.groups()
+            out.append(f"{indent}```math")
+            out.append(f"{indent}{expr.strip()}")
+            out.append(f"{indent}```")
+            i += 1
+            continue
+
+        out.append(_migrate_inline(line))
+        i += 1
+    return "\n".join(out)
+
+
+def _migrate_inline(line: str) -> str:
+    """Rewrite `$expr$` -> ``$`expr`$`` outside backtick code spans.
+
+    Idempotent: a `$` followed immediately by a backtick (`$\\``) is
+    recognised as the opening of an already-migrated inline math block;
+    the walker skips to the matching `\\`$` and emits the whole span
+    verbatim.
+    """
+    result: list[str] = []
+    n = len(line)
+    i = 0
+    while i < n:
+        ch = line[i]
+
+        if ch == "`":
+            run = i
+            while run < n and line[run] == "`":
+                run += 1
+            tick_count = run - i
+            ticks = "`" * tick_count
+            search_from = run
+            close = -1
+            while search_from < n:
+                k = line.find(ticks, search_from)
+                if k == -1:
+                    break
+                end = k + tick_count
+                if end == n or line[end] != "`":
+                    close = k
+                    break
+                search_from = k + 1
+                while search_from < n and line[search_from] == "`":
+                    search_from += 1
+            if close == -1:
+                result.append(line[i:])
+                return "".join(result)
+            result.append(line[i : close + tick_count])
+            i = close + tick_count
+            continue
+
+        if ch == "\\" and i + 1 < n and line[i + 1] == "$":
+            result.append(line[i : i + 2])
+            i += 2
+            continue
+
+        if ch == "$":
+            # Already-migrated form: `$\`expr\`$`. Skip to closing `\`$`.
+            if i + 1 < n and line[i + 1] == "`":
+                k = i + 2
+                close_tick = -1
+                while k < n - 1:
+                    if line[k] == "`" and line[k + 1] == "$":
+                        close_tick = k
+                        break
+                    k += 1
+                if close_tick != -1:
+                    result.append(line[i : close_tick + 2])
+                    i = close_tick + 2
+                    continue
+
+            j = i + 1
+            close = -1
+            while j < n:
+                cj = line[j]
+                if cj == "`":
+                    break
+                if cj == "\\" and j + 1 < n and line[j + 1] == "$":
+                    j += 2
+                    continue
+                if cj == "$":
+                    close = j
+                    break
+                j += 1
+            if close == -1:
+                result.append(ch)
+                i += 1
+                continue
+            expr = line[i + 1 : close]
+            if not expr:
+                result.append("$$")
+                i = close + 1
+                continue
+            if "`" in expr:
+                result.append(line[i : close + 1])
+                i = close + 1
+                continue
+            result.append(f"$`{expr}`$")
+            i = close + 1
+            continue
+
+        result.append(ch)
+        i += 1
+    return "".join(result)
 
 
 PROSE_FENCE_LANGS = {"", "text", "pseudo", "pseudocode", "algorithm", "plain"}
@@ -142,7 +295,6 @@ def strip_pseudocode_latex(text: str) -> str:
             out.append(line)
             continue
         if in_fence and fence_lang in PROSE_FENCE_LANGS:
-            # Iteratively flatten nested braces.
             new = line
             for _ in range(4):
                 prev = new
@@ -166,190 +318,13 @@ def brace_math_font_macros(text: str) -> str:
     )
 
 
-def fix_escaped_curly_in_math(text: str) -> str:
-    """Replace `\\{` -> `\\lbrace` and `\\}` -> `\\rbrace` inside math regions
-    only. Also rewrites `\\big\\{` family to `\\big\\lbrace` family."""
-    lines = text.split("\n")
-    out: list[str] = []
-    in_fence = False
-    in_display = False
-    for line in lines:
-        stripped = line.strip()
-        if stripped.startswith("```"):
-            in_fence = not in_fence
-            out.append(line)
-            continue
-        if in_fence:
-            out.append(line)
-            continue
-        new_line_parts: list[str] = []
-        i = 0
-        # Track inline $ state per character to scope substitutions.
-        inline = False
-        local_display = in_display
-        n = len(line)
-        buf_start = 0
-        while i < n:
-            two = line[i:i + 2]
-            ch = line[i]
-            # Skip code spans.
-            if ch == "`":
-                # Find closing backtick.
-                end = line.find("`", i + 1)
-                if end == -1:
-                    end = n
-                else:
-                    end += 1
-                # Flush prior buffer with substitution if in math.
-                segment = line[buf_start:i]
-                new_line_parts.append(
-                    _curly_sub(segment) if (inline or local_display) else segment
-                )
-                new_line_parts.append(line[i:end])
-                i = end
-                buf_start = i
-                continue
-            if two == "$$":
-                segment = line[buf_start:i]
-                new_line_parts.append(
-                    _curly_sub(segment) if (inline or local_display) else segment
-                )
-                new_line_parts.append("$$")
-                local_display = not local_display
-                i += 2
-                buf_start = i
-                continue
-            if ch == "$" and (i == 0 or line[i - 1] != "\\"):
-                segment = line[buf_start:i]
-                new_line_parts.append(
-                    _curly_sub(segment) if (inline or local_display) else segment
-                )
-                new_line_parts.append("$")
-                inline = not inline
-                i += 1
-                buf_start = i
-                continue
-            i += 1
-        # Flush remainder.
-        segment = line[buf_start:]
-        new_line_parts.append(
-            _curly_sub(segment) if (inline or local_display) else segment
-        )
-        out.append("".join(new_line_parts))
-        in_display = local_display
-    return "\n".join(out)
-
-
-def _curly_sub(s: str) -> str:
-    """Apply `\\{` -> `\\lbrace`, `\\}` -> `\\rbrace`, and the `\\big`
-    family of sized delimiters wrapping curly braces. Insert a space
-    after `\\lbrace`/`\\rbrace` when followed by a letter so KaTeX
-    does not parse `\\lbracef` as one command."""
-    s = re.sub(r"\\(big|Big|bigg|Bigg)\\\{", r"\\\1\\lbrace", s)
-    s = re.sub(r"\\(big|Big|bigg|Bigg)\\\}", r"\\\1\\rbrace", s)
-    s = s.replace("\\{", "\\lbrace").replace("\\}", "\\rbrace")
-    s = re.sub(r"\\(lbrace|rbrace)(?=[A-Za-z])", r"\\\1 ", s)
-    return s
-
-
-GREEK_GLUED_FIX = re.compile(
-    r"\\(alpha|beta|gamma|delta|epsilon|zeta|eta|theta|iota|kappa|"
-    r"lambda|mu|nu|xi|pi|rho|sigma|tau|upsilon|phi|chi|psi|omega|"
-    r"Alpha|Beta|Gamma|Delta|Epsilon|Zeta|Eta|Theta|Iota|Kappa|"
-    r"Lambda|Mu|Nu|Xi|Pi|Rho|Sigma|Tau|Upsilon|Phi|Chi|Psi|Omega|"
-    r"varepsilon|vartheta|varpi|varrho|varsigma|varphi)"
-    r"([a-zA-Z])"
-)
-
-
-def fix_glued_greek(text: str) -> str:
-    """Insert a space between a Greek macro and a following letter (round-1
-    `\\,` removal sometimes glued `\\alpha\\,s` into `\\alphas`)."""
-    return GREEK_GLUED_FIX.sub(r"\\\1 \2", text)
-
-
-SINGLE_TOKEN_BRACE_SUB = re.compile(r"_\{([A-Za-z0-9]|\\[A-Za-z]+)\}")
-
-
-def drop_single_token_subscript_braces(text: str) -> str:
-    """Inside inline `$...$` math, rewrite `_{x}` -> `_x` when the
-    subscript is a single token (letter, digit, or LaTeX macro)."""
-    lines = text.split("\n")
-    out: list[str] = []
-    in_fence = False
-    in_display = False
-    for line in lines:
-        stripped = line.strip()
-        if stripped.startswith("```"):
-            in_fence = not in_fence
-            out.append(line)
-            continue
-        if in_fence:
-            out.append(line)
-            continue
-        new_parts: list[str] = []
-        i = 0
-        n = len(line)
-        inline = False
-        local_display = in_display
-        buf_start = 0
-        while i < n:
-            ch = line[i]
-            two = line[i:i + 2]
-            if ch == "`":
-                end = line.find("`", i + 1)
-                if end == -1:
-                    end = n
-                else:
-                    end += 1
-                seg = line[buf_start:i]
-                new_parts.append(
-                    SINGLE_TOKEN_BRACE_SUB.sub(r"_\1", seg) if (inline and not local_display) else seg
-                )
-                new_parts.append(line[i:end])
-                i = end
-                buf_start = i
-                continue
-            if two == "$$":
-                seg = line[buf_start:i]
-                new_parts.append(
-                    SINGLE_TOKEN_BRACE_SUB.sub(r"_\1", seg) if (inline and not local_display) else seg
-                )
-                new_parts.append("$$")
-                local_display = not local_display
-                i += 2
-                buf_start = i
-                continue
-            if ch == "$" and (i == 0 or line[i - 1] != "\\"):
-                seg = line[buf_start:i]
-                new_parts.append(
-                    SINGLE_TOKEN_BRACE_SUB.sub(r"_\1", seg) if (inline and not local_display) else seg
-                )
-                new_parts.append("$")
-                inline = not inline
-                i += 1
-                buf_start = i
-                continue
-            i += 1
-        seg = line[buf_start:]
-        new_parts.append(
-            SINGLE_TOKEN_BRACE_SUB.sub(r"_\1", seg) if (inline and not local_display) else seg
-        )
-        out.append("".join(new_parts))
-        in_display = local_display
-    return "\n".join(out)
-
-
 def fix_file(path: Path) -> bool:
     original = path.read_text()
     text = original
-    text = strip_thin_space(text)
     text = reformat_dollar_blocks(text)
-    text = strip_pseudocode_latex(text)
+    text = migrate_to_code_fence(text)
     text = brace_math_font_macros(text)
-    text = fix_escaped_curly_in_math(text)
-    text = fix_glued_greek(text)
-    text = drop_single_token_subscript_braces(text)
+    text = strip_pseudocode_latex(text)
     if text != original:
         path.write_text(text)
         return True

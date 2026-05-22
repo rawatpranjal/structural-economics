@@ -10,88 +10,88 @@ The primitive object is a consideration process. A product can be valuable if in
 
 ## Equations
 
-There are $J$ inside products and an outside option with value zero. Product
-$j$ has observable quality $q_j$, price $p_j$, and complexity $x_j$. Before
+There are $`J`$ inside products and an outside option with value zero. Product
+$`j`$ has observable quality $`q_j`$, price $`p_j`$, and complexity $`x_j`$. Before
 search, the consumer knows the product's mean match value
 
-$$
+```math
 \begin{aligned}
 \mu_j
 &=
 \beta q_j - \alpha p_j,
 \end{aligned}
-$$
+```
 
-The term $\mu_j$ is not the utility from buying product $j$. It is the expected
+The term $`\mu_j`$ is not the utility from buying product $`j`$. It is the expected
 value before the consumer learns whether the product is a good personal fit.
 Inspection reveals an idiosyncratic match component, so the realized value is
 
-$$
+```math
 \begin{aligned}
 u_{ij}
 &=
 \mu_j + \sigma \varepsilon_{ij},
 \qquad \varepsilon_{ij}\sim N(0,1).
 \end{aligned}
-$$
+```
 
-The shock $\varepsilon_{ij}$ is consumer-specific. Two consumers can face the
+The shock $`\varepsilon_{ij}`$ is consumer-specific. Two consumers can face the
 same price and quality but learn different match values after inspection. This
 is why search paths carry information beyond final purchases.
 
-Inspecting product $j$ costs
+Inspecting product $`j`$ costs
 
-$$
+```math
 \begin{aligned}
 c_j
 &=
 c_0 \exp(\gamma x_j),
 \end{aligned}
-$$
+```
 
-where $x_j$ is product complexity. Higher complexity raises the cost of
+where $`x_j`$ is product complexity. Higher complexity raises the cost of
 learning about the product, not the utility from owning it. The consumer pays
-$c_j$ before observing $u_{ij}$.
+$`c_j`$ before observing $`u_{ij}`$.
 
 With perfect recall, the consumer keeps every inspected value. The Weitzman
-reservation value $z_j$ is the cutoff that makes the option value of inspecting
-product $j$ equal to its search cost:
+reservation value $`z_j`$ is the cutoff that makes the option value of inspecting
+product $`j`$ equal to its search cost:
 
-$$
+```math
 \begin{aligned}
 c_j
 &=
 E[\max(u_{ij}-z_j,0)].
 \end{aligned}
-$$
+```
 
-The expectation is over the unknown match draw for product $j$. A high $z_j$
+The expectation is over the unknown match draw for product $`j`$. A high $`z_j`$
 means the product is worth inspecting early because it has high mean utility,
 low search cost, or enough upside risk.
 
-After some inspections, the consumer has an inspected set $S_i$ and a current
+After some inspections, the consumer has an inspected set $`S_i`$ and a current
 best value
 
-$$
+```math
 \begin{aligned}
 b_i
 &=
 \max\lbrace0,\max_{j\in S_i} u_{ij}\rbrace.
 \end{aligned}
-$$
+```
 
-The outside option enters through the zero in $b_i$. If every inspected product
+The outside option enters through the zero in $`b_i`$. If every inspected product
 has negative realized value, the best available action is not to buy.
 
 The search rule is a threshold rule. Among uninspected products, the consumer
 looks at the product with the highest reservation value. If that value exceeds
-$b_i$, she searches it and updates $S_i$ and $b_i$. If the highest remaining
-reservation value is below $b_i$, every other uninspected product has even lower
+$`b_i`$, she searches it and updates $`S_i`$ and $`b_i`$. If the highest remaining
+reservation value is below $`b_i`$, every other uninspected product has even lower
 option value, so she stops.
 
 The simulated-moments estimator chooses
 
-$$
+```math
 \begin{aligned}
 \hat\theta
 &=
@@ -100,21 +100,21 @@ $$
 W
 \left[m_{sim}(\theta)-m_{obs}\right].
 \end{aligned}
-$$
+```
 
-The observed moment vector $m_{obs}$ summarizes search and purchase behavior.
-The simulated vector $m_{sim}(\theta)$ is built by simulating complete search
+The observed moment vector $`m_{obs}`$ summarizes search and purchase behavior.
+The simulated vector $`m_{sim}(\theta)`$ is built by simulating complete search
 paths under the same stopping rule. In this tutorial the moments include product
 search rates, purchase shares, average searches, and the probability of
 stopping after one search.
 
-The weighting matrix $W$ is diagonal in the implementation. Each moment is
+The weighting matrix $`W`$ is diagonal in the implementation. Each moment is
 scaled so that a small purchase or search rate does not dominate the objective
 only because it is measured in smaller units.
 
-In this exercise, the price taste $\alpha$, match-value scale $\sigma$, and
-complexity slope $\gamma$ are fixed. The estimator recovers the quality taste
-$\beta$ and the base search-cost level $c_0$. That two-parameter target keeps
+In this exercise, the price taste $`\alpha`$, match-value scale $`\sigma`$, and
+complexity slope $`\gamma`$ are fixed. The estimator recovers the quality taste
+$`\beta`$ and the base search-cost level $`c_0`$. That two-parameter target keeps
 the tutorial focused on the central identification problem: separating products
 that consumers dislike from products that consumers rarely inspect.
 
@@ -147,118 +147,118 @@ that consumers dislike from products that consumers rarely inspect.
 
 The search rule has two layers. First, reservation values rank products before the consumer knows her idiosyncratic match values. Second, after each search, the realized match value updates the current best option. Search continues only when the best remaining reservation value is above that current best value.
 
-For a normal match distribution, the reservation equation can be solved as a one-dimensional root. A high search cost lowers $z_j$ because the product must offer more option value before inspection is worthwhile. A high mean utility raises $z_j$ because the product is likely to be useful if inspected.
+For a normal match distribution, the reservation equation can be solved as a one-dimensional root. A high search cost lowers $`z_j`$ because the product must offer more option value before inspection is worthwhile. A high mean utility raises $`z_j`$ because the product is likely to be useful if inspected.
 
 ### Algorithm 1. Reservation order
 
-**Inputs.** Product primitives $\lbrace q_j,p_j,x_j\rbrace_{j=1}^J$, trial parameter $\theta=(\beta,\ell_c)$, and fixed $(\alpha,\gamma,\sigma)$.
+**Inputs.** Product primitives $`\lbrace q_j,p_j,x_j\rbrace_{j=1}^J`$, trial parameter $`\theta=(\beta,\ell_c)`$, and fixed $`(\alpha,\gamma,\sigma)`$.
 
-**Outputs.** Reservation values $\lbrace z_j(\theta)\rbrace_{j=1}^J$ and priority order $\pi(\theta)$.
+**Outputs.** Reservation values $`\lbrace z_j(\theta)\rbrace_{j=1}^J`$ and priority order $`\pi(\theta)`$.
 
 1. Convert the log cost into a positive base search cost:
 
-$$
+```math
 c_0=\exp(\ell_c).
-$$
+```
 
-2. For each product $j$, compute mean utility and search cost:
+2. For each product $`j`$, compute mean utility and search cost:
 
-$$
+```math
 \mu_j(\theta)=\beta q_j-\alpha p_j,
 \qquad
 c_j(\theta)=c_0\exp(\gamma x_j).
-$$
+```
 
 3. Solve the standardized reservation equation:
 
-$$
+```math
 G(k_j)=c_j(\theta)/\sigma,
 \qquad
 G(k)=\phi(k)-k[1-\Phi(k)],
-$$
+```
 
-Here $k_j$ is the standardized threshold solved by root-finding; $\phi$ is the standard normal PDF and $\Phi$ the standard normal CDF.
+Here $`k_j`$ is the standardized threshold solved by root-finding; $`\phi`$ is the standard normal PDF and $`\Phi`$ the standard normal CDF.
 
 4. Recover the reservation value:
 
-$$
+```math
 z_j(\theta)=\mu_j(\theta)+\sigma k_j.
-$$
+```
 
-5. Sort products by reservation values. The priority order $\pi(\theta)$ satisfies
+5. Sort products by reservation values. The priority order $`\pi(\theta)`$ satisfies
 
-$$
+```math
 z_{\pi_1}(\theta)\geq z_{\pi_2}(\theta)\geq\cdots\geq z_{\pi_J}(\theta).
-$$
+```
 
 ### Algorithm 2. Simulate one search path
 
-**Inputs.** Reservation values $\lbrace z_j(\theta)\rbrace$, order $\pi(\theta)$, shocks $\lbrace\varepsilon_{ij}\rbrace_{j=1}^J$, mean utilities $\lbrace\mu_j(\theta)\rbrace_{j=1}^J$, and match-value scale $\sigma$.
+**Inputs.** Reservation values $`\lbrace z_j(\theta)\rbrace`$, order $`\pi(\theta)`$, shocks $`\lbrace\varepsilon_{ij}\rbrace_{j=1}^J`$, mean utilities $`\lbrace\mu_j(\theta)\rbrace_{j=1}^J`$, and match-value scale $`\sigma`$.
 
-**Outputs.** Inspected set $S_i$, terminal best value $b_i$, and purchase $y_i$.
+**Outputs.** Inspected set $`S_i`$, terminal best value $`b_i`$, and purchase $`y_i`$.
 
 1. Initialize the path with no inspected products:
 
-$$
+```math
 S_i=\varnothing,
 \qquad
 b_i=0,
 \qquad
 y_i=0.
-$$
+```
 
-2. For step $h=1,\ldots,J$, take the next product in reservation order: $j=\pi_h(\theta)$.
+2. For step $`h=1,\ldots,J`$, take the next product in reservation order: $`j=\pi_h(\theta)`$.
 
-3. If $z_j(\theta)\leq b_i$, stop search.
+3. If $`z_j(\theta)\leq b_i`$, stop search.
 
-4. If $z_j(\theta)>b_i$, inspect product $j$ and update the inspected set:
+4. If $`z_j(\theta)>b_i`$, inspect product $`j`$ and update the inspected set:
 
-$$
+```math
 S_i\leftarrow S_i\cup\lbrace j\rbrace.
-$$
+```
 
 5. Reveal the match value:
 
-$$
+```math
 u_{ij}(\theta)=\mu_j(\theta)+\sigma\varepsilon_{ij}.
-$$
+```
 
-6. If $u_{ij}(\theta)>b_i$, update the best option:
+6. If $`u_{ij}(\theta)>b_i`$, update the best option:
 
-$$
+```math
 b_i\leftarrow u_{ij}(\theta),
 \qquad
 y_i\leftarrow j.
-$$
+```
 
 7. If no stopping condition has been met, return to step 2 for the next product.
 
-8. Return $S_i$, $|S_i|$, $b_i$, and $y_i$.
+8. Return $`S_i`$, $`|S_i|`$, $`b_i`$, and $`y_i`$.
 
 The estimator simulates the full path for many consumers at each parameter vector. It matches search rates and purchase shares, so the same product can be identified as hard to discover rather than simply low quality.
 
-### Algorithm 3. Estimate $\theta$ by simulated moments
+### Algorithm 3. Estimate $`\theta`$ by simulated moments
 
-**Inputs.** Observed moments $m_{obs}$, fixed simulation shocks $\lbrace\varepsilon_{sj}\rbrace_{s=1,j=1}^{S,J}$, starting value $\theta_0$, and scale floor $a_{min}$.
+**Inputs.** Observed moments $`m_{obs}`$, fixed simulation shocks $`\lbrace\varepsilon_{sj}\rbrace_{s=1,j=1}^{S,J}`$, starting value $`\theta_0`$, and scale floor $`a_{min}`$.
 
-**Output.** Simulated-moments estimate $\hat\theta$.
+**Output.** Simulated-moments estimate $`\hat\theta`$.
 
-1. For each moment $\ell$, compute the scale:
+1. For each moment $`\ell`$, compute the scale:
 
-$$
+```math
 a_\ell=\max\lbrace|m_{obs,\ell}|,a_{min}\rbrace.
-$$
+```
 
-2. Let Nelder-Mead propose a candidate $\theta^m=(\beta^m,\ell_c^m)$.
+2. Let Nelder-Mead propose a candidate $`\theta^m=(\beta^m,\ell_c^m)`$.
 
-3. At $\theta^m$, compute $z_j(\theta^m)$ and $\pi(\theta^m)$ using Algorithm 1.
+3. At $`\theta^m`$, compute $`z_j(\theta^m)`$ and $`\pi(\theta^m)`$ using Algorithm 1.
 
-4. For each simulated consumer $s$, simulate
-$\lbrace S_s(\theta^m), b_s(\theta^m), y_s(\theta^m)\rbrace$ using Algorithm 2.
+4. For each simulated consumer $`s`$, simulate
+$`\lbrace S_s(\theta^m), b_s(\theta^m), y_s(\theta^m)\rbrace`$ using Algorithm 2.
 
 5. Build the simulated moment vector:
 
-$$
+```math
 m_{sim}(\theta^m)=
 \left(
 \Pr_{sim}\lbrace j\in S_s(\theta^m)\rbrace_{j=1}^J, 
@@ -266,11 +266,11 @@ m_{sim}(\theta^m)=
 E_{sim}|S_s(\theta^m)|, 
 \Pr_{sim}\lbrace|S_s(\theta^m)|=1\rbrace
 \right).
-$$
+```
 
 6. Evaluate the scaled criterion:
 
-$$
+```math
 Q_S(\theta^m)=
 \sum_\ell
 \left(
@@ -278,9 +278,9 @@ Q_S(\theta^m)=
 \right)^2,
 \qquad
 \hat\theta=\arg\min_\theta Q_S(\theta).
-$$
+```
 
-7. Continue until Nelder-Mead stops and return $\hat\theta$.
+7. Continue until Nelder-Mead stops and return $`\hat\theta`$.
 
 Purchase data alone confound low demand with high search costs. Search paths help because a product can be attractive among consumers who inspect it but rarely inspected when its search cost is high.
 

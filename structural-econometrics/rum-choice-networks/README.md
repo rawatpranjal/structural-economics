@@ -12,124 +12,124 @@ RUMnets keep the random-utility discipline. The utility function is flexible, bu
 
 ## Equations
 
-Consumer $i$ chooses one product $j \in \mathcal{J}$. Product $j$ has price
-$p_{ij}$ and quality $q_{ij}$. The customer has observed context $z_i$ and an
-unobserved taste draw $\eta_i$.
+Consumer $`i`$ chooses one product $`j \in \mathcal{J}`$. Product $`j`$ has price
+$`p_{ij}`$ and quality $`q_{ij}`$. The customer has observed context $`z_i`$ and an
+unobserved taste draw $`\eta_i`$.
 
 The baseline is a plain logit with linear utility in a small feature vector
 
-$$
+```math
  x^{L}_{ij}=(p_{ij}, q_{ij}, p_{ij}z_i, q_{ij}z_i). 
-$$
+```
 
-With product intercepts $a^L_j$ and slopes $b^L$, baseline utility is
+With product intercepts $`a^L_j`$ and slopes $`b^L`$, baseline utility is
 
-$$
+```math
  v^L_{ij}=a^L_j+x^{L}_{ij} b^L. 
-$$
+```
 
 The baseline choice probability is
 
-$$
+```math
  P^L_{ij}=\frac{\exp(v^L_{ij})}{\sum_{k\in\mathcal{J}}\exp(v^L_{ik})}. 
-$$
+```
 
 The logit estimate minimizes the average negative log likelihood
 
-$$
+```math
  Q_L(a^L,b^L)=\frac{-1}{N}\sum_{i=1}^{N}\log P^L_{i y_i}. 
-$$
+```
 
-Here $N$ is the number of choice occasions and $y_i \in \mathcal{J}$ is the product chosen by consumer $i$.
+Here $`N`$ is the number of choice occasions and $`y_i \in \mathcal{J}`$ is the product chosen by consumer $`i`$.
 
 The data-generating model is still random utility, but the systematic utility is
 not linear. The simulation uses
 
-$$
+```math
  U_{ij}=v^0_{ij}+\varepsilon_{ij}, \quad \varepsilon_{ij}\sim \mathrm{Type\ I\ EV}. 
-$$
+```
 
 One convenient way to write the nonlinear part is
 
-$$
+```math
  v^0_{ij}=\delta_j+\alpha_i p_{ij}+\beta_i q_{ij}+m_j(z_i)+\ell_j(q_{ij},z_i)+\sigma_j(z_i)+r_{ij}(\eta_i). 
-$$
+```
 
-Here $\delta_j$ is the product-specific intercept in the systematic utility.
+Here $`\delta_j`$ is the product-specific intercept in the systematic utility.
 
 The random price and quality tastes are
 
-$$
+```math
  \alpha_i=-(1.05+0.22\tanh(z_i)+0.12\eta_i+0.08\eta_i\tanh(z_i)). 
-$$
+```
 
-$$
+```math
  \beta_i=0.78+0.30\tanh(1.10z_i+0.45\eta_i). 
-$$
+```
 
 The context term is product-specific:
 
-$$
+```math
  m(z_i)=(-0.35\tanh(1.20z_i)+0.10(z_i^2-1), 0.10\tanh(1.20z_i)-0.08(z_i^2-1), 0.55\tanh(1.20z_i)-0.28(z_i^2-1)). 
-$$
+```
 
 The quality-context complementarity is
 
-$$
+```math
  \ell_j(q_{ij},z_i)=\kappa_j\tanh(1.15(q_{ij}-1.25)z_i), \quad \kappa=(-0.15,0.20,0.62). 
-$$
+```
 
 The extra nonlinear product shifter is
 
-$$
+```math
  \sigma_j(z_i)=(0,0.12\tanh(1.80z_i)^2,0.35\tanh(1.50z_i)^2). 
-$$
+```
 
 The latent-taste interaction is
 
-$$
+```math
  r_{ij}(\eta_i)=0.18\eta_i\tanh(q_{ij}z_i). 
-$$
+```
 
-This is the misspecification: plain logit can use $p_{ij}z_i$ and $q_{ij}z_i$,
+This is the misspecification: plain logit can use $`p_{ij}z_i`$ and $`q_{ij}z_i`$,
 but it cannot represent the saturation and hump shapes exactly.
 
 The RUMnet keeps the same random-utility structure but replaces the linear
-index with a neural utility. For fixed latent draw $\eta_r$, define
+index with a neural utility. For fixed latent draw $`\eta_r`$, define
 
-$$
+```math
  \tilde x_{ijr}=(p_{ij},q_{ij},z_i,p_{ij}z_i,q_{ij}z_i,z_i^2,q_{ij}z_i^2,\eta_r,p_{ij}\eta_r,q_{ij}\eta_r,z_i\eta_r,q_{ij}z_i\eta_r). 
-$$
+```
 
 The one-hidden-layer utility is
 
-$$
+```math
  h_{ijr}(\theta)=\tanh(W^{\top}\tilde x_{ijr}+d). 
-$$
+```
 
-$$
+```math
  v_{\theta}(i,j,r)=a_j+b_p p_{ij}+b_q q_{ij}+b_{pz}p_{ij}z_i+b_{qz}q_{ij}z_i+c^{\top}h_{ijr}(\theta). 
-$$
+```
 
-Conditional on draw $r$, the RUM probability is
+Conditional on draw $`r`$, the RUM probability is
 
-$$
+```math
  P_{ijr}(\theta)=\frac{\exp(v_{\theta}(i,j,r))}{\sum_{k\in\mathcal{J}}\exp(v_{\theta}(i,k,r))}. 
-$$
+```
 
 The simulated RUMnet probability averages over the fixed draws:
 
-$$
+```math
  \widehat P_{ij}(\theta)=\frac{1}{R}\sum_{r=1}^{R}P_{ijr}(\theta). 
-$$
+```
 
 The estimated RUMnet minimizes the penalized simulated likelihood
 
-$$
+```math
  Q_R(\theta)=\frac{-1}{N}\sum_{i=1}^{N}\log \max(\widehat P_{i y_i}(\theta),10^{-12})+\lambda\frac{\theta_{\mathrm{net}}^{\top}\theta_{\mathrm{net}}}{d_{\mathrm{net}}}. 
-$$
+```
 
-Here $\theta_{\mathrm{net}}$ is the subset of neural-layer weights in $\theta$ and $d_{\mathrm{net}}$ is the count of those weights.
+Here $`\theta_{\mathrm{net}}`$ is the subset of neural-layer weights in $`\theta`$ and $`d_{\mathrm{net}}`$ is the count of those weights.
 
 ## Model Setup
 
@@ -139,17 +139,17 @@ Here $\theta_{\mathrm{net}}$ is the subset of neural-layer weights in $\theta$ a
 | Training choices | 3,000 | Used for estimation |
 | Test choices | 1,500 | Held out for evaluation |
 | Product variables | price, quality | Observed attributes in each choice set |
-| Customer context | one scalar $z_i$ | Shifts the value of product quality |
+| Customer context | one scalar $`z_i`$ | Shifts the value of product quality |
 | Latent taste draws | 9 | Fixed normal quantiles in the RUMnet likelihood |
 | Hidden units | 6 | Size of the neural utility layer |
-| RUMnet penalty $\lambda$ | 0.012 | Shrinks the neural weights in small samples |
+| RUMnet penalty $`\lambda`$ | 0.012 | Shrinks the neural weights in small samples |
 | Learning-curve sizes | 300, 600, 1,200, 3,000 | Training samples used in the learning curve |
 | Price shock | +0.25 on Premium | Used to compare substitution predictions |
 
 ## Solution Method
 
 The estimation uses common latent draws. The draws are fixed normal quantiles,
-so the simulated likelihood is a smooth function of $\theta$ rather than a new
+so the simulated likelihood is a smooth function of $`\theta`$ rather than a new
 Monte Carlo objective at every optimizer step.
 
 The baseline and the RUMnet answer the same choice question. The baseline asks
@@ -158,36 +158,36 @@ quality, context, and latent-taste inputs, but lets a small neural layer bend
 the utility surface before the softmax.
 
 The first step estimates the plain logit. With
-$\theta_L=(a^L_2,a^L_3,b^L)$ and $a^L_1=0$ for normalization, the optimizer
+$`\theta_L=(a^L_2,a^L_3,b^L)`$ and $`a^L_1=0`$ for normalization, the optimizer
 solves
 
-$$
+```math
  \hat\theta_L=\arg\min_{\theta_L} Q_L(\theta_L). 
-$$
+```
 
 The RUMnet starts near that estimate:
 
-$$
+```math
  a_j^{(0)}=\hat a^L_j, \quad (b_p^{(0)},b_q^{(0)},b_{pz}^{(0)},b_{qz}^{(0)})=\hat b^L. 
-$$
+```
 
 The neural weights start as small random numbers and the hidden biases start at
 zero. This makes the first RUMnet probabilities close to the fitted logit
 probabilities, then lets the neural part bend the utility surface.
 
-For any trial $\theta$, the code forms $\tilde x_{ijr}$ for all consumers,
-products, and latent draws. It then evaluates $h_{ijr}(\theta)$,
-$v_\theta(i,j,r)$, $P_{ijr}(\theta)$, and finally $\widehat P_{ij}(\theta)$.
-The same fixed draws are used for every trial $\theta$.
+For any trial $`\theta`$, the code forms $`\tilde x_{ijr}`$ for all consumers,
+products, and latent draws. It then evaluates $`h_{ijr}(\theta)`$,
+$`v_\theta(i,j,r)`$, $`P_{ijr}(\theta)`$, and finally $`\widehat P_{ij}(\theta)`$.
+The same fixed draws are used for every trial $`\theta`$.
 
 After estimation, the Premium price counterfactual recomputes fitted shares
-after adding $\Delta p$ to Premium. If $s_j$ is the baseline fitted share and
-$s_j^{+}$ is the fitted share after the price increase, the recapture rate for
-receiving product $n$ is
+after adding $`\Delta p`$ to Premium. If $`s_j`$ is the baseline fitted share and
+$`s_j^{+}`$ is the fitted share after the price increase, the recapture rate for
+receiving product $`n`$ is
 
-$$
+```math
  D_{n,\mathrm{Premium}}=\frac{s_n^{+}-s_n}{s_{\mathrm{Premium}}-s_{\mathrm{Premium}}^{+}}. 
-$$
+```
 
 ```text
 Algorithm: RUMnet simulated likelihood and price-shock recapture

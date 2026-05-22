@@ -1,5 +1,18 @@
 #!/usr/bin/env python3
-"""Validate the root tutorial catalog and active-folder hygiene."""
+"""Validate the root tutorial catalog and active-folder hygiene.
+
+The catalog uses GitHub code-fence math syntax exclusively:
+
+- Inline math:  ``$`expr`$``
+- Display math: ```` ```math ```` ... ```` ``` ````
+
+This bypasses GitHub's markdown sanitizer (which corrupts bare `$...$`
+and `$$...$$` math) at the source. Bare `$...$` or `$$...$$` math
+outside fenced code blocks is hard-rejected by `bare_dollar_math_errors`.
+
+The KaTeX-genuine rules (math-font macros, star scripts, empty script
+targets) still apply inside fenced math and are enforced.
+"""
 from __future__ import annotations
 
 import re
@@ -8,36 +21,18 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DISPLAY_MATH_BAD_PREFIX = re.compile(r"^\s*[+*-]\s+")
 TABLE_SEPARATOR_CELL = re.compile(r":?-{3,}:?")
-FRAGILE_MATH_DELIMITERS = tuple(
-    "\\" + prefix + suffix
-    for prefix in ("left", "right", "big", "Big", "bigg", "Bigg")
-    for suffix in ("{", "}", "\\{", "\\}")
-)
-FRAGILE_MATH_SIZE_COMMANDS = tuple(
-    "\\" + command for command in ("bigl", "bigr", "Bigl", "Bigr")
-)
-FRAGILE_MATH_SPACING_COMMANDS = ("\\;", "\\!", "\\,")
-UNSUPPORTED_MATH_COMMANDS = ("\\operatorname",)
-# Inline display math: `$$` is not the only thing on its line.
-INLINE_DISPLAY_MATH = re.compile(r"^(?!\s*\$\$\s*$).*\$\$")
-# Math-y tokens inside code fences (LaTeX braces or `$`).
-CODE_FENCE_MATH_TOKEN = re.compile(r"\$|_\{|\^\{")
-# Prose-language code fences where pseudocode lives (no real-code lang tag).
 PROSE_CODE_FENCE_LANGS = {"", "text", "pseudo", "pseudocode", "algorithm", "plain"}
-# Greek-letter spellings that should not stand alone as a column header.
+CODE_FENCE_MATH_TOKEN = re.compile(r"\$|_\{|\^\{")
 GREEK_NAMES = {
     "alpha", "beta", "gamma", "delta", "epsilon", "zeta", "eta", "theta",
     "iota", "kappa", "lambda", "mu", "nu", "xi", "omicron", "pi", "rho",
     "sigma", "tau", "upsilon", "phi", "chi", "psi", "omega",
 }
-# Short acronyms that should not stand alone as a column header.
 BARE_ACRONYMS = {
     "OLS", "IV", "2SLS", "GMM", "MLE", "KL", "HHI", "MSE", "RMSE", "FOC",
     "MPC", "DGP", "PDF", "CDF", "AR", "MA", "VAR", "DSGE", "BLP",
 }
-# Header cell deemed "code-style": lowercase identifier with underscore/digit.
 CODE_STYLE_HEADER = re.compile(r"^[a-z][a-z0-9]*(?:[_/][a-z0-9]+)+$")
 UNBRACED_MATH_FONT = re.compile(
     r"\\(mathbb|mathbf|mathcal|mathrm|mathfrak|mathit|mathsf|mathtt)\s+[A-Za-z0-9]"
@@ -45,16 +40,16 @@ UNBRACED_MATH_FONT = re.compile(
 UNBRACED_STAR_SCRIPT = re.compile(r"(?<!\\)(\^|_)\*")
 BRACED_LITERAL_STAR_SCRIPT = re.compile(r"(?<!\\)(\^|_)\{\*\}")
 EMPTY_SCRIPT_TARGET = re.compile(r"(?<!\\)(\^|_)(?:\s|$|[,$.;:)\]}]|[\^_])")
+# Match the canonical inline code-fence math form `$`expr`$`.
+INLINE_CODE_FENCE_MATH = re.compile(r"\$`[^`]+`\$")
 
 
 def is_python_string_close(line: str) -> bool:
-    """Return whether a Python line only closes a multiline string/call."""
     stripped = line.strip()
     return stripped in {'"""', "'''", '""")', "''')"}
 
 
 def catalog_links() -> set[Path]:
-    """Return local tutorial directories linked from the root README."""
     text = (ROOT / "README.md").read_text()
     links = set()
     for raw in re.findall(r"\]\(([^)#]+/)\)", text):
@@ -71,7 +66,6 @@ def catalog_links() -> set[Path]:
 
 
 def active_notebooks() -> list[Path]:
-    """Find notebooks that still live outside legacy storage."""
     bad = []
     for path in ROOT.rglob("*.ipynb"):
         rel = path.relative_to(ROOT)
@@ -82,7 +76,6 @@ def active_notebooks() -> list[Path]:
 
 
 def active_checkpoints() -> list[Path]:
-    """Find Jupyter checkpoint directories outside legacy storage."""
     bad = []
     for path in ROOT.rglob(".ipynb_checkpoints"):
         rel = path.relative_to(ROOT)
@@ -93,7 +86,6 @@ def active_checkpoints() -> list[Path]:
 
 
 def tutorial_dirs() -> set[Path]:
-    """Return active tutorial directories with a run.py entrypoint."""
     dirs = set()
     for path in ROOT.rglob("run.py"):
         rel = path.relative_to(ROOT)
@@ -111,8 +103,6 @@ def active_text_files() -> list[Path]:
             rel = path.relative_to(ROOT)
             if ".git" in rel.parts or "_legacy" in rel.parts:
                 continue
-            # Skip audit/QC reports: they quote broken claim-source math by
-            # design and are not catalog content.
             if path.name.startswith("bullshit-detector_"):
                 continue
             if "qc-reports" in rel.parts:
@@ -121,51 +111,15 @@ def active_text_files() -> list[Path]:
     return sorted(files)
 
 
-def display_math_errors() -> list[str]:
-    """Find display-math blocks that are likely to be misparsed by Markdown."""
-    errors = []
-    for path in active_text_files():
-        rel = path.relative_to(ROOT)
-        lines = path.read_text(errors="replace").splitlines()
-        in_math = False
-        start_line: int | None = None
-        for lineno, line in enumerate(lines, start=1):
-            if line.strip() == "$$":
-                if in_math:
-                    next_line = lines[lineno] if lineno < len(lines) else ""
-                    if (
-                        next_line.strip()
-                        and not (path.suffix == ".py" and is_python_string_close(next_line))
-                    ):
-                        errors.append(
-                            f"{rel}:{lineno} display math block must be followed by a blank line"
-                        )
-                    in_math = False
-                    start_line = None
-                else:
-                    if lineno > 1 and lines[lineno - 2].strip():
-                        errors.append(
-                            f"{rel}:{lineno} display math block must be preceded by a blank line"
-                        )
-                    in_math = True
-                    start_line = lineno
-                continue
-            if in_math and DISPLAY_MATH_BAD_PREFIX.match(line):
-                errors.append(
-                    f"{rel}:{lineno} display math line starts with a Markdown list marker/operator"
-                )
-        if in_math and start_line is not None:
-            errors.append(f"{rel}:{start_line} unclosed display math block")
-    return errors
+def active_markdown_files() -> list[Path]:
+    return [p for p in active_text_files() if p.suffix == ".md"]
 
 
 def count_unescaped_pipes(line: str) -> int:
-    """Count Markdown table separators, ignoring escaped literal pipes."""
     return len(re.findall(r"(?<!\\)\|", line))
 
 
 def is_markdown_table_separator(line: str) -> bool:
-    """Return whether a line looks like a Markdown table separator row."""
     if "|" not in line:
         return False
     cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
@@ -173,11 +127,8 @@ def is_markdown_table_separator(line: str) -> bool:
 
 
 def markdown_table_errors() -> list[str]:
-    """Find table rows whose unescaped pipes would break GitHub rendering."""
     errors = []
-    for path in active_text_files():
-        if path.suffix != ".md":
-            continue
+    for path in active_markdown_files():
         rel = path.relative_to(ROOT)
         lines = path.read_text(errors="replace").splitlines()
         in_fence = False
@@ -203,131 +154,93 @@ def markdown_table_errors() -> list[str]:
     return errors
 
 
-def fragile_math_delimiter_errors() -> list[str]:
-    """Reject LaTeX delimiter forms that GitHub Markdown often misrenders."""
-    errors = []
-    for path in active_text_files():
-        rel = path.relative_to(ROOT)
-        for lineno, line in enumerate(path.read_text(errors="replace").splitlines(), start=1):
-            for delimiter in FRAGILE_MATH_DELIMITERS:
-                if delimiter in line:
-                    errors.append(
-                        f"{rel}:{lineno} uses fragile math delimiter {delimiter}; use bracket delimiters instead"
-                    )
-            for command in FRAGILE_MATH_SIZE_COMMANDS:
-                if command in line:
-                    errors.append(
-                        f"{rel}:{lineno} uses GitHub-fragile math delimiter command {command}; use plain delimiters instead"
-                    )
-    return errors
+def bare_dollar_math_errors() -> list[str]:
+    """Hard-reject bare `$...$` or `$$...$$` math outside fenced code blocks.
 
+    The catalog uses GitHub code-fence math syntax exclusively:
+    ``$`expr`$`` inline and ```` ```math ```` for display. Bare-dollar
+    math is corrupted by GitHub's pre-extraction markdown sanitizer and
+    is not allowed anywhere in active content.
 
-def fragile_math_command_errors() -> list[str]:
-    """Reject math commands that have failed in the target Markdown renderer."""
-    errors = []
-    for path in active_text_files():
-        if path.suffix == ".py" and path.name != "run.py":
-            continue
-        rel = path.relative_to(ROOT)
-        for lineno, line in enumerate(path.read_text(errors="replace").splitlines(), start=1):
-            bare = re.sub(r"`[^`]*`", "", line) if path.suffix == ".md" else line
-            for command in FRAGILE_MATH_SPACING_COMMANDS:
-                if command in bare:
-                    errors.append(
-                        f"{rel}:{lineno} uses renderer-fragile math spacing command {command}; remove it"
-                    )
-            for command in UNSUPPORTED_MATH_COMMANDS:
-                if command in line:
-                    errors.append(
-                        f"{rel}:{lineno} uses unsupported math command {command}; use \\mathrm{{...}}"
-                    )
-            m = UNBRACED_MATH_FONT.search(line)
-            if m:
-                errors.append(
-                    f"{rel}:{lineno} uses unbraced \\{m.group(1)}; brace the argument (e.g. \\{m.group(1)}{{X}})"
-                )
-    return errors
-
-
-def math_script_errors() -> list[str]:
-    """Reject math scripts that are fragile after Markdown preprocessing."""
-    errors = []
-    for path in active_text_files():
-        if path.suffix == ".py" and path.name != "run.py":
-            continue
-        rel = path.relative_to(ROOT)
-        in_display_math = False
-        for lineno, line in enumerate(path.read_text(errors="replace").splitlines(), start=1):
-            stripped = line.strip()
-            has_math_marker = "$" in line or in_display_math
-
-            if has_math_marker:
-                if UNBRACED_STAR_SCRIPT.search(line):
-                    errors.append(
-                        f"{rel}:{lineno} uses an unbraced star script in math; write ^{{\\ast}} or _{{\\ast}}"
-                    )
-                if path.suffix == ".md" and BRACED_LITERAL_STAR_SCRIPT.search(line):
-                    errors.append(
-                        f"{rel}:{lineno} uses a literal star script in rendered math; write ^{{\\ast}} or _{{\\ast}}"
-                    )
-                if EMPTY_SCRIPT_TARGET.search(line):
-                    errors.append(
-                        f"{rel}:{lineno} has a superscript/subscript marker with no target"
-                    )
-
-            if stripped.count("$$") % 2 == 1:
-                in_display_math = not in_display_math
-    return errors
-
-
-def inline_display_math_errors() -> list[str]:
-    """Reject `$$...$$` blocks that share a line with prose.
-
-    GitHub markdown often falls back to text when `$$` opens or closes inline
-    with surrounding prose. The fallback then runs through markdown's
-    italic/underscore processing and corrupts subscripts.
+    Legitimate raw `$` survives:
+    - Escaped (`\\$5`) — currency or shell literal
+    - Inside an inline code span (`` `$x$` ``)
+    - Inside a fenced code block (including ```` ```math ```` blocks)
+    - The canonical ``$`expr`$`` inline-math form itself
     """
     errors = []
-    for path in active_text_files():
-        if path.suffix != ".md":
-            continue
+    for path in active_markdown_files():
         rel = path.relative_to(ROOT)
+        lines = path.read_text(errors="replace").splitlines()
         in_fence = False
-        for lineno, line in enumerate(path.read_text(errors="replace").splitlines(), start=1):
+        for lineno, line in enumerate(lines, start=1):
             stripped = line.strip()
             if stripped.startswith("```"):
                 in_fence = not in_fence
                 continue
             if in_fence:
                 continue
-            # Strip inline code spans so backtick-quoted `$$...$$` references
-            # in prose (e.g. in CLAUDE.md) don't trip the check.
-            bare = re.sub(r"`[^`]*`", "", line)
-            if "$$" not in bare:
+            # Strip legitimate forms before checking for bare `$`.
+            bare = INLINE_CODE_FENCE_MATH.sub("", line)
+            bare = re.sub(r"`[^`]*`", "", bare)
+            bare = bare.replace("\\$", "")
+            if "$" in bare:
+                errors.append(
+                    f"{rel}:{lineno} bare `$` math outside code fence; use `$`expr`$` for inline math or a ```math fence for display"
+                )
+    return errors
+
+
+def math_script_errors() -> list[str]:
+    """Reject KaTeX-illegal script forms (unbraced star, empty target)."""
+    errors = []
+    for path in active_markdown_files():
+        rel = path.relative_to(ROOT)
+        lines = path.read_text(errors="replace").splitlines()
+        in_fence = False
+        fence_lang = ""
+        for lineno, line in enumerate(lines, start=1):
+            stripped = line.strip()
+            if stripped.startswith("```"):
+                if in_fence:
+                    in_fence = False
+                    fence_lang = ""
+                else:
+                    in_fence = True
+                    fence_lang = stripped[3:].strip().lower()
                 continue
-            if bare.strip() == "$$":
-                continue
-            if bare.count("$$") >= 2:
-                m = re.match(r"^\s*\$\$.*\$\$\s*$", bare)
-                if m:
-                    continue
-            errors.append(
-                f"{rel}:{lineno} `$$` must be on its own line; prose or punctuation must not share the line"
-            )
+            in_math_fence = in_fence and fence_lang == "math"
+            # Inline math sites: `$`...`$`. Pull contents for checking.
+            inline_bodies = [m.group(0) for m in INLINE_CODE_FENCE_MATH.finditer(line)]
+            check_targets = []
+            if in_math_fence:
+                check_targets.append(line)
+            check_targets.extend(inline_bodies)
+            for target in check_targets:
+                if UNBRACED_STAR_SCRIPT.search(target):
+                    errors.append(
+                        f"{rel}:{lineno} uses an unbraced star script in math; write ^{{\\ast}} or _{{\\ast}}"
+                    )
+                if BRACED_LITERAL_STAR_SCRIPT.search(target):
+                    errors.append(
+                        f"{rel}:{lineno} uses a literal star script in math; write ^{{\\ast}} or _{{\\ast}}"
+                    )
+                if EMPTY_SCRIPT_TARGET.search(target):
+                    errors.append(
+                        f"{rel}:{lineno} has a superscript/subscript marker with no target"
+                    )
+                if UNBRACED_MATH_FONT.search(target):
+                    m = UNBRACED_MATH_FONT.search(target)
+                    errors.append(
+                        f"{rel}:{lineno} uses unbraced \\{m.group(1)}; brace the argument (e.g. \\{m.group(1)}{{X}})"
+                    )
     return errors
 
 
 def pseudocode_math_errors() -> list[str]:
-    """Reject LaTeX-style math inside prose-language code fences.
-
-    Pseudocode blocks in tutorial READMEs must read as plain text. LaTeX
-    macros, `$`, and brace-grouped subscripts/superscripts belong in
-    `$$...$$` blocks, not in `\`\`\`text` fences.
-    """
+    """Reject LaTeX-style math inside prose-language code fences."""
     errors = []
-    for path in active_text_files():
-        if path.suffix != ".md":
-            continue
+    for path in active_markdown_files():
         rel = path.relative_to(ROOT)
         in_fence = False
         fence_lang = ""
@@ -353,7 +266,6 @@ def pseudocode_math_errors() -> list[str]:
 
 
 def split_markdown_table_cells(row: str) -> list[str]:
-    """Split a Markdown table row into trimmed cell contents."""
     body = row.strip()
     if body.startswith("|"):
         body = body[1:]
@@ -363,18 +275,15 @@ def split_markdown_table_cells(row: str) -> list[str]:
 
 
 def header_cell_is_bad(cell: str) -> bool:
-    """Return whether a header cell looks like a raw code/symbol identifier."""
     if not cell:
         return False
-    # Strip a wrapping pair of backticks or `$...$` so we evaluate the content.
     plain = cell
     if plain.startswith("`") and plain.endswith("`") and len(plain) >= 2:
         plain = plain[1:-1].strip()
-    # Header containing English words alongside symbols/acronyms is fine.
     if re.search(r"[A-Za-z]{4,}", plain) and " " in plain:
         return False
-    # Pure-math header like `$\alpha$` or `$\beta_{\text{sugar}}$` is fine.
-    if plain.startswith("$") and plain.endswith("$"):
+    # Code-fence inline math form `$`expr`$` is fine as a header.
+    if INLINE_CODE_FENCE_MATH.fullmatch(plain):
         return False
     lower = plain.lower()
     if lower in GREEK_NAMES:
@@ -387,11 +296,8 @@ def header_cell_is_bad(cell: str) -> bool:
 
 
 def table_header_errors() -> list[str]:
-    """Reject Markdown table headers that read as code identifiers."""
     errors = []
-    for path in active_text_files():
-        if path.suffix != ".md":
-            continue
+    for path in active_markdown_files():
         rel = path.relative_to(ROOT)
         lines = path.read_text(errors="replace").splitlines()
         in_fence = False
@@ -411,210 +317,13 @@ def table_header_errors() -> list[str]:
             for cell in split_markdown_table_cells(line):
                 if header_cell_is_bad(cell):
                     errors.append(
-                        f"{rel}:{i + 1} table header cell `{cell}` reads as a code identifier; use English with the symbol in parentheses (e.g. `Price coefficient ($\\alpha$)`)"
+                        f"{rel}:{i + 1} table header cell `{cell}` reads as a code identifier; use English with the symbol in parentheses (e.g. `Price coefficient ($`\\alpha`$)`)"
                     )
-    return errors
-
-
-def _iter_math_states(lines: list[str]):
-    """Yield (lineno, line, in_inline, in_display) walking math state.
-
-    Skips fenced code blocks. Tracks `$$` display state and `$` inline state
-    on a per-line basis. Inline `$` parsing strips inline code spans first.
-    """
-    in_fence = False
-    in_display = False
-    for lineno, line in enumerate(lines, start=1):
-        stripped = line.strip()
-        if stripped.startswith("```"):
-            in_fence = not in_fence
-            yield lineno, line, False, False
-            continue
-        if in_fence:
-            yield lineno, line, False, False
-            continue
-        # Strip inline code spans before parsing $.
-        bare = re.sub(r"`[^`]*`", "", line)
-        # Remove escaped $.
-        bare = bare.replace("\\$", "")
-        # Toggle display state on each $$ pair.
-        display_count = bare.count("$$")
-        without_display = bare.replace("$$", "")
-        single_count = without_display.count("$")
-        has_inline = (single_count > 0) or in_display
-        yield lineno, line, has_inline, in_display or display_count > 0
-        if display_count % 2 == 1:
-            in_display = not in_display
-
-
-def markdown_link_in_math_errors() -> list[str]:
-    """Reject `](` inside display math; GitHub markdown eats `[X](Y)`."""
-    errors = []
-    for path in active_text_files():
-        if path.suffix != ".md":
-            continue
-        rel = path.relative_to(ROOT)
-        lines = path.read_text(errors="replace").splitlines()
-        in_fence = False
-        in_display = False
-        for lineno, line in enumerate(lines, start=1):
-            stripped = line.strip()
-            if stripped.startswith("```"):
-                in_fence = not in_fence
-                continue
-            if in_fence:
-                continue
-            # Only flag when fully inside a multi-line $$...$$ block.
-            if in_display and "](" in line:
-                errors.append(
-                    f"{rel}:{lineno} `](` inside display math is parsed as a markdown link by GitHub; rewrite without bracket+paren adjacency"
-                )
-            if line.count("$$") % 2 == 1:
-                in_display = not in_display
-    return errors
-
-
-def multiline_inline_math_errors() -> list[str]:
-    """Reject lines with an odd number of unescaped `$` (inline math
-    that opens or closes across a line break). GitHub terminates inline
-    math at the line break and the trailing fragment becomes prose."""
-    errors = []
-    for path in active_text_files():
-        if path.suffix != ".md":
-            continue
-        rel = path.relative_to(ROOT)
-        lines = path.read_text(errors="replace").splitlines()
-        in_fence = False
-        in_display = False
-        for lineno, line in enumerate(lines, start=1):
-            stripped = line.strip()
-            if stripped.startswith("```"):
-                in_fence = not in_fence
-                continue
-            if in_fence:
-                continue
-            bare = re.sub(r"`[^`]*`", "", line).replace("\\$", "")
-            display_count = bare.count("$$")
-            without_display = bare.replace("$$", "")
-            single_count = without_display.count("$")
-            if not in_display and display_count % 2 == 0:
-                if single_count % 2 == 1:
-                    errors.append(
-                        f"{rel}:{lineno} unmatched `$` on this line; inline math must open and close on the same line"
-                    )
-            if display_count % 2 == 1:
-                in_display = not in_display
-    return errors
-
-
-SAFE_SUBSCRIPT_BODY = re.compile(r"^[A-Za-z0-9]+$")
-
-
-def inline_subscript_braces_errors() -> list[str]:
-    """Reject `_{...}` inside inline `$...$` math when the braced body
-    contains anything other than a plain alphanumeric identifier.
-
-    Empirically, every render bug the user has caught involves a braced
-    subscript with operators, commas, spaces, or LaTeX macros inside
-    (`_{n+1}`, `_{k, i}`, `_{++}`, `_{\\infty}`). Subscripts whose body
-    is a pure alphanumeric token (`_{ij}`, `_{10}`) appear to render
-    correctly on GitHub. The fix at source is to drop braces if the
-    subscript is one token, rename the symbol, or promote the
-    expression to display math.
-    """
-    errors = []
-    for path in active_text_files():
-        if path.suffix != ".md":
-            continue
-        rel = path.relative_to(ROOT)
-        lines = path.read_text(errors="replace").splitlines()
-        in_fence = False
-        in_display = False
-        for lineno, line in enumerate(lines, start=1):
-            stripped = line.strip()
-            if stripped.startswith("```"):
-                in_fence = not in_fence
-                continue
-            if in_fence:
-                continue
-            bare = re.sub(r"`[^`]*`", "", line)
-            blocks = []
-            i = 0
-            n = len(bare)
-            inline_start = None
-            local_display = in_display
-            while i < n:
-                two = bare[i:i + 2]
-                ch = bare[i]
-                if two == "$$":
-                    local_display = not local_display
-                    i += 2
-                    continue
-                if ch == "$" and (i == 0 or bare[i - 1] != "\\"):
-                    if local_display:
-                        i += 1
-                        continue
-                    if inline_start is None:
-                        inline_start = i + 1
-                    else:
-                        blocks.append((inline_start, i))
-                        inline_start = None
-                    i += 1
-                    continue
-                i += 1
-            in_display = local_display
-            for start, end in blocks:
-                content = bare[start:end]
-                # Walk braced subscripts and check body content.
-                k = 0
-                while True:
-                    k = content.find("_{", k)
-                    if k == -1:
-                        break
-                    j = k + 2
-                    depth = 1
-                    while j < len(content) and depth > 0:
-                        if content[j] == "{":
-                            depth += 1
-                        elif content[j] == "}":
-                            depth -= 1
-                            if depth == 0:
-                                break
-                        j += 1
-                    body = content[k + 2:j]
-                    if not SAFE_SUBSCRIPT_BODY.fullmatch(body):
-                        errors.append(
-                            f"{rel}:{lineno} `_{{{body}}}` inside inline `$...$` is fragile on GitHub; drop braces if one token, rename, or promote to display math"
-                        )
-                        break
-                    k = j + 1
-    return errors
-
-
-def escaped_curly_in_math_errors() -> list[str]:
-    """Reject raw `\\{` or `\\}` inside math; use `\\lbrace` / `\\rbrace`."""
-    errors = []
-    for path in active_text_files():
-        if path.suffix != ".md":
-            continue
-        rel = path.relative_to(ROOT)
-        lines = path.read_text(errors="replace").splitlines()
-        for lineno, line, in_inline, in_display in _iter_math_states(lines):
-            if not (in_inline or in_display):
-                continue
-            bare = re.sub(r"`[^`]*`", "", line)
-            # Only flag once per offending line.
-            if re.search(r"\\\{|\\\}", bare):
-                errors.append(
-                    f"{rel}:{lineno} `\\{{` or `\\}}` inside math is fragile on GitHub; use `\\lbrace` and `\\rbrace`"
-                )
     return errors
 
 
 def _run_self_tests() -> None:
     """Smoke fixtures for each new check. Raises on regression."""
-    assert INLINE_DISPLAY_MATH.search("quality: $$x = 1$$.")
-    assert not INLINE_DISPLAY_MATH.search("$$")
     assert CODE_FENCE_MATH_TOKEN.search("p_{rho, gamma}(j)")
     assert CODE_FENCE_MATH_TOKEN.search("$x$")
     assert not CODE_FENCE_MATH_TOKEN.search("theta_hat <- argmax f(theta)")
@@ -622,15 +331,17 @@ def _run_self_tests() -> None:
     assert header_cell_is_bad("beta_sugar")
     assert header_cell_is_bad("gamma2/gamma1")
     assert header_cell_is_bad("OLS")
-    assert not header_cell_is_bad("Price coefficient ($\\alpha$)")
-    assert not header_cell_is_bad("$\\alpha$")
+    assert not header_cell_is_bad("Price coefficient ($`\\alpha`$)")
+    assert not header_cell_is_bad("$`\\alpha`$")
     assert not header_cell_is_bad("Iterations")
     assert not header_cell_is_bad("OLS estimate")
     assert UNBRACED_MATH_FONT.search(r"\mathbf A")
     assert UNBRACED_MATH_FONT.search(r"\mathcal D")
     assert not UNBRACED_MATH_FONT.search(r"\mathbf{A}")
-    assert "\\big" + "\\{" in FRAGILE_MATH_DELIMITERS
-    assert "\\Bigg" + "}" in FRAGILE_MATH_DELIMITERS
+    # Bare-dollar smoke: an isolated `$x$` outside a code span trips the
+    # rule; a wrapped `$`x`$` does not.
+    assert INLINE_CODE_FENCE_MATH.search("$`x`$")
+    assert not INLINE_CODE_FENCE_MATH.search("$x$")
 
 
 def validate() -> int:
@@ -656,31 +367,11 @@ def validate() -> int:
     for rel in active_checkpoints():
         errors.append(f"Active checkpoint directory outside _legacy: {rel}")
 
-    errors.extend(display_math_errors())
     errors.extend(markdown_table_errors())
-    errors.extend(fragile_math_delimiter_errors())
-    errors.extend(fragile_math_command_errors())
+    errors.extend(bare_dollar_math_errors())
     errors.extend(math_script_errors())
-    errors.extend(inline_display_math_errors())
     errors.extend(pseudocode_math_errors())
     errors.extend(table_header_errors())
-    errors.extend(markdown_link_in_math_errors())
-    errors.extend(multiline_inline_math_errors())
-    errors.extend(escaped_curly_in_math_errors())
-
-    # Warnings (do not fail the build, but surface for review). The
-    # inline-subscript rule catches the GitHub markdown-italic bug the
-    # user has confirmed on a handful of pages, but the corpus has
-    # ~230 plausible sites; promote to error after a manual audit
-    # confirms which patterns actually break on GitHub.
-    warnings = inline_subscript_braces_errors()
-
-    if warnings:
-        print(f"Catalog validation warnings ({len(warnings)}):")
-        for w in warnings[:20]:
-            print(f"  ~ {w}")
-        if len(warnings) > 20:
-            print(f"  ... and {len(warnings) - 20} more")
 
     if errors:
         print("Catalog validation failed:")

@@ -12,53 +12,53 @@ The computation estimates those tastes from market shares. A BLP contraction rec
 
 ## Equations
 
-Consumer $i$ in market $t$ chooses among $J$ inside goods and an outside good.
+Consumer $`i`$ in market $`t`$ chooses among $`J`$ inside goods and an outside good.
 
-Think of $x_{jt}$ as a product attribute such as quality, style, or size.
+Think of $`x_{jt}`$ as a product attribute such as quality, style, or size.
 
-The indirect utility from inside product $j$ is:
+The indirect utility from inside product $`j`$ is:
 
-$$
+```math
 u_{ijt} = \beta_0 + \beta_x x_{jt} + \alpha p_{jt} + \xi_{jt} + \sigma_x \nu_{i1} x_{jt} + \sigma_p \nu_{i2} p_{jt} + \varepsilon_{ijt}
-$$
+```
 
-Here $x_{jt}$ is an observed product characteristic, $p_{jt}$ is price,
-$\xi_{jt}$ is unobserved quality, $\nu_i \sim N(0,I)$, and
-$\varepsilon_{ijt}$ is Type-I extreme value.
+Here $`x_{jt}`$ is an observed product characteristic, $`p_{jt}`$ is price,
+$`\xi_{jt}`$ is unobserved quality, $`\nu_i \sim N(0,I)`$, and
+$`\varepsilon_{ijt}`$ is Type-I extreme value.
 
 The outside good has utility
 normalized to zero.
 
 Mean utility and individual taste enter separately:
 
-$$
+```math
 \delta_{jt} = \beta_0 + \beta_x x_{jt} + \alpha p_{jt} + \xi_{jt}, \qquad \mu_{ijt} = \sigma_x \nu_{i1} x_{jt} + \sigma_p \nu_{i2} p_{jt}
-$$
+```
 
-For a candidate $\sigma=(\sigma_x,\sigma_p)$, simulated market shares are:
+For a candidate $`\sigma=(\sigma_x,\sigma_p)`$, simulated market shares are:
 
-$$
+```math
 s_{jt} = \frac{1}{ns} \sum_{i=1}^{ns} \frac{\exp(\delta_{jt} + \mu_{ijt})}{1 + \sum_{k=1}^{J} \exp(\delta_{kt} + \mu_{ikt})}
-$$
+```
 
 The BLP contraction finds the mean utilities that make predicted shares equal
 observed shares:
 
-$$
+```math
 \delta^{(r+1)}_{jt} = \delta^{(r)}_{jt} + \log s^{\text{obs}}_{jt} - \log s^{\text{pred}}_{jt}(\delta^{(r)}, \sigma)
-$$
+```
 
-Given $\delta(\sigma)$, the linear demand equation is:
+Given $`\delta(\sigma)`$, the linear demand equation is:
 
-$$
+```math
 \delta_{jt} = X_{jt}\theta_1 + \xi_{jt}, \qquad X_{jt}=(1,x_{jt},p_{jt})
-$$
+```
 
-Here $\theta_1 = (\beta_0, \beta_x, \alpha)$ collects the linear demand coefficients.
+Here $`\theta_1 = (\beta_0, \beta_x, \alpha)`$ collects the linear demand coefficients.
 
-The identifying moments are $E[Z_{jt}\xi_{jt}]=0$. The instruments include
+The identifying moments are $`E[Z_{jt}\xi_{jt}]=0`$. The instruments include
 a cost shifter and sums of rival characteristics, so price can be endogenous
-through $\mathrm{Cov}(p_{jt},\xi_{jt}) \ne 0$.
+through $`\mathrm{Cov}(p_{jt},\xi_{jt}) \ne 0`$.
 
 ## Model Setup
 
@@ -66,18 +66,18 @@ The example has 100 independent markets with five products per market. Each prod
 
 | Object | Value | Role |
 |-----------|-------|-------------|
-| $T$ | 100 | Markets |
-| $J$ | 5 | Products per market |
-| $ns$ | 200 | Simulation draws used for shares |
-| $\beta_0$ | 2.0 | Mean inside-good utility |
-| $\beta_x$ | 1.5 | Mean taste for $x$ |
-| $\alpha$ | -0.8 | Mean price coefficient |
-| $\sigma_x$ | 0.8 | Dispersion in taste for $x$ |
-| $\sigma_p$ | 0.3 | Dispersion in price sensitivity |
+| $`T`$ | 100 | Markets |
+| $`J`$ | 5 | Products per market |
+| $`ns`$ | 200 | Simulation draws used for shares |
+| $`\beta_0`$ | 2.0 | Mean inside-good utility |
+| $`\beta_x`$ | 1.5 | Mean taste for $`x`$ |
+| $`\alpha`$ | -0.8 | Mean price coefficient |
+| $`\sigma_x`$ | 0.8 | Dispersion in taste for $`x`$ |
+| $`\sigma_p`$ | 0.3 | Dispersion in price sensitivity |
 
 ## Solution Method
 
-The estimator is a nested fixed point with GMM. The outer search chooses the taste-dispersion parameters $\sigma=(\sigma_x,\sigma_p)$. For each trial $\sigma$, the inner contraction finds the mean utilities $\delta(\sigma)$ that reproduce the observed shares.
+The estimator is a nested fixed point with GMM. The outer search chooses the taste-dispersion parameters $`\sigma=(\sigma_x,\sigma_p)`$. For each trial $`\sigma`$, the inner contraction finds the mean utilities $`\delta(\sigma)`$ that reproduce the observed shares.
 
 It helps to separate two jobs. The contraction is an inversion: it finds the product-level mean utilities that rationalize the observed shares for the current taste distribution. The IV/GMM step is identification: it asks whether the implied unobserved quality is orthogonal to cost and rival-characteristic instruments. The elasticity matrix is computed only after both jobs are done.
 
@@ -98,7 +98,7 @@ The contraction is the share inversion. It asks what common product utility must
 
 The GMM step then checks whether the recovered unobserved qualities are orthogonal to excluded cost and rival-characteristic instruments.
 
-At the true nonlinear parameters, the contraction converged in **627 iterations** with max $|\delta^{\mathrm{recovered}}-\delta^{\mathrm{true}}|=2.45e-11$.
+At the true nonlinear parameters, the contraction converged in **627 iterations** with max $`|\delta^{\mathrm{recovered}}-\delta^{\mathrm{true}}|=2.45e-11`$.
 
 The GMM search first ran a coarse starting grid, where the grid evaluated the objective 25 times. The Nelder-Mead refinement from the best grid point then evaluated the objective 46 more times. The convergence diagnostics in the Results table record these counts so they can be checked against a fresh run.
 
@@ -128,11 +128,11 @@ The parameter table checks the simulation truth. The nonlinear dispersion estima
 
 | Parameter                  |   True |   Estimated |
 |:---------------------------|-------:|------------:|
-| $\beta_0$ (intercept)      |    2   |       1.969 |
-| $\beta_x$ (characteristic) |    1.5 |       1.576 |
-| $\alpha$ (price)           |   -0.8 |      -0.835 |
-| $\sigma_x$ (RC on $x$)     |    0.8 |       0.951 |
-| $\sigma_p$ (RC on price)   |    0.3 |       0.196 |
+| $`\beta_0`$ (intercept)      |    2   |       1.969 |
+| $`\beta_x`$ (characteristic) |    1.5 |       1.576 |
+| $`\alpha`$ (price)           |   -0.8 |      -0.835 |
+| $`\sigma_x`$ (RC on $`x`$)     |    0.8 |       0.951 |
+| $`\sigma_p`$ (RC on price)   |    0.3 |       0.196 |
 
 These are the runtime counts and accuracy checks the prose refers to: contraction iterations at the true parameters, the max recovered-versus-true mean-utility error, starting-grid objective evaluations, Nelder-Mead objective evaluations, and the largest own-elasticity error in market 1. Committing them lets a re-run verify the numbers in the text against an on-disk artifact.
 
@@ -148,7 +148,7 @@ These are the runtime counts and accuracy checks the prose refers to: contractio
 
 ## Takeaway
 
-BLP changes the estimated substitution object. The contraction lets each candidate $\sigma$ fit observed shares. IV/GMM chooses heterogeneity using moments for recovered unobserved quality. With heterogeneity, substitution no longer has to follow existing shares.
+BLP changes the estimated substitution object. The contraction lets each candidate $`\sigma`$ fit observed shares. IV/GMM chooses heterogeneity using moments for recovered unobserved quality. With heterogeneity, substitution no longer has to follow existing shares.
 
 ## References
 

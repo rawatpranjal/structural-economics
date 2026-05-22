@@ -2,115 +2,115 @@
 
 ## Overview
 
-Unemployed workers and posted vacancies meet through a matching technology. A formed match produces surplus $z_t-b$, and Nash bargaining splits it.
+Unemployed workers and posted vacancies meet through a matching technology. A formed match produces surplus $`z_t-b`$, and Nash bargaining splits it.
 
-The equilibrium object is labor-market tightness $\theta_t=v_t/u_t$. Free entry pins down tightness because firms post vacancies until expected job value covers vacancy cost.
+The equilibrium object is labor-market tightness $`\theta_t=v_t/u_t`$. Free entry pins down tightness because firms post vacancies until expected job value covers vacancy cost.
 
 The code compares a log-linear rule with a finite-state free-entry fixed point. This asks whether the Shimer amplification puzzle comes from the solver or from surplus calibration.
 
 ## Equations
 
-**Matching technology.** Let $u_t$ be unemployment, $v_t$ vacancies, and
-$\theta_t=v_t/u_t$ tightness. Constant-returns matching gives
+**Matching technology.** Let $`u_t`$ be unemployment, $`v_t`$ vacancies, and
+$`\theta_t=v_t/u_t`$ tightness. Constant-returns matching gives
 
-$$
+```math
 m(u_t,v_t)=\chi u_t^{1-\eta}v_t^\eta,\qquad
 f(\theta_t)=\chi\theta_t^{\eta},\qquad
 q(\theta_t)=\chi\theta_t^{\eta-1},
-$$
+```
 
-Here $f$ is the worker job-finding rate. The term $q$ is the firm
+Here $`f`$ is the worker job-finding rate. The term $`q`$ is the firm
 vacancy-filling rate.
 
 **Productivity.** Aggregate productivity is a stationary AR(1) in logs,
 
-$$
+```math
 \hat z_{t+1}=\rho\hat z_t+\epsilon_{t+1},\quad
 \epsilon_{t+1}\sim\mathcal{N}(0,\sigma_\epsilon^2),\quad
 z_t=\bar z\exp(\hat z_t).
-$$
+```
 
-**Wage rule.** Nash bargaining with worker weight $\gamma$ splits joint
+**Wage rule.** Nash bargaining with worker weight $`\gamma`$ splits joint
 surplus and yields the equilibrium wage
 
-$$
+```math
 w_t=\gamma(z_t+k\theta_t)+(1-\gamma)b,
-$$
+```
 
-Here $b$ is the flow value of unemployment. The parameter $k$ is the
+Here $`b`$ is the flow value of unemployment. The parameter $`k`$ is the
 per-period cost of an open vacancy.
 
 **Job value and free entry.** A filled job has value
 
-$$
+```math
 J_t=z_t-w_t+\beta(1-\sigma) \mathbb{E}_t[J_{t+1}],
-$$
+```
 
-where $\sigma$ is the exogenous separation rate. Free entry equates expected
+where $`\sigma`$ is the exogenous separation rate. Free entry equates expected
 discounted job value with vacancy cost:
 
-$$
+```math
 k=\beta q(\theta_t) \mathbb{E}_t[J_{t+1}].
-$$
+```
 
-This condition pins down $\theta_t$.
+This condition pins down $`\theta_t`$.
 
-**Stock dynamics.** Once $\theta_t$ is known, unemployment follows
+**Stock dynamics.** Once $`\theta_t`$ is known, unemployment follows
 
-$$
+```math
 u_{t+1}=\sigma(1-u_t)+(1-f(\theta_t))u_t,\qquad
 v_t=\theta_t u_t.
-$$
+```
 
-The deterministic steady state has $u_{ss}=\sigma/(\sigma+f(\theta_{ss}))$.
+The deterministic steady state has $`u_{ss}=\sigma/(\sigma+f(\theta_{ss}))`$.
 
 **Local linearization.** Write
-$\hat\theta_t=\log\theta_t-\log\theta_{ss}$. Linearizing free entry at
-$\theta_{ss}=1$ gives $\hat\theta_t=C\hat z_t$, with
+$`\hat\theta_t=\log\theta_t-\log\theta_{ss}`$. Linearizing free entry at
+$`\theta_{ss}=1`$ gives $`\hat\theta_t=C\hat z_t`$, with
 
-$$
+```math
 C=\frac{\rho}{A-B\rho},\qquad
 A=\frac{\eta k}{(1-\gamma)\beta\chi},\qquad
 B=\beta A(1-\sigma)-\frac{\gamma k}{1-\gamma}.
-$$
+```
 
-At baseline, $A=1.1098$ and $B=0.5262$. A one-percent productivity
-innovation raises tightness by $C=1.55$ percent.
+At baseline, $`A=1.1098`$ and $`B=0.5262`$. A one-percent productivity
+innovation raises tightness by $`C=1.55`$ percent.
 
 ## Model Setup
 
 | Object | Value | Role |
 |---|---:|---|
-| Discount factor $\beta$ | 0.996 | Monthly time preference |
-| Productivity persistence $\rho$ | 0.949 | AR(1) coefficient on $\hat z_t$ |
-| Innovation s.d. $\sigma_\epsilon$ | 0.0065 | Monthly productivity shock |
-| Mean productivity $\bar z$ | 1.00 | Normalization |
-| Separation rate $\sigma$ | 0.034 | Exogenous job destruction |
-| Matching efficiency $\chi$ | 0.49 | Level of $m(u,v)$ |
-| Matching elasticity $\eta$ | 0.72 | Vacancy elasticity in $m$ |
-| Worker bargaining weight $\gamma$ | 0.72 | Nash share |
-| Flow value of unemployment $b$ | 0.40 | Outside option |
-| Vacancy cost $k$ | 0.2106 | Calibrated for $\theta_{ss}=1$ |
-| Steady-state unemployment $u_{ss}$ | 0.0649 | $\sigma/(\sigma+f(\theta_{ss}))$ |
-| Steady-state wage $w_{ss}$ | 0.9837 | Nash wage at $z=\bar z$ |
-| Surplus $\bar z-b$ | 0.60 | Match surplus before vacancy costs |
-| Coarse grid $N_z$ | 41 | Rouwenhorst nodes (tutorial run) |
-| Fine-grid benchmark $N_z$ | 121 | Discretization audit |
+| Discount factor $`\beta`$ | 0.996 | Monthly time preference |
+| Productivity persistence $`\rho`$ | 0.949 | AR(1) coefficient on $`\hat z_t`$ |
+| Innovation s.d. $`\sigma_\epsilon`$ | 0.0065 | Monthly productivity shock |
+| Mean productivity $`\bar z`$ | 1.00 | Normalization |
+| Separation rate $`\sigma`$ | 0.034 | Exogenous job destruction |
+| Matching efficiency $`\chi`$ | 0.49 | Level of $`m(u,v)`$ |
+| Matching elasticity $`\eta`$ | 0.72 | Vacancy elasticity in $`m`$ |
+| Worker bargaining weight $`\gamma`$ | 0.72 | Nash share |
+| Flow value of unemployment $`b`$ | 0.40 | Outside option |
+| Vacancy cost $`k`$ | 0.2106 | Calibrated for $`\theta_{ss}=1`$ |
+| Steady-state unemployment $`u_{ss}`$ | 0.0649 | $`\sigma/(\sigma+f(\theta_{ss}))`$ |
+| Steady-state wage $`w_{ss}`$ | 0.9837 | Nash wage at $`z=\bar z`$ |
+| Surplus $`\bar z-b`$ | 0.60 | Match surplus before vacancy costs |
+| Coarse grid $`N_z`$ | 41 | Rouwenhorst nodes (tutorial run) |
+| Fine-grid benchmark $`N_z`$ | 121 | Discretization audit |
 | Simulation length | 4500 months | Post-burn-in moments |
 
 ## Solution Method
 
 Two solvers compute the same tightness rule.
 
-**Log-linear local rule.** The local rule linearizes free entry and the AR(1) around the deterministic steady state. It gives $C=\rho/(A-B\rho)$ and sets $\theta_t=\exp(C\hat z_t)$.
+**Log-linear local rule.** The local rule linearizes free entry and the AR(1) around the deterministic steady state. It gives $`C=\rho/(A-B\rho)`$ and sets $`\theta_t=\exp(C\hat z_t)`$.
 
-**Nonlinear free-entry fixed point.** The nonlinear solver discretizes $\hat z_t$ on a Rouwenhorst grid with $N_z=41$ nodes. It substitutes free entry inside the job-value Bellman:
+**Nonlinear free-entry fixed point.** The nonlinear solver discretizes $`\hat z_t`$ on a Rouwenhorst grid with $`N_z=41`$ nodes. It substitutes free entry inside the job-value Bellman:
 
-$$
+```math
 J_i=(1-\gamma)(z_i-b)-\gamma k\theta_i+\beta(1-\sigma)\sum_j P_{ij}J_j,\qquad \theta_i=(\frac{\beta\chi}{k}\sum_j P_{ij}J_j)^{1/(1-\eta)}.
-$$
+```
 
-The operator is a contraction. Its linear term $\beta(1-\sigma)E[J']$ alone has modulus $\beta(1-\sigma)=0.9621$, but the substituted free-entry term $\theta(E[J'])$ inside the Bellman adds a negative correction. The total derivative of the update with respect to $E[J']$ at the steady state gives an effective modulus of about $0.293$, well below the linear-term bound. The tight effective modulus is why the fixed point converges in a few dozen iterations rather than the several hundred the linear-term modulus would imply.
+The operator is a contraction. Its linear term $`\beta(1-\sigma)E[J']`$ alone has modulus $`\beta(1-\sigma)=0.9621`$, but the substituted free-entry term $`\theta(E[J'])`$ inside the Bellman adds a negative correction. The total derivative of the update with respect to $`E[J']`$ at the steady state gives an effective modulus of about $`0.293`$, well below the linear-term bound. The tight effective modulus is why the fixed point converges in a few dozen iterations rather than the several hundred the linear-term modulus would imply.
 
 ```text
 Algorithm 1: Log-linear local rule
@@ -143,9 +143,9 @@ repeat n = 0, 1, 2, ...:
 until err < ε
 ```
 
-**Discretization audit.** The same nonlinear solver is rerun with $N_z=121$ nodes. The interpolated gap in $\theta(z)$ is **3.97e-04%**.
+**Discretization audit.** The same nonlinear solver is rerun with $`N_z=121`$ nodes. The interpolated gap in $`\theta(z)`$ is **3.97e-04%**.
 
-At baseline, the log-linear elasticity is $C=1.554$. The $N_z=41$ fixed point converges in **26 iterations**. The maximum policy gap between the nonlinear and log-linear rules is **3.23%**.
+At baseline, the log-linear elasticity is $`C=1.554`$. The $`N_z=41`$ fixed point converges in **26 iterations**. The maximum policy gap between the nonlinear and log-linear rules is **3.23%**.
 
 ## Results
 
@@ -153,7 +153,7 @@ The nonlinear rule, fine-grid rule, and local rule are close over the simulated 
 
 <img src="figures/productivity-tightness.png" alt="Tightness as a function of productivity: log-linear, nonlinear coarse, and nonlinear fine-grid benchmark, with simulated months overlaid." width="80%">
 
-Given tightness, unemployment follows the stock law and vacancies equal $\theta_t u_t$. Vacancies jump with entry. Unemployment falls more slowly because hires reduce tomorrow's search pool.
+Given tightness, unemployment follows the stock law and vacancies equal $`\theta_t u_t`$. Vacancies jump with entry. Unemployment falls more slowly because hires reduce tomorrow's search pool.
 
 <img src="figures/unemployment-vacancies.png" alt="Simulated unemployment and vacancy paths under the nonlinear tightness rule." width="80%">
 
@@ -173,7 +173,7 @@ The signs match the model logic. Tightness and vacancies are procyclical, unempl
 | Tightness theta             | 0.9959 |          0.0372 |          1.72 |          1     |
 | Tightness theta, log-linear | 0.9965 |          0.0336 |          1.55 |          1     |
 
-Raising $b$ shrinks surplus and raises elasticity $C$. Moving from $b=0.40$ to $b=0.95$ takes $C$ from 1.55 to 18.65. The surplus calibration drives amplification.
+Raising $`b`$ shrinks surplus and raises elasticity $`C`$. Moving from $`b=0.40`$ to $`b=0.95`$ takes $`C`$ from 1.55 to 18.65. The surplus calibration drives amplification.
 
 **Tightness elasticity by flow value of unemployment**
 

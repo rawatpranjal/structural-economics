@@ -4,76 +4,76 @@
 
 Households face different endowment shocks and cannot fully insure each other. In Heaton and Lucas (1996), two CRRA agents trade equity and a one-period bond. Short-sale and borrowing limits make marginal utilities depend on who holds wealth after each shock.
 
-The state is agent 1's wealth share, $\omega_1$. When constraints bind, this share changes how aggregate dividends are priced. Equity premia therefore vary across the wealth distribution.
+The state is agent 1's wealth share, $`\omega_1`$. When constraints bind, this share changes how aggregate dividends are priced. Equity premia therefore vary across the wealth distribution.
 
-The transition for $\omega_1$ is implicit. Tomorrow's share depends on tomorrow's equity price, which also depends on tomorrow's share. STPFI solves prices, portfolios, multipliers, and shock-contingent next wealth shares in one global system.
+The transition for $`\omega_1`$ is implicit. Tomorrow's share depends on tomorrow's equity price, which also depends on tomorrow's share. STPFI solves prices, portfolios, multipliers, and shock-contingent next wealth shares in one global system.
 
 ## Equations
 
-Let $z_t\in\lbrace1,\ldots,8\rbrace$ be the Markov shock. In state $z$, aggregate growth
-is $g_z$, the equity dividend is $d_z$, and agent 1 receives endowment share
-$\eta_{1z}$ with $\eta_{2z}=1-\eta_{1z}$. Agent $i$ has CRRA utility with
-risk aversion $\gamma$ and chooses consumption $c_i$, next-period equity
-holdings $s_i'$, and next-period bond holdings $b_i'$. The equity and bond
-prices are $p_s$ and $p_b$.
+Let $`z_t\in\lbrace1,\ldots,8\rbrace`$ be the Markov shock. In state $`z`$, aggregate growth
+is $`g_z`$, the equity dividend is $`d_z`$, and agent 1 receives endowment share
+$`\eta_{1z}`$ with $`\eta_{2z}=1-\eta_{1z}`$. Agent $`i`$ has CRRA utility with
+risk aversion $`\gamma`$ and chooses consumption $`c_i`$, next-period equity
+holdings $`s_i'`$, and next-period bond holdings $`b_i'`$. The equity and bond
+prices are $`p_s`$ and $`p_b`$.
 
-For $i=1,2$, the budget constraint is
+For $`i=1,2`$, the budget constraint is
 
-$$
+```math
 c_i+p_s s_i' + p_b b_i'
 =\omega_i(p_s+d_z)+\eta_{iz},\qquad \omega_2=1-\omega_1.
-$$
+```
 
 Asset markets clear through
 
-$$
+```math
 s_1'+s_2'=1,\qquad b_1'+b_2'=0,
-$$
+```
 
 with constraints
 
-$$
+```math
 s_i'\geq 0,\qquad b_i'\geq \bar K^b.
-$$
+```
 
-The Kuhn-Tucker conditions for equity and bond positions are, where $E_z[\cdot]$
-denotes the expectation over next-period shocks $z'$ conditional on current shock $z$,
+The Kuhn-Tucker conditions for equity and bond positions are, where $`E_z[\cdot]`$
+denotes the expectation over next-period shocks $`z'`$ conditional on current shock $`z`$,
 
-$$
+```math
 1=\beta E_z\left[
 g_{z'}^{1-\gamma}\left(\frac{c_i'}{c_i}\right)^{-\gamma}
 \frac{p_s(z',\omega_1')+d_{z'}}{p_s}\right]+\mu_i^s,
-$$
+```
 
-$$
+```math
 1=\beta E_z\left[
 g_{z'}^{-\gamma}\left(\frac{c_i'}{c_i}\right)^{-\gamma}
 \frac{1}{p_b}\right]+\mu_i^b,
-$$
+```
 
-$$
+```math
 \mu_i^s\geq0,\quad \mu_i^s s_i'=0,\qquad
 \mu_i^b\geq0,\quad \mu_i^b(b_i'-\bar K^b)=0.
-$$
+```
 
 The future wealth share is not an exogenous Markov transition. It must be
 consistent with today's portfolio choice and tomorrow's asset prices:
 
-$$
+```math
 \omega_1'(z')=
 \frac{s_1'[p_s(z',\omega_1'(z'))+d_{z'}]+b_1'/g_{z'}}
 {p_s(z',\omega_1'(z'))+d_{z'}}.
-$$
+```
 
 ## Model Setup
 
 | Object | Value | Why it matters |
 |---|---:|---|
-| $\beta$ | 0.95 | Discount factor |
-| $\gamma$ | 1.5 | CRRA risk aversion |
-| $\bar{K}^b$ | -0.05 | Lower bound on each agent's bond position |
+| $`\beta`$ | 0.95 | Discount factor |
+| $`\gamma`$ | 1.5 | CRRA risk aversion |
+| $`\bar{K}^b`$ | -0.05 | Lower bound on each agent's bond position |
 | Shock states | 8 | Joint Markov chain for growth, dividends, and endowment shares |
-| Wealth-share grid | 201 points on $[-0.05,1.05]$ | Collocation grid for $\omega_1$, with a small buffer around $[0,1]$ |
+| Wealth-share grid | 201 points on $`[-0.05,1.05]`$ | Collocation grid for $`\omega_1`$, with a small buffer around $`[0,1]`$ |
 | Unknowns per collocation point | 19 | Consumption, portfolios, prices, multipliers, and eight shock-contingent wealth shares |
 | Simulation | 24 paths x 10,000 periods | Used to approximate the ergodic wealth-share distribution |
 
