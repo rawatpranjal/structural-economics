@@ -140,6 +140,8 @@ Output: price deviations x_t, strategy shares n_ht, return moments
 4. Choose beta_hat = argmin_beta ||W * (m(beta) - m_data)||^2.
 ```
 
+The weighting matrix $`W`$ in step 4 is the optimal-weighting matrix derived in [`structural-econometrics/gmm-foundations/`](../../structural-econometrics/gmm-foundations/); the identity is used here for simplicity.
+
 The pseudo-data moments come from one deterministic shock bank. The candidate simulations use a separate deterministic shock bank. Within the grid, every candidate intensity sees the same candidate shocks, so the objective mostly reflects strategy switching rather than Monte Carlo noise.
 
 ## Results

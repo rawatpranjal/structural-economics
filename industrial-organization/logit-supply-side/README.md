@@ -8,6 +8,10 @@ The target object is the marginal cost vector behind those prices. Markups are t
 
 Accounting costs are missing, so the model infers costs from demand and firm optimality. Berry inversion turns shares into mean utilities. IV/2SLS estimates the price slope using excluded cost variation. Bertrand-Nash FOCs then map demand derivatives and ownership into markups.
 
+## Preliminary readings
+
+- [`structural-econometrics/gmm-foundations/`](../../structural-econometrics/gmm-foundations/)
+
 ## Equations
 
 Markets are indexed by $`t`$. Products are indexed by $`j`$.
