@@ -13,26 +13,12 @@ The Minnesota prior is ridge-like shrinkage for dynamic systems. It puts prior m
 ## Preliminary readings
 
 - [`time-series/ar-processes/`](../../time-series/ar-processes/)
+- [`time-series/reduced-form-var/`](../../time-series/reduced-form-var/)
 - [`bayesian-methods/bayesian-foundations/`](../../bayesian-methods/bayesian-foundations/)
 
 ## Equations
 
-Let $`y_t=(x_t,\pi_t,i_t)'`$ collect the output gap, inflation, and the policy
-rate. The reduced-form VAR is
-
-```math
-y_t = c + A_1 y_{t-1} + A_2 y_{t-2} + \cdots + A_p y_{t-p} + u_t,
-\qquad u_t \sim N(0,\Sigma_u).
-```
-
-Stack the observations equation by equation. Let $`X`$ contain an intercept and
-the $`p`$ lagged values of $`y_t`$. For equation $`i`$,
-
-```math
-y_i = X\beta_i + e_i,
-\qquad
-e_i \sim N(0,\sigma_i^2 I_T).
-```
+The reduced-form VAR setup, equation-by-equation OLS, and companion form are the same ones used in [`time-series/reduced-form-var/`](../../time-series/reduced-form-var/). Here $`y_t = (x_t, \pi_t, i_t)'`$ collects the output gap, inflation, and the policy rate, and the equation-by-equation stack writes equation $`i`$ as $`y_i = X \beta_i + e_i`$ with $`e_i \sim N(0, \sigma_i^2 I_T)`$, where $`X`$ contains an intercept and $`p`$ lagged values of $`y_t`$.
 
 The Gaussian-Gaussian conjugate regression update used here (posterior precision $`V_i^{-1}`$ as the sum of prior precision and data precision; posterior mean as the precision-weighted average of the prior mean and the ordinary-least-squares estimate) is derived in [`bayesian-methods/bayesian-foundations/`](../../bayesian-methods/bayesian-foundations/). The Minnesota-specific content is the structured choice of prior mean $`b_i^0`$ and prior covariance $`V_i^0`$ below.
 
@@ -85,42 +71,7 @@ Coefficient uncertainty comes from the posterior covariance:
 \beta_{im}\approx b_{im}\pm 1.96\sqrt{(V_i)_{mm}}.
 ```
 
-Recursive SVAR identification factors the BVAR reduced-form covariance as
-
-```math
-\Sigma_u = PP',
-\qquad
-u_t=P\varepsilon_t,\qquad
-E[\varepsilon_t\varepsilon_t']=I.
-```
-
-This factorization is not unique. A recursive SVAR chooses the lower-triangular
-Cholesky factor $`P`$ after fixing an ordering. With ordering output gap,
-inflation, policy rate,
-
-```math
-\begin{bmatrix}
-u_{y,t}\\
-u_{\pi,t}\\
-u_{i,t}
-\end{bmatrix} =
-\begin{bmatrix}
-p_{11} & 0 & 0\\
-p_{21} & p_{22} & 0\\
-p_{31} & p_{32} & p_{33}
-\end{bmatrix}
-\begin{bmatrix}
-\varepsilon_{y,t}\\
-\varepsilon_{\pi,t}\\
-\varepsilon_{i,t}
-\end{bmatrix}.
-```
-
-The policy shock is the third structural innovation. It has zero impact effect
-on output and inflation because the third column of $`P`$ is zero in those rows.
-It can still affect output and inflation after one or more quarters through the
-lag matrices. The policy rate can react on impact to output and inflation shocks
-through $`p_{31}`$ and $`p_{32}`$.
+Recursive SVAR identification of the BVAR follows [`time-series/reduced-form-var/`](../../time-series/reduced-form-var/): factor the posterior-mean residual covariance as $`\Sigma_u = P P'`$ with $`P`$ lower triangular, and read each column of $`P`$ as the impact effect of one orthogonal structural shock $`\varepsilon_t = P^{-1} u_t`$. With ordering output gap, inflation, policy rate, the policy shock is the third column. It has zero impact effect on output and inflation because the third column of $`P`$ is zero in those rows. It can still affect them after one or more quarters through the lag matrices. The policy rate can react on impact to output and inflation shocks through the off-diagonal entries $`p_{31}`$ and $`p_{32}`$ in the third row of $`P`$.
 
 The plotted shock is scaled to move the policy rate by $`\tau=0.25`$ on impact:
 
@@ -129,14 +80,7 @@ q =
 \tau \frac{P e_3}{e_3'P e_3}.
 ```
 
-Impulse responses then propagate the scaled impact vector through the posterior
-mean VAR dynamics:
-
-```math
-\psi_0=q,
-\qquad
-\psi_h=A_1\psi_{h-1}+A_2\psi_{h-2}+\cdots+A_p\psi_{h-p}.
-```
+Impulse responses then propagate the scaled impact vector $`q`$ through the posterior-mean VAR dynamics using the companion-form recursion $`\Phi_j = J F^j J' P`$ derived in [`time-series/reduced-form-var/`](../../time-series/reduced-form-var/).
 
 ## Model Setup
 
@@ -153,7 +97,7 @@ mean VAR dynamics:
 
 ## Solution Method
 
-The tutorial estimates the same reduced-form VAR in two ways. OLS treats all lag coefficients as free. The Minnesota BVAR treats the OLS residual scales as fixed, then computes the Gaussian posterior for each equation. That makes this an empirical-Bayes shrinkage estimator: posterior means and posterior covariance matrices are available without running an MCMC sampler.
+The tutorial estimates the same reduced-form VAR in two ways. OLS treats all lag coefficients as free; that estimator is documented in [`time-series/reduced-form-var/`](../../time-series/reduced-form-var/). The Minnesota BVAR treats the OLS residual scales as fixed, then computes the Gaussian posterior for each equation. That makes this an empirical-Bayes shrinkage estimator: posterior means and posterior covariance matrices are available without running an MCMC sampler.
 
 There are two stages. First, estimate stable reduced-form dynamics with the Minnesota prior. Second, take the reduced-form residual covariance and impose a Cholesky ordering to name the policy shock. The prior controls coefficient noise; the ordering controls the shock interpretation.
 
@@ -162,18 +106,20 @@ Procedure: Minnesota-prior monetary policy SVAR
 Inputs: quarterly series y_t, lag order p, prior hyperparameters
 Output: posterior coefficients, forecasts, and policy-shock impulse responses
 
-1. Build X from an intercept and p lags of output, inflation, and the rate.
-2. Fit the unrestricted OLS VAR and estimate residual scales sigma_i.
-3. Construct the Minnesota prior mean b_i^0 and diagonal covariance V_i^0.
-4. For each equation i:
+1. Run the reduced-form pipeline from time-series/reduced-form-var/:
+   build X from an intercept and p lags, fit the unrestricted OLS VAR,
+   and record residual scales sigma_i.
+2. Construct the Minnesota prior mean b_i^0 and diagonal covariance V_i^0.
+3. For each equation i:
    precision_i <- X'X / sigma_i^2 + inv(V_i^0)
    covariance_i <- inv(precision_i)
    mean_i <- covariance_i * (X'y_i / sigma_i^2 + inv(V_i^0) b_i^0)
-5. Report selected posterior means and 1.96 posterior-sd intervals.
-6. Estimate the BVAR residual covariance and take its Cholesky factor P.
-7. Pick the third structural shock because policy is ordered last.
-8. Scale that shock to raise the policy rate by 25 bp on impact.
-9. Use posterior mean VAR coefficients to propagate the impulse responses.
+4. Report selected posterior means and 1.96 posterior-sd intervals.
+5. Take the BVAR residual covariance, recursive-Cholesky factor as in
+   the prelim, and pick the third structural shock because policy is
+   ordered last.
+6. Scale that shock to raise the policy rate by 25 bp on impact.
+7. Propagate impulse responses through the posterior-mean VAR dynamics.
 ```
 
 ## Results

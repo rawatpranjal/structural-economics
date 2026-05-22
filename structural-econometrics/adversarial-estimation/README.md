@@ -13,6 +13,7 @@ The illustration uses the smallest model that supports the comparison. The real 
 ## Preliminary readings
 
 - [`structural-econometrics/gmm-foundations/`](../../structural-econometrics/gmm-foundations/)
+- [`numerical-methods/simulated-likelihood/`](../../numerical-methods/simulated-likelihood/)
 - [`computational-methods/simulation-based-estimation/`](../../computational-methods/simulation-based-estimation/)
 
 ## Equations
@@ -23,13 +24,7 @@ The setup has three objects.
 - A parametric structural model $`\lbrace P_\theta : \theta \in \Theta \rbrace`$ that can be simulated. The model need not admit a closed-form density.
 - A class of candidate discriminators $`\mathcal{D}_n`$. Each $`D \in \mathcal{D}_n`$ maps an observation $`x`$ to a number $`D(x) \in [0, 1]`$, read as the predicted probability that $`x`$ is a real observation rather than a simulated one.
 
-Simulated observations come from a fixed shock vector and a structural transform. Draw $`\tilde X_i \sim \tilde P_0`$ once for $`i = 1, \dots, m`$. At any candidate $`\theta`$,
-
-```math
-X_{i,\theta} = T_\theta(\tilde X_i).
-```
-
-The same shocks are reused at every candidate $`\theta`$. This is the standard common-random-numbers trick; it keeps the outer objective a smooth function of $`\theta`$ rather than a step function that re-randomizes with each new draw.
+Simulated observations come from a fixed shock vector and a structural transform. Draw $`\tilde X_i \sim \tilde P_0`$ once for $`i = 1, \dots, m`$, and at any candidate $`\theta`$ set $`X_{i,\theta} = T_\theta(\tilde X_i)`$. The same shocks are reused at every candidate $`\theta`$, which keeps the outer objective a smooth function of $`\theta`$ rather than a step function that re-randomizes with each new draw; the common-random-numbers argument is derived in [`numerical-methods/simulated-likelihood/`](../../numerical-methods/simulated-likelihood/).
 
 The estimator is the min-max
 

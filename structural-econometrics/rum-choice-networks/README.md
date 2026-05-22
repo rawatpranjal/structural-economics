@@ -13,6 +13,7 @@ RUMnets keep the random-utility discipline. The utility function is flexible, bu
 ## Preliminary readings
 
 - [`choice/logit-discrete-choice/`](../../choice/logit-discrete-choice/)
+- [`numerical-methods/simulated-likelihood/`](../../numerical-methods/simulated-likelihood/)
 
 ## Equations
 
@@ -152,9 +153,7 @@ Here $`\theta_{\mathrm{net}}`$ is the subset of neural-layer weights in $`\theta
 
 ## Solution Method
 
-The estimation uses common latent draws. The draws are fixed normal quantiles,
-so the simulated likelihood is a smooth function of $`\theta`$ rather than a new
-Monte Carlo objective at every optimizer step.
+The estimation uses fixed common latent draws so the simulated likelihood is a smooth function of $`\theta`$; the smoothness argument is in [`numerical-methods/simulated-likelihood/`](../../numerical-methods/simulated-likelihood/).
 
 The baseline and the RUMnet answer the same choice question. The baseline asks
 whether a linear utility index is enough. The RUMnet keeps the same price,
