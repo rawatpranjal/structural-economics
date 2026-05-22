@@ -2,11 +2,13 @@
 
 ## Overview
 
-A continuous-time control problem on a bounded interval reduces to a first-order Hamilton-Jacobi-Bellman partial differential equation. Information flows along the policy-implied drift, whose sign can change across the interval. The numerical scheme must honour that sign.
+A 1D Hamilton-Jacobi-Bellman partial differential equation has one state variable and one unknown value function. The PDE is first-order: it involves the value function's first derivative but not its second. A continuous-time control problem on a bounded interval reduces to such a PDE.
 
-A symmetric solver picks up checkerboard oscillations that grow with iteration count. A fixed one-sided solver propagates information against the natural flow at one end. The upwind rule picks the one-sided difference whose neighbour the state is moving toward.
+At each grid point the current policy fixes the direction the state will move next. Call that direction the drift. Its sign can change across the interval. The numerical scheme has to look in that direction for the next-period value.
 
-At a lower-bounded state, the Kuhn-Tucker condition swaps the policy that would push the state through the floor for the policy that holds it there. The numerical scheme must enforce the same clip.
+A symmetric solver averages both neighbours of a grid point. That produces alternating-sign oscillations on adjacent grid points that grow with each iteration. A fixed one-sided solver always looks the same way and points against the drift at one end. The upwind rule fixes both failures. It picks the one-sided difference whose neighbour the state is moving toward.
+
+At a lower-bounded state the policy might try to push the state through the floor. The same multiplier condition that holds at a constrained optimum in static problems then forces a switch. The policy that violates the floor is swapped for the policy that holds the state exactly at the floor. The numerical scheme has to enforce the same clip.
 
 The generic operator drives the Ramsey HJB in [`optimal-control/hjb-growth/`](../../optimal-control/hjb-growth/) and the Huggett incomplete-markets equilibrium in [`heterogeneous-agents/huggett-incomplete-markets/`](../../heterogeneous-agents/huggett-incomplete-markets/). The payoff here is threefold: forward, backward, and upwind one-sided differences; the sparse generator that the implicit HJB solve inverts; the state-constraint clip that turns the lower-boundary policy into one that respects the floor.
 
@@ -16,9 +18,11 @@ The generic operator drives the Ramsey HJB in [`optimal-control/hjb-growth/`](..
 
 ## Equations
 
+The objects build up in a chain. First place a grid to discretise the state. Then approximate the value function's slope at each grid point. Then pick which one-sided slope to use at each point. Assemble those choices into a sparse matrix. At the boundary, handle the case where one of the one-sided slopes does not exist.
+
 Place a uniform grid $`x_1 < x_2 < \cdots < x_n`$ on $`[\underline x, \overline x]`$ with spacing $`\Delta x`$. Let $`v_i = v(x_i)`$ be the value at node $`i`$, and $`s_i = s(x_i)`$ the policy-implied drift, positive when the state moves right.
 
-The forward and backward one-sided slopes at an interior node are
+The HJB involves $`v'(x)`$, so on a grid we need a finite-difference approximation to that slope. The two natural one-sided approximations at an interior node are forward and backward,
 
 ```math
 D^{+} v_i = \frac{v_{i+1} - v_i}{\Delta x},
@@ -26,9 +30,9 @@ D^{+} v_i = \frac{v_{i+1} - v_i}{\Delta x},
 D^{-} v_i = \frac{v_i - v_{i-1}}{\Delta x}.
 ```
 
-Each slope uses one neighbour. The central slope $`(v_{i+1} - v_{i-1}) / (2 \Delta x)`$ weights both equally. It is unstable here because HJB information propagates along the drift, not against it.
+Each one-sided slope uses one neighbour. The central slope $`(v_{i+1} - v_{i-1}) / (2 \Delta x)`$ weights both equally. That is unstable here. A first-order HJB only uses the neighbour the state is moving toward, so weighting the other one introduces information that should not be there.
 
-The upwind rule selects the slope whose neighbour the state is moving toward,
+Now that we have two candidate slopes, the upwind rule says which to use at each node. It selects the slope whose neighbour the state is moving toward,
 
 ```math
 D v_i =
@@ -41,7 +45,7 @@ D^{-} v_i & \text{if } s_i < 0,\\
 
 To compute the selector, solve the first-order condition with each one-sided slope, evaluate the implied drift, and keep the side whose drift has the matching sign. Where neither sign holds, the node sits at a local steady state with zero-drift policy. Results colours each node by branch.
 
-Split the drift into positive and negative parts $`s^{+}_i = \max(s_i, 0)`$, $`s^{-}_i = \min(s_i, 0)`$. The sparse generator $`A`$ has super-diagonal $`s^{+}_i / \Delta x`$, sub-diagonal $`-s^{-}_i / \Delta x`$, with main-diagonal chosen so each row sums to zero. With one state, $`A`$ is tridiagonal.
+Now collect the per-node slope choices into a single matrix. We need this matrix because the implicit HJB step solves a linear system in $`v`$, and the matrix is the operator on that system. Split the drift into positive and negative parts $`s^{+}_i = \max(s_i, 0)`$, $`s^{-}_i = \min(s_i, 0)`$. The sparse matrix $`A`$ has super-diagonal $`s^{+}_i / \Delta x`$, sub-diagonal $`-s^{-}_i / \Delta x`$, with main-diagonal chosen so each row sums to zero. With one state, $`A`$ is tridiagonal.
 
 ```math
 A_{i, i-1} = -\frac{s^{-}_i}{\Delta x},
@@ -51,9 +55,11 @@ A_{i, i+1} = \frac{s^{+}_i}{\Delta x},
 A_{i, i} = -A_{i, i-1} - A_{i, i+1}.
 ```
 
-This is a continuous-time Markov-chain generator on the grid: zero row sums, non-positive diagonal, off-diagonals non-negative. The implicit HJB step inverts $`(\rho I - A)`$ as a sparse tridiagonal solve. Its transpose is the Kolmogorov forward operator, a duality the KFE prelim develops.
+The matrix $`A`$ is a continuous-time Markov-chain generator on the grid. A generator is a matrix whose rows sum to zero, with non-positive diagonal and non-negative off-diagonals. Multiplying a probability vector by a generator gives the rate of change of that probability under the chain. Here the row sums are zero by construction, the off-diagonals are non-negative because they are $`s^{+}_i / \Delta x \geq 0`$ and $`-s^{-}_i / \Delta x \geq 0`$, and the diagonal is non-positive because it is the negative sum of the off-diagonals.
 
-At $`x_1 = \underline x`$, the backward slope is undefined. The boundary forcing rule uses $`D^{+} v_1`$ when the resulting drift is non-negative. Otherwise the constraint binds. The Kuhn-Tucker condition is
+The implicit HJB step inverts $`(\rho I - A)`$ as a sparse tridiagonal solve. The transpose $`A^{\top}`$ is the Kolmogorov forward operator: the same matrix transports the cross-sectional density forward in time. The KFE prelim develops that duality.
+
+We now turn to the boundary. At $`x_1 = \underline x`$ the backward neighbour $`x_0`$ does not exist, so the backward slope is undefined. We need a separate rule for what the scheme does at the boundary. The forcing rule uses $`D^{+} v_1`$ when the resulting drift is non-negative, so the state moves into the interior. Otherwise the constraint binds and the policy is overridden. The condition that selects between these two cases is the same Karush-Kuhn-Tucker multiplier condition that holds at a constrained optimum in static problems,
 
 ```math
 s_1 \geq 0
@@ -65,7 +71,7 @@ where $`c_{\mathrm{floor}}`$ is the consumption that zeroes the drift at the bou
 
 Equality holds when the constraint is slack. Strict inequality holds when the household would dissave further. The scheme overrides the lower-boundary policy with $`c_{\mathrm{floor}}`$ whenever the unconstrained forward drift would be negative. An analogous rule applies at $`x_n`$.
 
-The HJB is a first-order PDE whose classical solution may not exist where the value function has kinks. The viscosity-solution framework of Crandall, Evans, and Lions (1984) admits non-differentiable value functions. It selects the economically meaningful root. The upwind scheme is *monotone* in their sense, so its fixed point converges to the viscosity solution under refinement. The centred scheme is non-monotone, which explains the failure-mode comparison below.
+One last piece motivates why this discretisation converges to the right object. The HJB is a first-order PDE whose classical solution may not exist where the value function has kinks. The viscosity solution is the standard relaxation that admits such kinks and still picks the economically meaningful one. Crandall, Evans, and Lions (1984) formalised this notion. A discretisation is called *monotone* when its update is non-decreasing in each grid value. Monotonicity is what makes the discrete limit equal the viscosity solution. The upwind scheme is monotone, so its fixed point converges to the viscosity solution under grid refinement. The centred scheme is non-monotone, which is why the failure-mode comparison below diverges.
 
 ## Model Setup
 
@@ -94,9 +100,9 @@ The symbol $`A`$ here (upwind generator) collides with $`A`$ in the linearised D
 
 ## Solution Method
 
-Implicit upwind iteration. At each pseudo-time step the solver forms forward and backward slopes at every node, computes the implied drift for each side, and picks the side whose drift carries the matching sign. The implied consumption defines $`A`$, and the next value iterate satisfies a sparse linear system.
+The scheme is implicit upwind iteration. At each pseudo-time step the solver forms forward and backward slopes at every node. It then computes the implied drift for each side and picks the side whose drift carries the matching sign. The implied consumption defines $`A`$. The next value iterate then satisfies a sparse linear system.
 
-The matrix $`(\rho I + I / \Delta - A)`$ is strictly diagonally dominant for any positive pseudo-time step, so the solve is unconditionally stable regardless of $`\Delta`$. Large $`\Delta`$ drives the update toward a Newton step with the policy frozen. The Ramsey application in [`optimal-control/hjb-growth/`](../../optimal-control/hjb-growth/) collects the implementation details.
+The matrix $`(\rho I + I / \Delta - A)`$ is strictly diagonally dominant for any positive pseudo-time step. Strict diagonal dominance means each diagonal entry exceeds the absolute sum of off-diagonals in its row, which guarantees the system is invertible and the solve is unconditionally stable regardless of $`\Delta`$. Large $`\Delta`$ drives the update toward a Newton step with the policy frozen. The Ramsey application in [`optimal-control/hjb-growth/`](../../optimal-control/hjb-growth/) collects the implementation details.
 
 ```text
 Algorithm: implicit upwind HJB iteration on a 1D grid
@@ -119,9 +125,9 @@ repeat
     v = v_new
 ```
 
-The KT clip at the left endpoint enforces a state constraint when present. When the forward-slope policy at $`\underline x`$ would push the state left, the override sets consumption to the zero-drift value. The `lib.finite_differences.kt_state_constraint_clip` helper exposes this operation. In the Ramsey calibration below the steady state is interior, so the clip does not bind. `run.py` exercises it on a synthetic input to verify the helper. The clip binds at the borrowing limit in [`heterogeneous-agents/huggett-incomplete-markets/`](../../heterogeneous-agents/huggett-incomplete-markets/), where households would dissave below $`\underline a`$ if unconstrained.
+The KT clip at the left endpoint enforces the state constraint when one is present. When the forward-slope policy at $`\underline x`$ would push the state left, the override sets consumption to the zero-drift value. The `lib.finite_differences.kt_state_constraint_clip` helper exposes this operation. In the Ramsey calibration below the steady state is interior, so the clip does not bind. `run.py` exercises it on a synthetic input to verify the helper. The clip binds at the borrowing limit in [`heterogeneous-agents/huggett-incomplete-markets/`](../../heterogeneous-agents/huggett-incomplete-markets/), where households would dissave below $`\underline a`$ if unconstrained.
 
-The implicit scheme is unconditionally stable. Under an explicit pseudo-time step the same operator obeys a CFL-like condition $`\Delta t \lesssim \Delta x / \max_i |s_i|`$. The failure-mode figure compares explicit centred against explicit upwind at the same step size. The centred iterates diverge; the upwind iterates remain bounded.
+The implicit scheme is unconditionally stable. An explicit pseudo-time step on the same operator must obey a CFL-like condition $`\Delta t \lesssim \Delta x / \max_i |s_i|`$. The failure-mode figure compares explicit centred against explicit upwind at the same step size. The centred iterates diverge. The upwind iterates remain bounded.
 
 ## Results
 

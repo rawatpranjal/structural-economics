@@ -2,26 +2,28 @@
 
 ## Overview
 
-Bayes rule combines a prior and a likelihood into a posterior. Two cases admit closed forms. The Beta-Binomial gives a scalar conjugate update for a probability of success. The Gaussian-Gaussian conjugate regression gives a vector update whose posterior mean is the precision-weighted average of the prior mean and the ordinary-least-squares estimate.
+Bayes rule combines a prior and a likelihood into a posterior. Most posteriors have no closed form and need simulation. A short list of prior-likelihood pairs is the exception. These pairs are called conjugate and update by algebra alone.
 
-When conjugacy fails the response is sampling, covered in [`computational-methods/metropolis-hastings/`](../../computational-methods/metropolis-hastings/). The Gaussian-Gaussian update drives the Minnesota-prior BVAR in [`time-series/minnesota-svar/`](../../time-series/minnesota-svar/). Its function-space version is the Gaussian-process posterior in [`numerical-methods/bayesian-optimization/`](../../numerical-methods/bayesian-optimization/).
+Two conjugate cases anchor this tutorial. The Beta-Binomial gives a scalar update for a probability of success. The Gaussian-Gaussian regression gives a vector update for linear-regression coefficients. In both cases the posterior mean is a weighted average. The weights are precisions, where precision is the inverse variance. A confident belief has high precision; a diffuse belief has low precision.
 
-Three runnable examples carry the lesson: posterior contraction under three priors as the sample grows, posterior regression bands shrinking with sample size, and a prior-sensitivity sweep from prior-dominated to data-dominated.
+When conjugacy fails the response is sampling, covered in [`computational-methods/metropolis-hastings/`](../../computational-methods/metropolis-hastings/). The Gaussian-Gaussian update is the building block of the Minnesota-prior BVAR in [`time-series/minnesota-svar/`](../../time-series/minnesota-svar/), a Bayesian time-series model that shrinks vector-autoregression coefficients toward zero. Its function-space analogue is the Gaussian-process posterior in [`numerical-methods/bayesian-optimization/`](../../numerical-methods/bayesian-optimization/), a probability distribution over functions.
+
+Three runnable examples carry the lesson: posterior contraction under three priors as the sample grows, regression bands shrinking with sample size, and a prior-strength sweep that moves the posterior from data-dominated to prior-dominated.
 
 ## Equations
 
-Let $`\theta`$ be the unknown parameter and $`y`$ the observed data. Bayes rule combines a prior $`p(\theta)`$ and likelihood $`p(y \mid \theta)`$ into a posterior:
+We need a rule that updates a prior belief about an unknown parameter once data arrive. Let $`\theta`$ be the unknown parameter and $`y`$ the observed data. Bayes rule combines a prior $`p(\theta)`$ and a likelihood $`p(y \mid \theta)`$ into a posterior:
 
 ```math
 p(\theta \mid y) = \frac{p(y \mid \theta)  p(\theta)}{\int p(y \mid \theta')  p(\theta')  d\theta'}
 \propto p(y \mid \theta)  p(\theta).
 ```
 
-The denominator is constant in $`\theta`$, so the posterior is proportional to the prior-times-likelihood kernel. Closed forms arise when prior and posterior share a parametric family.
+The denominator is constant in $`\theta`$, so the posterior is proportional to the prior-times-likelihood kernel. Closed forms arise when prior and posterior share a parametric family (a set of distributions indexed by finite-dimensional parameters, like all $`\mathrm{Beta}(\alpha, \beta)`$). When the posterior stays in the same family as the prior, the pair is conjugate, and inference reduces to algebra on the family's parameters.
 
 ### Beta-Binomial conjugate update
 
-The scalar parameter $`\theta \in (0, 1)`$ is a probability of success. The prior is Beta with shapes $`\alpha > 0`$ and $`\beta > 0`$:
+The scalar parameter $`\theta \in (0, 1)`$ is a probability of success. We need a prior with support on the unit interval that conjugates with the Bernoulli likelihood; the Beta distribution is the standard choice, with shapes $`\alpha > 0`$ and $`\beta > 0`$:
 
 ```math
 \theta \sim \mathrm{Beta}(\alpha, \beta),
@@ -29,42 +31,42 @@ The scalar parameter $`\theta \in (0, 1)`$ is a probability of success. The prio
 p(\theta) \propto \theta^{\alpha - 1} (1 - \theta)^{\beta - 1}.
 ```
 
-Given $`n`$ independent Bernoulli trials with $`s`$ successes, the likelihood is proportional to $`\theta^s (1 - \theta)^{n - s}`$. Multiplying by the prior gives the posterior kernel:
+Given $`n`$ independent Bernoulli trials with $`s`$ successes, the likelihood is proportional to $`\theta^s (1 - \theta)^{n - s}`$. Bayes rule says the posterior is proportional to prior times likelihood. Multiplying gives the posterior kernel:
 
 ```math
 p(\theta \mid y) \propto \theta^{\alpha - 1} (1 - \theta)^{\beta - 1} \cdot \theta^s (1 - \theta)^{n - s}
 = \theta^{\alpha + s - 1} (1 - \theta)^{\beta + n - s - 1}.
 ```
 
-The kernel is Beta, so the posterior is Beta with updated shapes:
+The kernel has the same functional form as a Beta density, so the posterior is Beta with updated shapes. The Beta prior is conjugate to the Bernoulli likelihood:
 
 ```math
 \theta \mid y \sim \mathrm{Beta}(\alpha + s,  \beta + n - s).
 ```
 
-The posterior mean is a convex combination of prior mean and sample fraction:
+The posterior mean splits cleanly into prior mean and sample fraction:
 
 ```math
 \mathbb{E}[\theta \mid y] = \frac{\alpha + \beta}{\alpha + \beta + n} \cdot \frac{\alpha}{\alpha + \beta} + \frac{n}{\alpha + \beta + n} \cdot \frac{s}{n}.
 ```
 
-The prior weight $`(\alpha + \beta) / (\alpha + \beta + n)`$ shrinks to zero as $`n`$ grows, so a flat prior with a large sample reports the sample fraction.
+The two weights sum to one. The prior weight $`(\alpha + \beta) / (\alpha + \beta + n)`$ shrinks to zero as $`n`$ grows, so a flat prior with a large sample reports the sample fraction. A tight prior or small sample keeps the posterior mean close to the prior mean.
 
 ### Gaussian-Gaussian conjugate linear regression
 
-Linear regression with known residual variance $`\sigma^2`$ has data $`y \in \mathbb{R}^n`$, design matrix $`X \in \mathbb{R}^{n \times p}`$, and coefficient vector $`\beta \in \mathbb{R}^p`$. The likelihood is
+We need the vector analogue of the Beta-Binomial update. The Gaussian prior is the standard choice: it has support on all of $`\mathbb{R}^p`$ and conjugates with the Gaussian likelihood. Linear regression with known residual variance $`\sigma^2`$ has data $`y \in \mathbb{R}^n`$, design matrix $`X \in \mathbb{R}^{n \times p}`$, and coefficient vector $`\beta \in \mathbb{R}^p`$. The likelihood, viewed as a function of $`\beta`$, is a Gaussian kernel:
 
 ```math
 p(y \mid \beta) \propto \exp\left[-\frac{1}{2 \sigma^2} (y - X \beta)^{\top} (y - X \beta)\right].
 ```
 
-The conjugate prior is Gaussian with mean $`b_0 \in \mathbb{R}^p`$ and precision $`V_0^{-1}`$:
+The conjugate prior is Gaussian with mean $`b_0 \in \mathbb{R}^p`$, covariance $`V_0`$, and precision $`V_0^{-1}`$:
 
 ```math
 \beta \sim \mathcal{N}(b_0,  V_0).
 ```
 
-Completing the square gives a Gaussian posterior with precision and mean
+Both factors are exponentials of quadratics in $`\beta`$, so their product is too. Completing the square rewrites this combined quadratic as $`(\beta - b)^{\top} V^{-1} (\beta - b)`$ plus a constant in $`\beta`$. Reading off $`V^{-1}`$ and $`b`$ identifies the posterior as another Gaussian:
 
 ```math
 V^{-1} = V_0^{-1} + \frac{X^{\top} X}{\sigma^2},
@@ -72,17 +74,17 @@ V^{-1} = V_0^{-1} + \frac{X^{\top} X}{\sigma^2},
 b = V \left[V_0^{-1} b_0 + \frac{X^{\top} y}{\sigma^2}\right].
 ```
 
-Posterior precision sums prior and data precision. Writing $`\hat\beta_{\mathrm{OLS}} = (X^{\top} X)^{-1} X^{\top} y`$, the posterior mean is the precision-weighted average of prior mean and OLS:
+The posterior precision $`V^{-1}`$ is the sum of prior precision and data precision $`X^{\top} X / \sigma^2`$. Precisions add. Writing $`\hat\beta_{\mathrm{OLS}} = (X^{\top} X)^{-1} X^{\top} y`$ for the OLS estimate, the posterior mean is the precision-weighted average of prior mean and OLS:
 
 ```math
 b = V \left[V_0^{-1} b_0 + \frac{X^{\top} X}{\sigma^2} \hat\beta_{\mathrm{OLS}}\right].
 ```
 
-As $`n`$ grows the data precision $`X^{\top} X / \sigma^2`$ dominates $`V_0^{-1}`$. With a tight prior or small sample the prior anchors the posterior instead.
+The two weights are the prior precision $`V_0^{-1}`$ and the data precision $`X^{\top} X / \sigma^2`$. The more precise input pulls the average more strongly. As $`n`$ grows the data precision dominates and the posterior mean approaches OLS. With a tight prior or a small sample the prior precision dominates and the posterior mean stays close to $`b_0`$.
 
 ### Posterior predictive density
 
-The predictive density for a new observation $`\tilde y`$ averages over the posterior:
+The posterior describes uncertainty about $`\theta`$, not the distribution of a new observation. The predictive density for a new observation $`\tilde y`$ averages the sampling density $`p(\tilde y \mid \theta)`$ over the posterior:
 
 ```math
 p(\tilde y \mid y) = \int p(\tilde y \mid \theta)  p(\theta \mid y)  d\theta.
@@ -94,7 +96,7 @@ For Beta-Binomial with one new trial the predictive probability equals the poste
 \Pr(\tilde y = 1 \mid y) = \mathbb{E}[\theta \mid y] = \frac{\alpha + s}{\alpha + \beta + n}.
 ```
 
-Integrating over $`p(\theta \mid y)`$ widens the predictive against the plug-in density at $`\mathbb{E}[\theta \mid y]`$.
+Averaging over all posterior values of $`\theta`$ inflates the predictive variance relative to the plug-in density $`p(\tilde y \mid \mathbb{E}[\theta \mid y])`$: it accounts for uncertainty about $`\theta`$ on top of the natural variability in $`\tilde y`$.
 
 ## Model Setup
 
@@ -169,7 +171,7 @@ Data are fixed at 50 trials with 32 successes; the prior anchor $`p_0 = 0.3`$ si
 
 ## Results
 
-All three posteriors contract toward $`p^{\ast} = 0.55`$ as the sample grows. The flat prior peaks at the noisy 10-observation sample fraction. The conservative $`\mathrm{Beta}(20, 20)`$ moves more slowly because the prior carries forty pseudo-observations. The confident-wrong $`\mathrm{Beta}(40, 10)`$ stays pinned near $`0.80`$ for the first ten observations; only by $`n = 1000`$ does the data drag it onto the dashed red target.
+All three posteriors contract toward $`p^{\ast} = 0.55`$ as the sample grows. The flat prior peaks at the noisy 10-observation sample fraction. The conservative $`\mathrm{Beta}(20, 20)`$ moves more slowly because the prior carries forty pseudo-observations. The confident-wrong $`\mathrm{Beta}(40, 10)`$ stays pinned near $`0.80`$ for the first ten observations. Only by $`n = 1000`$ does the data drag it onto the dashed red target.
 
 <img src="figures/beta-posteriors.png" alt="Beta posteriors after 0, 10, 100, and 1000 observations under three priors" width="90%">
 

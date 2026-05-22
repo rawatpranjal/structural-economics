@@ -2,9 +2,11 @@
 
 ## Overview
 
-Blanchard and Kahn (1980) select the unique bounded path of a linear rational-expectations model by counting eigenvalues. The number of stable generalised eigenvalues must equal the number of predetermined states. Too few stable eigenvalues and no bounded path exists. Too many and jump variables load on a sunspot, so equilibrium is indeterminate.
+Blanchard and Kahn (1980) select the unique bounded path of a linear rational-expectations model by counting eigenvalues. A linearised model has two kinds of variables. Predetermined variables, like capital at the start of the period, are pinned down by past decisions. Jump variables, like consumption or inflation, are free to move each period and have to be chosen by some rule. The Blanchard-Kahn rule says equilibrium is unique and non-explosive when the number of stable directions in the system equals the number of predetermined variables.
 
-The example is a three-variable New Keynesian system swept along the Taylor-rule inflation coefficient, which crosses the determinacy boundary at unity. One generalised eigenvalue migrates across the unit circle at the crossing. The same QZ partition is the inner loop of the RBC tutorial in [`dsge/rbc/`](../../dsge/rbc/) and the New Keynesian DSGE in [`dsge/nkdsge/`](../../dsge/nkdsge/). The upstream linearisation step lives in [`computational-methods/perturbation-linearization/`](../../computational-methods/perturbation-linearization/), which produces the matrices partitioned here.
+The three counts have three economic readings. When the number of stable directions equals the number of predetermined variables, there is one bounded path and equilibrium is determinate. When the number falls below it, no bounded path exists; every solution explodes. When the number exceeds it, the jump variables have spare bounded directions to load on, and an equilibrium can respond to random signals unrelated to fundamentals. This last case is called a sunspot equilibrium.
+
+The example is a three-variable New Keynesian system. The Taylor-rule inflation coefficient is swept across the threshold at one. This threshold is the determinacy boundary, the parameter value where the stable count changes. One generalised eigenvalue migrates across the unit circle at the crossing, flipping the model from determinate to indeterminate. The same QZ partition is the inner loop of the RBC tutorial in [`dsge/rbc/`](../../dsge/rbc/) and the New Keynesian DSGE in [`dsge/nkdsge/`](../../dsge/nkdsge/). The upstream linearisation step lives in [`computational-methods/perturbation-linearization/`](../../computational-methods/perturbation-linearization/), which produces the matrices partitioned here.
 
 ## Preliminary readings
 
@@ -12,7 +14,7 @@ The example is a three-variable New Keynesian system swept along the Taylor-rule
 
 ## Equations
 
-Let $`t`$ index time and let $`s_t \in \mathbb{R}^n`$ stack the state. Partition $`s_t = (x_t, z_t)`$ where $`x_t \in \mathbb{R}^{n_x}`$ collects the predetermined variables and $`z_t \in \mathbb{R}^{n_z}`$ collects the jump variables, with $`n_x + n_z = n`$. Let $`\varepsilon_t`$ denote a vector of mean-zero structural innovations. The linear rational-expectations system is
+The equilibrium conditions of a linearised model form a system of linear equations relating current variables to next-period expectations. Let $`t`$ index time and let $`s_t \in \mathbb{R}^n`$ stack the state. Partition $`s_t = (x_t, z_t)`$ where $`x_t \in \mathbb{R}^{n_x}`$ collects the predetermined variables and $`z_t \in \mathbb{R}^{n_z}`$ collects the jump variables, with $`n_x + n_z = n`$. Let $`\varepsilon_t`$ denote a vector of mean-zero structural innovations. The linear rational-expectations system is
 
 ```math
 A \, \mathbb{E}_t s_{t+1} = B \, s_t + C \, \varepsilon_t.
@@ -20,7 +22,7 @@ A \, \mathbb{E}_t s_{t+1} = B \, s_t + C \, \varepsilon_t.
 
 The matrices $`A`$, $`B`$, and $`C`$ are the output of log-linearising the model around its deterministic steady state. Each row is one equilibrium condition; columns correspond to entries of $`s_t`$. The expectation $`\mathbb{E}_t s_{t+1}`$ multiplies $`A`$ because the row may involve next-period choices.
 
-The Klein algorithm applies the generalised Schur (QZ) decomposition to the pair $`(B, A)`$. There exist unitary matrices $`Q`$ and $`Z`$ such that
+We need a way to separate the stable directions of this system from the unstable ones. The generalised Schur decomposition, also called the QZ decomposition, does exactly that for a pair of matrices. It is the analogue of an eigendecomposition for the pencil $`(B, A)`$, and it works even when $`A`$ is singular. The Klein algorithm applies this decomposition to the pair $`(B, A)`$. There exist unitary matrices $`Q`$ and $`Z`$ such that
 
 ```math
 Q \, B \, Z = T,
@@ -28,9 +30,9 @@ Q \, B \, Z = T,
 Q \, A \, Z = S,
 ```
 
-with $`S`$ and $`T`$ upper triangular. The diagonal pairs $`(s_{ii}, t_{ii})`$ encode the generalised eigenvalues $`\lambda_i = t_{ii} / s_{ii}`$. A reordered Schur form puts the stable roots in the leading $`n_x \times n_x`$ block, with stability defined as $`|t_{ii} / s_{ii}| < 1`$.
+with $`S`$ and $`T`$ upper triangular. The diagonal pairs $`(s_{ii}, t_{ii})`$ encode the generalised eigenvalues $`\lambda_i = t_{ii} / s_{ii}`$. These are the ratios of diagonal entries. A direction $`i`$ is stable when $`|\lambda_i| < 1`$, meaning the system decays along it. A reordered Schur form puts the stable roots in the leading $`n_x \times n_x`$ block.
 
-The Blanchard-Kahn rule counts those stable roots:
+With stable and unstable directions separated, we can ask whether the count of stable ones matches what equilibrium needs. The Blanchard-Kahn rule expresses this as
 
 ```math
 \#\bigl\{ \, i : |t_{ii} / s_{ii}| < 1 \, \bigr\} = n_x
@@ -38,13 +40,13 @@ The Blanchard-Kahn rule counts those stable roots:
 \text{unique bounded RE solution.}
 ```
 
-When the equality holds the leading block of $`Z`$ is invertible and the recovered policy is read off the partition. Partition $`Z`$ conformably with $`(x_t, z_t)`$,
+When the equality holds we can recover the policy from the QZ factors. The $`n_x \times n_x`$ upper-left corner of $`Z`$ has full rank. This invertibility is what lets us solve for the policy matrices below. Partition $`Z`$ conformably with $`(x_t, z_t)`$,
 
 ```math
 Z = \begin{pmatrix} Z_{11} & Z_{12} \\ Z_{21} & Z_{22} \end{pmatrix},
 ```
 
-and let $`S_{11}, T_{11}`$ be the stable triangular blocks. The state transition matrix and the jump rule are
+and let $`S_{11}, T_{11}`$ be the upper-triangular blocks holding the stable diagonal pairs. The state transition matrix and the jump rule are
 
 ```math
 F = Z_{11} \, S_{11}^{-1} \, T_{11} \, Z_{11}^{-1},
@@ -54,7 +56,7 @@ P = Z_{21} \, Z_{11}^{-1}.
 
 The recovered policy is $`x_{t+1} = F x_t`$ for the predetermined block and $`z_t = P x_t`$ for the jumps. This is the same first-order solution `solve_klein` returns from `lib/perturbation.py`.
 
-The two failure modes carry distinct economic content. A stable count below $`n_x`$ leaves the predetermined block with too few decaying directions. Every path consistent with the model is explosive, so equilibrium does not exist. A stable count above $`n_x`$ gives the jumps more than one bounded loading on the state. The model admits a family of bounded equilibria indexed by the unused stable directions, and sunspot equilibria can be constructed.
+The two failure modes carry distinct economic content. Suppose the stable count falls below $`n_x`$. The predetermined block then has fewer decaying directions than it has initial values to absorb. Every solution path consistent with the model grows without bound. Equilibrium does not exist. Now suppose the stable count exceeds $`n_x`$. The jump variables then have more bounded responses to the state than they need. The extra responses parameterise a continuum of bounded solutions. Some of these solutions react to random signals unrelated to the model's shocks. This is what a sunspot equilibrium means, and equilibrium is indeterminate.
 
 ## Model Setup
 

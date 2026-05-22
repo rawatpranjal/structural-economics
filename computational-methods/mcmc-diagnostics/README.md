@@ -2,11 +2,11 @@
 
 ## Overview
 
-A chain can look converged on a trace plot and still be reporting the average of one slice of the posterior. Diagnostics decide whether to trust the averages.
+A trace plot can look settled even when the chain has only explored one region of the posterior. The visible mixing is local. The global picture may still be wrong. Diagnostics decide whether to trust the chain's averages.
 
-Three random-walk Metropolis-Hastings chains run on a correlated bivariate Gaussian target. The integrated autocorrelation time and effective sample size measure how much information the chain has carried. The classical Gelman-Rubin R-hat and its rank-normalised split variant ask whether independent chains have agreed.
+Three questions need answers. How much information does each draw carry? Have independent chains agreed on the same posterior? Do those answers still hold when chains drift within their run or the posterior has heavy tails? Three diagnostics answer them. Integrated autocorrelation time and effective sample size measure information per draw. The classical Gelman-Rubin R-hat tests agreement across chains. The rank-normalised split variant sharpens that test for drift and for heavy tails.
 
-Two step sizes bracket the Roberts-Gelman-Gilks acceptance band. R-hat separates them without looking at the trace.
+Three random-walk Metropolis-Hastings chains run on a correlated bivariate Gaussian target. Two step sizes bracket the Roberts-Gelman-Gilks acceptance band. R-hat separates them even when the trace plots look similar.
 
 The sampler lives in [`computational-methods/metropolis-hastings/`](../../computational-methods/metropolis-hastings/). The same R-hat column governs convergence in [`structural-econometrics/bayesian-dsge-hmc/`](../../structural-econometrics/bayesian-dsge-hmc/), where any chain above 1.01 is unconverged.
 
@@ -17,57 +17,59 @@ The sampler lives in [`computational-methods/metropolis-hastings/`](../../comput
 
 ## Equations
 
-Let $`\theta`$ denote a single coordinate of the chain. Let $`(\theta_1, \ldots, \theta_T)`$ be the post-burn-in draws. Assume stationarity: any joint distribution depends only on lag, not time index.
+Let $`\theta`$ denote a single coordinate of the chain. Let $`(\theta_1, \ldots, \theta_T)`$ be the post-burn-in draws. Assume the chain has reached stationarity: it has settled into its target distribution, so the marginal of $`\theta_t`$ no longer depends on $`t`$ and any joint distribution depends only on the lag between draws.
 
-The lag-$`t`$ autocorrelation is the correlation between draws $`t`$ steps apart:
+Consecutive MCMC draws are not independent. Each step proposes a small move, so $`\theta_{t+1}`$ tends to sit near $`\theta_t`$. The lag-$`t`$ autocorrelation measures how quickly that dependence dies out:
 
 ```math
 \rho_t = \mathrm{Corr}(\theta_s,  \theta_{s + t}).
 ```
 
-Independent draws give $`\rho_t = 0`$ for $`t \ge 1`$. A slow-mixing chain has $`\rho_t`$ close to one for many lags.
+Independent draws give $`\rho_t = 0`$ for $`t \ge 1`$. A slow-mixing chain keeps $`\rho_t`$ close to one for many lags: it steps slowly across the posterior, consecutive draws are nearly the same point, and many steps are needed to cover the support.
 
-The integrated autocorrelation time sums all positive lags:
+Autocorrelations at every lag are hard to summarise. The integrated autocorrelation time collapses them into one scalar that compares an average over correlated draws to one over independent draws:
 
 ```math
 \tau = 1 + 2 \sum_{t \ge 1} \rho_t.
 ```
 
-A chain of $`\tau`$ correlated draws carries the information of one independent draw. Empirical autocorrelations grow noisy at large lags, so the sum is truncated. Geyer's (1992) monotone-positive estimator pairs adjacent lags into sums $`\rho_{2i + 1} + \rho_{2i + 2}`$, walks forward until the first nonpositive pair, then enforces a running minimum on the survivors.
+The number $`\tau`$ is a variance-inflation factor: $`\tau`$ correlated draws carry the information of one independent draw. The sum cannot run forever in practice. Estimates of $`\rho_t`$ at large $`t`$ use fewer pairs of draws, their standard error grows with $`t`$, and the tail is dominated by noise. Geyer's (1992) monotone-positive estimator handles the truncation: it pairs adjacent lags into sums $`\rho_{2i + 1} + \rho_{2i + 2}`$, walks forward until the first nonpositive pair, and enforces a running minimum on the survivors.
 
-The effective sample size inverts the inflation factor:
+Once $`\tau`$ is in hand, the equivalent number of independent draws is just the inverse:
 
 ```math
 \mathrm{ESS} = \frac{T}{\tau}.
 ```
 
-The Gelman-Rubin diagnostic compares within-chain to between-chain variance. Run $`M`$ chains of equal length $`T`$ from dispersed starts. Let $`\bar\theta_{m}`$ and $`s_m^2`$ denote chain $`m`$'s sample mean and variance. The within-chain variance is
+ESS is the efficiency number reported in practice: $`T = 8000`$ draws with $`\tau = 40`$ are worth about $`200`$ independent ones.
+
+The next question is whether independent chains have agreed on the same posterior. If they have, within-chain spread should look similar to the spread of the chain means. If they are stuck in different regions, the chain means will be far apart relative to within-chain spread. The Gelman-Rubin diagnostic formalises that comparison. Run $`M`$ chains of equal length $`T`$ from dispersed starts, and let $`\bar\theta_{m}`$ and $`s_m^2`$ denote chain $`m`$'s sample mean and variance. The within-chain variance averages the per-chain variances:
 
 ```math
 W = \frac{1}{M} \sum_{m = 1}^{M} s_m^2.
 ```
 
-The between-chain variance is
+The between-chain variance scales the variance of the chain means by $`T`$, so $`B`$ and $`W`$ share a scale under stationarity:
 
 ```math
 B = \frac{T}{M - 1} \sum_{m = 1}^{M} (\bar\theta_m - \bar{\bar\theta})^2,
 ```
 
-where $`\bar{\bar\theta}`$ is the grand mean. The classical Gelman-Rubin potential scale reduction factor is
+where $`\bar{\bar\theta}`$ is the grand mean. The classical Gelman-Rubin potential scale reduction factor combines the two:
 
 ```math
 \hat R = \sqrt{\frac{T - 1}{T} + \frac{B}{T  W}}.
 ```
 
-At $`\hat R = 1`$ within-chain and between-chain variance estimate the same posterior variance. Values above 1.01 mean the chains have not agreed.
+At $`\hat R = 1`$, within-chain and between-chain variances estimate the same posterior variance. The chains agree. Values above $`1.01`$ mean the chains have not agreed and the posterior averages cannot yet be trusted.
 
-Vehtari et al. (2021) sharpen the diagnostic two ways. Splitting each chain in half lets within-chain variance pick up drift between halves. Rank-normalising the pooled draws makes $`\hat R`$ robust to heavy tails. Let $`r_{m, t}`$ be the rank of $`\theta_{m, t}`$ in the pooled sample and let
+Classical $`\hat R`$ has two known failure modes. It misses drift inside a chain whose two halves still happen to give the same average. It also reacts weakly when the posterior has heavy tails: more probability mass far from the mean than a Gaussian. Vehtari et al. (2021) sharpen the diagnostic two ways. Splitting each chain in half computes $`\hat R`$ across the $`2M`$ half-chains, so within-chain variance picks up drift. Rank-normalising the pooled draws replaces each value by the standard-normal quantile of its rank, giving every draw a finite moment regardless of the original tail. Let $`r_{m, t}`$ be the rank of $`\theta_{m, t}`$ in the pooled sample and let
 
 ```math
 z_{m, t} = \Phi^{-1}\left(\frac{r_{m, t} - 3/8}{M T + 1/4}\right),
 ```
 
-where $`\Phi^{-1}`$ is the standard normal quantile. Apply classical $`\hat R`$ to the half-split $`z`$ values. This is the default in modern probabilistic-programming libraries.
+where $`\Phi^{-1}`$ is the standard normal quantile. Classical $`\hat R`$ is then applied to the half-split $`z`$ values. This is the default in modern probabilistic-programming libraries.
 
 ## Model Setup
 
@@ -106,7 +108,7 @@ Output: tau and the truncation cutoff
   ESS <- T / tau
 ```
 
-For a reversible Markov chain, adjacent lag pairs have positive autocovariance even when individual lags fluctuate around zero. The monotone projection stabilises the tail. The cutoff is reported with the IAT.
+A reversible chain (transitions look the same forward and backward in time under the target) has positive autocovariance at adjacent lag pairs even when individual lags fluctuate around zero. Random-walk Metropolis-Hastings is reversible. The monotone projection exploits that to stabilise the noisy tail. The cutoff lag is reported alongside the IAT.
 
 ### Classical Gelman-Rubin R-hat
 
@@ -121,7 +123,7 @@ Output: R-hat
   R-hat <- sqrt(var_hat / W)
 ```
 
-Three chains run from $`(3, -3)`$, $`(-3, 3)`$, and $`(0, 0)`$. Dispersed starts let the diagnostic detect chains stuck in different posterior regions. After burn-in the chains should overlap so $`B`$ stays small relative to $`W`$.
+Three chains run from $`(3, -3)`$, $`(-3, 3)`$, and $`(0, 0)`$. Dispersed starts matter: chains launched from the same point can agree on a wrong posterior by exploring the same neighbourhood. Spread starts make stuck chains visible. After burn-in the chains should overlap, so $`B`$ stays small relative to $`W`$ and $`\hat R`$ approaches one.
 
 ### Rank-normalised split-R-hat
 
@@ -135,13 +137,13 @@ Output: R-hat
   return classical R-hat on the z array
 ```
 
-Splitting catches drift between halves. Rank normalisation handles heavy tails. Vehtari treats any chain with split-rank-$`\hat R`$ above $`1.01`$ as unconverged.
+Splitting catches drift between halves of a single chain. Rank normalisation handles heavy tails by giving every draw a finite moment. Vehtari treats any chain with split-rank-$`\hat R`$ above $`1.01`$ as unconverged.
 
-The Roberts-Gelman-Gilks asymptotic acceptance optimum for random-walk Metropolis is $`0.234`$ as $`d \to \infty`$. On this $`d = 2`$ target the practical band is $`0.25`$ to $`0.40`$. The two step sizes bracket it.
+The Roberts-Gelman-Gilks asymptotic acceptance optimum for random-walk Metropolis is $`0.234`$ as $`d \to \infty`$. On this $`d = 2`$ target the practical band is $`0.25`$ to $`0.40`$. The two step sizes used here bracket it, one well below and one inside.
 
 ## Results
 
-The trace plots show the tuning story. Under the tiny step the three chains barely leave their starts; each explores a different slice of the posterior over 8000 draws and the coloured paths never overlap. Under the near-optimal step the chains mix within a few hundred draws and then overlap. Acceptance rates are 0.92 for the tiny step and 0.26 for the near-optimal step, inside the asymptotic band.
+The trace plots show the tuning story. Under the tiny step the three chains barely leave their starts. Each one explores a different region of the posterior over 8000 draws, and the coloured paths never overlap. Under the near-optimal step the chains mix within a few hundred draws and then overlap. Acceptance rates are 0.92 for the tiny step and 0.26 for the near-optimal step, inside the asymptotic band.
 
 <img src="figures/trace-plots.png" alt="Trace plots: tiny step versus near-optimal step across three chains" width="90%">
 
@@ -149,13 +151,13 @@ The autocorrelation decay panel quantifies the traces. Under the tiny step, lag-
 
 <img src="figures/autocorrelation-decay.png" alt="Autocorrelation decay with Geyer monotone-positive truncation under each step size" width="90%">
 
-Only one step size passes $`\hat R`$. Under the near-optimal step both classical and rank-normalised diagnostics fall below 1.01 after a few thousand draws. Under the tiny step both stay near 1.8 because the chains still explore different posterior slices. The dotted line at 1.01 is Vehtari's threshold; anything above it should be re-run with more draws or a different proposal. Trace plots alone cannot tell the two apart.
+Only one step size passes $`\hat R`$. Under the near-optimal step, both classical and rank-normalised diagnostics fall below 1.01 after a few thousand draws. Under the tiny step both stay near 1.8 because the chains are still parked in different posterior regions. The dotted line at 1.01 is Vehtari's threshold. Anything above it should be re-run with more draws or a different proposal. Trace plots alone cannot tell the two regimes apart.
 
 <img src="figures/r-hat-trajectory.png" alt="R-hat trajectory versus chain length under the tiny and near-optimal step sizes" width="80%">
 
 ## Takeaway
 
-Three diagnostics catch three failures. IAT and ESS flag chains that look fine but carry few independent draws. Classical $`\hat R`$ flags chains that have not agreed. Rank-normalised split-$`\hat R`$ sharpens the test and handles heavy tails. Trace plots are the cheapest visual cross-check. Any structural posterior with ESS below a few hundred or split-$`\hat R`$ above $`1.01`$ should be re-tuned and re-run.
+Three diagnostics catch three failures. The first is wasted draws: a chain that looks fine on a trace plot but moves so slowly that thousands of correlated draws are worth a handful of independent ones. IAT and ESS flag it. The second is non-agreement across chains: independent chains parked in different posterior regions, often different modes. Classical $`\hat R`$ flags it. The third is drift inside a single chain or a heavy-tailed posterior. Rank-normalised split-$`\hat R`$ catches it. Trace plots are the cheapest visual cross-check but cannot be trusted alone. Any structural posterior with ESS below a few hundred or split-$`\hat R`$ above $`1.01`$ should be re-tuned and re-run.
 
 These diagnostics are gradient-free. Hamiltonian Monte Carlo adds sampler-specific divergence counts, introduced in [`computational-methods/hamiltonian-monte-carlo/`](../../computational-methods/hamiltonian-monte-carlo/) and reported in the posterior summary of [`structural-econometrics/bayesian-dsge-hmc/`](../../structural-econometrics/bayesian-dsge-hmc/).
 
