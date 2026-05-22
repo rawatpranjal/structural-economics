@@ -1,0 +1,2 @@
+p_qz,q_qz,p_hand,q_hand,abs_diff_p,abs_diff_q,bk_message,n_stable,n_predetermined
+0.9620614804571276,0.08009743411295173,0.9620614804571267,0.08009743411295327,8.881784197001252e-16,1.5404344466674047e-15,Blanchard-Kahn satisfied,2,2

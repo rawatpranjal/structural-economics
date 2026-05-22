@@ -1,0 +1,52 @@
+phi_pi,n_stable,n_predetermined,bk_satisfied,classification,abs_eig_1,abs_eig_2,abs_eig_3,bk_message
+0.0,2,1,False,indeterminate,0.4999999999999999,0.584251837191934,1.7288794759393786,no solution: 2 stable eigenvalues exceed 1 predetermined vars (Z11 singular)
+0.05,2,1,False,indeterminate,0.49999999999999994,0.59764563304295,1.7154856800883636,no solution: 2 stable eigenvalues exceed 1 predetermined vars (Z11 singular)
+0.1,2,1,False,indeterminate,0.5,0.6113683734257753,1.701762939705538,no solution: 2 stable eigenvalues exceed 1 predetermined vars (Z11 singular)
+0.15000000000000002,2,1,False,indeterminate,0.49999999999999994,0.6254455549016423,1.6876857582296707,no solution: 2 stable eigenvalues exceed 1 predetermined vars (Z11 singular)
+0.2,2,1,False,indeterminate,0.5000000000000001,0.639906148533454,1.673225164597859,no solution: 2 stable eigenvalues exceed 1 predetermined vars (Z11 singular)
+0.25,2,1,False,indeterminate,0.5,0.6547833012675033,1.65834801186381,no solution: 2 stable eigenvalues exceed 1 predetermined vars (Z11 singular)
+0.30000000000000004,2,1,False,indeterminate,0.5000000000000001,0.6701152305847069,1.6430160825466054,no solution: 2 stable eigenvalues exceed 1 predetermined vars (Z11 singular)
+0.35000000000000003,2,1,False,indeterminate,0.5,0.6859463817951348,1.6271849313361784,no solution: 2 stable eigenvalues exceed 1 predetermined vars (Z11 singular)
+0.4,2,1,False,indeterminate,0.5,0.7023289488525779,1.6108023642787355,no solution: 2 stable eigenvalues exceed 1 predetermined vars (Z11 singular)
+0.45,2,1,False,indeterminate,0.49999999999999994,0.7193249088276378,1.593806404303675,no solution: 2 stable eigenvalues exceed 1 predetermined vars (Z11 singular)
+0.5,2,1,False,indeterminate,0.5,0.7370087994759569,1.576122513655356,no solution: 2 stable eigenvalues exceed 1 predetermined vars (Z11 singular)
+0.55,2,1,False,indeterminate,0.4999999999999999,0.7554716012875068,1.557659711843806,no solution: 2 stable eigenvalues exceed 1 predetermined vars (Z11 singular)
+0.6000000000000001,2,1,False,indeterminate,0.5,0.7748263135212748,1.5383049996100386,no solution: 2 stable eigenvalues exceed 1 predetermined vars (Z11 singular)
+0.65,2,1,False,indeterminate,0.5000000000000001,0.7952162261296295,1.5179150870016829,no solution: 2 stable eigenvalues exceed 1 predetermined vars (Z11 singular)
+0.7000000000000001,2,1,False,indeterminate,0.5,0.8168276755789466,1.4963036375523664,no solution: 2 stable eigenvalues exceed 1 predetermined vars (Z11 singular)
+0.75,2,1,False,indeterminate,0.5,0.8399106699107628,1.47322064322055,no solution: 2 stable eigenvalues exceed 1 predetermined vars (Z11 singular)
+0.8,2,1,False,indeterminate,0.5,0.8648142805245217,1.448317032606791,no solution: 2 stable eigenvalues exceed 1 predetermined vars (Z11 singular)
+0.8500000000000001,2,1,False,indeterminate,0.4999999999999999,0.89205223484498,1.4210790782863336,no solution: 2 stable eigenvalues exceed 1 predetermined vars (Z11 singular)
+0.9,2,1,False,indeterminate,0.5000000000000001,0.9224378386565804,1.3906934744747321,no solution: 2 stable eigenvalues exceed 1 predetermined vars (Z11 singular)
+0.9500000000000001,2,1,False,indeterminate,0.5,0.9574066247158549,1.3557246884154572,no solution: 2 stable eigenvalues exceed 1 predetermined vars (Z11 singular)
+1.0,1,1,True,determinate,0.4999999999999999,1.0000000000000002,1.3131313131313131,Blanchard-Kahn satisfied
+1.05,1,1,True,determinate,0.5,1.0598118986834952,1.2533194144478184,Blanchard-Kahn satisfied
+1.1,1,1,True,determinate,0.4999999999999999,1.159066151448804,1.1590661514488045,Blanchard-Kahn satisfied
+1.1500000000000001,1,1,True,determinate,0.5,1.165583913146479,1.1655839131464796,Blanchard-Kahn satisfied
+1.2000000000000002,1,1,True,determinate,0.5,1.172065430655377,1.172065430655377,Blanchard-Kahn satisfied
+1.25,1,1,True,determinate,0.5,1.178511301977579,1.1785113019775797,Blanchard-Kahn satisfied
+1.3,1,1,True,determinate,0.5,1.184922108849524,1.1849221088495248,Blanchard-Kahn satisfied
+1.35,1,1,True,determinate,0.5,1.191298417354744,1.1912984173547445,Blanchard-Kahn satisfied
+1.4000000000000001,1,1,True,determinate,0.5000000000000001,1.1976407785072425,1.197640778507243,Blanchard-Kahn satisfied
+1.4500000000000002,1,1,True,determinate,0.5000000000000002,1.2039497288072072,1.2039497288072079,Blanchard-Kahn satisfied
+1.5,1,1,True,determinate,0.4999999999999999,1.2102257907706577,1.2102257907706582,Blanchard-Kahn satisfied
+1.55,1,1,True,determinate,0.5,1.2164694734344872,1.2164694734344876,Blanchard-Kahn satisfied
+1.6,1,1,True,determinate,0.5,1.222681272838304,1.2226812728383043,Blanchard-Kahn satisfied
+1.6500000000000001,1,1,True,determinate,0.5000000000000001,1.2288616724843406,1.2288616724843406,Blanchard-Kahn satisfied
+1.7000000000000002,1,1,True,determinate,0.5,1.2350111437766569,1.2350111437766569,Blanchard-Kahn satisfied
+1.75,1,1,True,determinate,0.5,1.2411301464407516,1.2411301464407516,Blanchard-Kahn satisfied
+1.8,1,1,True,determinate,0.5,1.2472191289246468,1.247219128924647,Blanchard-Kahn satisfied
+1.85,1,1,True,determinate,0.5,1.2532785287824368,1.253278528782437,Blanchard-Kahn satisfied
+1.9000000000000001,1,1,True,determinate,0.5000000000000001,1.259308773041221,1.2593087730412216,Blanchard-Kahn satisfied
+1.9500000000000002,1,1,True,determinate,0.5,1.2653102785523005,1.2653102785523005,Blanchard-Kahn satisfied
+2.0,1,1,True,determinate,0.5000000000000001,1.2712834523274565,1.2712834523274568,Blanchard-Kahn satisfied
+2.0500000000000003,1,1,True,determinate,0.5000000000000002,1.2772286918610662,1.2772286918610665,Blanchard-Kahn satisfied
+2.1,1,1,True,determinate,0.5000000000000001,1.2831463854387954,1.2831463854387957,Blanchard-Kahn satisfied
+2.15,1,1,True,determinate,0.5,1.2890369124335277,1.2890369124335277,Blanchard-Kahn satisfied
+2.2,1,1,True,determinate,0.5000000000000001,1.2949006435891817,1.2949006435891819,Blanchard-Kahn satisfied
+2.25,1,1,True,determinate,0.5,1.3007379412930145,1.3007379412930151,Blanchard-Kahn satisfied
+2.3000000000000003,1,1,True,determinate,0.5000000000000001,1.3065491598369752,1.3065491598369754,Blanchard-Kahn satisfied
+2.35,1,1,True,determinate,0.49999999999999994,1.3123346456686351,1.3123346456686351,Blanchard-Kahn satisfied
+2.4000000000000004,1,1,True,determinate,0.5,1.3180947376322145,1.3180947376322147,Blanchard-Kahn satisfied
+2.45,1,1,True,determinate,0.5000000000000001,1.323829767200168,1.3238297672001687,Blanchard-Kahn satisfied
+2.5,1,1,True,determinate,0.5000000000000001,1.3295400586957762,1.3295400586957768,Blanchard-Kahn satisfied

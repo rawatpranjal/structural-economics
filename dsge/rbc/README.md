@@ -15,6 +15,7 @@ Each linear solution is checked against the exact nonlinear perfect-foresight tr
 - [`dynamic-programming/optimal-growth/`](../../dynamic-programming/optimal-growth/)
 - [`dynamic-programming/shock-discretization/`](../../dynamic-programming/shock-discretization/)
 - [`computational-methods/perturbation-linearization/`](../../computational-methods/perturbation-linearization/)
+- [`dsge/blanchard-kahn-determinacy/`](../../dsge/blanchard-kahn-determinacy/)
 
 ## Equations
 
@@ -176,16 +177,12 @@ Outputs: state transition F (2x2), jump rule P (2x2)
 1. Build (A, B) for the 4x4 system. Rows: capital accumulation,
    TFP AR(1), intratemporal labor supply, intertemporal Euler.
    Order entries (k_lag, a, c, n) so the first two are predetermined.
-2. Compute the ordered generalized Schur decomposition QZ of (B, A),
-   placing stable roots (|lambda| < 1) first.
-3. Blanchard-Kahn check: # stable roots == # predetermined states (= 2).
-4. Partition the Schur vectors into [Z_xx Z_xy; Z_yx Z_yy].
-5. Recover P = Z_yx * Z_xx^(-1)                        # jump rule
-6. Recover F = Z_xx * T_xx^(-1) * S_xx * Z_xx^(-1)     # state transition
-   from the stable triangular blocks T_xx, S_xx.
-7. Initialize x_0 = (0, sigma_e). Iterate x[t+1] = F x_t, y_t = P x_t.
-8. Recover output and investment from production and capital accumulation.
+2. Run Klein QZ on (A, B). The decomposition returns F and P.
+3. Initialize x_0 = (0, sigma_e). Iterate x[t+1] = F x_t, y_t = P x_t.
+4. Recover output and investment from production and capital accumulation.
 ```
+
+Steps 2 through 6 (the generalised Schur decomposition, BK eigenvalue count, partition into stable and unstable blocks, and recovery of $`F`$ and $`P`$) are derived in [`dsge/blanchard-kahn-determinacy/`](../../dsge/blanchard-kahn-determinacy/).
 
 Blanchard-Kahn passes: Blanchard-Kahn satisfied. The capital rule is $`\hat k_t = 0.9531\hat k_{t-1} + 0.1078\hat a_t`$. The labor rule is $`\hat n_t = -0.1677\hat k_{t-1} + 0.4612\hat a_t`$. Hours rise with productivity and fall with inherited capital. Each linear solution is then checked against the exact nonlinear perfect-foresight transition for the same shock path.
 
