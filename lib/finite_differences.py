@@ -147,8 +147,6 @@ def stationary_distribution(
         upwind-FD prelim (#1) constructs `A` and may demonstrate the
         forward-equation duality only as a sanity check.
     """
-    # TODO(prelim-2): when the KFE tutorial lands, factor the multi-state
-    # block-generator path here too. For now, single 1D state.
     n = A.shape[0]
     AT = A.T.tolil()
     rhs = np.zeros(n)
