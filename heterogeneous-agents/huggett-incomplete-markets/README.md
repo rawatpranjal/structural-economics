@@ -16,6 +16,7 @@ Bisection updates $`r`$ until aggregate bond demand clears.
 
 ## Preliminary readings
 
+- [`optimal-control/upwind-finite-differences/`](../../optimal-control/upwind-finite-differences/)
 - [`dynamic-programming/consumption-savings/`](../../dynamic-programming/consumption-savings/)
 - [`dynamic-programming/aiyagari/`](../../dynamic-programming/aiyagari/)
 
@@ -97,21 +98,7 @@ HJB.
 
 ### The borrowing limit as a state constraint
 
-The borrowing limit $`a \geq \underline a`$ is a state constraint, not a budget
-constraint. It binds whenever the unconstrained drift would push assets
-through the floor. The Kuhn-Tucker condition is
-
-```math
-s_i(\underline a) \geq 0
-\quad\Longleftrightarrow\quad
-V_i'(\underline a) \geq u'(z_i + r \underline a) ,
-```
-
-with equality when the constraint is slack and strict inequality (a kink in
-$`V_i'`$) when the household would prefer to dissave further. The numerical
-scheme enforces this by computing the implied unconstrained drift at
-$`a = \underline a`$ and clipping consumption to $`z_i + r \underline a`$ when
-the drift would be negative.
+The borrowing limit $`a \geq \underline a`$ is a state constraint, not a budget constraint. It binds whenever the unconstrained drift would push assets through the floor. The state-constraint Kuhn-Tucker clip that replaces consumption with $`z_i + r \underline a`$ whenever the forward drift at $`a = \underline a`$ would be negative is derived in [`optimal-control/upwind-finite-differences/`](../../optimal-control/upwind-finite-differences/).
 
 ### The Kolmogorov forward equation
 
@@ -197,32 +184,7 @@ Achdou-Han-Lasry-Lions-Moll method specialised to two income states.
 
 ### Upwind discretisation of the HJB
 
-Place a uniform grid $`a_1 < a_2 < \cdots < a_I`$ on $`[\underline a, \bar a]`$
-with spacing $`\Delta a`$. At each pair $`(a_k, i)`$ the solver computes the
-forward and backward asset slopes
-
-```math
-D^{+}_{k, i} V = \frac{V_i(a_{k+1}) - V_i(a_k)}{\Delta a},
-\qquad
-D^{-}_{k, i} V = \frac{V_i(a_k) - V_i(a_{k-1})}{\Delta a},
-```
-
-The forward and backward candidate consumptions and the implied drifts are
-
-```math
-c^{\pm}_{k, i} = (D^{\pm}_{k, i} V)^{-1/\sigma}, \qquad
-s^{\pm}_{k, i} = z_i + r a_k - c^{\pm}_{k, i} .
-```
-
-The upwind rule keeps the side whose drift points away from the grid point: the forward side when the forward drift is positive, the backward side when the backward drift is negative, and the zero-drift consumption $`c^0 = z_i + r a_k`$ otherwise. A central difference would mix the two sides with equal weight and produce oscillating iterates because information in the HJB flows in the direction of the drift.
-
-At the borrowing limit $`a_1 = \underline a`$ the backward difference is
-undefined, so the algorithm uses the forward difference and additionally
-enforces the state constraint by clipping consumption to
-$`z_i + r \underline a`$ when the implied forward drift is negative. At the
-upper end $`a_I = \bar a`$ the forward difference is undefined, so the
-algorithm uses the backward difference; the upper bound is set wide enough
-that no probability mass sits there in equilibrium.
+Place a uniform grid $`a_1 < a_2 < \cdots < a_I`$ on $`[\underline a, \bar a]`$ with spacing $`\Delta a`$. The forward and backward asset slopes, the upwind rule that selects between them by the sign of the policy-implied drift, and the boundary forcing at $`a_1 = \underline a`$ together with the Kuhn-Tucker clip on consumption at the borrowing limit are derived in [`optimal-control/upwind-finite-differences/`](../../optimal-control/upwind-finite-differences/). At the upper end $`a_I = \bar a`$ the forward difference is undefined, so the algorithm uses the backward difference; the upper bound is set wide enough that no probability mass sits there in equilibrium.
 
 ### The upwind generator
 
