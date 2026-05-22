@@ -1,6 +1,6 @@
 # spec.md — Preliminary-Readings Curriculum (P0 + P1 + P2)
 
-**Date:** 2026-05-21 (spec); 2026-05-22 (P0 + #6 shipped). **Scope:** all 14 prelims (P0 5 + P1 5 + P2 4). **Status:** P0 (#1-5) + P1 #6 complete on `main`; P1 #7-10 and P2 #11-14 pending.
+**Date:** 2026-05-21 (spec); 2026-05-22 (all 14 prelims shipped). **Scope:** all 14 prelims (P0 5 + P1 5 + P2 4). **Status:** complete on `main` (commits `51e25ae`, `b36454f`, `f602b3d`, `4bac3ed`).
 
 This spec defines fourteen new tutorials that fill the gaps in the
 catalog's "on-ramp" to dense tutorials. Companion documents:
@@ -1428,29 +1428,22 @@ both its P0 and P1 prelim before any final QC pass:
 2. [DONE 2026-05-22] #2 KFE — depends on #1's notation.
 3. [DONE 2026-05-22] #4 Blanchard-Kahn — independent.
 4. [DONE 2026-05-22] #3 GMM foundations — independent.
-5. #7 reduced-form-VAR — independent; lands before P0 #5
-   touches minnesota-svar so both cuts can be sequenced. (Sequencing
-   note is now historical; P0 #5 already landed.)
-6. #8 Bertrand ownership matrix — independent.
-7. #9 simulated-likelihood — independent.
-8. #10 NN regression — independent.
+5. [DONE 2026-05-22] #7 reduced-form-VAR — commit `b36454f`.
+6. [DONE 2026-05-22] #8 Bertrand ownership matrix — commit `b36454f`.
+7. [DONE 2026-05-22] #9 simulated-likelihood — commit `b36454f`.
+8. [DONE 2026-05-22] #10 NN regression — commit `f602b3d`.
 9. [DONE 2026-05-22] #5 Bayesian foundations — paired with #6 in one
     PR per the alternative below.
 10. [DONE 2026-05-22] #6 MCMC diagnostics — paired with #5 (the MH
     refactor: Bayes primer out, diagnostics primer out, MH stays as
     the algorithm tutorial).
 
-P2 prelims (singletons, mostly independent):
+P2 prelims (shipped together as one omnibus PR, commit `4bac3ed`):
 
-11. #13 gaussian-processes — single target (bayesian-optimization,
-    ~50-line refactor).
-12. #12 quadrature — pair the smolyak cut with this PR.
-13. #11 weitzman-search-rule — single dense target; trivial.
-14. #14 regret-matching — single dense target; trivial.
-
-The P2 four can be batched into a single "P2 omnibus" PR if
-their author prefers, since the cuts are localised and don't
-collide with each other.
+11. [DONE 2026-05-22] #13 gaussian-processes.
+12. [DONE 2026-05-22] #12 quadrature.
+13. [DONE 2026-05-22] #11 weitzman-search-rule.
+14. [DONE 2026-05-22] #14 regret-matching.
 
 Each prelim is one PR: tutorial folder + cuts to the targeted
 dense READMEs + catalog row insertion + validator pass.
