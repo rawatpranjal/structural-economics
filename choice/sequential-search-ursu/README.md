@@ -12,6 +12,7 @@ The primitive object is a consideration process. A product can be valuable if in
 
 - [`dynamic-programming/job-search-mccall/`](../../dynamic-programming/job-search-mccall/)
 - [`choice/bayesian-learning/`](../../choice/bayesian-learning/)
+- [`choice/weitzman-search-rule/`](../../choice/weitzman-search-rule/)
 
 ## Equations
 
@@ -58,21 +59,7 @@ where $`x_j`$ is product complexity. Higher complexity raises the cost of
 learning about the product, not the utility from owning it. The consumer pays
 $`c_j`$ before observing $`u_{ij}`$.
 
-With perfect recall, the consumer keeps every inspected value. The Weitzman
-reservation value $`z_j`$ is the cutoff that makes the option value of inspecting
-product $`j`$ equal to its search cost:
-
-```math
-\begin{aligned}
-c_j
-&=
-E[\max(u_{ij}-z_j,0)].
-\end{aligned}
-```
-
-The expectation is over the unknown match draw for product $`j`$. A high $`z_j`$
-means the product is worth inspecting early because it has high mean utility,
-low search cost, or enough upside risk.
+With perfect recall, the consumer keeps every inspected value. The Weitzman reservation value $`z_j`$ (defined by $`c_j = E[\max(u_{ij} - z_j, 0)]`$ and derived in [`choice/weitzman-search-rule/`](../../choice/weitzman-search-rule/)) is the cutoff that makes the option value of inspecting product $`j`$ equal to its search cost. A high $`z_j`$ means the product is worth inspecting early because it has high mean utility, low search cost, or enough upside risk.
 
 After some inspections, the consumer has an inspected set $`S_i`$ and a current
 best value
@@ -88,11 +75,7 @@ b_i
 The outside option enters through the zero in $`b_i`$. If every inspected product
 has negative realized value, the best available action is not to buy.
 
-The search rule is a threshold rule. Among uninspected products, the consumer
-looks at the product with the highest reservation value. If that value exceeds
-$`b_i`$, she searches it and updates $`S_i`$ and $`b_i`$. If the highest remaining
-reservation value is below $`b_i`$, every other uninspected product has even lower
-option value, so she stops.
+The search rule is the Weitzman index-ordering rule from [`choice/weitzman-search-rule/`](../../choice/weitzman-search-rule/): inspect in decreasing order of $`z_j`$ and stop the first time $`b_i`$ exceeds the highest reservation value among uninspected products.
 
 The simulated-moments estimator chooses
 

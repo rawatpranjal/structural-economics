@@ -15,6 +15,8 @@ The objective here is the same two-segment monopoly profit used in [`numerical-m
 - [`numerical-methods/scalar-optimization-monopoly-pricing/`](../../numerical-methods/scalar-optimization-monopoly-pricing/)
 - [`numerical-methods/global-search-multistart/`](../../numerical-methods/global-search-multistart/)
 - [`bayesian-methods/bayesian-foundations/`](../../bayesian-methods/bayesian-foundations/)
+- [`numerical-methods/gaussian-processes/`](../../numerical-methods/gaussian-processes/)
+- [`numerical-methods/quadrature/`](../../numerical-methods/quadrature/)
 
 ## Equations
 
@@ -43,34 +45,7 @@ This is the same Bayesian update that produces a Beta posterior from a Beta-Bino
 
 ### Method 1: Gaussian-process surrogate
 
-A Gaussian process $`\mathcal{GP}(m, k)`$ is a distribution over functions $`f : \mathcal{X} \to \mathbb{R}`$ such that for any finite set of inputs $`X = (x_1, \ldots, x_n) \in \mathcal{X}^n`$ the vector of function values $`f(X) = (f(x_1), \ldots, f(x_n)) \in \mathbb{R}^n`$ is jointly Gaussian with mean $`m(X) = (m(x_1), \ldots, m(x_n))`$ and covariance matrix $`K(X, X) \in \mathbb{R}^{n \times n}`$ with entries $`K_{ij} = k(x_i, x_j)`$.
-The process is fully specified by its mean function $`m : \mathcal{X} \to \mathbb{R}`$ and its covariance kernel $`k : \mathcal{X} \times \mathcal{X} \to \mathbb{R}`$.
-We use a constant-mean prior, $`f \sim \mathcal{GP}(m, k)`$ with $`m(x) \equiv \bar{y}`$ fixed to the sample mean of the observed targets, and the squared-exponential kernel
-
-```math
-k(x, x') = \sigma_f^2 \exp\left(-\tfrac{(x - x')^2}{2 \ell^2}\right).
-```
-
-Here $`\sigma_f > 0`$ is the prior signal standard deviation and $`\ell > 0`$ is the length scale, which controls how quickly the kernel decays with distance.
-A small $`\ell`$ gives a wiggly prior; a large $`\ell`$ gives a smooth prior.
-
-Suppose we have observed evaluations $`y_i = f(x_i) + \varepsilon_i`$ for $`i = 1, \ldots, n`$, where the observation noise $`\varepsilon_i \sim \mathcal{N}(0, \sigma_n^2)`$ is independent and $`\sigma_n > 0`$ is the noise standard deviation.
-Stack the targets into $`y = (y_1, \ldots, y_n)^{\top} \in \mathbb{R}^n`$.
-Because the joint distribution of $`(y, f(x_\ast))`$ at any new input $`x_\ast \in \mathcal{X}`$ is Gaussian by construction, the conditional distribution $`f(x_\ast) \mid (X, y)`$ is also Gaussian, with closed-form posterior mean $`\mu(x_\ast)`$ and variance $`\sigma^2(x_\ast)`$:
-
-```math
-\mu(x_{\ast}) = m(x_{\ast}) + \underbrace{k(x_{\ast}, X)}_{\text{similarity to training inputs}} \underbrace{\left[K(X, X) + \sigma_n^2 I\right]^{-1} (y - m(X))}_{\text{noise-corrected training residual}},
-```
-
-```math
-\sigma^2(x_{\ast}) = \underbrace{k(x_{\ast}, x_{\ast})}_{\text{prior variance at } x_{\ast}} - \underbrace{k(x_{\ast}, X) \left[K(X, X) + \sigma_n^2 I\right]^{-1} k(X, x_{\ast})}_{\text{variance explained by the data}}.
-```
-
-The vector $`k(x_\ast, X) \in \mathbb{R}^n`$ collects the kernel values $`(k(x_\ast, x_1), \ldots, k(x_\ast, x_n))`$ and $`I`$ is the $`n \times n`$ identity matrix.
-Read the posterior mean as a kernel-weighted regression around the constant mean $`m(x_\ast)`$: the row vector $`k(x_\ast, X)`$ gives the similarity of the candidate to each evaluated point, and the precision-weighted residual $`[K + \sigma_n^2 I]^{-1} (y - m(X))`$ tells the formula how to combine those similarities.
-Read the posterior variance as "prior variance minus what the data already explain", which is the GP analogue of the Bayesian shrinkage identity $`\mathrm{Var}(\theta) = \mathrm{Var}(\mathbb{E}[\theta \mid D]) + \mathbb{E}[\mathrm{Var}(\theta \mid D)]`$.
-The subtracted term cannot exceed the prior, so the posterior variance is always nonnegative and shrinks toward zero as the candidate moves close to an evaluated point.
-The variance collapsing at evaluated points is what makes Expected Improvement avoid re-querying the same input, and it is the reason posterior variance is the right signal for "where would another evaluation be informative".
+The GP prior, the squared-exponential kernel, and the closed-form posterior mean $`\mu(x_\ast)`$ and variance $`\sigma^2(x_\ast)`$ are derived in [`numerical-methods/gaussian-processes/`](../../numerical-methods/gaussian-processes/). Here the prior is over the unknown profit function on the bracket $`\mathcal{X} = [p_{\mathrm{lo}}, p_{\mathrm{hi}}]`$, the mean is fixed at the sample mean of the observed targets, and the kernel is the squared-exponential with length scale $`\ell`$ and signal scale $`\sigma_f`$. The posterior variance collapsing to zero at evaluated points is what makes Expected Improvement avoid re-querying the same input, and it is the reason posterior variance is the right signal for "where would another evaluation be informative".
 
 ### Method 2: Expected Improvement acquisition
 
@@ -130,22 +105,9 @@ Bayesian optimization is a single loop. Fit a Gaussian-process surrogate to the 
 
 ### Method 1: Gaussian-process surrogate
 
-The Gaussian process places a prior on the unknown profit function. After $`n`$ evaluations $`(X, y)`$ the posterior at any candidate price $`x_\ast`$ is Gaussian with closed-form mean and variance. The closed form requires one Cholesky factor of the $`n \times n`$ kernel matrix, so the cost is $`O(n^3)`$ in evaluations and $`O(n^2)`$ per prediction. For budgets of tens to hundreds of evaluations this is negligible.
+The Gaussian process places a prior on the unknown profit function. After $`n`$ evaluations $`(X, y)`$ the posterior at any candidate price $`x_\ast`$ is Gaussian with closed-form mean and variance, computed via one Cholesky factor of the $`n \times n`$ kernel matrix; the Cholesky-based posterior algorithm is in [`numerical-methods/gaussian-processes/`](../../numerical-methods/gaussian-processes/). The cost is $`O(n^3)`$ in evaluations and $`O(n^2)`$ per prediction. For budgets of tens to hundreds of evaluations this is negligible.
 
-```text
-Algorithm: GP posterior at candidates X_star
-Input : training inputs X, targets y, kernel k, noise sigma_n
-Output: posterior mean mu(X_star), posterior std sigma(X_star)
-  K   = k(X, X) + sigma_n^2 * I
-  L   = cholesky(K)
-  a   = solve(L^T, solve(L, y - mean(y)))
-  k_s = k(X, X_star)
-  mu        = mean(y) + k_s^T @ a
-  v         = solve(L, k_s)
-  variance  = k(X_star, X_star) - sum(v^2, axis=0)
-```
-
-The length scale $`\ell`$ is the key hyperparameter. A small $`\ell`$ produces a wiggly surrogate that fits each observation tightly but extrapolates poorly. A large $`\ell`$ produces a smooth surrogate that may miss narrow basins. We refit $`\ell`$ at each step by maximizing the log marginal likelihood over a coarse grid. This is the cleanest empirical-Bayes choice and avoids the optimizer-inside-optimizer problem of joint hyperparameter and acquisition maximization.
+The length scale $`\ell`$ is the key hyperparameter. A small $`\ell`$ produces a wiggly surrogate that fits each observation tightly but extrapolates poorly. A large $`\ell`$ produces a smooth surrogate that may miss narrow basins. We refit $`\ell`$ at each step by maximizing the log marginal likelihood over a coarse grid; the log-marginal-likelihood objective is derived in the prelim. This is the cleanest empirical-Bayes choice and avoids the optimizer-inside-optimizer problem of joint hyperparameter and acquisition maximization.
 
 ### Method 2: Expected Improvement acquisition
 
