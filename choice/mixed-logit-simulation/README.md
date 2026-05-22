@@ -11,6 +11,7 @@ The key economic issue is substitution. A plain logit can match average shares a
 ## Preliminary readings
 
 - [`choice/logit-discrete-choice/`](../../choice/logit-discrete-choice/)
+- [`numerical-methods/simulated-likelihood/`](../../numerical-methods/simulated-likelihood/)
 - [`structural-econometrics/gmm-foundations/`](../../structural-econometrics/gmm-foundations/)
 
 ## Equations
@@ -47,19 +48,10 @@ P_{ij}(\theta,\nu_r)
 
 Here $`\alpha_r = \bar\alpha + \sigma_\alpha\nu_{r\alpha}`$ and $`\beta_r = \bar\beta + \sigma_\beta\nu_{r\beta}`$ are the draw-specific taste coefficients.
 
-The mixed-logit probability integrates over random tastes. The code approximates
-that integral with fixed simulation draws. Here $`\phi`$ is the $`N(0,I)`$ density. The exact integral
-$`\int P_{ij}(\theta,\nu)\phi(\nu)d\nu`$ has no closed form here because the
-logit probability is nonlinear in the random coefficients. The code draws
-$`\nu_1,\ldots,\nu_R`$ once and replaces the integral with the same finite
-average at every candidate $`\theta`$:
+The mixed-logit probability integrates over random tastes against the $`N(0, I)`$ density. The integral has no closed form because the logit probability is nonlinear in the random coefficients. The simulated estimator replaces it with the same finite average at every candidate $`\theta`$, computed from fixed draws $`\nu_1, \ldots, \nu_R`$ held constant across the optimiser; the construction and the common-random-numbers property are derived in [`numerical-methods/simulated-likelihood/`](../../numerical-methods/simulated-likelihood/):
 
 ```math
-\begin{aligned}
-\widehat P_{ij}(\theta)
-&=
-\frac{1}{R}\sum_{r=1}^R P_{ij}(\theta,\nu_r).
-\end{aligned}
+\widehat P_{ij}(\theta) = \frac{1}{R} \sum_{r=1}^{R} P_{ij}(\theta, \nu_r).
 ```
 
 Simulated maximum likelihood picks the parameter vector that assigns high
@@ -102,7 +94,7 @@ heterogeneity:
 
 ## Solution Method
 
-The estimator uses common random numbers. Draws are made once and then held fixed while the optimizer moves $`\theta`$. This turns the population integral into the same finite average at every trial parameter vector. Without common draws, fresh simulation noise would move the likelihood surface while the optimizer is trying to climb it.
+The estimator uses common random numbers; the smoothness argument is in [`numerical-methods/simulated-likelihood/`](../../numerical-methods/simulated-likelihood/).
 
 The standard deviations are optimized in logs. The optimizer can move freely over log standard deviations, while the model sees positive values after exponentiation. The bounds are not an economic restriction in this example. They keep the teaching likelihood away from numerically irrelevant regions.
 

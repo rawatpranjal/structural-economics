@@ -11,6 +11,7 @@ Accounting costs are missing, so the model infers costs from demand and firm opt
 ## Preliminary readings
 
 - [`structural-econometrics/gmm-foundations/`](../../structural-econometrics/gmm-foundations/)
+- [`industrial-organization/bertrand-ownership-matrix/`](../../industrial-organization/bertrand-ownership-matrix/)
 
 ## Equations
 
@@ -42,29 +43,7 @@ The supply inversion uses the logit derivative matrix:
 \frac{\partial s_k}{\partial p_j} =\begin{cases} {}-\alpha s_j(1-s_j), & k=j,\\ \alpha s_k s_j, & k\neq j. \end{cases}
 ```
 
-In the supply equations, $`p`$ and $`s`$ are vectors collecting prices and shares across all products in a market.
-Firm $`f`$ chooses prices for its products. Product $`j`$'s FOC is
-
-```math
-0=s_j(p)+\sum_k \mathbf{1}\lbrace f(j)=f(k)\rbrace (p_k-c_k) \frac{\partial s_k(p)}{\partial p_j}.
-```
-
-Here $`c_k`$ denotes the marginal cost of product $`k`$.
-Let $`O_{jk}=1`$ when products $`j`$ and $`k`$ share an owner. Define the pricing
-matrix
-
-```math
-\Omega_{jk}=-O_{jk}\frac{\partial s_k}{\partial p_j}.
-```
-
-The markup vector $`m=p-c`$ solves
-
-```math
-\Omega m=s.
-```
-
-The recovered cost vector is then $`c=p-m`$. Ownership matters because a firm
-internalizes lost sales across its own products.
+The multi-product Bertrand-Nash FOC, the ownership matrix $`\Omega`$, and the markup-recovery linear system $`s + (\Omega \odot \Delta^{\top})(p - c) = 0`$ are derived in [`industrial-organization/bertrand-ownership-matrix/`](../../industrial-organization/bertrand-ownership-matrix/). Here the demand Jacobian $`\Delta_{kj} = \partial s_k / \partial p_j`$ is the logit form just above, the ownership matrix encodes the cereal firms' multi-product holdings (firms 1 and 2 each own two products, firm 3 owns one), and the recovered cost vector is $`c = p - m`$ for the markup vector $`m`$ that solves that linear system. Ownership matters because a firm internalizes lost sales across its own products.
 
 ## Model Setup
 
@@ -92,8 +71,9 @@ Outputs: demand estimates, elasticities, markups, recovered marginal costs
 2. Estimate linear logit demand by OLS as a biased benchmark.
 3. Re-estimate by IV/2SLS using excluded cost shifters for price.
 4. For one market, compute the logit derivative matrix Delta.
-5. Combine Delta with firm ownership to form Omega.
-6. Solve Omega m = s for markups, then set c = p - m.
+5. Build the binary ownership matrix Omega_O from firm labels.
+6. Solve (Omega_O elementwise-times Delta') m = -s for markups, then set c = p - m
+   (derivation in the bertrand-ownership-matrix prelim).
 7. Compare recovered costs with the simulated marginal costs.
 ```
 

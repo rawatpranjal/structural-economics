@@ -15,6 +15,7 @@ The same logic threads the three layers. Two competitors come under one owner. T
 ## Preliminary readings
 
 - [`choice/logit-discrete-choice/`](../../choice/logit-discrete-choice/)
+- [`industrial-organization/bertrand-ownership-matrix/`](../../industrial-organization/bertrand-ownership-matrix/)
 - [`industrial-organization/logit-supply-side/`](../../industrial-organization/logit-supply-side/)
 
 ## Equations
@@ -53,49 +54,7 @@ A delta-HHI above 100 is significant for the structural presumption.
 
 ### B. Bertrand-Nash pricing with multi-product firms
 
-There are $`J`$ inside products. Product $`j`$ has price $`p_j`$, marginal cost $`c_j`$,
-quantity or share $`q_j(p)`$, and owner $`f(j)`$. The ownership matrix records
-which products belong to the same firm:
-
-```math
-\Omega_{jk}=\mathbf{1}\lbrace f(j)=f(k)\rbrace.
-```
-
-Worked example. Take $`J=4`$ products with pre-merger owners $`f^{\text{pre}}=(1,2,3,4)`$,
-so each product is its own single-product firm:
-
-```math
-\Omega^{\text{pre}}=\begin{pmatrix}1&0&0&0\\0&1&0&0\\0&0&1&0\\0&0&0&1\end{pmatrix}.
-```
-
-Now firm 1 buys firm 2. The post-merger owners are $`f^{\text{post}}=(1,1,3,4)`$.
-Products 1 and 2 share an owner. The off-diagonal entries that link them switch
-on:
-
-```math
-\Omega^{\text{post}}=\begin{pmatrix}1&1&0&0\\1&1&0&0\\0&0&1&0\\0&0&0&1\end{pmatrix}.
-```
-
-Those two new ones in the upper-left block are the entire merger as the model
-sees it. Every price effect that follows is the consequence of switching them
-on.
-
-A multi-product Bertrand firm chooses each price to satisfy
-
-```math
-0=q_j(p)+\sum_{k=1}^J \Omega_{jk}(p_k-c_k)\frac{\partial q_k(p)}{\partial p_j}, \qquad j=1,\ldots,J.
-```
-
-With $`\Delta_{kj}(p)=\partial q_k(p)/\partial p_j`$, the vector form is
-
-```math
-q(p)+\underbrace{(\Omega\circ \Delta(p)^\top)}_{\text{within-firm price externality}}(p-c)=0.
-```
-
-Here $`\circ`$ is the element-wise (Hadamard) product. Multiplying by $`\Omega`$
-knocks out cross-firm price externalities. Only co-owned products show up in
-any one firm's markup equation. The merger flips entries of $`\Omega`$ from zero
-to one. The FOCs then solve for new prices.
+The ownership-matrix construction and the multi-product Bertrand-Nash FOC $`q(p) + (\Omega \odot \Delta(p)^{\top})(p - c) = 0`$ are derived in [`industrial-organization/bertrand-ownership-matrix/`](../../industrial-organization/bertrand-ownership-matrix/), where the share function is written $`s(p)`$. Here we use $`q(p)`$ to keep notation consistent with the rest of this tutorial; the two symbols refer to the same object. The co-ownership indicator is $`\Omega_{jk} = \mathbf{1}\lbrace f(j) = f(k) \rbrace`$, the demand Jacobian is $`\Delta_{kj}(p) = \partial q_k(p) / \partial p_j`$, and a merger flips off-diagonal entries of $`\Omega`$ from zero to one. The merger-specific question this section asks is what those flipped entries do to equilibrium prices once we plug in calibrated demand and recovered marginal costs.
 
 ### C. Three demand systems
 

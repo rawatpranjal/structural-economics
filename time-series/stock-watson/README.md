@@ -130,7 +130,7 @@ The forecast table reports the same loss comparison. The estimated factor and tr
 
 ## Takeaway
 
-Stock-Watson diffusion indexes let a forecaster use many macro indicators without estimating one coefficient per series. In this run, PCA recovers the common state almost exactly. The factor forecast lowers one-step RMSE by 11.4% relative to AR(2). The practical lesson is simple: estimate the shared state first, then forecast with a small regression.
+Stock-Watson diffusion indexes let a forecaster use many macro indicators without estimating one coefficient per series. In this run, PCA recovers the common state almost exactly. The factor forecast lowers one-step RMSE by 11.4% relative to AR(2). The practical lesson is simple: estimate the shared state first, then forecast with a small regression. The AR-with-factor forecast regression here is the univariate special case of the lag-stacking and OLS mechanics derived in [`time-series/reduced-form-var/`](../../time-series/reduced-form-var/), with the estimated factor entering as an additional regressor on the right-hand side.
 
 ## References
 

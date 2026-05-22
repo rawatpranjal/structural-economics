@@ -10,6 +10,11 @@ The main difficulty is that market shares are aggregate outcomes. The analyst do
 
 The computation estimates those tastes from market shares. A BLP contraction recovers mean utility for each trial dispersion, and IV/GMM chooses dispersion.
 
+## Preliminary readings
+
+- [`numerical-methods/simulated-likelihood/`](../../numerical-methods/simulated-likelihood/)
+- [`structural-econometrics/gmm-foundations/`](../../structural-econometrics/gmm-foundations/)
+
 ## Equations
 
 Consumer $`i`$ in market $`t`$ chooses among $`J`$ inside goods and an outside good.
@@ -35,10 +40,10 @@ Mean utility and individual taste enter separately:
 \delta_{jt} = \beta_0 + \beta_x x_{jt} + \alpha p_{jt} + \xi_{jt}, \qquad \mu_{ijt} = \sigma_x \nu_{i1} x_{jt} + \sigma_p \nu_{i2} p_{jt}
 ```
 
-For a candidate $`\sigma=(\sigma_x,\sigma_p)`$, simulated market shares are:
+For a candidate $`\sigma = (\sigma_x, \sigma_p)`$, simulated market shares average the conditional logit probability over $`ns`$ fixed draws $`\nu_i`$ from $`N(0, I)`$ that are held constant across $`\sigma`$ values; the construction and the common-random-numbers smoothness argument are in [`numerical-methods/simulated-likelihood/`](../../numerical-methods/simulated-likelihood/):
 
 ```math
-s_{jt} = \frac{1}{ns} \sum_{i=1}^{ns} \frac{\exp(\delta_{jt} + \mu_{ijt})}{1 + \sum_{k=1}^{J} \exp(\delta_{kt} + \mu_{ikt})}
+s_{jt}(\sigma) = \frac{1}{ns} \sum_{i=1}^{ns} \frac{\exp(\delta_{jt} + \mu_{ijt})}{1 + \sum_{k=1}^{J} \exp(\delta_{kt} + \mu_{ikt})}.
 ```
 
 The BLP contraction finds the mean utilities that make predicted shares equal
