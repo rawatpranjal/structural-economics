@@ -132,7 +132,7 @@ the heavy piece because its inputs and outputs are sequences of aggregates.
 **Steady-state household block.** Endogenous grid points solve the joint
 $`(c, n)`$ policy by FOC inversion, with a Newton subsolver for the borrowing-
 constrained region. The stationary distribution follows from forward-iterating
-the Young (2010) lottery on the saving policy. A joint Broyden iteration on
+the Young (2010) lottery on the saving policy; the lottery iteration is the discrete-time analog of the continuous-time stationary solve $`\mathbf{A}^{\top} g = 0`$ derived in [`heterogeneous-agents/kolmogorov-forward-equation/`](../../heterogeneous-agents/kolmogorov-forward-equation/). A joint Broyden iteration on
 $`(\beta, v_\varphi)`$ matches the asset target $`A^{\ast} = B`$ and the
 labor-supply target $`N^E_\ast = 1`$.
 
