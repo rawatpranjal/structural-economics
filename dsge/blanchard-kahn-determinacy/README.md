@@ -2,11 +2,9 @@
 
 ## Overview
 
-A forward-looking linear difference equation does not pin down its solution from initial conditions alone. The household forms expectations of every future state, so the model has many algebraic paths through any given starting point. Most of them explode. The economic question is which path the model selects when the household refuses to follow an explosive trajectory.
+Blanchard and Kahn (1980) select the unique bounded path of a linear rational-expectations model by counting eigenvalues. The number of stable generalised eigenvalues must equal the number of predetermined states. Too few stable eigenvalues and no bounded path exists. Too many and jump variables load on a sunspot, so equilibrium is indeterminate.
 
-Blanchard and Kahn answered this in 1980 with an eigenvalue count. The system has one unique non-explosive solution when the number of stable generalised eigenvalues equals the number of predetermined states. Too few stable eigenvalues leaves predetermined states with no bounded path. Too many leaves the jump variables free to load on a sunspot, so the equilibrium is indeterminate.
-
-This tutorial demonstrates the rule on a small New Keynesian toy model. It also runs the same machinery on the canonical Real Business Cycle linearisation. The spec sketched a two-equation consumption-Euler plus capital-accumulation example; the prelim substitutes a three-variable New Keynesian system because the Taylor-rule coefficient crosses the BK boundary at exactly unity (Taylor principle) and gives a textbook-clean sweep. Sweeping the inflation response from zero through two and a half crosses the determinacy boundary, where one generalised eigenvalue migrates across the unit circle. The same QZ partition used here is the inner loop of the dense RBC tutorial in [`dsge/rbc/`](../../dsge/rbc/) and the New Keynesian DSGE in [`dsge/nkdsge/`](../../dsge/nkdsge/). The upstream linearisation step lives in [`computational-methods/perturbation-linearization/`](../../computational-methods/perturbation-linearization/), which produces the matrices this tutorial then partitions.
+The example is a three-variable New Keynesian system swept along the Taylor-rule inflation coefficient, which crosses the determinacy boundary at unity. One generalised eigenvalue migrates across the unit circle at the crossing. The same QZ partition is the inner loop of the RBC tutorial in [`dsge/rbc/`](../../dsge/rbc/) and the New Keynesian DSGE in [`dsge/nkdsge/`](../../dsge/nkdsge/). The upstream linearisation step lives in [`computational-methods/perturbation-linearization/`](../../computational-methods/perturbation-linearization/), which produces the matrices partitioned here.
 
 ## Preliminary readings
 
@@ -56,11 +54,11 @@ P = Z_{21} \, Z_{11}^{-1}.
 
 The recovered policy is $`x_{t+1} = F x_t`$ for the predetermined block and $`z_t = P x_t`$ for the jumps. This is the same first-order solution `solve_klein` returns from `lib/perturbation.py`.
 
-The two failure modes carry distinct economic content. When the stable count falls short of $`n_x`$, the predetermined block has too few decaying directions; the only paths consistent with the model are explosive, and the equilibrium does not exist. When the stable count exceeds $`n_x`$, jump variables have more than one bounded loading on the state; the model admits a family of bounded equilibria, indexed by the unused stable directions, and sunspot equilibria can be constructed.
+The two failure modes carry distinct economic content. A stable count below $`n_x`$ leaves the predetermined block with too few decaying directions. Every path consistent with the model is explosive, so equilibrium does not exist. A stable count above $`n_x`$ gives the jumps more than one bounded loading on the state. The model admits a family of bounded equilibria indexed by the unused stable directions, and sunspot equilibria can be constructed.
 
 ## Model Setup
 
-The toy model is a three-equation New Keynesian system with a Taylor-rule wedge. Variables in deviation from steady state:
+The model is a three-equation New Keynesian system with a Taylor-rule wedge. Variables are in deviation from steady state:
 
 | Symbol | Range or value | Role |
 |---|---|---|
@@ -95,7 +93,7 @@ The symbol $`A`$ collides across the catalog. In this tutorial it is the RE lead
 
 ## Solution Method
 
-The numerical engine is `lib.perturbation.solve_klein(A, B, n_predetermined)`. It applies an ordered generalised Schur decomposition to the pair $`(B, A)`$ with the stable roots placed in the upper-left block. It then recovers $`F`$ and $`P`$ from the leading partition and returns a diagnostic structure carrying the eigenvalues, the stable count, and a Blanchard-Kahn flag.
+The numerical engine is `lib.perturbation.solve_klein(A, B, n_predetermined)`. It applies an ordered generalised Schur decomposition to $`(B, A)`$ with stable roots in the upper-left block. It recovers $`F`$ and $`P`$ from the leading partition and returns a diagnostic carrying the eigenvalues, the stable count, and a Blanchard-Kahn flag.
 
 ```text
 Algorithm: Klein QZ solve with Blanchard-Kahn diagnostics
@@ -117,37 +115,37 @@ Outputs:   state transition F, jump rule P,
 7. Return F, P, eigenvalues, BK status.
 ```
 
-When the stable count exceeds the predetermined count the leading block $`Z_{11}`$ is rank-deficient. The library catches the ill-conditioning and raises; the tutorial wraps that exception and continues recording the diagnostic so the sweep produces a complete classification.
+When the stable count exceeds the predetermined count, the leading block $`Z_{11}`$ is rank-deficient. The library raises on the ill-conditioning; the tutorial wraps the exception and continues recording the diagnostic, so the sweep produces a complete classification.
 
-The sanity-check pass calls `solve_klein` on the fixed-labor Real Business Cycle matrices from `dsge/rbc/run.py` and compares the recovered capital decision rule with the hand-derived undetermined-coefficients solve in the same file. Agreement to machine precision is the expected pass condition.
+The sanity-check calls `solve_klein` on the fixed-labor RBC matrices from `dsge/rbc/run.py` and compares the recovered capital decision rule with the hand-derived undetermined-coefficients solve in the same file. Agreement to machine precision is the pass condition.
 
 ## Results
 
-The Taylor-rule inflation coefficient $`\phi_\pi`$ is swept across the determinacy boundary at unity. At each value the QZ pass returns three generalised eigenvalues; their absolute values are plotted as a function of $`\phi_\pi`$.
+The Taylor-rule inflation coefficient $`\phi_\pi`$ is swept across the determinacy boundary at unity. At each value the QZ pass returns three generalised eigenvalues, with absolute values plotted against $`\phi_\pi`$.
 
 <img src="figures/eigenvalue-trajectories.png" alt="Absolute generalised eigenvalues as the Taylor-rule inflation coefficient sweeps from zero to 2.5" width="80%">
 
-One eigenvalue stays at $`0.5`$, equal to the persistence of the Taylor wedge. A second eigenvalue rises smoothly through unity as $`\phi_\pi`$ crosses one; on the right of the boundary it lies outside the unit circle. The third eigenvalue follows the symmetric branch. The stable count is two for $`\phi_\pi < 1`$ and one for $`\phi_\pi \geq 1`$. With one predetermined state, the right region is determinate and the left region is indeterminate. The classification flips discontinuously even though the eigenvalues move continuously.
+One eigenvalue stays at $`0.5`$, the persistence of the Taylor wedge. A second rises smoothly through unity as $`\phi_\pi`$ crosses one, leaving the unit circle on the right of the boundary. The third follows the symmetric branch. The stable count is two for $`\phi_\pi < 1`$ and one for $`\phi_\pi \geq 1`$. With one predetermined state, the right region is determinate and the left is indeterminate. The classification flips discontinuously even though the eigenvalues move continuously.
 
 The phase plane reads the two regimes in $`(y_t, \pi_t)`$ space.
 
 <img src="figures/phase-plane.png" alt="Phase plane of output gap and inflation under determinate and indeterminate calibrations" width="100%">
 
-The left panel uses $`\phi_\pi = 1.5`$. The wedge shock pushes the economy onto the saddle path. Output and inflation start below their steady-state values and decay along a single line. The slope of the line is $`P_{21} / P_{11}`$, the ratio of the inflation and output jump loadings on the wedge. The right panel uses $`\phi_\pi = 0.6`$. The QZ pass returns two stable eigenvalues for one predetermined state. The three coloured paths in the right panel are three distinct bounded rational-expectations solutions for the same initial wedge $`v_0 = 0.01`$. Each chooses a different sunspot amplitude in the second stable direction. All three decay to the steady state. The model cannot pick between them on its own.
+The left panel uses $`\phi_\pi = 1.5`$. The wedge shock pushes the economy onto the saddle path. Output and inflation start below steady state and decay along a single line. The slope is $`P_{21} / P_{11}`$, the ratio of inflation and output jump loadings on the wedge. The right panel uses $`\phi_\pi = 0.6`$. The QZ pass returns two stable eigenvalues for one predetermined state. The three coloured paths are three distinct bounded rational-expectations solutions for the same initial wedge $`v_0 = 0.01`$. Each picks a different sunspot amplitude in the second stable direction. All three decay to the steady state. The model cannot select among them.
 
 The two-parameter classification map turns the BK rule into a regime diagram over the Taylor-rule coefficient pair.
 
 <img src="figures/bk-heatmap.png" alt="Blanchard-Kahn classification heatmap over the inflation and output Taylor coefficients" width="80%">
 
-The determinate region lies to the right of the dashed white frontier. The frontier follows the Bullard-Mitra long-run Taylor principle $`\phi_\pi + \frac{1 - \beta}{\kappa} \phi_y > 1`$ closely. The grid is computed cell by cell from the QZ count; the analytical curve confirms the empirical frontier is not an artefact of the sweep resolution. Explosive cells do not appear in this calibration because the wedge is the only predetermined state and its single decaying eigenvalue is always stable.
+The determinate region lies to the right of the dashed white frontier. The frontier tracks the Bullard-Mitra long-run Taylor principle $`\phi_\pi + \frac{1 - \beta}{\kappa} \phi_y > 1`$ closely. The grid is computed cell by cell from the QZ count; the analytical curve confirms the frontier is not an artefact of sweep resolution. Explosive cells do not appear in this calibration because the wedge is the only predetermined state and its decaying eigenvalue is always stable.
 
-The sanity-check pass on the fixed-labor RBC linearisation from `dsge/rbc/` returns Blanchard-Kahn satisfied with two stable eigenvalues for two predetermined states. The recovered capital decision rule reads $`\hat k_t = 0.9621 \hat k_{t-1} + 0.0801 \hat a_t`$. The hand-derived undetermined-coefficients solve in `dsge/rbc/run.py` gives the same coefficients to absolute differences of $`8.9 \times 10^{-16}`$ and $`1.5 \times 10^{-15}`$, written to `tables/rbc-sanity-check.csv`. The same QZ partition runs on a small DSGE and selects the unique non-explosive path.
+The sanity-check on the fixed-labor RBC linearisation from `dsge/rbc/` returns Blanchard-Kahn satisfied with two stable eigenvalues for two predetermined states. The recovered capital decision rule is $`\hat k_t = 0.9621 \hat k_{t-1} + 0.0801 \hat a_t`$. The hand-derived undetermined-coefficients solve in `dsge/rbc/run.py` matches to absolute differences $`8.9 \times 10^{-16}`$ and $`1.5 \times 10^{-15}`$, written to `tables/rbc-sanity-check.csv`. The same QZ partition selects the unique non-explosive path on the DSGE.
 
-The full $`\phi_\pi`$ sweep is written to `tables/eigenvalue-sweep.csv` so a reader can replicate the eigenvalue trajectories without rerunning the script. Each row pairs a $`\phi_\pi`$ value with its three generalised eigenvalues, the BK classification, and the library message string.
+The full $`\phi_\pi`$ sweep is written to `tables/eigenvalue-sweep.csv` so a reader can replicate the trajectories without rerunning the script. Each row pairs a $`\phi_\pi`$ value with its three generalised eigenvalues, the BK classification, and the library message.
 
 ## Takeaway
 
-The Blanchard-Kahn rule turns the existence and uniqueness question for a linear rational-expectations model into an eigenvalue count. The boundary is a clean line in parameter space. Crossing the boundary flips the equilibrium between unique, indeterminate, and non-existent without warning from the steady state. Estimation of any DSGE has to live inside the determinate region of the parameter space, and a sibling tutorial walks through a Hamiltonian Monte Carlo posterior that restricts to that region.
+The Blanchard-Kahn rule turns existence and uniqueness for a linear rational-expectations model into an eigenvalue count. The boundary is a clean line in parameter space. Crossing it flips equilibrium between unique, indeterminate, and non-existent without warning from the steady state. Estimation of any DSGE has to live inside the determinate region. A sibling tutorial walks through a Hamiltonian Monte Carlo posterior that restricts to it.
 
 ## References
 
