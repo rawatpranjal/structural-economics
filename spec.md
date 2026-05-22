@@ -1,6 +1,6 @@
 # spec.md — Preliminary-Readings Curriculum (P0 + P1 + P2)
 
-**Date:** 2026-05-21. **Scope:** all 14 prelims (P0 5 + P1 5 + P2 4). **Status:** spec; nothing authored yet.
+**Date:** 2026-05-21 (spec); 2026-05-22 (P0 + #6 shipped). **Scope:** all 14 prelims (P0 5 + P1 5 + P2 4). **Status:** P0 (#1-5) + P1 #6 complete on `main`; P1 #7-10 and P2 #11-14 pending.
 
 This spec defines fourteen new tutorials that fill the gaps in the
 catalog's "on-ramp" to dense tutorials. Companion documents:
@@ -1424,30 +1424,26 @@ tutorial cut totals are listed in each prelim entry above.
 P0 first, then P1 interleaved so each consumer tutorial gets
 both its P0 and P1 prelim before any final QC pass:
 
-1. #1 upwind-finite-differences — foundation for #2.
-2. #2 KFE — depends on #1's notation.
-3. #4 Blanchard-Kahn — independent.
-4. #3 GMM foundations — independent.
+1. [DONE 2026-05-22] #1 upwind-finite-differences — foundation for #2.
+2. [DONE 2026-05-22] #2 KFE — depends on #1's notation.
+3. [DONE 2026-05-22] #4 Blanchard-Kahn — independent.
+4. [DONE 2026-05-22] #3 GMM foundations — independent.
 5. #7 reduced-form-VAR — independent; lands before P0 #5
-   touches minnesota-svar so both cuts can be sequenced.
+   touches minnesota-svar so both cuts can be sequenced. (Sequencing
+   note is now historical; P0 #5 already landed.)
 6. #8 Bertrand ownership matrix — independent.
 7. #9 simulated-likelihood — independent.
 8. #10 NN regression — independent.
-9. #5 Bayesian foundations — biggest single dense-tutorial
-   refactor; do near the end after the smaller MH cut in #6
-   has landed.
-10. #6 MCMC diagnostics — last, slot it into the MH refactor
-    PR so MH's diagnostic block is replaced once, not twice.
-
-Alternative: pair #5 and #6 in one PR ("MH refactor: Bayes
-primer out, diagnostics primer out, MH stays as the algorithm
-tutorial") to avoid touching MH's `## Equations` twice.
+9. [DONE 2026-05-22] #5 Bayesian foundations — paired with #6 in one
+    PR per the alternative below.
+10. [DONE 2026-05-22] #6 MCMC diagnostics — paired with #5 (the MH
+    refactor: Bayes primer out, diagnostics primer out, MH stays as
+    the algorithm tutorial).
 
 P2 prelims (singletons, mostly independent):
 
-11. #13 gaussian-processes — author before #5/#6 close; the BO
-    tutorial gets the biggest single P2 refactor (~50 lines)
-    and benefits from landing while BO is open.
+11. #13 gaussian-processes — single target (bayesian-optimization,
+    ~50-line refactor).
 12. #12 quadrature — pair the smolyak cut with this PR.
 13. #11 weitzman-search-rule — single dense target; trivial.
 14. #14 regret-matching — single dense target; trivial.
