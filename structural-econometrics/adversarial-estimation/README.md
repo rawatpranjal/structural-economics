@@ -12,6 +12,7 @@ The illustration uses the smallest model that supports the comparison. The real 
 
 ## Preliminary readings
 
+- [`structural-econometrics/gmm-foundations/`](../../structural-econometrics/gmm-foundations/)
 - [`computational-methods/simulation-based-estimation/`](../../computational-methods/simulation-based-estimation/)
 
 ## Equations

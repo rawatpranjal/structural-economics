@@ -54,7 +54,7 @@ Write $`m_{sim}(\theta) = m(S(\theta, \varepsilon_{sim}))`$ for the same moments
 
 with the diagonal weight $`W_m = \mathrm{diag}(1 / \max(|m_{obs}|, 0.1))^{2}`$.
 The criterion is a weighted sum of squared moment gaps, so $`W_m`$ is what makes a 1% gap in the acceptance rate comparable to a 0.01 gap in the offer mean.
-Scaling each gap by the magnitude of the observed moment is the simplest such normalization; in production code one would replace it by the inverse of the moment covariance estimated by bootstrap.
+In production code one would replace it by the inverse of the moment covariance; the optimal-weighting derivation is in [`structural-econometrics/gmm-foundations/`](../../structural-econometrics/gmm-foundations/).
 
 ### Method 2: Indirect Inference
 

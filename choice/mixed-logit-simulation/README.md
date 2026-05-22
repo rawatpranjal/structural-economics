@@ -11,6 +11,7 @@ The key economic issue is substitution. A plain logit can match average shares a
 ## Preliminary readings
 
 - [`choice/logit-discrete-choice/`](../../choice/logit-discrete-choice/)
+- [`structural-econometrics/gmm-foundations/`](../../structural-econometrics/gmm-foundations/)
 
 ## Equations
 
