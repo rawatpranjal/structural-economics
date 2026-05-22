@@ -2,11 +2,11 @@
 
 ## Overview
 
-The Kolmogorov forward equation propagates a population density of households along the drift implied by their consumption policy. Its stationary form closes a Huggett or Aiyagari steady state by pinning down the long-run distribution of assets and income.
+The Kolmogorov forward equation is the partial differential equation that tracks how a density of agents evolves over time, as each agent's state drifts according to its own dynamics. Its stationary form is the density that no longer changes. That density is what closes a Huggett or Aiyagari steady state. It is the long-run cross section of assets and income.
 
-Mass conservation drives the derivation. Households neither appear nor vanish, so density flows in and out of any asset interval balance, plus net Poisson income switching. Discretising that bookkeeping on the same grid as the HJB yields a sparse linear system whose stationary solution is the cross section.
+Mass conservation drives the derivation. No household appears or vanishes, so the integral of the density over the full state space stays at one. The density at any point changes only because agents arrive at that point or depart from it. Discretising this bookkeeping on the same grid as the HJB yields a sparse linear system. Its stationary solution is the cross section.
 
-The upwind generator built in [`optimal-control/upwind-finite-differences/`](../../optimal-control/upwind-finite-differences/) acts on values from the right. Its transpose acts on densities from the left. One matrix discretises the stationary equilibrium of the dense Huggett tutorial in [`heterogeneous-agents/huggett-incomplete-markets/`](../../heterogeneous-agents/huggett-incomplete-markets/) and the continuous-time Aiyagari tutorial in [`heterogeneous-agents/aiyagari-hact/`](../../heterogeneous-agents/aiyagari-hact/). The discrete-time analog is the Young (2010) lottery iteration in the steady-state block of [`heterogeneous-agents/sequence-space-jacobian-hank/`](../../heterogeneous-agents/sequence-space-jacobian-hank/).
+The same sparse matrix serves both halves of the equilibrium. The upwind generator built in [`optimal-control/upwind-finite-differences/`](../../optimal-control/upwind-finite-differences/) discretises the HJB step that solves for the household value function. Its transpose discretises the KFE step that solves for the household density. One matrix, two equations, two solves. This single object discretises the stationary equilibrium of the dense Huggett tutorial in [`heterogeneous-agents/huggett-incomplete-markets/`](../../heterogeneous-agents/huggett-incomplete-markets/) and the continuous-time Aiyagari tutorial in [`heterogeneous-agents/aiyagari-hact/`](../../heterogeneous-agents/aiyagari-hact/). The discrete-time analog is the Young (2010) lottery iteration in the steady-state block of [`heterogeneous-agents/sequence-space-jacobian-hank/`](../../heterogeneous-agents/sequence-space-jacobian-hank/).
 
 ## Preliminary readings
 
@@ -14,7 +14,7 @@ The upwind generator built in [`optimal-control/upwind-finite-differences/`](../
 
 ## Equations
 
-Let $`x`$ be a one-dimensional state on a bounded interval $`[\underline x, \overline x]`$. Let $`g(x, t)`$ be the density of agents at state $`x`$ at time $`t`$. Each agent drifts at rate $`s(x)`$ under diffusion of constant volatility $`\sigma \geq 0`$. Differentiating the integral mass balance gives the continuity equation,
+We want the law of motion for the cross-sectional density. Let $`t`$ index time. Let $`x`$ be a one-dimensional state on a bounded interval $`[\underline x, \overline x]`$. Let $`g(x, t)`$ be the density of agents at state $`x`$ at time $`t`$. Each agent's state evolves with drift $`s(x)`$ and diffusion of volatility $`\sigma \geq 0`$. Mass conservation says the total number of agents in any sub-interval changes only by inflow at one boundary and outflow at the other. Taking the derivative of that balance with respect to time and length gives the continuity equation,
 
 ```math
 \frac{\partial g}{\partial t}(x, t) =
@@ -22,9 +22,9 @@ Let $`x`$ be a one-dimensional state on a bounded interval $`[\underline x, \ove
 + \frac{\sigma^2}{2}  \frac{\partial^2 g}{\partial x^2}(x, t) .
 ```
 
-The first term is the divergence of the deterministic flux $`s(x)  g(x, t)`$. The second is the diffusion correction from Wiener noise; it vanishes for a purely convective process. In steady state $`\partial_t g = 0`$, so the density satisfies $`-\partial_x[s g] + (\sigma^2/2)  \partial_{xx} g = 0`$ with normalisation $`\int g  dx = 1`$.
+The first term reads as follows. The product $`s(x)  g(x, t)`$ is the flux: the rate at which agents cross point $`x`$. Its spatial derivative measures whether more agents arrive at $`x`$ than leave it. The second term is the diffusion correction: it appears whenever each agent's state has a noise component, and it vanishes when $`\sigma = 0`$. In steady state the density no longer changes, so $`\partial_t g = 0`$. The stationary density then satisfies $`-\partial_x[s g] + (\sigma^2/2)  \partial_{xx} g = 0`$ with normalisation $`\int g  dx = 1`$.
 
-Discretise $`x`$ on a uniform grid $`x_1 < x_2 < \cdots < x_n`$ with spacing $`\Delta x`$. Let $`g_i = g(x_i)`$. The upwind operator that discretises the HJB also carries the drift block of the forward equation. Let $`A`$ denote that operator, built in [`optimal-control/upwind-finite-differences/`](../../optimal-control/upwind-finite-differences/). Its rows sum to zero with non-negative off-diagonals, so $`A`$ is a continuous-time Markov generator on the grid. Discrete mass conservation becomes a single linear system,
+We need a finite version of the stationary equation that a computer can solve. Discretise $`x`$ on a uniform grid $`x_1 < x_2 < \cdots < x_n`$ with spacing $`\Delta x`$. Let $`g_i = g(x_i)`$ be the density value at node $`i`$. The upwind generator built for the HJB step is the same matrix that drives the forward equation here. Call that matrix $`A`$. It is defined in [`optimal-control/upwind-finite-differences/`](../../optimal-control/upwind-finite-differences/). Its rows sum to zero, and its off-diagonal entries are non-negative. A matrix with those two properties is called a continuous-time Markov generator: multiplied by a probability vector, it returns the time derivative of that vector. Discrete mass conservation becomes a single linear system,
 
 ```math
 A^{\top}  g = 0,
@@ -32,9 +32,9 @@ A^{\top}  g = 0,
 \sum_i g_i  \Delta x = 1 .
 ```
 
-The system is singular. $`A`$ has zero row sums, so $`A^{\top}`$ carries the constant vector in its left null space and $`g`$ in its right null space. To pin the scale, replace one row of $`A^{\top}`$ with the normalisation constraint, solve, then rescale to integrate to one. The dense Huggett and Aiyagari tutorials invoke this stationary KFE solve.
+This system is singular by construction. Zero row sums of $`A`$ mean $`A^{\top}`$ has the constant vector in its left null space and the stationary density $`g`$ in its right null space. Any scalar multiple of $`g`$ also solves $`A^{\top} g = 0`$. To pick out the one with unit mass, replace one row of $`A^{\top}`$ with the normalisation constraint. Solve the modified system. Rescale the answer to integrate to one. The dense Huggett and Aiyagari tutorials invoke this stationary KFE solve.
 
-For a multi-component state, the joint generator is built blockwise. Take a two-state Poisson income chain $`j \in \lbrace L, H \rbrace`$. Let $`\lambda_{LH}`$ be the jump rate from $`L`$ to $`H`$, and $`\lambda_{HL}`$ the rate from $`H`$ to $`L`$. The income generator is
+The same idea extends to a state with more than one component. The asset axis already has a generator $`A`$. We add an income axis with its own generator, and assemble a joint generator from the two pieces. Take a two-state Poisson income chain $`j \in \lbrace L, H \rbrace`$. Let $`\lambda_{LH}`$ be the jump rate from low income to high, and $`\lambda_{HL}`$ the rate from high to low. The income generator is
 
 ```math
 Q =
@@ -44,14 +44,14 @@ Q =
 \end{pmatrix} .
 ```
 
-Off-diagonals are Poisson jump rates. Each row sums to zero, so $`Q`$ is a continuous-time Markov generator on the income axis. The joint generator on the product state space is
+Off-diagonals are Poisson jump rates. Each row sums to zero, so $`Q`$ is a Markov generator in the same sense as $`A`$: it gives the time derivative of any income probability vector. To combine the asset and income generators on the joint state space, we need a block-matrix construction. The result is
 
 ```math
 A_{\mathrm{joint}}
 = \mathrm{diag}(A_{L}, A_{H}) + Q \otimes I_n ,
 ```
 
-where $`A_j`$ is the asset-axis generator for income state $`j`$, and $`I_n`$ is the $`n \times n`$ identity. The first term advances assets within each income state. The second shuffles mass across income states at every asset level. The stationary joint density solves $`A_{\mathrm{joint}}^{\top} g = 0`$ by the same single-row-replacement trick. [`heterogeneous-agents/aiyagari-hact/`](../../heterogeneous-agents/aiyagari-hact/) generalises this with an $`N`$-state Rouwenhorst-derived chain.
+where $`A_j`$ is the asset-axis generator for income state $`j`$, and $`I_n`$ is the $`n \times n`$ identity. Reading the two terms: the block-diagonal piece $`\mathrm{diag}(A_L, A_H)`$ advances assets within each income state, leaving income alone. The Kronecker product $`Q \otimes I_n`$ is a block matrix that places each entry of $`Q`$ as a scaled $`n \times n`$ block; it shuffles agents across income states at every asset level, leaving the asset position alone. The stationary joint density solves $`A_{\mathrm{joint}}^{\top} g = 0`$ by the same single-row-replacement trick used in the 1D case. [`heterogeneous-agents/aiyagari-hact/`](../../heterogeneous-agents/aiyagari-hact/) generalises this construction to an $`N`$-state Rouwenhorst-derived chain.
 
 ## Model Setup
 
@@ -81,7 +81,7 @@ The symbol $`A`$ collides with the lead matrix of rational-expectations systems 
 
 ### Stationary solve by row replacement
 
-The discretised stationary KFE is $`A^{\top} g = 0`$ with $`\sum_i g_i  \Delta x = 1`$. Zero row sums of $`A`$ give $`A^{\top}`$ a non-trivial right null space spanned by the stationary density. Fold the normalisation into the system by replacing one row of $`A^{\top}`$ with the constraint. Pick a row index $`i^{\ast}`$. Set row $`i^{\ast}`$ of $`A^{\top}`$ to the unit row $`e_{i^{\ast}}^{\top}`$. Set the right-hand side to $`e_{i^{\ast}}`$ with zeros elsewhere. Solve the non-singular sparse system by LU. Rescale by $`(\sum_i g_i  \Delta x)^{-1}`$ to integrate to one. The helper `lib.finite_differences.stationary_distribution` packages this recipe.
+The discretised stationary KFE is $`A^{\top} g = 0`$ with $`\sum_i g_i  \Delta x = 1`$. Zero row sums of $`A`$ give $`A^{\top}`$ a non-trivial right null space spanned by the stationary density. Any scalar multiple of $`g`$ solves the homogeneous equation, so the system needs one extra equation to pick out the unit-mass solution. Fold the normalisation into the system by replacing one row of $`A^{\top}`$ with the constraint. Pick a row index $`i^{\ast}`$. Set row $`i^{\ast}`$ of $`A^{\top}`$ to the unit row $`e_{i^{\ast}}^{\top}`$. Set the right-hand side to $`e_{i^{\ast}}`$ with zeros elsewhere. Solve the non-singular sparse system by LU. Rescale by $`(\sum_i g_i  \Delta x)^{-1}`$ to integrate to one. The helper `lib.finite_differences.stationary_distribution` packages this recipe.
 
 ```text
 Algorithm: stationary distribution by row replacement
@@ -99,11 +99,11 @@ return g
 
 ### Operator duality across the HJB and the KFE
 
-One sparse matrix carries information in two directions. The HJB step inverts $`(\rho I - A)`$ to step the value function backward in pseudo-time. The KFE step inverts a modified $`A^{\top}`$ for the stationary density. Results visualises this side by side. The spy patterns of $`A`$ and $`A^{\top}`$ share the same nonzero structure. Entry $`(i, j)`$ of $`A`$ becomes entry $`(j, i)`$ of $`A^{\top}`$. Achdou et al. (2022) emphasise this duality, which runs through the dense Huggett and Aiyagari-HACT tutorials.
+One sparse matrix serves two equations. The HJB step inverts $`(\rho I - A)`$ to step the value function backward in pseudo-time. The KFE step inverts a modified $`A^{\top}`$ to recover the stationary density. Results visualises both sides on the same grid. The spy patterns of $`A`$ and $`A^{\top}`$ share the same nonzero locations. Entry $`(i, j)`$ of $`A`$ moves to entry $`(j, i)`$ of $`A^{\top}`$. Achdou et al. (2022) emphasise this duality. It runs through the dense Huggett and Aiyagari-HACT tutorials.
 
 ### Multi-state generalisation via Kronecker blocks
 
-The 1D solve generalises by block assembly. Take an income chain with generator $`Q \in \mathbb{R}^{N \times N}`$ and asset-axis generators $`A_1, \dots, A_N`$ at each income state. The joint generator is $`\mathrm{diag}(A_1, \dots, A_N) + Q \otimes I_n`$. The block-diagonal piece advances assets within each income state. The Kronecker piece shuffles income at every asset level. Single-row replacement pins the joint stationary scale.
+The 1D solve extends to multi-component states by block assembly. Take an income chain with generator $`Q \in \mathbb{R}^{N \times N}`$ and asset-axis generators $`A_1, \dots, A_N`$, one per income state. The joint generator is $`\mathrm{diag}(A_1, \dots, A_N) + Q \otimes I_n`$. The block-diagonal piece advances assets inside each income state. The Kronecker piece moves agents between income states at every asset level. Single-row replacement on $`A_{\mathrm{joint}}^{\top}`$ pins the joint stationary scale.
 
 ## Results
 
