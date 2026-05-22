@@ -11,6 +11,7 @@ Smolyak sparse grids keep only the tensor blocks that carry new interaction info
 ## Preliminary readings
 
 - [`computational-methods/projection-methods/`](../../computational-methods/projection-methods/)
+- [`numerical-methods/quadrature/`](../../numerical-methods/quadrature/)
 
 ## Equations
 
@@ -202,7 +203,7 @@ Time iteration freezes $`\theta^{\mathrm{old}}`$ on the right-hand side of the E
 E_n(\theta^{\mathrm{old}}) = \sum_{q} w_q \frac{e^{z'_q}}{c'_q(\theta^{\mathrm{old}})}
 ```
 
-is a known number once $`\theta^{\mathrm{old}}`$ is fixed, where $`(z'_q, w_q)`$ are Gauss-Hermite nodes and weights for the productivity innovation and $`c'_q(\theta^{\mathrm{old}})`$ is consumption next period evaluated through the old policy. The collapsed Euler condition then becomes
+is a known number once $`\theta^{\mathrm{old}}`$ is fixed, where $`(z'_q, w_q)`$ are the Gauss-Hermite nodes and weights derived in [`numerical-methods/quadrature/`](../../numerical-methods/quadrature/), evaluated at the AR(1) productivity innovation, and $`c'_q(\theta^{\mathrm{old}})`$ is consumption next period evaluated through the old policy. The collapsed Euler condition then becomes
 
 ```math
 (Y_n - S_n) \cdot S_n^{\alpha - 1} = \frac{1}{\beta \alpha Z^{1-\alpha} E_n},

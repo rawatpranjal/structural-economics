@@ -8,6 +8,10 @@ The object is a persistent log income or productivity shock. We model it as a Ga
 
 A Bellman equation needs finite shock states. It also needs a transition matrix for next-period expectations. The tutorial compares Tauchen and Rouwenhorst by their variance and persistence errors.
 
+## Preliminary readings
+
+- [`numerical-methods/quadrature/`](../../numerical-methods/quadrature/)
+
 ## Equations
 
 A household with assets $`a`$ faces shock $`z_i`$. It chooses next assets $`a'`$.

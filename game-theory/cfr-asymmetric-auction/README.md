@@ -12,6 +12,7 @@ The tutorial implements vanilla CFR on the asymmetric game and gives it three di
 
 - [`game-theory/normal-form-games/`](../../game-theory/normal-form-games/)
 - [`game-theory/first-price-auctions/`](../../game-theory/first-price-auctions/)
+- [`game-theory/regret-matching/`](../../game-theory/regret-matching/)
 
 ## Equations
 
@@ -43,28 +44,7 @@ expected payoff by the chance reach probability $`P(v)`$:
 v_i^{\sigma}(I_v, b) = P(v) \cdot u_i(v, b; \sigma_{-i}).
 ```
 
-The instantaneous regret at iteration $`t`$ is the gap between the value of
-deviating to $`b`$ and the value of the current mixed strategy:
-
-```math
-r_i^{t}(I_v, b) = v_i^{\sigma^{t}}(I_v, b) - \sum_{b'} \sigma_i^{t}(b' \mid v) \cdot v_i^{\sigma^{t}}(I_v, b').
-```
-
-Cumulative regret accumulates these one-shot gaps:
-
-```math
-R_i^{T}(I_v, b) = \sum_{t = 1}^{T} r_i^{t}(I_v, b).
-```
-
-The next strategy is regret matching, which puts mass on each bid in proportion
-to its positive cumulative regret:
-
-```math
-\sigma_i^{T+1}(b \mid v) = \frac{\max(R_i^{T}(I_v, b), 0)}{\sum_{b'} \max(R_i^{T}(I_v, b'), 0)},
-```
-
-with a uniform fallback when every cumulative regret is non-positive. The output
-of the algorithm is the time-averaged strategy
+The Hart-Mas-Colell regret-matching primitive (instantaneous regret, cumulative regret, and the next-iteration strategy proportional to positive cumulative regret, with a uniform fallback when every cumulative regret is non-positive) is derived in [`game-theory/regret-matching/`](../../game-theory/regret-matching/) and applied here at each information set $`I_v`$ with action set the bid grid; the counterfactual value entering the instantaneous regret is $`v_i^{\sigma^{t}}(I_v, b)`$ defined above. The output of the algorithm is the time-averaged strategy
 
 ```math
 \bar{\sigma}_i^{T}(b \mid v) = \frac{1}{T} \sum_{t = 1}^{T} \sigma_i^{t}(b \mid v).

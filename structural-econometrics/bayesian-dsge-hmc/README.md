@@ -12,6 +12,7 @@ The Klein step uses the JAX port from `lib/perturbation_jax.py`. The underlying 
 
 - [`bayesian-methods/bayesian-foundations/`](../../bayesian-methods/bayesian-foundations/)
 - [`computational-methods/mcmc-diagnostics/`](../../computational-methods/mcmc-diagnostics/)
+- [`numerical-methods/quadrature/`](../../numerical-methods/quadrature/)
 
 ## Equations
 
