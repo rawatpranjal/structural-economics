@@ -13,6 +13,7 @@ The Minnesota prior is ridge-like shrinkage for dynamic systems. It puts prior m
 ## Preliminary readings
 
 - [`time-series/ar-processes/`](../../time-series/ar-processes/)
+- [`bayesian-methods/bayesian-foundations/`](../../bayesian-methods/bayesian-foundations/)
 
 ## Equations
 
@@ -33,23 +34,9 @@ y_i = X\beta_i + e_i,
 e_i \sim N(0,\sigma_i^2 I_T).
 ```
 
-Conditional on the residual scale $`\sigma_i^2`$, the Gaussian likelihood is
+The Gaussian-Gaussian conjugate regression update used here (posterior precision $`V_i^{-1}`$ as the sum of prior precision and data precision; posterior mean as the precision-weighted average of the prior mean and the ordinary-least-squares estimate) is derived in [`bayesian-methods/bayesian-foundations/`](../../bayesian-methods/bayesian-foundations/). The Minnesota-specific content is the structured choice of prior mean $`b_i^0`$ and prior covariance $`V_i^0`$ below.
 
-```math
-p(y_i \mid \beta_i,\sigma_i^2)
-\propto
-\exp\left[-\frac{1}{2\sigma_i^2}(y_i-X\beta_i)'(y_i-X\beta_i)
-\right].
-```
-
-The Minnesota prior is Gaussian:
-
-```math
-\beta_i \sim N(b_i^0,V_i^0).
-```
-
-For variable $`j`$ and lag $`\ell`$, the prior mean is persistent only for the own
-first lag:
+The Minnesota prior is Gaussian, $`\beta_i \sim N(b_i^0, V_i^0)`$. For variable $`j`$ and lag $`\ell`$, the prior mean is persistent only for the own first lag:
 
 ```math
 b_{i,j,\ell}^0 =

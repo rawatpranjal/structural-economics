@@ -14,6 +14,7 @@ The objective here is the same two-segment monopoly profit used in [`numerical-m
 
 - [`numerical-methods/scalar-optimization-monopoly-pricing/`](../../numerical-methods/scalar-optimization-monopoly-pricing/)
 - [`numerical-methods/global-search-multistart/`](../../numerical-methods/global-search-multistart/)
+- [`bayesian-methods/bayesian-foundations/`](../../bayesian-methods/bayesian-foundations/)
 
 ## Equations
 
@@ -38,7 +39,7 @@ On the calibration used here, $`p_L^{\ast} \approx 1.603`$ with $`\pi \approx 4.
 
 Bayesian optimization treats $`\pi`$ as an unknown function on a bracket $`\mathcal{X} = [p_{\mathrm{lo}}, p_{\mathrm{hi}}]`$.
 It places a probabilistic prior on $`\pi`$, updates that prior to a posterior conditional on the evaluations collected so far, and selects the next evaluation by maximizing an acquisition function on the posterior.
-This is the same Bayesian update that produces a Beta posterior from a Beta-Binomial conjugate model in [`computational-methods/metropolis-hastings/`](../../computational-methods/metropolis-hastings/); here the prior is over an unknown function rather than a scalar probability, and conjugacy is replaced by the closed form for conditioning a joint Gaussian.
+This is the same Bayesian update that produces a Beta posterior from a Beta-Binomial conjugate model in [`bayesian-methods/bayesian-foundations/`](../../bayesian-methods/bayesian-foundations/); here the prior is over an unknown function rather than a scalar probability, and conjugacy is replaced by the closed form for conditioning a joint Gaussian.
 
 ### Method 1: Gaussian-process surrogate
 
