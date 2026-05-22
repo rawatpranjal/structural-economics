@@ -8,6 +8,10 @@ For one item and IID uniform values, Myerson's reserve-price auction is the exac
 
 This tutorial keeps the environment small enough to run locally. The computation trains a two-bidder neural auction and audits it against the Myerson benchmark.
 
+## Preliminary readings
+
+- [`numerical-methods/neural-networks-regression/`](../../numerical-methods/neural-networks-regression/)
+
 ## Equations
 
 There are two risk-neutral bidders and one item. Bidder $`i`$ has value
@@ -130,7 +134,7 @@ The paper studies flexible multi-bidder, multi-item settings. This tutorial uses
 
 ## Solution Method
 
-The neural mechanism is a differentiable direct mechanism. The allocation head chooses among bidder 1, bidder 2, and no sale. The payment head chooses how much of each allocated report to charge. This keeps the object close to auction theory: the network is not predicting labels; it is choosing an allocation rule and a payment rule.
+The neural mechanism is a differentiable direct mechanism. The allocation head chooses among bidder 1, bidder 2, and no sale. The payment head chooses how much of each allocated report to charge. This keeps the object close to auction theory: the network is not predicting labels; it is choosing an allocation rule and a payment rule. The forward pass, the autodiff gradient, and the Adam optimiser are the generic neural primitives derived in [`numerical-methods/neural-networks-regression/`](../../numerical-methods/neural-networks-regression/).
 
 The hard part is incentive compatibility. The algorithm approximates each bidder's best lie by a grid search. That makes regret differentiable through the neural mechanism except at grid argmax switches, which is enough for this small tutorial.
 
