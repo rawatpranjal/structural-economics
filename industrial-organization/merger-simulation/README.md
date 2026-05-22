@@ -12,6 +12,11 @@ The third question is harder. Different demand systems can match the same observ
 
 The same logic threads the three layers. Two competitors come under one owner. The owner now internalizes diversion between them. Whether prices rise, and by how much, depends on substitution to rivals, the outside option, and any cost savings the merger brings.
 
+## Preliminary readings
+
+- [`choice/logit-discrete-choice/`](../../choice/logit-discrete-choice/)
+- [`industrial-organization/logit-supply-side/`](../../industrial-organization/logit-supply-side/)
+
 ## Equations
 
 The three layers stack on the same observed market.

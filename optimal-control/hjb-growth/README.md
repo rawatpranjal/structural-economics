@@ -8,6 +8,11 @@ The object is the consumption policy $`c(k)`$ and the capital drift $`\dot{k}`$.
 
 The HJB gives the value of starting from each capital stock. Its derivative is the shadow value that pins down consumption. A finite-difference scheme is needed because the nonlinear HJB has no closed-form policy on the grid. Upwinding chooses the derivative side using the policy-implied drift.
 
+## Preliminary readings
+
+- [`dynamic-programming/optimal-growth/`](../../dynamic-programming/optimal-growth/)
+- [`optimal-control/phase-diagrams/`](../../optimal-control/phase-diagrams/)
+
 ## Equations
 
 The planner solves

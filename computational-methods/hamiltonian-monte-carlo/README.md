@@ -10,6 +10,10 @@ The proposal moves far across the posterior in one step. It follows the curvatur
 
 HMC is the natural next step after the random-walk Metropolis-Hastings tutorial in [`computational-methods/metropolis-hastings/`](../../computational-methods/metropolis-hastings/). It is also the right tool when a structural likelihood is differentiable and expensive: each gradient evaluation pays for itself many times over by amortizing the cost across the trajectory.
 
+## Preliminary readings
+
+- [`computational-methods/metropolis-hastings/`](../../computational-methods/metropolis-hastings/)
+
 ## Equations
 
 Let $`\theta \in \mathbb{R}^d`$ denote the parameter we wish to sample and let $`\pi(\theta \mid D)`$ denote the posterior density given data $`D`$, known only up to a normalizing constant.

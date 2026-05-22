@@ -8,6 +8,10 @@ The mixture profit function has two local maxima. A low-price peak serves both s
 
 The lesson is reporting discipline. An optimizer that converges has answered a local question, not a global one. Multi-start, random search, and global search are diagnostics that bound the gap between local and global optimality. The same habit transfers to structural likelihoods, simulated moments, mixture models, and dynamic games.
 
+## Preliminary readings
+
+- [`numerical-methods/scalar-optimization-monopoly-pricing/`](../../numerical-methods/scalar-optimization-monopoly-pricing/)
+
 ## Equations
 
 A monopolist faces a population of consumers split between two segments.

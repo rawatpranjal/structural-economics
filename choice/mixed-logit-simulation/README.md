@@ -8,6 +8,10 @@ Plain logit compresses everyone into one representative taste vector. Mixed logi
 
 The key economic issue is substitution. A plain logit can match average shares and still say that all products are equally close substitutes after conditioning on their shares. Mixed logit keeps the logit formula for a simulated consumer with fixed tastes, then averages across consumers with different tastes.
 
+## Preliminary readings
+
+- [`choice/logit-discrete-choice/`](../../choice/logit-discrete-choice/)
+
 ## Equations
 
 Consumer $`i`$ chooses product $`j`$ with utility

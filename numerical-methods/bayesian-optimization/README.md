@@ -10,6 +10,11 @@ Bayesian optimization is the gradient-free member of a family. When the objectiv
 
 The objective here is the same two-segment monopoly profit used in [`numerical-methods/global-search-multistart/`](../../numerical-methods/global-search-multistart/). It is cheap to evaluate, which makes it a poor production target for Bayesian optimization. It is a good teaching target. The two local peaks are well separated, the global is known analytically, and the head-to-head budget is directly comparable to multi-start, random search, and simulated annealing on the same problem.
 
+## Preliminary readings
+
+- [`numerical-methods/scalar-optimization-monopoly-pricing/`](../../numerical-methods/scalar-optimization-monopoly-pricing/)
+- [`numerical-methods/global-search-multistart/`](../../numerical-methods/global-search-multistart/)
+
 ## Equations
 
 A monopolist faces a population of consumers split between two segments.

@@ -10,6 +10,11 @@ A plain grid search treats every current asset and every next asset as a nested 
 
 The staging is branch first, envelope second. On each branch, the household is solving a standard Euler-equation saving problem. The discrete retirement choice enters only after those branch values have been placed on the same asset grid.
 
+## Preliminary readings
+
+- [`dynamic-programming/consumption-savings/`](../../dynamic-programming/consumption-savings/)
+- [`heterogeneous-agents/endogenous-grid-points/`](../../heterogeneous-agents/endogenous-grid-points/)
+
 ## Equations
 
 At age $`t`$, the household enters with assets $`a_t`$ and retirement status

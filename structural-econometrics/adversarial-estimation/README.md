@@ -10,6 +10,10 @@ Two choices of classifier recover estimators the reader has seen. A logistic reg
 
 The illustration uses the smallest model that supports the comparison. The real data are $`n`$ i.i.d. draws from the standard logistic distribution. The single unknown is the location $`\theta_0`$, set to zero. Maximum likelihood is available in closed form as the efficiency benchmark. The headline exhibit puts SMM and the adversarial estimator side by side as the moment count grows from three to eleven.
 
+## Preliminary readings
+
+- [`computational-methods/simulation-based-estimation/`](../../computational-methods/simulation-based-estimation/)
+
 ## Equations
 
 The setup has three objects.
