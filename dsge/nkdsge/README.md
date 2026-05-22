@@ -93,7 +93,7 @@ Outputs: paths for y_t, pi_t, i_t, and the shock state s_t
 5. Iterate s_t and plot y_t, pi_t, and i_t.
 ```
 
-Klein QZ solves the same linear system as a check. The coefficient solution and QZ solution differ by at most 1.4e-15. This confirms the stable rational-expectations equilibrium for this calibration.
+Klein QZ solves the same linear system as a check, with the coefficient solution and the QZ solution differing by at most 1.4e-15. The Blanchard-Kahn eigenvalue-counting rule that selects this unique non-explosive path is derived in [`dsge/blanchard-kahn-determinacy/`](../../dsge/blanchard-kahn-determinacy/).
 
 ## Results
 
@@ -119,7 +119,7 @@ The table reports impact signs and sizes. Output is in percent deviations. Infla
 
 The three-equation New Keynesian model shows how sticky prices make nominal policy matter. A policy wedge raises the real rate and contracts demand. A natural-rate shock expands demand and inflation, with the Taylor rule leaning back.
 
-Coefficient matching is enough because the model is log-linear. The Klein QZ check confirms the same stable equilibrium. Determinacy is economic here: inflation feedback selects one forward-looking path.
+Coefficient matching is enough because the model is log-linear. Inflation feedback selects one forward-looking path; weakening it would push the model into the indeterminate region.
 
 ## References
 

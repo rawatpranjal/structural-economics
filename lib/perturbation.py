@@ -77,9 +77,9 @@ def solve_klein(A: np.ndarray, B: np.ndarray, n_predetermined: int) -> KleinSolu
 
     bk_ok = n_stable == n_x
     if n_stable < n_x:
-        msg = f"indeterminacy: only {n_stable} stable eigenvalues for {n_x} predetermined vars"
+        msg = f"no bounded solution: only {n_stable} stable eigenvalues for {n_x} predetermined vars"
     elif n_stable > n_x:
-        msg = f"no solution: {n_stable} stable eigenvalues exceed {n_x} predetermined vars"
+        msg = f"indeterminacy: {n_stable} stable eigenvalues exceed {n_x} predetermined vars"
     else:
         msg = "Blanchard-Kahn satisfied"
 
