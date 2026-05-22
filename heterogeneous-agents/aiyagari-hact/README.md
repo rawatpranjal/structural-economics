@@ -21,6 +21,7 @@ For readers who want the discrete-time formulation as a benchmark, see the Aiyag
 
 - [`dynamic-programming/aiyagari/`](../../dynamic-programming/aiyagari/)
 - [`heterogeneous-agents/huggett-incomplete-markets/`](../../heterogeneous-agents/huggett-incomplete-markets/)
+- [`heterogeneous-agents/kolmogorov-forward-equation/`](../../heterogeneous-agents/kolmogorov-forward-equation/)
 
 ## Equations
 
@@ -67,17 +68,7 @@ The household HJB therefore depends parametrically on the price $`r`$ and the im
 
 ### Stationary KFE and closure
 
-Under the optimal rule $`c_j(a)`$ and its drift $`s_j(a)`$, the cross-sectional density $`g_j(a)`$ of households over wealth and income solves a Kolmogorov-forward equation:
-
-```math
-\frac{\partial g_j}{\partial t}(a, t)
-= -\frac{\partial}{\partial a}\big[s_j(a)  g_j(a, t)\big] +
-\sum_{k} Q_{kj}  g_k(a, t) .
-```
-
-The first term is the divergence of the deterministic flux $`s_j g_j`$, and the second term is the net inflow from income switching.
-The stationary density solves the time-invariant version with the normalisation $`\int (\sum_j g_j)  da = 1`$, and the discretised form is the linear system $`\mathbf{A}^{\top} g = 0`$ where $`\mathbf{A}`$ is the same upwind generator that the HJB assembles.
-The two equations are therefore dual under one transposition: the same matrix that propagates values backward propagates densities forward, and the same numerical effort discretises both.
+The cross-sectional density $`g_j(a)`$ satisfies the Kolmogorov forward equation with normalisation $`\int (\sum_j g_j)  da = 1`$, and in discretised form this is the singular linear system $`\mathbf{A}^{\top} g = 0`$ where $`\mathbf{A}`$ is the joint upwind generator on the asset axis plus the income generator $`Q`$. The derivation and the single-row-replacement solve are developed in [`heterogeneous-agents/kolmogorov-forward-equation/`](../../heterogeneous-agents/kolmogorov-forward-equation/).
 
 The mean field that closes the system is the interest rate $`r`$.
 Each household reacts to $`r`$ as exogenous through the HJB.
@@ -159,13 +150,7 @@ The HJB is then advanced by an implicit pseudo-time step,
 which is unconditionally stable because the left-hand matrix is strictly diagonally dominant with positive diagonal.
 A large step size $`\Delta = 10^{3}`$ pushes the update into a Newton-step regime on the fixed-point equation $`\rho V - u(c) - \mathbf{A} V = 0`$ with the policy frozen, and the inner loop converges in a few dozen iterations.
 
-### KFE by transposing the same generator
-
-When the HJB inner loop converges, the same generator $`\mathbf{A}`$ at the optimal policy is also the operator that propagates the density forward in time, $`\partial g / \partial t = \mathbf{A}^{\top} g`$.
-The stationary density therefore solves $`\mathbf{A}^{\top} g = 0`$ with the normalisation $`\int (\sum_j g_j)  da = 1`$.
-This system is singular because $`\mathbf{A}`$ has zero row sums; the null space of $`\mathbf{A}^{\top}`$ is one-dimensional and spanned by the stationary density.
-The code pins the scale by replacing one row with the normalisation constraint, solves the resulting non-singular system by sparse LU, and rescales the solution to integrate to one.
-The HJB and the KFE share the operator $`\mathbf{A}`$, so this step is essentially free given the HJB solve.
+The stationary density then solves $`\mathbf{A}^{\top} g = 0`$ by the single-row-replacement workflow developed in [`heterogeneous-agents/kolmogorov-forward-equation/`](../../heterogeneous-agents/kolmogorov-forward-equation/) (one row of $`\mathbf{A}^{\top}`$ becomes the normalisation constraint, the resulting non-singular sparse system is solved by LU, and the result is rescaled to integrate to one).
 
 ```text
 Algorithm: HACT mean-field-game fixed point

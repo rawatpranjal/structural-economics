@@ -17,6 +17,7 @@ Bisection updates $`r`$ until aggregate bond demand clears.
 ## Preliminary readings
 
 - [`optimal-control/upwind-finite-differences/`](../../optimal-control/upwind-finite-differences/)
+- [`heterogeneous-agents/kolmogorov-forward-equation/`](../../heterogeneous-agents/kolmogorov-forward-equation/)
 - [`dynamic-programming/consumption-savings/`](../../dynamic-programming/consumption-savings/)
 - [`dynamic-programming/aiyagari/`](../../dynamic-programming/aiyagari/)
 
@@ -102,38 +103,7 @@ The borrowing limit $`a \geq \underline a`$ is a state constraint, not a budget 
 
 ### The Kolmogorov forward equation
 
-Once the household policy is known, the cross-section of households evolves
-as a deterministic transport along the drift, plus stochastic switching
-between income states. Let $`g_i(a, t)`$ be the time-$`t`$ density of households
-in state $`i`$ at asset level $`a`$. Mass conservation requires the density to
-satisfy a continuity equation: the rate of change of mass in any region
-equals the inflow at the left boundary minus the outflow at the right
-boundary, plus the income-switching gain or loss. In differential form,
-
-```math
-\frac{\partial g_i}{\partial t}(a, t)
-= -\frac{\partial}{\partial a}\big[s_i(a)  g_i(a, t)\big] -
-\lambda_i g_i(a, t) +
-\lambda_j g_j(a, t) .
-```
-
-The first term is the divergence of the deterministic flux $`s_i g_i`$ along
-the asset axis. The second term removes mass from state $`i`$ at the leaving
-rate $`\lambda_i`$. The third term adds mass arriving from state $`j`$ at rate
-$`\lambda_j`$. The stationary density satisfies
-
-```math
-0 = -\frac{\partial}{\partial a}\big[s_i(a)  g_i(a)\big] -
-\lambda_i g_i(a) + \lambda_j g_j(a),
-\qquad \int_{\underline a}^{\bar a} \big[g_L(a) + g_H(a)\big]  da = 1 .
-```
-
-Discretised on the same asset grid as the HJB, this becomes
-$`\mathbf{A}^{\top} g = 0`$, where $`\mathbf{A}`$ is the upwind generator
-used to solve the HJB and $`g`$ is the joint density across grid points and
-income states. The HJB and KFE are dual under one transposition: the same
-matrix encodes both the operator that propagates values backward and the
-operator that propagates densities forward.
+The Kolmogorov forward equation for the stationary cross-sectional density and the operator-duality $`\mathbf{A}`$ vs $`\mathbf{A}^{\top}`$ are derived in [`heterogeneous-agents/kolmogorov-forward-equation/`](../../heterogeneous-agents/kolmogorov-forward-equation/). The block-tridiagonal asset generator with Kronecker income switching used below is the two-state instance of the construction developed there.
 
 ### Equilibrium return
 
@@ -231,21 +201,7 @@ that an explicit value iteration would need.
 
 ### KFE by transposing the same generator
 
-When the HJB inner loop converges, the upwind generator $`\mathbf{A}^{\ast}`$ at
-the equilibrium policy is exactly the operator whose transpose pushes the
-density forward in time:
-
-```math
-\frac{\partial g}{\partial t} = \mathbf{A}^{\top}  g .
-```
-
-The stationary density solves $`\mathbf{A}^{\top} g = 0`$, a singular system
-because $`\mathbf{A}`$ has zero row sums (so $`\mathbf{A}^{\top}`$ has a zero
-right-singular vector). The code pins down the scale by replacing one row
-with a normalisation constraint, solving the resulting non-singular system
-by sparse LU, and rescaling so that $`\int (g_L + g_H)  da = 1`$. The same
-matrix that solved the HJB therefore solves the KFE; this **operator
-duality** is the elegance of the continuous-time framework.
+The stationary density solves $`\mathbf{A}^{\top} g = 0`$ with normalisation $`\int (g_L + g_H)  da = 1`$. The single-row-replacement solve that pins the scale of the singular system is the workflow developed in [`heterogeneous-agents/kolmogorov-forward-equation/`](../../heterogeneous-agents/kolmogorov-forward-equation/) and reused here without re-derivation.
 
 ### Outer bisection on $`r`$
 
