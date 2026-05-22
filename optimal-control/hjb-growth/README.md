@@ -10,6 +10,7 @@ The HJB gives the value of starting from each capital stock. Its derivative is t
 
 ## Preliminary readings
 
+- [`optimal-control/upwind-finite-differences/`](../../optimal-control/upwind-finite-differences/)
 - [`dynamic-programming/optimal-growth/`](../../dynamic-programming/optimal-growth/)
 - [`optimal-control/phase-diagrams/`](../../optimal-control/phase-diagrams/)
 
@@ -103,49 +104,7 @@ correct side at each grid point.
 
 ### Upwind finite-difference discretisation
 
-Place a grid $`k_1 < k_2 < \cdots < k_N`$ with uniform spacing $`\Delta k`$. Two
-natural one-sided derivatives at interior point $`i`$ are the forward and
-backward differences
-
-```math
-D^{+}_i V = \frac{V_{i+1} - V_i}{\Delta k},
-\qquad
-D^{-}_i V = \frac{V_i - V_{i-1}}{\Delta k} .
-```
-
-A central difference $`(V_{i+1} - V_{i-1})/(2\Delta k)`$ would use both sides
-with equal weight. That choice is unstable for first-order PDEs of this form
-because information flows in the direction of the drift: the value at $`k_i`$ is
-affected by the value at the point the system is moving toward, not the point
-behind it. Mixing in information from the wrong side produces oscillating,
-non-monotone iterates.
-
-The **upwind** rule picks the side whose drift points away from $`k_i`$:
-
-```math
-D_i V =
-\begin{cases}
-D^{+}_i V & \text{if } s_i > 0 \text{ (forward, into the right neighbour)},\\
-D^{-}_i V & \text{if } s_i < 0 \text{ (backward, into the left neighbour)},\\
-(f(k_i) - \delta k_i)^{-\sigma} & \text{if } s_i = 0
-\text{ (steady-state marginal utility)} .
-\end{cases}
-```
-
-The sign of $`s_i`$ depends on the consumption derived from the upwind
-derivative, which in turn depends on the side picked. The standard resolution
-computes both candidate drifts, $`s^{+}_i = f(k_i) - \delta k_i - (D^{+}_i V)^{-1/\sigma}`$ and $`s^{-}_i`$ analogously, and uses $`D^{+}`$ when $`s^{+}_i > 0`$, $`D^{-}`$ when $`s^{-}_i < 0`$, and the zero-drift consumption $`c^{0}_i = f(k_i) - \delta k_i`$ otherwise. This is the rule encoded above and used in the
-algorithm below.
-
-### Boundary conditions
-
-The grid endpoints need special handling because they have only one neighbour.
-At $`k_1`$ (the left boundary) the backward difference is undefined, so the
-solver always uses the forward difference; at $`k_N`$ (the right boundary) the
-forward difference is undefined, so the solver always uses the backward
-difference. These choices are reflexive: capital cannot drift out of the grid,
-so the upwind rule that would pick the missing side is replaced by its only
-available alternative.
+The forward and backward operators $`D^{+}_i V, D^{-}_i V`$ and the upwind selection rule that picks the side whose drift points away from each grid point are derived in [`optimal-control/upwind-finite-differences/`](../../optimal-control/upwind-finite-differences/). The boundary forcing at $`k_1`$ and $`k_N`$ that uses the only available one-sided difference at each endpoint is also presented there. The construction is general: the same operator and rule reappear in the Huggett asset-grid HJB.
 
 ### Steady state
 
