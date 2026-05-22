@@ -10,6 +10,10 @@ The tutorial keeps those two concerns separate. Prediction improves only if the 
 
 RUMnets keep the random-utility discipline. The utility function is flexible, but choice probabilities still come from maximizing utility with random tastes. This tutorial uses a small synthetic example to show the idea.
 
+## Preliminary readings
+
+- [`choice/logit-discrete-choice/`](../../choice/logit-discrete-choice/)
+
 ## Equations
 
 Consumer $`i`$ chooses one product $`j \in \mathcal{J}`$. Product $`j`$ has price

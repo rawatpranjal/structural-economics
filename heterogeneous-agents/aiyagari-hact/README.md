@@ -17,6 +17,11 @@ The same three coupled objects are the steady-state block of continuous-time het
 The exposition of the HJB and KFE solvers in this tutorial reuses the upwind discretisation already explained in the Huggett continuous-time tutorial at [`heterogeneous-agents/huggett-incomplete-markets/`](../../heterogeneous-agents/huggett-incomplete-markets/), and is not re-derived here.
 For readers who want the discrete-time formulation as a benchmark, see the Aiyagari tutorial at [`dynamic-programming/aiyagari/`](../../dynamic-programming/aiyagari/).
 
+## Preliminary readings
+
+- [`dynamic-programming/aiyagari/`](../../dynamic-programming/aiyagari/)
+- [`heterogeneous-agents/huggett-incomplete-markets/`](../../heterogeneous-agents/huggett-incomplete-markets/)
+
 ## Equations
 
 A household is described by two state variables.

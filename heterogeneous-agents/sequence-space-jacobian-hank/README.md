@@ -8,6 +8,12 @@ Sequence-space Jacobians make that propagation tractable. Each block is lineariz
 
 This tutorial follows the canonical one-asset HANK setup from Auclert, Bardóczy, Rognlie, and Straub (2021). Households save in bonds, supply labor elastically, and receive firm dividends as a skill-proportional transfer. The steady-state household block reuses ideas from the discrete-time Aiyagari tutorial [`dynamic-programming/aiyagari/`](../../dynamic-programming/aiyagari/) and the endogenous-grid-point inversion in [`heterogeneous-agents/endogenous-grid-points/`](../endogenous-grid-points/), extended to elastic labor via a joint endogenous-grid step over consumption and hours. The figure overlays a representative-agent New Keynesian benchmark, the same three-equation NK model solved in [`dsge/nkdsge/`](../../dsge/nkdsge/), so the reader can read off the contribution of heterogeneity to monetary transmission.
 
+## Preliminary readings
+
+- [`dynamic-programming/aiyagari/`](../../dynamic-programming/aiyagari/)
+- [`heterogeneous-agents/endogenous-grid-points/`](../../heterogeneous-agents/endogenous-grid-points/)
+- [`dsge/nkdsge/`](../../dsge/nkdsge/)
+
 ## Equations
 
 **Household problem.** Each household has assets $`a \geq 0`$ and idiosyncratic

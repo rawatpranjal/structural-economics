@@ -8,6 +8,11 @@ Counterfactual regret minimization is a learning algorithm that handles this cas
 
 The tutorial implements vanilla CFR on the asymmetric game and gives it three diagnostics. The symmetric closed form anchors the implementation when both value distributions are made equal. The continuous asymmetric BNE itself is recovered independently by solving the Marshall, Meurer, Richard, and Stromquist boundary-value problem on the inverse bid functions, and overlaid on the CFR result. Exploitability of the average strategy on the discretized game is the no-deviation diagnostic, the same idea as the bid-grid deviation check in the existing first-price auction tutorial.
 
+## Preliminary readings
+
+- [`game-theory/normal-form-games/`](../../game-theory/normal-form-games/)
+- [`game-theory/first-price-auctions/`](../../game-theory/first-price-auctions/)
+
 ## Equations
 
 The auction has two bidders indexed by $`i \in \lbrace 1, 2 \rbrace`$. Bidder $`i`$ draws a

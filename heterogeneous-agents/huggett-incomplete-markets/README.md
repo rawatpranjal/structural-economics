@@ -14,6 +14,11 @@ The computation links household policy to the cross section. The HJB gives consu
 and savings drift at a candidate $`r`$. The KFE turns that drift into a stationary density.
 Bisection updates $`r`$ until aggregate bond demand clears.
 
+## Preliminary readings
+
+- [`dynamic-programming/consumption-savings/`](../../dynamic-programming/consumption-savings/)
+- [`dynamic-programming/aiyagari/`](../../dynamic-programming/aiyagari/)
+
 ## Equations
 
 A household in income state $`i \in \lbrace L, H \rbrace`$ receives endowment

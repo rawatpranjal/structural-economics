@@ -8,6 +8,10 @@ The state vector has five continuous coordinates. A tensor Chebyshev grid pays a
 
 Smolyak sparse grids keep only the tensor blocks that carry new interaction information at a chosen accuracy level. The node count then grows polynomially in dimension, and Chebyshev collocation still recovers a smooth saving rule.
 
+## Preliminary readings
+
+- [`computational-methods/projection-methods/`](../../computational-methods/projection-methods/)
+
 ## Equations
 
 The planner chooses consumption $`c`$ and the next-period sectoral capitals

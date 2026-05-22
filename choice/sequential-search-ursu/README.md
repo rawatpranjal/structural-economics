@@ -8,6 +8,11 @@ The tutorial implements the sequential search logic used in the empirical framew
 
 The primitive object is a consideration process. A product can be valuable if inspected, but still rarely bought because consumers do not pay to inspect it. That is why the data include both searched products and final purchases.
 
+## Preliminary readings
+
+- [`dynamic-programming/job-search-mccall/`](../../dynamic-programming/job-search-mccall/)
+- [`choice/bayesian-learning/`](../../choice/bayesian-learning/)
+
 ## Equations
 
 There are $`J`$ inside products and an outside option with value zero. Product

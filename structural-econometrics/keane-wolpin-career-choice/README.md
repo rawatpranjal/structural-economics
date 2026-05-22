@@ -8,6 +8,11 @@ The economic object is the life-cycle policy: when does the worker leave school,
 
 The computational object is the Emax function. Exact backward induction is straightforward in this small version, but the number of states grows quickly. The Keane-Wolpin approximation computes exact Emax values at sampled states and predicts the rest with a regression.
 
+## Preliminary readings
+
+- [`dynamic-programming/job-search-mccall/`](../../dynamic-programming/job-search-mccall/)
+- [`choice/logit-discrete-choice/`](../../choice/logit-discrete-choice/)
+
 ## Equations
 
 At age $`t`$, the state is

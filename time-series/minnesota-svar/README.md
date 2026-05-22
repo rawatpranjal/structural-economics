@@ -10,6 +10,10 @@ The economic object is still a reduced-form forecasting system plus an identifyi
 
 The Minnesota prior is ridge-like shrinkage for dynamic systems. It puts prior mass on persistent own first lags, pulls most other coefficients toward zero, and tightens the prior for cross-variable and distant-lag effects. The shrinkage is soft, so the data can still move coefficients away from the prior when the sample is informative.
 
+## Preliminary readings
+
+- [`time-series/ar-processes/`](../../time-series/ar-processes/)
+
 ## Equations
 
 Let $`y_t=(x_t,\pi_t,i_t)'`$ collect the output gap, inflation, and the policy

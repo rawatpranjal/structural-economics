@@ -10,6 +10,11 @@ The three methods are projected gradient, an interior-point log barrier, and SLS
 
 The main lesson is that the value of the objective is not enough to judge a constrained answer. What matters is the set of Karush-Kuhn-Tucker conditions: stationarity, primal feasibility, dual feasibility, and complementary slackness. The Lagrange multipliers on binding constraints are the shadow prices that the economist actually wants to read.
 
+## Preliminary readings
+
+- [`numerical-methods/scalar-optimization-monopoly-pricing/`](../../numerical-methods/scalar-optimization-monopoly-pricing/)
+- [`numerical-methods/root-finding/`](../../numerical-methods/root-finding/)
+
 ## Equations
 
 The planner picks an allocation vector $`x \in \mathbb{R}^3`$.

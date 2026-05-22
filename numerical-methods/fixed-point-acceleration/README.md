@@ -8,6 +8,10 @@ One concrete instance serves as the test bed. Observed market shares are inverte
 
 The lesson is about iteration speed and reliability. Vanilla iteration always converges under contraction but can be slow. Anderson is often dramatically faster. It can also extrapolate unstably without a residual safeguard. A small Cournot best-response example at the end applies the same methods to a static game, where the fixed point is a Nash equilibrium.
 
+## Preliminary readings
+
+- [`game-theory/static-games/`](../../game-theory/static-games/)
+
 ## Equations
 
 The general problem is to find $`x \in \mathbb{R}^d`$ satisfying $`x = T(x)`$ for a given map $`T : \mathbb{R}^d \to \mathbb{R}^d`$.

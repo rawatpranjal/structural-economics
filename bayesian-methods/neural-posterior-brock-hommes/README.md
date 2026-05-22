@@ -8,6 +8,10 @@ The estimator is neural posterior estimation. The analyst draws parameter vector
 
 This is the Bayesian neural counterpart of the frequentist adversarial estimator in [`adversarial-estimation`](../../structural-econometrics/adversarial-estimation/) and the amortized cousin of the ABC-SMC sampler in [`simulation-based-estimation`](../../computational-methods/simulation-based-estimation/). Where ABC accepts or rejects against a fixed tolerance schedule, neural posterior estimation learns the conditional density directly.
 
+## Preliminary readings
+
+- [`agent-based-models/brock-hommes-asset-pricing/`](../../agent-based-models/brock-hommes-asset-pricing/)
+
 ## Equations
 
 The model is the same as in

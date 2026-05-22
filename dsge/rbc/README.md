@@ -10,6 +10,12 @@ Two solvers run on the same model, one after the other. The fixed-labor case is 
 
 Each linear solution is checked against the exact nonlinear perfect-foresight transition for the same TFP path.
 
+## Preliminary readings
+
+- [`dynamic-programming/optimal-growth/`](../../dynamic-programming/optimal-growth/)
+- [`dynamic-programming/shock-discretization/`](../../dynamic-programming/shock-discretization/)
+- [`computational-methods/perturbation-linearization/`](../../computational-methods/perturbation-linearization/)
+
 ## Equations
 
 The same primitives drive both cases. The only structural difference is
