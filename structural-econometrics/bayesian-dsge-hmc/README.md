@@ -8,6 +8,11 @@ The estimation pipeline is end-to-end gradient-based. The structural parameters 
 
 The Klein step uses the JAX port from `lib/perturbation_jax.py`. The underlying complex-Schur primitive in JAX has no autodiff rule, so the policy function gets gradients from an implicit-function-theorem JVP on the Klein equations. The Kalman recursion in `lib/kalman_jax.py` runs in plain JAX and gets its gradients from standard autodiff. The two compose cleanly into a single differentiable log posterior, and BlackJAX NUTS samples from it.
 
+## Preliminary readings
+
+- [`bayesian-methods/bayesian-foundations/`](../../bayesian-methods/bayesian-foundations/)
+- [`computational-methods/mcmc-diagnostics/`](../../computational-methods/mcmc-diagnostics/)
+
 ## Equations
 
 The three-equation New Keynesian block is the same one used in
@@ -126,7 +131,7 @@ The top row shows the response of $`(y,\pi,i)`$ to a one-standard-deviation mone
 
 <img src="/Users/pranjal/Code/computational-economics/structural-econometrics/bayesian-dsge-hmc/figures/posterior-irfs.png" alt="Posterior impulse responses with 90 percent bands." width="80%">
 
-**Posterior summary and effective sample size comparison.**
+**Posterior summary and effective sample size comparison.** The R-hat column reports the classical Gelman-Rubin potential scale reduction factor; its definition, the rank-normalised split variant, and the Vehtari et al. (2021) 1.01 threshold are in [`computational-methods/mcmc-diagnostics/`](../../computational-methods/mcmc-diagnostics/).
 
 | parameter   |   true |   post mean |   post median |   5 percent |   95 percent |    R hat |   NUTS ESS |   RW MH ESS |   ESS ratio |
 |:------------|-------:|------------:|--------------:|------------:|-------------:|---------:|-----------:|------------:|------------:|
@@ -155,3 +160,4 @@ Three pieces compose. Klein QZ in JAX gives a differentiable policy function. A 
 - Smets, F. and Wouters, R. (2007). Shocks and Frictions in US Business Cycles. *American Economic Review*, 97(3), 586-606.
 - Farkas, M. (2020). Bayesian estimation of DSGE models in Stan. IMFS Working Paper 145.
 - Herbst, E. and Schorfheide, F. (2016). *Bayesian Estimation of DSGE Models*. Princeton University Press.
+- **See also.** The $`\hat R`$ statistic and the ESS column in the posterior-summary table are derived in [`computational-methods/mcmc-diagnostics/`](../../computational-methods/mcmc-diagnostics/). The conjugate-Bayes baseline that motivates HMC for nonconjugate posteriors is in [`bayesian-methods/bayesian-foundations/`](../../bayesian-methods/bayesian-foundations/).

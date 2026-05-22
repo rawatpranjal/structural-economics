@@ -13,6 +13,8 @@ HMC is the natural next step after the random-walk Metropolis-Hastings tutorial 
 ## Preliminary readings
 
 - [`computational-methods/metropolis-hastings/`](../../computational-methods/metropolis-hastings/)
+- [`bayesian-methods/bayesian-foundations/`](../../bayesian-methods/bayesian-foundations/)
+- [`computational-methods/mcmc-diagnostics/`](../../computational-methods/mcmc-diagnostics/)
 
 ## Equations
 
