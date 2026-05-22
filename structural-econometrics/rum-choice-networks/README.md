@@ -14,6 +14,7 @@ RUMnets keep the random-utility discipline. The utility function is flexible, bu
 
 - [`choice/logit-discrete-choice/`](../../choice/logit-discrete-choice/)
 - [`numerical-methods/simulated-likelihood/`](../../numerical-methods/simulated-likelihood/)
+- [`numerical-methods/neural-networks-regression/`](../../numerical-methods/neural-networks-regression/)
 
 ## Equations
 
@@ -174,9 +175,7 @@ The RUMnet starts near that estimate:
  a_j^{(0)}=\hat a^L_j, \quad (b_p^{(0)},b_q^{(0)},b_{pz}^{(0)},b_{qz}^{(0)})=\hat b^L. 
 ```
 
-The neural weights start as small random numbers and the hidden biases start at
-zero. This makes the first RUMnet probabilities close to the fitted logit
-probabilities, then lets the neural part bend the utility surface.
+The neural weights and biases are initialised per the generic recipe in [`numerical-methods/neural-networks-regression/`](../../numerical-methods/neural-networks-regression/). With small weights at initialisation, the first RUMnet probabilities are close to the fitted logit probabilities. The neural part then bends the utility surface as training proceeds.
 
 For any trial $`\theta`$, the code forms $`\tilde x_{ijr}`$ for all consumers,
 products, and latent draws. It then evaluates $`h_{ijr}(\theta)`$,

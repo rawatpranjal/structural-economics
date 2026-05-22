@@ -14,6 +14,7 @@ The illustration uses the smallest model that supports the comparison. The real 
 
 - [`structural-econometrics/gmm-foundations/`](../../structural-econometrics/gmm-foundations/)
 - [`numerical-methods/simulated-likelihood/`](../../numerical-methods/simulated-likelihood/)
+- [`numerical-methods/neural-networks-regression/`](../../numerical-methods/neural-networks-regression/)
 - [`computational-methods/simulation-based-estimation/`](../../computational-methods/simulation-based-estimation/)
 
 ## Equations
@@ -164,7 +165,7 @@ This estimator matches optimally-weighted SMM with the first $`d`$ power moments
 
 ### Method 3: Shallow neural-network discriminator
 
-The discriminator is a one-hidden-layer network with $`H`$ tanh units and a sigmoid output. The inner problem is non-convex but small. L-BFGS on JAX-computed gradients handles it in tens of milliseconds. A small ridge penalty on the input and output weights limits the freedom of the network in finite samples.
+The discriminator is a one-hidden-layer tanh network with $`H`$ units, a sigmoid output, and L2 weight decay; the network architecture, the JAX-autodiff gradient, and the role of weight decay are described in [`numerical-methods/neural-networks-regression/`](../../numerical-methods/neural-networks-regression/). The inner optimisation here uses L-BFGS rather than Adam because the problem is small and the L-BFGS subproblem finishes in tens of milliseconds.
 
 ```
 Algorithm: neural-net adversarial estimator
