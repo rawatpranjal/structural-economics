@@ -1,5 +1,9 @@
 # Aggregate Adjustment Around a Steady State
 
+## Preliminary readings
+
+- [`dsge/blanchard-kahn-determinacy/`](../../dsge/blanchard-kahn-determinacy/)
+
 ## Overview
 
 A macro model tracks an aggregate state after a shock. Here $`x_t`$ is a deviation from steady state. The shock can be positive or negative.
