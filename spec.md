@@ -1,8 +1,17 @@
-# spec.md — Preliminary-Readings Curriculum (P0 + P1 + P2)
+# spec.md - Computational Economics Authoring Spec
+
+This spec covers all authoring waves for the tutorial catalog.
+
+- **Wave 1 - Preliminary-Readings Curriculum.** Closed. 14 prelims shipped 2026-05-22.
+- **Wave 2 - Behavioral and Dynamic Learning Tutorials.** Open. 3 primary + 1 addendum tutorials, design ported from `plan.md` on 2026-05-22. `plan.md` is now a stub.
+
+See each wave section below.
+
+## Wave 1: Preliminary-Readings Curriculum (P0 + P1 + P2)
 
 **Date:** 2026-05-21 (spec); 2026-05-22 (all 14 prelims shipped). **Scope:** all 14 prelims (P0 5 + P1 5 + P2 4). **Status:** complete on `main` (commits `51e25ae`, `b36454f`, `f602b3d`, `4bac3ed`).
 
-This spec defines fourteen new tutorials that fill the gaps in the
+This wave defines fourteen new tutorials that fill the gaps in the
 catalog's "on-ramp" to dense tutorials. Companion documents:
 
 - Gap analysis (input): `docs/missing-preliminary-readings.md`.
@@ -28,7 +37,7 @@ Equations and Model Setup sections of every dense tutorial in its
   consumption `c`, value `v`, density `g`).
 - Operator names (e.g. upwind generator `A`, its transpose `Aᵀ`,
   Markov generator `Q`).
-- Parameter letters (`ρ`, `β`, `σ`, `γ` — read the dense tutorial's
+- Parameter letters (`ρ`, `β`, `σ`, `γ` - read the dense tutorial's
   symbol table, don't invent).
 - Indexing conventions (asset index `i`, income index `j`,
   time-step `n`).
@@ -50,7 +59,7 @@ Concretely, by prelim:
   `hjb-growth` and `huggett-incomplete-markets`. Drift symbol `s`
   on the asset grid follows Huggett's convention.
 - **KFE (#2).** Density `g`, generator `A` (shared with #1), `Aᵀ`,
-  income generator `Q`, normalisation row index `i*` — pinned from
+  income generator `Q`, normalisation row index `i*` - pinned from
   Huggett and Aiyagari-HACT. Young-lottery weights `Λ` follow
   the SSJ tutorial's symbol.
 - **GMM foundations (#3).** Parameter `θ`, moment vector `g(θ,x)`,
@@ -69,7 +78,7 @@ Concretely, by prelim:
   refactor lands without renaming.
 - **MCMC diagnostics (#6).** Chain length `T`, lag-`t`
   autocorrelation `ρ_t`, integrated autocorrelation time
-  `τ = 1 + 2 Σ ρ_t`, effective sample size `ESS = T/τ` — pinned
+  `τ = 1 + 2 Σ ρ_t`, effective sample size `ESS = T/τ` - pinned
   from the existing `metropolis-hastings` definition block.
   `R̂` symbol and within/between variance notation `W, B` follow
   Gelman-Rubin convention.
@@ -122,7 +131,7 @@ Cross-tutorial collisions to watch:
   prelim uses `A` in its own scope. The Model Setup table makes
   the scope explicit.
 - `θ` appears as a Bayesian parameter (#5) and a GMM parameter
-  (#3). Same letter, same meaning — fine.
+  (#3). Same letter, same meaning - fine.
 - `σ` is income volatility in HA tutorials, prior scale in
   Bayesian-foundations, and posterior std in MH. Each prelim
   uses the dense-tutorial convention and labels it on first use.
@@ -188,11 +197,11 @@ interval is discretised with one-sided finite differences. Sign of
 the policy-implied drift selects forward or backward, and a
 Kuhn-Tucker clip enforces the state constraint at the boundary.
 
-**Scope — in.** Forward and backward finite-difference operators;
+**Scope - in.** Forward and backward finite-difference operators;
 the upwind selection rule; sparse upwind generator matrix `A`;
 borrowing-limit Kuhn-Tucker clip; viscosity-solution motivation
 (one paragraph); CFL-like stability note (one sentence).
-**Scope — out.** Higher-order schemes (WENO, ENO); semi-Lagrangian
+**Scope - out.** Higher-order schemes (WENO, ENO); semi-Lagrangian
 methods; PDE theory beyond a one-paragraph motivation.
 
 **Dense tutorials served + concept supplied.**
@@ -275,13 +284,13 @@ is the transpose of the upwind HJB generator. A sparse linear
 solve plus a normalisation row delivers the stationary
 distribution.
 
-**Scope — in.** KFE / Fokker-Planck derivation from mass
+**Scope - in.** KFE / Fokker-Planck derivation from mass
 conservation; the operator-duality `A` vs `Aᵀ`; sparse stationary
 solve `Aᵀ g = 0` with a normalisation row; continuous-time Markov
 generator `Q` for a Poisson income process as a worked subexample;
 brief comparison to Young (2010) lottery iteration as the
 discrete-time analog.
-**Scope — out.** Time-dependent KFE solves; reflected diffusions
+**Scope - out.** Time-dependent KFE solves; reflected diffusions
 beyond a state constraint; ergodicity proofs.
 
 **Dense tutorials served + concept supplied.**
@@ -363,13 +372,13 @@ weighting. Adding moments raises efficiency only when each one
 adds independent identifying variation; redundant moments shrink
 the gain.
 
-**Scope — in.** Moment conditions; just- vs over-identification;
+**Scope - in.** Moment conditions; just- vs over-identification;
 the GMM estimator and its asymptotic distribution; Hansen's
 two-step optimal weighting matrix; identification through
 exclusion restrictions sketched briefly; the SMM bridge
 (simulated moments stand in for population moments) in one
 short subsection.
-**Scope — out.** Nonparametric IV; weak-identification theory
+**Scope - out.** Nonparametric IV; weak-identification theory
 beyond a one-paragraph caveat; specification-test details
 (J-test mentioned, derivation deferred).
 
@@ -446,13 +455,13 @@ is solved by counting stable generalised eigenvalues against
 predetermined states. The same QZ partition runs on a small
 DSGE and selects the unique non-explosive path.
 
-**Scope — in.** The Blanchard-Kahn eigenvalue-counting rule;
+**Scope - in.** The Blanchard-Kahn eigenvalue-counting rule;
 generalised Schur (QZ) decomposition; reordering stable roots
 into the leading block; reading off the state transition `F`
 and the jump rule `P`; what happens when the count fails
 (indeterminacy, explosiveness, sunspot equilibria stated but
 not built).
-**Scope — out.** Full DSGE construction; estimation; impulse
+**Scope - out.** Full DSGE construction; estimation; impulse
 response analysis beyond a sanity-check plot.
 
 **Dense tutorials served + concept supplied.**
@@ -525,13 +534,13 @@ posterior. Beta-Binomial conjugacy gives a closed-form scalar
 update; Gaussian-Gaussian conjugacy gives a closed-form linear
 regression update with shrinkage as a precision-weighted average.
 
-**Scope — in.** Bayes rule for a scalar parameter; conjugacy via
+**Scope - in.** Bayes rule for a scalar parameter; conjugacy via
 Beta-Binomial; Gaussian-Gaussian conjugate linear regression
 (precision = prior precision + data precision; mean = precision-
 weighted average); prior sensitivity; posterior predictive
 distribution; positions itself as the bayesian-methods/ entry
 point.
-**Scope — out.** Hierarchical models; nonconjugate sampling
+**Scope - out.** Hierarchical models; nonconjugate sampling
 (that is metropolis-hastings/'s job); model selection; Bayesian
 nonparametrics.
 
@@ -556,7 +565,7 @@ nonparametrics.
   subsection (~lines 26-92): cut ~70 lines. Replace with a
   one-paragraph recap pointing to the prelim. The conjugate
   Beta-Binomial sanity-check experiment in Solution Method
-  (lines 182-196) and Results (lines 224-237) STAYS — the
+  (lines 182-196) and Results (lines 224-237) STAYS - the
   derivation moves out, the verification stays.
 - `numerical-methods/bayesian-optimization/README.md`,
   ~lines 39-41: repoint the existing cross-reference from
@@ -621,13 +630,13 @@ sampled with random-walk Metropolis. ESS, IAT, R-hat across
 multiple chains, and trace plots each catch a different
 pathology before any structural model is touched.
 
-**Scope — in.** Lag autocorrelation `ρ_t`; integrated
+**Scope - in.** Lag autocorrelation `ρ_t`; integrated
 autocorrelation time `τ = 1 + 2 Σ ρ_t`; effective sample size
 `ESS = T/τ`; multi-chain potential scale reduction factor `R̂`
 (classical Gelman-Rubin and rank-normalised split-R̂); trace
 plots; burn-in heuristics; brief note on Roberts-Gelman-Gilks
 optimal acceptance rate.
-**Scope — out.** Stationarity tests beyond R̂; geometric-
+**Scope - out.** Stationarity tests beyond R̂; geometric-
 ergodicity proofs; sample-size planning rules.
 
 **Dense tutorials served + concept supplied.**
@@ -698,12 +707,12 @@ recursive Cholesky ordering of the residual covariance. The
 resulting impulse responses are the building block for
 Bayesian and structural extensions in the rest of the section.
 
-**Scope — in.** VAR(p) lag stacking; companion-form matrix;
+**Scope - in.** VAR(p) lag stacking; companion-form matrix;
 OLS estimation; reduced-form residual covariance `Σ_u`;
 recursive (lower-triangular) Cholesky identification; impulse
 response propagation `Φ_j`; brief comparison with non-recursive
 identification (sign restrictions named, not derived).
-**Scope — out.** Bayesian priors (handled in `minnesota-svar/`);
+**Scope - out.** Bayesian priors (handled in `minnesota-svar/`);
 SVAR with proxy / external instruments; cointegration / VECM.
 
 **Dense tutorials served + concept supplied.**
@@ -776,13 +785,13 @@ encodes the Hadamard product with the demand Jacobian. The
 same system reads pre-merger markups, recovers marginal costs,
 and produces post-merger counterfactual prices.
 
-**Scope — in.** Ownership matrix construction (single-product,
+**Scope - in.** Ownership matrix construction (single-product,
 multi-product, merged); demand Jacobian `Δ(p) = ∂s/∂p`; Hadamard
 product `Ω ⊙ Δ`; the FOC `p = c − (Ω ⊙ Δ)⁻¹ s`; fixed-point
 iteration on the price vector; cost recovery as one inversion;
 post-merger price counterfactual as a second solve under a new
 `Ω`.
-**Scope — out.** Random-coefficient demand (lives in BLP);
+**Scope - out.** Random-coefficient demand (lives in BLP);
 merger-screen formulas UPP/GUPPI/CMCR (stay in
 `merger-simulation/`); bargaining (Nash-in-Nash is a different
 method).
@@ -862,11 +871,11 @@ random numbers make the objective smooth in `θ`; Halton
 sequences beat pseudorandom draws on bias and variance for the
 same draw count.
 
-**Scope — in.** Simulated likelihood `P̂(θ) = (1/R) Σ f(θ; ξ_r)`;
+**Scope - in.** Simulated likelihood `P̂(θ) = (1/R) Σ f(θ; ξ_r)`;
 common random numbers (CRN) for smoothness; pseudo-random vs
 Halton vs scrambled Sobol; draw-count bias-variance tradeoff;
 brief note on antithetic variates.
-**Scope — out.** Maximum simulated moments (handled in GMM
+**Scope - out.** Maximum simulated moments (handled in GMM
 prelim); importance sampling for rare events; sequential
 Monte Carlo.
 
@@ -945,12 +954,12 @@ Forward pass, backpropagation, L2 weight decay, and Adam are
 the four moving parts that every neural utility, neural
 discriminator, and neural mechanism in this catalog reuses.
 
-**Scope — in.** One-hidden-layer feedforward architecture with
+**Scope - in.** One-hidden-layer feedforward architecture with
 tanh activation; forward pass; squared-error loss for
 regression and cross-entropy for classification; backpropagation
 via JAX autodiff; L2 weight decay; Adam optimiser; basic
 hyperparameter sensitivity.
-**Scope — out.** Deep architectures (multiple hidden layers);
+**Scope - out.** Deep architectures (multiple hidden layers);
 convolutional / recurrent / attention layers; normalising
 flows; meta-learning. Architecture choices specific to consumer
 tutorials (RUMnet structure, GAN discriminator design,
@@ -1025,12 +1034,12 @@ random values at a cost per inspection. Weitzman's reservation
 value `z_j` summarises each box; opening boxes in decreasing
 `z` is optimal under perfect recall.
 
-**Scope — in.** Reservation value derivation
+**Scope - in.** Reservation value derivation
 `z_j = max_v (v − ∫ G_j(w) dw / something)`; index-ordering
 optimal rule (open in decreasing `z`); perfect-recall stopping
 condition; brief comparison with myopic search and with the
 McCall job-search reservation wage.
-**Scope — out.** Search with bargaining; rational-inattention
+**Scope - out.** Search with bargaining; rational-inattention
 search models; learning across boxes.
 
 **Dense tutorials served + concept supplied.**
@@ -1093,12 +1102,12 @@ turns `E[f(z')|z]` under an AR(1) Gaussian innovation into a
 small weighted sum that converges faster than Monte Carlo on
 smooth integrands.
 
-**Scope — in.** Gauss-Hermite nodes from Hermite polynomial
+**Scope - in.** Gauss-Hermite nodes from Hermite polynomial
 roots; weights from Christoffel-Darboux; change of variables
 for an AR(1) conditional expectation under Gaussian
 innovations; node-count vs error scaling; brief comparison
 with Simpson's rule and Monte Carlo.
-**Scope — out.** Adaptive quadrature; sparse-grid quadrature
+**Scope - out.** Adaptive quadrature; sparse-grid quadrature
 (handled in `smolyak-sparse-grids/`); high-dimensional
 quasi-Monte Carlo.
 
@@ -1174,11 +1183,11 @@ posterior with closed-form mean and variance. Marginal
 likelihood tunes the kernel hyperparameters, giving a
 data-adaptive smoothness scale.
 
-**Scope — in.** GP prior with constant mean; squared-
+**Scope - in.** GP prior with constant mean; squared-
 exponential (RBF) kernel; closed-form posterior conditioning;
 marginal-likelihood-II hyperparameter tuning (length scale,
 signal variance, noise); brief note on Matérn kernel choices.
-**Scope — out.** Deep kernels; sparse / inducing-point GPs;
+**Scope - out.** Deep kernels; sparse / inducing-point GPs;
 scalable variational inference; GP classification.
 
 **Dense tutorials served + concept supplied.**
@@ -1243,13 +1252,13 @@ converges to a correlated equilibrium without any opponent
 model, and the same primitive scales to CFR for extensive-form
 games.
 
-**Scope — in.** Instantaneous regret `r_i^t`; cumulative
+**Scope - in.** Instantaneous regret `r_i^t`; cumulative
 regret `R_i^T`; regret-matching update rule (probability
 proportional to positive cumulative regret); convergence of
 the time-average strategy to correlated equilibrium;
 counterfactual regret as the extensive-form generalisation
 (named, briefly motivated).
-**Scope — out.** Specific CFR variants (vanilla CFR is in
+**Scope - out.** Specific CFR variants (vanilla CFR is in
 `cfr-asymmetric-auction/`); deep CFR; multi-agent learning
 theory beyond Hart-Mas-Colell.
 
@@ -1353,7 +1362,7 @@ P1 cuts:
 
 - `computational-methods/metropolis-hastings/README.md`,
   `## Solution Method` ~lines 218-220: cut ESS + IAT
-  definitions (P1 #6 — MCMC diagnostics). One pointer
+  definitions (P1 #6 - MCMC diagnostics). One pointer
   paragraph in. Note: this is in addition to the larger MH
   refactor in P0 #5.
 - `structural-econometrics/bayesian-dsge-hmc/README.md`,
@@ -1424,17 +1433,17 @@ tutorial cut totals are listed in each prelim entry above.
 P0 first, then P1 interleaved so each consumer tutorial gets
 both its P0 and P1 prelim before any final QC pass:
 
-1. [DONE 2026-05-22] #1 upwind-finite-differences — foundation for #2.
-2. [DONE 2026-05-22] #2 KFE — depends on #1's notation.
-3. [DONE 2026-05-22] #4 Blanchard-Kahn — independent.
-4. [DONE 2026-05-22] #3 GMM foundations — independent.
-5. [DONE 2026-05-22] #7 reduced-form-VAR — commit `b36454f`.
-6. [DONE 2026-05-22] #8 Bertrand ownership matrix — commit `b36454f`.
-7. [DONE 2026-05-22] #9 simulated-likelihood — commit `b36454f`.
-8. [DONE 2026-05-22] #10 NN regression — commit `f602b3d`.
-9. [DONE 2026-05-22] #5 Bayesian foundations — paired with #6 in one
+1. [DONE 2026-05-22] #1 upwind-finite-differences - foundation for #2.
+2. [DONE 2026-05-22] #2 KFE - depends on #1's notation.
+3. [DONE 2026-05-22] #4 Blanchard-Kahn - independent.
+4. [DONE 2026-05-22] #3 GMM foundations - independent.
+5. [DONE 2026-05-22] #7 reduced-form-VAR - commit `b36454f`.
+6. [DONE 2026-05-22] #8 Bertrand ownership matrix - commit `b36454f`.
+7. [DONE 2026-05-22] #9 simulated-likelihood - commit `b36454f`.
+8. [DONE 2026-05-22] #10 NN regression - commit `f602b3d`.
+9. [DONE 2026-05-22] #5 Bayesian foundations - paired with #6 in one
     PR per the alternative below.
-10. [DONE 2026-05-22] #6 MCMC diagnostics — paired with #5 (the MH
+10. [DONE 2026-05-22] #6 MCMC diagnostics - paired with #5 (the MH
     refactor: Bayes primer out, diagnostics primer out, MH stays as
     the algorithm tutorial).
 
@@ -1458,10 +1467,199 @@ After each prelim PR:
   dense README cut by the PR.
 - `git diff --stat` matches the cut list above for that prelim.
 
-## Out of scope
+## Out of scope (Wave 1)
 
-- P1 and P2 prelims (9 more) — separate spec.
+- P1 and P2 prelims were originally out of scope at spec time; they were folded in on 2026-05-22 (see "Authoring order" above). This bullet is preserved for historical context.
 - No catalog-row insertions in this pass; rows land with each
   prelim PR.
 - No edits to dense READMEs in this pass; cuts are documented
   here and applied per prelim PR.
+
+---
+
+## Wave 2: Behavioral and Dynamic Learning Tutorials
+
+**Date opened:** 2026-05-22 (merge of plan.md into spec.md). **Source:** plan.md (now retired and stubbed). **Status:** W2.1, W2.2, W2.3 already shipped May 20-21, 2026 - predating this merge. plan.md was retroactively a record of work that had already shipped, not a forward design. W2.4 (online-pricing-partial-identification) remains the only undone item; treat the rest of Wave 2 as a closed historical record.
+
+Shipped tutorials (root README catalog rows):
+
+- W2.1 `choice/convex-time-budget-present-bias/` - root README line 195.
+- W2.2 `choice/consideration-set-estimation/` - root README line 196 (shipped framing: Manzini-Mariotti stochastic-choice + random consideration, slightly different from plan.md's "exact enumeration over consideration sets" framing).
+- W2.3 `choice/probability-distortion-mixture/` - root README line 197 (shipped under a different folder name than plan.md's `probability-weighting-lottery-choice`, and a different framing: Bruhin-Fehr-Duda-Epper finite-mixture EM over latent CPT/EUT types instead of Prelec-weighting NLS. The economic object is closely related; the computational object is finite-mixture EM, not constrained nonlinear estimation. The user pivoted at authoring time. This is documented here rather than rewriting the Wave 2 spec; the shipped tutorial is the canonical artifact).
+
+The PyBehavior repo and the `rawatpranjal/interactive-pricing-theory` repo were surveyed for tutorials that teach a computational tool not already covered cleanly by the catalog. The original output: three primary behavioral tutorials in `choice/` plus one IO addendum. The IO addendum outranks the three on raw computational novelty (a real online-learning algorithm with revealed-preference dominance elimination). It is the only Wave 2 item still to author.
+
+### Notational policy (Wave 2)
+
+Unlike Wave 1, Wave 2 tutorials do not serve existing dense tutorials. No cross-folder symbol pinning is required. Each tutorial pins its own canonical letters once in `Model Setup` and uses them consistently:
+
+- **W2.1 CTB.** `β` (present bias), `δ` (long-run discount), `ρ` (CRRA curvature), `c_t`, `c_{t+k}`, `q` (gross price), `m` (budget), `k` (delay length).
+- **W2.2 Consideration.** `J` (universe size), `C` (consideration set), `π_j` (consideration probability), `u_j` (utility), `p_j` (price), `q_j` (quality).
+- **W2.3 Probability weighting.** `p` (objective probability), `w(p)` (decision weight), `α`, `η` (Prelec parameters), `v(x)` (value function), `EU` vs `PT`.
+- **W2.4 Online pricing.** `K` (price grid), `S` (segments), `v_s` (segment valuation), `D_L(p)`, `D_U(p)` (demand bounds), `r_t` (regret at round `t`).
+
+Cross-wave collisions to label on first use: `β` is present bias in W2.1 and the discount factor in many Wave-1 tutorials (disjoint scopes). `π` is consideration probability in W2.2 and regret-matching probability in Wave-1 prelim #14 (disjoint scopes).
+
+### Cuts list (Wave 2)
+
+None. Wave-2 tutorials introduce new economic objects, not new exposition of objects already in dense tutorials. No surgical cuts to existing READMEs are required. Each Wave-2 tutorial is a single-folder addition plus a root-catalog row.
+
+### Curriculum map (Wave 2)
+
+| # | Tutorial | Subject section | Core method | Status |
+|---|---|---|---|---|
+| W2.1 | `choice/convex-time-budget-present-bias/` | Choice and Demand | NLS + Tobit MLE on continuous allocations | shipped (root README line 195) |
+| W2.2 | `choice/consideration-set-estimation/` | Choice and Demand | Manzini-Mariotti stochastic choice + random consideration (shipped framing) | shipped (root README line 196) |
+| W2.3 | `choice/probability-distortion-mixture/` | Choice and Demand | Bruhin-Fehr-Duda-Epper finite-mixture EM (shipped framing) | shipped (root README line 197) |
+| W2.4 | `industrial-organization/online-pricing-partial-identification/` | Industrial Organization | UCB with WARP-bound elimination | open |
+
+---
+
+### W2.1. `choice/convex-time-budget-present-bias/`
+
+**Title.** Convex Time Budgets and the Identification of Present Bias.
+
+**Description (catalog row).** Continuous experimental allocations between sooner and later payments identify present bias, long-run discounting, and utility curvature jointly. Nonlinear estimation on β-δ utility recovers preferences from designed intertemporal choices.
+
+**Scope - in.** β-δ quasi-hyperbolic utility; CRRA curvature; CTB budget design (front-end delay, delay length, gross interest rate, budget variation); FOC-based and likelihood-based estimation via `scipy.optimize`; corner handling at allocation extremes; weak-design vs full-design identification comparison; brief framing of why front-end delay separates present bias from patience.
+**Scope - out.** Sophisticated vs naive quasi-hyperbolic types; habit formation; non-CRRA utility families; field choice data (synthetic only).
+
+**Economic object served.** Time preferences in experimental economics. Not currently in the catalog. Distinct from binary discrete-choice intertemporal work because the observed object is a continuous interior allocation, which is what makes the estimation problem nonlinear-structural rather than discrete.
+
+**References (anchors; verify and expand at authoring time).**
+1. Andreoni & Sprenger (2012), "Estimating Time Preferences from Convex Budgets," *AER* 102(7), 3333-3356. Founding CTB paper.
+2. Laibson (1997), "Golden Eggs and Hyperbolic Discounting," *QJE* 112(2), 443-477. β-δ foundational.
+3. Augenblick, Niederle & Sprenger (2015), "Working Over Time: Dynamic Inconsistency in Real Effort Tasks," *QJE* 130(3), 1067-1115. CTB with real-effort allocations.
+4. Cohen, Ericson, Laibson & White (2020), "Measuring Time Preferences," *JEL* 58(2), 299-347. Comprehensive identification review.
+
+**Equations.**
+- Budget: `c_t + q c_{t+k} = m`.
+- β-δ utility: `U = u(c_t) + β δ^k u(c_{t+k})`.
+- CRRA utility: `u(c) = c^{1-ρ} / (1-ρ)`.
+- Interior FOC: `u'(c_t) = β δ^k q u'(c_{t+k})`.
+- NLS objective: `min_{β,δ,ρ} Σ (c_t^{obs} - c_t^{pred}(β, δ, ρ; design))²`.
+
+**`run.py` sketch.** Simulate a CTB design with three front-end delays, three gross interest rates, and Gaussian mean-zero allocation noise. Generate continuous sooner/later allocations from known `(β, δ, ρ)`. Estimate by NLS and likelihood; bootstrap CIs. Compare a weak design (today-vs-future only) against a strong design (today-vs-future + future-vs-future). Figures: (a) CTB budget lines with simulated allocations; (b) sooner allocation by interest rate and delay; (c) `(β, δ)` profile-likelihood surface. Tables: `parameter-recovery.csv`, `design-comparison.csv`. Thumbnail from (a).
+
+**Catalog row.** Insert in "Choice and Demand" of root `README.md`, near other static demand / preference-estimation rows. Suggested position: above `choice/sequential-search-ursu/`.
+
+---
+
+### W2.2. `choice/consideration-set-estimation/`
+
+**Title.** Latent Consideration Sets in Product Choice.
+
+**Description (catalog row).** Consumers may not evaluate every product. Enumerating hidden choice sets and summing the observed-choice likelihood over sets containing the chosen product separates attention from preference in observed demand.
+
+**Scope - in.** Two-stage choice (consideration + final choice); consideration probability `π_j`; exact enumeration over consideration sets for small `J ≤ 6`; MLE of attention and preference parameters jointly; comparison with full-choice-set multinomial logit; display / prominence counterfactual.
+**Scope - out.** Bayesian latent-set inference with MCMC; consideration-set sampling for large `J`; structural models of search effort (distinct from one-shot inattention).
+
+**Economic object served.** Attention vs preference in demand. Not currently in the catalog. Teaches a genuinely new computational operation - likelihood evaluation over a latent combinatorial object - different from logit, BLP, or static demand.
+
+**References (anchors).**
+1. Hauser & Wernerfelt (1990), "An Evaluation Cost Model of Consideration Sets," *JCR* 16(4), 393-408. Founding two-stage choice model.
+2. Goeree (2008), "Limited Information and Advertising in the U.S. Personal Computer Industry," *Econometrica* 76(5), 1017-1074. Latent consideration in IO.
+3. Abaluck & Adams-Prassl (2021), "What Do Consumers Consider Before They Choose? Identification from Asymmetric Demand Responses," *QJE* 136(3), 1611-1663. Identification of inattention.
+4. Crawford, Griffith & Iaria (2021), "A Survey of Preference Estimation with Unobserved Choice Set Heterogeneity," *Journal of Econometrics*. Pedagogical survey.
+
+**Equations.**
+- Stage 1 (consideration): `P(j ∈ C) = π_j`, products enter independently.
+- Stage 2 (choice given set): `P(choose j | C) = exp(u_j) / Σ_{k ∈ C} exp(u_k)`.
+- Observed-choice likelihood: `P(choose j) = Σ_{C : j ∈ C} P(choose j | C) P(C)`.
+- Full enumeration size: `2^{J-1}` sets containing `j` for universe of size `J`.
+
+**`run.py` sketch.** Universe of `J = 5` products with price, quality, and display status. Display affects consideration; price and quality affect utility. Simulate 5000 choices from known parameters. Estimate by MLE with exact enumeration. Compare against a full-choice-set logit fit to the same data. Counterfactual: raise display on one product, recompute predicted demand. Figures: (a) true vs estimated consideration probabilities; (b) observed shares, full-info predictions, latent-consideration predictions side-by-side; (c) demand shift from display counterfactual. Tables: `parameter-recovery.csv`, `model-comparison.csv`. Thumbnail from (a).
+
+**Catalog row.** Insert in "Choice and Demand" of root `README.md`. Suggested position: near `choice/mixed-logit-simulation/`, before random-coefficient demand entries.
+
+---
+
+### W2.3. `choice/probability-weighting-lottery-choice/`
+
+**Title.** Probability Weighting and Prospect-Theory Estimation.
+
+**Description (catalog row).** Risky choices reveal distorted probability weights. Estimating a Prelec weighting function from lottery choices or certainty equivalents requires nonlinear transformation estimation under shape restrictions, and exposes the classic identification problem between utility curvature and probability weighting.
+
+**Scope - in.** Expected utility, probability weighting only, and full prospect-theory value weighting; Prelec one-parameter and two-parameter weighting functions; certainty-equivalent inversion; shape restrictions via parameter bounds; identification comparison between strong-design (varied `p`, varied prizes) and weak-design (limited `p` variation).
+**Scope - out.** Rank-dependent expected utility with general weighting families; loss aversion estimation; field-data prospect-theory applications.
+
+**Economic object served.** Risk preferences with distorted probabilities. The catalog currently has no risk-preference-estimation tutorial. Teaches nonlinear function estimation with shape constraints - a reusable tool.
+
+**References (anchors).**
+1. Kahneman & Tversky (1979), "Prospect Theory: An Analysis of Decision under Risk," *Econometrica* 47(2), 263-291. Founding paper.
+2. Prelec (1998), "The Probability Weighting Function," *Econometrica* 66(3), 497-527. Prelec one- and two-parameter forms.
+3. Wu & Gonzalez (1996), "Curvature of the Probability Weighting Function," *Management Science* 42(12), 1676-1690. Curvature estimation.
+4. Bruhin, Fehr-Duda & Epper (2010), "Risk and Rationality: Uncovering Heterogeneity in Probability Distortion," *Econometrica* 78(4), 1375-1412. Modern estimation.
+
+**Equations.**
+- Expected utility: `EU = p v(x_1) + (1-p) v(x_0)`.
+- Prospect-theory value: `PT = w(p) v(x_1) + [1 - w(p)] v(x_0)`.
+- Prelec weighting: `w(p) = exp(-η (-log p)^α)`.
+- CRRA value: `v(x) = x^{1-γ} / (1-γ)`.
+- NLS / MLE objective with bounds: `α > 0`, `η > 0`, `γ ≥ 0`.
+
+**`run.py` sketch.** Simulate lottery choices and certainty equivalents across a grid of `(p, x_1, x_0)`. Compare three nested models: EU (`α = 1, η = 1`), probability weighting only (`v` linear), full PT. Solve certainty equivalents by Brent root-finding. Run identification comparison: strong design vs weak design. Figures: (a) objective probability vs Prelec decision weight at recovered `(α, η)`; (b) certainty equivalents by probability and prize; (c) fit-quality comparison across the three models; (d) strong vs weak parameter-recovery distributions. Tables: `parameter-recovery.csv`, `model-comparison.csv`. Thumbnail from (a).
+
+**Catalog row.** Insert in "Choice and Demand" of root `README.md`. Suggested position: near the consideration-set entry; both are static demand with latent or distorted choice processes.
+
+---
+
+### W2.4. `industrial-organization/online-pricing-partial-identification/` (addendum)
+
+**Status.** Optional in Wave 2. Outranks W2.1-W2.3 on raw computational novelty (real online-learning algorithm). Promote to first authoring slot if user prioritises a hardcore method over behavioral coverage. Otherwise defer to Wave 3.
+
+**Title.** Online Pricing with Revealed-Preference Bounds: UCB on Partial Identification.
+
+**Description (catalog row).** A seller posts prices and observes only buy / no-buy. WARP-style monotonicity converts each observation into a valuation bound, then bounds become demand bounds, then dominated prices are eliminated. The active price set shrinks as observations accumulate, faster than any bandit without economic structure.
+
+**Scope - in.** Multi-segment demand on a discrete price grid; bandit algorithms (ε-greedy, learn-then-earn, UCB1, Thompson sampling); revealed-preference (WARP-style) valuation bound updates; profit-bound dominance elimination; UCB-PI as the hybrid; regret comparison against an oracle best fixed price.
+**Scope - out.** Continuous price space; competing sellers; dynamic demand with inventory (that is `dynamic-pricing-sawtooth`, deferred). Formal regret-rate theorems (cite Auer et al. but do not re-prove).
+
+**Economic object served.** Online learning under economic structure. Currently absent from the catalog. Distinct from existing bandit work (none) and from BLP because the learning signal is binary purchase, not allocation, and identification is partial via bounds.
+
+**References (anchors).**
+1. Auer, Cesa-Bianchi & Fischer (2002), "Finite-time Analysis of the Multiarmed Bandit Problem," *Machine Learning* 47, 235-256. UCB1 foundation.
+2. Cohen, Lobel & Paes Leme (2020), "Feature-Based Dynamic Pricing," *Management Science* 66(11), 4921-4943. Dynamic pricing under structure.
+3. Lattimore & Szepesvári (2020), *Bandit Algorithms*, Cambridge University Press. Textbook.
+4. Manski (2003), *Partial Identification of Probability Distributions*, Springer. Partial-identification foundation.
+
+**Equations.**
+- Per-round observation: at price `p_t`, segment `s` either buys (`v_s ≥ p_t`) or does not (`v_s < p_t`).
+- Bound update: `v_s^L ← max(v_s^L, p_t × 1[buy])`, `v_s^U ← min(v_s^U, p_t × 1[no buy] + ∞ × 1[buy])`.
+- Demand bounds: `D_L(p) = Σ_s 1[v_s^L ≥ p]`, `D_U(p) = Σ_s 1[v_s^U ≥ p]`.
+- Profit bounds: `π_L(p) = p D_L(p)`, `π_U(p) = p D_U(p)`.
+- Elimination rule: drop `p` if `π_U(p) ≤ max_q π_L(q)`.
+
+**`run.py` sketch.** `S = 4` segments with disjoint valuation intervals on a `K = 20`-price grid. Run `T = 5000` rounds for each of five algorithms (ε-greedy, learn-then-earn, UCB1, Thompson sampling, UCB-PI). Track cumulative regret against the oracle best fixed price. Show how UCB-PI's active price set shrinks while UCB1's does not. Figures: (a) cumulative regret on log-log axes; (b) active-price count over time under UCB-PI; (c) profit bounds across the grid at selected rounds; (d) segment valuation intervals tightening with observations. Tables: `final-regret.csv`, `elimination-diagnostics.csv`. Thumbnail from (a).
+
+**Catalog row.** Insert in "Industrial Organization" of root `README.md`. Suggested position: near `industrial-organization/merger-simulation/`, or open a "Pricing and Demand" subsection if one fits.
+
+---
+
+### Authoring order (Wave 2)
+
+1. [DONE 2026-05-21] **W2.1 `convex-time-budget-present-bias`** - shipped before this spec was written.
+2. [DONE 2026-05-21] **W2.2 `consideration-set-estimation`** - shipped before this spec was written.
+3. [DONE 2026-05-21] **W2.3 `probability-distortion-mixture`** - shipped before this spec was written, under a different folder name and framing than the plan.md original; see status note above.
+4. **W2.4 `online-pricing-partial-identification`** - only undone item. Author next.
+
+Each tutorial is one PR: folder + `run.py` + hand-maintained `README.md` + `figures/` + `tables/` + catalog row + validator pass.
+
+### Verification (Wave 2)
+
+Per tutorial:
+- `python scripts/validate_catalog.py` passes from repo root.
+- `python run.py` inside the tutorial folder regenerates `figures/`, `tables/`, and `figures/thumb.png`.
+- Manual github.com render of the tutorial README (KaTeX visual check, no em-dashes).
+- Root README catalog row inserted at the position named in each entry.
+- Adversarial pass (per local memory rule: separate Sonnet agent runs `/bullshit` audit against this spec).
+
+### Out of scope (Wave 2)
+
+- PyBehavior and PyTorch are NOT runtime dependencies. Stack stays `numpy`, `scipy`, `pandas`, `matplotlib`. JAX may be used if it adds clarity.
+- Runner-up methods from `rawatpranjal/interactive-pricing-theory` deferred to Wave 3:
+  - `dynamic-pricing-sawtooth` (Gallego-van Ryzin finite-inventory by backward induction).
+  - `network-rm` (LP-based network revenue management, bid-price controls).
+  - `markdown-management` (discrete price-ladder DP with markdown-only constraint).
+  - `dynamic-durable-games` (Markov-perfect dynamic oligopoly - already covered elsewhere).
+- Behavioral tutorials beyond W2.1-W2.3 (e.g. habit formation, reference dependence) deferred to Wave 3.
