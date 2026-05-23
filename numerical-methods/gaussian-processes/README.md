@@ -2,11 +2,11 @@
 
 ## Overview
 
-A Gaussian process (GP) is a probability distribution over functions. Sampling from a GP returns a whole function $`f`$, not a finite vector of parameters. Conditioning a GP prior on a finite set of noisy observations returns another GP, the posterior, with a closed-form mean function and a closed-form variance function. There is no MCMC inside the conditioning step; everything is linear algebra against the kernel matrix.
+A Gaussian process (GP) is a probability distribution over functions. Sampling from a GP returns a whole function, not a finite vector of parameters. Conditioning a GP prior on a finite set of noisy observations returns another GP, the posterior, with a closed-form mean function and a closed-form variance function. There is no MCMC inside the conditioning step; everything is linear algebra against the kernel matrix.
 
 This makes GPs the natural surrogate model in two settings. The first is regression with uncertainty quantification: fit a smooth function from sparse, noisy data, and report a credible band rather than a single point estimate. The second is sequential optimisation of an expensive function (Bayesian optimisation), where the GP posterior over the unknown objective guides which point to evaluate next. Both settings need three things: a kernel, a posterior, and a way to choose the kernel's hyperparameters from data.
 
-This prelim builds those three pieces on a one-dimensional toy target ($`f(x) = x \sin x`$ on $`[0, 10]`$ with Gaussian observation noise), compares the squared-exponential (RBF) kernel against the Matern-5/2 kernel, and tunes the length-scale by maximising the log marginal likelihood. The closed-form posterior, the kernel choice, and the marginal-likelihood tuning are the same three ingredients that the GP surrogate uses in [`numerical-methods/bayesian-optimization/`](../../numerical-methods/bayesian-optimization/) inside its acquisition loop.
+This prelim builds those three pieces on a one-dimensional toy target with Gaussian observation noise, compares the squared-exponential (RBF) kernel against the Matern-5/2 kernel, and tunes the length-scale by maximising the log marginal likelihood. The closed-form posterior, the kernel choice, and the marginal-likelihood tuning are the same three ingredients that the GP surrogate uses in [`numerical-methods/bayesian-optimization/`](../../numerical-methods/bayesian-optimization/) inside its acquisition loop.
 
 ## Equations
 
