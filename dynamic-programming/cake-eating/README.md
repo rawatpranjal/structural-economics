@@ -4,7 +4,7 @@
 
 A household owns a fixed cake and chooses consumption each period. The cake does not grow. There is no income or uncertainty. Consuming more today leaves less cake for every future period.
 
-The state is the remaining stock of cake $`W_t`$ at the start of period $`t`$. The control is consumption $`c_t`$ chosen from the feasible set $`[0, W_t]`$. A policy rule $`\pi`$ maps each stock $`W`$ into a consumption choice $`c = \pi(W)`$. The value function $`V`$ assigns to each stock the discounted utility from following the optimal policy.
+The state is the cake stock remaining at the start of the period. The control is current consumption, bounded above by the remaining stock. A policy rule maps each stock into a consumption choice, and the value function assigns to each stock the discounted utility from following the optimal policy.
 
 The Bellman equation is solved three ways on the same wealth grid. Method 1 is value function iteration. Method 2 is modified policy iteration, also called Howard acceleration. Method 3 is exact Howard policy iteration. Log utility gives a closed-form value and policy that benchmark all three numerical solutions.
 

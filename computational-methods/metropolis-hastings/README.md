@@ -13,14 +13,14 @@ A bounded one-dimensional random-walk chain on the Beta-Binomial conjugate poste
 
 ## Equations
 
-The likelihood, prior, and posterior decomposition that motivates Metropolis-Hastings is in [`bayesian-methods/bayesian-foundations/`](../../bayesian-methods/bayesian-foundations/). This tutorial picks up where conjugacy fails: the posterior $`\pi(\theta \mid D)`$ can be evaluated pointwise up to a normalizing constant but no closed-form moments are available.
+The likelihood, prior, and posterior decomposition that motivates Metropolis-Hastings is in [`bayesian-methods/bayesian-foundations/`](../../bayesian-methods/bayesian-foundations/). This tutorial picks up where conjugacy fails: the posterior $`\pi(\theta \mid y)`$ can be evaluated pointwise up to a normalizing constant but no closed-form moments are available.
 
 ### Random-walk Metropolis-Hastings on a mixture posterior
 
 The target is a posterior over $`\theta = (\theta_1, \theta_2) \in \mathbb{R}^2`$ given by a two-component Gaussian mixture:
 
 ```math
-\pi(\theta \mid D) = \omega \phi(\theta;  \mu_1, \Sigma) + (1 - \omega)  \phi(\theta;  \mu_2, \Sigma),
+\pi(\theta \mid y) = \omega \phi(\theta;  \mu_1, \Sigma) + (1 - \omega)  \phi(\theta;  \mu_2, \Sigma),
 ```
 
 where $`\omega \in (0, 1)`$ is the mixing weight, $`\mu_1, \mu_2 \in \mathbb{R}^2`$ are the component means, $`\Sigma \in \mathbb{R}^{2 \times 2}`$ is the shared component covariance, and the bivariate normal density is
@@ -32,7 +32,7 @@ where $`\omega \in (0, 1)`$ is the mixing weight, $`\mu_1, \mu_2 \in \mathbb{R}^
 The two components stand in for two structural regimes that fit the same data.
 There is no closed-form posterior moment generator: the moments depend on the mixture and we cannot integrate against $`\pi`$ analytically.
 
-Random-walk Metropolis-Hastings constructs a Markov chain $`(\theta_t)_{t \ge 0}`$ whose stationary distribution is $`\pi(\theta \mid D)`$ using only pointwise evaluations of the kernel.
+Random-walk Metropolis-Hastings constructs a Markov chain $`(\theta_t)_{t \ge 0}`$ whose stationary distribution is $`\pi(\theta \mid y)`$ using only pointwise evaluations of the kernel.
 Given current state $`\theta_t \in \mathbb{R}^d`$ (with $`d = 2`$ here), a Gaussian random-walk proposal draws
 
 ```math
@@ -48,10 +48,10 @@ Because the proposal density $`q(\theta^{\star} \mid \theta_t)`$ is symmetric, t
 
 ```math
 \alpha(\theta_t, \theta^{\star}) =
-\min\bigg\lbrace 1,  \underbrace{\frac{\pi(\theta^{\star} \mid D)}{\pi(\theta_t \mid D)}}_{\text{kernel ratio, marginal cancels}} \bigg\rbrace.
+\min\bigg\lbrace 1,  \underbrace{\frac{\pi(\theta^{\star} \mid y)}{\pi(\theta_t \mid y)}}_{\text{kernel ratio, marginal cancels}} \bigg\rbrace.
 ```
 
-The marginal likelihood $`m(D)`$ appears in both the numerator and denominator of the kernel ratio and cancels exactly, which is why the sampler never needs to evaluate the partition function.
+The marginal likelihood $`m(y)`$ appears in both the numerator and denominator of the kernel ratio and cancels exactly, which is why the sampler never needs to evaluate the partition function.
 This rule satisfies detailed balance: for any pair $`(\theta, \theta')`$ the joint density of "current state and proposal" is symmetric under swapping the two, since
 
 ```math
@@ -60,7 +60,7 @@ This rule satisfies detailed balance: for any pair $`(\theta, \theta')`$ the joi
 ```
 
 Detailed balance implies that $`\pi`$ is the stationary distribution of the resulting chain.
-The acceptance ratio depends only on the kernel ratio, so the marginal likelihood $`m(D)`$ cancels.
+The acceptance ratio depends only on the kernel ratio, so the marginal likelihood $`m(y)`$ cancels.
 That is the load-bearing reason MH works without ever computing the partition function.
 The same algorithm applies to the Beta-Binomial conjugate posterior from [`bayesian-methods/bayesian-foundations/`](../../bayesian-methods/bayesian-foundations/), with the bound $`\theta \in (0, 1)`$ enforced by rejecting proposals outside the unit interval. Running it there is how we verify the sampler before applying it to the harder mixture target.
 
@@ -69,7 +69,7 @@ For curved or strongly correlated posteriors the random walk mixes slowly and ef
 Retained draws from the chain approximate posterior averages of any integrable function $`g : \Theta \to \mathbb{R}`$:
 
 ```math
-\mathbb{E}[g(\theta) \mid D] \approx \frac{1}{T - T_{\mathrm{burn}}}  \sum_{t = T_{\mathrm{burn}} + 1}^{T} g(\theta_t).
+\mathbb{E}[g(\theta) \mid y] \approx \frac{1}{T - T_{\mathrm{burn}}}  \sum_{t = T_{\mathrm{burn}} + 1}^{T} g(\theta_t).
 ```
 
 The approximation is exact in the limit $`T \to \infty`$.
@@ -113,7 +113,7 @@ Random-walk Metropolis-Hastings needs the posterior kernel at the current and pr
 ```text
 Algorithm: random-walk Metropolis-Hastings
 Input: log posterior kernel ell(theta), proposal scale s, initial theta_0, draws T
-Output: draws from pi(theta | D), plus mode-crossing summaries
+Output: draws from pi(theta | y), plus mode-crossing summaries
 1. Set theta = theta_0 and compute ell(theta)
 2. For t = 1, ..., T:
        propose theta_star = theta + s * eta_t, eta_t ~ N(0, I)

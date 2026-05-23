@@ -4,9 +4,9 @@
 
 A firm can install machines before it learns that productivity will be low. It can stop new investment. Installed capital only leaves through depreciation.
 
-The model is a stochastic RBC economy with capital $`K`$ and productivity $`z`$. The household chooses $`K'`$ after observing $`z`$. Irreversible investment imposes $`K' \geq (1-\delta)K`$, or $`I\geq 0`$.
+The model is a stochastic RBC economy with capital and a productivity shock. The household chooses next-period capital after observing productivity, but the irreversibility constraint forbids disinvestment: next-period capital must stay at or above the undepreciated portion of today's stock.
 
-The object of interest is the zero-investment boundary. It can bind far from the steady state. Global value function iteration keeps that boundary on the grid. The solution can then show the binding region and the overhang path.
+The object of interest is the zero-investment boundary. It can bind far from the steady state. Global value function iteration keeps that boundary on the grid. The solution then exposes the binding region and the resulting capital-overhang path after a bad productivity draw.
 
 ## Equations
 

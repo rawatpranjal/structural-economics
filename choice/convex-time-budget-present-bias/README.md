@@ -2,11 +2,11 @@
 
 ## Overview
 
-Subjects in a Convex Time Budget (CTB) experiment allocate a fixed token budget between a sooner payment at date $`t`$ and a later payment at date $`t + k`$. The relative price between sooner and later tokens is the experimental gross interest rate $`1 + r`$. Each interior allocation is the solution to a standard intertemporal optimisation under a quasi-hyperbolic discount function.
+Subjects in a Convex Time Budget (CTB) experiment allocate a fixed token budget between a sooner payment date and a later payment date, with the relative price between sooner and later tokens set by the experimenter's gross interest rate. Each interior allocation is the solution to a standard intertemporal optimisation under a quasi-hyperbolic discount function.
 
-Andreoni and Sprenger (2012) introduced this design to recover three structural parameters jointly: the present-bias factor $`\beta`$, the per-day discount factor $`\delta`$, and the CRRA curvature exponent $`\alpha`$. The tutorial reconstructs both estimation methods from the paper. The first is nonlinear least squares on the closed-form demand function. The second is two-limit Tobit maximum likelihood on a log-tangency linearisation that handles corner allocations explicitly.
+Andreoni and Sprenger (2012) introduced this design to recover three structural parameters jointly: the present-bias factor, the per-day discount factor, and the CRRA curvature exponent. The tutorial reconstructs both estimation methods from the paper. The first is nonlinear least squares on the closed-form demand function. The second is two-limit Tobit maximum likelihood on a log-tangency linearisation that handles corner allocations explicitly.
 
-The pedagogical hook is that varying the front-end delay $`t`$ is what separates $`\beta`$ from $`\delta`$ in identification. A weak design that uses only $`t = 0`$ cells leaves $`\beta`$ and $`\delta^k`$ entangled. A strong design that includes $`t > 0`$ cells breaks the entanglement by adding a regressor that is non-zero only at $`t = 0`$. Andreoni and Sprenger themselves found $`\hat\beta \approx 1.004`$ in their UCSD sample, which is an empirical surprise about monetary-payment present bias rather than a failure of the method.
+The pedagogical hook is that varying the front-end delay (the gap between today and the sooner payment date) is what separates present bias from long-run patience in identification. A weak design that uses only no-front-end-delay cells leaves the two parameters entangled. A strong design that includes positive front-end-delay cells breaks the entanglement by adding a regressor that is non-zero only when the sooner date is today. Andreoni and Sprenger themselves found a present-bias estimate close to one in their UCSD sample, which is an empirical surprise about monetary-payment present bias rather than a failure of the method.
 
 ## Equations
 

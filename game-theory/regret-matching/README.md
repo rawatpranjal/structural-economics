@@ -50,7 +50,8 @@ We need a convergence statement. Hart and Mas-Colell (2000) prove that if both p
 | Mixed strategy | $`\pi_i^t`$ | $`\Delta(A_i)`$ at round $`t`$ |
 | Instantaneous regret | $`r_i^t(a)`$ | $`u_i(a, a_{-i}^t) - u_i(a_i^t, a_{-i}^t)`$ [from `cfr-asymmetric-auction/`] |
 | Cumulative regret | $`R_i^T(a)`$ | $`\sum_t r_i^t(a)`$ [from `cfr-asymmetric-auction/`] |
-| Time-average play | $`\bar\pi^T`$ | $`(1/T) \sum_t (a_1^t, a_2^t)`$ |
+| Joint time-average play | $`\bar\pi^T`$ | $`(1/T) \sum_t (a_1^t, a_2^t)`$, joint distribution on $`A_1 \times A_2`$ |
+| Per-player time-average | $`\bar\pi_i^T`$ | $`(1/T) \sum_t \pi_i^t`$, marginal mixed strategy of player $`i`$ (tracked by the pseudocode) |
 | Rounds | $`T`$ | 10000 in the example |
 | RPS payoffs | | $`u_1(R, P) = -1`$, $`u_1(P, R) = +1`$, $`u_1(R, R) = 0`$, etc.; $`u_2 = -u_1`$ |
 | Stag-Hunt payoffs | | $`u_1(\text{Stag}, \text{Stag}) = 4`$, $`u_1(\text{Hare}, \cdot) = 3`$, $`u_1(\text{Stag}, \text{Hare}) = 0`$ |

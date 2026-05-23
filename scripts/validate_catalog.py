@@ -42,6 +42,8 @@ BRACED_LITERAL_STAR_SCRIPT = re.compile(r"(?<!\\)(\^|_)\{\*\}")
 EMPTY_SCRIPT_TARGET = re.compile(r"(?<!\\)(\^|_)(?:\s|$|[,$.;:)\]}]|[\^_])")
 # Match the canonical inline code-fence math form `$`expr`$`.
 INLINE_CODE_FENCE_MATH = re.compile(r"\$`[^`]+`\$")
+OVERVIEW_HEADER = re.compile(r"^##\s+Overview\s*$")
+NEXT_SECTION_HEADER = re.compile(r"^##\s+\S")
 
 
 def is_python_string_close(line: str) -> bool:
@@ -265,6 +267,51 @@ def pseudocode_math_errors() -> list[str]:
     return errors
 
 
+def overview_math_warnings() -> list[str]:
+    """Flag inline or display math inside any tutorial's `## Overview` section.
+
+    Learned Rule (CLAUDE.md, "Tutorial Sections"): the Overview is prose
+    only and contains no math, inline LaTeX, or symbolic notation. Symbols
+    move to Equations or Model Setup. This check is opt-in via --strict
+    because a long tail of tutorials still violates the rule and the
+    cleanup is incremental.
+    """
+    warnings = []
+    for path in active_markdown_files():
+        rel = path.relative_to(ROOT)
+        lines = path.read_text(errors="replace").splitlines()
+        in_overview = False
+        in_fence = False
+        fence_lang = ""
+        for lineno, line in enumerate(lines, start=1):
+            stripped = line.strip()
+            if stripped.startswith("```"):
+                if in_fence:
+                    in_fence = False
+                    fence_lang = ""
+                else:
+                    in_fence = True
+                    fence_lang = stripped[3:].strip().lower()
+                if in_overview and fence_lang == "math":
+                    warnings.append(
+                        f"{rel}:{lineno} Overview contains a ```math display block; move math to Equations"
+                    )
+                continue
+            if in_fence:
+                continue
+            if OVERVIEW_HEADER.match(line):
+                in_overview = True
+                continue
+            if in_overview and NEXT_SECTION_HEADER.match(line):
+                in_overview = False
+                continue
+            if in_overview and INLINE_CODE_FENCE_MATH.search(line):
+                warnings.append(
+                    f"{rel}:{lineno} Overview contains inline math (`$`...`$`); rewrite as prose and move symbols to Equations"
+                )
+    return warnings
+
+
 def split_markdown_table_cells(row: str) -> list[str]:
     body = row.strip()
     if body.startswith("|"):
@@ -344,7 +391,7 @@ def _run_self_tests() -> None:
     assert not INLINE_CODE_FENCE_MATH.search("$x$")
 
 
-def validate() -> int:
+def validate(strict: bool = False) -> int:
     errors = []
     links = catalog_links()
     tutorials = tutorial_dirs()
@@ -373,6 +420,14 @@ def validate() -> int:
     errors.extend(pseudocode_math_errors())
     errors.extend(table_header_errors())
 
+    overview_findings = overview_math_warnings()
+    if strict:
+        errors.extend(overview_findings)
+    elif overview_findings:
+        print(f"Overview-math warnings ({len(overview_findings)}; pass --strict to fail on these):")
+        for warning in overview_findings:
+            print(f"  - {warning}")
+
     if errors:
         print("Catalog validation failed:")
         for error in errors:
@@ -385,4 +440,5 @@ def validate() -> int:
 
 if __name__ == "__main__":
     _run_self_tests()
-    sys.exit(validate())
+    strict = "--strict" in sys.argv[1:]
+    sys.exit(validate(strict=strict))
