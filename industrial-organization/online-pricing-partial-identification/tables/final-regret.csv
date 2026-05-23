@@ -1,0 +1,6 @@
+Algorithm,Final cumulative regret,Average regret per round,Oracle price,Most-played price (last 500 rounds),Active prices at T
+epsilon-greedy,1093.58,0.2187,4.29,4.29,20
+learn-then-earn,503.58,0.1007,4.29,4.29,20
+UCB1,4073.71,0.8147,4.29,6.18,20
+Thompson,874.32,0.1749,4.29,4.29,20
+UCB-PI,1269.32,0.2539,4.29,4.29,3
