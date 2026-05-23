@@ -2,17 +2,11 @@
 
 ## Overview
 
-Households receive stochastic income and trade one risk-free bond. They can borrow only
-down to $`a \geq \underline a`$. Since the bond is in zero net supply, aggregate asset
-demand must equal zero.
+Households receive stochastic income and trade one risk-free bond. Borrowing is bounded by an exogenous limit. Since the bond is in zero net supply, aggregate asset demand must equal zero.
 
-The object is the equilibrium return $`r^{\ast}`$. It is the rate that makes stationary
-bond demand $`S(r^{\ast})`$ equal zero. With incomplete insurance, households want buffer
-wealth at $`r = \rho`$. Market clearing therefore requires $`r^{\ast} < \rho`$.
+The object of interest is the equilibrium risk-free return, defined as the rate that makes stationary aggregate bond demand vanish. With incomplete insurance, households want buffer wealth at the rate-of-time-preference benchmark; market clearing therefore requires the equilibrium return to sit strictly below that benchmark.
 
-The computation links household policy to the cross section. The HJB gives consumption
-and savings drift at a candidate $`r`$. The KFE turns that drift into a stationary density.
-Bisection updates $`r`$ until aggregate bond demand clears.
+The computation links household policy to the cross section. The HJB gives consumption and the savings drift at a candidate return. The KFE turns that drift into a stationary density. Bisection updates the return until aggregate bond demand clears.
 
 ## Preliminary readings
 

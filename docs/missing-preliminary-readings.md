@@ -1,5 +1,7 @@
 # Missing Preliminary Readings: Gap-Analysis Proposals
 
+**Status: DONE 2026-05-22.** All 14 ranked P0+P1+P2 proposals from this doc shipped as Wave 1 (see `spec.md > Wave 1`). This file is now historical; kept for the gap-analysis methodology and the deferred / rejected proposals at the bottom.
+
 Generated 2026-05-21. Companion to commit `20b0242`, which added
 `## Preliminary readings` sections to 21 dense tutorials by linking
 *existing* simpler siblings. This report lists 15 proposed NEW

@@ -2,8 +2,9 @@
 
 This spec covers all authoring waves for the tutorial catalog.
 
-- **Wave 1 - Preliminary-Readings Curriculum.** Closed. 14 prelims shipped 2026-05-22.
-- **Wave 2 - Behavioral and Dynamic Learning Tutorials.** Open. 3 primary + 1 addendum tutorials, design ported from `plan.md` on 2026-05-22. `plan.md` is now a stub.
+- **Wave 1 - Preliminary-Readings Curriculum.** DONE 2026-05-22. 14 prelims shipped.
+- **Wave 2 - Behavioral and Dynamic Learning Tutorials.** DONE 2026-05-22. W2.1-W2.3 shipped 2026-05-20/21 (predated spec); W2.4 shipped 2026-05-22. `plan.md` retired to stub.
+- **Wave 3 - Unplanned.** Not specced. Deferred items listed in `## Out of scope (Wave 2)` below (Gallego-van Ryzin pricing, network RM, markdown DP; behavioral runners). Brainstorm required before authoring.
 
 See each wave section below.
 
@@ -1479,7 +1480,7 @@ After each prelim PR:
 
 ## Wave 2: Behavioral and Dynamic Learning Tutorials
 
-**Date opened:** 2026-05-22 (merge of plan.md into spec.md). **Source:** plan.md (now retired and stubbed). **Status:** W2.1, W2.2, W2.3 already shipped May 20-21, 2026 - predating this merge. plan.md was retroactively a record of work that had already shipped, not a forward design. W2.4 (online-pricing-partial-identification) remains the only undone item; treat the rest of Wave 2 as a closed historical record.
+**Date opened:** 2026-05-22 (merge of plan.md into spec.md). **Source:** plan.md (now retired and stubbed). **Status:** DONE 2026-05-22. W2.1, W2.2, W2.3 shipped May 20-21, 2026 (predated this merge). W2.4 shipped 2026-05-22 (commit `48be... ship W2.4`). plan.md was retroactively a record of work that had already shipped, not a forward design. All four tutorials closed; treat Wave 2 as a closed historical record.
 
 Shipped tutorials (root README catalog rows):
 
@@ -1487,7 +1488,7 @@ Shipped tutorials (root README catalog rows):
 - W2.2 `choice/consideration-set-estimation/` - root README line 196 (shipped framing: Manzini-Mariotti stochastic-choice + random consideration, slightly different from plan.md's "exact enumeration over consideration sets" framing).
 - W2.3 `choice/probability-distortion-mixture/` - root README line 197 (shipped under a different folder name than plan.md's `probability-weighting-lottery-choice`, and a different framing: Bruhin-Fehr-Duda-Epper finite-mixture EM over latent CPT/EUT types instead of Prelec-weighting NLS. The economic object is closely related; the computational object is finite-mixture EM, not constrained nonlinear estimation. The user pivoted at authoring time. This is documented here rather than rewriting the Wave 2 spec; the shipped tutorial is the canonical artifact).
 
-The PyBehavior repo and the `rawatpranjal/interactive-pricing-theory` repo were surveyed for tutorials that teach a computational tool not already covered cleanly by the catalog. The original output: three primary behavioral tutorials in `choice/` plus one IO addendum. The IO addendum outranks the three on raw computational novelty (a real online-learning algorithm with revealed-preference dominance elimination). It is the only Wave 2 item still to author.
+The PyBehavior repo and the `rawatpranjal/interactive-pricing-theory` repo were surveyed for tutorials that teach a computational tool not already covered cleanly by the catalog. The original output: three primary behavioral tutorials in `choice/` plus one IO addendum. The IO addendum outranks the three on raw computational novelty (a real online-learning algorithm with revealed-preference dominance elimination). DONE 2026-05-22.
 
 ### Notational policy (Wave 2)
 
@@ -1511,7 +1512,7 @@ None. Wave-2 tutorials introduce new economic objects, not new exposition of obj
 | W2.1 | `choice/convex-time-budget-present-bias/` | Choice and Demand | NLS + Tobit MLE on continuous allocations | shipped (root README line 195) |
 | W2.2 | `choice/consideration-set-estimation/` | Choice and Demand | Manzini-Mariotti stochastic choice + random consideration (shipped framing) | shipped (root README line 196) |
 | W2.3 | `choice/probability-distortion-mixture/` | Choice and Demand | Bruhin-Fehr-Duda-Epper finite-mixture EM (shipped framing) | shipped (root README line 197) |
-| W2.4 | `industrial-organization/online-pricing-partial-identification/` | Industrial Organization | UCB with WARP-bound elimination | open |
+| W2.4 | `industrial-organization/online-pricing-partial-identification/` | Industrial Organization | UCB with WARP-bound elimination | shipped 2026-05-22 |
 
 ---
 
@@ -1606,7 +1607,7 @@ None. Wave-2 tutorials introduce new economic objects, not new exposition of obj
 
 ### W2.4. `industrial-organization/online-pricing-partial-identification/` (addendum)
 
-**Status.** Optional in Wave 2. Outranks W2.1-W2.3 on raw computational novelty (real online-learning algorithm). Promote to first authoring slot if user prioritises a hardcore method over behavioral coverage. Otherwise defer to Wave 3.
+**Status.** DONE 2026-05-22. Originally marked optional pending user prioritization; promoted and completed as the only undone Wave 2 item. Shipped tutorial: UCB-PI vs 4 bandit baselines + WARP-bound elimination on 20-price grid.
 
 **Title.** Online Pricing with Revealed-Preference Bounds: UCB on Partial Identification.
 
@@ -1641,7 +1642,7 @@ None. Wave-2 tutorials introduce new economic objects, not new exposition of obj
 1. [DONE 2026-05-21] **W2.1 `convex-time-budget-present-bias`** - shipped before this spec was written.
 2. [DONE 2026-05-21] **W2.2 `consideration-set-estimation`** - shipped before this spec was written.
 3. [DONE 2026-05-21] **W2.3 `probability-distortion-mixture`** - shipped before this spec was written, under a different folder name and framing than the plan.md original; see status note above.
-4. **W2.4 `online-pricing-partial-identification`** - only undone item. Author next.
+4. [DONE 2026-05-22] **W2.4 `online-pricing-partial-identification`** - shipped commit `48be... ship W2.4`. UCB-PI + WARP-elimination + 4 bandit baselines.
 
 Each tutorial is one PR: folder + `run.py` + hand-maintained `README.md` + `figures/` + `tables/` + catalog row + validator pass.
 

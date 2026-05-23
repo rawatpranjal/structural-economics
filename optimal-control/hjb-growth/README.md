@@ -150,15 +150,15 @@ At each grid point the solver computes the forward slope $`D^{+}_i V`$ and the b
 
 ### The implicit step
 
-An explicit pseudo-time update $`V^{n+1} = V^n + \Delta(u(c^n) + G^n V^n - \rho V^n)`$ is unstable for moderately large $`\Delta`$ because the upwind generator $`G^n`$ has eigenvalues with arbitrarily large negative real part (the leaving rate at a point with steep drift can be very large). The implicit version replaces $`G^n V^n`$ with $`G^n V^{n+1}`$ and rearranges to
+Write the upwind generator as $`\mathbf{A}^n`$ (bold, to distinguish from the scalar TFP $`A`$), the same symbol the [`optimal-control/upwind-finite-differences/`](../../optimal-control/upwind-finite-differences/) prelim and the Huggett HJB use. An explicit pseudo-time update $`V^{n+1} = V^n + \Delta(u(c^n) + \mathbf{A}^n V^n - \rho V^n)`$ is unstable for moderately large $`\Delta`$ because $`\mathbf{A}^n`$ has eigenvalues with arbitrarily large negative real part (the leaving rate at a point with steep drift can be very large). The implicit version replaces $`\mathbf{A}^n V^n`$ with $`\mathbf{A}^n V^{n+1}`$ and rearranges to
 
 ```math
-[(1/\Delta + \rho)  \mathbf{I} - G^n]  V^{n+1} = u(c^n) + V^n / \Delta .
+[(1/\Delta + \rho)  \mathbf{I} - \mathbf{A}^n]  V^{n+1} = u(c^n) + V^n / \Delta .
 ```
 
-The matrix on the left is strictly diagonally dominant with positive diagonal because $`G^n`$ has zero row sums and non-positive diagonal (it is the generator of a sub-Markov process), so the linear system is unconditionally invertible regardless of $`\Delta`$. Taking $`\Delta \to \infty`$ recovers a Newton step on $`\rho V - u(c) - G V = 0`$ with the policy frozen, which is the deepest reason the algorithm converges in a handful of iterations.
+The matrix on the left is strictly diagonally dominant with positive diagonal because $`\mathbf{A}^n`$ has zero row sums and non-positive diagonal (it is the generator of a sub-Markov process), so the linear system is unconditionally invertible regardless of $`\Delta`$. Taking $`\Delta \to \infty`$ recovers a Newton step on $`\rho V - u(c) - \mathbf{A} V = 0`$ with the policy frozen, which is the deepest reason the algorithm converges in a handful of iterations.
 
-The pseudo-time step $`\Delta = 1000`$ used here is numerical, not economic. It is chosen large enough to be effectively infinite relative to the discount-rate scale $`1/\rho = 20`$ and the leaving-rate scale $`|G^n|`$ on the grid.
+The pseudo-time step $`\Delta = 1000`$ used here is numerical, not economic. It is chosen large enough to be effectively infinite relative to the discount-rate scale $`1/\rho = 20`$ and the leaving-rate scale $`|\mathbf{A}^n|`$ on the grid.
 
 ```text
 Algorithm: implicit upwind HJB iteration
@@ -175,11 +175,11 @@ For n = 0, 1, ... until ||V^(n+1) - V^n||_infinity < eps:
        at s_i = 0 use the steady-state marginal utility.
        At i = 1 use D^+; at i = N use D^- (boundary forcing).
     5. Set c^n_i = (D_i V^n)^(-1/sigma) and build the tridiagonal
-       generator G^n from the positive and negative drift parts:
+       generator A^n from the positive and negative drift parts:
        sub-diagonal -s^-_i / dk, super-diagonal s^+_i / dk,
        diagonal -(s^+_i / dk - s^-_i / dk).
     6. Solve the implicit linear system
-       [(1/Delta + rho) I - G^n] V^(n+1) = u(c^n) + V^n / Delta
+       [(1/Delta + rho) I - A^n] V^(n+1) = u(c^n) + V^n / Delta
        by sparse LU on a tridiagonal matrix.
 Output: value V, consumption policy c(k), drift s(k) = dot{k}
 ```

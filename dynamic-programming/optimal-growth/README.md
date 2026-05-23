@@ -2,11 +2,11 @@
 
 ## Overview
 
-A planner allocates output between consumption today and capital tomorrow. Capital produces future output, so saving has a return that falls with $`k`$. The economy settles where impatience balances the marginal product of capital.
+A planner allocates output between consumption today and capital tomorrow. Capital produces future output, and the return to saving falls as the capital stock rises. The economy settles where impatience balances the marginal product of capital.
 
-The object is the policy rule $`g(k)`$ for next-period capital. Given $`g(k)`$, consumption is $`c^{\ast}(k)=A k^{\alpha}-g(k)`$, where $`A>0`$ is total factor productivity and $`\alpha\in(0,1)`$ is the capital share.
+The object of interest is the policy rule mapping today's capital stock to next-period capital. Consumption falls out as the residual after that saving choice, given Cobb-Douglas production.
 
-The log Cobb-Douglas case has the closed-form saving rate $`\alpha\beta`$, where $`\beta\in(0,1)`$ is the discount factor. Value function iteration solves the Bellman equation on a grid. Here the closed form audits the computed value and policy point by point.
+The log Cobb-Douglas case has a closed-form saving rate equal to the product of the capital share and the discount factor. Value function iteration solves the Bellman equation on a grid; the closed form then audits the computed value and policy point by point.
 
 ## Equations
 
