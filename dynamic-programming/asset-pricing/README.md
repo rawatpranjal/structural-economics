@@ -2,9 +2,9 @@
 
 ## Overview
 
-A Lucas tree pays a stochastic dividend $`y_t`$ each period. A representative household owns the tree and consumes the dividend. Market clearing sets $`c_t=y_t`$, so there is no savings choice.
+A Lucas tree pays a stochastic dividend each period. A representative household owns the tree and consumes the dividend. Market clearing sets consumption equal to the dividend, so there is no savings choice.
 
-The equilibrium object is the price function $`p(y)`$. It makes the household willing to hold the tree after seeing today's dividend. The stochastic discount factor prices the next dividend and resale value.
+The equilibrium object is the price function. It makes the household willing to hold the tree after seeing today's dividend. The stochastic discount factor prices the next dividend and resale value.
 
 The price satisfies an Euler equation with a conditional expectation. We solve a one-dimensional fixed point after scaling price by marginal utility. Gauss-Hermite quadrature evaluates the expectation at off-grid dividend states.
 

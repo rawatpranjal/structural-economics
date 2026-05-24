@@ -4,9 +4,9 @@
 
 A Solow economy saves a fixed share of output each period. Capital grows through investment and shrinks through depreciation. Labor and technology growth make each unit of capital serve more effective workers.
 
-The state is $`k_t = K_t/(A_t L_t)`$, capital per unit of effective labor. If investment exceeds break-even investment, $`k_t`$ rises. If investment falls short, $`k_t`$ falls. Concavity gives one positive steady state.
+The state is capital per unit of effective labor. If investment exceeds break-even investment, capital rises. If investment falls short, capital falls. Concavity gives one positive steady state.
 
-The computation iterates the law of motion from an initial $`k_0`$. A closed-form steady state checks the path and makes convergence visible.
+The computation iterates the law of motion from an initial capital stock. A closed-form steady state checks the path and makes convergence visible.
 
 ## Equations
 

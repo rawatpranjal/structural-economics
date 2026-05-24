@@ -4,11 +4,11 @@
 
 Structural estimation matches data to a model that is easier to simulate than to write down as a likelihood. The simulated method of moments does this by matching a vector of empirical moments to simulated ones. The catch is moment choice. A poorly chosen pair can outperform a long list; adding moments often hurts precision rather than improving it.
 
-Adversarial estimation moves the moment-choice step inside the algorithm. The analyst trains a binary classifier, called the discriminator, to separate real observations from observations simulated under a candidate parameter. The estimator is the parameter that the best-trained discriminator finds hardest to spot. The class of classifiers replaces the list of moments.
+Adversarial estimation moves the moment-choice step inside the algorithm. The analyst trains a binary classifier, called the discriminator, to separate real observations from observations simulated under a candidate parameter. The estimator is the parameter that the best-trained discriminator finds hardest to spot. The class of classifiers replaces the list of moment conditions.
 
-Two choices of classifier recover estimators the reader has seen. A logistic regression on the first $`d`$ power features of $`x`$ asymptotically matches optimally-weighted SMM with the first $`d`$ power moments. A small neural network asymptotically matches maximum likelihood, without writing down the likelihood and without picking moments by hand.
+Two choices of classifier recover estimators the reader has seen. A logistic regression on polynomial features asymptotically matches optimally-weighted SMM with power moments. A small neural network asymptotically matches maximum likelihood, without writing down the likelihood and without picking moments by hand.
 
-The illustration uses the smallest model that supports the comparison. The real data are $`n`$ i.i.d. draws from the standard logistic distribution. The single unknown is the location $`\theta_0`$, set to zero. Maximum likelihood is available in closed form as the efficiency benchmark. The headline exhibit puts SMM and the adversarial estimator side by side as the moment count grows from three to eleven.
+The illustration uses the smallest model that supports the comparison. The real data are independent draws from the standard logistic distribution. The single unknown is the location parameter, set to zero. Maximum likelihood is available in closed form as the efficiency benchmark. The headline exhibit puts SMM and the adversarial estimator side by side as the moment count grows from three to eleven.
 
 ## Preliminary readings
 

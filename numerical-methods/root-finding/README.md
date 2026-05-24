@@ -2,11 +2,11 @@
 
 ## Overview
 
-A representative-firm economy with Cobb-Douglas production has a closed-form clearing rate $`r^{\ast} = 1/\beta - 1`$. The market-clearing condition is one scalar equation in $`r`$.
+A representative-firm economy with Cobb-Douglas production has a closed-form clearing rate. The market-clearing condition is one scalar equation in the interest rate.
 
 Bisection halves a sign-change bracket. Secant fits a chord through the last two iterates. Brent combines bisection's bracket with inverse quadratic interpolation when the fast step stays inside. Newton-Raphson uses the analytic derivative.
 
-These are the four solvers behind $`\mathrm{scipy.optimize.brentq}`$ and the equilibrium clearings in Aiyagari and Huggett.
+These are the four solvers behind the standard scipy Brent solver and the equilibrium clearings in Aiyagari and Huggett.
 
 ## Equations
 

@@ -6,7 +6,7 @@ A consumer faces a menu of products and picks one (or walks away). If the consum
 
 Manzini and Mariotti (2014) show that this two-stage random consideration set rule has a closed-form choice probability and that both the underlying preference ranking and the per-alternative attention probabilities are uniquely identified from how choice frequencies vary across menus. The empirical signature is asymmetric: removing a product the consumer ranks above the chosen one raises the chosen one's probability, while removing a product ranked below has no effect.
 
-The tutorial reconstructs both estimation strategies the paper implies. Method 1 is joint maximum likelihood with brute-force enumeration of the $`J!`$ candidate rankings; the attention MLE has a closed form given the ranking, so the inner step is one division per alternative. Method 2 is a two-step revealed-preference procedure: attention is recovered from singleton menus that include the default, and the ranking is recovered from the asymmetric impact pattern. A Luce / multinomial-logit benchmark on the same data shows where IIA-respecting models break.
+The tutorial reconstructs both estimation strategies the paper implies. Method 1 is joint maximum likelihood with brute-force enumeration of all possible rankings; the attention MLE has a closed form given the ranking, so the inner step is one division per alternative. Method 2 is a two-step revealed-preference procedure: attention is recovered from singleton menus that include the default, and the ranking is recovered from the asymmetric impact pattern. A Luce / multinomial-logit benchmark on the same data shows where IIA-respecting models break.
 
 ## Equations
 

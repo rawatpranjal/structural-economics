@@ -6,7 +6,7 @@
 
 ## Overview
 
-A macro model tracks an aggregate state after a shock. Here $`x_t`$ is a deviation from steady state. The shock can be positive or negative.
+A macro model tracks an aggregate state after a shock. Here the state is a deviation from steady state. The shock can be positive or negative.
 
 The object is the path back to steady state. Equal shocks need not unwind symmetrically when the transition is nonlinear.
 

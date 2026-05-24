@@ -4,9 +4,9 @@
 
 Households face different endowment shocks and cannot fully insure each other. In Heaton and Lucas (1996), two CRRA agents trade equity and a one-period bond. Short-sale and borrowing limits make marginal utilities depend on who holds wealth after each shock.
 
-The state is agent 1's wealth share, $`\omega_1`$. When constraints bind, this share changes how aggregate dividends are priced. Equity premia therefore vary across the wealth distribution.
+The state is agent 1's wealth share. When constraints bind, this share changes how aggregate dividends are priced. Equity premia therefore vary across the wealth distribution.
 
-The transition for $`\omega_1`$ is implicit. Tomorrow's share depends on tomorrow's equity price, which also depends on tomorrow's share. STPFI solves prices, portfolios, multipliers, and shock-contingent next wealth shares in one global system.
+The transition for the wealth share is implicit. Tomorrow's share depends on tomorrow's equity price, which also depends on tomorrow's share. STPFI solves prices, portfolios, multipliers, and shock-contingent next wealth shares in one global system.
 
 ## Equations
 

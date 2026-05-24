@@ -4,7 +4,7 @@
 
 An investor owns a claim to a dividend tree. Today she learns that next period's dividend will be higher. Today's dividend has not moved.
 
-The object is a representative-agent Lucas tree. A surprise shock $`z_t`$ moves today's dividend. A news shock $`n_t`$ is observed today and moves tomorrow's dividend.
+The object is a representative-agent Lucas tree. A surprise shock moves today's dividend. A news shock is observed today and moves tomorrow's dividend.
 
 The computational task is a first-order pricing rule. It maps the dividend state and the news signal into today's asset price.
 

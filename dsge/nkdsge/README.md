@@ -4,7 +4,7 @@
 
 A central bank raises the policy rate when firms adjust prices slowly. The nominal surprise raises the real rate before prices catch up. Demand falls, and the Phillips curve turns the lower output gap into lower inflation.
 
-The model has three variables: output gap $`y_t`$, inflation $`\pi_t`$, and policy rate $`i_t`$. The shocks are a Taylor-rule wedge $`v_t`$ and a natural-rate demand shock $`d_t`$. The tutorial studies their impulse responses.
+The model has three variables: output gap, inflation, and policy rate. The shocks are a Taylor-rule wedge and a natural-rate demand shock. The tutorial studies their impulse responses.
 
 Today's output and inflation depend on expected future values, so the equilibrium is forward looking. Because the system is log-linear, coefficient matching solves the shock loadings directly. A Klein QZ solve checks the same stable path.
 

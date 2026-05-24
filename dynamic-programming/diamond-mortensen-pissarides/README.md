@@ -2,9 +2,9 @@
 
 ## Overview
 
-Unemployed workers and posted vacancies meet through a matching technology. A formed match produces surplus $`z_t-b`$, and Nash bargaining splits it.
+Unemployed workers and posted vacancies meet through a matching technology. A formed match produces surplus, and Nash bargaining splits it.
 
-The equilibrium object is labor-market tightness $`\theta_t=v_t/u_t`$. Free entry pins down tightness because firms post vacancies until expected job value covers vacancy cost.
+The equilibrium object is labor-market tightness. Free entry pins down tightness because firms post vacancies until expected job value covers vacancy cost.
 
 The code compares a log-linear rule with a finite-state free-entry fixed point. This asks whether the Shimer amplification puzzle comes from the solver or from surplus calibration.
 

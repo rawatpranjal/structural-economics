@@ -2,9 +2,9 @@
 
 ## Overview
 
-A Ramsey planner inherits aggregate capital $`k`$. Output can be consumed today or invested for future production. Scarce capital raises investment value. Abundant capital makes current consumption cheaper.
+A Ramsey planner inherits aggregate capital. Output can be consumed today or invested for future production. Scarce capital raises investment value. Abundant capital makes current consumption cheaper.
 
-The object is the consumption policy $`c(k)`$ and the capital drift $`\dot{k}`$. Together they describe how the economy returns to its steady state.
+The object is the consumption policy and the capital drift. Together they describe how the economy returns to its steady state.
 
 The HJB gives the value of starting from each capital stock. Its derivative is the shadow value that pins down consumption. A finite-difference scheme is needed because the nonlinear HJB has no closed-form policy on the grid. Upwinding chooses the derivative side using the policy-implied drift.
 

@@ -4,7 +4,7 @@
 
 Consider a local market with eight active firms. Some firms may be close to leaving. Potential entrants wait outside because entry requires a sunk cost. The firm count is therefore a state variable.
 
-The model uses a symmetric Cournot market. The state is the active firm count $`N_t`$. Incumbents pay fixed cost $`f`$ to operate. Entrants pay sunk cost $`K`$ before earning future profits.
+The model uses a symmetric Cournot market. The state is the active firm count. Incumbents pay fixed cost to operate. Entrants pay sunk cost before earning future profits.
 
 Exit and entry rules depend on future market sizes. We solve a finite-state Bellman fixed point for incumbent values. The implied Markov chain gives persistence and the long-run firm-count distribution.
 

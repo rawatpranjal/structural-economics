@@ -4,9 +4,9 @@
 
 A supplier may invest in tooling useful only for one buyer. The asset raises joint surplus. After the asset is sunk, bargaining may leave the supplier with too little of the return. The supplier then invests for private surplus.
 
-The object is a governance choice. Asset specificity $`s\in[0,1]`$ measures how hard the asset is to redeploy. The choices are spot exchange, a long-term contract, and vertical integration. Each form changes investment incentives and governance cost.
+The object is a governance choice. Asset specificity measures how hard the asset is to redeploy. The choices are spot exchange, a long-term contract, and vertical integration. Each form changes investment incentives and governance cost.
 
-For each $`s`$, the code computes investment and surplus under each form. A grid search then selects the surplus-maximizing boundary choice. The output is a set of specificity thresholds.
+For each specificity level, the code computes investment and surplus under each form. A grid search then selects the surplus-maximizing boundary choice. The output is a set of specificity thresholds.
 
 ## Equations
 
