@@ -6,7 +6,7 @@ Schelling starts with a simple city. Two groups fill a checkerboard. Some cells 
 
 Agents do not choose segregation as a social outcome. They choose acceptable local neighborhoods. Their moves change the choices that other agents face next.
 
-This tutorial keeps the classic model. We simulate a 50 x 50 city. We sweep the minimum same-group neighbor share $`\tau`$. We track the segregation index $`S(t)`$ until the city stops moving.
+This tutorial keeps the classic model. We simulate a 50 x 50 city. We sweep the minimum same-group neighbor share threshold. We track the aggregate segregation index until the city stops moving.
 
 ## Equations
 
