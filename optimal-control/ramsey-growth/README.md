@@ -4,9 +4,9 @@
 
 In Ramsey growth, an economy inherits its capital stock. A capital-poor economy saves to build productive capacity. A capital-rich economy can consume more while capital falls toward its long-run level.
 
-The object is the date-zero consumption choice $`c_0`$. History fixes $`k_0`$, but consumption can jump. The right jump places the economy on the saddle path to the Ramsey steady state.
+The object is the initial consumption choice. History fixes the starting capital, but consumption can jump. The right jump places the economy on the saddle path to the Ramsey steady state.
 
-Shooting treats $`c_0`$ as the unknown. Each guess defines a full path through the Euler equation and resource law. A root search chooses the guess whose terminal capital is near $`k^{\ast}`$.
+Shooting treats the initial consumption as the unknown. Each guess defines a full path through the Euler equation and resource law. A root search chooses the guess whose terminal capital is near the steady-state level.
 
 ## Equations
 

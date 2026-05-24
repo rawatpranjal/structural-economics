@@ -2,11 +2,11 @@
 
 ## Overview
 
-An unemployed worker draws one wage offer each period. Accepting locks in that wage forever. Rejecting pays benefit $`b`$ and returns the worker to search next period.
+An unemployed worker draws one wage offer each period. Accepting locks in that wage forever. Rejecting pays an unemployment benefit and returns the worker to search next period.
 
-The object is the reservation wage $`w^{\ast}`$. The worker accepts offers at or above it and rejects offers below it.
+The object is the reservation wage. The worker accepts offers at or above it and rejects offers below it.
 
-The computation needs one continuation value. Rejection discards today's offer, so the Bellman equation compares acceptance against a scalar. That scalar gives a fixed point for $`w^{\ast}`$.
+The computation needs one continuation value. Rejection discards today's offer, so the Bellman equation compares acceptance against a scalar. That scalar gives a fixed point for the reservation wage.
 
 ## Equations
 
