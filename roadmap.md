@@ -35,26 +35,24 @@ Pedagogical tutorial catalog of computational and structural economics models. S
 - **Math-syntax migration DONE.** Repo-wide code-fence math syntax (`` $`...`$ ``, `` ```math ``). Validator hard-rejects bare-dollar math. `scripts/grep_math_bugs.sh` reports clean.
 - **Em-dash and en-dash scrub DONE.** Zero hits across active `.md` (excluding `_legacy/`).
 
-## LEFT (mop-up only - close-out scope)
+### Mop-up sweep (2026-05-23)
 
-### Mechanical residue
+| Item | Status | Where | Outcome |
+|------|--------|-------|---------|
+| 44 Overview-math warns across 30 tutorials | DONE 2026-05-23 (commits `42ce1e1`, `70055bd`) | repo-wide | validator now 0 warns; 30 files touched, 54+/54- total (pure prose-for-symbol substitution) |
+| Stale "rename to $`A`$ pending" annotation | DONE 2026-05-23 (`70055bd`) | `optimal-control/upwind-finite-differences/README.md:90` | parenthetical updated to current state |
+| Zinkevich year drift (2007 vs 2008) | DONE 2026-05-23 (`70055bd`) | `game-theory/cfr-asymmetric-auction/README.md:223` | year aligned to 2008 (NIPS proceedings year, matching `regret-matching/`) |
+| `\Lambda` undefined in dynamic-games-estimation | NOT NEEDED | `industrial-organization/dynamic-games-estimation/README.md:53` | verified defined at first use ("`\Lambda(\cdot)` is the logistic CDF"); audit was a false positive |
 
-| Item | Status | Where | Sweep cost |
-|------|--------|-------|------------|
-| 44 Overview-math warns across 30 tutorials | testing Haiku sweep 2026-05-23 | `python scripts/validate_catalog.py --strict` | 1 batch if Haiku quality holds, else manual |
-| Stale "rename to $`A`$ pending" annotation | open | `optimal-control/upwind-finite-differences/README.md:90` | 1-line edit |
-| Zinkevich year drift (2007 vs 2008) | open | `game-theory/cfr-asymmetric-auction/README.md:223` vs `game-theory/regret-matching/README.md:119` | 1-line edit (canonical year: 2008) |
-| Undefined `\Lambda` symbol | open | `industrial-organization/dynamic-games-estimation/README.md` | define at first use or rephrase |
-| Stale remote branch `migrate-code-fence-math` | open | `origin/migrate-code-fence-math` (unreachable, superseded) | destructive; user decision |
+### Still open
 
-The Overview-math sweep is the only sizable item. Everything else is sub-minute.
+| Item | Where | Cost |
+|------|-------|------|
+| Stale remote branch `migrate-code-fence-math` | `origin/migrate-code-fence-math` (unreachable, superseded) | destructive; user decision |
 
-### Active session plan
+### Sweep tooling
 
-The Haiku-pilot test for the Overview sweep lives at:
-`~/.claude/plans/test-if-a-haiku-tingly-kahan.md`
-
-If the pilot passes, three parallel Haiku batches sweep the remaining 27 tutorials and the three landmines above. Validator must drop to **zero** Overview-math warns post-sweep.
+The Haiku-pilot test plan lives at `~/.claude/plans/test-if-a-haiku-tingly-kahan.md`. Pilot passed on 3 tutorials; full sweep ran as 3 parallel batches over 27 tutorials with a tight "minimal surgical edit" prompt. End-state: zero Overview-math warns, math-syntax clean, em-dash scrub clean.
 
 ## DEFERRED (out of close-out scope)
 
