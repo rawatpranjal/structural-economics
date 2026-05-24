@@ -4,7 +4,7 @@
 
 Prices and budgets change across shopping trips. Each trip leaves one chosen bundle, so the data show choices under different budget sets. The economic question is whether one stable utility function could have chosen all bundles.
 
-The object is a finite revealed-preference relation. If bundle $`x_j`$ was affordable when $`x_i`$ was chosen, the data reveal $`x_i`$ as weakly preferred to $`x_j`$. A violation appears when chained comparisons return to a bundle that was strictly cheaper at a later budget.
+The object is a finite revealed-preference relation. If a bundle was affordable when another bundle was chosen, the data reveal that the chosen bundle is weakly preferred to the affordable one. A violation appears when chained comparisons return to a bundle that was strictly cheaper at a later budget.
 
 The computation builds that relation, closes it transitively, and checks the GARP contradiction. The run compares a rational Cobb-Douglas sample with one corrupted sample.
 

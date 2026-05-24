@@ -4,7 +4,7 @@
 
 Households often face income paths they cannot insure. A worker with low assets must absorb a bad income draw through current consumption.
 
-The object is a household savings rule. The state is assets $`a`$ and income $`z`$. The control is next-period assets $`a'`$ under a no-borrowing limit.
+The object is a household savings rule. The state is assets and income. The control is next-period assets under a no-borrowing limit.
 
 Income is persistent, so today's choice changes future cash-on-hand risk. Value function iteration solves the Bellman equation on an asset grid and a finite Markov chain for income.
 

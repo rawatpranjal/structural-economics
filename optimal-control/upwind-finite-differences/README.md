@@ -87,7 +87,7 @@ The illustrative model is a Ramsey HJB on a single capital state with log utilit
 | $`v(x)`$ | grid array | value function |
 | $`s(x)`$ | grid array | policy-implied drift, signed (Huggett writes $`s_i(a)`$ with an income index) |
 | $`D^{+}, D^{-}`$ | linear operators | forward and backward one-sided differences |
-| $`A`$ | sparse $`n \times n`$ | upwind generator on the 1D grid (Huggett: $`\mathbf{A}^n`$; `hjb-growth/`: $`G^n`$, rename to $`A`$ pending) |
+| $`A`$ | sparse $`n \times n`$ | upwind generator on the 1D grid (Huggett: $`\mathbf{A}^n`$; `hjb-growth/`: $`\mathbf{A}^n`$) |
 | $`\rho`$ | 0.05 | continuous-time discount rate |
 | $`\alpha`$ | 0.36 | capital share in Cobb-Douglas production |
 | $`\delta`$ | 0.05 | depreciation rate |

@@ -2,7 +2,7 @@
 
 ## Overview
 
-A fixed-point problem asks for a vector $`x`$ satisfying $`x = T(x)`$. This is a functional equation. The numerical question is how to solve it when $`T`$ is a contraction.
+A fixed-point problem asks for a vector satisfying the condition that itself equals the transformation applied to itself. This is a functional equation. The numerical question is how to solve it when the transformation is a contraction.
 
 One concrete instance serves as the test bed. Observed market shares are inverted to recover the mean utilities that generated them under a plain-logit choice model. Plain logit admits a closed-form benchmark, which makes every method's accuracy verifiable. Three fixed-point methods are compared: vanilla Picard iteration, a damped variant, and Anderson acceleration with five-step memory.
 

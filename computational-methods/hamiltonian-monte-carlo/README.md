@@ -4,7 +4,7 @@
 
 Random-walk Metropolis-Hastings is the workhorse of Bayesian inference. It needs only the posterior kernel and a proposal scale. It works well on roughly isotropic posteriors and breaks down on curved or strongly correlated ones. Each random-walk proposal is a local Gaussian step. On a curved ridge the chain either takes tiny steps that follow the ridge slowly or large steps that get rejected.
 
-Hamiltonian Monte Carlo replaces the random-walk proposal with a deterministic trajectory simulated through Hamiltonian dynamics. Augment the parameter $`\theta`$ with a momentum $`r`$ and define a Hamiltonian that adds a kinetic term to the log posterior. Run leapfrog integration to simulate the dynamics, which preserves the Hamiltonian almost exactly. Accept the endpoint with a Metropolis correction that rejects only the small discretization error.
+Hamiltonian Monte Carlo replaces the random-walk proposal with a deterministic trajectory simulated through Hamiltonian dynamics. Augment the parameter with a momentum variable and define a Hamiltonian that adds a kinetic term to the log posterior. Run leapfrog integration to simulate the dynamics, which preserves the Hamiltonian almost exactly. Accept the endpoint with a Metropolis correction that rejects only the small discretization error.
 
 The proposal moves far across the posterior in one step. It follows the curvature of the log density because the trajectory uses the gradient. The acceptance rate stays high because the Hamiltonian is conserved. On hard posteriors like this banana, HMC reaches the same finite-chain error as random-walk MH with one or two orders of magnitude fewer effective evaluations.
 

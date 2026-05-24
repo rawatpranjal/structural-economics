@@ -4,9 +4,9 @@
 
 A supermarket raises the price of Choco-Bombs. Fewer shoppers choose it. Some switch to Store-Frosted, and some leave the cereal category.
 
-The object is the diversion pattern. Nested logit groups Choco-Bombs with Store-Frosted and groups the two healthier cereals. The nesting parameter $`\sigma`$ controls how much substitution stays inside a group.
+The object is the diversion pattern. Nested logit groups Choco-Bombs with Store-Frosted and groups the two healthier cereals. The nesting parameter controls how much substitution stays inside a group.
 
-The computation starts from shares, prices, nests, and instruments. Berry inversion gives a linear equation. 2SLS estimates price sensitivity and $`\sigma`$. Elasticities and diversion ratios then show where lost Choco-Bombs demand goes.
+The computation starts from shares, prices, nests, and instruments. Berry inversion gives a linear equation. 2SLS estimates price sensitivity and the nesting parameter. Elasticities and diversion ratios then show where lost Choco-Bombs demand goes.
 
 ## Equations
 

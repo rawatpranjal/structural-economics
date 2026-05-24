@@ -4,7 +4,7 @@
 
 A planner starts each period with capital. Output can be consumed today or saved as next-period capital.
 
-The object is the policy $`g(k)`$ from current capital to capital tomorrow. Here the exact policy is known.
+The object is the policy function from current capital to capital tomorrow. Here the exact policy is known.
 
 Chebyshev collocation approximates that policy with a few coefficients. Euler residuals check whether the fitted rule respects the marginal tradeoff.
 

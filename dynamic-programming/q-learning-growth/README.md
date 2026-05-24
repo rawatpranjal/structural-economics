@@ -4,7 +4,7 @@
 
 A planner allocates output between consumption and productive capital. Productivity moves stochastically each period. The saving choice carries today's shock into tomorrow's capital stock.
 
-The target object is the optimal saving rule $`k'(k, z)`$. Log utility, Cobb-Douglas production, and full depreciation pin down a closed form, $`k'(k, z) = \alpha\beta z A k^{\alpha}`$. The closed form audits any numerical solver.
+The target object is the optimal saving rule. Log utility, Cobb-Douglas production, and full depreciation pin down a closed form. The closed form audits any numerical solver.
 
 Value iteration solves the Bellman equation through the productivity transition matrix. Q-learning replaces the matrix with sampled transitions. The same saving rule emerges from interaction alone.
 

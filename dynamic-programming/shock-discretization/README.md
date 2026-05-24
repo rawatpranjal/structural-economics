@@ -4,7 +4,7 @@
 
 Suppose a household receives low income this year. Saving depends on whether low income is likely to persist. The same issue appears when productivity shocks guide investment.
 
-The object is a persistent log income or productivity shock. We model it as a Gaussian AR(1) with persistence $`\rho`$ and innovation scale $`\sigma_\epsilon`$.
+The object is a persistent log income or productivity shock. We model it as a Gaussian AR(1) with persistence and innovation scale.
 
 A Bellman equation needs finite shock states. It also needs a transition matrix for next-period expectations. The tutorial compares Tauchen and Rouwenhorst by their variance and persistence errors.
 

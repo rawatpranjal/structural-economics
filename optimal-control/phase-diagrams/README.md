@@ -4,9 +4,9 @@
 
 An economy begins with inherited capital. A Ramsey planner chooses consumption today and lets investment carry capital forward. The wrong choice either runs capital down or delays consumption too long.
 
-The object is the phase diagram in $`(k,c)`$. Capital is the state. Consumption is the control. Nullclines show where each variable stops moving. The stable arm is the curve of choices that converges to the saddle steady state.
+The object is the phase diagram in capital and consumption space. Capital is the state. Consumption is the control. Nullclines show where each variable stops moving. The stable arm is the curve of choices that converges to the saddle steady state.
 
-The computation traces that arm. The code linearizes the ODE at the steady state, uses the stable eigenvector, and integrates backward. Forward paths then show which initial consumption choices miss the boundary condition.
+The computation traces that arm. The code linearizes the ODE at the steady state, uses the stable eigenvector, and integrates backward. Forward paths then show which initial consumption choices miss the steady-state target.
 
 ## Equations
 

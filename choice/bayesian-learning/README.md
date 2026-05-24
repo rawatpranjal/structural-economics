@@ -4,9 +4,9 @@
 
 Suppose a firm can invest in a project, but project quality is hidden. Each signal is red or blue. A red signal raises the chance that the project is good. A blue signal lowers it.
 
-The object is the posterior belief $`p_t=\Pr(H \mid s_1,\ldots,s_t)`$. It summarizes the signal history for both learning and investment timing. Extreme beliefs lead to investment or rejection. Middle beliefs can justify waiting.
+The object is the posterior belief. It summarizes the signal history for both learning and investment timing. Extreme beliefs lead to investment or rejection. Middle beliefs can justify waiting.
 
-The computation updates $`p_t`$ with Bayes' rule and solves a finite-horizon Bellman problem. Backward induction maps each belief into invest, reject, or continue regions.
+The computation updates the posterior with Bayes' rule and solves a finite-horizon Bellman problem. Backward induction maps each belief into invest, reject, or continue regions.
 
 ## Equations
 

@@ -4,7 +4,7 @@
 
 A bus depot decides each period whether to keep a high-mileage engine or pay a lump-sum replacement cost. Higher mileage raises operating costs. The trade-off tilts toward replacement.
 
-The target object is the replacement hazard $`P(\mathrm{replace} \mid x)`$ at each mileage level. Rust's nested fixed-point estimator computes it by iterating the structural Bellman equation. NFXP needs the mileage transition matrix as an input.
+The target object is the replacement probability at each mileage level. Rust's nested fixed-point estimator computes it by iterating the structural Bellman equation. NFXP needs the mileage transition matrix as an input.
 
 The bridge to reinforcement learning is direct. Rust's conditional value for a state and action is a soft action-value function. The Type-I extreme value shocks turn the continuation value into a log-sum-exp, which is the same soft Bellman operator used in entropy-regularized Q-learning.
 

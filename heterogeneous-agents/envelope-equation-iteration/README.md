@@ -4,7 +4,7 @@
 
 A CRRA household faces IID labor income and cannot borrow. Wealth is a buffer against low income. The policy says how assets shape consumption and saving.
 
-The object is the marginal continuation value $`W_a(a)`$. It measures the value of one more dollar before next period's income draw. EEI updates this curve directly with the envelope condition.
+The object is the marginal continuation value. It measures the value of one more dollar before next period's income draw. EEI updates this curve directly with the envelope condition.
 
 The computational need is to update this curve without solving for the whole value function. The Euler equation then recovers consumption at each asset-income state.
 

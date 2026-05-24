@@ -2,9 +2,9 @@
 
 ## Overview
 
-Value function iteration stores $`V`$ at a finite grid and reads it off-grid every step. Three classical interpolators are the workhorses: piecewise linear, natural cubic spline, and PCHIP (piecewise cubic Hermite interpolating polynomial).
+Value function iteration stores the value function at a finite grid and reads it off-grid every step. Three classical interpolators are the workhorses: piecewise linear, natural cubic spline, and PCHIP (piecewise cubic Hermite interpolating polynomial).
 
-This tutorial fits each one to two targets. The first target is the closed-form cake-eating value function $`V(W)`$, which is smooth and monotone. The second is a stylized consumption policy with a borrowing-constraint kink. The level is continuous but the slope drops sharply at $`a_{\text{kink}}`$.
+This tutorial fits each one to two targets. The first target is the closed-form cake-eating value function, which is smooth and monotone. The second is a stylized consumption policy with a borrowing-constraint kink. The level is continuous but the slope drops sharply at the constraint boundary.
 
 Cubic splines shine on the smooth target. They ring on the kinked one. Linear interpolation and PCHIP do not.
 
