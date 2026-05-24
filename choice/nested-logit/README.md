@@ -2,7 +2,7 @@
 
 ## Overview
 
-A supermarket raises the price of Choco-Bombs. Fewer shoppers choose it. Some switch to Store-Frosted, and some leave the cereal category.
+A supermarket raises the price of Choco-Bombs. Fewer shoppers choose it, with some switching to Store-Frosted and others leaving the cereal category.
 
 The object is the diversion pattern. Nested logit groups Choco-Bombs with Store-Frosted and groups the two healthier cereals. The nesting parameter controls how much substitution stays inside a group.
 

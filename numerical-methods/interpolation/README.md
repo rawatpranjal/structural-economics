@@ -6,7 +6,7 @@ Value function iteration stores the value function at a finite grid and reads it
 
 This tutorial fits each one to two targets. The first target is the closed-form cake-eating value function, which is smooth and monotone. The second is a stylized consumption policy with a borrowing-constraint kink. The level is continuous but the slope drops sharply at the constraint boundary.
 
-Cubic splines shine on the smooth target. They ring on the kinked one. Linear interpolation and PCHIP do not.
+Cubic splines fit the smooth target best but ring at kinks; linear interpolation and PCHIP avoid the ringing at the cost of curvature accuracy.
 
 ## Equations
 

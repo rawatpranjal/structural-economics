@@ -2,7 +2,7 @@
 
 ## Overview
 
-An investor owns a claim to a dividend tree. Today she learns that next period's dividend will be higher. Today's dividend has not moved.
+An investor owns a claim to a dividend tree. She learns today that next period's dividend will be higher even though current dividends are unchanged.
 
 The object is a representative-agent Lucas tree. A surprise shock moves today's dividend. A news shock is observed today and moves tomorrow's dividend.
 
