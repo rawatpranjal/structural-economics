@@ -44,11 +44,16 @@ Pedagogical tutorial catalog of computational and structural economics models. S
 | Zinkevich year drift (2007 vs 2008) | DONE 2026-05-23 (`70055bd`) | `game-theory/cfr-asymmetric-auction/README.md:223` | year aligned to 2008 (NIPS proceedings year, matching `regret-matching/`) |
 | `\Lambda` undefined in dynamic-games-estimation | NOT NEEDED | `industrial-organization/dynamic-games-estimation/README.md:53` | verified defined at first use ("`\Lambda(\cdot)` is the logistic CDF"); audit was a false positive |
 
+### Description column sweep (2026-05-23)
+
+| Item | Status | Where | Outcome |
+|------|--------|-------|---------|
+| Catalog Description cells inconsistent (length + jargon + missing method names) | DONE 2026-05-23 (commit `30cdb71`) | root `README.md` | 102 of 112 rows rewritten to 2-line accessible format (3 pilot + 99 across 13 per-subject Sonnet batches). Hard cap 240 chars. Method named in every cell. |
+| Stale remote branch `migrate-code-fence-math` | DONE 2026-05-23 | `origin/migrate-code-fence-math` | deleted, refs pruned. Only `main` / `origin/main` remain. |
+
 ### Still open
 
-| Item | Where | Cost |
-|------|-------|------|
-| Stale remote branch `migrate-code-fence-math` | `origin/migrate-code-fence-math` (unreachable, superseded) | destructive; user decision |
+(empty)
 
 ### Sweep tooling
 
