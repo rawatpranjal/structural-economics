@@ -61,6 +61,43 @@ S_t\sim \mathrm{Binomial}\left(N_t,1-p_{\mathrm{exit}}(N_t)\right),
 N_{t+1}=\max\lbrace1,\min(S_t+e(N_t),N_{\max})\rbrace.
 ```
 
+## Worked Numerical Example
+
+To see why entry and exit thresholds separate, strip the model to a two-state profit process and trace the option values by hand. Let profit be $`\pi_H = 10`$ in a high state and $`\pi_L = -2`$ in a low state, with symmetric Markov transitions $`p_{HH} = p_{LL} = 0.8`$. Use $`\beta = 0.95`$, sunk entry cost $`\kappa = 20`$, and exit cost $`\phi = 5`$.
+
+Start with the quasi-myopic in-market values, ignoring the exit option:
+
+```math
+\tilde V_{\mathrm{in}}(H) = \frac{\pi_H}{1-\beta} = \frac{10}{0.05} = 200, \qquad
+\tilde V_{\mathrm{in}}(L) = \frac{\pi_L}{1-\beta} = \frac{-2}{0.05} = -40.
+```
+
+The high-state value is too good to walk away from. The low-state value of $`-40`$ is worse than paying the exit cost $`-\phi = -5`$, so an incumbent in the low state exercises the exit option:
+
+```math
+V_{\mathrm{in}}(L) = \max(-40,\, -\phi) = \max(-40,\, -5) = -5.
+```
+
+The high-state value with this exit threat baked in is
+
+```math
+V_{\mathrm{in}}(H) = \pi_H + \beta\bigl[p_{HH} V_{\mathrm{in}}(H) + p_{HL} V_{\mathrm{in}}(L)\bigr]
+                  = 10 + 0.95\bigl[0.8\, V_{\mathrm{in}}(H) + 0.2(-5)\bigr],
+```
+
+which gives $`V_{\mathrm{in}}(H)(1-0.76) = 10 - 0.95 = 9.05`$ and so $`V_{\mathrm{in}}(H) \approx 37.7`$. For a potential entrant outside the market with $`V_{\mathrm{out}} \approx 0`$, the entry decision compares $`V_{\mathrm{in}}(s) - \kappa`$ to zero:
+
+```math
+V_{\mathrm{in}}(H) - \kappa \approx 37.7 - 20 = 17.7 > 0, \qquad
+V_{\mathrm{in}}(L) - \kappa = -5 - 20 = -25 < 0.
+```
+
+```math
+\boxed{\text{Enter only in } H;\ \text{exit only in } L.}
+```
+
+The two thresholds do not coincide. Entry requires covering the sunk cost $`\kappa = 20`$, so it shuts down well before profits turn negative. Exit requires paying $`\phi = 5`$, so an incumbent absorbs $`\pi_L = -2`$ losses as long as the option value of returning to the high state exceeds the exit cost. The gap between thresholds is the hysteresis band that the full Cournot tutorial recovers numerically over $`N \in \lbrace 1,\ldots,30\rbrace`$.
+
 ## Model Setup
 
 | Parameter | Value | Description |

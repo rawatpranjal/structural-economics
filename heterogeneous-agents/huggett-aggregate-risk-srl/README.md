@@ -71,6 +71,48 @@ is advanced by a non-stochastic histogram update. Each mass point is split
 linearly between the two nearest asset-grid points after applying
 $`g_\theta`$, then multiplied by the idiosyncratic transition matrix.
 
+## Worked Numerical Example
+
+To anchor the SRL market-clearing step by hand, compute one interpolated equilibrium rate from a small distribution and two bracketing rate-grid points. Take a $`2\times 2`$ household block at aggregate state $`z_t = z_H`$, with the cross-sectional mass
+
+```math
+\mu_t = \begin{pmatrix} \mu(b_L, y_L) & \mu(b_L, y_H) \\ \mu(b_H, y_L) & \mu(b_H, y_H) \end{pmatrix} = \begin{pmatrix} 0.30 & 0.20 \\ 0.20 & 0.30 \end{pmatrix}.
+```
+
+The masses sum to one. Pick adjacent rate-grid points $`r^\ell = 0.035`$ and $`r^{\ell+1} = 0.045`$, both inside the published interval $`[0.01, 0.06]`$. The price-conditioned policy $`g_\theta(b, y, z_H, r)`$ returns these next-bond choices:
+
+```math
+g_\theta(\cdot, \cdot, z_H, 0.035) = \begin{pmatrix} -0.40 & -0.10 \\ 0.20 & 0.60 \end{pmatrix}, \qquad g_\theta(\cdot, \cdot, z_H, 0.045) = \begin{pmatrix} -0.50 & -0.20 \\ 0.10 & 0.40 \end{pmatrix}.
+```
+
+A higher candidate rate raises the return on debt and pushes each household to hold fewer bonds, so every entry falls when $`r`$ rises from $`0.035`$ to $`0.045`$. Aggregate bond demand at each candidate is the mass-weighted sum:
+
+```math
+B_t(0.035) = (0.30)(-0.40) + (0.20)(-0.10) + (0.20)(0.20) + (0.30)(0.60) = -0.12 - 0.02 + 0.04 + 0.18 = +0.08.
+```
+
+```math
+B_t(0.045) = (0.30)(-0.50) + (0.20)(-0.20) + (0.20)(0.10) + (0.30)(0.40) = -0.15 - 0.04 + 0.02 + 0.12 = -0.05.
+```
+
+The schedule crosses zero between the two grid points, so this is a bracketing pair. Apply the paper-style linear interpolation weight:
+
+```math
+\lambda_t = \frac{-B_t(0.035)}{B_t(0.045) - B_t(0.035)} = \frac{-0.08}{-0.05 - 0.08} = \frac{-0.08}{-0.13} = 0.6154.
+```
+
+Plug $`\lambda_t`$ into the interpolated rate formula:
+
+```math
+r_t = (1 - 0.6154)(0.035) + (0.6154)(0.045) = (0.3846)(0.035) + (0.6154)(0.045) = 0.01346 + 0.02769 = 0.04115.
+```
+
+```math
+\boxed{r_t = 0.04115, \quad B_t(r_t) \approx 0 \text{ by linear interpolation.}}
+```
+
+This $`r_t`$ sits inside the bracket and close to the run-level mean equilibrium rate $`0.04167`$ reported in the diagnostics table. The full SRL loop replaces the hand-picked $`2\times 2`$ block with the histogram-transported distribution, the toy policy with $`g_\theta`$ evaluated on all 9 rate-grid points, and the manual sum with the vectorised aggregation in `run.py`. The arithmetic above is exactly the operation behind the mean interpolated residual of $`9.78\mathrm{e}{-18}`$ reported in the training diagnostics: by construction, the linear weight $`\lambda_t`$ zeroes the bracket residual to machine precision.
+
 ## Model Setup
 
 The calibration follows the published SRL Huggett experiment. The period is a year, $`\beta=0.96`$, and CRRA curvature is $`\sigma=2`$. Idiosyncratic log income has persistence 0.6 and innovation volatility 0.2. Aggregate log income has persistence 0.9 and volatility 0.02. The borrowing limit is $`\underline b=-1`$, and net bond supply is zero. Both income processes are discretized by Rouwenhorst, which preserves persistence accurately at the small state counts used here.

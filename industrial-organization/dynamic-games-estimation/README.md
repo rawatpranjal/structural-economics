@@ -56,6 +56,46 @@ $`t`$ and $`\Lambda(\cdot)`$ is the logistic CDF:
 \ell(\theta)=\sum_{i,t} d_{it}\log \Lambda[v_\theta(1,\omega_{it})-v_\theta(0,\omega_{it})] +(1-d_{it})\log\lbrace1-\Lambda[v_\theta(1,\omega_{it})-v_\theta(0,\omega_{it})]\rbrace.
 ```
 
+## Worked Numerical Example
+
+The Bajari-Benkard-Levin (BBL) estimator is the moment-inequality sibling of the CCP likelihood above. The optimality requirement is that the observed policy beats every alternative policy in value. A two-state, two-action sketch shows how that inequality translates into a bound on a payoff parameter.
+
+Strip the model to a single firm with state $`s\in\lbrace L,H\rbrace`$, investment intensity $`x\in[0,1]`$, flow payoff $`\pi - c x`$ with $`\pi=1`$, and transition $`\Pr(s'=H\mid x)=0.5+0.3 x`$. Let $`\Delta=V(H)-V(L)`$ be the value gap. The observed policy is $`x_o=0.7`$; consider the alternative $`x_a=0.5`$. Discount factor $`\beta=0.95`$.
+
+The flow payoff difference is
+
+```math
+(\pi - c x_o) - (\pi - c x_a) = -c(x_o - x_a) = -0.2 c .
+```
+
+The transition difference shifts the probability of reaching $`H`$ tomorrow by
+
+```math
+\Pr(s'=H\mid x_o) - \Pr(s'=H\mid x_a) = 0.3 (x_o - x_a) = 0.3 \cdot 0.2 = 0.06 .
+```
+
+Each unit of that probability shift is worth $`\Delta`$ in continuation value, scaled by $`\beta`$, so the continuation gain from $`\sigma_o`$ over $`\sigma_a`$ is $`0.06 \beta \Delta`$. The BBL inequality $`V(\sigma_o)-V(\sigma_a)\geq 0`$ becomes
+
+```math
+-0.2 c + 0.06 \beta \Delta \geq 0
+\quad\Longleftrightarrow\quad
+c \leq 0.3 \beta \Delta .
+```
+
+Take a baseline value gap $`\Delta = 2`$. Then $`0.3 \beta \Delta = 0.3 \cdot 0.95 \cdot 2 = 0.57`$. Evaluate the inequality at the calibration $`c=0.4`$:
+
+```math
+V(\sigma_o) - V(\sigma_a) = 0.2 \cdot (0.57 - 0.4) = 0.2 \cdot 0.17 = 0.034 > 0 .
+```
+
+The observed policy beats the alternative by $`0.034`$ units of value, so the inequality holds and the data are consistent with $`c=0.4`$. Inverting the inequality gives the identified bound
+
+```math
+\boxed{ c \leq 0.3 \beta \Delta = 0.57 } .
+```
+
+Each $`(\sigma_o,\sigma_a)`$ pair the econometrician tries adds one inequality of this shape. The intersection of all such inequalities is the BBL identified set for the payoff vector. The CCP likelihood above point-identifies $`c`$ by imposing logit shocks; the moment-inequality view stays nonparametric in the shock distribution and reports a set.
+
 ## Model Setup
 
 | Object | Value | Role |

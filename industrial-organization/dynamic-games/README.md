@@ -42,6 +42,46 @@ G_i(a_i^{\ast},a_j^{\ast};\omega,V)\geq G_i(a_i,a_j^{\ast};\omega,V) \quad\text{
 
 with $`V_i(\omega)=G_i(a_i^{\ast},a_j^{\ast};\omega,V)`$ at every state.
 
+## Worked Numerical Example
+
+To see one inner state game in isolation, fix the state at $`\omega = (0,0)`$ and impose a linear continuation-value guess $`V_i(q_i, q_j) = 5 q_i`$, which mimics the rough magnitude of the converged values in `Results`.
+
+Flow profit at the bottom-rung symmetric state uses the logit share with $`q_i = q_j = 0`$:
+
+```math
+\pi_i(0,0) = 14 \cdot \frac{\exp(0)}{1 + \exp(0) + \exp(0)} + 0.35 \cdot 0 = \frac{14}{3} \approx 4.667.
+```
+
+Compute the expected continuation value for each own action. Since $`V_i`$ depends only on $`q_i`$ under this guess, the rival's action does not enter $`E[V_i \mid a_i]`$:
+
+```math
+E[V_i \mid a_i = 1,\, q_i = 0] = 0.62 \cdot 5 \cdot 1 + 0.38 \cdot 5 \cdot 0 = 3.10,
+```
+
+```math
+E[V_i \mid a_i = 0,\, q_i = 0] = 1.00 \cdot 5 \cdot 0 = 0,
+```
+
+where the bottom-rung wait transition leaves $`q_i = 0`$ with probability one because depreciation is truncated at the floor.
+
+Substitute into the state-game payoff $`G_i(a_i, a_j; \omega, V) = \pi_i(\omega) - \kappa a_i + \beta E[V_i \mid a_i]`$:
+
+```math
+G_i(0, a_j) = 4.667 - 0 + 0.9 \cdot 0 = 4.667,
+```
+
+```math
+G_i(1, a_j) = 4.667 - 2.20 + 0.9 \cdot 3.10 = 4.667 + 0.59 = 5.257.
+```
+
+The 2-by-2 state-game payoff matrix for firm $`i`$ is independent of $`a_j`$ under this value guess, so investing dominates waiting by $`0.59`$ for both firms:
+
+```math
+\boxed{a^{\ast}(0,0) = (1, 1), \qquad V_i(0,0) \approx 5.257.}
+```
+
+The dominance margin $`-\kappa + \beta \cdot 0.62 \cdot \Delta V = 0.59`$ isolates the invest decision: $`\kappa = 2.20`$ is the certain investment cost, and $`\beta \cdot 0.62 \cdot \Delta V`$ is the discounted expected gain when the climb probability is $`0.62`$ and the value of an extra rung is $`\Delta V = 5`$. Once the full fixed point is solved in `Results`, $`V_i(0,0) = 60.03`$ replaces the $`5 q_i`$ guess, but the same FOC logic decides each state game.
+
 ## Model Setup
 
 | Primitive | Value | Role |

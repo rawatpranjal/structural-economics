@@ -181,6 +181,32 @@ with a short vector of economic moments $`y = s(x_{1:T_{sim}}) \in \mathbb{R}^{5
 before training: the flow conditions on those summaries rather than on the
 raw simulator output. The next section lists the five summaries used.
 
+## Worked Numerical Example
+
+To see what the flow returns once training has converged, replace the masked autoregressive flow with the simplest possible conditional density: a one-dimensional Gaussian whose mean and standard deviation are read off a tiny network. The arithmetic that follows treats $`\beta`$ as the only parameter so the densities are scalars rather than determinants.
+
+Suppose the trained network outputs the posterior $`q_\phi(\beta \mid y_{obs}) = \mathcal{N}(\mu_\phi(y_{obs}), \sigma_\phi(y_{obs})^2)`$ with mean head $`\mu_\phi(y) = w_\mu \cdot \tanh(W y + b) + b_\mu`$ and scale head $`\sigma_\phi(y) = 1`$. Take the observed summary vector to be $`y_{obs} = (0.1, 0.2)`$, with two summaries (return mean and return autocorrelation) standing in for the full five.
+
+Plug $`y_{obs}`$ through the mean head. With trained weights chosen so the hidden pre-activation lands at $`W y_{obs} + b = 1.0`$, the hidden unit fires at $`\tanh(1.0) = 0.7616`$, and with $`w_\mu = 6.566`$, $`b_\mu = 0`$ the posterior mean is
+
+```math
+\mu_\phi(y_{obs}) = 6.566 \cdot 0.7616 + 0 = 5.0.
+```
+
+The trained flow therefore returns $`q_\phi(\beta \mid y_{obs}) = \mathcal{N}(5.0, 1.0)`$. Evaluate this density at the true parameter value $`\beta_{true} = 4.0`$:
+
+```math
+q_\phi(\beta = 4 \mid y_{obs}) = \frac{1}{\sqrt{2\pi \cdot 1^{2}}} \exp\left(-\frac{(4 - 5)^{2}}{2 \cdot 1^{2}}\right) = 0.3989 \cdot \exp(-0.5) = 0.3989 \cdot 0.6065 = 0.2420.
+```
+
+The prior was uniform on the interval $`[0, 10]`$, so $`\pi(\beta = 4) = 1/10 = 0.1`$. The posterior-to-prior ratio at $`\beta = 4`$ is therefore
+
+```math
+\frac{q_\phi(\beta = 4 \mid y_{obs})}{\pi(\beta = 4)} = \frac{0.2420}{0.1} = \boxed{2.42}.
+```
+
+The density at the true parameter rose from 0.1 to 0.242: the summaries $`y_{obs}`$ moved the analyst from a flat box to a Gaussian bump concentrated near 5.0. The factor 2.42 is the information gain at this single point in parameter space; integrated against the prior it would be the Bayes factor against a vacuous alternative. The same forward pass applied to a different $`y'_{obs}`$ would return a different mean and scale at no additional simulator cost, which is what amortization buys.
+
 ## Model Setup
 
 The prior is a four-dimensional box. Bounds are wide enough to admit behaviorally distinct dynamics: $`\beta`$ spans from near-uniform switching to near-corner allocations, $`g`$ spans weak to strong extrapolation, $`\sigma_\epsilon`$ spans quiet to noisy markets, and $`c_T`$ ranges from no cost to a level that meaningfully penalizes the trend rule.

@@ -96,6 +96,64 @@ where $`N^E_t = \int e n_t(a, e)  \mathrm{d}\mu_t`$ is aggregate effective
 labor supply. Building these matrices via the fake-news algorithm is the
 algorithmic content of SSJ.
 
+## Worked Numerical Example
+
+Trace one column of the consumption-to-rate Jacobian $`J^{C, r}`$ on a toy
+horizon $`T = 2`$, using a permanent-income approximation to keep the
+arithmetic transparent. Set $`\beta = 0.96`$, steady-state asset-to-income
+ratio $`A^{\ast} / Y^{\ast} = 5.0`$, and MPC out of wealth $`m = 1 - \beta = 0.04`$.
+
+A date-$`s`$ pulse to $`r`$ raises lifetime wealth by approximately
+$`A^{\ast}`$ per unit shock, discounted back $`s`$ periods, so the consumption
+response on impact and one period later is
+
+```math
+J^{C, r}_{t, s} \approx -\, m \cdot \beta^{\,\max(s - t,\, 0)} \cdot A^{\ast} / Y^{\ast},
+\qquad t, s \in \lbrace 0, 1 \rbrace.
+```
+
+The sign is negative because a higher real return raises the price of current
+consumption. Plug in the column $`s = 0`$ (an unanticipated pulse at date 0):
+
+```math
+J^{C, r}_{0, 0} = -\, 0.04 \cdot 1 \cdot 5.0 = -0.200,
+\qquad
+J^{C, r}_{1, 0} = -\, 0.04 \cdot 1 \cdot 5.0 = -0.200.
+```
+
+For the column $`s = 1`$ (news at date 0 of a pulse arriving at date 1), the
+date-0 response is discounted by $`\beta`$ while the date-1 response is on
+impact:
+
+```math
+J^{C, r}_{0, 1} = -\, 0.04 \cdot 0.96 \cdot 5.0 = -0.192,
+\qquad
+J^{C, r}_{1, 1} = -\, 0.04 \cdot 1 \cdot 5.0 = -0.200.
+```
+
+Stacking the four entries gives the toy Jacobian and its action on a
+permanent unit shock $`\mathrm{d}r = (1, 1)^{\top}`$:
+
+```math
+J^{C, r} = \begin{pmatrix} -0.200 & -0.192 \\ -0.200 & -0.200 \end{pmatrix},
+\qquad
+\mathrm{d}C = J^{C, r} \mathrm{d}r = \begin{pmatrix} -0.392 \\ -0.400 \end{pmatrix}.
+```
+
+The off-diagonal entry $`J^{C, r}_{0, 1} = -0.192`$ is the news-shock channel:
+consumption falls at date 0 in response to a date-1 rate hike, smaller in
+magnitude than the contemporaneous response by the factor $`\beta`$. The boxed
+column reports the impact-pulse response over the two-period horizon:
+
+```math
+\boxed{\; J^{C, r}_{:,\, s = 0} = (-0.200,\; -0.200)^{\top}. \;}
+```
+
+The full-scale calibration replaces the closed-form permanent-income MPC with
+the household-block Jacobian built by the fake-news algorithm, so $`J^{C, r}`$
+becomes a $`300 \times 300`$ matrix whose columns are not flat but decay with
+the anticipation lag, as shown in the anticipation-curves figure below.
+
 ## Model Setup
 
 **Parameters.** Quarterly calibration matched to the canonical

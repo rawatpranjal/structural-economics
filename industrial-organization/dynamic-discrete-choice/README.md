@@ -97,6 +97,34 @@ formula.
 The fixed point appears as equality constraints rather than an inner loop inside
 the objective.
 
+## Worked Numerical Example
+
+Recover the mileage-cost slope $`\theta_1`$ from observed conditional choice probabilities on a two-state, two-action slice of the bus problem. Mileage states are $`x \in \{x_L, x_H\}`$ with $`x_L = 0`$ and $`x_H = 10`$. The observed replacement hazards are $`\sigma(1 \mid x_L) = 0.05`$ and $`\sigma(1 \mid x_H) = 0.40`$, so $`\sigma(0 \mid x_L) = 0.95`$ and $`\sigma(0 \mid x_H) = 0.60`$. The discount factor is $`\beta = 0.9`$ and the replacement payoff is normalized to $`u(x, 1) = 0`$.
+
+Apply the Hotz-Miller inversion $`v_1(x) - v_0(x) = \log[\sigma(1 \mid x) / \sigma(0 \mid x)]`$ at each state:
+
+```math
+v_1(x_L) - v_0(x_L) = \log(0.05 / 0.95) = \log(0.05263) = -2.944,
+```
+
+```math
+v_1(x_H) - v_0(x_H) = \log(0.40 / 0.60) = \log(0.6667) = -0.405.
+```
+
+Replacement resets the engine to the low-mileage transition, so $`v_1`$ does not depend on the current state. Subtracting the two equations cancels $`v_1`$ and gives a direct read on the keep-value gradient:
+
+```math
+v_0(x_L) - v_0(x_H) = -0.405 - (-2.944) = 2.539.
+```
+
+The keep conditional value satisfies $`v_0(x) = \theta_0 + \theta_1 x + \beta \, E_0(x)`$, where $`E_0(x) = \sum_{x'} F_0(x' \mid x) [\log(\exp v_1(x') + \exp v_0(x')) + \gamma]`$. In the two-state toy the continuation difference $`\beta [E_0(x_L) - E_0(x_H)]`$ is small relative to the flow gap, so the leading term in $`v_0(x_L) - v_0(x_H)`$ is $`\theta_1 (x_L - x_H) = -10\,\theta_1`$. Equating gives
+
+```math
+-10\,\theta_1 \approx 2.539 \quad \Longrightarrow \quad \boxed{\theta_1 \approx -0.254}.
+```
+
+The recovered slope is negative because keep payoff falls with mileage. The toy value $`-0.254`$ exceeds the data-generating $`-0.15`$ used on the full 61-state grid because the two-state collapse loads the continuation-value difference, which carries part of the gradient on the 61-state grid, back onto the flow payoff. Hotz-Miller on the full grid restores the continuation term and recovers $`\theta_1 = -0.153`$, matching the table in Results.
+
 ## Model Setup
 
 | Parameter | Value | Description |
