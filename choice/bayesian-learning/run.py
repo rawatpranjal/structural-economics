@@ -5,7 +5,7 @@ A firm observes noisy signals about a binary project type before deciding
 whether to invest. The posterior belief is the state variable for the
 finite-horizon stopping problem.
 
-Reference: DeGroot (1970), Chamley (2003).
+Reference: DeGroot (1970), Roberts and Weitzman (1981), Chamley (2003).
 """
 import sys
 from pathlib import Path
@@ -59,6 +59,35 @@ def posterior_from_counts(
     if np.isscalar(red_count):
         return float(posterior)
     return posterior
+
+
+def exact_kl_to_truth(
+    true_state: str,
+    T: int,
+    prior_H: float,
+    p_red_H: float,
+    p_red_L: float,
+) -> np.ndarray:
+    """KL divergence from true state to posterior, integrated over signal law.
+
+    KL(delta_theta || p_t) = -log p_t(theta*), where theta* is the true state.
+    This equals the expected log-loss of the posterior at the truth.
+    A lower value means the posterior is closer to the truth.
+    Returns array of length T+1 starting at KL(prior).
+    """
+    p_red = p_red_H if true_state == "H" else p_red_L
+    kl = np.zeros(T + 1)
+    for t in range(T + 1):
+        k_grid = np.arange(t + 1)
+        weights = binom.pmf(k_grid, t, p_red)
+        posteriors = posterior_from_counts(k_grid, t, prior_H, p_red_H, p_red_L)
+        # KL(delta_H || p_t) = -log(p_t(H)) if true state is H
+        if true_state == "H":
+            log_p = np.log(np.clip(posteriors, 1e-15, 1.0))
+        else:
+            log_p = np.log(np.clip(1.0 - posteriors, 1e-15, 1.0))
+        kl[t] = -float(np.sum(weights * log_p))
+    return kl
 
 
 def exact_mean_posterior_path(
@@ -210,6 +239,8 @@ def main():
         beliefs_L[i], _ = simulate_belief_path("L", T, prior_H, p_red_H, p_red_L, rng)
     exact_mean_H = exact_mean_posterior_path("H", T, prior_H, p_red_H, p_red_L)
     exact_mean_L = exact_mean_posterior_path("L", T, prior_H, p_red_H, p_red_L)
+    kl_H = exact_kl_to_truth("H", T, prior_H, p_red_H, p_red_L)
+    kl_L = exact_kl_to_truth("L", T, prior_H, p_red_H, p_red_L)
 
     # =========================================================================
     # Optimal stopping boundary
@@ -225,8 +256,10 @@ def main():
     # =========================================================================
     setup_style()
 
-    # --- Figure 1: Posterior belief evolution ---
-    fig1, (ax1a, ax1b) = plt.subplots(1, 2, figsize=(14, 5))
+    # --- Figure 1 (2x2): belief paths (top) | log-Bayes-factor + KL convergence (bottom) ---
+    fig1, axes1 = plt.subplots(2, 2, figsize=(14, 9))
+    ax1a, ax1b = axes1[0, 0], axes1[0, 1]
+    ax1c, ax1d = axes1[1, 0], axes1[1, 1]
 
     periods = np.arange(T + 1)
     # Plot subset of paths for clarity
@@ -240,7 +273,7 @@ def main():
     ax1a.axhline(y=1.0, color="black", linestyle="--", alpha=0.3, linewidth=1)
     ax1a.set_xlabel("Number of signals")
     ax1a.set_ylabel("$P(H)$")
-    ax1a.set_title("Project is good")
+    ax1a.set_title("Project is good ($\\theta = H$)")
     ax1a.set_ylim(-0.05, 1.05)
     ax1a.legend()
 
@@ -253,39 +286,114 @@ def main():
     ax1b.axhline(y=0.0, color="black", linestyle="--", alpha=0.3, linewidth=1)
     ax1b.set_xlabel("Number of signals")
     ax1b.set_ylabel("$P(H)$")
-    ax1b.set_title("Project is bad")
+    ax1b.set_title("Project is bad ($\\theta = L$)")
     ax1b.set_ylim(-0.05, 1.05)
     ax1b.legend()
 
-    fig1.suptitle("Posterior beliefs under repeated signals", fontsize=14, fontweight="bold")
+    # Log-Bayes-factor: cumulative evidence for H vs L along exact mean paths
+    # log BF_t = sum of per-signal log-likelihood ratios, integrated over signal law
+    # For the H-side: E[Lambda_t | theta=H]; for L-side: E[Lambda_t | theta=L]
+    log_bf_H = np.zeros(T + 1)
+    log_bf_L = np.zeros(T + 1)
+    p_red = p_red_H  # true state H
+    for t in range(1, T + 1):
+        k_grid = np.arange(t + 1)
+        lambda_t = (
+            k_grid * np.log(p_red_H / p_red_L)
+            + (t - k_grid) * np.log((1 - p_red_H) / (1 - p_red_L))
+        )
+        log_bf_H[t] = float(np.sum(binom.pmf(k_grid, t, p_red_H) * lambda_t))
+        log_bf_L[t] = float(np.sum(binom.pmf(k_grid, t, p_red_L) * lambda_t))
+
+    ax1c.plot(periods, log_bf_H, color="steelblue", linewidth=2.0,
+              label="$\\theta = H$ (evidence for $H$)")
+    ax1c.plot(periods, log_bf_L, color="indianred", linewidth=2.0,
+              label="$\\theta = L$ (evidence misleads)")
+    ax1c.axhline(0, color="0.5", linestyle="--", linewidth=0.8)
+    ax1c.set_xlabel("Number of signals")
+    ax1c.set_ylabel(r"$\mathbb{E}[\Lambda_t \mid \theta]$")
+    ax1c.set_title("Evidence accumulation (log-Bayes-factor)")
+    ax1c.legend()
+
+    # KL divergence to truth: posterior concentration
+    ax1d.plot(periods, kl_H, color="steelblue", linewidth=2.0,
+              label="$\\theta = H$")
+    ax1d.plot(periods, kl_L, color="indianred", linewidth=2.0,
+              label="$\\theta = L$")
+    ax1d.set_xlabel("Number of signals")
+    ax1d.set_ylabel(r"$\mathrm{KL}(\delta_{\theta^*} \| p_t)$")
+    ax1d.set_title("Posterior concentration (KL to truth)")
+    ax1d.legend()
+
     fig1.tight_layout()
     save_figure(fig1, "figures/belief-evolution.png", dpi=150)
 
-    # --- Figure 2: Optimal stopping boundary ---
-    fig4, ax4 = plt.subplots()
+    # --- Figure 2 (1x2): stopping boundary | value-function slices by horizon ---
+    # Rerun backward induction to collect V at selected horizons for right panel.
+    n_p = 1000
+    p_grid_plot = np.linspace(0.001, 0.999, n_p)
+
+    def v_invest_fn(p):
+        return p * payoff_invest_H + (1.0 - p) * payoff_invest_L
+
+    V_term = np.maximum(v_invest_fn(p_grid_plot), payoff_wait)
+    V_by_horizon = {T_stop: V_term.copy()}
+    V_curr = V_term.copy()
+    for t in range(T_stop - 1, -1, -1):
+        V_new = np.zeros(n_p)
+        for i, p in enumerate(p_grid_plot):
+            v_stop = max(v_invest_fn(p), payoff_wait)
+            p_red_pred = p * p_red_H + (1.0 - p) * p_red_L
+            p_after_red = p * p_red_H / p_red_pred
+            p_blue = 1.0 - p_red_pred
+            p_after_blue = p * (1.0 - p_red_H) / p_blue if p_blue > 0 else p
+            v_red = np.interp(p_after_red, p_grid_plot, V_curr)
+            v_blue = np.interp(p_after_blue, p_grid_plot, V_curr)
+            v_cont = p_red_pred * v_red + p_blue * v_blue
+            V_new[i] = max(v_stop, v_cont)
+        V_curr = V_new
+        if t in {0, 5, 10, 20}:
+            V_by_horizon[t] = V_curr.copy()
+
+    fig2, (ax2a, ax2b) = plt.subplots(1, 2, figsize=(14, 5))
     t_grid = np.arange(T_stop + 1)
 
-    ax4.fill_between(t_grid, upper_bounds, 1.0, alpha=0.3, color="green", label="Invest")
-    ax4.fill_between(t_grid, 0.0, lower_bounds, alpha=0.3, color="red", label="Don't invest")
-    ax4.fill_between(t_grid, lower_bounds, upper_bounds, alpha=0.2, color="gray",
-                     label="Continue observing")
-    ax4.plot(t_grid, upper_bounds, "g-", linewidth=2)
-    ax4.plot(t_grid, lower_bounds, "r-", linewidth=2)
+    ax2a.fill_between(t_grid, upper_bounds, 1.0, alpha=0.3, color="green", label="Invest")
+    ax2a.fill_between(t_grid, 0.0, lower_bounds, alpha=0.3, color="red", label="Don't invest")
+    ax2a.fill_between(t_grid, lower_bounds, upper_bounds, alpha=0.2, color="gray",
+                      label="Continue observing")
+    ax2a.plot(t_grid, upper_bounds, "g-", linewidth=2)
+    ax2a.plot(t_grid, lower_bounds, "r-", linewidth=2)
 
     # Overlay a few belief paths
     for i in range(5):
         path, _ = simulate_belief_path("H", T_stop, prior_H, p_red_H, p_red_L, rng)
-        ax4.plot(np.arange(T_stop + 1), path, "k-", alpha=0.3, linewidth=0.8)
+        ax2a.plot(np.arange(T_stop + 1), path, "k-", alpha=0.3, linewidth=0.8)
 
-    ax4.set_xlabel("Period")
-    ax4.set_ylabel("Belief $P(H)$")
-    ax4.set_title("Stopping regions over the belief state")
-    ax4.set_ylim(-0.05, 1.05)
-    ax4.legend(loc="center right")
-    save_figure(fig4, "figures/stopping-boundary.png", dpi=150)
+    ax2a.set_xlabel("Period")
+    ax2a.set_ylabel("Belief $P(H)$")
+    ax2a.set_title("Stopping regions over the belief state")
+    ax2a.set_ylim(-0.05, 1.05)
+    ax2a.legend(loc="center right")
+
+    # Value-function slices: V_t(p) for t = 0, 5, 10, 20, T (terminal)
+    horizon_cmap = plt.cm.viridis(np.linspace(0.1, 0.9, len(V_by_horizon)))
+    for idx, (t_key, V_slice) in enumerate(sorted(V_by_horizon.items())):
+        label = f"$t = {t_key}$" if t_key < T_stop else f"$t = T$ (terminal)"
+        ax2b.plot(p_grid_plot, V_slice, color=horizon_cmap[idx], linewidth=1.8, label=label)
+    ax2b.plot(p_grid_plot, v_invest_fn(p_grid_plot), color="0.5", linestyle=":",
+              linewidth=1.4, label="Action value $A(p)$")
+    ax2b.set_xlabel("Belief $P(H)$")
+    ax2b.set_ylabel("$V_t(p)$")
+    ax2b.set_title("Value function at selected horizons")
+    ax2b.set_xlim(0, 1)
+    ax2b.legend(loc="upper left", fontsize=8)
+
+    fig2.tight_layout()
+    save_figure(fig2, "figures/stopping-boundary.png", dpi=150)
 
     save_thumbnail("figures/belief-evolution.png", "figures/thumb.png")
-    print("\nDone: 2 figures, thumb reproduced.")
+    print("\nDone: 2 figures (2x2 + 1x2), thumb reproduced.")
 
 
 if __name__ == "__main__":
