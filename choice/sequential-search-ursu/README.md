@@ -106,6 +106,40 @@ $`\beta`$ and the base search-cost level $`c_0`$. That two-parameter target keep
 the tutorial focused on the central identification problem: separating products
 that consumers dislike from products that consumers rarely inspect.
 
+## Worked Numerical Example
+
+Take two products with mean utilities $`\mu_1 = 2.0`$ and $`\mu_2 = 1.0`$, a common match-value scale $`\sigma = 1`$, and search costs $`c_1 = c_2 = 0.0833`$. Product 1 has the higher mean. We compute reservation values, simulate one inspection, and check the stopping rule.
+
+The standardized reservation equation from Algorithm 1 is $`G(k_j) = c_j/\sigma`$ with $`G(k) = \phi(k) - k[1 - \Phi(k)]`$. Here $`c_j/\sigma = 0.0833`$ for both products. A short standard-normal table is enough to bracket the root:
+
+```math
+\begin{array}{r|cccc}
+k & 0.80 & 0.90 & 1.00 & 1.10 \\
+\hline
+\phi(k) & 0.2897 & 0.2661 & 0.2420 & 0.2179 \\
+1-\Phi(k) & 0.2119 & 0.1841 & 0.1587 & 0.1357 \\
+G(k) & 0.1202 & 0.1004 & 0.0833 & 0.0686
+\end{array}
+```
+
+From the table, $`G(1.00) = 0.0833`$, so $`k_1 = k_2 = 1.00`$ exactly. Recover the reservation values $`z_j = \mu_j + \sigma k_j`$:
+
+```math
+z_1 = 2.0 + (1)(1.00) = 3.00, \qquad z_2 = 1.0 + (1)(1.00) = 2.00.
+```
+
+Since $`z_1 > z_2`$, the priority order is $`\pi = (1, 2)`$. Inspect Product 1 first.
+
+Suppose the realized shock is $`\varepsilon_{i1} = 0.5`$, so the revealed match value is $`u_{i1} = \mu_1 + \sigma \varepsilon_{i1} = 2.5`$. Update the best so far: $`b_i = \max(0, 2.5) = 2.5`$.
+
+Apply the stopping rule. The highest reservation value among uninspected products is $`z_2 = 2.00`$. Compare to $`b_i`$:
+
+```math
+b_i = 2.5 > 2.00 = z_2 \implies \boxed{\text{stop and purchase Product 1.}}
+```
+
+The consumer inspects one product and buys it. If the draw had been $`\varepsilon_{i1} = -0.5`$ instead, $`b_i = 1.5 < 2.00 = z_2`$ would have forced a second inspection. The reservation values do all the planning: every later decision is a one-line comparison against $`b_i`$.
+
 ## Model Setup
 
 | Object | Value | Role |

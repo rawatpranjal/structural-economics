@@ -80,6 +80,42 @@ p_L(a, A) = \frac{u(a)}{u(a^{\ast}) + \sum_{b \in A} u(b)}.
 Luce satisfies IIA: removing any alternative raises every other alternative's probability by the same proportional factor.
 The Manzini-Mariotti rule predicts a strictly asymmetric pattern and therefore lies outside the Luce class whenever the attention parameters do not co-move with the ranking.
 
+## Worked Numerical Example
+
+Take $`J = 3`$ alternatives with strict ranking $`a_1 \succ a_2 \succ a_3`$ and attention vector $`\gamma = (0.5, 0.4, 0.8)`$. The toy attention vector differs from the Model Setup vector so the arithmetic stays clean; the full simulation uses $`J = 5`$.
+
+For the full menu $`A = \lbrace a_1, a_2, a_3 \rbrace`$, the Manzini-Mariotti closed form gives the probability that alternative $`a`$ is chosen as $`\gamma(a)`$ times the probability that every higher-ranked alternative escapes attention. The top-ranked alternative has no higher-ranked rivals, so the empty product equals one:
+
+```math
+p(a_1, A) = \gamma(a_1) = 0.5.
+```
+
+For $`a_2`$, only $`a_1`$ ranks above it, so $`a_2`$ wins when it is considered and $`a_1`$ is not:
+
+```math
+p(a_2, A) = \gamma(a_2)\,(1 - \gamma(a_1)) = (0.4)(0.5) = 0.20.
+```
+
+For $`a_3`$, both $`a_1`$ and $`a_2`$ rank above it:
+
+```math
+p(a_3, A) = \gamma(a_3)\,(1 - \gamma(a_1))(1 - \gamma(a_2)) = (0.8)(0.5)(0.6) = 0.24.
+```
+
+The default absorbs the residual mass when nothing is considered:
+
+```math
+p(a^{\ast}, A) = (1 - 0.5)(1 - 0.4)(1 - 0.8) = (0.5)(0.6)(0.2) = 0.06.
+```
+
+The four probabilities sum to $`0.50 + 0.20 + 0.24 + 0.06 = 1.00`$. Suppose one subject is observed on menu $`A`$ choosing $`a_2`$. The single-observation log-likelihood at this parameter trial is
+
+```math
+\log p(a_2, A) = \log(0.20) = \boxed{-1.6094}.
+```
+
+The asymmetric signature is visible already: removing $`a_1`$ (higher-ranked) would raise $`p(a_2)`$ from $`0.20`$ to $`\gamma(a_2) = 0.40`$, while removing $`a_3`$ (lower-ranked) leaves $`p(a_2) = 0.20`$ untouched. A Luce model with $`u(a_1) = u(a_2) = u(a_3) = u(a^{\ast})`$ would predict each share at $`0.25`$ and cannot reproduce this asymmetry across menu removals.
+
 ## Model Setup
 
 The simulation uses $`J = 5`$ alternatives plus a default option, with all $`2^{5} - 1 = 31`$ non-empty menus presented to each of $`N = 500`$ subjects. Attention is deliberately not co-monotone with the ranking so the preference order cannot be read off from raw aggregate choice frequencies.

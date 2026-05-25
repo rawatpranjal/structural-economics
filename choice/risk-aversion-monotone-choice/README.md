@@ -58,6 +58,46 @@ Since $`\Lambda`$ is monotone, probability ordering follows from logit ordering.
 This gives
 $`\Pr(d=1\mid p_{j+1})\geq \Pr(d=1\mid p_j)`$.
 
+## Worked Numerical Example
+
+Use the Holt-Laury payoffs $`(2.00, 1.60)`$ for lottery $`A`$ and $`(3.85, 0.10)`$ for lottery $`B`$, with CRRA parameter $`\rho = 0.45`$. The goal is to find the indifference probability $`p^{\ast}`$ at which $`\Delta EU(p^{\ast}; \rho) = 0`$.
+
+Evaluate $`u(c; \rho) = (c^{1-\rho}-1)/(1-\rho)`$ at each payoff with $`1 - \rho = 0.55`$:
+
+```math
+u(2.00;\, 0.45) = \frac{2^{0.55}-1}{0.55} = \frac{1.4639-1}{0.55} = \frac{0.4639}{0.55} = 0.8435
+```
+
+```math
+u(1.60;\, 0.45) = \frac{1.6^{0.55}-1}{0.55} = \frac{1.2950-1}{0.55} = \frac{0.2950}{0.55} = 0.5363
+```
+
+```math
+u(3.85;\, 0.45) = \frac{3.85^{0.55}-1}{0.55} = \frac{2.0992-1}{0.55} = \frac{1.0992}{0.55} = 1.9985
+```
+
+```math
+u(0.10;\, 0.45) = \frac{0.1^{0.55}-1}{0.55} = \frac{0.2817-1}{0.55} = \frac{-0.7183}{0.55} = -1.3060
+```
+
+Set $`\Delta EU(p^{\ast}) = 0`$ and expand linearly in $`p^{\ast}`$:
+
+```math
+p^{\ast}\bigl[u(3.85) - u(2.00)\bigr] + (1 - p^{\ast})\bigl[u(0.10) - u(1.60)\bigr] = 0
+```
+
+```math
+p^{\ast}(1.9985 - 0.8435) + (1 - p^{\ast})(-1.3060 - 0.5363) = 0
+```
+
+```math
+1.1550\, p^{\ast} - 1.8423(1 - p^{\ast}) = 0
+\implies 2.9973\, p^{\ast} = 1.8423
+\implies \boxed{p^{\ast} \approx 0.614}
+```
+
+The switch from A to B falls between the sixth row ($`p = 0.60`$) and the seventh row ($`p = 0.70`$) of the ten-row ladder. A more risk-averse subject ($`\rho > 0.45`$) switches later, because the high variance of B becomes even more costly; a less risk-averse subject switches earlier. The monotone logit enforces that this switch row can only rise as $`\rho`$ rises, which is the observable shape restriction the estimator exploits.
+
 ## Model Setup
 
 | Primitive | Value | Economic role |

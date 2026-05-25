@@ -67,6 +67,42 @@ heterogeneity:
 \end{aligned}
 ```
 
+## Worked Numerical Example
+
+Take two inside products plus an outside option. Product 1 has $`(p_1, q_1) = (0, 2)`$ and product 2 has $`(p_2, q_2) = (0, 1)`$; the outside option has zero utility. Drop the price coefficient by fixing $`\bar\alpha = \sigma_\alpha = 0`$, so utility reduces to $`u_j = \beta_i q_j`$. Set $`\bar\beta = 1`$ and $`\sigma_\beta = 0.5`$, and take $`R = 3`$ fixed draws $`\nu_{r\beta} \in \{-1, 0, +1\}`$, which yield $`\beta_r \in \{0.5, 1.0, 1.5\}`$.
+
+For each draw, the conditional logit probability of product 1 is
+
+```math
+P_{i1}(\theta, \nu_r) = \frac{\exp(2\beta_r)}{1 + \exp(2\beta_r) + \exp(\beta_r)}.
+```
+
+Evaluate at each draw. For $`\beta_r = 0.5`$:
+
+```math
+P_{i1}(\theta, \nu_1) = \frac{e^{1}}{1 + e^{1} + e^{0.5}} = \frac{2.718}{1 + 2.718 + 1.649} = \frac{2.718}{5.367} \approx 0.506.
+```
+
+For $`\beta_r = 1.0`$:
+
+```math
+P_{i1}(\theta, \nu_2) = \frac{e^{2}}{1 + e^{2} + e^{1}} = \frac{7.389}{1 + 7.389 + 2.718} = \frac{7.389}{11.107} \approx 0.665.
+```
+
+For $`\beta_r = 1.5`$:
+
+```math
+P_{i1}(\theta, \nu_3) = \frac{e^{3}}{1 + e^{3} + e^{1.5}} = \frac{20.086}{1 + 20.086 + 4.482} = \frac{20.086}{25.568} \approx 0.786.
+```
+
+Average across the fixed draws to form the simulated mixed-logit probability:
+
+```math
+\widehat P_{i1}(\theta) = \frac{1}{3}(0.506 + 0.665 + 0.786) = \frac{1.957}{3} \approx \boxed{0.652}.
+```
+
+A plain logit at the mean taste $`\beta = 1`$ would return $`0.665`$ for product 1. Mixed logit shaves the probability to $`0.652`$ because the logit curve is concave in $`\beta_r`$ over this range, so Jensen's inequality pulls the average below the value at the mean. That curvature is exactly what lets mixed logit produce non-IIA substitution at the aggregate level even though each simulated consumer obeys a conditional logit rule.
+
 ## Model Setup
 
 | Object | Value | Role |

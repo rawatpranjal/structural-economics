@@ -84,6 +84,53 @@ Bayesian updating gives the posterior probability that subject $`i`$ belongs to 
 
 The normalised entropy criterion $`\mathrm{NEC} = -\frac{1}{N \ln C} \sum_{i, c} \tau_{ic} \ln \tau_{ic}`$ summarises classification sharpness; values near zero mean each subject is assigned almost without ambiguity to a single type.
 
+## Worked Numerical Example
+
+Take the mild-CPT type with parameters $`(\alpha, \lambda, \gamma, \delta) = (0.85, 1.50, 0.65, 0.85)`$ and evaluate the certainty equivalent for the gain-only lottery $`G = (10, 0.3; 0)`$, which pays $`\$10`$ with probability $`0.3`$ and $`\$0`$ otherwise.
+
+Compute the probability weight. We need $`0.3^{0.65}`$ and $`0.7^{0.65}`$:
+
+```math
+0.3^{0.65} = \exp(0.65 \cdot \ln 0.3) = \exp(0.65 \cdot (-1.2040)) = \exp(-0.7826) = 0.4574,
+```
+
+```math
+0.7^{0.65} = \exp(0.65 \cdot \ln 0.7) = \exp(0.65 \cdot (-0.3567)) = \exp(-0.2319) = 0.7929.
+```
+
+The Goldstein-Einhorn weight on the high outcome is
+
+```math
+w(0.3)
+= \frac{\delta \cdot 0.3^{\gamma}}{\delta \cdot 0.3^{\gamma} + (1 - 0.3)^{\gamma}}
+= \frac{0.85 \times 0.4574}{0.85 \times 0.4574 + 0.7929}
+= \frac{0.3888}{0.3888 + 0.7929}
+= \frac{0.3888}{1.1817}
+= 0.329.
+```
+
+Since $`w(0.3) = 0.329 > 0.3`$, the mild-CPT type overweights this 30-percent chance relative to the objective probability, which is the inverted-S signature.
+
+Compute the value of each outcome using $`v(x) = x^{\alpha}`$ for gains:
+
+```math
+v(10) = 10^{0.85} = \exp(0.85 \cdot \ln 10) = \exp(0.85 \times 2.3026) = \exp(1.9572) = 7.077, \qquad v(0) = 0.
+```
+
+The CPT value of the lottery is
+
+```math
+v(G) = v(10) \cdot w(0.3) + v(0) \cdot [1 - w(0.3)] = 7.077 \times 0.329 = 2.328.
+```
+
+Invert to recover the certainty equivalent:
+
+```math
+\widehat{ce}(G) = v(G)^{1/\alpha} = 2.328^{1/0.85} = \exp\!\left(\tfrac{1}{0.85} \cdot \ln 2.328\right) = \exp(1.1765 \times 0.8451) = \exp(0.9943) = \boxed{2.70}.
+```
+
+The expected value of the lottery is $`0.3 \times 10 = 3.0`$. The mild-CPT type accepts $`\$2.70`$ for certain over a lottery worth $`\$3.00`$ in expectation, a risk premium of $`\$0.30`$. Both probability overweighting ($`w = 0.329 > 0.3`$) and value-function concavity ($`\alpha = 0.85 < 1`$) contribute to this discount; the stronger-CPT type ($`\alpha = 0.70, \gamma = 0.40`$) would produce a larger premium.
+
 ## Model Setup
 
 The lottery design extends the Bruhin-Fehr-Duda-Epper Zurich 2003 cells to three domains. Gain and loss cells identify the curvature, slope, and elevation parameters; mixed cells identify loss aversion. Three latent types are present in fixed proportions matching the headline BFDE classification, with an added type-specific loss-aversion factor.

@@ -54,6 +54,40 @@ goes to product $`j`$:
 \mathcal{D}_{j\leftarrow k}= -\frac{\partial s_{jt}/\partial p_{kt}}{\partial s_{kt}/\partial p_{kt}} = \frac{\eta_{jk,t}s_{jt}}{|\eta_{kk,t}|s_{kt}} .
 ```
 
+## Worked Numerical Example
+
+Two nests, $`g \in \{A, B\}`$, each with two products. The nesting parameter is $`\sigma = 0.5`$ for both nests, so $`1 - \sigma = 0.5`$. Mean utilities are $`\delta_{1A} = 1`$, $`\delta_{2A} = 0.5`$, $`\delta_{1B} = 0.8`$, $`\delta_{2B} = 0.3`$.
+
+Compute the inclusive-value denominator $`D_{gt} = \sum_{k \in g} \exp(\delta_{kt} / (1-\sigma))`$ for each nest:
+
+```math
+D_{A} = \exp\!\left(\tfrac{1}{0.5}\right) + \exp\!\left(\tfrac{0.5}{0.5}\right) = e^{2} + e^{1} = 7.389 + 2.718 = 10.107
+```
+
+```math
+D_{B} = \exp\!\left(\tfrac{0.8}{0.5}\right) + \exp\!\left(\tfrac{0.3}{0.5}\right) = e^{1.6} + e^{0.6} = 4.953 + 1.822 = 6.775
+```
+
+The nest share formula uses $`D_{gt}^{1-\sigma}`$. With $`1 - \sigma = 0.5`$, this is $`D_{gt}^{0.5} = \sqrt{D_{gt}}`$, but the denominator in $`s_{gt}`$ requires $`D_{gt}^{1-\sigma}`$ summed over nests plus 1. Evaluating $`D_A^{0.5} = \sqrt{10.107} = 3.179`$ and $`D_B^{0.5} = \sqrt{6.775} = 2.603`$, the nest shares are:
+
+```math
+s_{A} = \frac{3.179}{1 + 3.179 + 2.603} = \frac{3.179}{6.782} = 0.469, \qquad s_{B} = \frac{2.603}{6.782} = 0.384.
+```
+
+The conditional share of product 1 inside nest $`A`$ is:
+
+```math
+s_{1|A} = \frac{\exp(\delta_{1A}/(1-\sigma))}{D_A} = \frac{e^{2}}{10.107} = \frac{7.389}{10.107} = 0.731.
+```
+
+The total market share of product 1 is:
+
+```math
+s_{1} = s_{1|A} \cdot s_{A} = 0.731 \times 0.469 = \boxed{0.343}.
+```
+
+With $`\sigma = 0.5`$, over two-thirds of nest $`A`$'s demand goes to the utility-leading product 1. Because nest $`A`$ itself captures $`46.9\%`$ of the market, product 1 ends up with roughly a third of all purchases, more than any other alternative.
+
 ## Model Setup
 
 The synthetic panel has a small cereal category across many markets. Prices move with a cost shifter. Shares come from the nested-logit model. The estimator observes prices, sugar, shares, nests, and excluded shifters.
