@@ -104,7 +104,6 @@ def main() -> None:
     T_sim = 180
 
     true_std = sigma_eps / np.sqrt(1.0 - rho**2)
-    half_life = float(np.log(2.0) / -np.log(rho))
 
     z_tau, P_tau = tauchen(rho=rho, sigma=sigma_eps, n=n_grid, m=3.0)
     z_rou, P_rou, _ = rouwenhorst(n=n_grid, mu=0.0, sigma=sigma_eps, rho=rho)
@@ -127,32 +126,67 @@ def main() -> None:
 
     setup_style()
 
-    # Figure 1: stationary mass with Gaussian density ground-truth overlay
-    fig1, ax1 = plt.subplots()
+    # =========================================================================
+    # Figure 1 (1x2): stationary mass vs Gaussian overlay | transition heatmap
+    # Left: where each chain's invariant distribution sits relative to the
+    # continuous AR(1) density. Right: the Rouwenhorst N=7 transition matrix
+    # as a heatmap -- each cell is P[i,j], the probability of moving from
+    # state i to state j.
+    # =========================================================================
+    fig1, (ax1a, ax1b) = plt.subplots(1, 2, figsize=(12, 4.8))
+
     z_dense = np.linspace(-3.5 * true_std, 3.5 * true_std, 400)
     tau_step = float(z_tau[1] - z_tau[0])
     pdf_dense = norm.pdf(z_dense, loc=0.0, scale=true_std) * tau_step
-    ax1.plot(
+    ax1a.plot(
         z_dense,
         pdf_dense,
         color="black",
         linestyle="--",
         linewidth=1.4,
         alpha=0.7,
-        label=r"Ground truth $\mathcal{N}(0,\sigma_z^2)\times\Delta_{\mathrm{Tau}}$",
+        label=r"AR(1) density $\times\,\Delta_{\mathrm{Tau}}$",
     )
-    ax1.vlines(z_tau, 0, pi_tau, color="tab:blue", linewidth=3, label="Tauchen")
-    ax1.scatter(z_tau, pi_tau, color="tab:blue", s=45)
-    ax1.vlines(z_rou, 0, pi_rou, color="tab:orange", linewidth=2, label="Rouwenhorst")
-    ax1.scatter(z_rou, pi_rou, color="tab:orange", s=35)
-    ax1.set_xlabel("Shock state $z$")
-    ax1.set_ylabel("Probability mass")
-    ax1.set_title("Where the Chain Lives")
-    ax1.legend(loc="upper right", fontsize=9)
+    ax1a.vlines(z_tau, 0, pi_tau, color="tab:blue", linewidth=3, label="Tauchen")
+    ax1a.scatter(z_tau, pi_tau, color="tab:blue", s=45)
+    ax1a.vlines(z_rou, 0, pi_rou, color="tab:orange", linewidth=2, label="Rouwenhorst")
+    ax1a.scatter(z_rou, pi_rou, color="tab:orange", s=35)
+    ax1a.set_xlabel("Shock state $z$")
+    ax1a.set_ylabel("Probability mass")
+    ax1a.set_title("Invariant distribution")
+    ax1a.legend(loc="upper right", fontsize=9)
+
+    # Rouwenhorst N=7 transition matrix heatmap
+    im = ax1b.imshow(P_rou, cmap="Blues", vmin=0, vmax=P_rou.max())
+    fig1.colorbar(im, ax=ax1b, fraction=0.046, pad=0.04)
+    state_labels = [f"$z_{{{j+1}}}$" for j in range(n_grid)]
+    ax1b.set_xticks(range(n_grid))
+    ax1b.set_yticks(range(n_grid))
+    ax1b.set_xticklabels(state_labels, fontsize=8)
+    ax1b.set_yticklabels(state_labels, fontsize=8)
+    ax1b.set_xlabel("Next state $z'$")
+    ax1b.set_ylabel("Current state $z$")
+    ax1b.set_title(r"Rouwenhorst $P$ ($N=7$)")
+
+    fig1.tight_layout()
     save_figure(fig1, "figures/stationary-mass.png", dpi=150)
 
-    # Figure 2: moment errors as the grid refines
-    fig2, (ax2a, ax2b) = plt.subplots(1, 2, figsize=(11, 4.5))
+    # =========================================================================
+    # Figure 2 (2x2): moment errors (top row) | simulated paths (bottom row)
+    # Top-left: unconditional std error vs grid size N.
+    # Top-right: persistence error vs grid size N.
+    # Bottom row: Tauchen and Rouwenhorst chains against continuous AR(1),
+    #   driven by common random numbers so the paths are comparable.
+    # =========================================================================
+    true_path, true_innovations = simulate_ar1(rho, sigma_eps, T_sim, seed=123)
+    common_uniforms = norm.cdf(true_innovations)
+    tau_path = simulate_chain_from_uniforms(P_tau, z_tau, true_path[0], common_uniforms)
+    rou_path = simulate_chain_from_uniforms(P_rou, z_rou, true_path[0], common_uniforms)
+
+    fig2, axes = plt.subplots(2, 2, figsize=(12, 8.5))
+    ax2a, ax2b = axes[0]
+    ax2c, ax2d = axes[1]
+
     for method, group in comparison.groupby("Method"):
         ax2a.plot(group["States"], group["Std error"], marker="o", label=method)
         ax2b.plot(group["States"], group["Persistence error"], marker="o", label=method)
@@ -161,27 +195,32 @@ def main() -> None:
     ax2a.set_xlabel("Number of states $N$")
     ax2a.set_ylabel(r"$\hat\sigma_z - \sigma_z$")
     ax2a.set_title("Unconditional std error")
+    ax2a.legend()
     ax2b.set_xlabel("Number of states $N$")
     ax2b.set_ylabel(r"$\hat\rho - \rho$")
     ax2b.set_title("Persistence error")
     ax2b.legend()
+
+    # Bottom-left: Tauchen path vs continuous AR(1)
+    t_axis = np.arange(T_sim)
+    ax2c.plot(t_axis, true_path, color="black", linewidth=1.8, alpha=0.75, label="Continuous AR(1)")
+    ax2c.step(t_axis, tau_path, where="post", alpha=0.85, label=r"Tauchen ($N=7$)")
+    ax2c.set_xlabel("Period $t$")
+    ax2c.set_ylabel("Shock state $z_t$")
+    ax2c.set_title(r"Tauchen path")
+    ax2c.legend(fontsize=9)
+
+    # Bottom-right: Rouwenhorst path vs continuous AR(1)
+    ax2d.plot(t_axis, true_path, color="black", linewidth=1.8, alpha=0.75, label="Continuous AR(1)")
+    ax2d.step(t_axis, rou_path, where="post", color="tab:orange", alpha=0.85,
+              label=r"Rouwenhorst ($N=7$)")
+    ax2d.set_xlabel("Period $t$")
+    ax2d.set_ylabel("Shock state $z_t$")
+    ax2d.set_title(r"Rouwenhorst path")
+    ax2d.legend(fontsize=9)
+
     fig2.tight_layout()
     save_figure(fig2, "figures/moment-accuracy.png", dpi=150)
-
-    # Figure 3: simulated path against the continuous AR(1)
-    true_path, true_innovations = simulate_ar1(rho, sigma_eps, T_sim, seed=123)
-    common_uniforms = norm.cdf(true_innovations)
-    tau_path = simulate_chain_from_uniforms(P_tau, z_tau, true_path[0], common_uniforms)
-    rou_path = simulate_chain_from_uniforms(P_rou, z_rou, true_path[0], common_uniforms)
-    fig3, ax3 = plt.subplots(figsize=(9, 4.5))
-    ax3.plot(true_path, label="Continuous AR(1) ground truth", color="black", linewidth=2.0, alpha=0.85)
-    ax3.plot(tau_path, label=r"Tauchen ($N=7$)", alpha=0.85)
-    ax3.plot(rou_path, label=r"Rouwenhorst ($N=7$)", alpha=0.85)
-    ax3.set_xlabel("Period $t$")
-    ax3.set_ylabel("Shock state $z_t$")
-    ax3.set_title("Transition Histories Against the Continuous AR(1)")
-    ax3.legend(loc="upper right", fontsize=9)
-    save_figure(fig3, "figures/simulated-paths.png", dpi=150)
 
     # Table: numerical detail behind the moment-accuracy figure
     table = comparison.copy()
