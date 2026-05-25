@@ -52,6 +52,46 @@ The likelihood contribution is the Gaussian density of $`\nu_t`$ under variance
 $`S_t`$. The same scalar density is what maximum-likelihood estimation uses when
 the state-space parameters are unknown.
 
+## Worked Numerical Example
+
+To see one predict-update cycle, take the scalar case with $`\Phi = 0.9`$, $`\Psi = 1`$, $`Q = 1`$, $`R = 1`$, prior $`\hat{s}_{0|0} = 0`$ with $`P_{0|0} = 1`$, and observation $`y_1 = 0.5`$.
+
+The prediction step propagates the prior through the transition equation:
+
+```math
+\hat{s}_{1|0} = \Phi \hat{s}_{0|0} = (0.9)(0) = 0,
+\qquad
+P_{1|0} = \Phi^2 P_{0|0} + Q = (0.81)(1) + 1 = 1.81.
+```
+
+The innovation variance combines the predicted state uncertainty with measurement noise:
+
+```math
+S_1 = \Psi^2 P_{1|0} + R = 1.81 + 1 = 2.81.
+```
+
+The Kalman gain is the share of $`P_{1|0}`$ that survives to $`S_1`$:
+
+```math
+K_1 = \frac{P_{1|0} \Psi}{S_1} = \frac{1.81}{2.81} = 0.644.
+```
+
+The forecast surprise is the observed signal minus its prediction:
+
+```math
+\nu_1 = y_1 - \Psi \hat{s}_{1|0} = 0.5 - 0 = 0.5.
+```
+
+Apply the gain to the surprise and shrink the prior variance by $`1 - K_1 \Psi`$:
+
+```math
+\hat{s}_{1|1} = \hat{s}_{1|0} + K_1 \nu_1 = 0 + (0.644)(0.5) = \boxed{0.322},
+\qquad
+P_{1|1} = (1 - K_1 \Psi) P_{1|0} = (0.356)(1.81) = \boxed{0.644}.
+```
+
+The signal carries 64 percent of the weight because predicted state variance 1.81 exceeds measurement variance 1. The posterior mean lands at 0.322, between the prior 0 and the signal 0.5, and the posterior variance 0.644 is below both $`P_{1|0}`$ and $`R`$ because the update combines two independent pieces of information.
+
 ## Model Setup
 
 | Object | Value |

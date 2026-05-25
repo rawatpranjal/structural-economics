@@ -90,6 +90,44 @@ J = n \cdot Q(\hat\theta) = n \, \bar g(\hat\theta)^{\top} \hat\Omega^{-1} \bar 
 
 Under correct specification $`J \to_d \chi^2_{q - p}`$, a chi-squared distribution with degrees of freedom equal to the number of over-identifying moments. A large $`J`$ relative to that reference means at least one moment condition is violated at the estimator. The model is misspecified; the issue is not estimation noise but a wrong moment condition.
 
+## Worked Numerical Example
+
+To see the criterion at work, take a just-identified scalar mean estimator with $`p = q = 1`$, single moment function $`g(\theta, x) = x - \theta`$, and the four observations $`x = \{0.5, 1.2, 0.9, 1.4\}`$.
+
+The sample moment is
+
+```math
+\bar g(\theta) = \frac{1}{n} \sum_{i=1}^{n} (x_i - \theta) = \bar x - \theta,
+\qquad
+\bar x = \frac{0.5 + 1.2 + 0.9 + 1.4}{4} = \frac{4.0}{4} = 1.0.
+```
+
+Because $`q = p = 1`$, any positive weight $`W > 0`$ yields the same minimiser, so set $`W = 1`$. The criterion is
+
+```math
+Q(\theta) = (\bar x - \theta)^{2},
+\qquad
+\frac{dQ}{d\theta} = -2(\bar x - \theta) = 0
+\implies \hat\theta = \bar x = 1.0.
+```
+
+For the standard error, the moment covariance at the truth is $`\Omega = \mathrm{Var}(x - \theta_0) = \mathrm{Var}(x)`$, estimated by the sample variance
+
+```math
+\hat\Omega = s^{2} = \frac{1}{n - 1} \sum_{i=1}^{n} (x_i - \hat\theta)^{2}
+           = \frac{0.25 + 0.04 + 0.01 + 0.16}{3} = \frac{0.46}{3} = 0.1533.
+```
+
+The Jacobian is $`G = \mathbb{E}[\partial g / \partial \theta] = -1`$, so the asymptotic variance formula $`(G^{\top} \Omega^{-1} G)^{-1} = \hat\Omega`$ gives
+
+```math
+\mathrm{SE}(\hat\theta) = \sqrt{\hat\Omega / n} = \frac{s}{\sqrt{n}}
+                       = \frac{\sqrt{0.1533}}{\sqrt{4}} = \frac{0.392}{2}
+\implies \boxed{\hat\theta = 1.0, \quad \mathrm{SE}(\hat\theta) \approx 0.196}.
+```
+
+The $`t`$-statistic for $`H_0: \theta_0 = 0`$ is $`t = 1.0 / 0.196 = 5.10`$, well past the usual rejection threshold. The just-identified case collapses to method-of-moments: the GMM machinery only starts paying off when $`q > p`$ forces the weighting choice in $`W`$ to matter.
+
 ## Model Setup
 
 The illustration uses a scalar location model

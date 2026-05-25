@@ -98,6 +98,47 @@ For Beta-Binomial with one new trial the predictive probability equals the poste
 
 Averaging over all posterior values of $`\theta`$ inflates the predictive variance relative to the plug-in density $`p(\tilde y \mid \mathbb{E}[\theta \mid y])`$: it accounts for uncertainty about $`\theta`$ on top of the natural variability in $`\tilde y`$.
 
+## Worked Numerical Example
+
+To see the Beta-Binomial update in one step, take a mildly informative symmetric prior and a small dataset, then read off the posterior by algebra alone.
+
+Start with the prior $`\theta \sim \mathrm{Beta}(\alpha, \beta)`$ at $`\alpha = 2`$, $`\beta = 2`$. The prior mean and variance are
+
+```math
+\mathbb{E}[\theta] = \frac{\alpha}{\alpha + \beta} = \frac{2}{4} = 0.5,
+\qquad
+\mathrm{Var}(\theta) = \frac{\alpha \beta}{(\alpha + \beta)^2 (\alpha + \beta + 1)} = \frac{4}{16 \cdot 5} = 0.05.
+```
+
+Observe $`n = 5`$ Bernoulli trials with $`s = 3`$ successes. The likelihood kernel in $`\theta`$ is
+
+```math
+p(y \mid \theta) \propto \theta^{s} (1 - \theta)^{n - s} = \theta^{3} (1 - \theta)^{2}.
+```
+
+Multiply prior and likelihood:
+
+```math
+p(\theta \mid y) \propto \theta^{\alpha - 1} (1 - \theta)^{\beta - 1} \cdot \theta^{s} (1 - \theta)^{n - s}
+= \theta^{4} (1 - \theta)^{3}.
+```
+
+The exponents are $`\alpha + s - 1 = 4`$ and $`\beta + n - s - 1 = 3`$, confirming the conjugate update rule:
+
+```math
+\theta \mid y \sim \boxed{\mathrm{Beta}(\alpha + s,\, \beta + n - s) = \mathrm{Beta}(5, 4)}.
+```
+
+The posterior mean and variance follow from the Beta moments:
+
+```math
+\mathbb{E}[\theta \mid y] = \frac{5}{5 + 4} = \boxed{\frac{5}{9} \approx 0.556},
+\qquad
+\mathrm{Var}(\theta \mid y) = \frac{5 \cdot 4}{9^{2} \cdot 10} = \frac{20}{810} \approx 0.0247.
+```
+
+The posterior mean shifts from the prior 0.5 toward the sample fraction $`s / n = 0.6`$, landing at 0.556 because the four prior pseudo-observations partly outweigh the five real ones. The posterior variance falls from 0.05 to 0.0247: adding data sharpens the belief. The same algebra scales to any $`(n, s)`$ without simulation.
+
 ## Model Setup
 
 | Object | Symbol | Role |
