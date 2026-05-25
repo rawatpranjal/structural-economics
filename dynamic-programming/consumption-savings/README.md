@@ -1,188 +1,190 @@
-# Buffer-Stock Saving with Persistent Income by Value Function Iteration
+# Consumption-Savings under Income Risk
 
 ## Overview
 
-Households often face income paths they cannot insure. A worker with low assets must absorb a bad income draw through current consumption.
+Deaton (1991) and Carroll (1997) showed that impatient households facing uninsurable income risk do not smooth consumption the way the permanent-income hypothesis predicts. The Euler equation tilts toward saving whenever marginal utility is convex and income could fall. Together, impatience and a borrowing constraint produce a finite *buffer-stock target*: a wealth level where the precautionary motive and the impatience motive exactly offset.
 
-The object is a household savings rule. The state is assets and income. The control is next-period assets under a no-borrowing limit.
+The object here is a household savings rule in partial equilibrium. The state is assets and current income. The control is next-period assets under a no-borrowing constraint. The solution maps the state into a consumption policy with high marginal propensities to consume near zero assets and a crossing of the 45-degree line at the buffer-stock target.
 
-Income is persistent, so today's choice changes future cash-on-hand risk. Value function iteration solves the Bellman equation on an asset grid and a finite Markov chain for income.
+Value function iteration solves the Bellman equation on an asset-income grid. Prices are exogenous. The downstream Aiyagari tutorial endogenizes the rate.
+
+## Read before
+
+- [Cake-eating problem](../cake-eating/README.md)
+- [Optimal growth model](../optimal-growth/README.md)
+- [Shock discretization with Rouwenhorst](../shock-discretization/README.md)
 
 ## Equations
 
-Let $`a_t`$ be beginning-of-period assets, $`z_t`$ labor income, and
-$`R=1+r`$ the gross risk-free return. The household chooses next-period assets
-$`a_{t+1}=a'`$ and consumes the residual
+Let $`a_t`$ be beginning-of-period assets, $`z_t`$ labor income, and $`R = 1 + r`$ the gross risk-free return. The household chooses next-period assets $`a_{t+1} = a'`$ and consumes the residual,
 
 ```math
 c_t = R a_t + z_t - a_{t+1}.
 ```
 
-Assets must respect the no-borrowing constraint:
+Assets respect the no-borrowing constraint,
 
 ```math
-a_{t+1}\geq \underline a = 0,
+a_{t+1} \geq \underline{a} = 0.
 ```
 
-The numerical problem also uses an upper grid bound $`\bar a`$. Utility is CRRA:
+Utility is CRRA with curvature $`\sigma > 0`$,
 
 ```math
-u(c)=\frac{c^{1-\sigma}}{1-\sigma}, \qquad \sigma>0,\quad \sigma\neq 1.
+u(c) = \frac{c^{1-\sigma}}{1 - \sigma}.
 ```
 
-Log income follows:
+Log income follows a Gaussian AR(1) with persistence $`\rho`$ and innovation standard deviation $`\sigma_\varepsilon`$,
 
 ```math
-\log z_{t+1}=\rho \log z_t+\varepsilon_{t+1},\qquad
-\varepsilon_{t+1}\sim N(0,\sigma_\varepsilon^2),
+\log z_{t+1} = \rho \log z_t + \varepsilon_{t+1}, \quad \varepsilon_{t+1} \sim \mathcal{N}(0, \sigma_\varepsilon^2).
 ```
 
-It is approximated by $`J`$ income states $`z_1,\ldots,z_J`$ with transition matrix
-$`P`$. Here $`P_{jk}=\Pr(z_{t+1}=z_k\mid z_t=z_j)`$. The Bellman equation is
+Discretize to a $`J`$-state Rouwenhorst chain on $`\{z_j\}`$ with transition matrix $`P_{jk} = \Pr(z_{t+1} = z_k \mid z_t = z_j)`$. The *Bellman equation* writes the household's value as the maximum over feasible next-period assets,
 
 ```math
-V(a,z_j)=
-\max_{\underline a\leq a'\leq \bar a,\ a'\leq R a+z_j}
-\left[
-u(Ra+z_j-a')+
-\beta\sum_{k=1}^J P_{jk}V(a',z_k)
-\right].
+V(a, z_j) = \max_{\underline{a} \leq a' \leq R a + z_j} \left[\, u(R a + z_j - a') + \beta \sum_{k=1}^{J} P_{jk} V(a', z_k) \,\right].
 ```
 
-Here $`\beta\in(0,1)`$ is the discount factor. The asset policy is $`g_a(a,z)=a'`$. The consumption policy is
-$`c^{\ast}(a,z)=Ra+z-g_a(a,z)`$. At an interior choice, the Euler equation is:
+The solution gives the asset policy $`g_a(a, z_j)`$ and consumption policy $`c^{\ast}(a, z_j) = R a + z_j - g_a(a, z_j)`$. At an interior choice, the Euler equation holds with equality,
 
 ```math
-u'(c_t)=\beta R\mathbb{E}_t[u'(c_{t+1})],
+u'(c_t) = \beta R\, \mathbb{E}_t[u'(c_{t+1})].
 ```
 
-When the constraint binds, $`a_{t+1}=0`$ and the Euler inequality holds:
+When the constraint binds, $`a_{t+1} = 0`$ and the Euler inequality holds,
 
 ```math
-u'(c_t)\geq \beta R\mathbb{E}_t[u'(c_{t+1})].
+u'(c_t) \geq \beta R\, \mathbb{E}_t[u'(c_{t+1})].
 ```
 
 ## Worked Numerical Example
 
-To isolate the precautionary motive, solve the Euler equation at one state with iid two-point income, then read off optimal saving.
-
-Take the calibration $`\beta = 0.95`$, $`R = 1.03`$, $`\sigma = 2`$, so $`u'(c) = 1/c^2`$ and $`\beta R = 0.9785`$. Replace the persistent process with iid two-point income $`z \in \{0.9, 1.1\}`$, each with probability $`1/2`$ (mean 1, no consumption smoothing tilt). Evaluate the Euler equation at $`(a_t, z_t) = (0, 1.1)`$, so $`c_t = 1.1 - a'`$ and $`c_{t+1} = 1.03\, a' + z'`$.
-
-The Euler equation becomes
+One *Bellman operator* application by hand. Take $`a \in \{0, 2\}`$, $`z \in \{0.5, 1.5\}`$, symmetric chain with $`P_{\text{stay}} = 0.9`$, $`P_{\text{switch}} = 0.1`$, $`\beta = 0.95`$, $`\sigma = 2`$ so $`u(c) = -1/c`$, $`r = 0.03`$, $`R = 1.03`$. Guess
 
 ```math
-\frac{1}{(1.1 - a')^2} = 0.9785 \cdot \tfrac{1}{2}\!\left[\frac{1}{(1.03\, a' + 1.1)^2} + \frac{1}{(1.03\, a' + 0.9)^2}\right].
+V(0, 0.5) = -40, \quad V(0, 1.5) = -20, \quad V(2, 0.5) = -25, \quad V(2, 1.5) = -15.
 ```
 
-At $`a' = 0`$: LHS $`= 1/1.21 = 0.8264`$ and RHS $`= 0.9785 \cdot \tfrac{1}{2}(0.8264 + 1.2346) = 1.0083`$. The residual is $`-0.1819 < 0`$, so saving zero leaves marginal utility tomorrow above marginal utility today.
-
-At $`a' = 0.1`$: LHS $`= 1/1.0^2 = 1.0000`$ and RHS $`= 0.9785 \cdot \tfrac{1}{2}(0.6910 + 0.9940) = 0.8244`$. The residual is $`+0.1756 > 0`$.
-
-The root lies between $`0`$ and $`0.1`$. Two bisection steps land at $`a' \approx 0.051`$, where LHS $`= 0.9087`$ and RHS $`= 0.9075`$ (residual $`\approx 0.001`$):
+Evaluate at $`(a, z_j) = (2, 1.5)`$. Cash-on-hand is $`(1.03)(2) + 1.5 = 3.56`$. Conditional on $`z_j = 1.5`$, $`P_{1.5, 0.5} = 0.1`$ and $`P_{1.5, 1.5} = 0.9`$. The two feasible choices give
 
 ```math
-\boxed{a'^{\ast}(0,\,1.1) \approx 0.051}, \qquad c_t^{\ast} \approx 1.049.
+a' = 0: \quad u(3.56) + \beta\,[(0.1)(-40) + (0.9)(-20)] = -0.2809 + (0.95)(-22.0) = -21.180,
 ```
 
-Expected income tomorrow is $`1.0`$, so a permanent-income agent at $`\beta R < 1`$ would set $`a' < 0`$ and consume more today. The household saves $`0.05`$ instead because $`u'`$ is convex: $`\mathbb{E}[1/c_{t+1}^2] > 1/(\mathbb{E} c_{t+1})^2`$ raises expected marginal utility tomorrow above its certainty value. That convexity wedge is the precautionary motive, and it survives even when the borrowing limit is slack and the impatience margin pulls the other way.
+```math
+a' = 2: \quad u(1.56) + \beta\,[(0.1)(-25) + (0.9)(-15)] = -0.6410 + (0.95)(-16.0) = -15.841.
+```
+
+Argmax is $`a' = 2`$,
+
+```math
+\boxed{g_a(2,\, 1.5) = 2, \quad c^{\ast}(2,\, 1.5) = 1.56, \quad V_{\text{new}}(2,\, 1.5) = -15.841.}
+```
+
+The high-income household holds wealth flat. Saving preserves the continuation value despite the curvature cost of cutting consumption from 3.56 to 1.56. The solver in `run.py` repeats this argmax at every $`(a_i, z_j)`$ node on the 300×5 grid and iterates until $`V_{\text{new}} \approx V`$ in sup-norm.
 
 ## Model Setup
 
-| Parameter | Value | Description |
-|-----------|-------|-------------|
-| $`\beta`$ | 0.95 | Discount factor |
-| $`r`$ | 0.03 | Exogenous risk-free interest rate |
-| $`R`$ | 1.03 | Gross return on assets |
-| $`\beta R`$ | 0.9785 | Impatience margin; below one here |
-| $`\sigma`$ | 2.0 | CRRA risk aversion |
-| $`\rho`$ | 0.9 | Persistence of log income |
-| $`\sigma_\varepsilon`$ | 0.1 | Innovation standard deviation |
-| $`\underline{a}`$ | 0.0 | No-borrowing lower bound |
-| $`a \in`$ | [0.0, 20.0] | Asset grid support |
-| Asset state grid | 300 points | Exponential spacing near $`\underline{a}`$ |
-| Next-asset choice grid | 900 points | Candidate $`a'`$ values in each Bellman update |
-| Refined diagnostic grid | 600 states, 1500 choices | Held-out check for the median income state |
-| Income states | 5 | Rouwenhorst approximation to log income |
-| Simulation panel | 3000 agents, 400 periods | Used only to illustrate the induced asset distribution |
+| Parameter | Value | Parameter | Value |
+|---|---:|---|---:|
+| Discount factor $`\beta`$ | 0.95 | Income persistence $`\rho`$ | 0.9 |
+| CRRA $`\sigma`$ | 2.0 | Innovation s.d. $`\sigma_\varepsilon`$ | 0.1 |
+| Gross return $`R = 1 + r`$ | 1.03 | Income states $`J`$ (Rouwenhorst) | 5 |
+| No-borrowing bound $`\underline{a}`$ | 0.0 | Asset grid support $`[0, 20]`$ | 300 pts (exponential) |
+| Choice grid | 900 pts | Refined diagnostic grid | 600 states, 1500 choices |
+| VFI tolerance (sup-norm on $`V`$) | 1e-06 | Simulation panel | 3000 agents, 400 periods |
 
 ## Solution Method
 
-The value function is stored on a grid for assets and income. Income uses a five-point Rouwenhorst chain for $`\log z`$.
+What is new here relative to cake-eating or optimal growth is the income risk. The Bellman operator now sums over income states when computing the continuation value.
 
-The Bellman operator is
-
-```math
-(TV)(a,z_j)=\max_{0\leq a'\leq Ra+z_j}\left[u(Ra+z_j-a')+\beta\sum_{k=1}^J P_{jk}V(a',z_k)\right],
+```
+                    primitives: beta, R, sigma, tol
+                    grids: A = {a_i}, G = {g_l}, Z = {z_j}, P
+                                      |
+                                      v
+               +----------- VFI loop -----------+
+               |                               |
+               |  for each z_j:                |
+               |    EV(a_i) = sum_k P[jk] V(a_i, z_k)        |
+               |    interp EV onto choice grid G               |
+               |    for each a_i:                              |
+               |      obj(g_l) = u(R a_i + z_j - g_l)         |
+               |                 + beta * EV(g_l)              |
+               |      g_a(a_i, z_j) = argmax obj               |
+               |      V_new(a_i, z_j) = max obj                |
+               |                               |
+               |  err = max|V_new - V|         |
+               +-- err >= tol: V <- V_new, repeat -+
+                                      |
+                                  err < tol
+                                      v
+                           V*(a_i, z_j),  g_a(a_i, z_j)
 ```
 
-a $`\beta`$-contraction on bounded functions of $`(a,z)`$ (the grid upper bound $`\bar{a}`$ is always slack at an interior solution). For each income state, the code computes expected continuation value on the asset grid. It interpolates that value onto a denser grid for $`a'`$.
+```python
+# VFI: iterate T until sup-norm change is below tolerance.
+def solve_bellman(a_grid, a_choice_grid, z_grid, transition, beta, R, sigma, tol):
+    # eat-cash-on-hand initial guess
+    cash_on_hand = R * a_grid[:, None] + z_grid[None, :]
+    V = u(cash_on_hand, sigma) / (1 - beta)
 
-At each $`(a,z)`$, infeasible choices with $`a'>Ra+z`$ receive value $`-\infty`$. The algorithm picks the best $`a'`$ and repeats until the sup-norm change is below tolerance.
+    while True:
+        V_new = empty_like(V)
+        for j, z_j in enumerate(z_grid):
+            # E[V(a', z') | z_j] on the state grid, then interpolate to choice grid
+            EV_state = V @ transition[j, :]
+            EV_choice = interp(a_choice_grid, a_grid, EV_state)
 
-```text
-Algorithm  Income-fluctuation VFI
-Inputs   asset state grid A = {a_i}, asset choice grid G = {g_l},
-           income grid Z = {z_j}, transition P with P[jk] = Pr(z' = z_k | z = z_j),
-           primitives (beta, R, sigma), utility u, tolerance epsilon
-Outputs  V*(a_i, z_j), asset policy g_a(a_i, z_j),
-           consumption policy c*(a_i, z_j) = R a_i + z_j - g_a(a_i, z_j)
+            # u(c) + beta * E[V(a', z')|z_j] for each (a_i, g_l) pair
+            c = R * a_grid[:, None] + z_j - a_choice_grid[None, :]   # (n_a, n_g)
+            obj = u(c, sigma) + beta * EV_choice[None, :]
+            obj[c <= 0] = -inf   # enforce feasibility
 
-Initialise V_0(a_i, z_j) <- u(R a_i + z_j) / (1 - beta)        # eat-cash-on-hand guess
-for n = 0, 1, 2, ...:
-    for each income state z_j:
-        EV(a_i) <- sum_k P[jk] * V_n(a_i, z_k)                # expected continuation on A
-        EV_hat(g_l) <- interp(EV from A to G)                  # off-state continuation on G
-        for each asset state a_i:
-            feasible(g_l) := { 0 <= g_l <= R a_i + z_j }       # no-borrowing and budget
-            obj(g_l) <- u(R a_i + z_j - g_l) + beta * EV_hat(g_l)
-            g_a(a_i, z_j) <- argmax[feasible] obj
-            V[n+1](a_i, z_j) <- max obj
-    err <- max[i,j] | V[n+1](a_i, z_j) - V_n(a_i, z_j) |
-    stop when err < epsilon
+            # Bellman operator: take argmax over choice grid
+            idx = argmax(obj, axis=1)
+            V_new[:, j] = obj[arange(n_a), idx]
+
+        if max|V_new - V| < tol:
+            return V_new, a_choice_grid[argmax(obj, axis=1)]
+        V = V_new
 ```
 
-The main grid converges in **260 iterations** to sup-norm residual **9.91e-07**. A refined grid repeats the same solve with 600 state points and 1500 choice points. Its median-income policy is plotted below as a diagnostic.
+The main grid converges in 260 iterations to sup-norm residual 9.91e-07. The Bellman operator is a $`\beta`$-contraction on bounded functions of $`(a, z)`$. Geometric convergence is visible in the log-scale convergence panel below.
 
 ## Results
 
-$`V(a,z_j)`$ rises with assets and income. Near $`\underline{a}=0`$, income states have large value gaps. Low assets give the household little insurance against a bad draw.
+Value functions rise with assets and income. Near the borrowing limit, income states have large value gaps. Low assets leave the household with little insurance against a bad draw.
 
-<img src="figures/value-functions.png" alt="Value functions by income state" width="80%">
+Consumption rises with assets and is steepest near the constraint. Average MPC is 0.51 near zero assets and 0.04 near the top of the grid for the median income state. The fall measures buffer-stock saving. An extra dollar is mostly consumed when assets are scarce. It is mostly saved once the buffer is large.
 
-Consumption rises with assets and is steepest near the borrowing limit. For the median income state, average MPC is **0.51** near zero assets and **0.04** near the top. The fall measures buffer-stock saving. An extra dollar is mostly consumed when assets are scarce. It is mostly saved after the buffer is large.
+The VFI sup-norm converges geometrically in log scale. The value-function snapshots show the Bellman operator pulling the initial guess toward the fixed point monotonically.
 
-The dashed line is the refined-grid median-income policy. Its maximum gap from the main grid is **2.55e-02**.
+![Value function, consumption policy, VFI convergence, and value-function evolution](figures/policy-convergence.png)
 
-<img src="figures/consumption-policy.png" alt="Consumption policy with refined-grid benchmark on the median income state" width="80%">
+Net saving $`g_a(a, z_j) - a`$ shows when the household builds the buffer. High income raises saving, especially near the constraint. Low income leads to dissaving until the constraint stops it. Each income line crosses zero at the *buffer-stock target* for that state. The forward simulation confirms the distribution implied by the policy. About 20.5% of agents sit near the constraint after 400 periods.
 
-Net saving $`g_a(a,z_j)-a`$ shows when the household builds the buffer. High income raises saving, especially close to the borrowing limit. Low income leads to dissaving until the constraint stops it. The zero crossing is the buffer-stock target for the median income state.
+![Net saving policy and simulated cross-sectional asset distribution](figures/saving-distribution.png)
 
-<img src="figures/savings-policy.png" alt="Net saving by asset and income state" width="80%">
+### Solution diagnostics
 
-Forward simulation applies the policy after each income draw. Five agents start with identical median income. Persistent shocks spread their assets over time. Runs of bad income push assets back toward the constraint.
-
-A panel of 3,000 agents shows the cross-section after 400 periods. Median wealth is **0.20**, and the 90th percentile is **1.85**. About **20.5%** of agents sit near $`\underline{a}`$. The pile-up at zero and the right tail come from the policy and persistent risk.
-
-<img src="figures/simulated-paths.png" alt="Simulated asset paths and the induced cross-sectional asset distribution" width="80%">
-
-Convergence statistics, marginal propensities to consume, and simulated wealth quantiles are persisted here so the inline numbers in the report can be cross-checked against a committed artifact.
-
-**Solver, policy, and simulation diagnostics**
-
-| Quantity                        |      Value |
-|:--------------------------------|-----------:|
-| Main-grid VFI iterations        | 260        |
-| Main-grid sup-norm residual     |   9.91e-07 |
-| Refined-grid max gap (median z) |   0.0255   |
-| MPC near zero assets (median z) |   0.5051   |
-| MPC near top assets (median z)  |   0.0416   |
-| Simulated median wealth         |   0.2043   |
-| Simulated P90 wealth            |   1.8467   |
-| Share near constraint           |   0.2053   |
+| Quantity | Value | Quantity | Value |
+|---|---:|---|---:|
+| VFI iterations | 260 | MPC near zero assets | 0.5051 |
+| Sup-norm residual | 9.91e-07 | MPC near top assets | 0.0416 |
+| Refined-grid max gap (median $`z`$) | 2.55e-02 | Simulated median wealth | 0.2043 |
+| Share near constraint | 0.2053 | Simulated P90 wealth | 1.8467 |
 
 ## Takeaway
 
-Persistent income risk and no borrowing make saving state-contingent. Value function iteration turns the recursive choice into a policy on the asset-income grid. The computed policy has high MPCs near zero assets, positive saving after high income, and a finite buffer-stock target.
+*Precautionary saving* and impatience pull in opposite directions. The borrowing constraint caps downside insurance and amplifies the precautionary motive near zero assets. Carroll (1997) showed that the resulting target wealth is finite and stable: starting from any initial condition, households converge to the buffer-stock level. That target governs average MPC, the mass near the constraint, and the shape of the wealth distribution. Aiyagari (1994) embeds this partial-equilibrium problem inside a general-equilibrium model where the interest rate clears the capital market.
+
+## See also
+
+- [Aiyagari saving and capital-market clearing](../aiyagari/README.md)
+- [Job search (McCall)](../job-search-mccall/README.md)
+- [Optimal growth model](../optimal-growth/README.md)
 
 ## References
 
