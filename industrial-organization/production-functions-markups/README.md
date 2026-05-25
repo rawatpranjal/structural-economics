@@ -66,6 +66,40 @@ be the materials revenue share. Cost minimization implies the gross markup
 \mu_{it}=\frac{\theta^m}{\alpha^m_{it}}.
 ```
 
+## Worked Numerical Example
+
+To see the De Loecker-Warzynski formula in one step, pin a single firm-year to the panel calibration $`\beta_l=0.32`$, $`\beta_k=0.24`$, $`\beta_m=0.44`$ and compute the markup three ways: at the truth, with the OLS-inflated elasticity, and with the proxy-corrected elasticity.
+
+Take firm-year observed quantities: output revenue $`pQ = 100`$, materials expenditure $`p^m M = 25`$. The materials revenue share is
+
+```math
+\alpha^m = \frac{p^m M}{p Q} = \frac{25}{100} = 0.25.
+```
+
+The materials output elasticity under Cobb-Douglas is the production coefficient itself, so $`\theta^m = \beta_m = 0.44`$. Cost minimization gives the gross markup
+
+```math
+\mu^{\text{true}} = \frac{\theta^m}{\alpha^m} = \frac{0.44}{0.25} = \boxed{1.76}.
+```
+
+The implied Lerner index $`\mathcal{L} = 1 - 1/\mu`$ is $`1 - 1/1.76 = 0.432`$, so price exceeds marginal cost by about 43 percent of price.
+
+Now run the same arithmetic with the OLS-inflated coefficient from the Results table, $`\hat\beta_m^{\text{OLS}} = 0.932`$:
+
+```math
+\hat\mu^{\text{OLS}} = \frac{0.932}{0.25} = 3.728.
+```
+
+The OLS markup overstates the truth by a factor of $`3.728/1.76 \approx 2.12`$. The bias comes entirely from $`\hat\beta_m^{\text{OLS}}`$: the share $`\alpha^m`$ is observed and shared across all three calculations, so any error in the numerator passes through one-for-one.
+
+The proxy-control estimate is $`\hat\beta_m^{\text{proxy}} = 0.451`$, giving
+
+```math
+\hat\mu^{\text{proxy}} = \frac{0.451}{0.25} = 1.804.
+```
+
+The residual bias is $`1.804 - 1.76 = 0.044`$, about 2.5 percent of the true markup. Controlling for productivity collapses the markup error from a factor of two to a fraction of a percent. The mechanism is one line of algebra: because $`\mu = \theta^m/\alpha^m`$ is linear in the elasticity, any percentage error in $`\hat\theta^m`$ shows up as the same percentage error in the recovered markup.
+
 ## Model Setup
 
 | Object | Value | Role in the exercise |

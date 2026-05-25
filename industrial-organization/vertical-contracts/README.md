@@ -68,6 +68,50 @@ M(A)=\sum_{j\in A}\mathbf{1}\lbrace m(j)=\text{Mars}\rbrace.
 Slotting fees instead leave wholesale margins unchanged and work through
 $`F_j^C(A)`$.
 
+## Worked Numerical Example
+
+To see how contract terms redirect assortment choice, take three products and two slots and solve the retailer's selection problem by hand.
+
+Set the common demand slope $`b = 1`$, wholesale margin $`\mu = 0.42`$, and assortment capacity $`K = 2`$. Three products have intercepts $`a_1 = 4`$ (Mars), $`a_2 = 3`$ (Mars), $`a_3 = 5`$ (Rival), and identical marginal costs $`c_j = 1`$.
+
+Under the wholesale-only contract, product $`j`$ receives wholesale price $`w_j = c_j + \mu = 1.42`$. The retailer's interior optimum is $`p_j^{\ast} = (a_j + bw_j)/(2b) = (a_j + 1.42)/2`$:
+
+```math
+p_1^{\ast} = \frac{4 + 1.42}{2} = 2.71, \quad
+p_2^{\ast} = \frac{3 + 1.42}{2} = 2.21, \quad
+p_3^{\ast} = \frac{5 + 1.42}{2} = 3.21.
+```
+
+Quantities are $`q_j = a_j - bp_j^{\ast}`$:
+
+```math
+q_1 = 4 - 2.71 = 1.29, \quad q_2 = 3 - 2.21 = 0.79, \quad q_3 = 5 - 3.21 = 1.79.
+```
+
+Retailer variable profit on each product is $`(p_j^{\ast} - w_j)q_j = (p_j^{\ast} - 1.42)q_j`$:
+
+```math
+\pi_1^D = (2.71 - 1.42)(1.29) = 1.29 \cdot 1.29 \approx 1.66, \quad
+\pi_2^D = (0.79)(0.79) \approx 0.63, \quad
+\pi_3^D = (1.79)(1.79) \approx 3.20.
+```
+
+With $`K = 2`$ slots and no fixed transfers, the retailer picks the two highest-profit products. Ranking gives $`\pi_3^D > \pi_1^D > \pi_2^D`$, so the optimal assortment is $`A^{\ast} = \{1, 3\}`$: one Mars, one Rival.
+
+Now introduce a slotting fee: Mars pays $`F_1 = F_2 = 1.10`$ to the retailer. Wholesale prices and retail prices are unchanged, but the retailer's total payoff from including product $`j`$ in $`A`$ becomes $`\pi_j^D + F_j`$. For the Mars products:
+
+```math
+\pi_1^D + F_1 = 1.66 + 1.10 = 2.76, \qquad \pi_2^D + F_2 = 0.63 + 1.10 = 1.73.
+```
+
+The Rival payoff stays at $`\pi_3^D = 3.20`$. Re-ranking gives $`3.20 > 2.76 > 1.73`$, so the optimal assortment remains $`\{1, 3\}`$ in this small example. In the full twelve-product, seven-slot problem, slotting fees flip enough Mars products past the threshold to displace a Rival product, because many Mars items cluster just below the wholesale-only cutoff.
+
+The mechanism is already visible in the two-slot case. The slotting fee acts as a per-product transfer that raises Mars products' effective rank without touching the retail margin or quantity:
+
+```math
+\boxed{A^{\ast}_{\text{wholesale}} = \{1,3\}, \quad A^{\ast}_{\text{slotting}} = \{1,3\}, \quad \Delta\Pi^D = F_1 + F_2 = 2.20 \text{ added Mars revenue}}.
+```
+
 ## Model Setup
 
 One machine can hold seven of twelve products. Mars controls five products, and rivals control seven. Demand intercepts and costs differ by product. The retailer chooses the assortment and then sets selected product prices. Upstream profit is reported because transfers move surplus across the channel.
