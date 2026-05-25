@@ -53,6 +53,50 @@ The posterior probability that subject $`i`$ follows rule $`m`$ is
 
 Here $`h`$ is a summation index ranging over the same rule set as $`m`$.
 
+## Worked Numerical Example
+
+To see the EM E-step by hand, take one subject, one task, and two candidate rules.
+
+The task draws $`n = 5`$ balls from an urn with either $`p_H = 0.72`$ or $`p_L = 0.32`$ red-ball probability. The prior is $`\pi_0 = \Pr(H) = 0.45`$. Suppose $`k = 3`$ red balls are observed.
+
+Compute the log-likelihood ratio:
+
+```math
+\Lambda(3, 5)
+= 3 \log\frac{p_H}{p_L} + 2 \log\frac{1 - p_H}{1 - p_L}
+= 3 \log\frac{0.72}{0.32} + 2 \log\frac{0.28}{0.68}
+= 3(0.811) + 2(-0.887) = 2.433 - 1.774 = 0.659.
+```
+
+Update the log-odds with the prior to get the posterior:
+
+```math
+\Pr(H \mid 3, 5)
+= \frac{1}{1 + \exp\!\bigl[-\bigl(\log\tfrac{0.45}{0.55} + 0.659\bigr)\bigr]}
+= \frac{1}{1 + \exp(-0.458)} = \frac{1}{1.632} = 0.613.
+```
+
+This posterior exceeds 0.5 but falls below 0.75. The Bayesian rule (threshold 0.5) assigns the subject to $`H`$; the conservative rule (threshold 0.75) assigns to $`L`$.
+
+Suppose the subject chose $`H`$ ($`d = 1`$). With tremble rate $`\varepsilon = 0.06`$, the one-task panel likelihoods are
+
+```math
+L_{i,\mathrm{Bayes}} = 1 - \varepsilon = 0.94, \qquad
+L_{i,\mathrm{Con}} = \varepsilon = 0.06.
+```
+
+Initialize weights $`w_{\mathrm{Bayes}} = w_{\mathrm{Con}} = 0.5`$. The EM E-step computes responsibilities:
+
+```math
+\tau_{i,\mathrm{Bayes}}
+= \frac{w_{\mathrm{Bayes}}\, L_{i,\mathrm{Bayes}}}
+       {w_{\mathrm{Bayes}}\, L_{i,\mathrm{Bayes}} + w_{\mathrm{Con}}\, L_{i,\mathrm{Con}}}
+= \frac{0.5 \times 0.94}{0.5 \times 0.94 + 0.5 \times 0.06}
+= \frac{0.47}{0.50} = \boxed{0.94}.
+```
+
+A single H-choice on a separating task raises the Bayesian-rule posterior from the prior of 0.5 to 0.94. The conservative rule's responsibility falls to 0.06. With repeated choices across all 60 tasks, the responsibilities sharpen further, and the M-step average $`\bar\tau_{m} = N^{-1}\sum_i \tau_{im}`$ updates the population weights $`w_m`$.
+
 ## Model Setup
 
 | Object | Value | Role |
