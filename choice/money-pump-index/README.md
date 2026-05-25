@@ -41,6 +41,49 @@ the revealed-preference graph:
 \mathrm{MPI} = \max_C \bar w(C).
 ```
 
+## Worked Numerical Example
+
+Take three observations. Each bundle is a unit good, so $`x_1 = (1,0,0)`$, $`x_2 = (0,1,0)`$, $`x_3 = (0,0,1)`$. Prices are
+
+```math
+p_1 = (1.00,\ 0.82,\ 1.20), \quad
+p_2 = (1.20,\ 1.00,\ 0.76), \quad
+p_3 = (0.92,\ 1.20,\ 1.00).
+```
+
+Because each bundle is a unit good, $`E_{ij} = p_i \cdot x_j`$ equals the $`j`$-th component of $`p_i`$. The own-expenditure diagonal is $`E_{11} = E_{22} = E_{33} = 1`$.
+
+Check the cycle $`1 \to 2 \to 3 \to 1`$. For each arc, the cross-cost is strictly below own expenditure, so the consumer's earlier choice directly reveals the new bundle was affordable and foregone.
+
+Edge $`1 \to 2`$: bundle $`x_2`$ cost $`E_{12} = 0.82`$ at prices $`p_1`$, while the consumer spent $`E_{11} = 1.00`$. The relative slack is
+
+```math
+w_{12} = \frac{E_{11} - E_{12}}{E_{11}} = \frac{1.00 - 0.82}{1.00} = 0.18.
+```
+
+Edge $`2 \to 3`$: bundle $`x_3`$ cost $`E_{23} = 0.76`$ at prices $`p_2`$, while the consumer spent $`E_{22} = 1.00`$.
+
+```math
+w_{23} = \frac{E_{22} - E_{23}}{E_{22}} = \frac{1.00 - 0.76}{1.00} = 0.24.
+```
+
+Edge $`3 \to 1`$: bundle $`x_1`$ cost $`E_{31} = 0.92`$ at prices $`p_3`$, while the consumer spent $`E_{33} = 1.00`$.
+
+```math
+w_{31} = \frac{E_{33} - E_{31}}{E_{33}} = \frac{1.00 - 0.92}{1.00} = 0.08.
+```
+
+All three weights are positive, confirming a GARP-violating cycle. Average the three edge weights:
+
+```math
+\mathrm{MPI} = \frac{w_{12} + w_{23} + w_{31}}{3}
+             = \frac{0.18 + 0.24 + 0.08}{3}
+             = \frac{0.50}{3}
+             = \boxed{0.1\overline{6}}.
+```
+
+Each trade around the cycle extracts on average 16.7 percent of the consumer's budget. A money pump that runs the consumer once through this three-step sequence captures one-sixth of expenditure.
+
 ## Model Setup
 
 | Object | Value | Interpretation |

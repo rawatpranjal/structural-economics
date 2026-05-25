@@ -58,6 +58,81 @@ c = p^{\mathrm{obs}} + \big(\Omega \odot (\Delta^{\mathrm{obs}})^{\top}\big)^{-1
 
 Cost recovery is one matrix inversion. No iteration, no calibration of $`c`$ to a target margin; the FOC plus the observed primitives identifies marginal cost up to the precision of the demand estimate.
 
+## Worked Numerical Example
+
+To see how $`\Omega`$ enters the FOC, take a three-firm symmetric linear-demand market and solve the pre-merger equilibrium by hand.
+
+Set up demand with own-price slope $`-2`$ and cross-price slope $`0.5`$ for the two rivals:
+
+```math
+q_j(p) = 10 - 2p_j + 0.5(p_k + p_l), \qquad j, k, l \text{ distinct}.
+```
+
+The demand Jacobian, with $`\Delta_{kj} = \partial q_k / \partial p_j`$, has diagonal entries $`-2`$ and off-diagonal entries $`0.5`$:
+
+```math
+\Delta =
+\begin{pmatrix}
+-2   & 0.5 & 0.5 \\
+0.5  & -2  & 0.5 \\
+0.5  & 0.5 & -2
+\end{pmatrix}.
+```
+
+Marginal costs are $`c_j = 1`$ for $`j = 1, 2, 3`$.
+
+Pre-merger, each firm owns one product, so $`\Omega = I`$:
+
+```math
+\Omega^{\text{pre}} =
+\begin{pmatrix}
+1 & 0 & 0 \\
+0 & 1 & 0 \\
+0 & 0 & 1
+\end{pmatrix}.
+```
+
+The Hadamard product $`\Omega^{\text{pre}} \odot \Delta^{\top}`$ zeros all off-diagonal entries. Row $`j`$ of the vector FOC $`q(p) + (\Omega \odot \Delta^{\top})(p - c) = 0`$ collapses to the single-product condition:
+
+```math
+q_j + \Delta_{jj}(p_j - c_j) = 0.
+```
+
+Impose symmetry $`p_1 = p_2 = p_3 = p`$ and substitute $`\Delta_{jj} = -2`$:
+
+```math
+(10 - 2p + 0.5 \cdot 2p) + (-2)(p - 1) = 0
+\implies 10 - p - 2p + 2 = 0
+\implies 12 = 3p.
+```
+
+This gives
+
+```math
+\boxed{p^{\ast} = 4.}
+```
+
+Verify: the FOC residual is $`q_j + \Delta_{jj}(p_j - c_j) = (10 - 8 + 4) + (-2)(3) = 6 - 6 = 0`$. Quantity per product is $`q_j = 6`$; margin is $`p^{\ast} - c = 3`$.
+
+Consider a hypothetical merger of firms 1 and 2. The entries $`\Omega_{12}`$ and $`\Omega_{21}`$ flip from zero to one:
+
+```math
+\Omega^{\text{post}} =
+\begin{pmatrix}
+1 & 1 & 0 \\
+1 & 1 & 0 \\
+0 & 0 & 1
+\end{pmatrix}.
+```
+
+Row 1 of the FOC now picks up the cross-price term for product 2 because $`\Omega_{12} = 1`$:
+
+```math
+q_1 + \Delta_{11}(p_1 - c_1) + \Delta_{21}(p_2 - c_2) = 0.
+```
+
+The term $`\Delta_{21}(p_2 - c_2)`$ was absent before the merger because $`\Omega_{12}^{\text{pre}} = 0`$. After the merger it enters with $`\Delta_{21} = 0.5 > 0`$ and a positive pre-merger margin, pushing the merged firm to raise prices. The single off-diagonal flip is the entire mechanism.
+
 ## Model Setup
 
 | Object | Symbol | Role |

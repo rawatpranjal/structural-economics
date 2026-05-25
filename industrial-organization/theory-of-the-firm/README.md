@@ -72,6 +72,86 @@ The first-best surplus benchmark is
 W^{\ast}=\frac{1}{2}\theta^2
 ```
 
+## Worked Numerical Example
+
+To see the hold-up mechanism in one step, trace the model at $`s = 0`$ (low specificity, easy redeployment) and $`s = 1`$ (high specificity, fully relationship-specific asset), using $`\theta = 4`$.
+
+The first-best benchmark is the investment level a planner would choose. Setting $`V'(x) = 0`$ gives
+
+```math
+x^{\ast} = \theta = 4, \qquad W^{\ast} = \tfrac{1}{2}\theta^2 = 8.
+```
+
+Every governance form falls short of this benchmark because capturing only a fraction $`b_g(s) < 1`$ of revenue means the investor undershoots $`x^{\ast}`$.
+
+At low specificity ($`s = 0`$), read the incentive shares and governance costs directly from the schedules:
+
+```math
+b_{\text{spot}}(0) = 0.72, \quad
+b_{\text{contract}}(0) = 0.72, \quad
+b_{\text{integration}}(0) = 0.74.
+```
+
+```math
+F_{\text{spot}}(0) = 0.02, \quad
+F_{\text{contract}}(0) = 0.38, \quad
+F_{\text{integration}}(0) = 1.05.
+```
+
+At $`s = 0`$ the asset can be redeployed elsewhere, so market governance imposes little hold-up. Compute investment $`x_g = b_g \cdot \theta`$ and surplus $`W_g = \theta x_g - \tfrac{1}{2}x_g^2 - F_g`$:
+
+```math
+x_{\text{spot}} = 0.72 \times 4 = 2.88, \qquad
+W_{\text{spot}} = 4(2.88) - \tfrac{1}{2}(2.88)^2 - 0.02 = 11.52 - 4.15 - 0.02 = \boxed{7.35}.
+```
+
+```math
+x_{\text{contract}} = 0.72 \times 4 = 2.88, \qquad
+W_{\text{contract}} = 11.52 - 4.15 - 0.38 = \boxed{6.99}.
+```
+
+```math
+x_{\text{integration}} = 0.74 \times 4 = 2.96, \qquad
+W_{\text{integration}} = 4(2.96) - \tfrac{1}{2}(2.96)^2 - 1.05 = 11.84 - 4.38 - 1.05 = \boxed{6.41}.
+```
+
+Spot exchange wins at $`s = 0`$: the incentive shares are the same as the long-term contract, but the contract carries a drafting cost of $`0.38`$ versus only $`0.02`$ for spot. Integration's hierarchy cost $`F = 1.05`$ is not worth paying when the asset is easy to redeploy.
+
+At high specificity ($`s = 1`$), the asset has no outside value, so spot bargaining leaves the investor with almost nothing:
+
+```math
+b_{\text{spot}}(1) = 0.17, \quad
+b_{\text{contract}}(1) = 0.47, \quad
+b_{\text{integration}}(1) = 0.71.
+```
+
+```math
+F_{\text{spot}}(1) = 0.06, \quad
+F_{\text{contract}}(1) = 0.41, \quad
+F_{\text{integration}}(1) = 0.70.
+```
+
+The hold-up problem collapses spot investment:
+
+```math
+x_{\text{spot}} = 0.17 \times 4 = 0.68, \qquad
+W_{\text{spot}} = 4(0.68) - \tfrac{1}{2}(0.68)^2 - 0.06 = 2.72 - 0.23 - 0.06 = \boxed{2.43}.
+```
+
+```math
+x_{\text{contract}} = 0.47 \times 4 = 1.88, \qquad
+W_{\text{contract}} = 4(1.88) - \tfrac{1}{2}(1.88)^2 - 0.41 = 7.52 - 1.77 - 0.41 = \boxed{5.34}.
+```
+
+```math
+x_{\text{integration}} = 0.71 \times 4 = 2.84, \qquad
+W_{\text{integration}} = 4(2.84) - \tfrac{1}{2}(2.84)^2 - 0.70 = 11.36 - 4.03 - 0.70 = \boxed{6.63}.
+```
+
+Integration wins at $`s = 1`$: its hierarchy cost has fallen to $`0.70`$ (from $`1.05`$ at $`s = 0`$) while it still delivers $`b = 0.71`$, keeping investment close to first-best. The hold-up losses under spot ($`W = 2.43`$ versus $`W^{\ast} = 8`$) are severe enough to justify the governance premium.
+
+The governance switch happens at two thresholds. Surplus equality $`W_{\text{spot}}(s) = W_{\text{contract}}(s)`$ gives $`s \approx 0.21`$ and $`W_{\text{contract}}(s) = W_{\text{integration}}(s)`$ gives $`s \approx 0.37`$. Below $`0.21`$ the market is cheapest; between $`0.21`$ and $`0.37`$ a contract provides just enough protection; above $`0.37`$ only residual control rights under integration can sustain adequate investment.
+
 ## Model Setup
 
 The calibration is illustrative. Higher specificity weakens market incentives. Contracts protect some returns at a cost. Integration gives control rights but carries hierarchy cost.

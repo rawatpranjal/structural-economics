@@ -99,6 +99,43 @@ The likelihood is the standard two-limit Tobit form:
 Estimates of $`(\beta, \delta, \alpha)`$ recover by inversion:
 $`\hat\alpha = 1 + 1 / \hat c`$, $`\hat\delta = \exp(\hat b / \hat c)`$, $`\hat\beta = \exp(\hat a / \hat c)`$.
 
+## Worked Numerical Example
+
+Fix $`\beta = 0.9`$, $`\delta = 0.99`$, $`\alpha = 0.92`$, delay $`k = 35`$ days, gross interest rate $`R = 1 + r = 1.05`$, budget $`m = 20`$ tokens, and sooner date $`t = 0`$ so that the present-bias factor enters the FOC.
+
+The CRRA tangency condition at $`t = 0`$ sets the ratio of sooner to later consumption equal to $`\xi`$, where
+
+```math
+\xi = \bigl(\beta\,\delta^{k}\,R\bigr)^{1/(\alpha - 1)}.
+```
+
+Evaluate the base $`\beta\,\delta^{k}\,R`$:
+
+```math
+\delta^{35} = 0.99^{35} \approx 0.7036, \qquad
+\beta\,\delta^{35}\,R = (0.9)(0.7036)(1.05) \approx 0.6649.
+```
+
+Because $`\alpha - 1 = -0.08`$, the exponent $`1/(\alpha - 1) = -12.5`$ is large and negative, so a base below one is raised to a large negative power:
+
+```math
+\xi = 0.6649^{-12.5} = \exp\!\bigl(-12.5\ln 0.6649\bigr) \approx \exp(5.103) \approx 164.5.
+```
+
+Substitute $`\xi`$ into the closed-form sooner demand (from the Equations section):
+
+```math
+s^{\ast} = \frac{\xi}{1 + R\,\xi}\,m
+       = \frac{164.5}{1 + (1.05)(164.5)}\times 20
+       = \frac{164.5}{173.7}\times 20.
+```
+
+```math
+\boxed{s^{\ast} \approx 18.94 \text{ tokens sooner}}.
+```
+
+The subject allocates roughly 95 percent of the budget to the sooner date. Two forces push the allocation toward sooner: present bias ($`\beta = 0.9 < 1`$) lowers the effective weight on the future, and low curvature ($`\alpha`$ close to 1) means utility is nearly linear so the subject loads heavily on whichever date the FOC favors. The 5 percent gross return over 35 days is too small to reverse either force.
+
 ## Model Setup
 
 The simulation uses the Andreoni-Sprenger 3x3 design (their Section I.A) with $`t \in \lbrace0, 7, 35\rbrace`$ days and $`k \in \lbrace35, 70, 98\rbrace`$ days. Each $`(t, k)`$ cell contains five gross-interest-rate cells. A fixed token budget of 100 is allocated each decision. The later token rate is $`a_{t + k} = \$0.20`$ and the sooner rate $`a_t`$ is implied by $`a_t = a_{t + k} / (1 + r)`$.

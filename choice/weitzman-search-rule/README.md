@@ -32,6 +32,34 @@ We need a policy statement. The Pandora's-box theorem says the optimal policy is
 
 where $`S_t`$ is the set of boxes inspected by step $`t`$. Perfect recall is what makes the policy stationary: the buyer's current state collapses to the scalar $`b`$. The reservation value $`z_j`$ encodes the value of the option to inspect $`j`$, and inspection is worthwhile only when the current alternative is worse than that option.
 
+## Worked Numerical Example
+
+Take Boxes 1 and 2 from the calibration: $`(\mu_1, \sigma_1, c_1) = (3.0, 1.0, 0.5)`$ and $`(\mu_2, \sigma_2, c_2) = (2.5, 1.5, 0.4)`$. Box 1 has the higher mean; Box 2 has the higher variance. We will see that Box 2 wins on reservation value.
+
+Let $`d_j = (\mu_j - z_j)/\sigma_j`$. The Gaussian closed form becomes $`\sigma_j\big[\phi(d_j) + d_j \Phi(d_j)\big] = c_j`$, so it is enough to solve $`g(d) \equiv \phi(d) + d \Phi(d) = c_j/\sigma_j`$ for the standardised threshold $`d_j`$. A short standard-normal table is enough to bracket $`d_j`$:
+
+```math
+\begin{array}{r|ccccc}
+d & -0.30 & -0.20 & 0.00 & 0.10 & 0.20 \\
+\hline
+g(d) & 0.2668 & 0.3069 & 0.3989 & 0.4509 & 0.5069
+\end{array}
+```
+
+Box 1: $`c_1/\sigma_1 = 0.5/1.0 = 0.5000`$. From the table, $`g(0.19) \approx 0.5011`$, so $`d_1 \approx 0.188`$. Unstandardise:
+
+```math
+z_1 = \mu_1 - \sigma_1 d_1 = 3.0 - (1.0)(0.188) = \boxed{z_1 \approx 2.81}.
+```
+
+Box 2: $`c_2/\sigma_2 = 0.4/1.5 \approx 0.2667`$. The table gives $`g(-0.30) \approx 0.2668`$ directly, so $`d_2 \approx -0.300`$. Unstandardise:
+
+```math
+z_2 = \mu_2 - \sigma_2 d_2 = 2.5 - (1.5)(-0.300) = \boxed{z_2 \approx 2.95}.
+```
+
+Even though $`\mu_1 > \mu_2`$, we get $`z_2 > z_1`$, so the Weitzman rule opens Box 2 first. The larger $`\sigma_2`$ stretches the right tail enough that the expected gain $`\mathbb{E}[\max(V_2 - z, 0)]`$ stays above the cost at a higher threshold than Box 1's tighter distribution can support. Variance dominates mean in the priority order.
+
 ## Model Setup
 
 | Object | Symbol | Role |

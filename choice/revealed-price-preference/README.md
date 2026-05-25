@@ -56,6 +56,63 @@ $`t`$ after allowing indirect comparisons. The second relation says the direct
 reverse comparison strictly favors $`t`$ over $`s`$. Together they form the
 price-regime analogue of a revealed-preference cycle.
 
+## Worked Numerical Example
+
+Take $`T = 3`$ observations over $`L = 2`$ goods. The three price-bundle pairs are
+
+| Observation $`t`$ | Price vector $`p^t`$ | Chosen bundle $`x^t`$ | Own expenditure $`m_t`$ |
+|:---:|:---:|:---:|:---:|
+| 1 | $`(3,\, 1)`$ | $`(4,\, 2)`$ | $`14`$ |
+| 2 | $`(1,\, 3)`$ | $`(2,\, 4)`$ | $`14`$ |
+| 3 | $`(5,\, 5)`$ | $`(3,\, 3)`$ | $`30`$ |
+
+Form the cross-cost matrix $`C_{st} = p^s \cdot x^t`$. The GAPP test compares what each price schedule would charge for every other observation's chosen bundle.
+
+```math
+C = \begin{pmatrix}
+C_{11} & C_{12} & C_{13} \\
+C_{21} & C_{22} & C_{23} \\
+C_{31} & C_{32} & C_{33}
+\end{pmatrix}
+=
+\begin{pmatrix}
+14 & 10 & 12 \\
+10 & 14 & 12 \\
+30 & 30 & 30
+\end{pmatrix}.
+```
+
+The diagonal entries are own expenditures: $`C_{11} = m_1 = 14`$, $`C_{22} = m_2 = 14`$, $`C_{33} = m_3 = 30`$. Off-diagonal entry $`C_{12} = p^1 \cdot x^2 = 3 \cdot 2 + 1 \cdot 4 = 10`$ is what schedule 1 would charge for bundle 2.
+
+Draw the direct preference edges. These are the raw revealed comparisons before transitive closure: edge $`s \to t`$ (weak) when $`C_{st} \le m_t`$, strict when $`C_{st} < m_t`$.
+
+Comparing each off-diagonal entry against the column's own expenditure:
+
+- $`C_{12} = 10 < 14 = m_2`$: schedule 1 makes bundle 2 cheaper, so $`1P_p^D 2`$ (strict).
+- $`C_{13} = 12 < 30 = m_3`$: schedule 1 makes bundle 3 cheaper, so $`1P_p^D 3`$ (strict).
+- $`C_{21} = 10 < 14 = m_1`$: schedule 2 makes bundle 1 cheaper, so $`2P_p^D 1`$ (strict).
+- $`C_{23} = 12 < 30 = m_3`$: schedule 2 makes bundle 3 cheaper, so $`2P_p^D 3`$ (strict).
+- $`C_{31} = 30 > 14 = m_1`$: no edge from schedule 3 to 1.
+- $`C_{32} = 30 > 14 = m_2`$: no edge from schedule 3 to 2.
+
+Direct graph: $`1 \to 2`$, $`1 \to 3`$, $`2 \to 1`$, $`2 \to 3`$. Schedule 3 has no outgoing edges.
+
+Compute the transitive closure $`R_p`$. GAPP checks indirect as well as direct comparisons: a chain $`1 \to 2 \to 3`$ means schedule 1 is indirectly ranked at least as good as schedule 3 even if no direct edge exists.
+
+Closing the graph: schedule 1 reaches $`\{1, 2, 3\}`$; schedule 2 reaches $`\{1, 2, 3\}`$; schedule 3 reaches only itself.
+
+Check for GAPP violations. A violation at $`(s, t)`$ means the data simultaneously say schedule $`s`$ is at least as good as schedule $`t`$ (indirect chain) and schedule $`t`$ is strictly better than schedule $`s`$ (direct edge), a contradiction.
+
+- Pair $`(1, 2)`$: $`1 R_p 2`$ (direct) and $`2 P_p^D 1`$ ($`C_{21} = 10 < 14 = m_1`$). Violation.
+- Pair $`(2, 1)`$: $`2 R_p 1`$ (direct) and $`1 P_p^D 2`$ ($`C_{12} = 10 < 14 = m_2`$). Violation.
+- Pair $`(1, 3)`$ and $`(2, 3)`$: schedule 3 has no strict outgoing edges, so no violation involving 3.
+
+```math
+\boxed{\text{GAPP fails. Violations: } (1,\, 2) \text{ and } (2,\, 1).}
+```
+
+The cycle reads: schedule 1 strictly undercuts schedule 2 for bundle 2, and schedule 2 strictly undercuts schedule 1 for bundle 1. No consistent ranking of the two price regimes can accommodate both comparisons. Schedule 3 is irrelevant to the cycle because it never undercuts either rival's own expenditure.
+
 ## Model Setup
 
 | Object | Value | Interpretation |

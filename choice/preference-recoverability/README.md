@@ -60,6 +60,99 @@ The data-generating benchmark, used only for comparison, is
 U^0(x)=x_1^{\alpha}x_2^{1-\alpha},\qquad \alpha=0.60 .
 ```
 
+## Worked Numerical Example
+
+Take $`T = 2`$ observations: prices $`p_1 = (1, 2)`$ with chosen bundle $`x_1 = (3, 1)`$, and
+$`p_2 = (2, 1)`$ with chosen bundle $`x_2 = (1, 3)`$. Expenditures are
+$`m_1 = p_1 \cdot x_1 = 5`$ and $`m_2 = p_2 \cdot x_2 = 5`$. Supporting slopes are
+$`\lambda_1 = \lambda_2 = 1/5 = 0.2`$.
+
+Check GARP first. For a revealed-preference cycle to exist, $`x_2`$ must be affordable
+under budget 1 and $`x_1`$ affordable under budget 2. Checking:
+
+```math
+p_1 \cdot x_2 = (1)(1) + (2)(3) = 7 > 5 = m_1,
+\qquad
+p_2 \cdot x_1 = (2)(3) + (1)(1) = 7 > 5 = m_2.
+```
+
+Neither bundle was affordable under the other budget. No revealed preference is
+established in either direction, so the sample passes GARP with no cycle.
+
+Now solve the Afriat LP. With $`T = 2`$, the inequalities reduce to two constraints.
+Set $`u_1 = 0`$. The inequality for the pair $`(i=2, j=1)`$ gives
+
+```math
+u_2 - u_1 \leq \lambda_1\, p_1 \cdot (x_2 - x_1)
+= 0.2\bigl[(1)(1-3) + (2)(3-1)\bigr]
+= 0.2 \times 2 = 0.4.
+```
+
+The inequality for the pair $`(i=1, j=2)`$ gives
+
+```math
+u_1 - u_2 \leq \lambda_2\, p_2 \cdot (x_1 - x_2)
+= 0.2\bigl[(2)(3-1) + (1)(1-3)\bigr]
+= 0.2 \times 2 = 0.4,
+```
+
+so $`u_2 \geq -0.4`$. Combined with non-negativity, the feasible range is
+$`u_2 \in [0,\, 0.4]`$. Choosing $`u_2 = 0.4`$ (binding on the first inequality) gives
+Afriat scores $`u_1 = 0`$ and $`u_2 = 0.4`$.
+
+Compute bounds at $`y = (2, 2)`$. Evaluate $`p_t \cdot y = (1)(2) + (2)(2) = 6`$ for
+$`t = 1`$ and $`p_t \cdot y = (2)(2) + (1)(2) = 6`$ for $`t = 2`$. Since
+$`p_t \cdot y = 6 > 5 = m_t`$ for both observations, $`y`$ lies outside both budget sets.
+No observation has $`p_t \cdot x_t \geq p_t \cdot y`$, so the data place no upper bound
+on $`U(y)`$ from direct revealed preference.
+
+For the lower bound, both observations satisfy $`p_t \cdot y \geq p_t \cdot x_t`$,
+meaning $`y`$ is more expensive than $`x_t`$ at every observed price vector. A consumer
+who faces prices $`p_t`$ and can afford $`y`$ can also afford $`x_t`$, so
+
+```math
+U_{\mathrm{low}}(y) = \max_{t:\, p_t \cdot y \,\geq\, p_t \cdot x_t} u_t
+= \max(u_1,\, u_2) = \max(0,\, 0.4) = 0.4.
+```
+
+Apply the Afriat recovery at $`y`$. The constructed utility index evaluates the lower
+envelope of supporting affine functions:
+
+```math
+\widehat U(y) = \min_{j=1,2}\bigl[u_j + \lambda_j\, p_j \cdot (y - x_j)\bigr].
+```
+
+For $`j = 1`$:
+
+```math
+u_1 + \lambda_1\, p_1 \cdot (y - x_1)
+= 0 + 0.2\bigl[(1)(2-3) + (2)(2-1)\bigr]
+= 0.2 \times 1 = 0.2.
+```
+
+For $`j = 2`$:
+
+```math
+u_2 + \lambda_2\, p_2 \cdot (y - x_2)
+= 0.4 + 0.2\bigl[(2)(2-1) + (1)(2-3)\bigr]
+= 0.4 + 0.2 \times 1 = 0.6.
+```
+
+Taking the minimum: $`\widehat U(y) = \min(0.2,\, 0.6) = 0.2`$. The envelope is
+determined by observation 1; observation 2 contributes a slack bound of 0.6. With two
+observations neither of which was in the other budget, the sample establishes only a
+lower bound on $`U(y)`$:
+
+```math
+\boxed{U(y) \geq 0.4.}
+```
+
+The Afriat function assigns $`\widehat U(y) = 0.2`$, one member of the rationalizing
+family. The gap between 0.2 and the lower bound 0.4 reflects partial identification:
+with $`y`$ outside both observed budget sets, different normalizations of the Afriat LP
+assign different values at $`y`$, and the two-observation sample cannot pin down
+$`U(y)`$ to a closed interval.
+
 ## Model Setup
 
 | Object | Value | Role in the exercise |

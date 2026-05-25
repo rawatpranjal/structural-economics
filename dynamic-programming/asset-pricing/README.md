@@ -79,7 +79,7 @@ The flat ratio gives a direct check on the numerical solution.
 
 To see the SDF mechanism in one step, solve the fixed point analytically under log utility, then extend to CRRA $`\gamma=2`$ using a special case that admits a closed form.
 
-**Log utility ($`\gamma=1`$).** When $`\gamma=1`$, marginal utility is $`u'(y)=y^{-1}`$, so $`u'(y)y=1`$ for all $`y`$. The scaled-price recursion
+Start with log utility, $`\gamma=1`$. Marginal utility is $`u'(y)=y^{-1}`$, so $`u'(y)y=1`$ for all $`y`$. The scaled-price recursion
 
 ```math
 f = \beta\,\mathbb{E}\!\left[f + u'(y')\,y'\right] = \beta(f + 1)
@@ -99,7 +99,7 @@ With $`\beta=0.95`$:
 
 for every dividend state $`y`$. The flat ratio is the benchmark the numerical solver must recover at $`\gamma=1`$.
 
-**CRRA $`\gamma=2`$, iid dividends.** Set $`\rho=0`$ so $`x'\sim\mathcal{N}(0,\sigma^2)`$ and each period's state is independent. The forcing term becomes $`u'(y')y'=(y')^{1-\gamma}=(y')^{-1}=e^{-x'}`$. By the log-normal moment-generating function, $`\mathbb{E}[e^{-x'}]=e^{\sigma^2/2}`$. At the mean state $`y=1`$, where $`u'(1)=1`$, the fixed-point equation is
+Now move to CRRA $`\gamma=2`$ with iid dividends. Set $`\rho=0`$ so $`x'\sim\mathcal{N}(0,\sigma^2)`$ and each period's state is independent. The forcing term becomes $`u'(y')y'=(y')^{1-\gamma}=(y')^{-1}=e^{-x'}`$. By the log-normal moment-generating function, $`\mathbb{E}[e^{-x'}]=e^{\sigma^2/2}`$. At the mean state $`y=1`$, where $`u'(1)=1`$, the fixed-point equation is
 
 ```math
 f^{\ast} = \beta\!\left(f^{\ast} + e^{\sigma^2/2}\right)
