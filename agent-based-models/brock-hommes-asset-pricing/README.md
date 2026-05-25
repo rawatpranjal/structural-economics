@@ -87,6 +87,48 @@ The parameter $`\beta`$ is the intensity of choice. As $`\beta \to 0`$, shares s
 near one half. As $`\beta`$ rises, small score gaps produce large reallocations
 across forecasting rules.
 
+## Worked Numerical Example
+
+Strategy switching is easiest to read after one full update of forecasts, market clearing, profit scoring, and logit reallocation. Use the calibration in `Model Setup` with intensity $`\beta = 50`$, start from equal shares $`n_{F} = n_{T} = 0.5`$ and zero past scores $`U_{F} = U_{T} = 0`$, and set $`x_{t-2} = 0.10`$, $`x_{t-1} = 0.20`$, $`\epsilon_t = 0`$.
+
+The untruncated trend forecast is
+
+```math
+\tilde f_{T,t} = x_{t-1} + g(x_{t-1} - x_{t-2}) = 0.20 + 1.40 \cdot 0.10 = 0.34.
+```
+
+Bounding by $`\bar x = 0.35`$ via $`\tanh`$:
+
+```math
+f_{T,t} = 0.35 \cdot \tanh(0.34 / 0.35) = 0.35 \cdot \tanh(0.9714) = 0.35 \cdot 0.7494 = 0.2623,
+```
+
+and $`f_{F,t} = 0`$. Market clearing at $`R = 1.01`$ delivers
+
+```math
+x_t = \frac{0.5 \cdot 0 + 0.5 \cdot 0.2623}{1.01} = \frac{0.1311}{1.01} = 0.1299.
+```
+
+The realized excess return in deviation form is
+
+```math
+e_t = x_t - R x_{t-1} = 0.1299 - 1.01 \cdot 0.20 = -0.0721.
+```
+
+Each rule's forecasted excess-return position is $`f_{h,t} - R x_{t-1}`$: $`-0.2020`$ for fundamentalists and $`0.0603`$ for trend followers. Profit scores with $`a\sigma^2 = 0.04`$, $`c_F = 0`$, $`c_T = 0.001`$ are
+
+```math
+\pi_{F,t} = \frac{(-0.0721)(-0.2020)}{0.04} - 0 = 0.3643, \qquad \pi_{T,t} = \frac{(-0.0721)(0.0603)}{0.04} - 0.001 = -0.1098.
+```
+
+Smoothing with $`\lambda = 0.80`$ and $`U_{h,t-1} = 0`$ gives $`U_{F,t} = 0.0729`$ and $`U_{T,t} = -0.0220`$. Logit choice with $`\beta = 50`$ yields $`\beta U_{F,t} = 3.643`$, $`\beta U_{T,t} = -1.098`$, so $`\exp(\beta U_{F,t}) = 38.19`$ and $`\exp(\beta U_{T,t}) = 0.334`$. New shares are
+
+```math
+n_{F,t} = \frac{38.19}{38.19 + 0.334} = 0.9913, \qquad n_{T,t} = \frac{0.334}{38.19 + 0.334} = \boxed{0.0087}.
+```
+
+The realized $`x_t = 0.130`$ fell below $`R x_{t-1} = 0.202`$, so the asset earned a negative excess return. The fundamentalist's short position $`(f_{F,t} - R x_{t-1} = -0.202)`$ matched that sign and the trend follower's positive position did not, so logit choice reallocates almost entirely to fundamentalists in one step. High $`\beta`$ turns the small score gap $`U_{F,t} - U_{T,t} \approx 0.095`$ into a near-corner share split; lowering $`\beta`$ to 2 would leave $`n_{F,t} \approx 0.55`$ and keep the market closer to fifty-fifty.
+
 ## Model Setup
 
 The calibration is intentionally small. The point is to make strategy switching visible, not to match a particular stock market.

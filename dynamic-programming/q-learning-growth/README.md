@@ -28,6 +28,30 @@ Here $`\alpha_t`$ is the step size (learning rate) for update $`t`$.
 
 Exploration draws each transition uniformly over feasible state-action pairs $`(s, a)`$, so every region of the grid receives updates regardless of the on-policy distribution. The greedy policy is read off the table as $`a^{\ast}(s) = \arg\max_a Q(s, a)`$.
 
+## Worked Numerical Example
+
+Run two Q-learning updates on a toy 3-state, 2-action slice of the model. States are capital levels $`k \in \{0.10, 0.19, 0.28\}`$ (low, near-steady-state, high). Actions are next-capital choices $`k' \in \{0.10, 0.19\}`$ (save-low, save-high). Productivity is fixed at $`z = 1`$. Calibration $`\alpha = 0.36`$, $`\beta = 0.95`$, $`A = 1.0`$. Learning rate $`\alpha_t = 0.5`$. Initialise $`Q(s, a) = 0`$ for every feasible pair.
+
+Update 1: sample state $`k = 0.19`$ and action $`k' = 0.10`$ (save-low). Output is
+
+```math
+y = z A k^{\alpha} = (1)(1)(0.19)^{0.36} = 0.5343,
+```
+
+so consumption is $`c = y - k' = 0.5343 - 0.10 = 0.4343`$ and the reward is $`r = \log c = \log(0.4343) = -0.8341`$. The next state is $`k' = 0.10`$, where every action still has $`Q = 0`$, so $`\max_{a'} Q(0.10, a') = 0`$. The update is
+
+```math
+Q(0.19, 0.10) \leftarrow 0 + 0.5 \cdot [-0.8341 + 0.95 \cdot 0 - 0] = -0.4171.
+```
+
+Update 2: sample state $`k = 0.19`$ and action $`k' = 0.19`$ (save-high). Consumption is $`c = 0.5343 - 0.19 = 0.3443`$ and the reward is $`r = \log(0.3443) = -1.0664`$. The next state is $`k' = 0.19`$, where actions now have $`Q(0.19, 0.10) = -0.4171`$ and $`Q(0.19, 0.19) = 0`$, so $`\max_{a'} Q(0.19, a') = 0`$. The update is
+
+```math
+Q(0.19, 0.19) \leftarrow 0 + 0.5 \cdot [-1.0664 + 0.95 \cdot 0 - 0] = \boxed{-0.5332}.
+```
+
+After two updates, $`Q(0.19, 0.10) = -0.4171 > Q(0.19, 0.19) = -0.5332`$, so the greedy action at $`k = 0.19`$ is save-low. The ranking is correct on these two samples because save-low yields a higher current reward and the continuation values are still uninformative zeros. Repeated sampling backs up nonzero continuation values from rewarding states and eventually flips the ordering toward the closed-form rule $`k' = \alpha\beta A k^{\alpha} = 0.342 \cdot 0.5343 = 0.183`$, which sits between save-low and save-high.
+
 ## Model Setup
 
 | Object | Value |

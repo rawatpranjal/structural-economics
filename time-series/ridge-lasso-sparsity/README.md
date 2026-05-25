@@ -49,6 +49,54 @@ The tuning parameter $`\lambda`$ is chosen on a blocked validation sample. Ridge
 keeps many small correlated signals. Lasso can set coefficients exactly to
 zero, so it produces a compressed selected set.
 
+## Worked Numerical Example
+
+Use orthonormal predictors ($`X'X = I`$) with four indicators and OLS estimates $`\hat\beta_{\mathrm{OLS}} = (0.5,\ 1.0,\ 0.1,\ -0.3)`$. Set $`\lambda = 0.4`$. Orthonormality reduces both estimators to scalar formulas that expose the shrinkage geometry directly.
+
+For ridge, the closed-form solution $`\hat b_{\mathrm{ridge}} = (X'X + \lambda I)^{-1}X'y`$ collapses to
+
+```math
+\hat\beta^j_{\mathrm{ridge}} = \frac{\hat\beta^j_{\mathrm{OLS}}}{1 + \lambda}.
+```
+
+With $`\lambda = 0.4`$, the denominator is $`1.4`$ for every coefficient:
+
+```math
+\hat\beta_{\mathrm{ridge}} = \frac{1}{1.4}(0.5,\ 1.0,\ 0.1,\ -0.3) = (0.357,\ 0.714,\ 0.0714,\ -0.214).
+```
+
+For lasso, coordinate descent on orthonormal $`X`$ reduces to soft-thresholding with threshold $`\lambda/2`$:
+
+```math
+\hat\beta^j_{\mathrm{lasso}} = \mathrm{sign}(\hat\beta^j_{\mathrm{OLS}})\cdot\max\!\left(|\hat\beta^j_{\mathrm{OLS}}| - \tfrac{\lambda}{2},\ 0\right).
+```
+
+Apply the threshold $`\lambda/2 = 0.2`$ coefficient by coefficient:
+
+```math
+\hat\beta^1_{\mathrm{lasso}} = \mathrm{sign}(0.5)\cdot\max(0.5 - 0.2,\ 0) = +0.3,
+```
+
+```math
+\hat\beta^2_{\mathrm{lasso}} = \mathrm{sign}(1.0)\cdot\max(1.0 - 0.2,\ 0) = +0.8,
+```
+
+```math
+\hat\beta^3_{\mathrm{lasso}} = \mathrm{sign}(0.1)\cdot\max(0.1 - 0.2,\ 0) = 0 \quad (\text{exact zero}),
+```
+
+```math
+\hat\beta^4_{\mathrm{lasso}} = \mathrm{sign}(-0.3)\cdot\max(0.3 - 0.2,\ 0) = -0.1.
+```
+
+Collecting both estimators,
+
+```math
+\boxed{\hat\beta_{\mathrm{ridge}} = (0.357,\ 0.714,\ 0.0714,\ -0.214), \qquad \hat\beta_{\mathrm{lasso}} = (0.3,\ 0.8,\ 0,\ -0.1).}
+```
+
+Lasso zeros the third coefficient because $`|0.1| < \lambda/2 = 0.2`$; ridge merely shrinks it to $`0.071`$. Both estimators shrink coefficient 2 (the strongest signal) the least in absolute terms, but lasso shrinks it less than ridge because lasso's penalty is linear rather than quadratic. This is the bias-variance tradeoff made concrete: ridge trades bias uniformly across all coefficients, while lasso concentrates bias on small signals and grants near-unbiased recovery to large ones.
+
 ## Model Setup
 
 | Object | Value | Role |

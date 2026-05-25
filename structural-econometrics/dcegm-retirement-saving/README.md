@@ -184,6 +184,49 @@ c_t^0(a) &= c_t^{d_t^{\ast}(a)}(a).
 \end{aligned}
 ```
 
+## Worked Numerical Example
+
+To see the branch-then-envelope staging, do one EGM step from the terminal period $`T`$ back to $`T-1`$ on each discrete branch, then compare. Use the README calibration $`\gamma = 2`$, $`\beta = 0.96`$, $`R = 1.02`$, $`\omega_B = 1.15`$, $`\bar b = 1.0`$, with age-55 incomes $`y(\mathrm{work}) = 1.42`$, $`y(\mathrm{retire}) = 0.78`$, work cost $`\psi(\mathrm{work}) = -0.16`$, retirement amenity $`\psi(\mathrm{retire}) = 0`$. Fix one next-asset node $`a^{+} = 1`$.
+
+The terminal bequest gives $`V_T^m(a) = \omega_B(1 - 1/(a + \bar b))`$ with marginal $`\mu_T(a^{+}) = \omega_B (a^{+} + \bar b)^{-2}`$. At $`a^{+} = 1`$:
+
+```math
+\mu_T(1) = 1.15 \cdot (1 + 1)^{-2} = 1.15/4 = 0.2875.
+```
+
+Invert the Euler equation $`u'(c) = \beta R\,\mu_T(a^{+})`$ with $`u'(c) = c^{-2}`$. The next-period continuation is the same on both branches because retirement is absorbing, so $`c`$ is identical on work and retire:
+
+```math
+c = (\beta R \mu_T)^{-1/\gamma} = (0.96 \cdot 1.02 \cdot 0.2875)^{-1/2} = (0.28152)^{-1/2} = 1.8847.
+```
+
+The endogenous current asset differs across branches through the income term in the budget identity $`a^{\mathrm{endo},d} = (c + a^{+} - y(d))/R`$:
+
+```math
+a^{\mathrm{endo},\mathrm{work}} = \frac{1.8847 + 1 - 1.42}{1.02} = 1.4360,
+\qquad
+a^{\mathrm{endo},\mathrm{retire}} = \frac{1.8847 + 1 - 0.78}{1.02} = 2.0635.
+```
+
+The branch-value contribution at each endogenous point sums flow utility, the branch-specific work cost or amenity, and the discounted continuation $`\beta V_T(a^{+}) = 0.96 \cdot \omega_B(1 - 1/2) = 0.5520`$. Flow utility at $`c = 1.8847`$ is $`u(c) = 1 - 1/c = 0.4694`$:
+
+```math
+\widetilde V^{\mathrm{work}}(1.4360) = 0.4694 - 0.16 + 0.5520 = 0.8614,
+```
+
+```math
+\widetilde V^{\mathrm{retire}}(2.0635) = 0.4694 + 0 + 0.5520 = 1.0214.
+```
+
+These values sit at different current assets, so they do not yet compare. After sweeping $`a^{+}`$ over the full grid, each branch interpolates onto the common current-asset grid; the upper envelope $`V_{T-1}^{0}(a) = \max\{V^{\mathrm{work}}(a), V^{\mathrm{retire}}(a)\}`$ picks the larger one pointwise. At the calibration above, the work branch wins for low $`a`$ where the wage premium $`y(\mathrm{work}) - y(\mathrm{retire}) = 0.64`$ outweighs the work cost $`-\psi(\mathrm{work}) = 0.16`$, and the retire branch wins at high $`a`$ where the wage premium is small relative to assets:
+
+```math
+\boxed{(a^{\mathrm{endo},\mathrm{work}},\, \widetilde V^{\mathrm{work}}) = (1.436,\, 0.861),
+\quad (a^{\mathrm{endo},\mathrm{retire}},\, \widetilde V^{\mathrm{retire}}) = (2.063,\, 1.021)}.
+```
+
+The same EGM inversion runs on both branches with one number changing, the branch income $`y(d)`$. The discrete retirement choice never enters Euler inversion; it enters only after both branch value curves sit on the common asset grid. That ordering, branch first and envelope second, is what makes DC-EGM avoid the joint search over saving and retirement.
+
 ## Model Setup
 
 | Symbol | Calibration | Meaning |
