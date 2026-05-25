@@ -51,6 +51,46 @@ Here $`c(k;\theta) \equiv Ak^\alpha - g(k;\theta)`$ is the consumption implied b
 
 For this calibration, the exact policy is $`g^{\ast}(k)=\alpha\beta A k^\alpha`$.
 
+## Worked Numerical Example
+
+To see why the Euler residual vanishes at the true policy, plug $`g^{\ast}(k)=\alpha\beta A k^\alpha`$ into the residual with $`\alpha=0.36`$, $`\beta=0.95`$, $`A=1`$, and a test capital $`k=0.2`$.
+
+The implied saving and consumption at $`k`$ are
+
+```math
+g^{\ast}(0.2) = (0.36)(0.95)(0.2)^{0.36} = 0.3420 \times 0.5602 = 0.1916,
+```
+
+```math
+c(0.2) = (0.2)^{0.36} - 0.1916 = 0.5602 - 0.1916 = 0.3686.
+```
+
+Next-period capital is $`k' = 0.1916`$, so saving and consumption tomorrow are
+
+```math
+g^{\ast}(0.1916) = 0.3420 \times (0.1916)^{0.36} = 0.3420 \times 0.5516 = 0.1887,
+```
+
+```math
+c(0.1916) = 0.5516 - 0.1887 = 0.3630.
+```
+
+The marginal product of capital tomorrow is
+
+```math
+\alpha A (k')^{\alpha-1} = (0.36)(0.1916)^{-0.64} = (0.36)(2.879) = 1.0365.
+```
+
+Form the Euler ratio inside the log:
+
+```math
+\beta \alpha A (k')^{\alpha-1} \frac{c(k)}{c(k')}
+= (0.95)(1.0365)\frac{0.3686}{0.3630}
+= 0.9847 \times 1.0154 = 0.9999.
+```
+
+So $`R(0.2) = \log(0.9999) = \boxed{-1.3\times 10^{-4}}`$, a residual of order $`10^{-4}`$ that comes only from the four-digit rounding above. The exact policy delivers $`R(k)=0`$ at every $`k`$, which is the target the Chebyshev coefficients $`\theta`$ are tuned to hit at the collocation nodes.
+
 ## Model Setup
 
 | Object | Value |

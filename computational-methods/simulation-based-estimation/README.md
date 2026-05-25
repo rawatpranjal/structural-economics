@@ -111,6 +111,34 @@ w_t^{(i)} \propto \frac{\pi(\theta_t^{(i)})}{\sum_{j=1}^{N} w_{t-1}^{(j)}  K_t(\
 
 Under the uniform prior $`\pi`$ is constant on the support, so the numerator drops out and the weight is just the inverse of the kernel-mixture density evaluated at $`\theta_t^{(i)}`$.
 
+## Worked Numerical Example
+
+To see the MSM criterion at one candidate, take a stripped scalar version of the model with a single moment, the sample mean. The data-generating process is $`x_i = \theta + \varepsilon_i`$ with $`\varepsilon_i \sim N(0, 1)`$ and truth $`\theta_0 = 1`$. The observed sample mean is $`m_{obs} = 1.05`$, a slight overshoot from sampling noise.
+
+Fix five common-random-number draws $`\varepsilon_{sim} = \{-1.5, -0.5, 0, 0.5, 1.5\}`$ and evaluate the simulator at the candidate $`\theta = 0.9`$:
+
+```math
+\tilde x_i = \theta + \varepsilon_{sim,i} = \{-0.6,\ 0.4,\ 0.9,\ 1.4,\ 2.4\},
+\qquad
+m_{sim}(0.9) = \frac{1}{5}\sum_{i=1}^{5} \tilde x_i = 0.9.
+```
+
+The scalar moment gap and identity-weighted criterion are
+
+```math
+m_{sim}(0.9) - m_{obs} = 0.9 - 1.05 = -0.15,
+\qquad
+Q_{MSM}(0.9) = (-0.15)^{2} \cdot 1 = 0.0225.
+```
+
+Repeat the simulator at the candidate $`\theta = 1.05`$. Because the same shocks shift rigidly, $`m_{sim}(1.05) = 1.05`$, the moment gap is exactly zero, and $`Q_{MSM}(1.05) = 0`$:
+
+```math
+\boxed{Q_{MSM}(0.9) = 0.0225,\qquad \hat\theta_{MSM} = 1.05.}
+```
+
+Common random numbers freeze the noise that maps $`\theta`$ into $`m_{sim}`$, so $`m_{sim}(\theta)`$ is a smooth function of $`\theta`$ rather than a fresh draw at each candidate. The MSM argmin matches $`m_{obs}`$ exactly here, not $`\theta_0`$, because the criterion has no way to tell sampling noise apart from a shift in the parameter.
+
 ## Model Setup
 
 | Object | Value | Role |
