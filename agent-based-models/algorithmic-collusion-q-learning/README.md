@@ -82,6 +82,30 @@ The reported collusion index is
 \mathrm{CI} = \frac{\bar p_{\mathrm{learned}} - p_{\mathrm{Bertrand}}}{p_{\mathrm{Monopoly}} - p_{\mathrm{Bertrand}}}.
 ```
 
+## Worked Numerical Example
+
+Run one Q-update on a 2-action toy slice of the calibrated model to see how the collusive incentive enters before the algorithm has learned anything. Use the README parameters $`a = 2`$, $`a_0 = 0`$, $`\mu = 0.25`$, $`c = 1`$, $`\alpha = 0.15`$, $`\delta = 0.95`$. Restrict each firm to two prices, the Bertrand benchmark and the monopoly benchmark, $`\mathcal{P} = \{1.473, 1.925\}`$. The state is the previous price-index pair, so there are four states; initialise $`Q_i(s, a) = 0`$ everywhere.
+
+Suppose the previous state is $`s_t = (1.473, 1.473)`$ (both at Bertrand) and the firms now play $`a_{1,t} = 1.925`$ (firm 1 deviates upward to the monopoly price) and $`a_{2,t} = 1.473`$ (firm 2 stays at Bertrand). Inside utilities are $`u_1 = (2 - 1.925)/0.25 = 0.300`$ and $`u_2 = (2 - 1.473)/0.25 = 2.108`$, with outside utility $`u_0 = 0`$. Exponentiating gives $`e^{u_1} = 1.350`$, $`e^{u_2} = 8.230`$, $`e^{u_0} = 1`$, so the logit denominator is $`D = 1 + 1.350 + 8.230 = 10.580`$.
+
+Shares and current profits are
+
+```math
+s_1 = \frac{1.350}{10.580} = 0.1276, \qquad s_2 = \frac{8.230}{10.580} = 0.7778,
+```
+
+```math
+\pi_1 = (1.925 - 1)(0.1276) = 0.1181, \qquad \pi_2 = (1.473 - 1)(0.7778) = 0.3679.
+```
+
+The next state is $`s_{t+1} = (1.925, 1.473)`$. Every Q-entry is still zero, so $`\max_a Q_1(s_{t+1}, a) = 0`$. The firm-1 update is
+
+```math
+Q_1\bigl((1.473, 1.473), 1.925\bigr) \leftarrow 0.85 \cdot 0 + 0.15 \cdot [0.1181 + 0.95 \cdot 0] = \boxed{0.01772}.
+```
+
+Firm 1 earns less this period than firm 2 because undercutting still pays in a static stage game ($`\pi_2 > \pi_1`$), but the Q-table now scores the higher price with a positive value where everything else is still zero. Repeated updates back nonzero continuation values into $`Q_1`$ from states where the rival also prices high, and the greedy action drifts toward the monopoly side of the grid. That is the mechanism the full 250,000-step run amplifies into the collusion index of 0.52 reported below.
+
 ## Model Setup
 
 The grid is centered on the static economic benchmarks. First solve the Bertrand-Nash and joint-monopoly first-order conditions. Then form 13 evenly spaced prices spanning from the Bertrand to the monopoly benchmark with both endpoints included, and add one padding point below and above. The padding point below Bertrand is the one-period undercut in the impulse-response diagnostic.

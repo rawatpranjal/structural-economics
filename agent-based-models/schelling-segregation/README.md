@@ -61,6 +61,40 @@ puts $`S(t)`$ near one half. Large values of $`S(t)`$ mean that the typical pers
 mostly sees same-group neighbors. Each decision still uses only the local rule
 above.
 
+## Worked Numerical Example
+
+A 3 by 3 city makes one wave of the Schelling rule hand-checkable. Place four red agents at the corners, four blue agents at the edge midpoints, and one empty cell at the center, with threshold $`\tau=0.5`$:
+
+```math
+\begin{pmatrix} R & B & R \\ B & E & B \\ R & B & R \end{pmatrix}.
+```
+
+Take the top-left corner agent at cell $`(0,0)`$. Its Moore neighborhood is $`\lbrace(0,1),(1,0),(1,1)\rbrace`$. Cell $`(1,1)`$ is empty, so $`O_{(0,0)}=2`$ and the two occupied neighbors are both $`B`$. The same-group share is
+
+```math
+s_{(0,0)}(0)=\frac{0}{2}=0<\tau,
+```
+
+so the top-left $`R`$ is dissatisfied. By symmetry every corner $`R`$ has $`s=0`$ and is dissatisfied. Take next the top-edge blue at $`(0,1)`$. Its neighborhood is $`\lbrace(0,0),(0,2),(1,0),(1,1),(1,2)\rbrace`$, with $`(1,1)`$ empty, giving $`O_{(0,1)}=4`$ occupied neighbors $`\lbrace R,R,B,B\rbrace`$ and
+
+```math
+s_{(0,1)}(0)=\frac{2}{4}=0.5\geq\tau,
+```
+
+so the edge $`B`$ is content. Symmetric counts hold at every edge, so the count of dissatisfied agents at $`t=0`$ is four (the corner reds). The aggregate index is
+
+```math
+S(0)=\frac{1}{8}\Big(4\cdot 0+4\cdot 0.5\Big)=0.25.
+```
+
+Now move the top-left $`R`$ into the empty center, $`(0,0)\to(1,1)`$, leaving $`(0,0)`$ vacant. The relocated $`R`$ at $`(1,1)`$ sees all eight surrounding cells with $`(0,0)`$ now empty, so $`O_{(1,1)}=7`$ with three reds at $`(0,2),(2,0),(2,2)`$, giving $`s_{(1,1)}(1)=3/7\approx 0.429`$. The three remaining corner reds now see one new same-group neighbor at $`(1,1)`$, lifting each to $`s=1/3\approx 0.333`$. The blues at $`(1,2)`$ and $`(2,1)`$, which previously had $`s=0.5`$, lose a same-group corner neighbor that flipped to the center and drop to $`s=2/5=0.4<\tau`$. The blues at $`(0,1)`$ and $`(1,0)`$ keep $`s=0.5`$. Counting strict violations of $`s<\tau`$:
+
+```math
+\boxed{D_0=4\ \text{(corner reds)},\qquad D_1=6\ \text{(four reds, plus two newly dissatisfied blues)},\qquad S(1)\approx 0.404.}
+```
+
+One local move raised the aggregate segregation index from $`0.25`$ to about $`0.404`$ but also created two new dissatisfied agents that were previously content. This is the externality at the heart of Schelling: each move improves the mover's own neighborhood at most weakly and changes the local composition that every other nearby agent faces, so equilibrium is reached only after enough rounds for these knock-on effects to die out. The 50 by 50 simulation in Results plays the same logic at scale.
+
 ## Model Setup
 
 The calibration keeps Schelling's checkerboard simple. These numbers are not estimates. They make the mechanism easy to see.
