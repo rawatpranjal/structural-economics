@@ -55,6 +55,48 @@ K_{ss}(\tau_k)=
 with $`Y_{ss}=K_{ss}^{\alpha}`$, $`C_{ss}=Y_{ss}-\delta K_{ss}`$, and
 tax revenue $`T_{ss}=\tau_k \alpha Y_{ss}`$.
 
+## Worked Numerical Example
+
+At steady state $`z = 1`$, the Euler equation collapses to the certainty version. Setting $`c_t = c_{t+1}`$ and $`K_t = K_{t+1} = K`$ in the Euler equation gives
+
+```math
+1 = \beta\left[(1-\tau_k)\,\alpha K^{\alpha-1} + 1 - \delta\right].
+```
+
+Rearranging, the after-tax marginal product must equal the household's required gross return:
+
+```math
+(1-\tau_k)\,\alpha K^{\alpha-1} = \frac{1}{\beta} - 1 + \delta.
+```
+
+Solving for $`K`$ yields the closed-form steady state from the Equations section:
+
+```math
+K_{ss}(\tau_k) = \left(\frac{(1-\tau_k)\,\alpha}{\tfrac{1}{\beta}-1+\delta}\right)^{1/(1-\alpha)}.
+```
+
+With the calibrated values $`\beta = 0.99`$, $`\alpha = 0.36`$, $`\delta = 0.025`$, the required return is $`1/0.99 - 1 + 0.025 = 0.0351`$.
+
+For no tax ($`\tau_k = 0`$), the inside fraction is $`0.36 / 0.0351 = 10.26`$, and the exponent is $`1/(1-0.36) = 1.5625`$:
+
+```math
+K_{ss}(0) = 10.26^{1.5625} = 37.99.
+```
+
+For a 20 percent tax ($`\tau_k = 0.2`$), the after-tax capital share shrinks to $`0.8 \times 0.36 = 0.288`$. The inside fraction falls to $`0.288 / 0.0351 = 8.20`$:
+
+```math
+K_{ss}(0.2) = 8.20^{1.5625} = 26.81.
+```
+
+The ratio
+
+```math
+\frac{K_{ss}(0.2)}{K_{ss}(0)} = \frac{26.81}{37.99} = \boxed{0.706},
+```
+
+so a 20 percent tax cuts long-run capital by 29.4 percent. The leverage comes from the exponent $`1/(1-\alpha) = 1.56 > 1`$: a 20 percent reduction in the after-tax capital share ($`1.0 \to 0.8`$) translates into a larger proportional fall in $`K`$ because capital is the only accumulating factor. The Results table confirms this exact figure in the $`K_{ss}/K_{ss}(0)`$ column.
+
 ## Model Setup
 
 | Parameter | Value | Description |

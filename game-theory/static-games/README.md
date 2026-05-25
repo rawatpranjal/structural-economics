@@ -38,6 +38,40 @@ q^{\ast}=\frac{a-c}{3b},\qquad
 P^{\ast}=a-2bq^{\ast}.
 ```
 
+## Worked Numerical Example
+
+Take $`a = 10`$, $`b = 1`$, and $`c = 2`$. These are the parameters used throughout the tutorial.
+
+The best-response function evaluated at $`q_j = q^{\ast}`$ gives the symmetric fixed-point condition. Setting $`q_1 = q_2 = q^{\ast}`$ in the FOC
+
+```math
+a - b(q_1 + q_2) - b q_i - c = 0,
+```
+
+that is $`10 - q^{\ast} - q^{\ast} - q^{\ast} - 2 = 0`$, so
+
+```math
+3 q^{\ast} = 8 \implies \boxed{q^{\ast} = \tfrac{8}{3} \approx 2.667}.
+```
+
+Market output is $`Q^{\ast} = 2 q^{\ast} = 16/3`$, and the market-clearing price is
+
+```math
+P^{\ast} = 10 - 1 \cdot \tfrac{16}{3} = \tfrac{14}{3} \approx 4.667.
+```
+
+Each firm earns
+
+```math
+\pi^{\ast} = (P^{\ast} - c)\, q^{\ast} = \left(\tfrac{14}{3} - 2\right)\tfrac{8}{3} = \tfrac{8}{3} \cdot \tfrac{8}{3} = \tfrac{64}{9} \approx 7.111.
+```
+
+Neither firm can raise profit by changing output: if firm 1 raises $`q_1`$ by $`\varepsilon`$, price falls by $`b\varepsilon`$ on all units it sells, and the net margin change is $`a - c - b(Q^{\ast} + \varepsilon) - b q_1^{\ast} = -2b\varepsilon < 0`$. The general closed forms are
+
+```math
+q^{\ast} = \frac{a-c}{3b}, \qquad \pi^{\ast} = \frac{(a-c)^2}{9b}.
+```
+
 ## Model Setup
 
 | Object | Value | Meaning |

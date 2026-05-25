@@ -124,6 +124,45 @@ k_{ss} = \left(\frac{\alpha A}{\rho + \delta}\right)^{1/(1-\alpha)},
 
 with steady-state consumption $`c_{ss} = f(k_{ss}) - \delta k_{ss}`$.
 
+## Worked Numerical Example
+
+To see how the modified golden rule and the Euler equation interact, evaluate the calibration $`(\rho, \sigma, \alpha, \delta, A) = (0.05, 2.0, 0.36, 0.05, 1.0)`$ at the steady state and then at one off-steady-state capital stock.
+
+The modified golden rule fixes $`k_{ss}`$ through $`f'(k_{ss}) = \rho + \delta = 0.10`$. With Cobb-Douglas production this inverts to
+
+```math
+k_{ss} = \left(\frac{\alpha A}{\rho + \delta}\right)^{1/(1-\alpha)}
+       = \left(\frac{0.36}{0.10}\right)^{1/0.64}
+       = (3.6)^{1.5625}
+       \approx 7.3998.
+```
+
+Steady-state consumption follows from $`c_{ss} = A k_{ss}^\alpha - \delta k_{ss}`$:
+
+```math
+c_{ss} = (7.3998)^{0.36} - (0.05)(7.3998) = 2.0555 - 0.3700 = 1.6855.
+```
+
+Now pick an off-steady-state point $`k_{\text{mid}} = k_{ss}/2 \approx 3.700`$ and read the Euler equation. Differentiating $`u'(c) = V'(k)`$ along an optimal path and using the envelope condition $`\rho V'(k) = V''(k) \dot k + u'(c) (f'(k) - \delta)`$ gives the continuous-time Euler equation
+
+```math
+\frac{\dot c}{c} = \frac{f'(k) - \rho - \delta}{\sigma}.
+```
+
+The marginal product at $`k_{\text{mid}}`$ is
+
+```math
+f'(k_{\text{mid}}) = \alpha A k_{\text{mid}}^{\alpha - 1} = (0.36)(3.700)^{-0.64} \approx 0.1558,
+```
+
+so the Euler equation evaluated at the midpoint reads
+
+```math
+\frac{\dot c}{c}\bigg|_{k_{\text{mid}}} = \frac{0.1558 - 0.05 - 0.05}{2.0} = \frac{0.0558}{2.0} = \boxed{0.0279}.
+```
+
+Consumption grows at about 2.8 percent per unit of time when capital is half its steady-state level. The marginal product 0.1558 exceeds the impatience-plus-depreciation hurdle 0.10, so the planner postpones consumption and the drift $`\dot k = f(k_{\text{mid}}) - \delta k_{\text{mid}} - c(k_{\text{mid}})`$ is positive on the saddle path. As $`k \to k_{ss}`$ the marginal product falls toward $`\rho + \delta`$ and consumption growth decays to zero.
+
 ## Model Setup
 
 The calibration uses one aggregate capital state, Cobb-Douglas production, CRRA utility, and no shocks. The grid spans low and high capital around the Ramsey steady state.

@@ -62,6 +62,45 @@ B_{11}p + B_{21}(1-p) = B_{12}p + B_{22}(1-p).
 The candidate is an equilibrium only if $`p,q \in [0,1]`$. The reported mixed
 residual is the maximum absolute gap left in these two indifference equations.
 
+## Worked Numerical Example
+
+Battle of the Sexes has two pure Nash equilibria and one interior mixed equilibrium. The payoff matrices from the code are
+
+```math
+A = \begin{pmatrix} 3 & 0 \\ 0 & 2 \end{pmatrix}, \qquad
+B = \begin{pmatrix} 2 & 0 \\ 0 & 3 \end{pmatrix},
+```
+
+where rows are Opera and Football for the row player, columns are Opera and Football for the column player, and $`(A_{ij}, B_{ij})`$ is the payoff pair at profile $`(i,j)`$.
+
+To find the interior mixed equilibrium, each player must be indifferent over the two actions used with positive probability. The row player mixes with probability $`p`$ on Opera; the column player mixes with probability $`q`$ on Opera.
+
+The column player's indifference condition sets the row player's two expected payoffs equal:
+
+```math
+A_{11}\,q + A_{12}(1-q) = A_{21}\,q + A_{22}(1-q)
+\implies 3q = 2(1-q)
+\implies 5q = 2.
+```
+
+Solving gives the equilibrium column probability $`q^{\ast} = 2/5`$.
+
+The row player's indifference condition sets the column player's two expected payoffs equal:
+
+```math
+B_{11}\,p + B_{21}(1-p) = B_{12}\,p + B_{22}(1-p)
+\implies 2p = 3(1-p)
+\implies 5p = 3.
+```
+
+Solving gives the equilibrium row probability $`p^{\ast} = 3/5`$. Both lie in $`[0,1]`$, confirming the mixed equilibrium is interior:
+
+```math
+\boxed{(p^{\ast},\,q^{\ast}) = (3/5,\;2/5).}
+```
+
+The asymmetry follows directly from the payoff structure. The row player prefers Opera (payoff 3 versus 2), so the column player must play Opera only 2/5 of the time to keep the row player indifferent. Symmetrically, the column player prefers Football, so the row player plays Opera 3/5 of the time. Each player randomizes more toward their less-preferred outcome to keep the opponent willing to mix.
+
 ## Model Setup
 
 Four 2x2 games make the checks concrete. Prisoner's Dilemma isolates private incentives against joint surplus. Matching Pennies has no pure equilibrium. Battle of the Sexes has two conventions and conflicting preferences. Stag Hunt has a safe action and a payoff-dominant convention.

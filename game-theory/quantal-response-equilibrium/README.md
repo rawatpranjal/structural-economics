@@ -45,6 +45,28 @@ p = QBR(p;\lambda).
 At $`\lambda=0`$, both actions receive probability one half. As $`\lambda`$ rises,
 $`p(\lambda)`$ moves toward the mixed Nash probability $`p^{N}=2/3`$.
 
+## Worked Numerical Example
+
+Take the entry game at precision $`\lambda = 4`$. The payoff gap is $`\Delta(p) = 2 - 3p`$, so the fixed-point condition is
+
+```math
+G_\lambda(p) = p - [1 + \exp(-4(2 - 3p))]^{-1} = 0.
+```
+
+We locate the root by bisection on $`[0, 1]`$.
+
+At $`p = 0.5`$, the argument to the sigmoid is $`4(2 - 1.5) = 2.0`$, so $`\text{QBR}(0.5) = 0.8808`$. The residual $`G(0.5) = 0.5 - 0.8808 = -0.3808 < 0`$, meaning the logit response exceeds the conjectured entry probability. At $`p = 0.7`$, the argument is $`4(2 - 2.1) = -0.4`$, so $`\text{QBR}(0.7) = 0.4013`$. The residual $`G(0.7) = 0.7 - 0.4013 = 0.2987 > 0`$, meaning the entry probability now exceeds the logit response. The root lies in $`(0.5, 0.7)`$.
+
+At $`p = 0.6`$, the argument is $`4(0.2) = 0.8`$, so $`\text{QBR}(0.6) = 0.6900`$. The residual is $`G(0.6) = -0.0900 < 0`$, so the root is above 0.6. At $`p = 0.65`$, the argument is $`4(0.05) = 0.2`$, so $`\text{QBR}(0.65) = 0.5498`$. The residual is $`G(0.65) = 0.1002 > 0`$, so the root is below 0.65. At $`p = 0.625`$, the argument is $`4(0.125) = 0.5`$, so $`\text{QBR}(0.625) = 0.6225`$ and $`G(0.625) = 0.0025 > 0`$. The bracket has narrowed to $`(0.6, 0.625)`$.
+
+Continuing bisection to tolerance $`10^{-6}`$ gives
+
+```math
+\boxed{p^{\ast}(\lambda=4) \approx 0.6243},
+```
+
+which matches the entry in the QRE path table below. This lies between the equal-probability benchmark $`1/2`$ (at $`\lambda = 0`$) and the mixed Nash value $`2/3`$, confirming that finite precision keeps the equilibrium strictly interior to both limits.
+
 ## Model Setup
 
 These payoffs create excess entry pressure when the rival is unlikely to enter.
