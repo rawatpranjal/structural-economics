@@ -116,6 +116,44 @@ The one-item uniform benchmark gives a clean audit. Myerson's virtual value is
 so the optimal reserve is $`r^{\ast}=1/2`$. The exact auction sells to the
 highest bidder only when the highest value exceeds this reserve.
 
+## Worked Numerical Example
+
+Take two bidders with IID values $`v_1, v_2 \sim U[0,1]`$. The virtual value $`\phi(v) = 2v - 1`$ vanishes at $`v = 1/2`$, so the Myerson reserve is
+
+```math
+r^{\ast} = \tfrac{1}{2}.
+```
+
+Expected revenue equals $`\mathbb{E}[\max(v_{(2)},\, r^{\ast}) \cdot \mathbf{1}\lbrace v_{(1)} \geq r^{\ast} \rbrace]`$, where $`v_{(1)}`$ and $`v_{(2)}`$ are the highest and second-highest values. Split the unit square into three regions and integrate.
+
+Region A is both values below the reserve, $`v_1, v_2 < 1/2`$. This region has probability $`1/4`$ and contributes zero revenue because the item does not sell.
+
+Region B is exactly one value above the reserve. Its probability is $`2 \cdot (1/2)(1/2) = 1/2`$, and the price charged equals $`r^{\ast} = 1/2`$. The revenue contribution is
+
+```math
+\Pr(B) \cdot r^{\ast} = \tfrac{1}{2} \cdot \tfrac{1}{2} = \tfrac{1}{4}.
+```
+
+Region C is both values above the reserve, $`v_1, v_2 \geq 1/2`$. The probability is $`1/4`$, and the winner pays the second-highest value. Conditional on both values lying in $`[1/2, 1]`$, the order statistic has mean
+
+```math
+\mathbb{E}\bigl[v_{(2)} \,\bigm|\, v_1, v_2 \geq \tfrac{1}{2}\bigr] = \tfrac{1}{2} + \tfrac{1}{3} \cdot \tfrac{1}{2} = \tfrac{2}{3}.
+```
+
+The contribution from region C is therefore
+
+```math
+\Pr(C) \cdot \mathbb{E}[v_{(2)} \mid C] = \tfrac{1}{4} \cdot \tfrac{2}{3} = \tfrac{1}{6}.
+```
+
+Summing regions B and C gives Myerson expected revenue
+
+```math
+\mathrm{Rev}^{\ast} = \tfrac{1}{4} + \tfrac{1}{6} = \tfrac{3}{12} + \tfrac{2}{12} = \boxed{\tfrac{5}{12} \approx 0.4167}.
+```
+
+This is the analytical benchmark in the Model Setup table. The plain second-price auction without reserve earns $`1/3 \approx 0.3333`$, so the reserve adds about $`0.083`$ in expected revenue. The neural auction reports $`0.4498`$ on its training grid, but the regret audit shows the gap above $`5/12`$ is paid for by small profitable misreports, not by a strictly better mechanism.
+
 ## Model Setup
 
 The paper studies flexible multi-bidder, multi-item settings. This tutorial uses the smallest benchmark where the answer is known.

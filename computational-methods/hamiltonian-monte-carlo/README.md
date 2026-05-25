@@ -162,6 +162,54 @@ On a banana ridge, each random-walk step is approximately isotropic in $`\theta`
 The chain crosses the ridge in many small steps, autocorrelations decay slowly, and effective sample size per evaluation is small.
 HMC follows the ridge with one trajectory and pays $`L`$ gradient evaluations per iteration in return.
 
+## Worked Numerical Example
+
+Trace one leapfrog step on a one-dimensional standard normal target. The toy target keeps the arithmetic clean; the leapfrog mechanics are identical to the two-dimensional banana run in Model Setup.
+
+Target $`\pi(\theta) \propto \exp(-\theta^2 / 2)`$, potential $`U(\theta) = \theta^2 / 2`$, gradient $`\nabla U(\theta) = \theta`$. Momentum $`p \sim \mathcal{N}(0, 1)`$, kinetic energy $`K(p) = p^2 / 2`$, Hamiltonian $`H(\theta, p) = U(\theta) + K(p)`$. Start at $`(\theta_0, p_0) = (1.0, 0.5)`$ with step size $`\varepsilon = 0.5`$.
+
+The half-step in momentum uses the gradient at the current position:
+
+```math
+p_{1/2} = p_0 - \tfrac{\varepsilon}{2}  \nabla U(\theta_0) = 0.5 - 0.25 \cdot 1.0 = 0.25.
+```
+
+The full-step in position drifts at the half-step momentum:
+
+```math
+\theta_1 = \theta_0 + \varepsilon  p_{1/2} = 1.0 + 0.5 \cdot 0.25 = 1.125.
+```
+
+The closing half-step in momentum uses the gradient at the new position:
+
+```math
+p_1 = p_{1/2} - \tfrac{\varepsilon}{2}  \nabla U(\theta_1) = 0.25 - 0.25 \cdot 1.125 = -0.03125.
+```
+
+The Hamiltonian at the start of the trajectory is
+
+```math
+H_0 = \tfrac{1.0^2}{2} + \tfrac{0.5^2}{2} = 0.5 + 0.125 = 0.625.
+```
+
+The Hamiltonian at the end of the trajectory is
+
+```math
+H_1 = \tfrac{1.125^2}{2} + \tfrac{(-0.03125)^2}{2} = 0.6328 + 0.000488 = 0.6333.
+```
+
+The energy drift is $`\Delta H = H_1 - H_0 = 0.0083`$, which is $`\mathcal{O}(\varepsilon^2)`$ as predicted: leapfrog preserves $`H`$ exactly only in continuous time. The Metropolis acceptance probability is
+
+```math
+\alpha = \min\lbrace 1,  \exp(-\Delta H) \rbrace = \min\lbrace 1,  \exp(-0.0083) \rbrace = \min\lbrace 1,  0.9917 \rbrace = 0.9917.
+```
+
+```math
+\boxed{(\theta_1,  \alpha) \approx (1.125,  0.992)}
+```
+
+The proposal moves the position from 1.0 to 1.125 in a single leapfrog step while the Hamiltonian drifts by less than one percent. Acceptance is 0.99, exactly the regime the banana run lands in at its tuned step size. Halving $`\varepsilon`$ would shrink $`\Delta H`$ by roughly a factor of four (the $`\varepsilon^2`$ scaling) at the cost of half the per-step exploration.
+
 ## Model Setup
 
 | Object | Value | Role |
