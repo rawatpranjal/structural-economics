@@ -20,7 +20,7 @@ We need a one-number summary of each box that captures the trade-off between exp
 c_j = \mathbb{E}\big[\max(V_j - z_j,  0)\big] = \int_{z_j}^{\infty} (v - z_j)  dF_j(v).
 ```
 
-The right-hand side is a smooth, strictly decreasing function of $`z_j`$ (the higher the threshold, the less probability mass above it), so the equation has a unique root and can be solved by one-dimensional bracketing. For Gaussian $`V_j \sim N(\mu_j, \sigma_j^2)`$, the integral has a closed form: $`\mathbb{E}[\max(V - z, 0)] = \sigma  \phi((\mu - z) / \sigma) + (\mu - z)  (1 - \Phi((\mu - z) / \sigma))`$, where $`\phi`$ and $`\Phi`$ are the standard-normal density and cumulative distribution function.
+The right-hand side is a smooth, strictly decreasing function of $`z_j`$ (the higher the threshold, the less probability mass above it), so the equation has a unique root and can be solved by one-dimensional bracketing. For Gaussian $`V_j \sim N(\mu_j, \sigma_j^2)`$, the integral has a closed form: $`\mathbb{E}[\max(V - z, 0)] = \sigma  \phi((\mu - z) / \sigma) + (\mu - z)  \Phi((\mu - z) / \sigma)`$, where $`\phi`$ and $`\Phi`$ are the standard-normal density and cumulative distribution function.
 
 We need a policy statement. The Pandora's-box theorem says the optimal policy is to open boxes in decreasing $`z_j`$, and to stop the first time the best inspected value $`b`$ exceeds the reservation value of every uninspected box. Equivalently, with the boxes labelled so that $`z_1 \geq z_2 \geq \cdots \geq z_J`$:
 
