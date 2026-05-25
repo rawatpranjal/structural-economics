@@ -1,181 +1,157 @@
-# Fiscal-Shock Persistence and Income Dynamics
+# Autoregressive Processes: Stationarity, Estimation, and Persistence
 
 ## Overview
 
-Suppose a fiscal authority raises spending during a downturn. The economic question is how long that impulse moves income.
+Serial dependence is the rule in macroeconomic and financial data. Box and Jenkins (1970) showed that a small number of autoregressive coefficients can capture the memory of most economic time series. Hamilton (1994) made AR processes the entry point to time-series analysis because they parametrize exactly how much of today's state survives to tomorrow.
 
-The object is a spending innovation with AR(1) persistence. It enters Samuelson's multiplier-accelerator model. Consumption depends on lagged income. Investment responds to consumption growth.
+The object is an *autoregressive process of order p*. The AR(p) nests two questions: what persistence structure is consistent with a stationary distribution, and how precisely can OLS recover that structure from finite samples.
 
-The computation propagates one innovation and simulated shocks. Impulse responses, autocorrelations, and a spectrum show how persistence changes timing.
+The computation simulates sample paths, applies OLS to estimate AR coefficients, traces autocorrelation and spectral density analytically and from samples, and shows how estimation error shrinks as the sample grows. A multiplier-accelerator economy illustrates how AR(1) persistence maps into macro dynamics.
+
+## Read before
+
+- [Discretizing Persistent Shocks](../../dynamic-programming/shock-discretization/README.md)
 
 ## Equations
 
-Let $`x_t`$ denote the fiscal shock state. The shock follows an AR(1) law.
+Let $`y_1, \ldots, y_T`$ be a covariance-stationary time series with zero mean. The autoregressive coefficients $`\phi_1, \phi_2, \ldots, \phi_p`$ express each observation as a linear function of its $`p`$ lags plus an unpredictable innovation. The *AR(p) law of motion* is
 
 ```math
-x_t = \rho x_{t-1} + \varepsilon_t, \qquad
-\varepsilon_t \sim N(0,\sigma^2), \qquad |\rho|<1.
+y_t = \phi_1 y_{t-1} + \phi_2 y_{t-2} + \cdots + \phi_p y_{t-p} + \varepsilon_t,
+\qquad \varepsilon_t \sim \mathcal{N}(0, \sigma^2).
 ```
 
-The coefficient $`\rho`$ tells us how much of today's state becomes tomorrow's
-state. A high value makes the shock persist.
+For the AR(1) special case the single coefficient $`\phi_1 = \rho`$ carries the full persistence structure. Covariance stationarity requires $`|\rho| < 1`$; without that bound the variance grows without limit and the process never returns to a fixed distribution.
 
-In the multiplier-accelerator economy, income is the sum of three components.
+The Yule-Walker equations link the autocovariance function $`\gamma_k = \mathrm{Cov}(y_t, y_{t-k})`$ to the AR coefficients. For an AR(1):
 
 ```math
-C_t = \beta Y_{t-1},
-\qquad
-G_t = \rho_g G_{t-1} + (1-\rho_g)\bar G + \eta_t,
+\gamma_k = \rho^k \, \gamma_0, \qquad \gamma_0 = \frac{\sigma^2}{1 - \rho^2}.
 ```
 
-The spending innovation $`\eta_t \sim N(0,\sigma^2)`$ is drawn independently of $`\varepsilon_t`$.
+The autocorrelation function is $`\mathrm{Corr}(y_t, y_{t-k}) = \rho^k`$: it decays geometrically with lag $`k`$. The partial autocorrelation function (PACF) cuts to zero after lag $`p`$, so a sharp PACF cutoff identifies the AR order.
+
+The spectral density of an AR(1) concentrates variance at low frequencies when $`\rho`$ is large. It is
 
 ```math
-I_t = \alpha(C_t-C_{t-1}),
-\qquad
-Y_t = C_t + I_t + G_t.
+S_y(\omega) = \frac{\sigma^2}{2\pi \,|1 - \rho\,e^{-i\omega}|^2}, \qquad \omega \in [0, \pi].
 ```
 
-The steady state is $`\bar Y=\bar G/(1-\beta)`$, $`\bar C=\beta \bar Y`$, and
-$`\bar I=0`$. Lowercase variables are deviations from that steady state. The
-impulse response uses the recursion below.
+As $`\rho \to 1`$ the peak at $`\omega = 0`$ grows without bound, which is the spectral fingerprint of near-unit-root persistence.
+
+In the multiplier-accelerator application, income $`y_t`$ is driven by government spending $`g_t`$ following an AR(1) with persistence $`\rho_g`$. Deviations from steady state satisfy
 
 ```math
-y_t = \beta(1+\alpha)y_{t-1}-\alpha\beta y_{t-2}+g_t,
-\qquad
-g_t=\rho_g g_{t-1}+\eta_t.
+y_t = \beta(1+\alpha)y_{t-1} - \alpha\beta\, y_{t-2} + g_t,
+\qquad g_t = \rho_g g_{t-1} + \eta_t,
 ```
+
+where $`\beta`$ is the marginal propensity to consume and $`\alpha`$ is the accelerator coefficient. The characteristic roots of the income equation determine whether the endogenous propagation damps or amplifies the AR(1) forcing.
 
 ## Worked Numerical Example
 
-Take the baseline calibration $`\rho = 0.90`$ and $`\sigma = 0.01`$. All three population moments follow from the AR(1) law of motion in closed form; nothing needs to be simulated.
+Four steps of an AR(1) recursion by hand. Take $`\rho = 0.7`$, $`\sigma = 1`$, and starting value $`y_0 = 0`$. The *AR(1) recursion* feeds each realization into the next period.
 
-The stationary variance accumulates the infinite sum of squared impulse responses. Summing the geometric series gives:
-
-```math
-\mathrm{Var}(x_t)
-  = \frac{\sigma^2}{1-\rho^2}
-  = \frac{(0.01)^2}{1-(0.90)^2}
-  = \frac{0.0001}{0.19}
-  = \boxed{0.000526}.
-```
-
-So the standard deviation of the stationary distribution is about $`0.0229`$, or roughly 2.3 times the innovation standard deviation $`\sigma = 0.01`$. Persistence inflates volatility beyond the size of any single shock.
-
-The autocorrelation at lag $`k`$ is $`\rho^k`$, so the function decays geometrically. At lags 1, 2, and 3:
+Draw innovations $`\varepsilon_1 = 1.0`$, $`\varepsilon_2 = -0.5`$, $`\varepsilon_3 = 0.8`$, $`\varepsilon_4 = 0.2`$.
 
 ```math
-\rho_1 = 0.90, \qquad \rho_2 = 0.81, \qquad \rho_3 = 0.73.
+y_1 = (0.7)(0) + 1.0 = 1.000,
 ```
-
-Each additional lag removes another 10 percent of the remaining serial correlation. After ten lags, $`\rho^{10} = 0.35`$; the process remembers more than a third of a shock even a decade later.
-
-The conditional forecast given a current observation $`x_0`$ shrinks geometrically toward zero. Starting from $`x_0 = 0.05`$ (five innovation standard deviations):
 
 ```math
-\mathbb{E}[x_1 \mid x_0] = \rho \, x_0 = (0.90)(0.05) = 0.045,
-\qquad
-\mathbb{E}[x_2 \mid x_0] = \rho^2 x_0 = (0.81)(0.05) = 0.0405.
+y_2 = (0.7)(1.000) + (-0.5) = 0.200,
 ```
-
-The forecast does not reach zero in finite time; it approaches zero asymptotically. The half-life is the horizon at which the forecast equals half the starting value:
 
 ```math
-\frac{\log(0.5)}{\log(\rho)}
-  = \frac{\log(0.5)}{\log(0.90)}
-  = \frac{-0.693}{-0.105}
-  = \boxed{6.6 \text{ periods}}.
+y_3 = (0.7)(0.200) + 0.8 = 0.940,
 ```
 
-After 6.6 periods, a shock retains exactly half its initial effect. Halving $`\rho`$ from 0.9 to 0.5 cuts the half-life to $`\log(0.5)/\log(0.5) = 1`$ period. This is the arithmetic behind the impulse-response comparison in Results.
+```math
+y_4 = (0.7)(0.940) + 0.2 = \boxed{0.858}.
+```
+
+The series does not move one-for-one with each shock. A negative innovation at $`t=2`$ partially cancels the positive level from $`t=1`$; a positive shock at $`t=3`$ recovers it. With $`\rho = 0.7`$ the half-life is $`\log(0.5)/\log(0.7) \approx 1.9`$ periods: shocks decay much faster than at $`\rho = 0.9`$ (half-life 6.6 periods).
 
 ## Model Setup
 
-**AR(1) shock process**
-
-| Parameter | Value | Role |
-|---|---:|---|
-| $`\rho`$ | 0.90 | Share of the shock state carried into the next period |
-| $`\sigma`$ | 0.01 | Standard deviation of new innovations |
-| $`T_{sim}`$ | 220 | Simulated periods after burn-in |
-
-**Multiplier-accelerator economy**
-
-| Parameter | Value | Role |
-|---|---:|---|
-| $`\alpha`$ | 0.30 | Accelerator response of investment to consumption growth |
-| $`\beta`$ | 0.80 | Marginal propensity to consume out of lagged income |
-| $`\rho_g`$ | 0.90 | Carryover of government-spending deviations |
-| $`\bar G`$ | 1.00 | Steady-state government spending |
-| $`\bar Y`$ | 5.00 | Implied steady-state income |
-| $`\bar C`$ | 4.00 | Implied steady-state consumption |
+| Parameter | Value | Parameter | Value |
+|---|---:|---|---:|
+| AR(1) persistence $`\rho`$ | 0.90 | Innovation s.d. $`\sigma`$ | 0.01 |
+| Simulated periods $`T`$ | 220 | Burn-in | 200 |
+| IRF horizon | 40 | Max ACF lag | 20 |
+| MPC $`\beta`$ (multiplier) | 0.80 | Accelerator $`\alpha`$ | 0.30 |
+| Gov. spending persistence $`\rho_g`$ | 0.90 | Steady-state $`\bar G`$ | 1.00 |
+| OLS sample sizes (convergence) | 50 – 10 000 | Repetitions per $`T`$ | 500 |
 
 ## Solution Method
 
-A shock path determines every variable because the model is backward-looking. No expectations fixed point is solved here.
+AR(1) population moments are closed form; no iteration is needed. Estimation uses OLS on the lagged design matrix, which is equivalent to Yule-Walker for an AR(1).
 
-The AR(1) population objects are closed form.
-
-```math
-E[x_t]=0, \qquad \mathrm{Var}(x_t)=\frac{\sigma^2}{1-\rho^2}=0.000526, \qquad \mathrm{Corr}(x_t,x_{t-k})=\rho^k.
+```
+            data  y_1, ..., y_T
+                       |
+                       v
++------- OLS / Yule-Walker estimation -------+
+|                                            |
+|  regress y_t on y_{t-1}, ..., y_{t-p}     |
+|                                            |
+|  phi_hat = (X'X)^{-1} X'y                 |
+|                                            |
+|  sigma_hat^2 = ||y - X phi_hat||^2 / T     |
+|                                            |
++--------------------------------------------+
+                       |
+                       v
+         phi_hat_1, ..., phi_hat_p,  sigma_hat^2
 ```
 
-The AR(1) half-life is $`\log(0.5)/\log(\rho)=6.6`$ periods. The income roots are 0.346, 0.694. The largest modulus is 0.694, so internal propagation is stable.
-
-```text
-Procedure: propagate a fiscal innovation through an AR(1) state
-Inputs: rho, sigma, alpha, beta, rho_g, horizon T, shock sequences eps_t, eta_t
-Outputs: AR path x_t and multiplier-accelerator paths y_t, c_t, i_t, g_t
-
-1. Set eps_0 = 1 (or eta_0 = 1) for an impulse response.
-2. For a simulation, draw eps_t and eta_t independently from N(0, sigma^2) after burn-in.
-3. Update x_t = rho x[t-1] + eps_t and g_t = rho_g g[t-1] + eta_t.
-4. Set c_t = beta y[t-1], i_t = alpha(c_t - c[t-1]), and y_t = c_t + i_t + g_t.
-5. Record impulse responses, autocorrelations, and the AR(1) spectrum.
+```python
+# OLS estimation of an AR(p) on a mean-zero series.
+def estimate_ar_ols(y: np.ndarray, p: int) -> tuple[np.ndarray, float]:
+    T = len(y)
+    # Build the (T-p) x p design matrix of lagged values.
+    X = np.column_stack([y[p - 1 - k : T - 1 - k] for k in range(p)])
+    y_dep = y[p:]
+    # OLS: phi_hat = (X'X)^{-1} X'y
+    phi_hat = np.linalg.lstsq(X, y_dep, rcond=None)[0]
+    residuals = y_dep - X @ phi_hat
+    sigma_hat2 = float(np.dot(residuals, residuals) / (T - p))
+    return phi_hat, sigma_hat2
 ```
+
+OLS is consistent: $`\hat\phi \to \phi`$ as $`T \to \infty`$ under stationarity. The convergence panel in Results plots $`\hat\rho`$ against $`T`$ and shows the $`1/\sqrt{T}`$ shrinkage of estimation error around the truth $`\rho = 0.9`$.
 
 ## Results
 
-A unit shock follows the exact path $`\rho^h`$ ($`h`$ = periods after the shock). Raising $`\rho`$ from 0.5 to 0.9 lengthens the half-life from 1.0 to 6.6 periods.
+The simulated AR(1) path stays within its analytic two-standard-deviation band. The sample ACF tracks the population decay $`\rho^k`$ closely; the spectral density concentrates power at low frequencies as persistence rises.
 
-<img src="figures/ar1-irfs.png" alt="Exact AR(1) impulse responses by persistence" width="80%">
+![AR(1) sample path, ACF, spectral density, and OLS convergence](figures/ar-diagnostics.png)
 
-Government spending decays after the innovation. Income adds lagged consumption and accelerator investment to that path.
+Each income line rises then falls back in the multiplier-accelerator response. The accelerator amplifies the initial impact and stretches the decay relative to the bare AR(1) forcing.
 
-<img src="figures/multiplier-accelerator-irfs.png" alt="Multiplier-accelerator impulse responses to a government spending shock" width="80%">
+![Multiplier-accelerator impulse responses to a government spending shock](figures/multiplier-accelerator-irfs.png)
 
-The simulated AR(1) path stays near its analytic two-standard-deviation band. Income and consumption move together with a lag.
+### AR(1) Analytical Benchmarks
 
-<img src="figures/simulated-paths.png" alt="Simulated AR(1) and multiplier-accelerator paths" width="80%">
-
-The AR(1) autocorrelation matches $`\rho^k`$ apart from simulation noise. Income inherits serial correlation from spending and lagged consumption.
-
-<img src="figures/autocorrelation.png" alt="Autocorrelation functions for the AR(1) and multiplier-accelerator output" width="80%">
-
-High persistence loads variance at low frequencies. A larger $`\rho`$ therefore changes timing and volatility.
-
-<img src="figures/spectral-density.png" alt="Exact AR(1) spectral density by persistence" width="80%">
-
-Holding $`\sigma`$ fixed, a higher $`\rho`$ raises variance and extends the half-life.
-
-**AR(1) Analytical Benchmarks**
-
-| Object                      | $`\rho=0.5`$   | $`\rho=0.9`$   | $`\rho=0.99`$   |
-|:----------------------------|:-------------|:-------------|:--------------|
-| Persistence ($`\rho`$)        | 0.50         | 0.90         | 0.99          |
-| Unconditional variance      | 0.000133     | 0.000526     | 0.005025      |
-| Half-life (periods)         | 1.0          | 6.6          | 69.0          |
-| First-order autocorrelation | 0.50         | 0.90         | 0.99          |
-| Spectral peak               | Frequency 0  | Frequency 0  | Frequency 0   |
+| Object | $`\rho=0.5`$ | $`\rho=0.9`$ | $`\rho=0.99`$ |
+|:---|---:|---:|---:|
+| Unconditional variance | 0.000133 | 0.000526 | 0.005025 |
+| Half-life (periods) | 1.0 | 6.6 | 69.0 |
+| First-order autocorrelation | 0.50 | 0.90 | 0.99 |
+| Spectral peak frequency | 0 | 0 | 0 |
 
 ## Takeaway
 
-An AR(1) coefficient is an economic timing assumption. With $`\rho=0.9`$, a shock has half of its initial effect after 6.6 periods. With $`\rho=0.99`$, the half-life is 69.0 periods.
+*Persistence* is the central parameter of an AR process. It determines variance inflation, the speed of mean reversion, and how long a shock shapes forecasts. The stationarity condition $`|\rho| < 1`$ is not a technical nuisance; it is the assumption that allows moments to exist and OLS to converge. Box and Jenkins (1970) built an identification toolkit around ACF and PACF shapes because those shapes are the observational fingerprints of the AR order and persistence. Hamilton (1994) placed AR processes at the foundation of time-series econometrics because they are the parsimonious workhorse for serially dependent data. Every structural model that feeds an AR(1) income process into a Bellman equation inherits the persistence properties derived here.
 
-The multiplier-accelerator model maps that state into income. Government spending supplies the disturbance. Lagged consumption and accelerator investment shape the income path.
+## See also
+
+- [Reduced-Form VARs](../reduced-form-var/README.md)
+- [Minnesota-Prior SVARs](../minnesota-svar/README.md)
+- [Aiyagari Saving and Capital-Market Clearing](../../dynamic-programming/aiyagari/README.md)
 
 ## References
 
-- Hamilton, J. (1994). *Time Series Analysis*. Princeton University Press.
-- Samuelson, P. (1939). Interactions between the Multiplier Analysis and the Principle of Acceleration. *Review of Economics and Statistics*, 21(2), 75-78.
-- Ljungqvist, L. and Sargent, T. (2018). *Recursive Macroeconomic Theory*. MIT Press, 4th edition, Ch. 2.
+- Box, G. E. P. and Jenkins, G. M. (1970). *Time Series Analysis: Forecasting and Control*. Holden-Day.
+- Hamilton, J. D. (1994). *Time Series Analysis*. Princeton University Press, Ch. 3.
+- Samuelson, P. A. (1939). Interactions between the Multiplier Analysis and the Principle of Acceleration. *Review of Economics and Statistics*, 21(2), 75-78.
