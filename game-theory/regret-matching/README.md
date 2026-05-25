@@ -38,6 +38,42 @@ with the convention $`\pi_i^{T+1}`$ uniform when all cumulative regrets are nega
 
 We need a convergence statement. Hart and Mas-Colell (2000) prove that if both players follow the regret-matching rule, then the time-average empirical play $`\bar\pi^T = (1/T) \sum_t (a_1^t, a_2^t)`$, viewed as a joint distribution over $`A_1 \times A_2`$, converges almost surely to the set of correlated equilibria of the stage game. The same result holds with the expected-payoff version of the regret (replacing the actual opponent action $`a_{-i}^t`$ by the expected payoff against $`\pi_{-i}^t`$), which is the variant used in the implementation here for faster, deterministic convergence.
 
+## Worked Numerical Example
+
+Take Matching Pennies for player 1 with $`A_1 = \{H, T\}`$ and payoffs $`u_1(H, H) = u_1(T, T) = 1`$, $`u_1(H, T) = u_1(T, H) = -1`$. Initialise cumulative regret at $`R_1^0 = (0, 0)`$, which gives the uniform start $`\pi_1^1 = (1/2, 1/2)`$.
+
+Round 1: player 1 plays $`a_1^1 = H`$ and the opponent plays $`a_{-1}^1 = T`$. The actual payoff is $`u_1(H, T) = -1`$, and the counterfactual payoff from $`T`$ would have been $`u_1(T, T) = 1`$. Instantaneous regrets are
+
+```math
+r_1^1(H) = u_1(H, T) - u_1(H, T) = 0, \qquad r_1^1(T) = u_1(T, T) - u_1(H, T) = 1 - (-1) = 2.
+```
+
+Cumulative regret after round 1 is $`R_1^1 = (0, 2)`$. The regret-matching update gives
+
+```math
+\pi_1^2(H) = \frac{\max(0, 0)}{0 + 2} = 0, \qquad \pi_1^2(T) = \frac{\max(2, 0)}{0 + 2} = 1.
+```
+
+Round 2: player 1 plays $`a_1^2 = T`$ and the opponent switches to $`H`$. The actual payoff is $`u_1(T, H) = -1`$, and the counterfactual from $`H`$ would have been $`u_1(H, H) = 1`$. Instantaneous regrets are
+
+```math
+r_1^2(H) = 1 - (-1) = 2, \qquad r_1^2(T) = -1 - (-1) = 0.
+```
+
+Cumulative regret after round 2 is $`R_1^2 = (0 + 2,  2 + 0) = (2, 2)`$, and the next-round mixed strategy is
+
+```math
+\pi_1^3(H) = \frac{2}{2 + 2} = \frac{1}{2}, \qquad \pi_1^3(T) = \frac{2}{2 + 2} = \frac{1}{2}.
+```
+
+The boxed result is the post-round-2 mixed strategy that the regret-matching rule prescribes:
+
+```math
+\boxed{\pi_1^3 = (1/2,  1/2).}
+```
+
+After two opposing plays the cumulative regret vector is symmetric, so the prescribed mix collapses to the unique mixed Nash $`(1/2, 1/2)`$ of Matching Pennies. The same algebra runs for any 2-action zero-sum game: each round adds a non-negative regret to the action that would have done better against the realised opponent move, and the positive-part normalisation in the update converts that running tally into the next-round mix.
+
 ## Model Setup
 
 | Object | Symbol | Role |
