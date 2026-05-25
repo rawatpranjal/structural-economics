@@ -62,6 +62,30 @@ When the constraint binds, $`a_{t+1}=0`$ and the Euler inequality holds:
 u'(c_t)\geq \beta R\mathbb{E}_t[u'(c_{t+1})].
 ```
 
+## Worked Numerical Example
+
+To isolate the precautionary motive, solve the Euler equation at one state with iid two-point income, then read off optimal saving.
+
+Take the calibration $`\beta = 0.95`$, $`R = 1.03`$, $`\sigma = 2`$, so $`u'(c) = 1/c^2`$ and $`\beta R = 0.9785`$. Replace the persistent process with iid two-point income $`z \in \{0.9, 1.1\}`$, each with probability $`1/2`$ (mean 1, no consumption smoothing tilt). Evaluate the Euler equation at $`(a_t, z_t) = (0, 1.1)`$, so $`c_t = 1.1 - a'`$ and $`c_{t+1} = 1.03\, a' + z'`$.
+
+The Euler equation becomes
+
+```math
+\frac{1}{(1.1 - a')^2} = 0.9785 \cdot \tfrac{1}{2}\!\left[\frac{1}{(1.03\, a' + 1.1)^2} + \frac{1}{(1.03\, a' + 0.9)^2}\right].
+```
+
+At $`a' = 0`$: LHS $`= 1/1.21 = 0.8264`$ and RHS $`= 0.9785 \cdot \tfrac{1}{2}(0.8264 + 1.2346) = 1.0083`$. The residual is $`-0.1819 < 0`$, so saving zero leaves marginal utility tomorrow above marginal utility today.
+
+At $`a' = 0.1`$: LHS $`= 1/1.0^2 = 1.0000`$ and RHS $`= 0.9785 \cdot \tfrac{1}{2}(0.6910 + 0.9940) = 0.8244`$. The residual is $`+0.1756 > 0`$.
+
+The root lies between $`0`$ and $`0.1`$. Two bisection steps land at $`a' \approx 0.051`$, where LHS $`= 0.9087`$ and RHS $`= 0.9075`$ (residual $`\approx 0.001`$):
+
+```math
+\boxed{a'^{\ast}(0,\,1.1) \approx 0.051}, \qquad c_t^{\ast} \approx 1.049.
+```
+
+Expected income tomorrow is $`1.0`$, so a permanent-income agent at $`\beta R < 1`$ would set $`a' < 0`$ and consume more today. The household saves $`0.05`$ instead because $`u'`$ is convex: $`\mathbb{E}[1/c_{t+1}^2] > 1/(\mathbb{E} c_{t+1})^2`$ raises expected marginal utility tomorrow above its certainty value. That convexity wedge is the precautionary motive, and it survives even when the borrowing limit is slack and the impatience margin pulls the other way.
+
 ## Model Setup
 
 | Parameter | Value | Description |

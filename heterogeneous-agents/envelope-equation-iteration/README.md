@@ -58,6 +58,40 @@ u'(R a + y_j - \underline a) \geq \beta W_a(\underline a),
 
 This case produces high MPCs near zero assets.
 
+## Worked Numerical Example
+
+Take the README parameters $`\gamma = 2`$, $`\beta = 0.95`$, $`R = 1.03`$, borrowing limit $`\underline a = 0`$, and a two-point income grid $`y_1 = 0.5`$, $`y_2 = 1.5`$ each with $`\pi_\ell = 1/2`$ (mean 1.0). Do one EEI update at the asset node $`a = 0`$ and income state $`y_1 = 0.5`$.
+
+Start from the initial policy $`c_0(a, y_\ell) = (R - 1) a + y_\ell`$. At $`a = 0`$ this is $`c_0(0, y_\ell) = y_\ell`$, so
+
+```math
+u'(c_0(0, 0.5)) = (0.5)^{-2} = 4.0, \qquad
+u'(c_0(0, 1.5)) = (1.5)^{-2} = 0.4444.
+```
+
+Envelope step at $`a = 0`$:
+
+```math
+W_a^{(0)}(0) = R \sum_{\ell} \pi_\ell\, u'(c_0(0, y_\ell))
+             = (1.03)\,\tfrac{1}{2}(4.0 + 0.4444)
+             = 2.2889.
+```
+
+Euler-step borrowing check at $`(a, y_1) = (0, 0.5)`$. Cash on hand is $`R a + y_1 = 0.5`$, so the constraint binds iff $`u'(\text{cash} - \underline a) \geq \beta W_a^{(0)}(\underline a)`$:
+
+```math
+u'(0.5) = 4.0, \qquad
+\beta\, W_a^{(0)}(0) = (0.95)(2.2889) = 2.1744.
+```
+
+Since $`4.0 > 2.1744`$, the household would like to borrow, so the constraint binds and $`c_1(0, 0.5) = 0.5`$. The envelope identity then delivers the updated marginal value at that node:
+
+```math
+V_a^{(1)}(0, 0.5) = R\, u'(c_1(0, 0.5)) = (1.03)(4.0) = \boxed{4.12}.
+```
+
+The marginal value is large because one extra dollar at $`a = 0, y = 0.5`$ relaxes a binding constraint. One EEI sweep returns the single curve $`W_a^{(0)}`$ on the asset grid; the Euler step then maps each $`(a, y_j)`$ to a current consumption, and the envelope identity reads off the next $`V_a`$ pointwise without ever forming the value level.
+
 ## Model Setup
 
 | Object | Value | Role |

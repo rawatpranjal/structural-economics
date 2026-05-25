@@ -75,6 +75,46 @@ It implies the constant ratio
 
 The flat ratio gives a direct check on the numerical solution.
 
+## Worked Numerical Example
+
+To see the SDF mechanism in one step, solve the fixed point analytically under log utility, then extend to CRRA $`\gamma=2`$ using a special case that admits a closed form.
+
+**Log utility ($`\gamma=1`$).** When $`\gamma=1`$, marginal utility is $`u'(y)=y^{-1}`$, so $`u'(y)y=1`$ for all $`y`$. The scaled-price recursion
+
+```math
+f = \beta\,\mathbb{E}\!\left[f + u'(y')\,y'\right] = \beta(f + 1)
+```
+
+is a scalar equation. Solving for the fixed point:
+
+```math
+f(1-\beta) = \beta \implies f^{\ast} = \frac{\beta}{1-\beta}.
+```
+
+With $`\beta=0.95`$:
+
+```math
+\frac{p(y)}{y} = f^{\ast} = \frac{0.95}{1-0.95} = \boxed{19.0}
+```
+
+for every dividend state $`y`$. The flat ratio is the benchmark the numerical solver must recover at $`\gamma=1`$.
+
+**CRRA $`\gamma=2`$, iid dividends.** Set $`\rho=0`$ so $`x'\sim\mathcal{N}(0,\sigma^2)`$ and each period's state is independent. The forcing term becomes $`u'(y')y'=(y')^{1-\gamma}=(y')^{-1}=e^{-x'}`$. By the log-normal moment-generating function, $`\mathbb{E}[e^{-x'}]=e^{\sigma^2/2}`$. At the mean state $`y=1`$, where $`u'(1)=1`$, the fixed-point equation is
+
+```math
+f^{\ast} = \beta\!\left(f^{\ast} + e^{\sigma^2/2}\right)
+\implies f^{\ast}(1-\beta) = \beta\,e^{\sigma^2/2}
+\implies f^{\ast} = \frac{\beta\,e^{\sigma^2/2}}{1-\beta}.
+```
+
+With $`\sigma=0.10`$, $`e^{\sigma^2/2}=e^{0.005}\approx 1.00501`$:
+
+```math
+\frac{p(1)}{1} = f^{\ast} = 19.0\times e^{0.005} \approx \boxed{19.10}.
+```
+
+The ratio exceeds 19.0 because higher risk aversion ($`\gamma=2`$) depresses $`u'(y')y'`$ on average relative to log utility. Dividend persistence ($`\rho=0.9`$ in the full model) strengthens this effect further, raising $`p/y`$ at the mean to $`\approx 19.29`$ as reported in the Results table.
+
 ## Model Setup
 
 | Primitive | Value | Role |
