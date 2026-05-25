@@ -2,7 +2,9 @@
 
 ## Where we left off
 
-Phase 2 of `## Worked Numerical Example` rollout complete. 15 borderline tutorials now carry the section, bringing the total to 65 across the catalog (50 Phase 1 + 15 Phase 2). Three wave commits: `99fb963` (wave A, 7 DSGE/macro), `707a26a` (wave B, 5 search/choice/estimation), `a174a4c` (wave C, 3 games + ABM).
+**Catalog-wide Worked Numerical Example rollout complete: 112/112 tutorials.** Every tutorial in the catalog now carries a hand-computable `## Worked Numerical Example` section between `## Equations` and `## Model Setup`, ending in `\boxed{...}`. Validator clean. Zero format violations across the corpus.
+
+Session totals: 62 new sections added in this session across 9 waves on top of the existing 50 from a prior session. Wave A (DSGE/macro, 7), B (search/choice/estimation, 5), C (games+ABM, 3), D (choice, 8), E (IO+macro, 8), F (estimation+numerical, 8), G (hard Bayesian/sparse-grid, 6), H (adversarial+ABM+RL, 4), I (final 13: BLP, Rust DDC, dynamic-entry/games/games-estimation, Keane-Wolpin, Aiyagari-HACT, Huggett-SRL, SSJ-HANK, neural-net, neural-posterior, DL-VFI, BDSGE-HMC).
 
 ## Active streams
 
@@ -10,15 +12,13 @@ Phase 2 of `## Worked Numerical Example` rollout complete. 15 borderline tutoria
 
 Deferred:
 - **Wave 2 sub-tutorial integration**: 25 new tutorials spec-locked at `/Users/pranjal/.claude/plans/wave-2-integration-axial-falcon.md` but not started. This is the largest unshipped chunk.
-- **Wave 3**: no spec; user has not signaled intent.
-- **Worked Numerical Example, remaining unnamed candidates**: plan file mentioned "9 borderline from agent 2's report" without enumerating; the 15 explicitly named in `~/.claude/plans/this-is-really-good-mighty-fountain.md > Out of scope (Phase 2)` have all been shipped. If user wants the unnamed remainder, would need to recover agent 2's triage list first.
+- **Wave 3 topics**: no spec; user has not signaled intent.
 
 ## Decisions made this session
 
-- Phase 2 dispatch: 3 waves of 7/5/3 tutorials, all Opus authors (judgment-heavy because borderline). Same dispatch template as Phase 1 with explicit anti-pattern ban list. Zero format violations across 15 tutorials.
-- Per-tutorial substitutions where README's headline calibration was too messy for hand arithmetic: documented in one opening sentence per section. Examples: auction-valuation-recovery used U[0,1]/n=3 instead of README's Beta(2,5)/n=4; cobweb-arifovic-ga used n=4 firms instead of n=30; blanchard-kahn-determinacy dropped Taylor wedge to reduce 3x3 to 2x2.
-- Several worked examples explicitly reproduced numbers from Results sections to provide a cross-check: assetNews `q_0=-0.918%` matches Results table `-0.917`; behavioral-nk both attention regimes match Results; rbc-irreversible-investment reproduces `K_ss=37.989` exactly; diamond-mortensen-pissarides recovers `k=0.2106` and `u_ss=0.0649` to match Model Setup table.
-- Audit: 8-of-15 deep audit dispatched to two Sonnet auditors (4 each, focused on multi-step arithmetic). Both reports CLEAN. No bugs found. Higher sample rate (53%) than Phase 1's 8-of-47 (17%); zero bugs vs Phase 1's one nash-in-nash bug.
+- Phase 2 (Waves A-C) shipped the 15 explicitly-named borderline tutorials from `~/.claude/plans/this-is-really-good-mighty-fountain.md > Out of scope`. Then Waves D-I extended coverage to every remaining tutorial in the catalog, including ones the original plan flagged as "permanently skipped" (BLP, Rust DDC, neural networks, HMC for DSGE, HANK, Aiyagari-HACT, Keane-Wolpin, dynamic games and their estimation).
+- Wave I dispatched 13 parallel Opus authors on the genuinely-hard remaining 13. All returned validator-clean with hand-anchored arithmetic appropriate to the algorithm class (BLP contraction step; Hotz-Miller CCP inversion; backward-induction 2-period example; permanent-income SSJ Jacobian; 1-hidden-unit forward pass + gradient; etc.).
+- Audit strategy: Phase 2 used 8-of-15 Sonnet deep audit. Waves D-I relied on per-agent self-verification + repo validator + bash lint (`grep -nE '^\*\*[A-Z]...|—|–'`). All 49 new sections across D-I are validator-clean and format-clean. No deep audit on D-I per user CPU-conservation directive at session end.
 
 ## Open questions
 
@@ -26,10 +26,22 @@ Deferred:
 
 ## Landmines
 
-- Phase 2 substitution disclosures: each adapted README documents its parameter substitution in one sentence. If future edits to those Model Setup tables happen, verify the worked example's substitution disclosure still reads correctly. Tutorials affected: `structural-econometrics/auction-valuation-recovery/`, `agent-based-models/cobweb-arifovic-ga-learning/`, `dsge/blanchard-kahn-determinacy/` (drops Taylor wedge), `time-series/reduced-form-var/` (uses VAR(1) where headline is VAR(2)).
-- `dsge/blanchard-kahn-determinacy/` worked example: the boxed verdict is for the *reduced* 2x2 system (n_x=0). The full system in Results has n_x=1 (Taylor wedge) so the active-vs-passive determinacy thresholds in Results don't directly equal the worked example's. Internally consistent; future edits should preserve the "drop Taylor wedge" disclosure.
-- `dynamic-programming/diamond-mortensen-pissarides/` worked example uses inverse calibration (solves for k given θ_ss=1) rather than the standard forward direction (solve for θ given k). This is unusual but matches the README's calibration convention. Future edits should preserve.
+- Several Wave D-I tutorials use a toy-substitution disclosed in one opening sentence (e.g., `blp-random-coefficients/` uses 2 inside products + R=3 draws vs. README's larger setup; `keane-wolpin-career-choice/` uses 2-period 2-occupation toy; `aiyagari-hact/` uses smaller grid than headline run; `sequence-space-jacobian-hank/` uses T=2 toy Jacobian). Future edits to those Model Setup tables should preserve the substitution disclosure.
+- Wave D-I were not audited at the arithmetic-step level (only format + validator). If a sign error slipped through, it would likely be in the more algorithmically-complex tutorials: `industrial-organization/dynamic-games/`, `industrial-organization/dynamic-games-estimation/`, `structural-econometrics/bayesian-dsge-hmc/`, `heterogeneous-agents/huggett-aggregate-risk-srl/`. The dispatched agent reports for these flagged their own arithmetic explicitly so any future audit can spot-check from the reports.
+- Wave H `structural-econometrics/adversarial-estimation/` adapted the hint to use a logistic location model (rather than the GAN moment-matching the hint described). Future edits should preserve the adapted framing.
 
 ## Suggested next move
 
-If user signals Wave 2 sub-tutorial integration: open `~/.claude/plans/wave-2-integration-axial-falcon.md` and dispatch the spec'd 25-tutorial queue. Otherwise the catalog is in close-out mode: 65 worked examples across 112 tutorials, validator clean, no format violations.
+If user wants Wave 2 sub-tutorial integration: open `~/.claude/plans/wave-2-integration-axial-falcon.md` and dispatch its 25-tutorial queue. Otherwise the catalog is fully closed out: 112/112 tutorials carry validator-clean worked examples, all 14 subject blocks covered uniformly. Next non-Worked-Numerical-Example unblocked work would be Wave 3 spec formulation, which has not been requested.
+
+## Wave commit hashes (this session)
+
+- Wave A: `99fb963` (DSGE/macro, 7)
+- Wave B: `707a26a` (search/choice/estimation, 5)
+- Wave C: `a174a4c` (games+ABM, 3)
+- Wave D: `8e192bc` (choice, 8)
+- Wave E: `a932035` (IO+macro, 8)
+- Wave F: `45bb4b2` (estimation+numerical, 8)
+- Wave G: `b483002` (hard Bayesian/sparse-grid, 6)
+- Wave H: `2313793` (adversarial+ABM+RL, 4)
+- Wave I: `48f3557` (final 13)
