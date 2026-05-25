@@ -99,6 +99,54 @@ Here $`b_{i,t}`$ is firm $`i`$'s chromosome at the start of period $`t`$, and $`
 
 The election threshold $`\pi_{\sigma(i),t}`$ in step (6) is the realized profit of the *tournament-selected parent* placed at slot $`i`$, not of the original firm $`i`$. Tournament selection at step (4) writes a parent index $`\sigma(i)`$ into each slot $`i`$ of the new population, and the child at slot $`i`$ is built from that parent. The election filter then compares the child against its own parent, $`\pi_{\sigma(i),t}`$, which is the standard Arifovic (1994) election operator. Because $`\sigma(i)`$ is a tournament winner, $`\pi_{\sigma(i),t}`$ weakly exceeds the profit of a randomly drawn firm, so the filter is conservative: it accepts offspring only when they beat a parent that already survived selection.
 
+## Worked Numerical Example
+
+GA dynamics are hard to hand-trace because crossover and mutation are random. Two clean anchors carry the logic: the closed-form REE price, and one round of fitness-proportional selection on a tiny population. Use the stable-regime demand and cost parameters $`a=60`$, $`b=30`$, $`x=1`$, $`y=2`$, with a toy population of $`n=4`$ firms (in place of $`n=30`$) so the arithmetic stays compact.
+
+The rational-expectations fixed point is
+
+```math
+p^{\ast} = \frac{ay + nx}{by + n} = \frac{(60)(2) + (4)(1)}{(30)(2) + 4} = \frac{124}{64} = 1.9375, \qquad q^{\ast} = \frac{p^{\ast} - x}{y} = \frac{0.9375}{2} = 0.4688.
+```
+
+Start from a population of four production plans $`q_1, q_2, q_3, q_4 = 0.30, 0.40, 0.50, 0.60`$, straddling $`q^{\ast}`$. Aggregate quantity is
+
+```math
+Q = 0.30 + 0.40 + 0.50 + 0.60 = 1.80,
+```
+
+so the market clears (with $`\varepsilon_t = 0`$) at
+
+```math
+p_t = \frac{a - Q}{b} = \frac{60 - 1.80}{30} = 1.9400.
+```
+
+Realized profits use $`\pi_i = (p_t - x) q_i - \tfrac{y}{2} q_i^{2} = 0.94 \, q_i - q_i^{2}`$:
+
+```math
+\pi_1 = (0.94)(0.30) - (0.30)^{2} = 0.282 - 0.090 = 0.192,
+```
+
+```math
+\pi_2 = (0.94)(0.40) - (0.40)^{2} = 0.376 - 0.160 = 0.216,
+```
+
+```math
+\pi_3 = (0.94)(0.50) - (0.50)^{2} = 0.470 - 0.250 = 0.220,
+```
+
+```math
+\pi_4 = (0.94)(0.60) - (0.60)^{2} = 0.564 - 0.360 = 0.204.
+```
+
+Sum of profits is $`\Pi = 0.832`$. Fitness-proportional selection probabilities $`\rho_i = \pi_i / \Pi`$ are $`0.2308, 0.2596, 0.2644, 0.2452`$. The expected mean quantity of the post-selection population is
+
+```math
+\mathbb{E}[\bar{q}^{\prime}] = \sum_{i=1}^{4} \rho_i \, q_i = (0.2308)(0.30) + (0.2596)(0.40) + (0.2644)(0.50) + (0.2452)(0.60) = \boxed{0.4524}.
+```
+
+The pre-selection mean is $`\bar{q} = 0.45`$; one selection step pulls it from $`0.4500`$ toward $`q^{\ast} = 0.4688`$. Selection alone moves the population in the right direction because firms whose quantities sit nearer the profit-maximizing $`q^{\ast}`$ earn higher $`\pi_i`$ and reproduce more often. Crossover and mutation supply variation; the election operator at step (6) of the GA loop filters out children whose realized profit at $`p_t`$ undercuts their parent's, which is what keeps the population from drifting away from $`q^{\ast}`$ once it arrives.
+
 ## Model Setup
 
 Two regimes share the same demand intercept and per-firm cost, but differ in the demand slope $`b`$. The stable regime has $`\beta < 1`$; the unstable regime has $`\beta > 1`$ and naive expectations diverge.

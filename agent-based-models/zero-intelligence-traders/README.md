@@ -91,6 +91,42 @@ z_j^S(t+1)=(1-\lambda)z_j^S(t)+\lambda \max\lbrace c_j,p_t-\kappa\rbrace.
 Quotes are noisy draws around these targets, clipped so buyers still satisfy
 $`b_i(t)\leq v_i`$ and sellers still satisfy $`a_j(t)\geq c_j`$.
 
+## Worked Numerical Example
+
+A four-trader market makes the Gode-Sunder benchmark visible by hand. Take buyers with values $`v=(10, 6)`$, sellers with costs $`c=(3, 5)`$, and ask support $`\bar p=10`$.
+
+Sort values high to low and costs low to high:
+
+```math
+v_{(1)}=10,\ v_{(2)}=6;\qquad c_{(1)}=3,\ c_{(2)}=5.
+```
+
+Both sorted gaps are positive, $`v_{(1)}-c_{(1)}=7`$ and $`v_{(2)}-c_{(2)}=1`$, so
+
+```math
+Q^{\ast}=2,\qquad S^{\ast}=7+1=8.
+```
+
+The competitive price band uses the last included unit and the first excluded unit. With no third buyer or seller, the next-unit terms drop:
+
+```math
+P^{\ast}=\left[c_{(Q^{\ast})},\ v_{(Q^{\ast})}\right]=[5,\ 6].
+```
+
+Now run one ZIC event. Suppose buyer 1 draws $`b_1=7\in[0,10]`$ and seller 1 draws $`a_1=4\in[3,10]`$. The books are $`B_t=\lbrace 7\rbrace`$ and $`A_t=\lbrace 4\rbrace`$. The cross condition $`\max B_t=7\geq \min A_t=4`$ holds, so the trade clears at the midpoint:
+
+```math
+p_t=\tfrac{1}{2}(7+4)=5.5\in P^{\ast},\qquad \Delta S_t=v_1-c_1=10-3=7.
+```
+
+Remove the matched buyer and seller. The remaining traders are buyer 2 with $`v_2=6`$ and seller 2 with $`c_2=5`$. A trade is feasible whenever the new draws satisfy $`b_2\geq a_2`$, which holds on the support rectangle $`[0,6]\times[5,10]`$ with positive probability. Conditional on a trade, $`\Delta S_t=6-5=1`$, so the cumulative realized surplus equals the competitive benchmark:
+
+```math
+\boxed{\sum_t \Delta S_t=7+1=8=S^{\ast},\qquad \mathrm{AE}=100\%.}
+```
+
+The arithmetic shows the Gode-Sunder mechanism in one line: no-loss draws restrict trades to within the supply-demand intersection, so any sequence of accepted ZIC trades exhausts $`S^{\ast}`$ once each side's marginal unit clears. The full simulation in Results runs this logic on the stepped ten-by-ten market and recovers $`\mathrm{AE}=99.3\%`$.
+
 ## Model Setup
 
 | Symbol | Value | Role |
