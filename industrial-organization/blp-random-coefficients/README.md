@@ -65,6 +65,50 @@ The identifying moments are $`E[Z_{jt}\xi_{jt}]=0`$. The instruments include
 a cost shifter and sums of rival characteristics, so price can be endogenous
 through $`\mathrm{Cov}(p_{jt},\xi_{jt}) \ne 0`$.
 
+## Worked Numerical Example
+
+Take one market with two inside products and an outside good. Observed shares are $`s^{\text{obs}} = (0.4, 0.3)`$ with outside share $`0.3`$. Each inside product has characteristic $`x_1 = x_2 = 1`$, and the random coefficient sits only on that characteristic with $`\sigma = 1`$ and $`\beta_r \sim N(0, 1)`$. Use $`R = 3`$ simulation draws $`\nu_r \in \lbrace -1, 0, 1 \rbrace`$, so $`\beta_r = \sigma\nu_r = (-1, 0, 1)`$. Start the contraction at $`\delta^{(0)} = (0, 0)`$.
+
+For each draw, the conditional logit probability of product 1 is
+
+```math
+P_1(\delta, \nu_r) = \frac{\exp(\delta_1 + \beta_r x_1)}{1 + \exp(\delta_1 + \beta_r x_1) + \exp(\delta_2 + \beta_r x_2)}.
+```
+
+Evaluate at $`\delta = (0, 0)`$ for each draw. For $`\nu = -1`$:
+
+```math
+P_1(\delta, \nu_1) = \frac{e^{-1}}{1 + e^{-1} + e^{-1}} = \frac{0.368}{1.736} \approx 0.212.
+```
+
+For $`\nu = 0`$, symmetry gives $`P_1(\delta, \nu_2) = 1/3 \approx 0.333`$. For $`\nu = 1`$:
+
+```math
+P_1(\delta, \nu_3) = \frac{e^{1}}{1 + e^{1} + e^{1}} = \frac{2.718}{6.436} \approx 0.422.
+```
+
+Average across draws to form the simulated predicted share for product 1:
+
+```math
+s_1^{\text{pred}}(\delta^{(0)}) = \tfrac{1}{3}(0.212 + 0.333 + 0.422) \approx 0.323.
+```
+
+By symmetry across products at $`\delta = 0`$, $`s_2^{\text{pred}} \approx 0.323`$ and the outside share is $`1 - 0.646 = 0.354`$. Apply one step of the BLP contraction $`\delta^{(1)} = \delta^{(0)} + \log s^{\text{obs}} - \log s^{\text{pred}}`$:
+
+```math
+\delta_1^{(1)} = 0 + \log(0.4) - \log(0.323) = -0.916 - (-1.130) = 0.214,
+```
+
+```math
+\delta_2^{(1)} = 0 + \log(0.3) - \log(0.323) = -1.204 - (-1.130) = -0.074.
+```
+
+```math
+\boxed{\delta^{(1)} = (0.214, -0.074)}.
+```
+
+The product with the larger observed share moves up the most, and the contraction nudges $`\delta`$ in the direction that closes the share-residual gap. Iterating this update is the inner loop that delivers $`\delta(\sigma)`$ for each candidate dispersion in the outer GMM search.
+
 ## Model Setup
 
 The example has 100 independent markets with five products per market. Each product has an observed characteristic, an unobserved quality draw, a cost shifter, and a price. Price loads on both cost and unobserved quality, so the IV step has an actual endogeneity problem to solve.

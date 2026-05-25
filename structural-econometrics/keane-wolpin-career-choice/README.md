@@ -152,6 +152,46 @@ The fitted continuation surface is
 This is the computational shortcut: unsampled states inherit continuation
 values from the fitted Emax surface rather than from fresh exact integrations.
 
+## Worked Numerical Example
+
+To see backward induction inside one Emax recursion, strip the model to a two-period, two-occupation toy. Drop schooling and home so the only choices are blue and white; toy wages are flatter than the README calibration to keep arithmetic clean.
+
+Take $`\beta = 0.95`$, terminal multiplier $`1`$, and log wages
+
+```math
+\log w_w(s) = 1.00 + 0.05\, X^w, \qquad \log w_b(s) = 0.90 + 0.04\, X^b.
+```
+
+The state is $`s = (X^b, X^w)`$, starting at $`(0,0)`$ with horizon $`T = 1`$. Reachable states at $`t = 1`$ are $`(1,0)`$ after one period of blue and $`(0,1)`$ after one period of white.
+
+Evaluate the terminal Emax in the zero-shock limit, where $`\mathbb{E}_T(s) = \max\{u_b(s), u_w(s)\}`$:
+
+```math
+\mathbb{E}_1(1,0) = \max\{1.00 + 0.04(1),\ 1.00 + 0.05(0)\} = \max\{1.04,\ 1.00\} = 1.04,
+```
+
+```math
+\mathbb{E}_1(0,1) = \max\{1.00 + 0.04(0),\ 1.00 + 0.05(1)\} = \max\{1.00,\ 1.05\} = 1.05.
+```
+
+Step back to $`t = 0`$ at $`s_0 = (0,0)`$. The two choice-specific values are
+
+```math
+v_0(\mathrm{blue},\, s_0) = u_b(s_0) + \beta\, \mathbb{E}_1(0+1,\,0) = 0.90 + 0.95(1.04) = 1.888,
+```
+
+```math
+v_0(\mathrm{white},\, s_0) = u_w(s_0) + \beta\, \mathbb{E}_1(0,\,0+1) = 1.00 + 0.95(1.05) = 1.9975.
+```
+
+White dominates, so the deterministic argmax is white and
+
+```math
+\boxed{\mathbb{E}_0(0,0) = \max\{1.888,\ 1.9975\} = 1.9975, \qquad d_0^{\ast} = \mathrm{white}.}
+```
+
+With $`\sigma_\epsilon > 0`$, the same numbers feed the log-sum-exp: $`\mathbb{E}_0(0,0) = \sigma_\epsilon \log(e^{1.888/\sigma_\epsilon} + e^{1.9975/\sigma_\epsilon}) + \sigma_\epsilon \gamma_E`$, and the logit choice probability of white is $`(1 + e^{(1.888 - 1.9975)/\sigma_\epsilon})^{-1}`$. The full tutorial replaces these exact backward steps at later states with a polynomial regression on a sampled subset.
+
 ## Model Setup
 
 | Symbol | Calibration | Meaning |

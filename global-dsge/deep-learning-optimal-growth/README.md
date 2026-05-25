@@ -99,6 +99,44 @@ The steady state is
 k_{ss}=(\alpha\beta A)^{1/(1-\alpha)}.
 ```
 
+## Worked Numerical Example
+
+One forward pass and one Euler-residual evaluation on a toy one-hidden-unit network make the loss concrete. The architecture collapses to scalars: hidden activation $`h = \tanh(w_1 x + b_1)`$ with $`x = \log(k/k_{ss})`$, pre-sigmoid output $`q = w_2 h + b_2`$, and saving share $`s = s_{\min} + (s_{\max}-s_{\min})\sigma(q)`$. Use the README's primitives $`\alpha = 0.36`$, $`\beta = 0.95`$, $`A = 2.0`$, $`s_{\min} = 0.02`$, $`s_{\max} = 0.95`$, and $`k_{ss} = 0.5524`$. Toy initial weights are $`w_1 = 1`$, $`b_1 = 0`$, $`w_2 = 1`$, $`b_2 = -0.637`$. These differ from the dense tutorial's 1-16-16-1 MLP for arithmetic cleanliness; the loss form is identical.
+
+Evaluate at the off-steady-state collocation point $`k = 0.3 \approx 0.54 k_{ss}`$. The input is $`x = \log(0.3/0.5524) = -0.6105`$, and the forward pass gives
+
+```math
+h = \tanh(-0.6105) = -0.5444, \qquad q = 1 \cdot (-0.5444) + (-0.637) = -1.1814.
+```
+
+The sigmoid maps to $`\sigma(-1.1814) = 1/(1 + e^{1.1814}) = 1/(1 + 3.259) = 0.2349`$, so
+
+```math
+s = 0.02 + (0.95 - 0.02) \cdot 0.2349 = 0.2385.
+```
+
+Output is $`y = A k^{\alpha} = 2.0 \cdot 0.3^{0.36} = 2.0 \cdot 0.6483 = 1.2966`$. Feasibility-by-construction gives
+
+```math
+k' = s y = 0.2385 \cdot 1.2966 = 0.3092, \qquad c = (1-s) y = 0.7615 \cdot 1.2966 = 0.9874.
+```
+
+Evaluate the network at $`k'`$ to get $`c'`$: $`x' = \log(0.3092/0.5524) = -0.5802`$, $`h' = \tanh(-0.5802) = -0.5230`$, $`q' = -0.5230 - 0.637 = -1.160`$, $`\sigma(q') = 0.2387`$, $`s' = 0.2420`$, $`y' = 2.0 \cdot 0.3092^{0.36} = 1.3106`$, $`c' = 0.7580 \cdot 1.3106 = 0.9934`$.
+
+The Euler residual collects the bracket
+
+```math
+r(k;\theta) = \log\!\left[\beta \alpha A (k')^{\alpha-1} \frac{c}{c'}\right] = \log\!\left[0.95 \cdot 0.36 \cdot 2.0 \cdot 0.3092^{-0.64} \cdot \frac{0.9874}{0.9934}\right].
+```
+
+With $`0.3092^{-0.64} = 2.120`$ and $`c/c' = 0.9940`$, the bracket is $`0.684 \cdot 2.120 \cdot 0.9940 = 1.4413`$, so
+
+```math
+\boxed{r(k;\theta) = \log(1.4413) = 0.366, \qquad r^2 = 0.134.}
+```
+
+The residual is positive because the toy network undersaves at this low-capital state: $`s = 0.2385`$ is below the optimal $`\alpha\beta = 0.342`$, so the implied $`k'`$ is too small and the marginal product $`\alpha A (k')^{\alpha-1}`$ is too high to satisfy the Euler equation. The squared-residual loss penalises that mismatch quadratically. One Adam step backpropagates this $`r^2`$ through the four weights $`(w_1, b_1, w_2, b_2)`$ via `jax.grad`; stacking 6000 minibatches drives the empirical risk $`\Xi_n(\theta)`$ to the level $`2.3 \times 10^{-8}`$ reported in Results.
+
 ## Model Setup
 
 | Symbol | Value | Role |

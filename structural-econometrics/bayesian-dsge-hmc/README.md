@@ -63,6 +63,46 @@ gives the log marginal likelihood
 evaluated with the predict-update recursion. The posterior is
 $`p(\theta\mid Y)\propto p(\theta) p(Y\mid\theta)`$.
 
+## Worked Numerical Example
+
+To see the Kalman-filter likelihood and the Gaussian prior combine into a single scalar log posterior, collapse the NK model to a one-parameter AR(1) and evaluate it at one point. The mechanics are the same building blocks that the Klein-plus-Kalman pipeline runs at every NUTS leapfrog step.
+
+Take the reduced form $`y_t = \rho y_{t-1} + \varepsilon_t`$ with $`\varepsilon_t \sim \mathcal{N}(0, 1)`$, parameter $`\rho \in (-1, 1)`$, and initial value $`y_0 = 0.4`$ known. The sample is $`T = 3`$ with observations $`y = (0.5,\, 0.8,\, 0.3)`$. Place a Gaussian prior $`\rho \sim \mathcal{N}(0.5, 0.1^2)`$. Evaluate the log posterior at $`\rho = 0.8`$.
+
+Compute residuals $`u_t = y_t - \rho y_{t-1}`$ at $`\rho = 0.8`$:
+
+```math
+u_1 = 0.5 - 0.8 \cdot 0.4 = 0.18,
+\quad u_2 = 0.8 - 0.8 \cdot 0.5 = 0.40,
+\quad u_3 = 0.3 - 0.8 \cdot 0.8 = -0.34.
+```
+
+The residual sum of squares is $`0.18^2 + 0.40^2 + (-0.34)^2 = 0.0324 + 0.1600 + 0.1156 = 0.3080`$. The Gaussian log likelihood with unit innovation variance is
+
+```math
+\log L(\rho) = -\tfrac{3}{2} \log(2\pi) - \tfrac{1}{2} \sum_{t=1}^{3} u_t^2 = -2.7568 - 0.1540 = -2.9108.
+```
+
+The log prior at $`\rho = 0.8`$ with $`\sigma_{\text{prior}}^2 = 0.01`$ is
+
+```math
+\log \pi(0.8) = -\tfrac{1}{2} \log(2\pi \cdot 0.01) - \tfrac{(0.8 - 0.5)^2}{2 \cdot 0.01} = 1.3827 - 4.5000 = -3.1173.
+```
+
+Adding the two gives the unnormalised log posterior:
+
+```math
+\log p(\rho = 0.8 \mid y) = \log L + \log \pi = -2.9108 + (-3.1173) = -6.0281.
+```
+
+The score that HMC needs is $`\nabla_\rho \log p`$. The data score is $`\sum_t y_{t-1} u_t = 0.4 \cdot 0.18 + 0.5 \cdot 0.40 + 0.8 \cdot (-0.34) = 0.072 + 0.200 - 0.272 = 0.000`$. The prior score is $`-(\rho - 0.5)/\sigma_{\text{prior}}^2 = -0.3 / 0.01 = -30`$. The total gradient is $`-30`$, pointing back toward the prior mean.
+
+```math
+\boxed{\log p(\rho = 0.8 \mid y) = -6.028, \qquad \nabla_\rho \log p = -30.}
+```
+
+The data are weakly informative at $`T = 3`$ and the tight prior at $`\sigma_{\text{prior}} = 0.1`$ dominates. A leapfrog half-kick from $`p_0 = 0.1`$ at step size $`\varepsilon = 0.01`$ gives $`p_{1/2} = 0.1 - 0.005 \cdot 30 = -0.05`$, and the full position step lands at $`\rho_1 = 0.8 + 0.01 \cdot (-0.05) = 0.7995`$. The gradient pulls the chain back toward the prior mean, exactly the regime where HMC's directed proposal beats a random walk.
+
 ## Model Setup
 
 | Symbol | Role | Prior | True | Prior mean |

@@ -54,6 +54,42 @@ v_t &= \beta_2  v_{t-1} + (1 - \beta_2)  g_t \odot g_t, \\
 
 The bias-corrected estimates $`\widehat m_t, \widehat v_t`$ compensate for the running averages being initialised at zero. The element-wise denominator $`\sqrt{\widehat v_t} + \varepsilon`$ is the per-coordinate adaptive step size that gives Adam its name (adaptive moment estimation). In practice Adam reaches a good fit in several hundred to a few thousand updates on small networks, where plain SGD with the same learning rate is several times slower.
 
+## Worked Numerical Example
+
+One forward pass and one gradient step on a one-hidden-unit network make the chain rule concrete. The architecture collapses to scalars: hidden activation $`h = \tanh(w_1 x + b_1)`$ and prediction $`\widehat y = w_2 h + b_2`$. Input $`x = 2`$, target $`y = 0.5`$, initial weights $`w_1 = 0.5`$, $`b_1 = 0`$, $`w_2 = 1.0`$, $`b_2 = 0`$, and plain SGD with $`\eta = 0.1`$ and $`\lambda = 0`$ (no weight decay, so the example isolates the chain rule).
+
+Forward pass. The pre-activation is $`w_1 x + b_1 = 0.5 \cdot 2 + 0 = 1.0`$, so
+
+```math
+h = \tanh(1.0) = 0.7616, \qquad \widehat y = 1.0 \cdot 0.7616 + 0 = 0.7616.
+```
+
+The squared-error loss (without the factor of $`2/n`$ used in batched training) is
+
+```math
+L = \tfrac{1}{2} (y - \widehat y)^2 = \tfrac{1}{2} (0.5 - 0.7616)^2 = \tfrac{1}{2} (-0.2616)^2 = 0.0342.
+```
+
+Backpropagation. The output-side residual is $`\partial L / \partial \widehat y = -(y - \widehat y) = 0.2616`$. Differentiating $`\widehat y = w_2 h + b_2`$ gives $`\partial L / \partial w_2 = (\partial L / \partial \widehat y) \cdot h = 0.2616 \cdot 0.7616 = 0.1993`$. The signal propagated back into the hidden layer is $`\partial L / \partial h = (\partial L / \partial \widehat y) \cdot w_2 = 0.2616 \cdot 1.0 = 0.2616`$. The tanh derivative at the pre-activation is $`1 - \tanh^2(1.0) = 1 - 0.5800 = 0.4200`$, so
+
+```math
+\frac{\partial L}{\partial (w_1 x + b_1)} = \frac{\partial L}{\partial h} \cdot (1 - h^2) = 0.2616 \cdot 0.4200 = 0.1099.
+```
+
+Multiplying by $`x = 2`$ gives $`\partial L / \partial w_1 = 0.1099 \cdot 2 = 0.2197`$.
+
+One SGD step. Subtract $`\eta`$ times each gradient:
+
+```math
+w_2^{\mathrm{new}} = 1.0 - 0.1 \cdot 0.1993 = 0.9801, \qquad w_1^{\mathrm{new}} = 0.5 - 0.1 \cdot 0.2197 = 0.4780.
+```
+
+```math
+\boxed{w_1^{\mathrm{new}} = 0.478, \quad w_2^{\mathrm{new}} = 0.980.}
+```
+
+Both weights shrink because the prediction overshoots the target. The tanh derivative attenuates the input-side gradient by the factor $`1 - h^2 = 0.42`$, which is why $`w_1`$ moves less per unit of output residual than $`w_2`$ does. Stacking many such updates and replacing the by-hand chain rule with `jax.grad` is the entire training loop the dense tutorial runs.
+
 ## Model Setup
 
 | Object | Symbol | Role |

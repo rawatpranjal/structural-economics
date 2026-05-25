@@ -88,6 +88,54 @@ K^{s}(r^{\ast}) = K^{d}(r^{\ast}) .
 This single equation closes the HJB-KFE pair, and the triple (HJB at $`r^{\ast}`$, KFE under the induced drift, closure $`K^{s} = K^{d}`$) is the Lasry-Lions mean-field game in stationary form.
 The remainder of the tutorial computes this fixed point, compares it to the discrete-time Aiyagari solution at the same calibration, and reads off the resulting policies and distributions.
 
+## Worked Numerical Example
+
+To anchor the HACT inner loop, take one implicit upwind HJB update at a single interior node, then read off the row of the generator the same step writes into $`\mathbf{A}`$. Use a two-state income chain $`(z_L, z_H) = (0.5, 1.5)`$ with symmetric switching $`Q_{LH} = Q_{HL} = 0.5`$, CRRA $`\sigma = 2`$ so $`u(c) = -1/c`$ and $`u'(c) = 1/c^2`$, prices $`r = 0.04`$ and $`w = 1.0`$, discount $`\rho = 0.05`$, asset spacing $`\Delta a = 0.5`$, and pseudo-time step $`\Delta = 10^{3}`$. The mechanic for the upwind branches and the KT clip is the one developed in [`optimal-control/upwind-finite-differences/`](../../optimal-control/upwind-finite-differences/); the new piece here is the Poisson jump line.
+
+Place the stencil at $`a_{k-1} = 1.5`$, $`a_k = 2.0`$, $`a_{k+1} = 2.5`$ in the low-income block, and carry the current iterate
+
+```math
+V_L(a_{k-1}) = -8.20, \quad V_L(a_k) = -7.80, \quad V_L(a_{k+1}) = -7.50, \quad V_H(a_k) = -6.00.
+```
+
+Form the two one-sided slopes in the low-income block:
+
+```math
+D^{+} V_L(a_k) = \frac{-7.50 - (-7.80)}{0.5} = 0.60,
+\qquad
+D^{-} V_L(a_k) = \frac{-7.80 - (-8.20)}{0.5} = 0.80.
+```
+
+Invert the first-order condition $`c = [V_a]^{-1/\sigma} = 1/\sqrt{V_a}`$ on each side:
+
+```math
+c_F = 1/\sqrt{0.60} = 1.2910, \qquad c_B = 1/\sqrt{0.80} = 1.1180.
+```
+
+Cash-flow at the node is $`w z_L + r a_k = (1.0)(0.5) + (0.04)(2.0) = 0.58`$. The two candidate drifts are
+
+```math
+s_F = 0.58 - 1.2910 = -0.7110, \qquad s_B = 0.58 - 1.1180 = -0.5380.
+```
+
+The forward test $`s_F > 0`$ fails; the backward test $`s_B < 0`$ holds, so the upwind selector keeps the backward branch: $`c^{\ast} = 1.1180`$, $`s^{\ast} = -0.5380`$, and $`u(c^{\ast}) = -1/1.1180 = -0.8944`$.
+
+The Poisson income-jump term in the low-income row of the joint generator is
+
+```math
+Q_{LH}\, [V_H(a_k) - V_L(a_k)] = (0.5)[(-6.00) - (-7.80)] = 0.90,
+```
+
+so the Hamiltonian at this node evaluates to $`u(c^{\ast}) + V_a s^{\ast} + Q_{LH}(V_H - V_L) = -0.8944 + (0.80)(-0.5380) + 0.90 = -0.4248`$.
+
+Row $`(k, L)`$ of the upwind generator $`\mathbf{A}`$ has sub-diagonal entry $`-s^{-}/\Delta a = 0.5380/0.5 = 1.076`$ on the asset axis, off-block entry $`Q_{LH} = 0.5`$ for the income switch, and diagonal $`-(1.076 + 0.5) = -1.576`$. The implicit-step right-hand side at this row is $`u(c^{\ast}) + V_L(a_k)/\Delta = -0.8944 + (-7.80)/1000 = -0.9022`$. Solving $`[(1/\Delta + \rho)\mathbf{I} - \mathbf{A}]V^{n+1} = u(c) + V/\Delta`$ at $`\Delta \to \infty`$ recovers a Newton step on $`\rho V - u(c) - \mathbf{A}V = 0`$; here the local row contributes
+
+```math
+\boxed{c^{\ast}_L(2.0) = 1.1180, \quad s^{\ast}_L(2.0) = -0.5380, \quad H_L(2.0) = -0.4248.}
+```
+
+Negative upwind drift puts a node above its income-conditional buffer target, so the household decumulates back toward the borrowing limit. Iterating this same update across the joint $`(a, z)`$ grid and then solving $`\mathbf{A}^{\top} g = 0`$ for the stationary density delivers $`K^{s}(r)`$; the outer bisection on $`r`$ keeps the asset block diagonal $`-1.576`$ and the income off-block $`0.5`$ unchanged while the consumption clip $`c^{\ast}`$ updates at every implicit step. The production solver in `run.py` does this on $`I = 800`$ asset nodes and $`N = 7`$ Rouwenhorst income states.
+
 ## Model Setup
 
 The calibration matches the discrete-time Aiyagari tutorial so the two solutions can be overlaid directly.
