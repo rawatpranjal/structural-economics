@@ -2,7 +2,7 @@
 
 ## Overview
 
-In Aiyagari (1994), households face persistent idiosyncratic income risk and cannot borrow. They save in one risk-free asset to smooth consumption across income states.
+In Aiyagari (1994), households face persistent idiosyncratic income risk and cannot borrow. They save in one risk-free asset to smooth consumption across income states. Bewley and Huggett had set up incomplete-markets economies without capital. Aiyagari adds production and asks how much uninsured income risk lifts aggregate saving once the rate of return is endogenous.
 
 The object is a *stationary general equilibrium*. Households choose an asset policy, firms demand capital, and the interest rate makes aggregate assets equal capital demand.
 
@@ -190,7 +190,7 @@ The stationary distribution comes from the asset policy and income chain. Mean w
 
 ## Takeaway
 
-*Precautionary saving* turns a household policy into an aggregate capital supply curve. Incomplete insurance pushes the equilibrium interest rate below the complete-markets benchmark. The gap is the price of self-insurance. The model closes via VFI inside bisection. Households optimize at a candidate rate. The policy gives a stationary distribution. An outer rate adjustment clears the capital market.
+*Precautionary saving* turns a household policy into an aggregate capital supply curve. Incomplete insurance pushes the equilibrium interest rate below the complete-markets benchmark. The size of that gap, modest under realistic risk, was the paper's quantitative surprise. The framework went on to anchor heterogeneous-agent macro, from Krusell-Smith with aggregate shocks to HANK.
 
 ## See also
 
