@@ -137,6 +137,58 @@ marginal-cost reduction that would offset that pressure at those same prices.
 Neither metric clears the market. The simulation in Method 3 does. It solves
 the full pricing system under post-merger ownership.
 
+## Worked Numerical Example
+
+To see the ownership-matrix mechanism in one step, take a 2-firm symmetric linear-demand market and solve the pre- and post-merger FOC by hand.
+
+Set up demand using the linear form from Section C, $`q_j = a_j - \sum_k B_{jk} p_k`$, with $`\Delta = -B`$:
+
+```math
+q_1(p) = 10 - 2p_1 + p_2, \qquad q_2(p) = 10 + p_1 - 2p_2.
+```
+
+The demand Jacobian is
+
+```math
+\Delta = \begin{pmatrix} -2 & 1 \\ 1 & -2 \end{pmatrix},
+```
+
+and marginal costs are $`c_1 = c_2 = 1`$.
+
+Pre-merger, each firm owns one product, so $`\Omega = I`$. The FOC for firm 1 uses only the own-price diagonal entry $`\Delta_{11} = -2`$:
+
+```math
+q_1 + \Delta_{11}(p_1 - c_1) = 0
+\implies (10 - 2p_1 + p_2) + (-2)(p_1 - 1) = 0
+\implies 4p_1 = 12 + p_2.
+```
+
+By symmetry, $`4p_2 = 12 + p_1`$. Substituting:
+
+```math
+16p_1 = 48 + 12 + p_1 \implies 15p_1 = 60 \implies \boxed{p_1^{\text{pre}} = p_2^{\text{pre}} = 4.0}.
+```
+
+Quantity: $`q_1 = 10 - 8 + 4 = 6`$. Margin: $`4.0 - 1 = 3`$. Profit per firm: $`18`$.
+
+Post-merger, a single owner controls both products, so $`\Omega`$ becomes the all-ones matrix. The FOC for product 1 now picks up the cross-price term $`\Delta_{21}(p_2 - c_2)`$:
+
+```math
+q_1 + \Delta_{11}(p_1 - c_1) + \Delta_{21}(p_2 - c_2) = 0
+\implies (10 - 2p_1 + p_2) + (-2)(p_1 - 1) + (1)(p_2 - 1) = 0
+\implies 4p_1 = 11 + 2p_2.
+```
+
+By symmetry, $`4p_2 = 11 + 2p_1`$. Substituting:
+
+```math
+8p_1 = 22 + 11 + 2p_1 \implies 6p_1 = 33 \implies \boxed{p_1^{\text{post}} = p_2^{\text{post}} = 5.5}.
+```
+
+The merger raises prices by $`(5.5 - 4.0)/4.0 = 37.5\%`$. Quantity falls to $`q_1 = 10 - 11 + 5.5 = 4.5`$, margin rises to $`4.5`$, and joint profit increases from $`2 \times 18 = 36`$ to $`2 \times (4.5)(4.5) = 40.5`$.
+
+The mechanism is one algebraic step: flipping $`\Omega_{12}`$ and $`\Omega_{21}`$ from zero to one brings the cross-price term $`\Delta_{21}(p_2 - c_2)`$ into firm 1's FOC. Because $`\Delta_{21} = 1 > 0`$ and the pre-merger margin $`p_2 - c_2 > 0`$, that term pushes the equilibrium price up. The full simulation in Method 2 and Method 3 runs the same FOC at scale on logit and multi-product demand, but the price-rise logic is already visible here.
+
 ## Model Setup
 
 Two market setups run in sequence. The first is a small four-product market. We calibrate logit demand from one observed margin. The second is a six-product market. We calibrate three demand systems against the full margin vector.

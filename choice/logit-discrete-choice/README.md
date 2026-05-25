@@ -54,6 +54,42 @@ IIA follows from the odds ratio
 
 which does not depend on any third product in the choice set.
 
+## Worked Numerical Example
+
+Three products with prices $`(p_1, p_2, p_3) = (2, 5, 10)`$ and qualities $`(q_1, q_2, q_3) = (1, 3, 5)`$, evaluated at the true coefficients $`\beta_p = -0.5`$ and $`\beta_q = 1.2`$.
+
+Form the deterministic utilities $`V_j = \beta_p p_j + \beta_q q_j`$:
+
+```math
+V_1 = (-0.5)(2) + (1.2)(1) = -1.0 + 1.2 = 0.2
+```
+
+```math
+V_2 = (-0.5)(5) + (1.2)(3) = -2.5 + 3.6 = 1.1
+```
+
+```math
+V_3 = (-0.5)(10) + (1.2)(5) = -5.0 + 6.0 = 1.0
+```
+
+Exponentiate and sum: $`e^{0.2} = 1.2214`$, $`e^{1.1} = 3.0042`$, $`e^{1.0} = 2.7183`$, total $`= 6.9439`$. Divide to get shares:
+
+```math
+s_1 = \frac{1.2214}{6.9439} = 0.176, \quad
+s_2 = \frac{3.0042}{6.9439} = 0.433, \quad
+s_3 = \frac{2.7183}{6.9439} = 0.391.
+```
+
+The shares sum to 1.000. The own-price elasticity for product 2 is
+
+```math
+\eta_{22} = \beta_p \, p_2 (1 - s_2) = (-0.5)(5)(1 - 0.433) = (-2.5)(0.567) = \boxed{-1.418}.
+```
+
+A 1 percent price increase for product 2 reduces its demand by about 1.4 percent.
+
+IIA check: the odds ratio $`s_2 / s_1 = 0.433 / 0.176 = 2.460`$ equals $`\exp(V_2 - V_1) = \exp(0.9) = 2.460`$. After removing product 3, the two-product shares become $`s_1' = 0.289`$ and $`s_2' = 0.711`$, and $`s_2' / s_1' = 2.460`$ still. Both surviving products scale up by the same factor $`1/(1 - s_3) = 1/0.609 = 1.643`$; this proportional reallocation is IIA in arithmetic form.
+
 ## Model Setup
 
 The market is small enough to see each estimate. Five products trade off price against quality. The sample is synthetic, so true coefficients and population shares are available after estimation.

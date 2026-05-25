@@ -53,6 +53,35 @@ Higher $`b`$ raises the outside option.
 Higher $`\beta`$ raises the value of waiting.
 The right tail of $`F`$ matters through the expectation.
 
+## Worked Numerical Example
+
+Take $`W \in \{2, 5, 10\}`$ each with probability $`1/3`$, $`\beta = 0.9`$, and $`b = 1`$.
+
+Conjecture $`w^{\ast} \in (5, 10)`$, so only $`W = 10`$ is accepted. Under that conjecture:
+
+```math
+\mathbb{E}_{F}[\max(W, w^{\ast})]
+  = \tfrac{1}{3} w^{\ast} + \tfrac{1}{3} w^{\ast} + \tfrac{1}{3}(10)
+  = \tfrac{2}{3} w^{\ast} + \tfrac{10}{3}.
+```
+
+Substitute into the fixed-point equation:
+
+```math
+w^{\ast} = (0.1)(1) + (0.9)\!\left[\tfrac{2}{3} w^{\ast} + \tfrac{10}{3}\right]
+         = 0.1 + 0.6\, w^{\ast} + 3.0.
+```
+
+Collect terms:
+
+```math
+0.4\, w^{\ast} = 3.1 \implies \boxed{w^{\ast} = 7.75}.
+```
+
+Since $`5 < 7.75 < 10`$, the conjecture holds.
+
+The mean offer is $`\mathbb{E}[W] = 17/3 \approx 5.67`$; the reservation wage 7.75 sits above it. Acceptance probability is $`1/3`$, so expected unemployment duration is 3 periods. The right tail - the offer of 10 - makes waiting worthwhile even though two of the three offers are rejected.
+
 ## Model Setup
 
 | Object | Value | Role |
