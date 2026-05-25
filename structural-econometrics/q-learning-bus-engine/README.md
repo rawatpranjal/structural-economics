@@ -42,6 +42,36 @@ Q(x_t, a_t) \leftarrow Q(x_t, a_t) + \alpha_t [ u(x_t, a_t) + \beta(\gamma + \lo
 
 The sampled next state $`x_{t+1}`$ is a noisy draw from the same transition distribution that NFXP averages over exactly. Repeated visits make the stochastic update approximate the transition-matrix expectation. Here $`\alpha_t`$ is a step-size sequence that shrinks with the per-state visit count (Robbins-Monro schedule).
 
+## Worked Numerical Example
+
+Run two soft Q-learning updates on a toy 3-state slice of the bus problem. Mileage states are $`x \in \{\mathrm{low}, \mathrm{mid}, \mathrm{high}\}`$ with mileage costs $`c(x) = (1, 3, 5)`$. Actions are keep and replace. Flow payoffs are $`u(x, \mathrm{keep}) = -c(x)`$ and $`u(x, \mathrm{replace}) = -R - c(\mathrm{low})`$ with replacement cost $`R = 4`$. Under keep the bus stays with probability 0.7 and moves up one step with probability 0.3; under replace the next state is deterministically low. Discount $`\beta = 0.95`$, learning rate $`\alpha = 0.5`$, and the Euler-Mascheroni constant $`\gamma \approx 0.5772`$. Initialise $`Q(x, a) = 0`$ everywhere, so the log-sum-exp continuation at any state evaluates to $`\log 2 = 0.6931`$.
+
+Update 1: sample $`(x_t, a_t) = (\mathrm{mid}, \mathrm{keep})`$ and observe the sampled next state $`x_{t+1} = \mathrm{mid}`$. The flow payoff is $`u(\mathrm{mid}, \mathrm{keep}) = -3`$. The soft-Bellman target is
+
+```math
+y_1 = -3 + 0.95 \cdot (0.5772 + 0.6931) = -3 + 0.95 \cdot 1.2703 = -1.7932,
+```
+
+so the update reads
+
+```math
+Q(\mathrm{mid}, \mathrm{keep}) \leftarrow 0 + 0.5 \cdot (-1.7932 - 0) = -0.8966.
+```
+
+Update 2: sample $`(x_t, a_t) = (\mathrm{high}, \mathrm{replace})`$ and observe $`x_{t+1} = \mathrm{low}`$ (replacement is deterministic). The flow payoff is $`u(\mathrm{high}, \mathrm{replace}) = -4 - 1 = -5`$. Continuation at low is still $`\log 2`$, so the target is
+
+```math
+y_2 = -5 + 0.95 \cdot (0.5772 + 0.6931) = -3.7932,
+```
+
+and the update gives
+
+```math
+Q(\mathrm{high}, \mathrm{replace}) \leftarrow 0 + 0.5 \cdot (-3.7932 - 0) = \boxed{-1.8966}.
+```
+
+Compare against keeping at high: $`u(\mathrm{high}, \mathrm{keep}) = -5`$ with the same continuation, so one update there would set $`Q(\mathrm{high}, \mathrm{keep}) = -1.8966`$ too. Replacement and keep tie at high after a single visit because both pay $`-5`$ today and inherit identical uninformative continuations. Subsequent passes back up the low replacement cost (1) versus the persistent high mileage cost (5) through the continuation term, and the structural CCP $`\sigma(\mathrm{replace} \mid \mathrm{high}) = \exp Q(\mathrm{high}, \mathrm{replace}) / \sum_{a'} \exp Q(\mathrm{high}, a')`$ tilts toward replacement.
+
 ## Model Setup
 
 | Object | Value |

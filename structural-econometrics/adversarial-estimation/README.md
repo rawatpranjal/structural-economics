@@ -96,6 +96,46 @@ With enough hidden units the class $`\mathcal{D}_n`$ can approximate the oracle 
 
 where $`I_0`$ is the Fisher information of the structural model at $`\theta_0`$. The factor $`1 + n/m`$ is the price of learning the discriminator from a finite simulation sample. With $`n = m`$ the adversarial standard error is $`\sqrt{2}`$ times the MLE one.
 
+## Worked Numerical Example
+
+To see the min-max criterion at work, evaluate one round of the game with the oracle discriminator on the smallest possible sample. Take the logistic location model with truth $`\theta_0 = 0`$ and one real observation $`X = 0`$, one common shock $`\tilde X = 0`$, so the simulated point at candidate $`\theta`$ is $`X_\theta = \theta + \tilde X = \theta`$.
+
+The logistic density evaluates cleanly at the mode and the unit shift,
+
+```math
+p_0(0) = \frac{e^{0}}{(1 + e^{0})^{2}} = \frac{1}{4},
+\qquad
+p_0(1) = \frac{e^{-1}}{(1 + e^{-1})^{2}} \approx 0.1966.
+```
+
+By symmetry $`p_\theta(x) = p_0(x - \theta)`$, so at the candidate $`\theta = 1`$ the simulated density flips with the real one: $`p_\theta(0) = p_0(-1) = p_0(1) \approx 0.1966`$ and $`p_\theta(1) = p_0(0) = 1/4`$.
+
+The oracle discriminator follows from Bayes' rule on the two densities,
+
+```math
+D^{\ast}_\theta(X = 0) = \frac{p_0(0)}{p_0(0) + p_\theta(0)} = \frac{0.2500}{0.2500 + 0.1966} \approx 0.5598,
+```
+
+```math
+D^{\ast}_\theta(X_\theta = 1) = \frac{p_0(1)}{p_0(1) + p_\theta(1)} = \frac{0.1966}{0.1966 + 0.2500} \approx 0.4402.
+```
+
+The oracle correctly assigns probability above one-half to the real point and below one-half to the simulated point. Plug into the cross-entropy with $`n = m = 1`$,
+
+```math
+M(\theta = 1, D^{\ast}_\theta) = \log(0.5598) + \log(1 - 0.4402) = -0.5803 - 0.5803 = -1.1605.
+```
+
+Now repeat at the truth $`\theta = 0`$. The two densities coincide, so $`D^{\ast}_0 \equiv 1/2`$ everywhere, and the cross-entropy hits its worst attainable value,
+
+```math
+M(\theta = 0, D^{\ast}_0) = \log\tfrac{1}{2} + \log\tfrac{1}{2} = -2 \log 2 \approx -1.3863.
+```
+
+The outer step compares the two: $`-1.3863 < -1.1605`$, so the minimizer prefers $`\theta = 0`$ over $`\theta = 1`$. The hostile critic has no telltale to exploit at the truth, the cross-entropy is at its lowest, and the outer step lands on $`\boxed{\hat\theta = \theta_0 = 0}`$.
+
+This is the population identification result in miniature. The further the candidate $`\theta`$ sits from the truth, the more decisively the oracle separates real from simulated, the larger $`M(\theta, D^{\ast}_\theta)`$ grows above $`-2 \log 2`$, and the more the outer min is pushed back toward $`\theta_0`$. The empirical estimator in the next sections replaces the oracle with a logistic or neural classifier trained on the same data, paying $`\sqrt{1 + n/m}`$ in standard error for not knowing the densities.
+
 ## Model Setup
 
 | Symbol | Meaning | Value |
