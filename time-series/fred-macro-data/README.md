@@ -59,6 +59,56 @@ c_{u,t}=\alpha_O+\beta_O c_{g,t}+e_t,
 where $`c_{g,t}`$ is the GDP-growth cycle and $`c_{u,t}`$ is the unemployment
 cycle.
 
+## Worked Numerical Example
+
+Take three quarterly observations of GDP growth: $`y_1 = 100`$, $`y_2 = 103`$, $`y_3 = 104`$ (percentage-point deviations from a long-run mean, scaled for arithmetic clarity). The standard HP smoothing parameter for quarterly data is $`\lambda = 1600`$.
+
+With only $`T = 3`$ observations there is one interior period, so the penalty has a single second-difference term. The HP objective becomes
+
+```math
+\min_{\tau_1,\tau_2,\tau_3}
+\bigl(y_1-\tau_1\bigr)^2
++\bigl(y_2-\tau_2\bigr)^2
++\bigl(y_3-\tau_3\bigr)^2
++\lambda\bigl(\tau_3-2\tau_2+\tau_1\bigr)^2.
+```
+
+Let $`D = \tau_3 - 2\tau_2 + \tau_1`$ denote the second difference of the trend. The first-order conditions with respect to each $`\tau_j`$ give
+
+```math
+\tau_1 = y_1 - \lambda D, \qquad
+\tau_2 = y_2 + 2\lambda D, \qquad
+\tau_3 = y_3 - \lambda D.
+```
+
+Substituting back into the definition of $`D`$ yields one equation in $`D`$ alone:
+
+```math
+D = (y_1 - 2y_2 + y_3) - 6\lambda D
+\implies
+D = \frac{y_1 - 2y_2 + y_3}{1 + 6\lambda}.
+```
+
+For the three observations above, the raw second difference is $`y_1 - 2y_2 + y_3 = 100 - 206 + 104 = -2`$. Plugging in $`\lambda = 1600`$:
+
+```math
+D = \frac{-2}{1 + 6 \times 1600} = \frac{-2}{9601} \approx -0.000208.
+```
+
+The trend at the middle period is
+
+```math
+\tau_2 = 103 + 2(1600)(-0.000208) = 103 - 0.666 \approx 102.334,
+```
+
+so the HP cycle at period 2 is
+
+```math
+c_2 = y_2 - \tau_2 = 103 - 102.334 = \boxed{0.666}.
+```
+
+The large $`\lambda`$ forces the trend close to the straight line through the endpoints (100 to 104), leaving the kink at $`y_2 = 103`$ almost entirely in the cycle. If $`\lambda = 0`$, the trend would interpolate the data exactly and the cycle would be zero. This tradeoff between fit and smoothness is the core mechanism that the full-panel HP filter applies series by series.
+
 ## Model Setup
 
 **Quarterly sample**

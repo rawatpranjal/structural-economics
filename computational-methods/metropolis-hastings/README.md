@@ -75,6 +75,55 @@ Retained draws from the chain approximate posterior averages of any integrable f
 The approximation is exact in the limit $`T \to \infty`$.
 On a finite run it is only as good as the chain's mixing, which on multimodal targets is governed by how often the chain crosses between modes.
 
+## Worked Numerical Example
+
+Trace two steps of random-walk Metropolis-Hastings on a scalar standard normal target. The toy params differ from the mixture target in Model Setup to keep the arithmetic clean; the acceptance rule is identical.
+
+Target $`\pi(\theta) \propto \exp\!\left(-\theta^2 / 2\right)`$, proposal scale $`\tau = 1`$, so $`\theta' = \theta_t + \varepsilon`$ with $`\varepsilon \sim \mathcal{N}(0, 1)`$.
+
+Step 1. Current state $`\theta_t = 0.5`$. Proposed move $`\theta' = 1.2`$. Because the random-walk proposal is symmetric, $`q(\theta_t \mid \theta') = q(\theta' \mid \theta_t)`$ and the Hastings correction cancels. The kernel ratio is
+
+```math
+\frac{\pi(\theta')}{\pi(\theta_t)}
+= \frac{\exp(-1.2^2 / 2)}{\exp(-0.5^2 / 2)}
+= \exp\!\left(-\tfrac{1.44}{2} + \tfrac{0.25}{2}\right)
+= \exp(-0.72 + 0.125)
+= \exp(-0.595)
+\approx 0.5516.
+```
+
+The acceptance probability is
+
+```math
+\alpha_1 = \min\{1,\, 0.5516\} = 0.5516.
+```
+
+Draw $`u \sim \mathrm{Uniform}[0, 1]`$; suppose $`u = 0.40`$. Since $`0.40 < 0.5516`$, accept: $`\theta_{t+1} = 1.2`$.
+
+Step 2. Current state $`\theta_{t+1} = 1.2`$. Proposed move $`\theta' = -0.3`$. The kernel ratio is
+
+```math
+\frac{\pi(-0.3)}{\pi(1.2)}
+= \frac{\exp(-0.3^2 / 2)}{\exp(-1.2^2 / 2)}
+= \exp\!\left(-0.045 + 0.72\right)
+= \exp(0.675)
+\approx 1.964.
+```
+
+The ratio exceeds one because $`-0.3`$ is closer to the mode than $`1.2`$. The acceptance probability is
+
+```math
+\alpha_2 = \min\{1,\, 1.964\} = 1.0.
+```
+
+This proposal is always accepted regardless of the draw $`u`$: $`\theta_{t+2} = -0.3`$.
+
+```math
+\boxed{(\alpha_1,\, \alpha_2) = (0.5516,\; 1.0)}
+```
+
+Step 1 accepts with probability 55% because the proposal moves away from the mode; step 2 always accepts because the proposal moves toward the mode. This asymmetry is how the chain concentrates mass near the peak of $`\pi`$ while still exploring the tails.
+
 ## Model Setup
 
 | Object | Value | Role |

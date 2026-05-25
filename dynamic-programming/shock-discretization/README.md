@@ -63,6 +63,54 @@ $`\sum_i \pi_i = 1`$. Two diagnostics matter:
 Variance controls risk exposure. Persistence controls expected continuation
 values after good and bad shocks.
 
+## Worked Numerical Example
+
+To see Tauchen's CDF-difference rule at small scale, build the $`3 \times 3`$ transition matrix by hand for a toy calibration $`\rho = 0.5`$ and $`\sigma_\epsilon = 1.0`$. The half-width is $`m = 2`$. These toy parameters differ from the Model Setup calibration ($`\rho = 0.95`$, $`\sigma_\epsilon = 0.02`$) so that the CDF arguments come out as round numbers; the algorithm is identical.
+
+The unconditional standard deviation is
+
+```math
+\sigma_z = \frac{\sigma_\epsilon}{\sqrt{1-\rho^2}}
+        = \frac{1}{\sqrt{0.75}}
+        = 1.1547.
+```
+
+The grid spans $`[-m\sigma_z, m\sigma_z] = [-2.309, 2.309]`$ with three evenly spaced nodes:
+
+```math
+z_1 = -2.309, \qquad z_2 = 0, \qquad z_3 = 2.309.
+```
+
+The cell midpoints between nodes are $`c_2 = -1.155`$ and $`c_3 = 1.155`$, with $`c_1 = -\infty`$ and $`c_4 = +\infty`$. The step in $`z`$ is $`h = 2\sigma_z = 2.309`$, so the half-step that appears in the CDF arguments is $`h/2 = 1.155`$.
+
+Compute row $`i=2`$ (starting from the middle state $`z_2 = 0`$, so $`\rho z_i = 0`$):
+
+```math
+P_{2,2} = \Phi\!\left(\tfrac{c_3 - \rho z_2}{\sigma_\epsilon}\right) - \Phi\!\left(\tfrac{c_2 - \rho z_2}{\sigma_\epsilon}\right)
+       = \Phi(1.155) - \Phi(-1.155)
+       = 2\Phi(1.155) - 1
+       = 2(0.8759) - 1
+       = 0.7518.
+```
+
+```math
+P_{2,1} = \Phi(-1.155) - 0 = 0.1241,
+\qquad
+P_{2,3} = 1 - \Phi(1.155) = 1 - 0.8759 = 0.1241.
+```
+
+The middle row sums to $`0.1241 + 0.7518 + 0.1241 = 1.000`$, as required.
+
+Repeat for row $`i=1`$ ($`\rho z_1 = -1.155`$). The endpoint cell $`j=1`$ absorbs all left-tail mass: $`P_{1,1} = \Phi((c_2 - \rho z_1)/\sigma_\epsilon) = \Phi(0) = 0.5`$. The middle cell gives $`P_{1,2} = \Phi(2.310) - \Phi(0) = 0.9896 - 0.5 = 0.4896`$. The right-tail cell gets $`P_{1,3} = 1 - \Phi(2.310) = 0.0104`$. By symmetry of the Gaussian kernel around $`z_2 = 0`$, row 3 reverses row 1.
+
+Stack the rows:
+
+```math
+\boxed{P = \begin{pmatrix} 0.500 & 0.490 & 0.010 \\ 0.124 & 0.752 & 0.124 \\ 0.010 & 0.490 & 0.500 \end{pmatrix}.}
+```
+
+The endpoint rows pile half their mass on their own state because tails past $`\pm m\sigma_z`$ collapse onto $`z_1`$ and $`z_3`$. That endpoint stickiness is the source of Tauchen's persistence error at coarse $`N`$ and high $`\rho`$, which the Results table quantifies for the full calibration.
+
 ## Model Setup
 
 The calibration is a small annual log-income or log-productivity process. It is designed for dynamic programming, not forecasting.

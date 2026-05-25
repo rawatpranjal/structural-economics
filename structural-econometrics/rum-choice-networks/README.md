@@ -100,6 +100,48 @@ The latent-taste interaction is
 This is the misspecification: plain logit can use $`p_{ij}z_i`$ and $`q_{ij}z_i`$,
 but it cannot represent the saturation and hump shapes exactly.
 
+## Worked Numerical Example
+
+Two products (Saver and Premium) with prices $`(p_1, p_2) = (1.0, 2.0)`$, qualities $`(q_1, q_2) = (1.0, 2.0)`$, customer context $`z = 0.5`$, and a single latent draw $`\eta = 0`$ to isolate the neural surface. Linear-utility weights are $`a_1 = 0`$, $`a_2 = 0.2`$, $`b_p = -0.5`$, $`b_q = 0.4`$, and $`b_{pz} = b_{qz} = 0`$. The hidden layer has one unit with bias $`d = 0`$ and weights $`W = 0`$ everywhere except on the $`q_{ij} z_i`$ feature, where $`W_{qz} = 1.0`$; the output weight is $`c = 0.3`$.
+
+Form the linear part of utility for each product:
+
+```math
+v^{\mathrm{lin}}_{1} = a_1 + b_p p_1 + b_q q_1 = 0 + (-0.5)(1.0) + (0.4)(1.0) = -0.1.
+```
+
+```math
+v^{\mathrm{lin}}_{2} = a_2 + b_p p_2 + b_q q_2 = 0.2 + (-0.5)(2.0) + (0.4)(2.0) = 0.0.
+```
+
+Evaluate the single hidden unit. The non-zero feature is $`q_{ij} z`$, so the pre-activation is $`W_{qz} \, q_{ij} z`$:
+
+```math
+h_1 = \tanh(1.0 \cdot 1.0 \cdot 0.5) = \tanh(0.5) = 0.4621.
+```
+
+```math
+h_2 = \tanh(1.0 \cdot 2.0 \cdot 0.5) = \tanh(1.0) = 0.7616.
+```
+
+Combine the linear part with the neural correction $`c \cdot h_j`$:
+
+```math
+v_1 = -0.1 + (0.3)(0.4621) = -0.1 + 0.1386 = 0.0386.
+```
+
+```math
+v_2 = 0.0 + (0.3)(0.7616) = 0.0 + 0.2285 = 0.2285.
+```
+
+Apply the softmax: $`e^{0.0386} = 1.0394`$ and $`e^{0.2285} = 1.2567`$, with sum $`2.2961`$. The RUMnet choice probabilities are
+
+```math
+P_1 = \frac{1.0394}{2.2961} = 0.4527, \qquad P_2 = \frac{1.2567}{2.2961} = \boxed{0.5473}.
+```
+
+The linear part alone gives $`v_1 - v_2 = -0.1`$, which would put $`P_2`$ near $`0.525`$. The tanh hidden unit, fed by the same $`q_{ij} z`$ feature the linear logit already uses, bends the utility surface so that the higher-quality Premium product gains an extra $`0.0899`$ in utility relative to Saver. Random-utility discipline is preserved: the choice probability is still a softmax over a deterministic index plus Type I extreme value noise.
+
 The RUMnet keeps the same random-utility structure but replaces the linear
 index with a neural utility. For fixed latent draw $`\eta_r`$, define
 
