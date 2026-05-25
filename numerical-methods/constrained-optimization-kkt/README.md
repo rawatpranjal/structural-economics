@@ -163,6 +163,40 @@ Each step linearises the constraints around the current iterate and solves a sma
 The QP uses a BFGS approximation of the Hessian of the Lagrangian; the QP solution becomes the search direction; a line search along that direction picks the next iterate.
 Multipliers are recovered after the fact from the stationarity equation by averaging $`a_j - (B x)_j`$ over the active set and solving for the bound multipliers on the inactive set.
 
+## Worked Numerical Example
+
+To see how the four KKT blocks pin down the answer, solve the baseline calibration $`a = (4, 3, 0.5)`$, $`B = I_3`$, $`I = 3`$ by hand. With $`B`$ diagonal the stationarity block collapses to one scalar equation per project.
+
+```math
+a_j - x_j - \lambda + \mu_j = 0 \quad \text{for } j = 1, 2, 3.
+```
+
+Drop all bound multipliers as a first guess, so $`\mu = 0`$. Stationarity then gives $`x_j = a_j - \lambda`$. Imposing the budget $`\sum_j x_j = I`$:
+
+```math
+\sum_j (a_j - \lambda) = I \implies \lambda = \frac{\sum_j a_j - I}{n} = \frac{7.5 - 3}{3} = 1.5.
+```
+
+That yields $`x = (2.5, 1.5, -1.0)`$, which violates $`x_3 \geq 0`$. The active set is wrong: project 3's bound must bind. Set $`x_3 = 0`$ and reactivate $`\mu_3 \geq 0`$, keeping $`\mu_1 = \mu_2 = 0`$. The budget reduces to $`x_1 + x_2 = I = 3`$ and stationarity on the first two coordinates gives $`x_j = a_j - \lambda`$.
+
+```math
+(a_1 - \lambda) + (a_2 - \lambda) = 3 \implies \lambda = \tfrac{1}{2}(a_1 + a_2 - 3) = \tfrac{1}{2}(4 + 3 - 3) = 2.
+```
+
+Hence $`x_1 = 4 - 2 = 2`$ and $`x_2 = 3 - 2 = 1`$. Project 3's stationarity equation recovers its multiplier:
+
+```math
+\mu_3 = \lambda - a_3 = 2 - 0.5 = 1.5.
+```
+
+Dual feasibility holds since $`\lambda = 2 > 0`$ and $`\mu_3 = 1.5 > 0`$. Complementary slackness holds because the budget binds with $`\lambda > 0`$, the project 3 bound binds with $`\mu_3 > 0`$, and the slack bounds carry zero multipliers.
+
+```math
+\boxed{x^{\ast} = (2, 1, 0), \quad \lambda^{\ast} = 2, \quad \mu^{\ast} = (0, 0, 1.5).}
+```
+
+The wedge $`\mu_3^{\ast} = \lambda^{\ast} - a_3 = 1.5`$ is the gap between the budget shadow price and project 3's marginal return at zero; that gap is exactly what makes the bound bite. The numerical methods below all rediscover this active set by enforcing primal feasibility throughout iteration rather than dropping it as the failed first guess did.
+
 ## Model Setup
 
 | Symbol | Value | Role |

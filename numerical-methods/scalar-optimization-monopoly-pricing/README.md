@@ -116,6 +116,34 @@ Newton is equivalent to maximising a parabolic surrogate that matches $`\pi`$ in
 The surrogate is concave only when $`\pi''(x_n)`$ is negative, which holds only when $`x_n`$ lies below $`p_{\mathrm{inflect}}`$.
 A start in the convex region drives the iterates away from $`p^{\ast}`$.
 
+## Worked Numerical Example
+
+Set $`\epsilon = 2.5`$ and $`c = 1`$. Plugging into the FOC derivation gives the closed-form price in one step.
+
+The profit function is
+
+```math
+\pi(p) = A(p - 1) \, p^{-2.5}.
+```
+
+Differentiating and setting to zero:
+
+```math
+\pi'(p) = A p^{-3.5} \left[(1 - 2.5) \, p + 2.5 \cdot 1\right] = 0
+\implies -1.5 \, p + 2.5 = 0
+\implies \boxed{p^{\ast} = \frac{2.5}{1.5} = \frac{5}{3} \approx 1.667}.
+```
+
+The Lerner markup follows immediately from the Lerner identity:
+
+```math
+\frac{p^{\ast} - c}{p^{\ast}} = \frac{1}{\epsilon} = \frac{1}{2.5} = \boxed{0.4}.
+```
+
+The monopolist marks up price 40 percent above marginal cost.
+
+The second-order condition requires $`\epsilon > 1`$. With $`\epsilon = 2.5`$ the profit function is concave at $`p^{\ast}`$, so the FOC root is indeed a maximum, not a minimum. The inflection point sits at $`p_{\mathrm{inflect}} = (2.5 + 1)/(2.5 - 1) \cdot 1 = 3.5/1.5 \approx 2.333`$, strictly above $`p^{\ast}`$, confirming that the optimum lies in the concave region.
+
 ## Model Setup
 
 | Symbol | Value | Role |

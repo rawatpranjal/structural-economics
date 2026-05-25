@@ -48,6 +48,48 @@ We need a way to choose the kernel hyperparameters $`(\ell, \sigma_f, \sigma_n)`
 
 The three terms balance data fit (the quadratic in $`y`$), model complexity (the log determinant penalises kernel matrices that imply low-noise prior covariance), and a constant. Maximising the log marginal likelihood is called marginal-likelihood-II or empirical Bayes, and it produces a data-adaptive smoothness scale: too short a length scale fits noise (low log-det penalty, large quadratic term), too long a length scale underfits (small quadratic term, large determinant penalty).
 
+## Worked Numerical Example
+
+To see the closed-form posterior in one step, take two training points and predict at a single test input by hand. Set $`x_1 = 0`$, $`x_2 = 2`$, observations $`y = (1, 3)^{\top}`$, RBF length scale $`\ell = 1`$, output scale $`\sigma_f = 1`$, and noise variance $`\sigma_n^2 = 0.01`$.
+
+Form the training covariance matrix using $`k(x, x') = \exp(-(x-x')^2 / (2\ell^2))`$. The off-diagonal is $`k(0, 2) = \exp(-2) \approx 0.1353`$:
+
+```math
+K + \sigma_n^2 I
+= \begin{pmatrix} 1.01 & 0.1353 \\ 0.1353 & 1.01 \end{pmatrix},
+\qquad
+\det = 1.01^2 - 0.1353^2 = 1.0018.
+```
+
+Solve $`\alpha = (K + \sigma_n^2 I)^{-1} y`$ by direct 2-by-2 inversion:
+
+```math
+\alpha = \frac{1}{1.0018}
+\begin{pmatrix} 1.01 & -0.1353 \\ -0.1353 & 1.01 \end{pmatrix}
+\begin{pmatrix} 1 \\ 3 \end{pmatrix}
+= \frac{1}{1.0018}
+\begin{pmatrix} 0.6041 \\ 2.8947 \end{pmatrix}
+\approx
+\begin{pmatrix} 0.6029 \\ 2.8895 \end{pmatrix}.
+```
+
+At test point $`x_{\ast} = 1`$, the train-test covariance vector has equal entries because $`x_{\ast}`$ sits at the midpoint of the training inputs: $`k_{\ast} = (e^{-1/2}, e^{-1/2})^{\top} \approx (0.6065, 0.6065)^{\top}`$. The posterior mean is the inner product $`k_{\ast}^{\top} \alpha`$:
+
+```math
+\mu_{\ast}(1) = 0.6065 \cdot 0.6029 + 0.6065 \cdot 2.8895 = 0.6065 \cdot 3.4924 = \boxed{2.118}.
+```
+
+For the variance, exploit the symmetry $`k_{\ast} = c (1, 1)^{\top}`$ with $`c = e^{-1/2}`$ so that $`(K + \sigma_n^2 I)^{-1} k_{\ast} = c \cdot (\text{row sum of inverse}) \cdot (1, 1)^{\top}`$. The row sum of the inverse is $`(1.01 - 0.1353)/1.0018 = 0.8731`$, giving:
+
+```math
+\sigma_{\ast}^2(1) = k(1, 1) - k_{\ast}^{\top} (K + \sigma_n^2 I)^{-1} k_{\ast}
+= 1 - 2 c^2 \cdot 0.8731
+= 1 - 2 \cdot 0.6065 \cdot 0.5296
+\approx 0.358.
+```
+
+The posterior at $`x_{\ast} = 1`$ is $`f(1) \mid y \sim N(2.118, 0.358)`$, with standard deviation $`\sigma_{\ast}(1) \approx 0.598`$. The mean lies between $`y_1 = 1`$ and $`y_2 = 3`$ but pulls toward the closer-in-likelihood neighbour weighted by kernel similarity; the posterior standard deviation 0.598 sits below the prior 1.0 because the test point is within one length-scale of both training points.
+
 ## Model Setup
 
 | Object | Symbol | Role |

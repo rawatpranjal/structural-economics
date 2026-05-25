@@ -109,6 +109,40 @@ Simulated annealing samples a Markov chain that proposes random moves and accept
 SciPy's `dual_annealing` combines a generalised-simulated-annealing global search with local refinement at each accepted move.
 The result is a stochastic global search that does not need a starting point inside the global basin.
 
+## Worked Numerical Example
+
+The calibration has two peaks separated by a kink at $`p_L^{\max} = 2.00`$. Below the kink both segments are active and profit is $`\pi(p) = (p - 0.5)(9.2 - 3.4p)`$. Above the kink only the high-valuation segment is active and profit is $`\pi(p) = (p - 0.5)(3.2 - 0.4p)`$. Each regime is quadratic, so Newton's method finds the interior peak in a single step from any starting price inside the regime.
+
+Regime below the kink has $`\pi'(p) = 10.9 - 6.8p`$ and $`\pi''(p) = -6.8`$. Starting at $`p_0 = 1.7`$:
+
+```math
+\pi'(1.7) = 10.9 - 6.8 \times 1.7 = -0.66.
+```
+
+The Newton step is $`-\pi'(p_0)/\pi''(p_0)`$, giving
+
+```math
+p_1 = 1.7 - \frac{-0.66}{-6.8} = 1.7 - 0.097 \approx \boxed{1.603}.
+```
+
+The update lands at the local peak with $`\pi(1.603) \approx 4.136`$.
+
+Regime above the kink has $`\pi'(p) = 3.4 - 0.8p`$ and $`\pi''(p) = -0.8`$. Starting at $`p_0 = 3.0`$:
+
+```math
+\pi'(3.0) = 3.4 - 0.8 \times 3.0 = 1.0.
+```
+
+The Newton step is
+
+```math
+p_1 = 3.0 - \frac{1.0}{-0.8} = 3.0 + 1.25 = \boxed{4.25}.
+```
+
+The update lands at the global peak in one step, with $`\pi(4.25) = 5.625`$.
+
+The two starts converge to opposite peaks. The profit gap is $`5.625 - 4.136 = 1.489`$. Neither run has any information about the other peak. A routine that returns after a single Newton convergence reports the right answer to the wrong question unless the starting price happened to fall inside the global basin.
+
 ## Model Setup
 
 | Symbol | Value | Role |
