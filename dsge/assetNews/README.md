@@ -67,6 +67,44 @@ A=\frac{\gamma+\rho(1-\beta-\gamma)}{1-\beta\rho}, \qquad B=\sigma_1\left(\beta 
 
 For this calibration, $`A=1.917`$ and $`B=-0.009`$.
 
+## Worked Numerical Example
+
+Plug the Model Setup calibration $`\beta=0.99`$, $`\gamma=2`$, $`\rho=0.9`$, $`\sigma_1=0.1`$ into the closed-form coefficients $`A`$ and $`B`$, then read off the date-0 price response to a one-unit news innovation $`n_0=1`$ at the steady-state dividend $`x_0=0`$.
+
+Start with the persistence-corrected current-dividend loading $`A`$:
+
+```math
+A=\frac{\gamma+\rho(1-\beta-\gamma)}{1-\beta\rho}=\frac{2+0.9\,(1-0.99-2)}{1-0.99\cdot 0.9}.
+```
+
+Evaluate the bracket $`1-\beta-\gamma=1-0.99-2=-1.99`$:
+
+```math
+A=\frac{2+0.9\,(-1.99)}{1-0.891}=\frac{2-1.791}{0.109}=\frac{0.209}{0.109}=1.9174.
+```
+
+Now compute the news loading $`B`$ from $`B=\sigma_1(\beta A+1-\beta-\gamma)`$:
+
+```math
+\beta A=0.99\cdot 1.9174=1.8982,
+```
+
+```math
+\beta A+1-\beta-\gamma=1.8982+(-1.99)=-0.0918,
+```
+
+```math
+B=0.1\cdot(-0.0918)=-0.00918.
+```
+
+Apply the linear rule $`q_t=A x_t+B n_t`$ at the news-shock impact date $`t=0`$, with $`x_0=0`$ and $`n_0=1`$:
+
+```math
+q_0=A\cdot 0+B\cdot 1=-0.00918 \;\Longrightarrow\; \boxed{q_0=-0.918\%}.
+```
+
+The impact price moves by less than one percent in log deviation, and the sign is negative even though the dividend news is good. Dividends are still at steady state on impact, so the only channel is the stochastic-discount-factor term: the higher payoff arrives in a high-consumption state where marginal utility is lower. This matches the News $`t=0`$ entry of $`-0.917`$ in the Impact and Realization Responses table.
+
 ## Model Setup
 
 | Primitive | Value | Role |

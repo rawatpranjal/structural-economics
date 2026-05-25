@@ -82,6 +82,45 @@ q =
 
 Impulse responses then propagate the scaled impact vector $`q`$ through the posterior-mean VAR dynamics using the companion-form recursion $`\Phi_j = J F^j J' P`$ derived in [`time-series/reduced-form-var/`](../../time-series/reduced-form-var/).
 
+## Worked Numerical Example
+
+Compute the Minnesota prior standard deviation for three coefficients in the output-gap equation, using the calibration from Model Setup: $`\lambda = 0.18`$, $`d = 1.4`$, $`\theta = 0.35`$. Assume homoscedastic residual scales $`\sigma_i = \sigma_j = 1`$ to isolate the shrinkage geometry.
+
+The variance formula from Equations is
+
+```math
+v_{i,j,\ell} = \left(\frac{\lambda}{\ell^d}\right)^2 \left(\frac{\sigma_i}{\sigma_j}\right)^2 \theta_{ij}^2.
+```
+
+The own-lag-1 coefficient ($`i=j`$, $`\ell=1`$, $`\theta_{ii}=1`$):
+
+```math
+v_{i,i,1} = \left(\frac{0.18}{1^{1.4}}\right)^2 (1)^2 (1)^2 = (0.18)^2 = 0.0324,
+\qquad \mathrm{sd} = 0.180.
+```
+
+The own-lag-2 coefficient ($`i=j`$, $`\ell=2`$). Compute $`2^{1.4} = 2 \cdot 2^{0.4} \approx 2.639`$, so
+
+```math
+v_{i,i,2} = \left(\frac{0.18}{2.639}\right)^2 (1)^2 (1)^2 = (0.0682)^2 = 0.00465,
+\qquad \mathrm{sd} = 0.0682.
+```
+
+The cross-equation lag-1 coefficient ($`i \neq j`$, $`\ell=1`$, $`\theta_{ij}=\theta=0.35`$):
+
+```math
+v_{i,j,1} = \left(\frac{0.18}{1^{1.4}}\right)^2 (1)^2 (0.35)^2 = (0.18 \cdot 0.35)^2 = (0.063)^2 = 0.00397,
+\qquad \mathrm{sd} = 0.063.
+```
+
+Collecting the three prior standard deviations,
+
+```math
+\boxed{\mathrm{sd}_{\text{own},1} = 0.180, \quad \mathrm{sd}_{\text{own},2} = 0.0682, \quad \mathrm{sd}_{\text{cross},1} = 0.063.}
+```
+
+Own lag-1 carries the widest prior, so the data move it most freely; this matches the posterior persistence estimates near $`0.80`$ in Results, far from the prior mean $`\rho_0 = 0.85`$ in absolute units but well inside the $`\pm 1.96 \cdot 0.08`$ band. Lag decay shrinks own lag-2 to roughly $`38\%`$ of the own lag-1 width, and the cross-equation factor $`\theta`$ pulls cross-variable slopes another notch tighter at lag 1. That ordering is exactly the heatmap pattern in the prior-standard-deviations figure: bright diagonal at short lags, fading rapidly into the off-diagonal and deeper-lag cells.
+
 ## Model Setup
 
 | Object | Value | Role |
