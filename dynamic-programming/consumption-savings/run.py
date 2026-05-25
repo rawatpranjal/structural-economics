@@ -38,6 +38,7 @@ def solve_income_fluctuation(
     max_iter: int,
     label: str,
     verbose: bool = False,
+    track_snapshots: bool = False,
 ) -> dict[str, np.ndarray | float | int | bool]:
     """Solve the discrete-grid income fluctuation problem by VFI."""
     n_asset = len(a_grid)
@@ -49,6 +50,10 @@ def solve_income_fluctuation(
     value = crra_utility(cash_on_hand, sigma) / (1.0 - beta)
     policy_a_idx = np.zeros((n_asset, n_income), dtype=int)
     row_idx = np.arange(n_asset)
+
+    error_history: list[float] = []
+    snapshot_iters = {1, 5, 20, 100, 500} if track_snapshots else set()
+    value_snapshots: dict[int, np.ndarray] = {}
 
     if verbose:
         print(
@@ -76,12 +81,18 @@ def solve_income_fluctuation(
         error = float(np.max(np.abs(value_new - value)))
         value = value_new
         policy_a_idx = policy_a_idx_new
+        error_history.append(error)
+
+        if track_snapshots and iteration in snapshot_iters:
+            value_snapshots[iteration] = value.copy()
 
         if verbose and iteration % 50 == 0:
             print(f"  {label} iteration {iteration:4d}, error = {error:.2e}")
         if error < tol:
             if verbose:
                 print(f"  {label} converged in {iteration} iterations (error = {error:.2e})")
+            if track_snapshots:
+                value_snapshots[iteration] = value.copy()
             break
     else:
         if verbose:
@@ -98,6 +109,8 @@ def solve_income_fluctuation(
         "iterations": iteration,
         "converged": error < tol,
         "error": error,
+        "error_history": error_history,
+        "value_snapshots": value_snapshots,
     }
 
 
@@ -190,6 +203,7 @@ def main() -> None:
         max_iter,
         label="main-grid",
         verbose=True,
+        track_snapshots=True,
     )
     refined_solution = solve_income_fluctuation(
         a_grid_refined,
@@ -246,19 +260,21 @@ def main() -> None:
 
     colors = plt.cm.viridis(np.linspace(0.15, 0.85, n_income))
 
-    fig1, ax1 = plt.subplots()
-    for iz in range(n_income):
-        ax1.plot(a_grid, value[:, iz], color=colors[iz], linewidth=2, label=f"$z={z_grid[iz]:.3f}$")
-    ax1.set_xlabel("Assets $a$")
-    ax1.set_ylabel("$V(a,z)$")
-    ax1.set_title("Value by Income State")
-    ax1.legend(fontsize=9)
-    save_figure(fig1, "figures/value-functions.png", dpi=150)
+    # Figure 1 (2x2): value function | consumption policy | VFI convergence | value snapshots
+    fig1, axes1 = plt.subplots(2, 2, figsize=(12.0, 8.6))
+    ax_v, ax_c = axes1[0, 0], axes1[0, 1]
+    ax_conv, ax_snap = axes1[1, 0], axes1[1, 1]
 
-    fig2, ax2 = plt.subplots()
     for iz in range(n_income):
-        ax2.plot(a_grid, policy_c[:, iz], color=colors[iz], linewidth=2, label=f"$z={z_grid[iz]:.3f}$")
-    ax2.plot(
+        ax_v.plot(a_grid, value[:, iz], color=colors[iz], linewidth=2, label=f"$z={z_grid[iz]:.3f}$")
+    ax_v.set_xlabel("Assets $a$")
+    ax_v.set_ylabel("$V(a,z)$")
+    ax_v.set_title("Value function")
+    ax_v.legend(fontsize=9)
+
+    for iz in range(n_income):
+        ax_c.plot(a_grid, policy_c[:, iz], color=colors[iz], linewidth=2, label=f"$z={z_grid[iz]:.3f}$")
+    ax_c.plot(
         a_grid,
         refined_c_mid_on_main,
         color="black",
@@ -266,43 +282,61 @@ def main() -> None:
         linewidth=1.2,
         label="refined benchmark, median $z$",
     )
-    ax2.set_xlabel("Assets $a$")
-    ax2.set_ylabel("Consumption $c^{*}(a,z)$")
-    ax2.set_title("Consumption Policy")
-    ax2.legend(fontsize=8)
-    save_figure(fig2, "figures/consumption-policy.png", dpi=150)
+    ax_c.set_xlabel("Assets $a$")
+    ax_c.set_ylabel("Consumption $c^{*}(a,z)$")
+    ax_c.set_title("Consumption policy")
+    ax_c.legend(fontsize=8)
 
-    fig3, ax3 = plt.subplots()
+    err_hist = solution["error_history"]
+    ax_conv.plot(range(1, len(err_hist) + 1), err_hist, color="tab:purple", linewidth=1.8)
+    ax_conv.axhline(tol, color="0.4", linestyle="--", linewidth=0.9,
+                    label=f"tolerance = {tol:.0e}")
+    ax_conv.set_yscale("log")
+    ax_conv.set_xlabel("VFI iteration")
+    ax_conv.set_ylabel(r"$\|V_{k+1} - V_k\|_\infty$ (log)")
+    ax_conv.set_title("VFI convergence (sup-norm)")
+    ax_conv.legend(loc="upper right", fontsize=9)
+
+    j_snap = median_z_idx
+    snapshots = solution["value_snapshots"]
+    snap_iters = sorted(snapshots.keys())
+    snap_cmap = plt.cm.plasma(np.linspace(0.05, 0.85, len(snap_iters)))
+    for idx_s, iter_s in enumerate(snap_iters):
+        suffix = " (converged)" if iter_s == snap_iters[-1] else ""
+        ax_snap.plot(a_grid, snapshots[iter_s][:, j_snap], color=snap_cmap[idx_s],
+                     linewidth=1.8, label=f"iter {iter_s}{suffix}")
+    ax_snap.set_xlabel("Assets $a$")
+    ax_snap.set_ylabel(f"$V(a, z)$ at median $z$")
+    ax_snap.set_title("Value function evolving over VFI")
+    ax_snap.legend(loc="lower right", fontsize=8)
+
+    fig1.tight_layout()
+    save_figure(fig1, "figures/policy-convergence.png", dpi=150)
+
+    # Figure 2 (1x2): net saving policy | simulated paths and cross-section
+    fig2, (ax_s, ax_sim) = plt.subplots(1, 2, figsize=(12.5, 4.8))
+
     for iz in range(n_income):
-        ax3.plot(a_grid, savings_policy[:, iz], color=colors[iz], linewidth=2, label=f"$z={z_grid[iz]:.3f}$")
-    ax3.axhline(0, color="black", linewidth=0.8, linestyle="--", alpha=0.6)
-    ax3.set_xlabel("Assets $a$")
-    ax3.set_ylabel("Net saving $g_a(a,z)-a$")
-    ax3.set_title("Net Saving Policy")
-    ax3.legend(fontsize=9)
-    save_figure(fig3, "figures/savings-policy.png", dpi=150)
+        ax_s.plot(a_grid, savings_policy[:, iz], color=colors[iz], linewidth=2, label=f"$z={z_grid[iz]:.3f}$")
+    ax_s.axhline(0, color="black", linewidth=0.8, linestyle="--", alpha=0.6)
+    ax_s.set_xlabel("Assets $a$")
+    ax_s.set_ylabel("Net saving $g_a(a,z)-a$")
+    ax_s.set_title("Net saving policy")
+    ax_s.legend(fontsize=9)
 
-    fig4, (ax4a, ax4b) = plt.subplots(1, 2, figsize=(12, 5))
-    periods = np.arange(path_assets.shape[0])
-    for agent in range(path_assets.shape[1]):
-        ax4a.plot(periods, path_assets[:, agent], linewidth=1.1, alpha=0.85, label=f"Agent {agent + 1}")
-    ax4a.set_xlabel("Period")
-    ax4a.set_ylabel("Assets $a_t$")
-    ax4a.set_title("Five Sample Histories")
-    ax4a.legend(fontsize=8)
+    ax_sim.hist(final_assets, bins=35, color="#4C78A8", edgecolor="white", alpha=0.9)
+    ax_sim.axvline(median_assets, color="black", linestyle="--", linewidth=1.2, label="Median")
+    ax_sim.axvline(p90_assets, color="black", linestyle=":", linewidth=1.2, label="90th pct.")
+    ax_sim.set_xlabel("Assets after 400 periods")
+    ax_sim.set_ylabel("Agents")
+    ax_sim.set_title("Simulated cross-section")
+    ax_sim.legend(fontsize=8)
 
-    ax4b.hist(final_assets, bins=35, color="#4C78A8", edgecolor="white", alpha=0.9)
-    ax4b.axvline(median_assets, color="black", linestyle="--", linewidth=1.2, label="Median")
-    ax4b.axvline(p90_assets, color="black", linestyle=":", linewidth=1.2, label="90th pct.")
-    ax4b.set_xlabel("Assets after 400 periods")
-    ax4b.set_ylabel("Agents")
-    ax4b.set_title("Simulated Cross-Section")
-    ax4b.legend(fontsize=8)
-    fig4.tight_layout()
-    save_figure(fig4, "figures/simulated-paths.png", dpi=150)
+    fig2.tight_layout()
+    save_figure(fig2, "figures/saving-distribution.png", dpi=150)
 
     # Thumbnail
-    save_thumbnail("figures/value-functions.png", "figures/thumb.png")
+    save_thumbnail("figures/policy-convergence.png", "figures/thumb.png")
 
     # =========================================================================
     # Table
