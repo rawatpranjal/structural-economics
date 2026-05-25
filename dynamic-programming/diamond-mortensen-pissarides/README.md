@@ -77,6 +77,52 @@ B=\beta A(1-\sigma)-\frac{\gamma k}{1-\gamma}.
 At baseline, $`A=1.1098`$ and $`B=0.5262`$. A one-percent productivity
 innovation raises tightness by $`C=1.55`$ percent.
 
+## Worked Numerical Example
+
+Solve the deterministic steady state at $`z=\bar z=1`$ with $`\theta_{ss}=1`$ to recover the calibrated vacancy cost $`k`$ and steady-state unemployment $`u_{ss}`$. Use the baseline calibration $`\beta=0.996`$, $`\sigma=0.034`$, $`\chi=0.49`$, $`\eta=0.72`$, $`\gamma=0.72`$, $`b=0.40`$.
+
+At $`\theta_{ss}=1`$ the matching rates collapse to constants:
+
+```math
+f(\theta_{ss}) = \chi \cdot 1^{\eta} = 0.49, \qquad q(\theta_{ss}) = \chi \cdot 1^{\eta-1} = 0.49.
+```
+
+The Nash wage at $`z=\bar z`$ becomes a linear function of $`k`$:
+
+```math
+w_{ss} = \gamma(\bar z + k\theta_{ss}) + (1-\gamma) b = 0.72(1 + k) + 0.28(0.40) = 0.832 + 0.72 k.
+```
+
+The deterministic job-value Bellman gives
+
+```math
+J_{ss} = \frac{\bar z - w_{ss}}{1 - \beta(1-\sigma)} = \frac{0.168 - 0.72 k}{1 - 0.996(0.966)} = \frac{0.168 - 0.72 k}{0.037864}.
+```
+
+Free entry at the steady state reads $`k = \beta q(\theta_{ss}) J_{ss} = 0.48804 \, J_{ss}`$. Substitute the expression for $`J_{ss}`$:
+
+```math
+k = \frac{0.48804 \, (0.168 - 0.72 k)}{0.037864}.
+```
+
+Clear the denominator and collect terms in $`k`$:
+
+```math
+0.037864 \, k + 0.48804 \cdot 0.72 \, k = 0.48804 \cdot 0.168,
+```
+
+```math
+0.389253 \, k = 0.081991 \implies \boxed{k = 0.2106}.
+```
+
+Back out the wage and the surplus per match: $`w_{ss} = 0.832 + 0.72(0.2106) = 0.9837`$ and $`J_{ss} = 0.2106 / 0.48804 = 0.4316`$. Steady-state unemployment follows from the Beveridge law:
+
+```math
+u_{ss} = \frac{\sigma}{\sigma + f(\theta_{ss})} = \frac{0.034}{0.034 + 0.49} = \boxed{0.0649}.
+```
+
+These values match the entries in the Model Setup table. The calibration absorbs all surplus into the vacancy cost so that posting is just profitable at $`\theta_{ss}=1`$; the small denominator $`1-\beta(1-\sigma)=0.0379`$ explains why a tiny per-period surplus $`\bar z - w_{ss} = 0.0163`$ supports a job value of $`0.43`$.
+
 ## Model Setup
 
 | Object | Value | Role |

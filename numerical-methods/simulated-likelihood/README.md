@@ -42,6 +42,36 @@ The first few Halton-base-2 points are $`1/2, 1/4, 3/4, 1/8, 5/8, 3/8, 7/8, \ldo
 
 For a mixed-logit choice probability with $`T`$ panel observations per individual and a single random coefficient, the kernel $`f`$ has the closed form $`f(\sigma; \xi) = \prod_{t = 1}^{T} L(y_{it}; (\mu + \sigma \xi)  x_{it})`$, where $`L(y; v) = \exp(yv) / (1 + \exp(v))`$ is the binary-logit likelihood. Plugging this into $`\widehat P(\sigma)`$ and taking logs gives the simulated log-likelihood that the estimator maximises.
 
+## Worked Numerical Example
+
+Take a probit-style binary-choice kernel to keep arithmetic transparent: latent $`y_i^{\ast} = \theta x_i + \xi_i`$ with $`\xi_i \sim N(0,1)`$, observed $`y_i = \mathbf{1}\lbrace y_i^{\ast} > 0 \rbrace`$, kernel $`f(\theta; \xi_i) = \mathbf{1}\lbrace \theta x_i + \xi_i > 0 \rbrace`$ for $`y_i = 1`$ and its complement for $`y_i = 0`$. Two observations $`(x_1, y_1) = (0.5, 1)`$, $`(x_2, y_2) = (-0.3, 0)`$, parameter trial $`\theta = 1`$, and $`R = 3`$ fixed draws per observation.
+
+The exact integrated object is $`P_i(\theta) = \Phi(\theta x_i)`$ when $`y_i = 1`$ and $`1 - \Phi(\theta x_i) = \Phi(-\theta x_i)`$ when $`y_i = 0`$, giving exact log-likelihood:
+
+```math
+\log L(1) = \log \Phi(0.5) + \log \Phi(0.3) \approx \log 0.6915 + \log 0.6179 \approx -0.369 + (-0.481) = -0.850.
+```
+
+Now form the simulated estimator $`\widehat P_i(\theta) = (1/R) \sum_r f(\theta; \xi_{i,r})`$ with fixed pseudo-random draws. For observation 1, draws $`\xi_{1,r} = (-0.2, 0.1, -0.8)`$ give latent values $`\theta x_1 + \xi_{1,r} = (0.3, 0.6, -0.3)`$, indicators $`(1, 1, 0)`$, so
+
+```math
+\widehat P_1(1) = \frac{1}{3}(1 + 1 + 0) = \frac{2}{3}.
+```
+
+For observation 2, draws $`\xi_{2,r} = (0.4, -0.1, 0.6)`$ give latent values $`\theta x_2 + \xi_{2,r} = (0.1, -0.4, 0.3)`$, indicators $`(1, 0, 1)`$ for $`y = 1`$, so $`y_2 = 0`$ matches with simulated probability
+
+```math
+\widehat P_2(1) = \frac{1}{3}(0 + 1 + 0) = \frac{1}{3}.
+```
+
+Sum the logs to get the simulated log-likelihood:
+
+```math
+\log \widehat L(1) = \log \tfrac{2}{3} + \log \tfrac{1}{3} \approx -0.405 + (-1.099) = \boxed{-1.504}.
+```
+
+The simulated value $`-1.504`$ differs from the exact $`-0.850`$ because $`R = 3`$ is small and the indicator kernel is discontinuous, so each $`\widehat P_i`$ is a coarse three-step staircase. The CRN property holds: the same draws $`(-0.2, 0.1, -0.8)`$ and $`(0.4, -0.1, 0.6)`$ are reused at every candidate $`\theta`$, so $`\log \widehat L(\theta)`$ is a deterministic function of $`\theta`$. Smoother kernels (logit, GHK) and larger $`R`$ shrink the gap between $`\log \widehat L`$ and $`\log L`$ at the rate displayed in the bias panel.
+
 ## Model Setup
 
 | Object | Symbol | Role |

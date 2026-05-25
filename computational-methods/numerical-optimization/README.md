@@ -38,6 +38,38 @@ Newton's method uses local curvature around the current guess:
 
 Here $`H_f(\theta)`$ denotes the Hessian matrix of $`f`$ at $`\theta`$.
 
+## Worked Numerical Example
+
+The full criterion is a two-dimensional Gaussian mixture, but the Newton update is easiest to read in one dimension. Take the test function $`f(x) = x^4 - 3x^2 + 1`$ from the start $`x_0 = 2`$. The 1D Newton step collapses the Hessian inverse to a scalar reciprocal.
+
+Compute the gradient and curvature at $`x_0 = 2`$:
+
+```math
+f'(x) = 4x^3 - 6x, \qquad f''(x) = 12x^2 - 6.
+```
+
+```math
+f'(2) = 4(8) - 6(2) = 32 - 12 = 20.
+```
+
+```math
+f''(2) = 12(4) - 6 = 48 - 6 = 42.
+```
+
+Apply the Newton update $`x_{n+1} = x_n - f'(x_n)/f''(x_n)`$:
+
+```math
+x_1 = 2 - \frac{20}{42} = \frac{64}{42} = \frac{32}{21} \approx 1.5238.
+```
+
+Check that the objective fell. At the start, $`f(2) = 16 - 12 + 1 = 5`$. At the new point,
+
+```math
+f(1.5238) = 5.391 - 6.966 + 1 = \boxed{-0.575 < f(x_0) = 5}.
+```
+
+One more iteration brings $`x_2 \approx 1.295`$, moving toward the right basin minimum at $`x^{\ast} = \sqrt{3/2} \approx 1.2247`$. The function has a second minimum at $`-\sqrt{3/2}`$ that Newton from $`x_0 = 2`$ never sees; this is the same basin-of-attraction issue the 2D criterion exposes when local methods are launched from a single start.
+
 ## Model Setup
 
 | Object | Value |

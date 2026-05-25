@@ -63,6 +63,46 @@ where $`\Pr(R\mid p)=pp_H+(1-p) p_L`$ is the predictive probability of a red sig
 V_t(p)=\max[A(p),\ C_t(p)].
 ```
 
+## Worked Numerical Example
+
+Take the calibration $`p_H = 0.7`$, $`p_L = 0.3`$, prior $`p_0 = 0.5`$, and observe two red signals in a row.
+
+The first update applies Bayes' rule with $`f_H(R) = 0.7`$ and $`f_L(R) = 0.3`$:
+
+```math
+p_1 = \frac{0.7 \cdot 0.5}{0.7 \cdot 0.5 + 0.3 \cdot 0.5}
+    = \frac{0.35}{0.35 + 0.15}
+    = \frac{0.35}{0.50}
+    = 0.70.
+```
+
+The second red signal updates the new prior $`p_1 = 0.70`$:
+
+```math
+p_2 = \frac{0.7 \cdot 0.70}{0.7 \cdot 0.70 + 0.3 \cdot 0.30}
+    = \frac{0.49}{0.49 + 0.09}
+    = \frac{0.49}{0.58}
+    \approx 0.8448.
+```
+
+The log-odds form gives the same answer in one shot. The per-signal log likelihood ratio is $`\log(p_H/p_L) = \log(7/3) \approx 0.8473`$, and starting log-odds are $`\log(0.5/0.5) = 0`$, so after $`k_T = 2`$ red signals:
+
+```math
+\Lambda_2 = 2 \cdot 0.8473 + 0 \cdot (-0.8473) = 1.6946,
+\qquad
+p_2 = \frac{e^{1.6946}}{1 + e^{1.6946}} \approx 0.8448.
+```
+
+Plug the posterior into the action value with $`\pi_H = 1.0`$ and $`\pi_L = -0.5`$:
+
+```math
+A(p_2) = \max[\,0.8448 \cdot 1.0 + 0.1552 \cdot (-0.5),\ 0\,]
+       = \max[\,0.8448 - 0.0776,\ 0\,]
+       = \boxed{0.7672}.
+```
+
+Two red signals lift belief from $`0.5`$ to $`0.8448`$ and push action value well above zero. The log-odds form makes clear why a longer red streak swamps any finite prior: $`\Lambda_T`$ grows linearly in the count of red signals, so the posterior tends to one geometrically fast.
+
 ## Model Setup
 
 The signal process is symmetric around an uninformative prior. A red signal is evidence for $`H`$. A blue signal is evidence for $`L`$.
