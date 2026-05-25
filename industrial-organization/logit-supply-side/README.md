@@ -45,6 +45,46 @@ The supply inversion uses the logit derivative matrix:
 
 The multi-product Bertrand-Nash FOC, the ownership matrix $`\Omega`$, and the markup-recovery linear system $`s + (\Omega \odot \Delta^{\top})(p - c) = 0`$ are derived in [`industrial-organization/bertrand-ownership-matrix/`](../../industrial-organization/bertrand-ownership-matrix/). Here the demand Jacobian $`\Delta_{kj} = \partial s_k / \partial p_j`$ is the logit form just above, the ownership matrix encodes the cereal firms' multi-product holdings (firms 1 and 2 each own two products, firm 3 owns one), and the recovered cost vector is $`c = p - m`$ for the markup vector $`m`$ that solves that linear system. Ownership matters because a firm internalizes lost sales across its own products.
 
+## Worked Numerical Example
+
+Take two single-product firms and an outside good, and compute markups by hand from the logit FOC.
+
+Set mean utilities $`\delta_1 = 1`$, $`\delta_2 = 0.5`$, and $`\delta_0 = 0`$ for the outside good. The logit denominator is
+
+```math
+D = 1 + e^{1} + e^{0.5} = 1 + 2.718 + 1.649 = 5.367.
+```
+
+The three shares are
+
+```math
+s_1 = \frac{e^{1}}{D} = \frac{2.718}{5.367} \approx 0.506, \qquad
+s_2 = \frac{e^{0.5}}{D} = \frac{1.649}{5.367} \approx 0.307, \qquad
+s_0 = \frac{1}{D} \approx 0.186.
+```
+
+For a single-product firm, the Bertrand FOC collapses to the own-price term. Substituting the logit own-price derivative $`\partial s_j / \partial p_j = -\alpha s_j (1 - s_j)`$ from the Equations section into the single-product Lerner condition $`s_j + \Delta_{jj}(p_j - c_j) = 0`$ gives the Berry markup formula:
+
+```math
+p_j - c_j = \frac{1}{\alpha (1 - s_j)}.
+```
+
+With price coefficient $`\alpha = 1.5`$ (the value from Model Setup):
+
+```math
+\mu_1 = \frac{1}{1.5 \cdot (1 - 0.506)} = \frac{1}{1.5 \cdot 0.494} = \frac{1}{0.741} \approx 1.350,
+```
+
+```math
+\mu_2 = \frac{1}{1.5 \cdot (1 - 0.307)} = \frac{1}{1.5 \cdot 0.693} = \frac{1}{1.040} \approx 0.962.
+```
+
+```math
+\boxed{(\mu_1,\, \mu_2) \approx (1.35,\ 0.96).}
+```
+
+Product 1 commands a higher markup because its larger share raises the own-price derivative's magnitude, which tightens the Lerner condition. The outside share $`s_0 \approx 0.186`$ captures consumer flight to no purchase; a larger outside option would compress both markups toward $`1/\alpha`$.
+
 ## Model Setup
 
 The simulation fixes true demand parameters and marginal costs. This makes demand bias and cost-recovery error observable.

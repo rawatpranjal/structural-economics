@@ -69,6 +69,63 @@ w_{ss}=(1-\alpha)(k_{ss}/l_{ss})^{\alpha}.
 
 The stochastic policy fluctuates around this benchmark.
 
+## Worked Numerical Example
+
+The model has two interlocking first-order conditions at the deterministic steady state ($`z = 1`$, all expectations realized). Solving them in sequence pins down every object the VFI converges to.
+
+The Euler equation for capital, evaluated at a constant interior path ($`c_{t+1} = c_t`$), requires the net return on capital to equal the inverse of the discount factor:
+
+```math
+\alpha (k/l)^{\alpha - 1} = \frac{1}{\beta} - 1 + \delta
+= \frac{1}{0.99} - 1 + 0.0233 = 0.03340.
+```
+
+Rearranging isolates the capital-labor ratio. With $`\alpha = 1/3`$ the exponent on the left is $`-2/3`$, so inverting gives an exponent of $`3/2`$:
+
+```math
+(k/l)^{2/3} = \frac{\alpha}{0.03340} = \frac{1/3}{0.03340} = 9.982,
+\qquad
+k/l = 9.982^{3/2} = 31.54.
+```
+
+The wage follows from the labor marginal product at this ratio:
+
+```math
+w = (1-\alpha)(k/l)^{\alpha} = \frac{2}{3} \times 31.54^{1/3}
+= \frac{2}{3} \times 3.160 = 2.107.
+```
+
+The labor first-order condition ties hours to consumption through the leisure weight $`\phi`$:
+
+```math
+\phi \frac{c}{1-l} = w \quad \Longrightarrow \quad
+c = \frac{w(1-l)}{\phi} = \frac{2.107(1-l)}{1.74}.
+```
+
+The resource constraint at steady state gives a second expression for $`c`$ in terms of $`l`$. Output per worker is $`(k/l)^\alpha = 3.160`$, capital per worker is $`31.54`$, so investment per worker is $`\delta \times 31.54 = 0.7349`$, and consumption per worker is $`(3.160 - 0.7349) \times l = 2.425 l`$. Setting the two expressions equal and solving:
+
+```math
+2.425 l = \frac{2.107(1-l)}{1.74} = 1.211(1-l),
+```
+
+```math
+l(2.425 + 1.211) = 1.211,
+\qquad l = \frac{1.211}{3.636} = 0.333.
+```
+
+Capital and consumption recover immediately:
+
+```math
+k = 31.54 \times 0.333 = 10.50, \qquad
+c = 2.425 \times 0.333 = 0.808.
+```
+
+```math
+\boxed{k_{ss} \approx 10.50, \quad l_{ss} \approx 0.333, \quad c_{ss} \approx 0.808.}
+```
+
+These three numbers are the fixed point that VFI converges to. The Euler equation pins the capital-labor ratio alone; labor hours are determined only when the leisure weight $`\phi`$ enters through the labor-leisure tradeoff. Without endogenous labor there would be one equation in one unknown; adding $`l`$ as a choice requires the second condition to close the system. The VFI policy functions $`g_k`$ and $`g_l`$ fluctuate around these values as $`z`$ switches between $`z_L`$ and $`z_H`$.
+
 ## Model Setup
 
 | Object | Value | Role |

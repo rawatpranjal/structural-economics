@@ -76,6 +76,42 @@ The first normalization sets total labor to one. The second normalization sets t
 
 The tutorial solves balanced trade and mobility directly. This matches the finite-location version of equations (11) and (12) in Allen and Arkolakis. On a continuum where iceberg costs depend only on distance, symmetry lets the paper eliminate wages and reduce the two equations to a single nonlinear integral equation in labor density. Allen and Arkolakis call this the Hammerstein reduction. The grid version here keeps the same equilibrium content without the continuum machinery.
 
+## Worked Numerical Example
+
+To see how trade openness maps into welfare in one closed-form step, collapse the grid to two regions and apply the Arkolakis-Costinot-Rodriguez-Clare welfare formula. In any CES gravity model with one factor and balanced trade, the welfare gain from trade for region $`i`$ relative to autarky is
+
+```math
+\text{GFT}_i = \lambda_{ii}^{-1/(\sigma-1)} - 1,
+```
+
+where $`\lambda_{ii}`$ is region $`i`$'s own expenditure share and $`\sigma-1`$ is the trade elasticity. The formula is the spatial-equilibrium analog of the ACR sufficient-statistics result.
+
+Take an open economy at home: $`\lambda_{11} = 0.7`$, with $`\sigma = 5`$ so $`\sigma - 1 = 4`$. Then
+
+```math
+0.7^{1/4} = \exp\left(\tfrac{1}{4}\log 0.7\right) = \exp(0.25 \cdot (-0.3567)) = \exp(-0.0892) = 0.9147,
+```
+
+so $`0.7^{-1/4} = 1/0.9147 = 1.0933`$. The welfare gain is
+
+```math
+\text{GFT}_1^{\text{open}} = 1.0933 - 1 = 0.0933.
+```
+
+For a near-autarky counterfactual, raise the domestic share to $`\lambda_{11} = 0.9`$:
+
+```math
+0.9^{1/4} = \exp(0.25 \cdot (-0.1054)) = 0.9740, \qquad 0.9^{-1/4} = 1.0267,
+```
+
+so $`\text{GFT}_1^{\text{autarky-like}} = 0.0267`$. Putting them side by side,
+
+```math
+\boxed{\text{GFT}_1^{\text{open}} \approx 9.33\% \quad\text{vs}\quad \text{GFT}_1^{\text{autarky-like}} \approx 2.67\%.}
+```
+
+The same trade elasticity converts a 20 percentage-point swing in the domestic share into a 6.7 percentage-point swing in welfare. Two sufficient statistics, $`\lambda_{ii}`$ and $`\sigma-1`$, do the entire job here; the grid solver in `run.py` produces the analogous numbers for 15 locations once labor mobility and amenity spillovers are layered in.
+
 ## Model Setup
 
 | Symbol | Value | Role |

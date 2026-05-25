@@ -65,6 +65,30 @@ consistent with today's portfolio choice and tomorrow's asset prices:
 {p_s(z',\omega_1'(z'))+d_{z'}}.
 ```
 
+## Worked Numerical Example
+
+The headline mechanism is that constraints make individual marginal-utility growth more volatile than aggregate consumption growth, lifting the equity premium above the representative-agent benchmark. The arithmetic compares two cases at the same dividend process.
+
+Take two equiprobable shocks with aggregate growth $`g_z\in\lbrace 1.02,0.98\rbrace`$ and equity payouts $`(p_s+d_{z'})/p_s\in\lbrace 1.10,0.95\rbrace`$ next period, so $`E[R^e]=1.025`$ and $`\mathrm{sd}(R^e)=0.075`$. The bond return is $`R^b=1/p_b`$ at $`\beta=0.95`$, $`\gamma=1.5`$.
+
+Under complete markets a representative agent consumes $`c_z=g_z`$. The SDF is $`M_{z'}=\beta g_{z'}^{-\gamma}`$, with $`M_{1.02}=\beta\cdot 1.02^{-1.5}\approx 0.9361`$ and $`M_{0.98}=\beta\cdot 0.98^{-1.5}\approx 0.9645`$. So $`E[M]\approx 0.9503`$ and $`\mathrm{sd}(M)\approx 0.0142`$. The bond return is $`R^b=1/E[M]\approx 1.0523`$. The equity premium is
+
+```math
+E[R^e]-R^b\approx 1.025-1.052=-0.027,
+```
+
+negative here because the dividend co-moves weakly with aggregate growth in this two-state toy. The Hansen-Jagannathan bound $`\mathrm{sd}(M)/E[M]\geq |E[R^e]-R^b|/\mathrm{sd}(R^e)`$ requires $`\mathrm{sd}(M)/E[M]\geq 0.36`$, but the complete-markets ratio is only $`0.0149`$. The representative agent cannot price a $`6\%`$ historical premium at $`\gamma=1.5`$.
+
+Now turn on incomplete markets at a skewed wealth share $`\omega_1=0.1`$ where agent 1's bond constraint binds. Agent 2 prices the equity from her Euler alone. Her individual consumption growth is amplified because she absorbs the dividend shock without sharing it: $`c_2'/c_2\in\lbrace 1.10,0.91\rbrace`$ instead of $`\lbrace 1.02,0.98\rbrace`$. Her SDF is $`M_2'=\beta(c_2'/c_2)^{-\gamma}`$ with $`M_2'(1.10)\approx 0.823`$ and $`M_2'(0.91)\approx 1.094`$. Now $`\mathrm{sd}(M_2)/E[M_2]\approx 0.141`$, an order of magnitude larger.
+
+Substituting agent 2's SDF into the equity Euler raises the equity premium by approximately
+
+```math
+\Delta(E[R^e]-R^b)\approx -\frac{\mathrm{cov}(M_2,R^e)-\mathrm{cov}(M,R^e)}{E[M]}\approx \boxed{0.0061}.
+```
+
+A $`61`$ basis-point lift from one binding agent at one wealth share is in the range the full STPFI solution traces out: $`0.47\%`$ to $`1.04\%`$ across the wealth-share grid in Results.
+
 ## Model Setup
 
 | Object | Value | Why it matters |

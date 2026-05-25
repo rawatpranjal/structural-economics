@@ -115,6 +115,40 @@ bisection on $`r`$ finds the wedge $`r^{\ast} < \rho`$ that closes the bond
 market. In this run,
 $`r^{\ast} = 0.03499`$ and the residual is $`5.43e-06`$.
 
+## Worked Numerical Example
+
+To anchor the Huggett pricing logic by hand, compute the two ingredients that bracket the bisection on $`r`$: the stationary income mass that pins average earnings, and the consumption clip at the borrowing limit that produces the buffer-stock motive. Use the calibration in Model Setup: $`(z_L, z_H) = (0.1, 0.2)`$, $`(\lambda_L, \lambda_H) = (1.2, 1.2)`$, $`\rho = 0.05`$, $`\underline a = -0.15`$.
+
+Form the income generator with the symmetric Huggett rates:
+
+```math
+Q = \begin{pmatrix} -1.2 & 1.2 \\ 1.2 & -1.2 \end{pmatrix}.
+```
+
+The stationary income vector $`(p_L, p_H)`$ solves $`Q^{\top} p = 0`$ with $`p_L + p_H = 1`$. Row one of $`Q^{\top} p = 0`$ gives $`-1.2 p_L + 1.2 p_H = 0`$, so $`p_L = p_H`$. Combined with normalisation,
+
+```math
+p_L = p_H = \tfrac{1}{2}, \qquad \bar z = p_L z_L + p_H z_H = (0.5)(0.1) + (0.5)(0.2) = 0.15.
+```
+
+This matches the Model Setup row and the $`|p_L - 0.5| = 1.11e\text{-}16`$ check reported below. The row-replacement recipe that turns a singular generator into a unique probability solve is worked at small scale in [`heterogeneous-agents/kolmogorov-forward-equation/`](../../heterogeneous-agents/kolmogorov-forward-equation/).
+
+Now evaluate the borrowing-limit clip at a candidate $`r = \rho = 0.05`$. The unconstrained drift at $`a = \underline a = -0.15`$ in the low-income state is $`s_L(\underline a) = z_L + r \underline a - c_L`$. The Kuhn-Tucker clip replaces consumption with the value that makes the drift exactly zero, so the asset stock never leaves the feasible interval:
+
+```math
+c_L(\underline a) = z_L + r \underline a = 0.1 + (0.05)(-0.15) = 0.1 - 0.0075 = 0.0925.
+```
+
+A low-income household at the borrowing limit consumes its entire flow income net of interest payments on debt. There is no further smoothing margin available.
+
+Finally, anchor the bisection sign. At $`r = \rho`$ the deterministic-income permanent-income consumption rule with $`a = 0`$ gives $`c^{PI} = \bar z = 0.15`$. With $`\sigma = 2`$, the precautionary motive raises desired saving strictly above this, so $`S(\rho) > 0`$. At $`r = 0`$ the low-income household runs into the constraint and bond demand is negative. The bracket $`[0, \rho] = [0, 0.05]`$ contains $`r^{\ast}`$. One bisection midpoint puts the candidate at $`(0 + 0.05)/2 = 0.025`$, which sits below the run's $`r^{\ast}`$, so the bisection raises the lower bound on the next step. The run converges to
+
+```math
+\boxed{r^{\ast} = 0.03499, \quad \rho - r^{\ast} = 0.01501.}
+```
+
+The wedge $`\rho - r^{\ast} = 0.01501`$ is the precautionary discount the bond market must offer to absorb buffer-savings demand without producing positive net supply. The full HJB-KFE loop in Solution Method automates the upwind drifts, the consumption clip at every grid point, and the bisection on $`r`$.
+
 ## Model Setup
 
 The calibration keeps only the ingredients needed for Huggett pricing. There are two

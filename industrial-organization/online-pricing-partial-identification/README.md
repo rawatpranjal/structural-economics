@@ -96,6 +96,49 @@ where $`\widehat{\mathrm{rev}}_t(p)`$ is the empirical mean per-round
 revenue at price $`p`$ and $`n_t(p)`$ is the number of rounds it has been
 played.
 
+## Worked Numerical Example
+
+Take a tiny market with $`S = 2`$ segments, a 3-point price grid $`\{2, 4, 6\}`$, and an upper bound $`V_{\max} = 10`$. The true valuations are $`v_1 = 3`$ and $`v_2 = 7`$, but the seller never sees these. Bounds start at $`v_s^{L} = 0`$ and $`v_s^{U} = 10`$ for every segment.
+
+At round 1, segment 1 arrives and the seller posts $`p = 4`$. Since $`v_1 = 3 < 4`$, the customer walks away ($`y_1 = 0`$). The no-buy update tightens the upper bound:
+
+```math
+v_1^{U} \leftarrow \min(10, 4) = 4.
+```
+
+Bounds after round 1: segment 1 sits in $`[0, 4]`$, segment 2 still in $`[0, 10]`$.
+
+At round 2, segment 2 arrives and the seller posts $`p = 6`$. Since $`v_2 = 7 \geq 6`$, the customer buys ($`y_2 = 1`$). The buy update tightens the lower bound:
+
+```math
+v_2^{L} \leftarrow \max(0, 6) = 6.
+```
+
+Bounds after round 2: segment 1 in $`[0, 4]`$, segment 2 in $`[6, 10]`$.
+
+Now compute the demand bounds at each grid price. The lower demand counts segments whose lower bound already exceeds $`p`$, and the upper demand counts segments whose upper bound still does:
+
+```math
+D_{L}(p) = \tfrac{1}{2}\sum_{s=1}^{2}\mathbf{1}\{v_s^{L} \geq p\}, \qquad
+D_{U}(p) = \tfrac{1}{2}\sum_{s=1}^{2}\mathbf{1}\{v_s^{U} \geq p\}.
+```
+
+At $`p = 2`$: $`v_2^{L} = 6 \geq 2`$ but $`v_1^{L} = 0 < 2`$, so $`D_{L}(2) = 1/2`$; both upper bounds clear 2, so $`D_{U}(2) = 1`$. At $`p = 4`$: only segment 2 contributes to either bound (since $`v_1^{U} = 4`$ does not strictly exceed 4 when the rule uses $`\geq`$; here it ties, so $`D_{U}(4) = 1`$), giving $`D_{L}(4) = 1/2`$ and $`D_{U}(4) = 1`$. At $`p = 6`$: $`v_2^{L} = 6 \geq 6`$ so $`D_{L}(6) = 1/2`$, and $`D_{U}(6) = 1/2`$ as well.
+
+Profit bounds $`\pi_L(p) = p \cdot D_L(p)`$ and $`\pi_U(p) = p \cdot D_U(p)`$:
+
+```math
+\pi_L(2) = 1, \ \pi_U(2) = 2; \quad \pi_L(4) = 2, \ \pi_U(4) = 4; \quad \pi_L(6) = 3, \ \pi_U(6) = 3.
+```
+
+The dominance rule eliminates $`p`$ when $`\pi_U(p) \leq \max_q \pi_L(q) = 3`$. Price 2 has $`\pi_U(2) = 2 \leq 3`$, so it is dominated. Prices 4 and 6 survive:
+
+```math
+\boxed{\text{active set after 2 rounds: } \{4, 6\}.}
+```
+
+Two observations collapsed the grid from three prices to two by ruling out the lowest as provably dominated, even though the seller never directly sampled it. UCB1 with no monotonicity link would still treat all three as live arms. The full simulation scales the same logic to twenty grid prices, four segments, and five thousand rounds.
+
 ## Model Setup
 
 | Symbol | Meaning | Value |
