@@ -1,41 +1,34 @@
-# Handoff - 2026-05-23 - main
+# Handoff - 2026-05-25 - main
 
 ## Where we left off
 
-Project close-out complete. Three sweeps shipped this session:
-Haiku Overview-math (30 tutorials), Sonnet catalog descriptions
-(99 rows in root README), and stale remote branch cleanup. Validator
-clean, em-dash scrub clean, main in sync with origin. No work in flight.
+Catalog-wide rollout of `## Worked Numerical Example` complete. 50 tutorials now carry a hand-computable section between `## Equations` and `## Model Setup`, ending in `\boxed{...}`. Last commit `5aa5cc2`. Project back to close-out.
 
 ## Active streams
 
-(none)
+(none in flight)
+
+Deferred:
+- **Phase 2 Worked Numerical Example PR**: ~21 borderline tutorials triaged but not authored. Candidates listed in `/Users/pranjal/.claude/plans/this-is-really-good-mighty-fountain.md` (assetNews, behavioral-nk, blanchard-kahn-determinacy, reduced-form-var, minnesota-svar, regret-matching, etc.). Permanently skipped: ~38 (BLP, HANK, neural-net, stochastic-algorithm tutorials).
+- Wave 3: no spec, user has not signaled intent. Out-of-scope items live in `spec.md > Out of scope (Wave 2)`.
+- 25-item Wave 2 sub-tutorial queue at `~/.claude/plans/wave-2-integration-axial-falcon.md` spec-locked but not started.
 
 ## Decisions made this session
 
-- Haiku handled mechanical symbol-to-prose substitution well (54/54
-  scope-confined diffs across 30 files). Sonnet did the 99 description
-  rewrites at higher judgment quality (acronym spelling, method-name
-  selection, jargon compression).
-- Pilot-3-then-sweep pattern worked twice. Default for future bulk edits.
-- Parallel agents editing the same README.md did not race in practice
-  (13 simultaneous Sonnet batches, perfect 99+/99- diff). Edit tool's
-  full-file rewrites appear well-serialized by the harness.
+- Worked Numerical Example format: `## ` top-level, between Equations and Model Setup; one motivating sentence then line-by-line math; no `**Step.**` / `**Setup.**` / `**Pre-merger.**` bold paragraph labels; final `\boxed{...}`. Rule lives in CLAUDE.md `## Learned Rules`.
+- Mixed Opus/Sonnet dispatch worked once anti-pattern lists were named. Wave 2B (sonnet, abstract rules) had 7 of 11 bold-label violations; waves 2C-2E (named ban list) had 0 of 27. Memory: `feedback_parallel_dispatch_format_drift.md`.
+- Three-layer audit: format validator + per-wave shallow audit (2 random tutorials per wave) + end-of-rollout deep audit (8-of-47 random sample). Deep audit caught the only real formula bug (nash-in-nash insurer-vs-hospital enrollment), fixed at `5aa5cc2`.
+- Weitzman README sign error in the Gaussian closed form (`(1 - Phi)` should be `Phi`) found during initial math verification, fixed standalone at `1e0ef12` before the pilot.
 
 ## Open questions
 
-- Wave 3 still deferred (no spec). User has not signaled intent to open;
-  out-of-scope items live in spec.md > Out of scope (Wave 2).
-- 25-item Wave 2 sub-tutorial queue at
-  ~/.claude/plans/wave-2-integration-axial-falcon.md is spec-locked but
-  not started. User excluded "new tutorials" from this close-out.
+(none)
 
 ## Landmines
 
-(none. _legacy/ at 776MB is preserved by policy.)
+- Phase 2 borderline list in plan file: do NOT redo eligibility from scratch. Triage already done by 3 Explore agents; eligibility verdicts are in the plan file's per-cluster tables.
+- Nash-in-Nash worked example: the README's `q_d(G)` denotes INSURER d's total enrollment, not hospital-conditional. The original draft used hospital-level 50 in the transfer denominator; corrected to insurer-level 100. Future edits to that tutorial must preserve this distinction. See commit `5aa5cc2`.
 
 ## Suggested next move
 
-Project is closed-out. Next session opens only when user signals a new
-direction (Wave 3 brainstorm, sub-tutorial queue execution, or unrelated
-work). Until then, no agent action needed.
+If user signals Phase 2: open `/Users/pranjal/.claude/plans/this-is-really-good-mighty-fountain.md`, read the Phase 2 borderline list, triage to ~5-6 tutorials with eyes-on, dispatch a single wave. Otherwise project remains closed-out.
