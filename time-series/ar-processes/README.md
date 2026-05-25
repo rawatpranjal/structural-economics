@@ -46,6 +46,49 @@ y_t = \beta(1+\alpha)y_{t-1}-\alpha\beta y_{t-2}+g_t,
 g_t=\rho_g g_{t-1}+\eta_t.
 ```
 
+## Worked Numerical Example
+
+Take the baseline calibration $`\rho = 0.90`$ and $`\sigma = 0.01`$. All three population moments follow from the AR(1) law of motion in closed form; nothing needs to be simulated.
+
+The stationary variance accumulates the infinite sum of squared impulse responses. Summing the geometric series gives:
+
+```math
+\mathrm{Var}(x_t)
+  = \frac{\sigma^2}{1-\rho^2}
+  = \frac{(0.01)^2}{1-(0.90)^2}
+  = \frac{0.0001}{0.19}
+  = \boxed{0.000526}.
+```
+
+So the standard deviation of the stationary distribution is about $`0.0229`$, or roughly 2.3 times the innovation standard deviation $`\sigma = 0.01`$. Persistence inflates volatility beyond the size of any single shock.
+
+The autocorrelation at lag $`k`$ is $`\rho^k`$, so the function decays geometrically. At lags 1, 2, and 3:
+
+```math
+\rho_1 = 0.90, \qquad \rho_2 = 0.81, \qquad \rho_3 = 0.73.
+```
+
+Each additional lag removes another 10 percent of the remaining serial correlation. After ten lags, $`\rho^{10} = 0.35`$; the process remembers more than a third of a shock even a decade later.
+
+The conditional forecast given a current observation $`x_0`$ shrinks geometrically toward zero. Starting from $`x_0 = 0.05`$ (five innovation standard deviations):
+
+```math
+\mathbb{E}[x_1 \mid x_0] = \rho \, x_0 = (0.90)(0.05) = 0.045,
+\qquad
+\mathbb{E}[x_2 \mid x_0] = \rho^2 x_0 = (0.81)(0.05) = 0.0405.
+```
+
+The forecast does not reach zero in finite time; it approaches zero asymptotically. The half-life is the horizon at which the forecast equals half the starting value:
+
+```math
+\frac{\log(0.5)}{\log(\rho)}
+  = \frac{\log(0.5)}{\log(0.90)}
+  = \frac{-0.693}{-0.105}
+  = \boxed{6.6 \text{ periods}}.
+```
+
+After 6.6 periods, a shock retains exactly half its initial effect. Halving $`\rho`$ from 0.9 to 0.5 cuts the half-life to $`\log(0.5)/\log(0.5) = 1`$ period. This is the arithmetic behind the impulse-response comparison in Results.
+
 ## Model Setup
 
 **AR(1) shock process**

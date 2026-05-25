@@ -43,6 +43,36 @@ Expected payoff is
 \pi(v,\hat b)=(v-\hat b)x(\hat b)^{n-1}.
 ```
 
+## Worked Numerical Example
+
+Take $`n = 3`$ bidders with values drawn from $`U[0,1]`$. The symmetric equilibrium bid function is $`b^{\ast}(v) = \tfrac{2}{3}v`$.
+
+Fix a type $`v = 0.9`$. The equilibrium bid is
+
+```math
+b^{\ast}(0.9) = \tfrac{2}{3}(0.9) = 0.6.
+```
+
+To find the win probability, invert the rival bid rule. A rival bids $`\hat b = 0.6`$ when its value is $`(3/2)(0.6) = 0.9`$, so the focal bidder beats both rivals if and only if both rival values fall below 0.9. With two independent rivals,
+
+```math
+\Pr(\text{win} \mid \hat b = 0.6) = (0.9)^{2} = 0.81.
+```
+
+Expected payoff at the equilibrium bid is
+
+```math
+\pi(0.9,\, 0.6) = (0.9 - 0.6)(0.81) = (0.3)(0.81) = \boxed{0.243}.
+```
+
+To verify this is a best response, try the alternative bid $`\hat b' = 0.55`$. The rival threshold is $`(3/2)(0.55) = 0.825`$, so the win probability falls to $`(0.825)^{2} = 0.681`$. The resulting payoff is
+
+```math
+\pi(0.9,\, 0.55) = (0.9 - 0.55)(0.681) = (0.35)(0.681) = 0.238 < 0.243.
+```
+
+The lower bid raises the margin by 0.05 but cuts the win probability from 0.81 to 0.681, a net loss. The same logic applies above the equilibrium bid: a bid of 0.65 raises win probability to $`(0.975)^{2} = 0.950`$, but the margin shrinks to 0.25, giving payoff $`(0.25)(0.950) = 0.238`$. The equilibrium bid 0.6 sits at the peak of the payoff curve for this type.
+
 ## Model Setup
 
 | Object | Value | Role |

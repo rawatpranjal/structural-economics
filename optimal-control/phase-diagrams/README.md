@@ -57,6 +57,54 @@ condition selecting the planner's path is transversality:
 
 Here $`u(c)=\frac{c^{1-\sigma}}{1-\sigma}`$ is the CRRA utility function, so $`u'(c(t))=c(t)^{-\sigma}`$.
 
+## Worked Numerical Example
+
+Plug the calibration $`\alpha=0.3`$, $`\delta=0.05`$, $`\rho=0.04`$, $`\sigma=2`$, $`A=1`$ into the steady-state and Jacobian formulas to recover the saddle structure by hand.
+
+The consumption nullcline pins down capital. Solve $`f'(k^{\ast})=\rho+\delta`$ with $`f'(k)=\alpha A k^{\alpha-1}`$:
+
+```math
+0.3\, k^{\ast\,-0.7}=0.09
+\quad\Longrightarrow\quad
+k^{\ast\,-0.7}=0.3
+\quad\Longrightarrow\quad
+k^{\ast}=0.3^{-1/0.7}\approx 5.5843.
+```
+
+The capital nullcline then gives steady-state consumption:
+
+```math
+c^{\ast}=k^{\ast\,0.3}-0.05\,k^{\ast}
+       =1.6753-0.2792
+       \approx 1.3961.
+```
+
+Linearize at $`(k^{\ast},c^{\ast})`$. The trace is $`\tau=f'(k^{\ast})-\delta=0.09-0.05=0.04=\rho`$, as the Euler equation guarantees. For the determinant, use $`f''(k)=\alpha(\alpha-1)k^{\alpha-2}`$ and the identity $`k^{\alpha-2}=k^{\alpha-1}/k=0.3/5.5843`$:
+
+```math
+f''(k^{\ast})=0.3\cdot(-0.7)\cdot\frac{0.3}{5.5843}\approx -0.01128.
+```
+
+```math
+\Delta=\frac{c^{\ast}f''(k^{\ast})}{\sigma}
+      =\frac{1.3961\cdot(-0.01128)}{2}
+      \approx -0.00787<0.
+```
+
+A negative determinant flags a saddle. The eigenvalues are
+
+```math
+\lambda=\frac{\tau\pm\sqrt{\tau^{2}-4\Delta}}{2}
+       =\frac{0.04\pm\sqrt{0.0016+0.0315}}{2}
+       =\frac{0.04\pm 0.1819}{2}.
+```
+
+```math
+\boxed{\;k^{\ast}\approx 5.5843,\quad c^{\ast}\approx 1.3961,\quad \lambda_{s}\approx -0.0710,\quad \lambda_{u}\approx 0.1110\;}
+```
+
+One eigenvalue is negative and one is positive, so the steady state is a saddle: exactly one direction in $`(k,c)`$ space converges. The stable eigenvector defines the local arm whose slope $`dc/dk`$ matches the value used to start backward integration in Solution Method.
+
 ## Model Setup
 
 The calibration keeps the mechanics visible. Output is Cobb-Douglas. Preferences are CRRA. There are no shocks, so each arrow shows the same law of motion.

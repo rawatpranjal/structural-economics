@@ -98,6 +98,70 @@ condition.
 
 Both cases linearize the same primitives. Case B is the strict augmentation.
 
+## Worked Numerical Example
+
+Take Case A with log utility and fix labor at $`N = 1`$. Use the README calibration $`\alpha = 0.33`$, $`\beta = 0.99`$, $`\delta = 0.025`$, $`\rho = 0.95`$, $`\sigma = 1`$. Solve the steady state by hand, then read off the one-period impact of a 1% TFP shock from the linear policy.
+
+The steady-state marginal product of capital comes from the Euler equation evaluated at $`A = 1`$ and $`C_{t+1} = C_t`$:
+
+```math
+\alpha K^{\alpha-1} = \frac{1}{\beta} - 1 + \delta = \frac{1}{0.99} - 1 + 0.025 = 0.035101.
+```
+
+Inverting the FOC gives the steady-state capital stock and the rest of the ratios from the resource constraint $`I = \delta K`$ and $`C = Y - I`$:
+
+```math
+K = \left(\frac{\alpha}{1/\beta - 1 + \delta}\right)^{\!1/(1-\alpha)} = 28.348, \qquad Y = K^{\alpha} = 3.015,
+```
+
+```math
+I = \delta K = 0.7087, \qquad C = Y - I = 2.307.
+```
+
+This yields the headline ratio that drives every coefficient in the linearization:
+
+```math
+\boxed{K/Y = 9.401, \qquad C/Y = 0.765, \qquad I/Y = 0.235.}
+```
+
+The linearized resource constraint and Euler equation, with $`s = \sigma = 1`$ and $`\hat a_t`$ the log-TFP deviation, are
+
+```math
+(C/Y)\,\hat c_t + (K/Y)\,\hat k_t = \hat a_t + \bigl[\alpha + (K/Y)(1-\delta)\bigr]\hat k_{t-1},
+```
+
+```math
+\hat c_{t+1} - \hat c_t = \frac{\beta\alpha}{K/Y}\bigl[\hat a_{t+1} + (\alpha-1)\hat k_t\bigr], \qquad \frac{\beta\alpha}{K/Y} = 0.03475.
+```
+
+Guess the linear capital rule $`\hat k_t = p\,\hat k_{t-1} + q\,\hat a_t`$ and read $`\hat c_t = c_k\,\hat k_{t-1} + c_a\,\hat a_t`$ from the resource constraint. Substituting into the Euler equation and matching coefficients on $`\hat k_{t-1}`$ and $`\hat a_t`$ gives a two-equation system in $`(p, q)`$. Solving numerically returns
+
+```math
+p = 0.9621, \qquad q = 0.0801, \qquad c_k = 0.5904, \qquad c_a = 0.3229.
+```
+
+Now hit the deterministic steady state with a one-period innovation $`\varepsilon_0 = 0.01`$. Capital is predetermined, so $`\hat k_{-1} = 0`$. The impact responses read directly off the policy rules with $`\hat a_0 = 0.01`$:
+
+```math
+\hat y_0 = \hat a_0 + \alpha\,\hat k_{-1} = 0.0100 = 1.00\%,
+```
+
+```math
+\hat c_0 = c_a\,\hat a_0 = 0.00323 = 0.323\%,
+```
+
+```math
+\hat k_0 = q\,\hat a_0 = 0.000801 = 0.0801\%.
+```
+
+One quarter later, TFP has decayed to $`\hat a_1 = \rho\,\hat a_0 = 0.0095`$ and the capital rule iterates to
+
+```math
+\hat k_1 = p\,\hat k_0 + q\,\hat a_1 = (0.9621)(0.000801) + (0.0801)(0.0095) = 0.00153 = 0.153\%.
+```
+
+These three numbers match the Case A IRF summary table in Results to the reported precision. Output jumps by the full 1% because $`\hat k_{-1} = 0`$, so the entire TFP increase passes through Cobb-Douglas production on impact. Consumption rises by only about a third of that because the Euler equation forces the household to smooth marginal utility across the AR(1) decay path. Capital barely moves on impact because $`q`$ is small: investment is large in percent terms ($`\hat\imath_0 = 3.20\%`$ from the resource constraint), but it cumulates onto a stock that is roughly nine times annual output, so one quarter of extra investment lifts the stock by less than a tenth of a percent.
+
 ## Model Setup
 
 Two cases share most primitives. Case B adds the labor-disutility parameters.

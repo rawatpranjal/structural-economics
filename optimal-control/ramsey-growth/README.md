@@ -61,6 +61,48 @@ along with the two differential equations above. The finite shooting
 calculation chooses $`c_0`$ so the path is near $`(k^{\ast},c^{\ast})`$ at date $`T`$.
 Here $`u(c)=c^{1-\sigma}/(1-\sigma)`$ is the period utility function, so $`u'(c)=c^{-\sigma}`$.
 
+## Worked Numerical Example
+
+Take one row of the shooting table and step the saddle path forward by hand. The calibration is $`\alpha = 0.33`$, $`\delta = 0.05`$, $`\rho = 0.03`$, $`\sigma = 2.0`$, $`A = 1.0`$, so the steady state is at $`f'(k^{\ast}) = \rho + \delta = 0.08`$:
+
+```math
+k^{\ast} = \left(\tfrac{0.33}{0.08}\right)^{1/0.67} = 8.2898,
+\qquad
+c^{\ast} = (8.2898)^{0.33} - (0.05)(8.2898) = 1.5952.
+```
+
+Start the capital-poor case from $`k_0 = 0.25 k^{\ast} = 2.0724`$ with the shooting-selected jump $`c_0 = 0.8671`$. Evaluate net output and the marginal product at $`k_0`$:
+
+```math
+f(k_0) = (2.0724)^{0.33} = 1.2719,
+\qquad
+f'(k_0) = (0.33)(2.0724)^{-0.67} = 0.2025.
+```
+
+Substitute into the resource law and the Keynes-Ramsey rule:
+
+```math
+\dot{k}(0) = f(k_0) - \delta k_0 - c_0 = 1.2719 - 0.1036 - 0.8671 = 0.3011,
+```
+
+```math
+\frac{\dot{c}(0)}{c(0)} = \frac{f'(k_0) - \delta - \rho}{\sigma} = \frac{0.2025 - 0.05 - 0.03}{2.0} = 0.0613.
+```
+
+Both velocities are positive. Capital rises because the planner saves a large share of output, and consumption rises because the marginal product $`0.2025`$ exceeds the modified golden-rule level $`0.08`$.
+
+Take one explicit Euler step of size $`\Delta t = 0.5`$:
+
+```math
+k(0.5) \approx k_0 + 0.5 \dot{k}(0) = 2.0724 + (0.5)(0.3011) = 2.2230,
+```
+
+```math
+\boxed{c(0.5) \approx c_0 + 0.5\, c_0\, \tfrac{\dot{c}(0)}{c(0)} = 0.8671 + (0.5)(0.8671)(0.0613) = 0.8937.}
+```
+
+The trajectory moves north-east in the phase diagram, consistent with the colored path that starts from $`k_0/k^{\ast} = 0.25`$ in the Results figure. The Brent search in the full code keeps refining $`c_0`$ until the analogous integration out to $`T = 150`$ lands within $`2.75 \times 10^{-7}`$ of $`k^{\ast}`$.
+
 ## Model Setup
 
 The calibration is deterministic and close to textbook growth examples. Initial states range from scarce capital to excess capital. The terminal date approximates the transversality condition; it is not an economic horizon.

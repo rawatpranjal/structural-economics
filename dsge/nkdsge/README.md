@@ -43,6 +43,42 @@ r^n_t=d_t,\qquad d_t=\rho_d d_{t-1}+\varepsilon^d_t.
 
 The report keeps $`v_t`$ and $`d_t`$ separate so the two shocks do not blur together.
 
+## Worked Numerical Example
+
+Take the demand shock with the README's calibration: $`\beta=0.99`$, $`\sigma=1`$, $`\kappa=0.3`$, $`\phi_\pi=1.5`$, $`\phi_y=0.125`$, and $`\rho_d=0.8`$. Set $`b_s=1`$ because the natural rate enters the IS curve. Solve for $`(\psi_y,\psi_\pi)`$ by hand and read off the impact response to a one-percentage-point innovation.
+
+Guess $`y_t=\psi_y d_t`$ and $`\pi_t=\psi_\pi d_t`$. The Phillips curve fixes the inflation loading in terms of the output loading:
+
+```math
+\psi_\pi = \frac{\kappa\,\psi_y}{1-\beta\rho_d} = \frac{0.3\,\psi_y}{1-(0.99)(0.8)} = \frac{0.3\,\psi_y}{0.208}.
+```
+
+Substitute the guess plus the Taylor rule into the IS curve. Matching the coefficient on $`d_t`$ gives one scalar equation in $`\psi_y`$:
+
+```math
+\psi_y\!\left[(1-\rho_d)+\frac{\phi_y}{\sigma}+\frac{(\phi_\pi-\rho_d)\kappa}{\sigma(1-\beta\rho_d)}\right]=1.
+```
+
+Plug in numbers term by term. The first bracket entry is $`1-0.8=0.2`$. The second is $`0.125/1=0.125`$. The third uses $`\phi_\pi-\rho_d=0.7`$, so the numerator is $`(0.7)(0.3)=0.21`$ and the denominator is $`0.208`$, giving $`0.21/0.208=1.0096`$. The bracket sums to $`0.2+0.125+1.0096=1.3346`$, so
+
+```math
+\psi_y = \frac{1}{1.3346} = 0.749.
+```
+
+Feed that into the Phillips link:
+
+```math
+\psi_\pi = \frac{(0.3)(0.749)}{0.208} = \frac{0.2247}{0.208} = 1.081.
+```
+
+The Taylor rule then pins the nominal-rate loading $`\psi_i=\phi_\pi\psi_\pi+\phi_y\psi_y=(1.5)(1.081)+(0.125)(0.749)=1.715`$.
+
+```math
+\boxed{(\psi_y,\;\psi_\pi,\;\psi_i)=(0.749,\;1.081,\;1.715)}.
+```
+
+A one-percentage-point innovation to the natural rate raises output by 0.749 percent on impact, inflation by 1.081 percentage points, and the policy rate by 1.715 percentage points. Those three numbers are the demand-shock column of the impact table in Results, recovered by paper algebra rather than by the QZ solve.
+
 ## Model Setup
 
 | Primitive | Value | Role |
