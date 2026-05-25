@@ -74,6 +74,32 @@ k_{ss} = (\alpha\beta A)^{1/(1-\alpha)},
 \qquad c_{ss} = A k_{ss}^{\alpha} - k_{ss}.
 ```
 
+## Worked Numerical Example
+
+Starting from the low-capital initial condition $`k_0 = 0.9952`$ (one-tenth of $`k_{ss}`$), trace one step of the closed-form policy to see how much capital the planner saves and how much is consumed.
+
+Output at $`k_0`$ is
+
+```math
+y_0 = A k_0^{\alpha} = 18.5 \times 0.9952^{0.3} = 18.4733.
+```
+
+The closed-form saving rate is $`\alpha\beta = (0.3)(0.9) = 0.27`$, so next-period capital is
+
+```math
+k_1 = \alpha\beta \, A k_0^{\alpha} = 0.27 \times 18.4733 = \boxed{4.9878}.
+```
+
+Period-0 consumption follows as the residual,
+
+```math
+c_0 = (1 - \alpha\beta) A k_0^{\alpha} = 0.73 \times 18.4733 = 13.4855.
+```
+
+The steady state verifies the same formula: substituting $`k_{ss} = (\alpha\beta A)^{1/(1-\alpha)} = 4.995^{1/0.7} = 9.9519`$ gives $`k_1 = \alpha\beta \cdot A k_{ss}^{\alpha} = k_{ss}`$, confirming it is a fixed point.
+
+Starting well below $`k_{ss}`$, the planner saves 27 percent of output regardless of the capital level - the log Cobb-Douglas case delivers a constant saving rate. The single step already moves capital from 0.9952 toward 4.99, nearly a fivefold jump, because output is high relative to capital when $`k`$ is low and the Cobb-Douglas exponent $`\alpha = 0.3`$ moderates diminishing returns.
+
 ## Model Setup
 
 | Symbol | Value | Role |

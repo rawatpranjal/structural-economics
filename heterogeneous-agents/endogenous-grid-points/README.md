@@ -47,6 +47,41 @@ u'(c(a,y_j)) \geq \beta R \sum_\ell \pi_\ell u'(c(\underline a,y_\ell)).
 This constraint margin creates high MPCs at low wealth. A small transfer relaxes
 the constraint before it mainly raises saving.
 
+## Worked Numerical Example
+
+To see the Euler inversion in one step, fix a single next-asset node $`a' = 1`$ and a 2-state IID income $`y' \in \{0.8, 1.2\}`$ with equal probability. Use the README calibration $`\gamma = 2`$, $`\beta = 0.95`$, $`R = 1.03`$, so $`\beta R = 0.9785`$. Bootstrap the next-period policy from terminal consumption, $`c'(a', y') = R a' + y'`$:
+
+```math
+c'(1, 0.8) = 1.03 + 0.8 = 1.83, \qquad c'(1, 1.2) = 1.03 + 1.2 = 2.23.
+```
+
+With CRRA $`\gamma = 2`$, marginal utility is $`u'(c) = 1/c^{2}`$. Form expected marginal utility tomorrow at $`a' = 1`$:
+
+```math
+\mathbb{E}[u'(c')] = \tfrac{1}{2}\!\left(\tfrac{1}{1.83^{2}}\right) + \tfrac{1}{2}\!\left(\tfrac{1}{2.23^{2}}\right)
+= \tfrac{1}{2}(0.2986) + \tfrac{1}{2}(0.2011) = 0.2498.
+```
+
+Multiply by $`\beta R`$ to get the Euler right-hand side:
+
+```math
+\beta R \, \mathbb{E}[u'(c')] = (0.9785)(0.2498) = 0.2445.
+```
+
+Invert marginal utility, $`(u')^{-1}(\mu) = \mu^{-1/\gamma} = 1/\sqrt{\mu}`$, to recover today's consumption at this node:
+
+```math
+c = \frac{1}{\sqrt{0.2445}} = \frac{1}{0.4944} = 2.0225.
+```
+
+Now back out the start-of-period asset from the budget identity $`c + a' = R a + y`$ at today's income $`y = 1.2`$:
+
+```math
+a^{\mathrm{endo}} = \frac{c + a' - y}{R} = \frac{2.0225 + 1 - 1.2}{1.03} = \boxed{(a, c) = (1.769, \, 2.022)}.
+```
+
+A household entering with $`a = 1.769`$ and drawing $`y = 1.2`$ chooses to leave $`a' = 1`$ next period. Repeating at $`y = 0.8`$ gives $`a^{\mathrm{endo}} = 2.158`$ at the same $`c`$: bad-income households need more starting assets to land on $`a' = 1`$. Sweeping $`a'`$ over the full grid traces out the consumption policy without any search over next assets.
+
 ## Model Setup
 
 | Object | Value | Role |

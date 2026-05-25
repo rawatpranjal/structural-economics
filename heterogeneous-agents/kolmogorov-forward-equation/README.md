@@ -53,6 +53,41 @@ A_{\mathrm{joint}}
 
 where $`A_j`$ is the asset-axis generator for income state $`j`$, and $`I_n`$ is the $`n \times n`$ identity. Reading the two terms: the block-diagonal piece $`\mathrm{diag}(A_L, A_H)`$ advances assets within each income state, leaving income alone. The Kronecker product $`Q \otimes I_n`$ is a block matrix that places each entry of $`Q`$ as a scaled $`n \times n`$ block; it shuffles agents across income states at every asset level, leaving the asset position alone. The stationary joint density solves $`A_{\mathrm{joint}}^{\top} g = 0`$ by the same single-row-replacement trick used in the 1D case. [`heterogeneous-agents/aiyagari-hact/`](../../heterogeneous-agents/aiyagari-hact/) generalises this construction to an $`N`$-state Rouwenhorst-derived chain.
 
+## Worked Numerical Example
+
+To see the row-replacement trick at small scale, solve the stationary KFE for the two-state Poisson income chain with $`\lambda_{LH} = 1`$ and $`\lambda_{HL} = 2`$. The continuous-state asset generator is replaced by a $`2 \times 2`$ matrix, so the whole computation fits on one page.
+
+The income generator from the Equations section becomes
+
+```math
+Q = \begin{pmatrix} -1 & 1 \\ 2 & -2 \end{pmatrix}.
+```
+
+Let $`\pi = (\pi_L, \pi_H)`$ be the stationary probability vector. The stationary KFE is $`Q^{\top} \pi = 0`$ with $`\pi_L + \pi_H = 1`$:
+
+```math
+Q^{\top} \pi
+= \begin{pmatrix} -1 & 2 \\ 1 & -2 \end{pmatrix}
+  \begin{pmatrix} \pi_L \\ \pi_H \end{pmatrix}
+= \begin{pmatrix} 0 \\ 0 \end{pmatrix}.
+```
+
+Both rows give the same equation $`-\pi_L + 2 \pi_H = 0`$, confirming the system is singular: $`Q^{\top}`$ has the stationary vector in its right null space. Pick the normalisation row $`i^{\ast} = 2`$ and overwrite the second row of $`Q^{\top}`$ with $`(1, 1)`$, with the right-hand side set to 1 in that entry. The modified system is
+
+```math
+\begin{pmatrix} -1 & 2 \\ 1 & 1 \end{pmatrix}
+\begin{pmatrix} \pi_L \\ \pi_H \end{pmatrix}
+= \begin{pmatrix} 0 \\ 1 \end{pmatrix}.
+```
+
+Row 1 gives $`\pi_L = 2 \pi_H`$. Row 2 gives $`\pi_L + \pi_H = 1`$. Substituting, $`3 \pi_H = 1`$, so
+
+```math
+\boxed{\pi = \left(\tfrac{2}{3}, \tfrac{1}{3}\right)}.
+```
+
+The high-income state has rate 2 out and rate 1 in, so it holds half the mass of the low-income state. The single-row replacement turned a singular homogeneous system into a non-singular linear solve and produced a probability vector in one step. The discretised continuous-state case in Solution Method runs the same recipe on the sparse $`n \times n`$ generator $`A^{\top}`$.
+
 ## Model Setup
 
 The prelim runs three examples that share one upwind generator. Symbols match the dense tutorials, so a reader walking to Huggett or Aiyagari-HACT sees no notational drift.

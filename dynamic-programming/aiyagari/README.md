@@ -92,6 +92,50 @@ not a model object.
 A standard result is $`r^{\ast}<1/\beta-1`$. At or above that rate,
 precautionary saving becomes unbounded. The economy has excess capital supply.
 
+## Worked Numerical Example
+
+To see one Bellman update by hand, take a toy with two asset nodes $`a \in \{0, 2\}`$ and two income states $`z \in \{0.5, 1.5\}`$ on a symmetric chain with $`\Pr(\text{stay}) = 0.9`$, $`\Pr(\text{switch}) = 0.1`$. Set $`\beta = 0.96`$, $`\sigma = 2`$ (so $`u(c) = -1/c`$), and clean prices $`r = 0.025`$, $`w = 1.25`$.
+
+Posit a guess for the continuation value on the four grid points:
+
+```math
+V(0, 0.5) = -40, \quad V(0, 1.5) = -20, \quad V(2, 0.5) = -25, \quad V(2, 1.5) = -15.
+```
+
+Evaluate the Bellman operator at the state $`(a, z_j) = (2, 1.5)`$. Cash-on-hand is
+
+```math
+(1+r)a + w z_j = (1.025)(2) + (1.25)(1.5) = 2.05 + 1.875 = 3.925.
+```
+
+Choice $`a' = 0`$: consumption is $`c = 3.925`$ and flow utility $`u(c) = -1/3.925 = -0.2548`$. The expected continuation conditional on $`z_j = 1.5`$ uses $`P_{1.5, 0.5} = 0.1`$ and $`P_{1.5, 1.5} = 0.9`$:
+
+```math
+\sum_k P_{jk}\, V(0, z_k) = (0.1)(-40) + (0.9)(-20) = -22.0,
+```
+
+```math
+u(c) + \beta\sum_k P_{jk}\, V(0, z_k) = -0.2548 + (0.96)(-22.0) = -21.375.
+```
+
+Choice $`a' = 2`$: consumption is $`c = 1.925`$ and $`u(c) = -1/1.925 = -0.5195`$. The expected continuation is
+
+```math
+\sum_k P_{jk}\, V(2, z_k) = (0.1)(-25) + (0.9)(-15) = -16.0,
+```
+
+```math
+u(c) + \beta\sum_k P_{jk}\, V(2, z_k) = -0.5195 + (0.96)(-16.0) = -15.880.
+```
+
+Take the max over the two feasible choices:
+
+```math
+\boxed{g_a(2, 1.5) = 2, \quad c^{\ast}(2, 1.5) = 1.925, \quad V_{\text{new}}(2, 1.5) = -15.880.}
+```
+
+The household holds wealth flat at the high-income state because the better continuation in both future income realizations beats the curvature cost of cutting consumption from 3.925 to 1.925. A full VFI run repeats this argmax at every $`(a_i, z_j)`$ node and iterates until $`V_{\text{new}} \approx V`$ in sup-norm; the production solver in `run.py` uses 7 income states and 200 asset nodes.
+
 ## Model Setup
 
 | Object | Value | Role |

@@ -143,6 +143,36 @@ The iteration can be read as Newton's method applied to the fixed-point equation
 Near an optimal policy the improvement step makes only second-order changes in $`V`$.
 Convergence is therefore super-linear once the policy is close to the optimum, which is why Howard typically finishes in three or four iterations while VFI needs hundreds.
 
+## Worked Numerical Example
+
+Set $`\beta = 0.9`$ and $`W_0 = 1`$ (the calibration in Model Setup) and trace the optimal path for three periods using the closed-form policy $`c^{\ast}(W) = (1-\beta)W`$.
+
+At $`t = 0`$, the household faces stock $`W_0 = 1`$:
+
+```math
+c_0 = (1 - 0.9)(1) = 0.1, \qquad W_1 = W_0 - c_0 = 1 - 0.1 = 0.9.
+```
+
+At $`t = 1`$, the remaining stock is $`W_1 = 0.9`$:
+
+```math
+c_1 = (1 - 0.9)(0.9) = 0.09, \qquad W_2 = 0.9 - 0.09 = 0.81.
+```
+
+At $`t = 2`$, the remaining stock is $`W_2 = 0.81`$:
+
+```math
+c_2 = (1 - 0.9)(0.81) = 0.081, \qquad W_3 = 0.81 - 0.081 = 0.729.
+```
+
+The three-period path follows the general formula $`c_t = (1-\beta)\beta^t W_0`$ and $`W_t = \beta^t W_0`$:
+
+```math
+\boxed{(c_0,\, c_1,\, c_2) = (0.1,\; 0.09,\; 0.081)}.
+```
+
+Consumption falls by factor $`\beta = 0.9`$ each period. The household never exhausts the cake in finite time because each period it saves the fraction $`\beta`$ of whatever stock remains.
+
 ## Model Setup
 
 | Symbol | Value | Role |

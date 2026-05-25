@@ -58,6 +58,43 @@ k^{\ast}=\left(\frac{s}{\Delta}\right)^{1/(1-\alpha)}, \qquad
 y^{\ast}=(k^{\ast})^\alpha, \qquad c^{\ast}=(1-s) y^{\ast}.
 ```
 
+## Worked Numerical Example
+
+Set $`\alpha = 0.33`$, $`s = 0.24`$, $`\delta = 0.06`$, $`n = 0.01`$, $`g = 0.02`$, and $`k_0 = 1.0`$, matching the calibration below.
+
+Break-even investment per unit of $`k`$ is
+
+```math
+\Delta = (1+g)(1+n) - 1 + \delta = (1.02)(1.01) - 1 + 0.06 = 0.0902.
+```
+
+At $`k_0 = 1`$, output, consumption, and investment per effective worker are
+
+```math
+y_0 = k_0^\alpha = 1.00, \qquad c_0 = (1-s)\,y_0 = 0.76, \qquad i_0 = s\,y_0 = 0.24.
+```
+
+One application of the law of motion gives
+
+```math
+k_1 = \frac{(1-\delta)\,k_0 + s\,k_0^\alpha}{(1+g)(1+n)}
+    = \frac{0.94 + 0.24}{1.0302}
+    = \boxed{k_1 \approx 1.145}.
+```
+
+The closed-form steady state is
+
+```math
+k^{\ast} = \left(\frac{s}{\Delta}\right)^{1/(1-\alpha)}
+         = \left(\frac{0.24}{0.0902}\right)^{1/0.67}
+         = (2.661)^{1.493}
+         = \boxed{k^{\ast} \approx 4.309},
+```
+
+with $`y^{\ast} = (k^{\ast})^\alpha \approx 1.619`$ and $`c^{\ast} = (1-s)\,y^{\ast} \approx 1.231`$.
+
+Since $`k_1 = 1.145 > k_0 = 1.0`$ and $`k_1 < k^{\ast}`$, the economy is still below steady state after one period. The gap $`k^{\ast} - k_1 \approx 3.16`$ is large because $`k_0`$ starts far from $`k^{\ast}`$ in the nonlinear region. The simulation takes 160 periods to close that gap to below $`3 \times 10^{-4}`$.
+
 ## Model Setup
 
 | Symbol | Value | Role |
