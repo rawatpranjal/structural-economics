@@ -77,6 +77,40 @@ inversion is
 The density estimate is least stable near the bid support boundaries, so the
 exercise trims low and high bid quantiles before evaluating recovery.
 
+## Worked Numerical Example
+
+Take $`n = 3`$ bidders with values $`v \sim U[0,1]`$, the textbook case where the equilibrium bid function is known in closed form. The Model Setup uses Beta(2,5) with $`n = 4`$ to stress the kernel step; the uniform case here lets the GPV inversion be checked by hand.
+
+With $`F_v(v) = v`$ and $`f_v(v) = 1`$, the equilibrium first-order condition $`s'(v) F_v(v) = (n-1)(v - s(v)) f_v(v)`$ has solution
+
+```math
+s(v) = \frac{n-1}{n}\, v = \frac{2}{3}\, v,
+```
+
+so bids live on $`[0, 2/3]`$. The bid CDF and density follow from $`G(b) = F_v(v(b))`$ with $`v(b) = 3b/2`$:
+
+```math
+G(b) = \frac{3b}{2}, \qquad g(b) = \frac{f_v(v(b))}{s'(v(b))} = \frac{1}{2/3} = \frac{3}{2}.
+```
+
+Fix one observed bid $`b = 0.4`$. Evaluate the bid objects:
+
+```math
+G(0.4) = \frac{3(0.4)}{2} = 0.6, \qquad g(0.4) = \frac{3}{2} = 1.5.
+```
+
+Plug into the GPV inversion:
+
+```math
+\hat v = b + \frac{G(b)}{(n-1)\, g(b)} = 0.4 + \frac{0.6}{(2)(1.5)} = 0.4 + \frac{0.6}{3.0} = 0.4 + 0.2.
+```
+
+```math
+\boxed{\hat v = 0.6}.
+```
+
+Check against the true bid function: $`v = (n/(n-1))\, b = (3/2)(0.4) = 0.6`$, so the inversion exactly recovers the latent value. The shading correction $`G(b)/[(n-1)g(b)] = 0.2`$ is one third of the recovered value: the bidder's submitted 0.4 understates her 0.6 valuation by exactly the rent from winning against two rivals.
+
 ## Model Setup
 
 | Object | Value | Role |
