@@ -78,6 +78,42 @@ x_{n+1} = x_n - \frac{Z(x_n)}{Z'(x_n)}.
 The method needs a derivative but only one starting point.
 Local convergence is quadratic when $`Z'(r^{\ast}) \neq 0`$.
 
+## Worked Numerical Example
+
+Take $`f(r) = r^3 - 2r - 5`$ as the test function. We need $`r^{\ast}`$ such that $`f(r^{\ast}) = 0`$.
+
+Evaluation at the bracket endpoints checks the sign-change condition: $`f(2) = 8 - 4 - 5 = -1 < 0`$ and $`f(3) = 27 - 6 - 5 = 16 > 0`$, so a root lies in $`(2, 3)`$.
+
+Bisection takes midpoints and discards the half that has no sign change.
+
+```math
+\begin{array}{c|c|c|c|c}
+n & a_n & b_n & m_n & f(m_n) \\ \hline
+1 & 2.000 & 3.000 & 2.500 & +5.625 \\
+2 & 2.000 & 2.500 & 2.250 & +1.891 \\
+3 & 2.000 & 2.250 & 2.125 & +0.346 \\
+4 & 2.000 & 2.125 & 2.063 & -0.351 \\
+\end{array}
+```
+
+After step 3, the bracket is $`(2.000, 2.125)`$ with width $`0.125`$. After step 4 the root is bracketed in $`(2.063, 2.125)`$. Each step halves the interval. After 30 steps the width is $`(3 - 2)/2^{30} \approx 10^{-9}`$, which is below the $`10^{-10}`$ tolerance. The true root is $`\boxed{r^{\ast} \approx 2.0946}`$.
+
+Newton-Raphson from the same starting point converges in far fewer steps. The derivative is $`f'(r) = 3r^2 - 2`$. Starting from $`r_0 = 2.5`$:
+
+```math
+r_1 = 2.5 - \frac{f(2.5)}{f'(2.5)} = 2.5 - \frac{5.625}{16.75} = 2.5 - 0.336 = 2.164.
+```
+
+```math
+r_2 = 2.164 - \frac{f(2.164)}{f'(2.164)} = 2.164 - \frac{0.885}{11.059} = 2.164 - 0.080 = 2.084.
+```
+
+```math
+r_3 = 2.084 - \frac{f(2.084)}{f'(2.084)} \approx 2.094.
+```
+
+Three Newton steps reach the same accuracy that bisection needs about 20 steps to match. The tradeoff is visible in the brackets: bisection maintains a sign-change guarantee at every step; Newton does not. In the equilibrium application, $`Z(r) = K_d(r) - K^{\ast}`$ plays the role of $`f(r)`$ here, and the same four methods are compared on that function in the Results below.
+
 ## Model Setup
 
 | Symbol | Value | Role |

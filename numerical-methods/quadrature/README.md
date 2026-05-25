@@ -36,6 +36,49 @@ This converts the AR(1) conditional expectation into a weighted sum of $`f`$ eva
 
 We need a statement on convergence. Stroud-Secrest establish that for an integrand in $`C^{2k}`$ (continuously differentiable $`2k`$ times), the Gauss-Hermite error decays at rate $`O(N^{-2k})`$, which is faster than any polynomial in $`N`$ when $`f`$ is smooth. For non-smooth integrands (kinked functions, indicators) the error decays slowly and Simpson's rule on a finite truncation can outperform Gauss-Hermite.
 
+## Worked Numerical Example
+
+Take $`f(z) = z^2`$ and $`Z \sim N(0,1)`$. The exact expectation is $`\mathbb{E}[Z^2] = \mathrm{Var}(Z) + (\mathbb{E}[Z])^2 = 1 + 0 = 1`$.
+
+The standard 3-node Gauss-Hermite rule gives physicists' nodes $`x = (-1.2247,\, 0,\, 1.2247)`$ and weights that absorb the $`e^{-x^2}`$ factor. To integrate against the standard-normal density $`\phi`$ we apply the change of variables from Equations: transformed nodes $`\xi_i = \sqrt{2}\, x_i`$ and rescaled weights $`\tilde{w}_i = w_i / \sqrt{\pi}`$:
+
+```math
+\xi = (-1.7321,\; 0,\; 1.7321), \qquad
+\tilde{w} = (0.1667,\; 0.6667,\; 0.1667).
+```
+
+The 3-node Gauss-Hermite sum is:
+
+```math
+\hat{I}_{\mathrm{GH}} = \sum_{i=1}^{3} \tilde{w}_i\, f(\xi_i)
+  = 0.1667 \cdot (-1.7321)^2 + 0.6667 \cdot 0^2 + 0.1667 \cdot (1.7321)^2.
+```
+
+Since $`(-1.7321)^2 = (1.7321)^2 = 3`$:
+
+```math
+\hat{I}_{\mathrm{GH}} = 0.1667 \cdot 3 + 0 + 0.1667 \cdot 3 = 0.500 + 0.500 = \boxed{1.000}.
+```
+
+Three nodes reproduce the exact answer because $`f(z) = z^2`$ is a polynomial of degree 2, which is below the $`2N - 1 = 5`$ exactness threshold for $`N = 3`$.
+
+Now compare against a 3-point trapezoid rule on $`[-3, 3]`$ with nodes $`(-3, 0, 3)`$ and step $`h = 3`$. The trapezoid approximates $`\int f(z)\phi(z)\,dz`$ as:
+
+```math
+\hat{I}_{\mathrm{trap}}
+  = h \left[\frac{f(-3)\,\phi(-3)}{2} + f(0)\,\phi(0) + \frac{f(3)\,\phi(3)}{2}\right].
+```
+
+Substituting $`\phi(-3) = \phi(3) \approx 0.0044`$ and $`\phi(0) \approx 0.3989`$:
+
+```math
+\hat{I}_{\mathrm{trap}}
+  = 3 \left[\frac{9 \cdot 0.0044}{2} + 0 \cdot 0.3989 + \frac{9 \cdot 0.0044}{2}\right]
+  = 3 \cdot (0.0198 + 0 + 0.0198) = \boxed{0.119}.
+```
+
+Gauss-Hermite gives the exact value of 1.000; the trapezoid gives 0.119, an error of 88 percent. The trapezoid places its outer nodes at $`\pm 3`$ where the Gaussian density is tiny, so the mass between the nodes is poorly captured. Gauss-Hermite places its outer nodes at $`\pm 1.73`$, precisely where the $`z^2 \phi(z)`$ integrand peaks, and the middle node at zero where the contribution of $`z^2`$ vanishes anyway. Node placement determined by the Hermite polynomials, not by a uniform grid, is the source of the gain.
+
 ## Model Setup
 
 | Object | Symbol | Role |

@@ -64,6 +64,35 @@ The trade against the cubic spline is between curvature and shape preservation.
 Cubic splines bend smoothly but can ring near a kink.
 PCHIP holds the shape but drops one order of smoothness.
 
+## Worked Numerical Example
+
+Three nodes $`(x_0, y_0) = (0, 0)`$, $`(x_1, y_1) = (1, 1)`$, $`(x_2, y_2) = (3, 9)`$ carry the data. These values come from $`f(x) = x^2`$, so the true function is known and all three methods can be scored against it at $`x = 2`$.
+
+The query $`x = 2`$ lies in the interval $`[x_1, x_2] = [1, 3]`$. The piecewise-linear formula applied to this segment weights the two bracketing nodes by their distances from the query:
+
+```math
+\hat{f}_{\text{lin}}(2)
+= \frac{x_2 - x}{x_2 - x_1} \, f(x_1) + \frac{x - x_1}{x_2 - x_1} \, f(x_2)
+= \frac{3 - 2}{3 - 1} (1) + \frac{2 - 1}{3 - 1} (9)
+= 0.5 \cdot 1 + 0.5 \cdot 9 = 5.
+```
+
+The weight on node $`(1, 1)`$ is 0.5 and the weight on node $`(3, 9)`$ is 0.5 because $`x = 2`$ sits exactly at the midpoint of the segment. The segment is a straight line, and the true function curves upward between the two nodes, so linear interpolation overshoots.
+
+With only three nodes there is a unique polynomial of degree at most two that passes through all three points. That quadratic interpolant recovers $`f(x) = x^2`$ exactly, so
+
+```math
+\hat{f}_{\text{quad}}(2) = 2^2 = 4.
+```
+
+The comparison isolates what curvature costs. The straight-line segment connecting $`(1,1)`$ and $`(3,9)`$ sits above the parabola on the open interval between them. Linear interpolation overestimates because it cannot track the concave-up shape; the polynomial interpolant has the right curvature and matches the true value:
+
+```math
+\boxed{\hat{f}_{\text{lin}}(2) = 5 \quad \text{vs} \quad \hat{f}_{\text{quad}}(2) = 4 \quad \text{(true value)}}.
+```
+
+In this tutorial, cubic spline and PCHIP are richer than the three-node quadratic - they use many nodes and fit piecewise cubics - but they share the same principle: adding curvature information lets the interpolant track $`f(x)`$ more faithfully between nodes. The sup-norm comparison in Results quantifies how much that extra curvature is worth on the smooth cake-eating target and where it stops helping on the kinked policy.
+
 ## Model Setup
 
 | Symbol | Value | Role |

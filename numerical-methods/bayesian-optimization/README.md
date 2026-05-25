@@ -68,17 +68,25 @@ z = \frac{\mu(x) - f^{\ast} - \xi}{\sigma(x)},
 valid whenever $`\sigma(x) > 0`$.
 Here $`\Phi`$ and $`\phi`$ denote the cumulative distribution function and probability density function of the standard normal distribution $`\mathcal{N}(0, 1)`$.
 
-#### Worked example
+## Worked Numerical Example
 
-Suppose after a handful of evaluations the GP at a candidate $`x`$ has posterior mean $`\mu(x) = 5.2`$ and standard deviation $`\sigma(x) = 0.5`$, and the best observation so far is $`f^{\ast} = 4.5`$.
-With $`\xi = 0`$, the standardized improvement is $`z = (5.2 - 4.5)/0.5 = 1.4`$.
-The closed form gives $`\mathrm{EI}(x) = 0.7 \cdot \Phi(1.4) + 0.5 \cdot \phi(1.4) \approx 0.7 \cdot 0.919 + 0.5 \cdot 0.150 \approx 0.72`$.
-The exploitation term dominates because the posterior mean already sits well above $`f^{\ast}`$; the candidate is mostly an exploit pick.
-The split into exploitation plus exploration is why Expected Improvement works without a hand-tuned trade-off.
-The first term is large where the posterior mean already exceeds the best observation, so it pulls the search toward known promising regions.
-The second term is large where the posterior standard deviation is high, which only happens away from evaluated points, so it pulls the search toward unexplored regions.
-Expected Improvement vanishes at evaluated points because $`\sigma(x_i) = 0`$ there, so the loop never re-evaluates the same input.
-The Bayesian-optimization loop alternates between fitting the GP and maximizing $`\mathrm{EI}`$ to pick the next evaluation, repeating until the evaluation budget is exhausted.
+After a handful of evaluations the GP has been conditioned on the observed prices and profits. Suppose that at a candidate price $`x`$ the posterior mean is $`\mu(x) = 5.2`$ and the posterior standard deviation is $`\sigma(x) = 0.5`$, and the best profit observed so far is $`f^{\ast} = 4.5`$. With exploration tilt $`\xi = 0`$, the standardized improvement is
+
+```math
+z = \frac{\mu(x) - f^{\ast}}{\sigma(x)} = \frac{5.2 - 4.5}{0.5} = 1.4.
+```
+
+Substituting into the closed-form EI expression with $`\Phi(1.4) = 0.9192`$ and $`\phi(1.4) = 0.1497`$:
+
+```math
+\mathrm{EI}(x)
+  = (\mu(x) - f^{\ast})\,\Phi(z) + \sigma(x)\,\phi(z)
+  = (0.7)(0.9192) + (0.5)(0.1497)
+  = 0.643 + 0.075
+  = \boxed{0.718}.
+```
+
+The exploitation term contributes $`0.643`$ and the exploration term $`0.075`$: the posterior mean already sits well above $`f^{\ast}`$, so the candidate is mostly an exploit pick. If instead the posterior mean were $`\mu(x) = 4.5`$ (no expected gain), then $`z = 0`$, and EI reduces to $`\sigma(x)\,\phi(0) = 0.5 \times 0.399 = 0.199`$, which is pure exploration. At an already-evaluated point, $`\sigma(x) = 0`$ and EI collapses to zero, which is why the loop never re-queries the same input.
 
 ## Model Setup
 

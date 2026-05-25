@@ -116,6 +116,53 @@ The fixed-point map is $`T(q_1, q_2) = (\mathrm{BR}_1(q_2), \mathrm{BR}_2(q_1))`
 Vanilla Picard on this map oscillates around $`q^{\ast}`$ with damping factor $`1/2`$.
 Damped Picard with $`\alpha = 1/2`$ removes the oscillation.
 
+## Worked Numerical Example
+
+Take a single product, $`J = 1`$, with observed share $`s_1^{\mathrm{obs}} = 0.4`$, so the outside share is $`s_0^{\mathrm{obs}} = 0.6`$.
+The closed-form mean utility is $`\delta^{\ast} = \log(0.4) - \log(0.6) = \log(2/3) \approx -0.4055`$.
+
+Start at $`\delta^0 = 0`$. The predicted share at the initial guess is
+
+```math
+s_1(\delta^0) = \frac{e^0}{1 + e^0} = \frac{1}{2} = 0.5000.
+```
+
+Picard step 1 adds the log-share residual to correct the over-prediction:
+
+```math
+\delta^1 = T(\delta^0) = 0 + \log(0.4) - \log(0.5)
+         = \log\!\left(\frac{0.4}{0.5}\right) = \log(0.8) \approx -0.2231.
+```
+
+The updated predicted share is $`s_1(\delta^1) = 0.8 / (1 + 0.8) = 4/9 \approx 0.4444`$, still above 0.4, so the next step pushes $`\delta`$ further down.
+
+Picard step 2:
+
+```math
+\delta^2 = \delta^1 + \log(0.4) - \log(4/9)
+         = \log(0.8) + \log(0.9)
+         = \log(0.72) \approx -0.3285.
+```
+
+The residual sequence is
+
+```math
+|\delta^1 - \delta^{\ast}| \approx 0.1823,
+\qquad
+|\delta^2 - \delta^{\ast}| \approx 0.0770,
+\qquad
+|\delta^3 - \delta^{\ast}| \approx 0.0315,
+```
+
+shrinking by a factor of roughly $`0.42`$ each step, confirming linear convergence with rate equal to the contraction modulus.
+The fixed point satisfies
+
+```math
+\boxed{\delta^{\ast} = \log(2/3) \approx -0.4055}.
+```
+
+A starting guess of $`\delta = 0`$ corresponds to equal shares everywhere; the map corrects toward the data monotonically. Anderson acceleration with memory $`m = 5`$ would extrapolate from the residual history after the first few steps and reach the same answer in far fewer iterations.
+
 ## Model Setup
 
 | Symbol | Value | Role |
