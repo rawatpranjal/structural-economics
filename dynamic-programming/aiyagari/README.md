@@ -22,21 +22,21 @@ The household side. Let $`a_t\in[\underline a,\bar a]`$ be beginning-of-period a
 c_t = (1+r)a_t + w z_t - a_{t+1}, \quad c_t > 0.
 ```
 
-Preferences are time-separable CRRA with discount factor $`\beta\in(0,1)`$ and curvature $`\sigma>0`$:
+Preferences are time-separable CRRA with discount factor $`\beta\in(0,1)`$ and curvature $`\sigma>0`$,
 
 ```math
 U_0 = \mathbb{E}_0\sum_{t=0}^{\infty}\beta^t u(c_t), \quad u(c)=\frac{c^{1-\sigma}}{1-\sigma}.
 ```
 
-Log productivity is a Gaussian AR(1) with persistence $`\rho`$ and innovation standard deviation $`\sigma_\varepsilon`$:
+Log productivity is a Gaussian AR(1) with persistence $`\rho`$ and innovation standard deviation $`\sigma_\varepsilon`$,
 
 ```math
 \log z_{t+1} = \rho\log z_t + \varepsilon_{t+1}, \quad \varepsilon_{t+1}\sim\mathcal{N}(0,\sigma_\varepsilon^2).
 ```
 
-Discretize to an $`N`$-state Rouwenhorst chain on $`\{z_j\}`$ with transition matrix $`P_{jk}=\Pr(z_{t+1}=z_k\mid z_t=z_j)`$, matched to the AR(1) variance and persistence and normalized so $`\mathbb{E}[z]=1`$.
+Discretize to an $`N`$-state Rouwenhorst chain on $`\{z_j\}`$ with transition matrix $`P_{jk}=\Pr(z_{t+1}=z_k\mid z_t=z_j)`$. The chain matches the AR(1) variance and persistence. It is normalized so $`\mathbb{E}[z]=1`$.
 
-The *Bellman equation* writes the household's value as the maximum over feasible next-period assets of current utility plus expected continuation value:
+The *Bellman equation* writes the household's value as the maximum over feasible next-period assets of current utility plus expected continuation value,
 
 ```math
 V(a,z_j) = \max_{a'\in[\underline a,\,(1+r)a+wz_j)} \left[\, u((1+r)a+wz_j-a') + \beta\sum_k P_{jk} V(a',z_k) \,\right].
@@ -60,16 +60,15 @@ r(K) = \alpha\left(\tfrac{K}{L}\right)^{\alpha-1}-\delta, \quad w(K) = (1-\alpha
 
 With $`L=1`$, capital demand inverts the first to $`K^d(r) = \left(\tfrac{r+\delta}{\alpha}\right)^{1/(\alpha-1)}`$.
 
-A stationary equilibrium is $`(r^{\ast}, w^{\ast}, g_a, \mu)`$ such that the household problem is solved at $`(r^{\ast},w^{\ast})`$, the distribution is invariant under $`(g_a,P)`$, and the capital market clears:
+A stationary equilibrium is $`(r^{\ast}, w^{\ast}, g_a, \mu)`$ such that the household problem is solved at $`(r^{\ast},w^{\ast})`$, the distribution is invariant under $`(g_a,P)`$, and the capital market clears,
 
 ```math
 K^s(r^{\ast}) = K^d(r^{\ast}).
 ```
 
-Bisection delivers $`K^s(r^{\ast}) \approx K^d(r^{\ast})`$ within tolerance, not exact equality; the residual is a tolerance gap, not a model object. A standard result is $`r^{\ast}<1/\beta-1`$: above that rate, precautionary saving becomes unbounded.
+Bisection delivers $`K^s(r^{\ast}) \approx K^d(r^{\ast})`$ within tolerance, not exact equality. The residual is a tolerance gap, not a model object. A standard result is $`r^{\ast}<1/\beta-1`$. Above that rate, precautionary saving becomes unbounded.
 
-<details>
-<summary>Worked Numerical Example (click to expand)</summary>
+## Worked Numerical Example
 
 One *Bellman operator* application by hand. Take $`a \in \{0, 2\}`$, $`z \in \{0.5, 1.5\}`$, symmetric chain with $`P_{\text{stay}} = 0.9, P_{\text{switch}} = 0.1`$, $`\beta = 0.96`$, $`\sigma = 2`$ (so $`u(c) = -1/c`$), $`r = 0.025`$, $`w = 1.25`$. Guess
 
@@ -87,62 +86,54 @@ a' = 0: \quad u(3.925) + \beta\,[(0.1)(-40) + (0.9)(-20)] = -0.2548 + (0.96)(-22
 a' = 2: \quad u(1.925) + \beta\,[(0.1)(-25) + (0.9)(-15)] = -0.5195 + (0.96)(-16.0) = -15.880.
 ```
 
-Argmax is $`a' = 2`$:
+Argmax is $`a' = 2`$,
 
 ```math
 \boxed{g_a(2, 1.5) = 2, \quad c^{\ast}(2, 1.5) = 1.925, \quad V_{\text{new}}(2, 1.5) = -15.880.}
 ```
 
-The high-income household holds wealth flat. The better continuation beats the curvature cost of cutting consumption from 3.925 to 1.925. The production solver in `run.py` repeats this argmax at every $`(a_i, z_j)`$ node on the 7×200 grid until $`V_{\text{new}} \approx V`$ in sup-norm.
-
-</details>
+The high-income household holds wealth flat. The better continuation beats the curvature cost of cutting consumption from 3.925 to 1.925. The production solver in `run.py` repeats this argmax at every $`(a_i, z_j)`$ node on the 7×200 grid. It iterates until $`V_{\text{new}} \approx V`$ in sup-norm.
 
 ## Model Setup
 
-| Object | Value | Role |
-|---|---:|---|
-| Discount factor $`\beta`$ | 0.96 | Annual time preference |
-| Impatience benchmark $`1/\beta-1`$ | 0.0417 | Complete-markets ceiling on $`r^{\ast}`$ |
-| CRRA $`\sigma`$ | 2.0 | Curvature; controls precautionary motive |
-| Capital share $`\alpha`$ | 0.36 | Cobb-Douglas exponent on $`K`$ |
-| Depreciation $`\delta`$ | 0.08 | Pinning $`K^d(r)`$ |
-| Income persistence $`\rho`$ | 0.9 | AR(1) coefficient on $`\log z`$ |
-| Innovation s.d. $`\sigma_\varepsilon`$ | 0.2 | AR(1) shock scale |
-| Income states $`N`$ | 7 | Rouwenhorst nodes for $`\{z_j\}`$ |
-| Asset bracket | $`[0,50]`$ | $`\underline a`$ at no-borrowing limit |
-| Asset grid (coarse) | 200 pts | Exponential, denser at $`\underline a`$ |
-| Capital-market tolerance | 5e-04 | Stop when $`\lvert K^s-K^d\rvert/K^d`$ falls below |
-| Bracket-width tolerance | 1e-06 | Backup stop on $`r_H-r_L`$ |
-| VFI tolerance | 1e-07 | Sup-norm on $`V`$ |
+| Parameter | Value | Parameter | Value |
+|---|---:|---|---:|
+| Discount factor $`\beta`$ | 0.96 | Income persistence $`\rho`$ | 0.9 |
+| CRRA $`\sigma`$ | 2.0 | Innovation s.d. $`\sigma_\varepsilon`$ | 0.2 |
+| Capital share $`\alpha`$ | 0.36 | Income states $`N`$ (Rouwenhorst) | 7 |
+| Depreciation $`\delta`$ | 0.08 | Asset bracket $`[\underline a, \bar a]`$ | $`[0, 50]`$ |
+| Impatience benchmark $`1/\beta-1`$ | 0.0417 | Asset grid (coarse, exponential) | 200 pts |
+| Capital-market tolerance $`\lvert K^s-K^d\rvert/K^d`$ | 5e-04 | Bracket-width tolerance $`r_H-r_L`$ | 1e-06 |
+| VFI tolerance (sup-norm on $`V`$) | 1e-07 | | |
 
 ## Solution Method
 
-What's new in Aiyagari is the outer *bisection* that ties household saving to firm capital demand. The inner blocks (household Bellman and stationary distribution) are covered in the prereq tutorials and used here as black boxes.
-
-<details>
-<summary>Algorithm structure: outer bisection around inner VFI (click to expand)</summary>
+What's new in Aiyagari is the outer *bisection* that ties household saving to firm capital demand. The inner blocks (household Bellman and stationary distribution) are covered in the prereq tutorials. They are used here as black boxes.
 
 ```
-+------------------- outer loop: bisect r ------------------+
-|                                                           |
-|   r  -->  firm FOC  -->  K^d(r), w(r)                     |
-|                                                           |
-|   +-------- inner loop: VFI --------+                     |
-|   |  V_k --> Bellman op --> V_{k+1} | --> policy g_a      |
-|   +---------------------------------+                     |
-|                                                           |
-|   g_a   -->  forward iteration  -->  mu(a, z)             |
-|   mu    -->  aggregate          -->  K^s(r)               |
-|                                                           |
-|   compare K^s vs K^d  -->  update [r_low, r_high]         |
-|                                                           |
-+-----------------------------------------------------------+
-                             |
-                             v
-                       r*, w*, K*, mu*
+                       guess r in [r_low, r_high]
+                                     |
+                                     v
++------------------- outer loop (bisect r) ------------------+
+|                                                            |
+|   r  -->  firm FOC  -->  K^d(r), w(r)                      |
+|                                                            |
+|   +-------- inner loop (VFI) --------+                     |
+|   |  V_k --> Bellman op --> V_{k+1}  |  -->  policy g_a    |
+|   +----------------------------------+                     |
+|                                                            |
+|   g_a  -->  forward iteration  -->  mu(a, z)               |
+|   mu   -->  aggregate          -->  K^s(r)                 |
+|                                                            |
+|   if K^s > K^d  -->  r too high, set r_high = r            |
+|   if K^s < K^d  -->  r too low,  set r_low  = r            |
+|                                                            |
++---------- not converged --> repeat with new r -------------+
+                                     |
+                                converged
+                                     v
+                              r*, w*, K*, mu*
 ```
-
-</details>
 
 ```python
 # Outer loop: bisect over r until K^s(r) = K^d(r).
@@ -169,43 +160,37 @@ def find_equilibrium(r_low, r_high, primitives, tol=5e-4):
     return r, w, K_s, mu
 ```
 
-The outer bisection reaches relative gap 4.94e-04 in 12 steps. The cold-start inner VFI at the equilibrium prices takes about 500 iterations to sup-norm 1e-07; inside the bisection a warm-started VFI converges in one to two iterations after the first solve.
+The outer bisection reaches relative gap 4.94e-04 in 12 steps. The cold-start inner VFI at the equilibrium prices takes about 500 iterations to sup-norm 1e-07. Inside the bisection a warm-started VFI converges in one to two iterations after the first solve.
 
 ## Results
 
-The firm schedule is analytic and slopes down. The household schedule solves the Bellman problem at each rate. The crossing is the stationary equilibrium. The bisection driving toward that crossing shows a roughly log-linear decay in the relative market-clearing gap, hitting tolerance in 12 steps.
+The firm schedule is analytic and slopes down. The household schedule solves the Bellman problem at each rate. The crossing is the stationary equilibrium. The bisection driving toward that crossing shows a roughly log-linear decay in the relative market-clearing gap. It hits tolerance in 12 steps.
 
 ![Capital-market clearing and bisection convergence](figures/capital-market.png)
 
-Value functions rise with assets and income. Asset policies show stronger saving after good income states, with a visible kink at the borrowing limit and each income line eventually crossing below the 45-degree line. That crossing is the *buffer-stock target* at the equilibrium rate. The inner VFI converges geometrically in sup-norm; the value-function snapshots show the Bellman operator pulling the initial guess toward the fixed point monotonically.
+Value functions rise with assets and income. Asset policies save more after good income states. A visible kink appears at the borrowing limit. Each income line eventually crosses below the 45-degree line. That crossing is the *buffer-stock target* at the equilibrium rate. The inner VFI converges geometrically in sup-norm. The value-function snapshots show the Bellman operator pulling the initial guess toward the fixed point monotonically.
 
 ![Value function, asset policy, VFI convergence, and value-function evolution](figures/savings-policy.png)
 
-The stationary distribution comes from the asset policy and income chain. Mean wealth exceeds median, with a small mass at the borrowing limit and a long right tail from repeated high-income draws. With no ex-ante heterogeneity, the run produces a Gini around 0.5.
+The stationary distribution comes from the asset policy and income chain. Mean wealth exceeds median. A small mass sits at the borrowing limit. A long right tail comes from repeated high-income draws. With no ex-ante heterogeneity, the run produces a Gini around 0.5.
 
 ![Stationary wealth distribution and Lorenz curve](figures/wealth-distribution.png)
 
 ### Stationary equilibrium diagnostics
 
-| Variable                     |       Value |
-|:-----------------------------|------------:|
-| Interest rate $`r^{\ast}`$     |   0.025959  |
-| Wage $`w^{\ast}`$              |   1.2734    |
-| Aggregate capital $`K^{\ast}`$ |   6.7599    |
-| Output $`Y^{\ast}`$            |   1.9897    |
-| Capital-output ratio $`K/Y`$   |   3.3975    |
-| Mean wealth $`\mathbb{E}[a]`$  |   6.7633    |
-| Median wealth $`\tilde a`$     |   4.4728    |
-| P90 wealth                   |  16.3145    |
-| Gini                         |   0.5261    |
-| Mass at constraint           |   0.0245    |
-| Relative market-clearing gap |   0.0004939 |
-| Bisection steps              |  12         |
-| VFI iterations               | 188         |
+| Variable | Value | Variable | Value |
+|---|---:|---|---:|
+| Interest rate $`r^{\ast}`$ | 0.025959 | Mean wealth $`\mathbb{E}[a]`$ | 6.7633 |
+| Wage $`w^{\ast}`$ | 1.2734 | Median wealth $`\tilde a`$ | 4.4728 |
+| Aggregate capital $`K^{\ast}`$ | 6.7599 | P90 wealth | 16.3145 |
+| Output $`Y^{\ast}`$ | 1.9897 | Gini | 0.5261 |
+| Capital-output ratio $`K/Y`$ | 3.3975 | Mass at constraint | 0.0245 |
+| Relative market-clearing gap | 0.0004939 | Bisection steps | 12 |
+| VFI iterations | 188 | | |
 
 ## Takeaway
 
-*Precautionary saving* turns a household policy into an aggregate capital supply curve. Incomplete insurance pushes the equilibrium interest rate below the complete-markets benchmark. The gap is the price of self-insurance. The model closes via VFI inside bisection: household optimization at a candidate rate, stationary distribution from the policy, and an outer rate adjustment that clears the capital market.
+*Precautionary saving* turns a household policy into an aggregate capital supply curve. Incomplete insurance pushes the equilibrium interest rate below the complete-markets benchmark. The gap is the price of self-insurance. The model closes via VFI inside bisection. Households optimize at a candidate rate. The policy gives a stationary distribution. An outer rate adjustment clears the capital market.
 
 ## See also
 
