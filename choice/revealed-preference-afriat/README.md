@@ -32,6 +32,77 @@ The first statement says $`x_i`$ is revealed at least as good as $`x_j`$ through
 
 Afriat's theorem makes this finite test enough. If GARP holds, the data are rationalizable by a monotone concave utility function.
 
+## Worked Numerical Example
+
+Take three observations: $`(p_1, x_1) = ((2,1),\,(1,2))`$, $`(p_2, x_2) = ((1,2),\,(2,1))`$, and $`(p_3, x_3) = ((1,1),\,(1,1))`$.
+
+Compute expenditure at each budget.
+
+```math
+m_1 = p_1\cdot x_1 = (2)(1)+(1)(2) = 4, \qquad
+m_2 = p_2\cdot x_2 = (1)(2)+(2)(1) = 4, \qquad
+m_3 = p_3\cdot x_3 = (1)(1)+(1)(1) = 2.
+```
+
+Build the direct revealed-preference matrix $`R^D`$. Entry $`R^D[i,j]=1`$ when $`m_i\geq p_i\cdot x_j`$, that is, when bundle $`x_j`$ was affordable at budget $`i`$. Compute the cross-expenditure terms.
+
+```math
+p_1\cdot x_2 = (2)(2)+(1)(1) = 5, \qquad p_1\cdot x_3 = (2)(1)+(1)(1) = 3,
+```
+
+```math
+p_2\cdot x_1 = (1)(1)+(2)(2) = 5, \qquad p_2\cdot x_3 = (1)(1)+(2)(1) = 3,
+```
+
+```math
+p_3\cdot x_1 = (1)(1)+(1)(2) = 3, \qquad p_3\cdot x_2 = (1)(2)+(1)(1) = 3.
+```
+
+Compare each with the row expenditure $`m_i`$.
+
+| Pair $`(i,j)`$ | $`m_i`$ | $`p_i\cdot x_j`$ | $`m_i \geq p_i\cdot x_j`$? | $`R^D[i,j]`$ |
+|:---:|:---:|:---:|:---:|:---:|
+| (1,1) | 4 | 4 | yes | 1 |
+| (1,2) | 4 | 5 | no | 0 |
+| (1,3) | 4 | 3 | yes | 1 |
+| (2,1) | 4 | 5 | no | 0 |
+| (2,2) | 4 | 4 | yes | 1 |
+| (2,3) | 4 | 3 | yes | 1 |
+| (3,1) | 2 | 3 | no | 0 |
+| (3,2) | 2 | 3 | no | 0 |
+| (3,3) | 2 | 2 | yes | 1 |
+
+Written as a matrix with rows as origins and columns as destinations:
+
+```math
+R^D =
+\begin{pmatrix}
+1 & 0 & 1 \\
+0 & 1 & 1 \\
+0 & 0 & 1
+\end{pmatrix}.
+```
+
+Observation 1 directly reveals $`x_1 \succsim x_3`$. Observation 2 directly reveals $`x_2 \succsim x_3`$. Neither observation 1 nor observation 2 could afford the other's chosen bundle.
+
+Take the transitive closure $`R^{\ast}`$ via Warshall's algorithm. Pass through intermediate node $`k=1`$: no row has $`R^D[\cdot,1]=1`$ except row 1 itself, so no new edges open. Pass through $`k=2`$: similarly, $`R^D[\cdot,2]`$ is zero outside the diagonal. Pass through $`k=3`$: $`R^D[i,3]=1`$ for $`i=1,2,3`$, but $`R^D[3,j]=0`$ for $`j=1,2`$, so no indirect path reaches 1 or 2. The closure adds nothing, and $`R^{\ast}=R^D`$.
+
+Check GARP. For each pair where $`iR^{\ast}j`$, test whether $`m_j > p_j\cdot x_i`$ (bundle $`x_i`$ was strictly cheaper at budget $`j`$, which would contradict $`iR^{\ast}j`$).
+
+| Pair $`(i,j)`$ with $`iR^{\ast}j`$ | $`m_j`$ | $`p_j\cdot x_i`$ | $`m_j > p_j\cdot x_i`$? |
+|:---:|:---:|:---:|:---:|
+| (1,3) | 2 | 3 | no |
+| (2,3) | 2 | 3 | no |
+| diagonal | - | - | no |
+
+No pair satisfies $`iR^{\ast}j`$ and $`m_j > p_j\cdot x_i`$ simultaneously.
+
+```math
+\boxed{\text{GARP passes. Zero violations.}}
+```
+
+Observation 3 is the cheapest budget and bundles 1 and 2 are mutually unaffordable across their own budgets, so no cycle can form. The three choices are consistent with a single preference ordering.
+
 ## Model Setup
 
 | Object | Value | Role in the exercise |

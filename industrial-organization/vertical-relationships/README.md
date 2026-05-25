@@ -73,6 +73,64 @@ to transfer operating profit upstream.
 
 The fee changes the profit split without changing the retailer's margin.
 
+## Worked Numerical Example
+
+To see double marginalization in one step, take a simple linear-demand channel with $`b = 1`$ and $`c_R = 0`$, so $`q = a - p`$, and solve both regimes by hand.
+
+Set $`a = 10`$ and $`c_M = 2`$, giving choke price $`\bar p = 10`$.
+
+Start with the decentralized channel and work backward from the retailer's problem. The retailer takes $`w`$ as given and solves
+
+```math
+\max_p\ (p - w)\,(10 - p).
+```
+
+The first-order condition is
+
+```math
+10 - p - (p - w) = 0 \implies \boxed{p_R(w) = \frac{10 + w}{2}},
+```
+
+which matches the general best-response $`p_R(w) = (\bar p + w + c_R)/2`$ at $`\bar p = 10`$, $`c_R = 0`$.
+
+The manufacturer anticipates this response and solves
+
+```math
+\max_w\ (w - 2)\,\left(10 - \frac{10 + w}{2}\right) = (w - 2)\,\frac{10 - w}{2}.
+```
+
+The first-order condition is
+
+```math
+\frac{d}{dw}\left[\frac{(w-2)(10-w)}{2}\right]
+  = \frac{(10 - w) - (w - 2)}{2}
+  = \frac{12 - 2w}{2} = 0
+\implies \boxed{w^{DM} = 6}.
+```
+
+Substituting back: $`p_R = (10 + 6)/2 = 8`$, quantity $`q = 10 - 8 = 2`$, manufacturer profit $`(6 - 2)(2) = 8`$, retailer profit $`(8 - 6)(2) = 4`$, channel profit $`8 + 4 = 12`$.
+
+Now compare the integrated channel. A single owner sets $`p`$ to maximize
+
+```math
+(p - c_M)\,q(p) = (p - 2)(10 - p).
+```
+
+The first-order condition gives
+
+```math
+p^I = \frac{10 + 2}{2} = 6, \qquad q^I = 10 - 6 = 4, \qquad \Pi^I = (6 - 2)(4) = 16.
+```
+
+The two regimes compare as follows:
+
+| Regime | $`w`$ | $`p`$ | $`q`$ | Channel profit |
+|--------|-------|-------|-------|----------------|
+| Integrated | $`-`$ | $`6`$ | $`4`$ | $`16`$ |
+| Decentralized | $`6`$ | $`8`$ | $`2`$ | $`12`$ |
+
+Double marginalization raises the retail price by $`(8 - 6)/6 \approx 33\%`$ and destroys $`16 - 12 = 4`$ units of channel profit. The mechanism is visible in the manufacturer's FOC: because $`w^{DM} = 6 > c_M = 2`$, the retailer treats the manufacturer's markup as marginal cost and marks up again, pricing too high and selling too little.
+
 ## Model Setup
 
 The calibration is small enough to solve analytically. Each number uses the same unit. The integrated channel is a benchmark, not an ownership assumption.
