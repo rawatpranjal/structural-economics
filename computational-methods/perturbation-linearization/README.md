@@ -64,10 +64,10 @@ The first-order law is $`F_1(x) = \rho x`$, so the linearized one-step response 
 The exact map gives
 
 ```math
-F(0.18) = (0.82)(0.18) + (0.45)(0.18)^2 - (0.80)(0.18)^3 + (0.35)(0.18)^4 = 0.1577.
+F(0.18) = (0.82)(0.18) + (0.45)(0.18)^2 - (0.80)(0.18)^3 + (0.35)(0.18)^4 = 0.1579.
 ```
 
-First order misses by $`0.0101`$, about $`6.4\%`$ of the exact response. Adding the quadratic term yields $`F_2(0.18) = 0.1476 + 0.0146 = 0.1622`$, which overshoots by $`0.0045`$. Adding the cubic term yields $`F_3(0.18) = 0.1622 - 0.0047 = 0.1575`$, within $`0.0002`$ of the exact value. Each higher order absorbs one more layer of local curvature.
+First order misses by $`0.0103`$, about $`6.5\%`$ of the exact response. Adding the quadratic term yields $`F_2(0.18) = 0.1476 + 0.0146 = 0.1622`$, which overshoots by $`0.0043`$. Adding the cubic term yields $`F_3(0.18) = 0.1622 - 0.0047 = 0.1575`$, within $`0.0004`$ of the exact value. Each higher order absorbs one more layer of local curvature.
 
 The same logic applies to a generic law $`F(x) = a + b x + c x^2`$ with steady state $`x^{\ast}`$ satisfying $`x^{\ast} = a + b x^{\ast} + c (x^{\ast})^2`$. The linearized coefficient on $`\hat{x}_t = x_t - x^{\ast}`$ is $`b + 2 c x^{\ast}`$, which is exactly what the validator iterates here once normalized to $`x^{\ast} = 0`$.
 

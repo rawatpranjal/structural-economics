@@ -82,52 +82,30 @@ is the system-level per-enrollee transfer.
 
 ## Worked Numerical Example
 
-Strip the model to one insurer ($`d=1`$) and two symmetric hospitals to see the
-Nash-in-Nash split in one algebraic step. Take logit-over-hospitals utilities
-$`\delta_1 = \delta_2 = 1`$, no outside hospital option, downstream per-enrollee
-margin $`m = P - c^D = 1`$, hospital cost $`c^H = 0`$, total insurer enrollment
-$`N = 100`$, and bargaining weight $`\tau = 0.5`$.
+Strip the model to one insurer ($`d=1`$) and two hospitals to see the
+Nash-in-Nash split in one algebraic step. Take downstream per-enrollee
+margin $`m = P_1 - c_1^D = 1`$, hospital cost $`c^H = 0`$, bargaining weight
+$`\tau = 0.5`$, and full-agreement insurer enrollment $`q_1(G) = 100`$.
 
-With identical logit utilities and no outside option, the full-network shares
-across hospitals are symmetric:
-
-```math
-s_1 = s_2 = \frac{e^{1}}{e^{1} + e^{1}} = \tfrac{1}{2},
-\qquad q_1(G) = q_2(G) = 50.
-```
-
-Break the link between insurer 1 and hospital 1. The disagreement network
-$`G^{-1,1}`$ leaves only hospital 2 in network, so every enrollee that would have
-chosen hospital 1 routes to hospital 2 instead. The diversion ratio is
+By construction, breaking the link between insurer 1 and hospital 1 costs
+the insurer half its enrollees, so the disagreement network gives
+$`q_1(G^{-1,1}) = 50`$. The gross incremental value of hospital 1 to the
+insurer is
 
 ```math
-D_{1 \to 2} = \frac{q_2(G^{-1,1}) - q_2(G)}{q_1(G)} = \frac{100 - 50}{50} = 1.
+\Delta_{1,1} = m \bigl[q_1(G) - q_1(G^{-1,1})\bigr]
+             = 1 \cdot (100 - 50) = 50.
 ```
 
-Hospital 1's gain from trade is the enrollment it brings in, valued at the
-per-enrollee margin it generates. Because diversion equals one, every one of
-hospital 1's enrollees would otherwise be served by hospital 2 at the same
-margin, and the bilateral surplus is the margin times hospital 1's share of
-enrollment:
-
-```math
-S_{1,1} = m \cdot q_1(G) - c^H \cdot q_1(G)
-        = 1 \cdot 50 - 0 \cdot 50 = 50.
-```
-
-The Nash split with $`\tau = 0.5`$ gives the per-enrollee transfer
+Net of hospital cost, the bilateral surplus is $`S_{1,1} = \Delta_{1,1} - c^H \cdot q_1(G) = 50`$.
+The Nash split with $`\tau = 0.5`$ divides this surplus by total insurer enrollment:
 
 ```math
 w_{1,1} = c^H + \tau \frac{S_{1,1}}{q_1(G)}
-        = 0 + 0.5 \cdot \frac{50}{50} = \boxed{0.5}.
+        = 0 + 0.5 \cdot \frac{50}{100} = \boxed{0.25}.
 ```
 
-By symmetry $`w_{2,1} = 0.5`$. Hospital revenue per link is $`w \cdot q = 0.5 \cdot 50 = 25`$,
-and the insurer's net surplus per link is also $`25`$. The bargaining weight $`\tau`$
-controls only the split, not the size, of the per-enrollee margin. Diversion enters
-the full Results table through the disagreement network: when the two hospitals have
-different quality $`a_h`$, dropping the better hospital costs more enrollment, raises
-its $`\Delta_{hd}`$, and so raises its transfer relative to the lower-quality hospital.
+The denominator is insurer enrollment, not hospital-conditional enrollment. Hospital revenue per link is $`w \cdot q_1(G) = 0.25 \cdot 100 = 25`$, equal to half the bilateral surplus. The bargaining weight $`\tau`$ controls only the split, not the size, of that surplus. When the two hospitals differ in quality $`a_h`$, dropping the better hospital costs more insurer enrollment, raises $`\Delta_{hd}`$, and raises its transfer relative to the lower-quality hospital.
 
 ## Model Setup
 
