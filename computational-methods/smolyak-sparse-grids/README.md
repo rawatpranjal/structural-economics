@@ -173,6 +173,36 @@ invertible at the Smolyak nodes. Collocation then sets the policy residual to
 zero at each node and recovers the unique coefficient vector $`\theta`$ that
 represents $`\log S(x; \theta) = \Phi(x) \theta`$.
 
+## Worked Numerical Example
+
+Count Smolyak nodes in $`d = 2`$ at level $`\mu = 2`$ and compare against the matching tensor product. The 1D node sets are $`X_1 = \lbrace 0 \rbrace`$, $`X_2 = \lbrace -1, 0, 1 \rbrace`$, and $`X_3 = \lbrace -1, -\tfrac{1}{\sqrt{2}}, 0, \tfrac{1}{\sqrt{2}}, 1 \rbrace`$, with sizes $`m_1 = 1, m_2 = 3, m_3 = 5`$.
+
+At $`\mu = 2, d = 2`$ the admissibility band is $`3 \le i_1 + i_2 \le 4`$. Enumerating multi-indices with $`i_k \ge 1`$:
+
+```math
+\lbrace (1, 2), (2, 1), (1, 3), (3, 1), (2, 2) \rbrace.
+```
+
+The corresponding tensor block sizes are $`m_{i_1} \cdot m_{i_2}`$:
+
+```math
+1 \cdot 3 = 3,\quad 3 \cdot 1 = 3,\quad 1 \cdot 5 = 5,\quad 5 \cdot 1 = 5,\quad 3 \cdot 3 = 9.
+```
+
+Summing without deduplication gives $`3 + 3 + 5 + 5 + 9 = 25`$ points. Most of these repeat: every block contains the origin $`(0, 0)`$ because $`0 \in X_i`$ for all $`i \ge 1`$, and the axis blocks $`(1, 3)`$ and $`(3, 1)`$ share their nodes with the corresponding sub-blocks inside $`(2, 2)`$ along each axis. Deduplicating gives the union
+
+```math
+H(2, 2) = \lbrace (0, 0),\; (\pm 1, 0),\; (0, \pm 1),\; (\pm 1, \pm 1),\; (\pm \tfrac{1}{\sqrt{2}}, 0),\; (0, \pm \tfrac{1}{\sqrt{2}}) \rbrace,
+```
+
+which contains $`1 + 2 + 2 + 4 + 2 + 2 = 13`$ unique points. The matching tensor grid at the same axis resolution is $`X_3 \times X_3`$ with $`5 \times 5 = 25`$ points.
+
+```math
+\boxed{\lvert H(2, 2) \rvert = 13 \quad \text{vs} \quad \lvert X_3 \times X_3 \rvert = 25, \quad \text{a 48\% reduction}.}
+```
+
+The gain is modest in two dimensions but compounds rapidly. At the README calibration $`d = 5, \mu = 2`$ the same construction yields $`|H(5, 2)| = 61`$ against $`|X_3|^5 = 3{,}125`$, a 98% reduction, and at $`d = 10, \mu = 2`$ it is $`221`$ against $`9{,}765{,}625`$. The polynomial-in-$`d`$ scaling of the band is what makes Chebyshev collocation tractable past three or four continuous states.
+
 ## Model Setup
 
 | Symbol | Object | Value |

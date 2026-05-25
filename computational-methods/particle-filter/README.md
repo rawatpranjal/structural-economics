@@ -94,6 +94,56 @@ $`y_t`$. Their likelihood weights are nearly zero, ESS collapses, and resampling
 copies a small number of particles many times. The optimal proposal reduces
 that problem by using the signal before drawing the new state.
 
+## Worked Numerical Example
+
+To see one bootstrap step, take the scalar AR(1) state $`x_{t+1} = 0.9 x_t + w_t`$ with $`w_t \sim N(0,1)`$ and observation $`y_t = x_t + v_t`$ with $`v_t \sim N(0,1)`$. Start from $`N = 3`$ particles at $`t = 0`$, $`\{0.0, 0.5, -0.5\}`$, with equal weights $`1/3`$. The new observation is $`y_1 = 1.0`$, and fixed process draws are $`w^{(1)} = 0.2`$, $`w^{(2)} = -0.3`$, $`w^{(3)} = 0.4`$.
+
+Apply the transition to each particle to get the predicted positions at $`t = 1`$:
+
+```math
+\begin{aligned}
+x_1^{(1)} &= (0.9)(0.0) + 0.2 = 0.20, \\
+x_1^{(2)} &= (0.9)(0.5) + (-0.3) = 0.15, \\
+x_1^{(3)} &= (0.9)(-0.5) + 0.4 = -0.05.
+\end{aligned}
+```
+
+Score each particle by the Gaussian observation density $`\widetilde w^{(i)} \propto \exp\bigl(-(y_1 - x_1^{(i)})^2 / 2\bigr)`$:
+
+```math
+\begin{aligned}
+\widetilde w^{(1)} &\propto \exp(-(0.80)^2 / 2) = \exp(-0.3200) = 0.7261, \\
+\widetilde w^{(2)} &\propto \exp(-(0.85)^2 / 2) = \exp(-0.3613) = 0.6968, \\
+\widetilde w^{(3)} &\propto \exp(-(1.05)^2 / 2) = \exp(-0.5513) = 0.5763.
+\end{aligned}
+```
+
+The unnormalized weights sum to $`1.9992`$. Normalize to obtain the posterior weights:
+
+```math
+\widehat w = (0.3632,\; 0.3486,\; 0.2882).
+```
+
+The posterior mean is the weighted average of predicted particles:
+
+```math
+\widehat x_1 = (0.3632)(0.20) + (0.3486)(0.15) + (0.2882)(-0.05) = 0.0726 + 0.0523 - 0.0144 = 0.1105.
+```
+
+The effective sample size summarizes how concentrated the weights are:
+
+```math
+ESS_1 = \frac{1}{\sum_i \widehat w_i^2} = \frac{1}{0.1319 + 0.1215 + 0.0830} = \frac{1}{0.3365} = 2.97.
+```
+
+Multinomial resampling draws three indices from $`\widehat w`$. Expected counts are $`N \widehat w = (1.09, 1.05, 0.86)`$, so a typical draw is $`(1, 1, 1)`$ while $`(2, 1, 0)`$ also occurs.
+
+```math
+\boxed{\widehat x_1 \approx 0.111, \qquad ESS_1 \approx 2.97.}
+```
+
+The three particles all land near the observation $`y_1 = 1.0`$, so their likelihoods are comparable and $`ESS_1 \approx N`$ signals a balanced posterior. Had the predicted particles been far from $`y_1`$, one weight would dominate, $`ESS`$ would collapse toward 1, and resampling would duplicate that single particle.
+
 ## Model Setup
 
 | Object | Value |

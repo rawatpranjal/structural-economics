@@ -49,6 +49,52 @@ y_{t+h} =\alpha+\sum_{\ell=1}^{p}\beta_\ell y_{t-\ell+1} +\gamma'\hat F_t+\varep
 The AR benchmark sets $`\gamma=0`$. A true-factor benchmark replaces $`\hat F_t`$
 with the simulated $`F_t`$.
 
+## Worked Numerical Example
+
+The 100-series panel is too large to compute by hand, but the PCA extraction step is the same on a toy $`N=2`$, $`T=4`$ panel. Take two zero-mean series at four dates:
+
+```math
+X_{1\cdot}=(-2,-1,1,2), \qquad X_{2\cdot}=(-1,-2,2,1).
+```
+
+Each series already has sample mean zero, so demeaning is a no-op. The sample variance with $`T-1=3`$ in the denominator is
+
+```math
+s_1^2=s_2^2=\frac{(-2)^2+(-1)^2+1^2+2^2}{3}=\frac{10}{3}, \qquad s_1=s_2=\sqrt{10/3}.
+```
+
+Standardize each row by its own $`s_i`$ to get $`Z_{it}=X_{it}/\sqrt{10/3}`$. The cross-product of the two deviation rows is
+
+```math
+\sum_{t=1}^{4} X_{1t}X_{2t}=(-2)(-1)+(-1)(-2)+(1)(2)+(2)(1)=8.
+```
+
+The sample correlation, equal to the (1,2) entry of $`(T-1)^{-1}Z'Z`$ here, is
+
+```math
+\rho=\frac{8}{3\cdot\sqrt{10/3}\cdot\sqrt{10/3}}=\frac{8}{10}=0.8.
+```
+
+The standardized covariance matrix is
+
+```math
+S=\begin{pmatrix}1 & 0.8 \\ 0.8 & 1\end{pmatrix},
+```
+
+whose eigenvalues solve $`(1-\lambda)^2=0.8^2`$, giving $`\lambda_1=1.8`$ and $`\lambda_2=0.2`$. The first eigenvector is $`v_1=(1,1)/\sqrt{2}`$, so the estimated factor at each date is the equal-weight average of standardized series,
+
+```math
+\hat F_t=v_1'Z_t=\tfrac{1}{\sqrt{2}}(Z_{1t}+Z_{2t}).
+```
+
+The variance share captured by PC1 is
+
+```math
+\frac{\lambda_1}{\lambda_1+\lambda_2}=\frac{1.8}{2.0}=\boxed{0.90}.
+```
+
+So with $`\rho=0.8`$ between two standardized series, the leading principal component already explains 90 percent of the cross-sectional variance. In the full 100-series run, $`\lambda_1`$ explains 57.2 percent because most of the 99 remaining components each pick up a small slice of idiosyncratic noise rather than common movement.
+
 ## Model Setup
 
 | Parameter | Value | Description |

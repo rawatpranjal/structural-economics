@@ -71,6 +71,44 @@ z_{m, t} = \Phi^{-1}\left(\frac{r_{m, t} - 3/8}{M T + 1/4}\right),
 
 where $`\Phi^{-1}`$ is the standard normal quantile. Classical $`\hat R`$ is then applied to the half-split $`z`$ values. This is the default in modern probabilistic-programming libraries.
 
+## Worked Numerical Example
+
+Compute effective sample size for a single short chain by hand, using only the lag-1 autocorrelation. The toy chain replaces the 8,000-draw run in Model Setup so the arithmetic stays on one page; the formula is identical.
+
+Take a chain of $`N = 8`$ post-burn-in draws,
+
+```math
+\theta = (0.1,\; 0.3,\; 0.5,\; 0.4,\; 0.6,\; 0.5,\; 0.7,\; 0.9).
+```
+
+The sample mean is $`\bar\theta = 4.0 / 8 = 0.5`$. Center each draw by subtracting the mean:
+
+```math
+d = (-0.4,\; -0.2,\; 0,\; -0.1,\; 0.1,\; 0,\; 0.2,\; 0.4).
+```
+
+The sample variance uses the squared deviations $`d_t^2 = (0.16, 0.04, 0, 0.01, 0.01, 0, 0.04, 0.16)`$, which sum to $`0.42`$, so
+
+```math
+\widehat{\mathrm{Var}}(\theta) = \frac{1}{N - 1} \sum_{t = 1}^{N} d_t^2 = \frac{0.42}{7} = 0.06.
+```
+
+The lag-1 sample autocovariance pairs each centered draw with its successor. The seven products $`d_t d_{t + 1}`$ are $`(0.08, 0, 0, -0.01, 0, 0, 0.08)`$ and sum to $`0.15`$, giving
+
+```math
+\widehat{\mathrm{Cov}}(\theta_t, \theta_{t + 1}) = \frac{0.15}{7} \approx 0.02143,
+\qquad
+\rho_1 = \frac{0.02143}{0.06} \approx 0.357.
+```
+
+A first-order autoregressive approximation truncates the IAT sum at lag 1 with a geometric tail $`\rho_t \approx \rho_1^{\,t}`$, so $`\tau \approx (1 + \rho_1) / (1 - \rho_1)`$ and
+
+```math
+\mathrm{ESS} \approx N \cdot \frac{1 - \rho_1}{1 + \rho_1} = 8 \cdot \frac{0.643}{1.357} \approx \boxed{3.79}.
+```
+
+The eight correlated draws carry the information of about $`3.8`$ independent ones, a 53% efficiency loss from the positive lag-1 dependence. The full Geyer estimator in Solution Method uses every lag and the monotone-positive truncation, but the qualitative lesson is the same: positive autocorrelation deflates ESS below the raw chain length, and a chain with $`\rho_1`$ near one would lose almost all its draws to dependence.
+
 ## Model Setup
 
 | Object | Symbol | Role |
