@@ -55,6 +55,50 @@ At the deterministic steady state the constraint is slack because
 $`I_{ss}=\delta K_{ss}>0`$.
 With the calibration below, $`K_{ss}=37.989`$, $`Y_{ss}=3.704`$, $`C_{ss}=2.754`$, and $`I_{ss}=0.950`$.
 
+## Worked Numerical Example
+
+Compute the deterministic steady state under the calibration $`\beta=0.99`$, $`\alpha=0.36`$, $`\delta=0.025`$. At $`z=1`$ and constant $`K`$, the Euler equation collapses to the no-uncertainty form $`1=\beta[\alpha K^{\alpha-1}+(1-\delta)]`$.
+
+Solve for the marginal product of capital:
+
+```math
+\alpha K_{ss}^{\alpha-1}=\frac{1}{\beta}-(1-\delta)=\frac{1}{\beta}-1+\delta.
+```
+
+Plug in the calibration:
+
+```math
+\frac{1}{0.99}-1+0.025=1.010101-1+0.025=0.035101.
+```
+
+Divide by $`\alpha`$ to isolate the capital term:
+
+```math
+K_{ss}^{\alpha-1}=\frac{0.035101}{0.36}=0.097503.
+```
+
+Invert the exponent. Since $`\alpha-1=-0.64`$, raise both sides to $`1/(\alpha-1)=-1.5625`$:
+
+```math
+K_{ss}=(0.097503)^{-1.5625}=37.989.
+```
+
+Output, investment, and consumption follow from the resource constraint at $`z=1`$:
+
+```math
+Y_{ss}=K_{ss}^{\alpha}=(37.989)^{0.36}=3.704.
+```
+
+```math
+I_{ss}=\delta K_{ss}=(0.025)(37.989)=0.950.
+```
+
+```math
+\boxed{C_{ss}=Y_{ss}-I_{ss}=3.704-0.950=2.754.}
+```
+
+Because $`I_{ss}=0.950>0`$, the irreversibility constraint $`I\geq 0`$ is slack at the deterministic steady state, so the irreversible and standard RBC models share this point. The constraint bites only in stochastic states where productivity is low and capital is high, exactly the region traced out by the overhang experiment in Results.
+
 ## Model Setup
 
 | Parameter | Value | Description |

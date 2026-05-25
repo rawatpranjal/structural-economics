@@ -73,6 +73,46 @@ Equality holds when the constraint is slack. Strict inequality holds when the ho
 
 One last piece motivates why this discretisation converges to the right object. The HJB is a first-order PDE whose classical solution may not exist where the value function has kinks. The viscosity solution is the standard relaxation that admits such kinks and still picks the economically meaningful one. Crandall, Evans, and Lions (1984) formalised this notion. A discretisation is called *monotone* when its update is non-decreasing in each grid value. Monotonicity is what makes the discrete limit equal the viscosity solution. The upwind scheme is monotone, so its fixed point converges to the viscosity solution under grid refinement. The centred scheme is non-monotone, which is why the failure-mode comparison below diverges.
 
+## Worked Numerical Example
+
+Take one interior node in the Ramsey HJB with $`u(c) = \log c`$, $`f(k) = k^{\alpha}`$, $`\alpha = 0.36`$, and $`\delta = 0.05`$. Place the three-point stencil at $`k_{i-1} = 1.0`$, $`k_i = 1.1`$, $`k_{i+1} = 1.2`$, so $`\Delta k = 0.1`$, and let the current value iterate carry $`v_{i-1} = 2.00`$, $`v_i = 2.10`$, $`v_{i+1} = 2.18`$.
+
+The two one-sided slopes at node $`i`$ are
+
+```math
+D^{+} v_i = \frac{v_{i+1} - v_i}{\Delta k} = \frac{2.18 - 2.10}{0.1} = 0.80,
+\qquad
+D^{-} v_i = \frac{v_i - v_{i-1}}{\Delta k} = \frac{2.10 - 2.00}{0.1} = 1.00.
+```
+
+The first-order condition for log utility is $`1/c = v'(k)`$, so each slope implies a candidate consumption,
+
+```math
+c_F = \frac{1}{D^{+} v_i} = 1.25,
+\qquad
+c_B = \frac{1}{D^{-} v_i} = 1.00.
+```
+
+Net resources at $`k_i`$ are $`f(k_i) - \delta k_i = 1.1^{0.36} - (0.05)(1.1) = 1.0349 - 0.055 = 0.9799`$. The two candidate drifts are
+
+```math
+s_F = 0.9799 - c_F = -0.2701,
+\qquad
+s_B = 0.9799 - c_B = -0.0201.
+```
+
+Both drifts are negative, so the forward test $`s_F > 0`$ fails and the backward test $`s_B < 0`$ holds. The upwind selector returns
+
+```math
+D v_i = D^{-} v_i = 1.00,
+\qquad
+\boxed{c^{\ast} = 1.00, \quad s^{\ast} = -0.0201.}
+```
+
+The Hamiltonian at this node evaluates to $`\log(1.00) + (1.00)(-0.0201) = -0.0201`$, the flow value the implicit step uses to update $`v_i`$.
+
+Negative drift on both candidates is the textbook signature of a node above the steady state, where capital decumulates regardless of which slope we trust. The selector picks the backward neighbour because that is where the state is actually moving, and the sub-diagonal entry $`-s^{-}_i / \Delta k = 0.201`$ is what gets written into row $`i`$ of the generator $`A`$.
+
 ## Model Setup
 
 The illustrative model is a Ramsey HJB on a single capital state with log utility, Cobb-Douglas production, and depreciation. The calibration exposes the upwind branches and the boundary forcing rule. Economic claims belong in the dense Ramsey tutorial.

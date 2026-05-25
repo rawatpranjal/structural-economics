@@ -67,6 +67,54 @@ J = \begin{bmatrix} I_k & 0_k & \cdots & 0_k \end{bmatrix} \in \mathbb{R}^{k \ti
 
 Entry $`(\Phi_j)_{ik}`$ reads as the response of variable $`i`$ to a unit-variance structural shock $`k`$, $`j`$ periods after the shock. Setting $`j = 0`$ recovers $`P`$, which encodes the impact restrictions; setting $`j > 0`$ propagates those restrictions through the estimated lag matrices.
 
+## Worked Numerical Example
+
+Take a bivariate VAR(1) ($`k = 2`$, $`p = 1`$, zero intercept) with $`y_t = (y_{1,t}, y_{2,t})'`$. The headline run uses $`p = 2`$; collapsing to one lag keeps the matrix algebra hand-sized while exercising the same companion-form and Cholesky machinery.
+
+Set the lag matrix and the reduced-form covariance to
+
+```math
+A_1 = \begin{pmatrix} 0.5 & 0.2 \\ 0.1 & 0.6 \end{pmatrix},
+\qquad
+\Sigma_u = \begin{pmatrix} 1.0 & 0.2 \\ 0.2 & 0.5 \end{pmatrix}.
+```
+
+With $`p = 1`$ the companion matrix is $`F = A_1`$ and the selector is $`J = I_2`$. Conditioning on $`y_t = (1, 1)'`$, the one-step forecast is
+
+```math
+\mathbb{E}_t[y_{t+1}] = A_1 y_t
+= \begin{pmatrix} 0.5(1) + 0.2(1) \\ 0.1(1) + 0.6(1) \end{pmatrix}
+= \begin{pmatrix} 0.7 \\ 0.7 \end{pmatrix}.
+```
+
+The one-step forecast covariance equals the residual covariance, $`\mathrm{Var}_t(y_{t+1}) = \Sigma_u`$.
+
+To check stability, compute the eigenvalues of $`F = A_1`$. The characteristic polynomial is
+
+```math
+\det(A_1 - \lambda I_2) = (0.5 - \lambda)(0.6 - \lambda) - (0.2)(0.1)
+= \lambda^2 - 1.1\lambda + 0.28 = 0,
+```
+
+so $`\lambda = (1.1 \pm \sqrt{1.21 - 1.12})/2 = (1.1 \pm 0.3)/2 \in \{0.7,\ 0.4\}`$. Both lie inside the unit circle, so the system is stable.
+
+The Cholesky factor of $`\Sigma_u`$ under the ordering $`(y_1, y_2)`$ is
+
+```math
+P = \begin{pmatrix} 1.0 & 0 \\ 0.2 & \sqrt{0.46} \end{pmatrix},
+\qquad \sqrt{0.46} \approx 0.6782,
+```
+
+since $`P P' = \begin{pmatrix} 1 & 0.2 \\ 0.2 & 0.04 + 0.46 \end{pmatrix} = \Sigma_u`$. The first column of $`P`$ is the impact response to the structural shock $`\varepsilon_{1,t}`$: a unit shock raises $`y_1`$ by $`1.0`$ and $`y_2`$ by $`0.2`$ on impact. The one-period-ahead response to that same shock is the first column of $`\Phi_1 = F P`$:
+
+```math
+\Phi_1\, e_1 = A_1 \begin{pmatrix} 1.0 \\ 0.2 \end{pmatrix}
+= \begin{pmatrix} 0.5(1.0) + 0.2(0.2) \\ 0.1(1.0) + 0.6(0.2) \end{pmatrix}
+= \boxed{\begin{pmatrix} 0.54 \\ 0.22 \end{pmatrix}}.
+```
+
+The recursive ordering forces the impact response of $`y_1`$ to the second structural shock to be zero (top entry of column 2 of $`P`$). After one period, that zero leaks into $`y_1`$ through the lag matrix, which is how the impulse response builds up over horizons.
+
 ## Model Setup
 
 | Object | Symbol | Role |

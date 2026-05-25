@@ -46,6 +46,40 @@ v_t=\rho_v v_{t-1}+\varepsilon^v_t.
 The forward-guidance experiment instead sets $`v_H=\varepsilon^v_H`$ for one future
 quarter $`H`$ and sets all other policy wedges to zero.
 
+## Worked Numerical Example
+
+Take the Setup calibration $`\sigma=1`$, $`\beta=0.99`$, $`\kappa=0.1`$, $`\phi_\pi=1.5`$, $`\phi_x=0.125`$, $`\rho_v=0.5`$, and solve the 2 by 2 coefficient system for $`\psi_x`$ once at rational attention $`M=M_f=1`$ and once at behavioral attention $`M=M_f=0.85`$.
+
+The bottom row of the system, $`-\kappa\,\psi_x + (1-\beta M_f\rho_v)\psi_\pi = 0`$, gives
+
+```math
+\psi_\pi = \frac{\kappa}{1-\beta M_f\rho_v}\,\psi_x.
+```
+
+Substituting into the top row collapses the system to a scalar equation in $`\psi_x`$:
+
+```math
+\left[(1-M\rho_v+\sigma\phi_x) + \sigma(\phi_\pi-\rho_v)\,\frac{\kappa}{1-\beta M_f\rho_v}\right]\psi_x = -\sigma.
+```
+
+At rational attention, $`1-M\rho_v+\sigma\phi_x = 1-0.5+0.125 = 0.625`$ and $`1-\beta M_f\rho_v = 1-0.495 = 0.505`$, so
+
+```math
+\left[0.625 + (1)(1.0)\,\frac{0.1}{0.505}\right]\psi_x = -1
+\implies 0.82302\,\psi_x = -1
+\implies \boxed{\psi_x^{\text{rat}} = -1.2150}.
+```
+
+At behavioral attention, $`1-M\rho_v+\sigma\phi_x = 1-0.425+0.125 = 0.700`$ and $`1-\beta M_f\rho_v = 1-0.42075 = 0.57925`$, so
+
+```math
+\left[0.700 + (1)(1.0)\,\frac{0.1}{0.57925}\right]\psi_x = -1
+\implies 0.87264\,\psi_x = -1
+\implies \boxed{\psi_x^{\text{beh}} = -1.1459}.
+```
+
+A one-percentage-point innovation $`\varepsilon^v = 0.010`$ therefore produces an impact output gap of $`-1.215`$ percent under rational attention and $`-1.146`$ percent under behavioral attention, matching the Output-impact column of the Policy-Wedge Responses table. Cognitive discounting raises the coefficient $`1-M\rho_v`$ in the IS row, which dampens the static feedback from the persistent wedge and shrinks $`|\psi_x|`$ by about 6 percent. The effect is small because the wedge is only weakly persistent at $`\rho_v=0.5`$; the bigger gap shows up in the forward-guidance experiment, where many quarters of expectations compound.
+
 ## Model Setup
 
 | Primitive | Value | Role |

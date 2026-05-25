@@ -58,6 +58,54 @@ The recovered policy is $`x_{t+1} = F x_t`$ for the predetermined block and $`z_
 
 The two failure modes carry distinct economic content. Suppose the stable count falls below $`n_x`$. The predetermined block then has fewer decaying directions than it has initial values to absorb. Every solution path consistent with the model grows without bound. Equilibrium does not exist. Now suppose the stable count exceeds $`n_x`$. The jump variables then have more bounded responses to the state than they need. The extra responses parameterise a continuum of bounded solutions. Some of these solutions react to random signals unrelated to the model's shocks. This is what a sunspot equilibrium means, and equilibrium is indeterminate.
 
+## Worked Numerical Example
+
+Drop the Taylor wedge so the system collapses to the purely forward-looking $`(y_t, \pi_t)`$ block with $`n_x = 0`$ and $`n_z = 2`$. Use the README calibration $`\sigma = 1`$, $`\beta = 0.99`$, $`\kappa = 0.30`$, $`\phi_y = 0`$, and compare the textbook active Taylor rule $`\phi_\pi = 1.5`$ to a passive rule $`\phi_\pi = 0.6`$.
+
+The Euler equation, Phillips curve, and Taylor rule give
+
+```math
+y_t = \mathbb{E}_t y_{t+1} - (\phi_\pi \pi_t - \mathbb{E}_t \pi_{t+1}), \qquad \pi_t = \beta \mathbb{E}_t \pi_{t+1} + \kappa y_t.
+```
+
+Solve the Phillips curve for $`\mathbb{E}_t \pi_{t+1} = (\pi_t - \kappa y_t)/\beta`$ and substitute into the Euler equation. The transition $`\mathbb{E}_t s_{t+1} = M(\phi_\pi) s_t`$ with $`s_t = (y_t, \pi_t)^{\top}`$ has
+
+```math
+M(\phi_\pi) = \begin{pmatrix} 1 + \kappa/\beta & \phi_\pi - 1/\beta \\ -\kappa/\beta & 1/\beta \end{pmatrix}.
+```
+
+Plugging in numbers: $`1/\beta = 1.0101`$ and $`\kappa/\beta = 0.3030`$.
+
+For $`\phi_\pi = 1.5`$ the matrix is
+
+```math
+M(1.5) = \begin{pmatrix} 1.3030 & 0.4899 \\ -0.3030 & 1.0101 \end{pmatrix}, \quad \mathrm{tr}\,M = 2.3131, \quad \det M = 1.4647.
+```
+
+The discriminant $`\mathrm{tr}^2 - 4\det = 5.3504 - 5.8587 = -0.5083`$ is negative, so the eigenvalues are complex conjugates with common modulus $`|\lambda| = \sqrt{\det M} = \sqrt{1.4647} = 1.2103`$. Both lie outside the unit circle, so the stable count is $`0`$.
+
+For $`\phi_\pi = 0.6`$ the matrix is
+
+```math
+M(0.6) = \begin{pmatrix} 1.3030 & -0.4101 \\ -0.3030 & 1.0101 \end{pmatrix}, \quad \mathrm{tr}\,M = 2.3131, \quad \det M = 1.1920.
+```
+
+The discriminant $`5.3504 - 4.7679 = 0.5825`$ is positive, so
+
+```math
+\lambda_{1,2} = \tfrac{1}{2}\bigl(2.3131 \pm \sqrt{0.5825}\bigr) = \tfrac{1}{2}(2.3131 \pm 0.7632) = \lbrace 1.5382, \; 0.7750 \rbrace.
+```
+
+One root sits inside the unit circle, so the stable count is $`1`$.
+
+Compare each stable count to $`n_x = 0`$:
+
+```math
+\boxed{\phi_\pi = 1.5: \; \#\{|\lambda|<1\} = 0 = n_x \;\Rightarrow\; \text{determinate}; \quad \phi_\pi = 0.6: \; \#\{|\lambda|<1\} = 1 > n_x \;\Rightarrow\; \text{indeterminate}.}
+```
+
+Both calibrations share the same trace, so the inflation coefficient acts entirely through the determinant. Lowering $`\phi_\pi`$ drops $`\det M`$ below the trace-implied threshold where both roots leave the unit circle, releasing one extra stable direction that the single jump pair $`(y_t, \pi_t)`$ does not need. That spare direction is the sunspot mode the right panel of the phase-plane figure visualises.
+
 ## Model Setup
 
 The model is a three-equation New Keynesian system with a Taylor-rule wedge. Variables are in deviation from steady state:
