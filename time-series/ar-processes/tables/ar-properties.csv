@@ -3,4 +3,4 @@ Persistence ($\rho$),0.50,0.90,0.99
 Unconditional variance,0.000133,0.000526,0.005025
 Half-life (periods),1.0,6.6,69.0
 First-order autocorrelation,0.50,0.90,0.99
-Spectral peak,Frequency 0,Frequency 0,Frequency 0
+Spectral peak frequency,0,0,0
