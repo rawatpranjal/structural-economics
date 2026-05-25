@@ -68,13 +68,8 @@ K^s(r^{\ast}) = K^d(r^{\ast}).
 
 Bisection delivers $`K^s(r^{\ast}) \approx K^d(r^{\ast})`$ within tolerance, not exact equality; the residual is a tolerance gap, not a model object. A standard result is $`r^{\ast}<1/\beta-1`$: above that rate, precautionary saving becomes unbounded.
 
-## Data flow
-
-```
-primitives (β, σ, α, δ, ρ, σ_ε)   →   [ Aiyagari equilibrium solver ]   →   r*, w*, K*, μ*(a, z)
-```
-
-## Worked Numerical Example
+<details>
+<summary>Worked Numerical Example (click to expand)</summary>
 
 One *Bellman operator* application by hand. Take $`a \in \{0, 2\}`$, $`z \in \{0.5, 1.5\}`$, symmetric chain with $`P_{\text{stay}} = 0.9, P_{\text{switch}} = 0.1`$, $`\beta = 0.96`$, $`\sigma = 2`$ (so $`u(c) = -1/c`$), $`r = 0.025`$, $`w = 1.25`$. Guess
 
@@ -98,7 +93,9 @@ Argmax is $`a' = 2`$:
 \boxed{g_a(2, 1.5) = 2, \quad c^{\ast}(2, 1.5) = 1.925, \quad V_{\text{new}}(2, 1.5) = -15.880.}
 ```
 
-The high-income household holds wealth flat: the better continuation beats the curvature cost of cutting consumption from 3.925 to 1.925. The production solver in `run.py` repeats this argmax at every $`(a_i, z_j)`$ node on the 7×200 grid until $`V_{\text{new}} \approx V`$ in sup-norm.
+The high-income household holds wealth flat. The better continuation beats the curvature cost of cutting consumption from 3.925 to 1.925. The production solver in `run.py` repeats this argmax at every $`(a_i, z_j)`$ node on the 7×200 grid until $`V_{\text{new}} \approx V`$ in sup-norm.
+
+</details>
 
 ## Model Setup
 
@@ -120,7 +117,32 @@ The high-income household holds wealth flat: the better continuation beats the c
 
 ## Solution Method
 
-What's new in Aiyagari is the outer *bisection* that ties household saving to firm capital demand. The inner blocks — household Bellman and stationary distribution — are covered in the prereq tutorials and used here as black boxes.
+What's new in Aiyagari is the outer *bisection* that ties household saving to firm capital demand. The inner blocks (household Bellman and stationary distribution) are covered in the prereq tutorials and used here as black boxes.
+
+<details>
+<summary>Algorithm structure: outer bisection around inner VFI (click to expand)</summary>
+
+```
++------------------- outer loop: bisect r ------------------+
+|                                                           |
+|   r  -->  firm FOC  -->  K^d(r), w(r)                     |
+|                                                           |
+|   +-------- inner loop: VFI --------+                     |
+|   |  V_k --> Bellman op --> V_{k+1} | --> policy g_a      |
+|   +---------------------------------+                     |
+|                                                           |
+|   g_a   -->  forward iteration  -->  mu(a, z)             |
+|   mu    -->  aggregate          -->  K^s(r)               |
+|                                                           |
+|   compare K^s vs K^d  -->  update [r_low, r_high]         |
+|                                                           |
++-----------------------------------------------------------+
+                             |
+                             v
+                       r*, w*, K*, mu*
+```
+
+</details>
 
 ```python
 # Outer loop: bisect over r until K^s(r) = K^d(r).
@@ -138,7 +160,7 @@ def find_equilibrium(r_low, r_high, primitives, tol=5e-4):
         # K^s(r) = Σ_{i, j} a_i * μ(a_i, z_j)
         K_s = aggregate_assets(mu, primitives)
 
-        # market-clearing: K^s > K^d means households save too much → rate too high
+        # market-clearing: K^s > K^d means households save too much, rate too high
         if K_s > K_d:
             r_high = r
         else:
@@ -147,22 +169,21 @@ def find_equilibrium(r_low, r_high, primitives, tol=5e-4):
     return r, w, K_s, mu
 ```
 
-The run reaches relative gap 4.94e-04 in 12 bisection steps; the final household VFI takes 188 iterations to sup-norm 1e-07.
+The outer bisection reaches relative gap 4.94e-04 in 12 steps. The cold-start inner VFI at the equilibrium prices takes about 500 iterations to sup-norm 1e-07; inside the bisection a warm-started VFI converges in one to two iterations after the first solve.
 
 ## Results
 
-The firm schedule is analytic and slopes down. The household schedule solves the Bellman problem at each rate. The crossing is the stationary equilibrium. Value functions rise with assets and income; asset policies show stronger saving after good income states, with a visible kink at the borrowing limit and each income line eventually crossing below the 45-degree line — that crossing is the *buffer-stock target* at the equilibrium rate.
+The firm schedule is analytic and slopes down. The household schedule solves the Bellman problem at each rate. The crossing is the stationary equilibrium. The bisection driving toward that crossing shows a roughly log-linear decay in the relative market-clearing gap, hitting tolerance in 12 steps.
 
-<table>
-<tr>
-<td><img src="figures/capital-market.png" alt="Capital demand and household supply schedules with the stationary equilibrium" width="100%"></td>
-<td><img src="figures/savings-policy.png" alt="Equilibrium value function and asset policy" width="100%"></td>
-</tr>
-</table>
+![Capital-market clearing and bisection convergence](figures/capital-market.png)
+
+Value functions rise with assets and income. Asset policies show stronger saving after good income states, with a visible kink at the borrowing limit and each income line eventually crossing below the 45-degree line. That crossing is the *buffer-stock target* at the equilibrium rate. The inner VFI converges geometrically in sup-norm; the value-function snapshots show the Bellman operator pulling the initial guess toward the fixed point monotonically.
+
+![Value function, asset policy, VFI convergence, and value-function evolution](figures/savings-policy.png)
 
 The stationary distribution comes from the asset policy and income chain. Mean wealth exceeds median, with a small mass at the borrowing limit and a long right tail from repeated high-income draws. With no ex-ante heterogeneity, the run produces a Gini around 0.5.
 
-<img src="figures/wealth-distribution.png" alt="Stationary wealth distribution and Lorenz curve at the equilibrium prices" width="80%">
+![Stationary wealth distribution and Lorenz curve](figures/wealth-distribution.png)
 
 ### Stationary equilibrium diagnostics
 
@@ -184,7 +205,7 @@ The stationary distribution comes from the asset policy and income chain. Mean w
 
 ## Takeaway
 
-*Precautionary saving* turns a household policy into an aggregate capital supply curve. Incomplete insurance pushes the equilibrium interest rate below the complete-markets benchmark — the gap is the price of self-insurance. The model closes via VFI inside bisection: household optimization at a candidate rate, stationary distribution from the policy, and an outer rate adjustment that clears the capital market.
+*Precautionary saving* turns a household policy into an aggregate capital supply curve. Incomplete insurance pushes the equilibrium interest rate below the complete-markets benchmark. The gap is the price of self-insurance. The model closes via VFI inside bisection: household optimization at a candidate rate, stationary distribution from the policy, and an outer rate adjustment that clears the capital market.
 
 ## See also
 

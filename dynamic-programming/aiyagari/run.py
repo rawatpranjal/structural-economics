@@ -45,7 +45,8 @@ def solve_household(
     tol: float = 1e-7,
     max_iter: int = 4000,
     value_init: np.ndarray | None = None,
-) -> dict[str, np.ndarray | int | float | bool]:
+    track_snapshots: bool = False,
+) -> dict[str, object]:
     """Solve the household consumption-savings problem at prices (r, w).
 
     Vectorized grid-search VFI: cash on hand and the (current_asset,
@@ -65,6 +66,9 @@ def solve_household(
         value = crra_utility(np.maximum(cash_on_hand, 1e-12), sigma) / (1.0 - beta)
 
     flow_utility = crra_utility(np.maximum(consumption, 1e-15), sigma)
+    error_history: list[float] = []
+    snapshot_iters = {1, 5, 20, 100, 500} if track_snapshots else set()
+    value_snapshots: dict[int, np.ndarray] = {}
     for iteration in range(1, max_iter + 1):
         # E[V(a', z') | z_j] over the income chain, indexed [m, j].
         expected_value = value @ transition.T
@@ -75,7 +79,12 @@ def solve_household(
         value_new = np.take_along_axis(candidate, policy_idx[:, :, None], axis=2).squeeze(2)
         error = float(np.max(np.abs(value_new - value)))
         value = value_new
+        error_history.append(error)
+        if track_snapshots and iteration in snapshot_iters:
+            value_snapshots[iteration] = value.copy()
         if error < tol:
+            if track_snapshots:
+                value_snapshots[iteration] = value.copy()
             break
 
     asset_policy = a_grid[policy_idx]
@@ -88,6 +97,8 @@ def solve_household(
         "iterations": iteration,
         "error": error,
         "converged": error < tol,
+        "error_history": error_history,
+        "value_snapshots": value_snapshots,
     }
 
 
@@ -280,14 +291,24 @@ def main() -> None:
     Kd_curve_dense = np.array([capital_demand(r) for r in r_supply_grid])
 
     # =========================================================================
+    # Cold-start solve at equilibrium to capture an honest VFI trajectory.
+    # The warm-started solve inside the bisection converges in ~1-2 iterations
+    # so its history is not informative for the convergence plot.
+    # =========================================================================
+    sol_cold = solve_household(
+        a_grid, z_grid, transition, beta, sigma_crra, r_eq, w_eq,
+        tol=tol_vfi, value_init=None, track_snapshots=True,
+    )
+
+    # =========================================================================
     # Figures
     # =========================================================================
     setup_style()
 
     K_over_Y = K_eq / Y_eq
 
-    # Figure 1: capital market (thumb from this)
-    fig_capital, ax_capital = plt.subplots()
+    # Figure 1 (1x2): capital market | bisection convergence
+    fig_capital, (ax_capital, ax_bisect) = plt.subplots(1, 2, figsize=(12.5, 4.8))
     r_demand = np.linspace(0.005, impatience_rate - 5e-4, 200)
     K_demand_curve = np.array([capital_demand(rv) for rv in r_demand])
     ax_capital.plot(K_demand_curve, r_demand, color="tab:blue", linewidth=2.0,
@@ -302,18 +323,33 @@ def main() -> None:
                              f"$r^{{\\ast}}={r_eq:.4f}$)")
     ax_capital.set_xlabel("Aggregate capital $K$")
     ax_capital.set_ylabel("Interest rate $r$")
-    ax_capital.set_title("Capital-Market Clearing")
+    ax_capital.set_title("Capital-market clearing")
     ax_capital.set_xlim(0.85 * min(Ks_curve.min(), K_demand_curve.min()),
                         1.05 * max(Ks_curve.max(), K_demand_curve.max(), K_eq))
     ax_capital.set_ylim(0.0, impatience_rate + 5e-3)
     ax_capital.legend(loc="upper right", fontsize=9)
+
+    rel_gap_abs = [abs((ks - kd) / kd) for ks, kd in zip(Ks_history, Kd_history)]
+    ax_bisect.plot(range(1, len(rel_gap_abs) + 1), rel_gap_abs,
+                   color="tab:purple", linewidth=1.8, marker="o", markersize=5)
+    ax_bisect.axhline(tol_r, color="0.4", linestyle="--", linewidth=0.9,
+                      label=f"tolerance = {tol_r:.0e}")
+    ax_bisect.set_yscale("log")
+    ax_bisect.set_xlabel("Bisection iteration")
+    ax_bisect.set_ylabel(r"$|K^s - K^d| / K^d$ (log)")
+    ax_bisect.set_title("Outer-loop convergence")
+    ax_bisect.legend(loc="upper right", fontsize=9)
+    fig_capital.tight_layout()
     save_figure(fig_capital, "figures/capital-market.png", dpi=150)
 
-    # Figure 2: value and asset policy (2-panel)
+    # Figure 2 (2x2): value, policy, VFI convergence, value snapshots
     plot_states = [0, n_income // 4, n_income // 2, 3 * n_income // 4, n_income - 1]
     cmap = plt.cm.viridis(np.linspace(0.1, 0.9, n_income))
 
-    fig_pol, (ax_v, ax_g) = plt.subplots(1, 2, figsize=(11.5, 4.6))
+    fig_pol, axes = plt.subplots(2, 2, figsize=(11.5, 8.6))
+    ax_v, ax_g = axes[0, 0], axes[0, 1]
+    ax_conv, ax_snap = axes[1, 0], axes[1, 1]
+
     for j in plot_states:
         ax_v.plot(a_grid, sol["value"][:, j], color=cmap[j], linewidth=2.0,
                   label=f"$z_j={z_grid[j]:.2f}$")
@@ -334,6 +370,32 @@ def main() -> None:
     ax_g.set_xlim(0, min(a_max, 30))
     ax_g.set_ylim(0, min(a_max, 30))
     ax_g.legend(loc="upper left", fontsize=8)
+
+    err_hist = sol_cold["error_history"]
+    ax_conv.plot(range(1, len(err_hist) + 1), err_hist,
+                 color="tab:purple", linewidth=1.8)
+    ax_conv.axhline(tol_vfi, color="0.4", linestyle="--", linewidth=0.9,
+                    label=f"tolerance = {tol_vfi:.0e}")
+    ax_conv.set_yscale("log")
+    ax_conv.set_xlabel("VFI iteration")
+    ax_conv.set_ylabel(r"$\|V_{k+1} - V_k\|_\infty$ (log)")
+    ax_conv.set_title("Inner-loop convergence (cold start)")
+    ax_conv.legend(loc="upper right", fontsize=9)
+
+    j_snap = n_income // 2
+    snapshots = sol_cold["value_snapshots"]
+    snap_iters = sorted(snapshots.keys())
+    snap_cmap = plt.cm.plasma(np.linspace(0.05, 0.85, len(snap_iters)))
+    for idx_s, iter_s in enumerate(snap_iters):
+        suffix = " (converged)" if iter_s == snap_iters[-1] else ""
+        ax_snap.plot(a_grid, snapshots[iter_s][:, j_snap], color=snap_cmap[idx_s],
+                     linewidth=1.8, label=f"iter {iter_s}{suffix}")
+    ax_snap.set_xlabel("Assets $a$")
+    ax_snap.set_ylabel(f"$V(a, z_j)$ at $z_j = {z_grid[j_snap]:.2f}$")
+    ax_snap.set_title("Value function evolving over VFI")
+    ax_snap.set_xlim(0, min(a_max, 30))
+    ax_snap.legend(loc="lower right", fontsize=8)
+
     fig_pol.tight_layout()
     save_figure(fig_pol, "figures/savings-policy.png", dpi=150)
 
