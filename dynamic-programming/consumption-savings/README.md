@@ -100,27 +100,18 @@ The high-income household holds wealth flat. Saving preserves the continuation v
 What is new here relative to cake-eating or optimal growth is the income risk. The Bellman operator now sums over income states when computing the continuation value.
 
 ```
-                    primitives: beta, R, sigma, tol
-                    grids: A = {a_i}, G = {g_l}, Z = {z_j}, P
-                                      |
-                                      v
-               +----------- VFI loop -----------+
-               |                               |
-               |  for each z_j:                |
-               |    EV(a_i) = sum_k P[jk] V(a_i, z_k)        |
-               |    interp EV onto choice grid G               |
-               |    for each a_i:                              |
-               |      obj(g_l) = u(R a_i + z_j - g_l)         |
-               |                 + beta * EV(g_l)              |
-               |      g_a(a_i, z_j) = argmax obj               |
-               |      V_new(a_i, z_j) = max obj                |
-               |                               |
-               |  err = max|V_new - V|         |
-               +-- err >= tol: V <- V_new, repeat -+
-                                      |
-                                  err < tol
-                                      v
-                           V*(a_i, z_j),  g_a(a_i, z_j)
+              primitives (β, R, σ), grids (A, G, Z), transition P
+                                  |
+                                  v
+              +---------- VFI loop ----------+
+              |                              |
+              |   V_k  -->  [ Bellman op ]  -->  V_{k+1}
+              |                              |
+              +------ err >= tol: repeat ----+
+                                  |
+                              err < tol
+                                  v
+                         V*(a, z), policy g_a(a, z)
 ```
 
 ```python
