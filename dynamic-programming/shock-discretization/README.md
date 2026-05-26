@@ -89,27 +89,15 @@ The endpoint rows pile half their mass on themselves because tail probability pa
 What is new here is the discretization itself. Prereq tutorials use a chain as a black box. This tutorial builds one.
 
 ```
-input: ρ, σ_ε, N
-
-+------------------ Tauchen (1986) ------------------+
-|  σ_z  =  σ_ε / sqrt(1 − ρ²)                       |
-|  z_j  =  −m·σ_z + (j−1)·2m·σ_z/(N−1)             |
-|  c_j  =  cell midpoints; c_1 = −∞, c_{N+1} = +∞   |
-|  P[i,j] = Φ((c_{j+1} − ρ·z_i)/σ_ε)               |
-|           − Φ((c_j    − ρ·z_i)/σ_ε)               |
-+----------------------------------------------------+
-
-+-------------- Rouwenhorst (1995) ------------------+
-|  p   =  (1 + ρ) / 2                               |
-|  P_2 =  [[p, 1−p], [1−p, p]]                      |
-|  for n = 3..N:                                     |
-|    P_n = p·A_TL + (1−p)·A_TR                      |
-|         + (1−p)·A_BL + p·A_BR                     |
-|    normalize interior rows (÷ 2)                   |
-|  z_j = σ_z·√(N−1)·(2(j−1)/(N−1) − 1)            |
-+----------------------------------------------------+
-
-output: grid {z_j}, transition P, invariant π
+        ρ, σ_ε, N                       ρ, σ_ε, N
+            |                                |
+            v                                v
+   +------------------+             +------------------+
+   |    [ Tauchen ]   |             |  [ Rouwenhorst ] |
+   +------------------+             +------------------+
+            |                                |
+            v                                v
+       {z_j}, P                          {z_j}, P
 ```
 
 ```python
