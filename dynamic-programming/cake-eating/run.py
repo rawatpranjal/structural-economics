@@ -230,69 +230,60 @@ def main() -> None:
     # =========================================================================
     setup_style()
 
-    # Figure 1: value function vs closed form
-    fig1, ax1 = plt.subplots()
-    ax1.plot(w_grid, v_star, color="tab:blue", linewidth=2, label="Numerical (VFI)")
-    ax1.plot(w_grid, v_analytical, color="tab:red", linestyle="--", linewidth=1.5, label="Closed form")
-    ax1.set_xlabel("Cake size $W$")
-    ax1.set_ylabel("$V(W)$")
-    ax1.set_title("Value Function vs Closed Form")
-    ax1.legend()
-    save_figure(fig1, "figures/value-function.png", dpi=150)
+    # Figure 1 (1x2): value function vs closed form  |  convergence across methods
+    fig1, (ax1a, ax1b) = plt.subplots(1, 2, figsize=(12, 5))
 
-    # Figure 2: consumption policy vs closed form
-    fig2, ax2 = plt.subplots()
-    ax2.plot(w_grid, consumption_policy, color="tab:blue", linewidth=2, label=r"Numerical $c^{\ast}(W)$")
-    ax2.plot(w_grid, consumption_analytical, color="tab:red", linestyle="--", linewidth=1.5,
-             label=r"Closed form $(1-\beta)W$")
-    ax2.plot(w_grid, w_grid, color="black", linestyle=":", linewidth=0.8, alpha=0.5,
-             label="$45^{\\circ}$ line")
-    ax2.set_xlabel("Cake size $W$")
-    ax2.set_ylabel("Consumption $c$")
-    ax2.set_title("Consumption Policy")
-    ax2.legend()
-    save_figure(fig2, "figures/policy-function.png", dpi=150)
+    ax1a.plot(w_grid, v_star, color="tab:blue", linewidth=2, label="Numerical (VFI)")
+    ax1a.plot(w_grid, v_analytical, color="tab:red", linestyle="--", linewidth=1.5, label="Closed form")
+    ax1a.set_xlabel("Cake size $W$")
+    ax1a.set_ylabel("$V(W)$")
+    ax1a.set_title("Value Function vs Closed Form")
+    ax1a.legend()
 
-    # Figure 3: depletion and consumption paths
-    fig3, (ax3a, ax3b) = plt.subplots(1, 2, figsize=(12, 5))
-    ax3a.plot(periods, cake_path, "o-", color="tab:blue", markersize=3, linewidth=1.5, label="Numerical")
-    ax3a.plot(periods, cake_path_analytical, color="black", linestyle="--", linewidth=1.5,
+    ax1b.semilogy(np.arange(1, len(errors_vfi) + 1), errors_vfi,
+                  color="tab:blue", linewidth=2, label="VFI")
+    ax1b.semilogy(np.arange(1, len(errors_mpi) + 1), errors_mpi,
+                  color="tab:orange", linewidth=2, marker="o", markersize=4,
+                  label=f"MPI ($k={k_inner}$)")
+    ax1b.semilogy(np.arange(1, len(errors_pi) + 1), errors_pi,
+                  color="tab:green", linewidth=2, marker="s", markersize=5,
+                  label="Exact PI")
+    ax1b.axhline(tol, color="black", linestyle=":", linewidth=0.8, alpha=0.6,
+                 label=f"Tolerance ${tol:.0e}$")
+    ax1b.set_xlabel("Outer iteration")
+    ax1b.set_ylabel("Sup-norm update $\\|V_{n+1} - V_n\\|_{\\infty}$")
+    ax1b.set_title("Convergence: VFI, MPI, and Exact PI")
+    ax1b.legend()
+
+    fig1.tight_layout()
+    save_figure(fig1, "figures/value-convergence.png", dpi=150)
+
+    # Figure 2 (1x2): consumption policy vs closed form  |  depletion path
+    fig2, (ax2a, ax2b) = plt.subplots(1, 2, figsize=(12, 5))
+
+    ax2a.plot(w_grid, consumption_policy, color="tab:blue", linewidth=2, label=r"Numerical $c^{\ast}(W)$")
+    ax2a.plot(w_grid, consumption_analytical, color="tab:red", linestyle="--", linewidth=1.5,
+              label=r"Closed form $(1-\beta)W$")
+    ax2a.plot(w_grid, w_grid, color="black", linestyle=":", linewidth=0.8, alpha=0.5,
+              label="$45^{\\circ}$ line")
+    ax2a.set_xlabel("Cake size $W$")
+    ax2a.set_ylabel("Consumption $c$")
+    ax2a.set_title("Consumption Policy")
+    ax2a.legend()
+
+    ax2b.plot(periods, cake_path, "o-", color="tab:blue", markersize=3, linewidth=1.5, label="Numerical")
+    ax2b.plot(periods, cake_path_analytical, color="black", linestyle="--", linewidth=1.5,
               label=r"Closed form $\beta^t W_0$")
-    ax3a.set_xlabel("Period $t$")
-    ax3a.set_ylabel("Cake remaining $W_t$")
-    ax3a.set_title("Depletion path")
-    ax3a.legend()
+    ax2b.set_xlabel("Period $t$")
+    ax2b.set_ylabel("Cake remaining $W_t$")
+    ax2b.set_title("Depletion path")
+    ax2b.legend()
 
-    ax3b.plot(periods, consumption_path, "o-", color="tab:red", markersize=3, linewidth=1.5, label="Numerical")
-    ax3b.plot(periods, consumption_path_analytical, color="black", linestyle="--", linewidth=1.5,
-              label=r"Closed form $(1-\beta)\beta^t W_0$")
-    ax3b.set_xlabel("Period $t$")
-    ax3b.set_ylabel("Consumption $c_t$")
-    ax3b.set_title("Consumption path")
-    ax3b.legend()
-    fig3.tight_layout()
-    save_figure(fig3, "figures/simulation.png", dpi=150)
-
-    # Figure 4: convergence across methods
-    fig4, ax4 = plt.subplots()
-    ax4.semilogy(np.arange(1, len(errors_vfi) + 1), errors_vfi,
-                 color="tab:blue", linewidth=2, label="VFI")
-    ax4.semilogy(np.arange(1, len(errors_mpi) + 1), errors_mpi,
-                 color="tab:orange", linewidth=2, marker="o", markersize=4,
-                 label=f"MPI ($k={k_inner}$)")
-    ax4.semilogy(np.arange(1, len(errors_pi) + 1), errors_pi,
-                 color="tab:green", linewidth=2, marker="s", markersize=5,
-                 label="Exact PI")
-    ax4.axhline(tol, color="black", linestyle=":", linewidth=0.8, alpha=0.6,
-                label=f"Tolerance ${tol:.0e}$")
-    ax4.set_xlabel("Outer iteration")
-    ax4.set_ylabel("Sup-norm update $\\|V_{n+1} - V_n\\|_{\\infty}$")
-    ax4.set_title("Convergence: VFI, MPI, and Exact PI")
-    ax4.legend()
-    save_figure(fig4, "figures/convergence.png", dpi=150)
+    fig2.tight_layout()
+    save_figure(fig2, "figures/policy-simulation.png", dpi=150)
 
     # Thumbnail
-    save_thumbnail("figures/value-function.png", "figures/thumb.png")
+    save_thumbnail("figures/value-convergence.png", "figures/thumb.png")
 
     # =========================================================================
     # Tables

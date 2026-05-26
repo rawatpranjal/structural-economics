@@ -2,35 +2,39 @@
 
 ## Overview
 
+Before Lucas (1978), asset pricing theories priced securities relative to the market portfolio (CAPM) without a consumption-theoretic foundation for the discount rate. Lucas embedded pricing in a pure exchange economy with a representative agent, deriving prices from first principles as a fixed point in the consumption Euler equation.
+
 A Lucas tree pays a stochastic dividend each period. A representative household owns the tree and consumes the dividend. Market clearing sets consumption equal to the dividend, so there is no savings choice.
 
-The equilibrium object is the price function. It makes the household willing to hold the tree after seeing today's dividend. The stochastic discount factor prices the next dividend and resale value.
+The equilibrium object is the price function. It makes the household willing to hold the tree after seeing today's dividend. The *stochastic discount factor* prices the next dividend and resale value.
 
 The price satisfies an Euler equation with a conditional expectation. We solve a one-dimensional fixed point after scaling price by marginal utility. Gauss-Hermite quadrature evaluates the expectation at off-grid dividend states.
 
+## Read before
+
+- [Consumption-savings under income risk](../consumption-savings/README.md)
+- [Shock discretization with Rouwenhorst](../shock-discretization/README.md)
+- [Optimal growth model](../optimal-growth/README.md)
+
 ## Equations
 
-**Endowment process.** Let $`x_t=\log y_t`$ follow
+Let $`x_t=\log y_t`$ follow
 
 ```math
-x_{t+1}=\rho x_t+\varepsilon_{t+1}, \qquad
-\varepsilon_{t+1}\sim \mathcal{N}(0,\sigma^2),\qquad |\rho|<1.
+x_{t+1}=\rho x_t+\varepsilon_{t+1}, \qquad \varepsilon_{t+1}\sim \mathcal{N}(0,\sigma^2), \qquad |\rho|<1.
 ```
 
-The process is stationary with variance $`\sigma^2/(1-\rho^2)`$.
-Persistence $`\rho`$ controls how fast dividends move back toward the mean.
+The process is stationary with variance $`\sigma^2/(1-\rho^2)`$. Persistence $`\rho`$ controls how fast dividends revert toward the mean.
 
-**Preferences.** The representative household has CRRA utility
+The representative household has CRRA utility
 
 ```math
-u(c)=\frac{c^{1-\gamma}}{1-\gamma}, \qquad u'(c)=c^{-\gamma},\qquad \gamma>0,
+u(c)=\frac{c^{1-\gamma}}{1-\gamma}, \qquad u'(c)=c^{-\gamma}, \qquad \gamma>0.
 ```
 
 The log case is $`u(c)=\log c`$ as $`\gamma\to 1`$.
 
-**Pricing equation.** Market clearing imposes $`c_t=y_t`$.
-A claim pays $`y_{t+1}`$ plus resale value $`p(y_{t+1})`$.
-Its price satisfies
+Market clearing imposes $`c_t=y_t`$. A claim pays $`y_{t+1}`$ plus resale value $`p(y_{t+1})`$. Its price satisfies
 
 ```math
 p(y_t)=\mathbb{E}_t\left[M_{t+1}(y_{t+1}+p(y_{t+1}))\right],
@@ -44,7 +48,7 @@ p(y_t)=\beta\mathbb{E}_t\left[
 \frac{u'(y_{t+1})}{u'(y_t)}(p(y_{t+1})+y_{t+1})\right].
 ```
 
-**Scaled price.** Define the marginal-utility-scaled price
+Define the marginal-utility-scaled price
 
 ```math
 f(y)\equiv u'(y) p(y).
@@ -56,18 +60,15 @@ Multiplying the Euler equation by $`u'(y_t)`$ gives
 f(y)=\beta\mathbb{E}\left[f(y')+u'(y') y'\big|y\right].
 ```
 
-Here $`y'`$ denotes next-period endowment ($`y_{t+1}`$); primes denote next-period values throughout.
+Here $`y'`$ denotes next-period endowment; primes denote next-period values throughout.
 
-This is a linear fixed point in $`f`$.
-The price and price-dividend ratio recover from
+This is a linear fixed point in $`f`$. The price and price-dividend ratio recover from
 
 ```math
 p(y)=\frac{f(y)}{u'(y)},\qquad \frac{p(y)}{y}=\frac{f(y)}{yu'(y)}.
 ```
 
-**Log-utility benchmark.** When $`\gamma=1`$, $`u'(y)y=1`$.
-The recursion is $`f=\beta(f+1)`$ at every $`y`$.
-It implies the constant ratio
+When $`\gamma=1`$, $`u'(y)y=1`$. The recursion is $`f=\beta(f+1)`$ at every $`y`$. It implies the constant ratio
 
 ```math
 \frac{p(y)}{y}=\frac{\beta}{1-\beta}.
@@ -117,54 +118,55 @@ The ratio exceeds 19.0 because higher risk aversion ($`\gamma=2`$) depresses $`u
 
 ## Model Setup
 
-| Primitive | Value | Role |
-|---|---:|---|
-| $`\beta`$ | 0.95 | Discount factor |
-| $`\rho`$ | 0.90 | Persistence of log dividends |
-| $`\sigma`$ | 0.10 | Innovation standard deviation in log dividends |
-| Stationary $`\mathrm{sd}(\log y)`$ | 0.2294 | $`\sigma/\sqrt{1-\rho^2}`$ |
-| $`\gamma`$ | 2.0 | Baseline CRRA risk aversion |
-| Coarse grid | 120 log-endowment nodes on $`[\pm 5\mathrm{sd}(\log y)]`$ | Tutorial solution |
-| Quadrature | 21 Gauss-Hermite nodes for $`\varepsilon`$ | Conditional expectation |
-| Benchmark | 900 grid nodes, 45 quadrature nodes | Fine-grid check |
-| Stopping rule | $`\|f_{n+1}-f_n\|_\infty < 10^{-9}`$ | Fixed-point tolerance |
+| Parameter | Value | Parameter | Value |
+|---|---:|---|---:|
+| Discount factor $`\beta`$ | 0.95 | CRRA risk aversion $`\gamma`$ | 2.0 |
+| Log-dividend persistence $`\rho`$ | 0.90 | Coarse grid nodes | 120 |
+| Innovation s.d. $`\sigma`$ | 0.10 | Quadrature nodes (coarse) | 21 |
+| Stationary s.d. of $`\log y`$ | 0.2294 | Benchmark grid nodes | 900 |
+| Fine-grid quadrature nodes | 45 | Stopping tolerance | $`10^{-9}`$ |
 
 ## Solution Method
 
-**Scaled-price iteration.** The iteration works with $`f(y)=u'(y)p(y)`$. This scaling removes current marginal utility from the denominator. The update maps a guessed scaled price into a new scaled price.
+What is new here relative to the consumption-savings prereq is the *scaled-price iteration*. There is no household policy to solve for. Market clearing collapses the Bellman equation to a valuation equation in $`f(y) = u'(y)p(y)`$. The scaling removes current marginal utility from the denominator and turns the Euler equation into a linear contraction. Gauss-Hermite quadrature integrates over the continuous log-normal innovation at each grid point.
 
-The update operator is
-
-```math
-(Tf)(y)=\beta\mathbb{E}\left[f(y')+u'(y')y'\big|y\right]
+```
+         beta, rho, sigma, gamma; log-endowment grid X; GH nodes, weights
+                                       |
+                                       v
+             +---------- scaled-price iteration (Tf) -----------+
+             |                                                   |
+             |   f_n  -->  [ Bellman operator T ]  -->  f_{n+1} |
+             |                                                   |
+             +----------  err >= tol: repeat  ------------------+
+                                       |
+                                   err < tol
+                                       v
+                              f*(x), p(y) = f* / u'(y), p/y
 ```
 
-This operator is a $`\beta`$-contraction. The run stops when sup-norm changes fall below $`10^{-9}`$.
+```python
+# Precompute next-state nodes and forcing term u'(y') y' = (y')^{1 - gamma}
+x_next = rho * x_grid[:, None] + shocks[None, :]   # shape (n_grid, n_quad)
+y_next = np.exp(x_next)
+dividend_term = y_next ** (1 - gamma)               # u'(y') y' under CRRA
 
-**Conditional expectation.** The state $`x=\log y`$ uses a uniform grid. At each grid point, the code forms quadrature nodes $`x'=\rho x+\varepsilon_j`$. It interpolates old $`f`$ at those nodes. It then averages continuation value plus $`u'(y')y'`$ with Gauss-Hermite weights.
+f = np.zeros_like(x_grid)   # initial guess f_0 = 0
 
-```text
-Algorithm  Lucas-tree fixed-point iteration on f = u'(y) p
-Inputs   beta, rho, sigma, gamma; log-endowment grid X = {x_i};
-           Gauss-Hermite nodes {eps_j}, weights {w_j};
-           tolerance epsilon
-Outputs  scaled price f(x_i), price p(y_i), price-dividend ratio p/y
+for iteration in range(1, max_iter + 1):
+    # Interpolate old f at off-grid next-state nodes (prereq: linear interp)
+    continuation = np.interp(x_next.ravel(), x_grid, f).reshape(x_next.shape)
+    # Apply operator T: f_{n+1}(x_i) = beta * sum_j w_j * (f_n(x'_ij) + d_ij)
+    f_new = beta * np.sum((continuation + dividend_term) * weights[None, :], axis=1)
+    error = float(np.max(np.abs(f_new - f)))
+    f = f_new
+    if error < tol:
+        break
 
-Precompute   x'[ij] <- rho * x_i + eps_j                  # next-state nodes
-             y'[ij] <- exp(x'[ij])
-             d[ij]  <- (y'[ij])^(1 - gamma)              # forcing term u'(y') y'
-Initialise   f_0(x_i) <- 0
-for n = 0, 1, 2, ...:
-    for each x_i:
-        f_hat[ij]  <- interp(f_n, X, x'[ij])              # off-grid continuation
-        f[n+1](x_i) <- beta * sum_j w_j * (f_hat[ij] + d[ij])
-    err <- max_i | f[n+1](x_i) - f_n(x_i) |
-stop when err < epsilon
-p(y_i)     <- f(x_i) * (y_i)^(gamma)
-p(y_i)/y_i <- p(y_i) / y_i
+price = f / y_grid ** (-gamma)   # p(y) = f(x) / u'(y) = f(x) * y^gamma
 ```
 
-A fine grid with 900 state nodes and 45 quadrature nodes checks interpolation and quadrature error. The baseline $`\gamma=2.0`$ solution converges in **405 iterations** to sup-norm residual **9.76e-10**. On the central $`\pm 3\mathrm{sd}(\log y)`$ region, the maximum relative error is **0.011%**.
+The operator $`T`$ is a $`\beta`$-contraction on the sup-norm ball. The baseline $`\gamma=2.0`$ solution converges in 405 iterations to sup-norm residual 9.76e-10. A fine grid with 900 state nodes and 45 quadrature nodes checks interpolation and quadrature error. On the central $`\pm 3\,\mathrm{sd}(\log y)`$ region, the maximum relative error is 0.011%.
 
 ## Results
 
@@ -182,13 +184,13 @@ The lower panel plots $`p(y_t)/y_t`$. Under $`\gamma=2`$, the ratio moves with t
 
 Risk aversion changes the slope of the price-dividend ratio. Log utility gives the flat benchmark $`\beta/(1-\beta)\approx 19.0`$. The $`\gamma=1`$ curve overlaps the dashed line.
 
-When $`\gamma<1`$, the ratio falls with current dividends. When $`\gamma>1`$, it rises. Dotted lines are fine-grid benchmarks.
+When $`\gamma<1`$, the ratio falls with current dividends. When $`\gamma>1`$, it rises. Dotted lines are fine-grid benchmarks. The right panel shows the sup-norm residual falling geometrically across iterations, confirming that $`T`$ is a $`\beta`$-contraction.
 
-<img src="figures/comparative-statics-gamma.png" alt="Price-dividend ratios under alternative CRRA risk aversion values" width="80%">
+<img src="figures/comparative-statics-gamma.png" alt="Price-dividend ratios under alternative CRRA risk aversion values and fixed-point convergence" width="100%">
 
 Rows compare dividend states. Near $`y\approx 1`$, all ratios are close to the log-utility benchmark $`\beta/(1-\beta)=19.0`$. Away from the mean, risk aversion changes how the SDF prices mean reversion.
 
-**Price-dividend ratios at selected dividend states**
+Price-dividend ratios at selected dividend states:
 
 |     y |   p(y), gamma=2 |   p/y, gamma=0.5 |   p/y, gamma=1 |   p/y, gamma=2 |   p/y, gamma=5 |
 |------:|----------------:|-----------------:|---------------:|---------------:|---------------:|
@@ -200,19 +202,24 @@ Rows compare dividend states. Near $`y\approx 1`$, all ratios are close to the l
 | 1.573 |          42.114 |           16.373 |             19 |         26.771 |        109.637 |
 | 1.983 |          62.894 |           15.157 |             19 |         31.724 |        238.292 |
 
-The iteration count, sup-norm residual, and central relative error are persisted here so the convergence claims in the Solution Method section can be cross-checked against a committed artifact.
+### Solution diagnostics
 
-**Solver convergence diagnostics for the baseline solution**
-
-| Quantity                       |      Value |
-|:-------------------------------|-----------:|
-| Baseline iterations            | 405        |
-| Baseline sup-norm residual     |   9.76e-10 |
-| Central max relative error (%) |   0.011    |
+| Quantity | Value | Quantity | Value |
+|---|---:|---|---:|
+| Baseline iterations | 405 | Baseline sup-norm residual | 9.76e-10 |
+| Central max relative error (%) | 0.011 | Convergence rate (per iter) | $`\approx\beta`$ |
 
 ## Takeaway
 
 The Lucas tree has no household policy once market clearing sets $`c=y`$. The Euler equation is therefore a valuation equation for $`p(y)`$. Scaling by $`u'(y)`$ gives a linear fixed point. The price-dividend ratio shows how risk aversion prices dividend mean reversion.
+
+Mehra and Prescott (1985) used this exact framework and found that matching the observed equity premium requires risk aversion near 50, far above any plausible value. That tension launched three decades of habit, heterogeneous-agent, and rare-disaster extensions, all anchored to Lucas's stochastic discount factor.
+
+## See also
+
+- [Huggett incomplete-markets model](../../heterogeneous-agents/huggett-incomplete-markets/README.md)
+- [Aiyagari model with production](../aiyagari/README.md)
+- [Optimal growth model](../optimal-growth/README.md)
 
 ## References
 

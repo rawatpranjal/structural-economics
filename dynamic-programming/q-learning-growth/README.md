@@ -6,13 +6,23 @@ A planner allocates output between consumption and productive capital. Productiv
 
 The target object is the optimal saving rule. Log utility, Cobb-Douglas production, and full depreciation pin down a closed form. The closed form audits any numerical solver.
 
-Value iteration solves the Bellman equation through the productivity transition matrix. Q-learning replaces the matrix with sampled transitions. The same saving rule emerges from interaction alone.
+Classical dynamic programming solves the Bellman equation but requires the full *transition matrix*. Watkins (1989) showed that an agent interacting with a Markov environment can recover the same optimal policy through sampled transitions alone, with no model of the dynamics. Value iteration and Q-learning converge to the same saving rule. The surprise in Watkins and Dayan (1992) was that a convergence proof with probability one follows from mild Robbins-Monro conditions on the step size.
+
+## Read before
+
+- [Optimal growth model](../optimal-growth/README.md)
+- [Consumption-savings under income risk](../consumption-savings/README.md)
+- [Shock discretization with Rouwenhorst](../shock-discretization/README.md)
 
 ## Equations
 
-Let $`k_t`$ be capital and $`z_t`$ a productivity shock. Output is $`y_t = z_t A k_t^{\alpha}`$, the resource constraint is $`c_t + k_{t+1} = y_t`$, and productivity follows $`\log z_{t+1} = \rho \log z_t + \sigma \varepsilon_{t+1}`$ with $`\varepsilon_{t+1} \sim N(0, 1)`$.
+Let $`k_t`$ be capital and $`z_t`$ a productivity shock with persistence $`\rho`$ and innovation standard deviation $`\sigma`$. Output is $`y_t = z_t A k_t^{\alpha}`$ with capital share $`\alpha`$ and TFP $`A`$. The resource constraint is $`c_t + k_{t+1} = y_t`$. Productivity follows
 
-The planner's value function solves the Bellman equation:
+```math
+\log z_{t+1} = \rho \log z_t + \sigma \varepsilon_{t+1}, \quad \varepsilon_{t+1} \sim N(0, 1).
+```
+
+The planner discounts at rate $`\beta`$. The *value function* solves the Bellman equation:
 
 ```math
 V(k, z) = \max_{k' \in [0, y]} \lbrace \log(z A k^{\alpha} - k') + \beta \mathbb{E}[V(k', z') \mid z] \rbrace.
@@ -30,9 +40,9 @@ Exploration draws each transition uniformly over feasible state-action pairs $`(
 
 ## Worked Numerical Example
 
-Run two Q-learning updates on a toy 3-state, 2-action slice of the model. States are capital levels $`k \in \{0.10, 0.19, 0.28\}`$ (low, near-steady-state, high). Actions are next-capital choices $`k' \in \{0.10, 0.19\}`$ (save-low, save-high). Productivity is fixed at $`z = 1`$. Calibration $`\alpha = 0.36`$, $`\beta = 0.95`$, $`A = 1.0`$. Learning rate $`\alpha_t = 0.5`$. Initialise $`Q(s, a) = 0`$ for every feasible pair.
+Run two Q-learning updates on a toy 3-state, 2-action slice of the model. States are capital levels $`k \in \{0.10, 0.19, 0.28\}`$ (low, near-steady-state, high). Actions are next-capital choices $`k' \in \{0.10, 0.19\}`$ (save-low, save-high). Productivity is fixed at $`z = 1`$. Calibration $`\alpha = 0.36`$, $`\beta = 0.95`$, $`A = 1.0`$. Learning rate $`\alpha_t = 0.5`$. Initialise the *Q table* with $`Q(s, a) = 0`$ for every feasible pair.
 
-Update 1: sample state $`k = 0.19`$ and action $`k' = 0.10`$ (save-low). Output is
+*Update 1*: sample state $`k = 0.19`$ and action $`k' = 0.10`$ (save-low). Output is
 
 ```math
 y = z A k^{\alpha} = (1)(1)(0.19)^{0.36} = 0.5343,
@@ -54,93 +64,145 @@ After two updates, $`Q(0.19, 0.10) = -0.4171 > Q(0.19, 0.19) = -0.5332`$, so the
 
 ## Model Setup
 
-| Object | Value |
-|--------|-------|
-| Capital state $`k`$ | 41 grid points on $`[0.20, 1.80] \cdot k_{ss}`$ |
-| Action $`k'`$ | 21 grid points on the same capital range |
-| Productivity $`z`$ | 7-state Rouwenhorst chain |
-| Capital share $`\alpha`$ | 0.36 |
-| Discount $`\beta`$ | 0.95 |
-| Productivity persistence $`\rho`$ | 0.70 |
-| Innovation std $`\sigma`$ | 0.10 |
-| TFP parameter $`A`$ | 1.0 |
-| Q-learning steps per seed | 1,500,000 |
-| Q-learning seeds (averaged) | 4 |
-| DQN training steps | 250,000 |
-| Benchmark | $`k'(k, z) = \alpha\beta z A k^{\alpha}`$ |
-| Steady-state capital $`k_{ss}`$ | 0.187 |
+The *calibration* follows Brock and Mirman (1972): log utility, Cobb-Douglas production with capital share 0.36, and full depreciation, so the closed-form saving rate equals $`\alpha \beta`$.
+
+| Parameter | Value | Parameter | Value |
+|---|---:|---|---:|
+| Capital state $`k`$ | 41 grid points | Capital grid range | $`[0.20,\, 1.80] \cdot k_{ss}`$ |
+| Action $`k'`$ | 21 grid points | Productivity $`z`$ | 7-state Rouwenhorst |
+| Capital share $`\alpha`$ | 0.36 | Discount $`\beta`$ | 0.95 |
+| Productivity persistence $`\rho`$ | 0.70 | Innovation std $`\sigma`$ | 0.10 |
+| TFP parameter $`A`$ | 1.0 | Steady-state capital $`k_{ss}`$ | 0.187 |
+| Q-learning steps per seed | 1,500,000 | Q-learning seeds (averaged) | 4 |
+| DQN training steps | 250,000 | Benchmark | $`k'(k, z) = \alpha\beta z A k^{\alpha}`$ |
 
 ## Solution Method
 
-Value iteration sweeps the discrete Bellman operator until the value function stops moving. Each sweep evaluates expected continuation values through the productivity transition matrix.
+What is new here relative to value iteration is that Q-learning never forms the transition matrix. Each step samples one state-action pair at random, draws the next productivity from the Markov chain, and applies a *temporal-difference* correction to the action-value estimate. Uniform exploration keeps coverage of the grid independent of the steady-state distribution. Independent seeds are averaged to dampen the variance introduced by the action argmax.
 
-Tabular Q-learning sees one transition at a time. Each step samples a state and a feasible action uniformly at random. The productivity Markov chain delivers the next state. The Bellman temporal-difference error corrects the action-value estimate.
-
-Uniform sampling makes coverage of the grid independent of the steady-state distribution. A Robbins-Monro step size $`1 / n_{s,a}^{0.6}`$ decays with visit counts. Independent runs are averaged to dampen the action-argmax variance left on individual seeds.
-
-```text
-Algorithm: tabular Q-learning with uniform exploration
-Input: feasible reward r(s, a), productivity transition, step budget
-Output: action-value Q(s, a) and greedy policy a*(s)
-Initialize Q(s, a) <- pessimistic constant for all feasible (s, a)
-for t = 1, ..., T:
-    sample state s_t = (i_k, i_z) uniformly over the grid
-    sample action a_t uniformly over feasible actions at s_t
-    receive reward r_t = log(z A k^alpha - k'(a_t))
-    sample next productivity from the transition row
-    Q(s_t, a_t) += alpha_t * (r_t + beta * max_a Q(s[t+1], a) - Q(s_t, a_t))
+```
+   Q table (pessimistic init), feasible reward table, productivity transition
+                              |
+                              v
+          +----------- training loop (tabular Q-learning) -----------+
+          |                                                          |
+          |  (s, a) uniform sample  -->  [ TD update ]  -->  Q       |
+          |                                                          |
+          +----------- steps remain: repeat ------------------------+
+                              |
+                        budget exhausted
+                              v
+                      Q*(k, z, k'),  greedy policy g(k, z)
 ```
 
-The deep-RL appendix replaces the table with a small two-layer MLP $`Q_\theta(k, z, \cdot)`$. A replay buffer stores recent transitions. The loss is a Huber penalty against a slow-moving target network.
+```python
+# Tabular Q-learning: uniform off-policy exploration.
+def tabular_q_learning(k_grid, z_grid, z_trans, rewards, a_to_k_index, seed=7):
+    q = np.full((n_k, n_z, n_a), PESSIMISTIC_INIT)
+    visits = np.zeros((n_k, n_z, n_a), dtype=np.int64)
 
-```text
-Algorithm: deep Q-network on continuous (k, z)
-Input: discrete next-capital actions, replay buffer, minibatch size
-Output: parameters theta of Q_theta(k, z, .)
-Initialize online and target networks with the same weights
-for t = 1, ..., T_dqn:
-    select a_t with epsilon-greedy on Q_theta(s_t, .)
-    step the environment, store (s_t, a_t, r_t, s[t+1]) in the buffer
-    sample a minibatch and form targets y = r + beta * max_a Q_target(s', a)
-    take a gradient step on Huber(Q_theta(s, a) - y)
-    every K steps copy the online weights into the target network
+    for step in range(1, QL_STEPS + 1):
+        # sample state and feasible action uniformly
+        i_k, i_z = rng.integers(n_k), rng.integers(n_z)
+        i_a = rng.choice(feasible_indices_by_state[i_k * n_z + i_z])
+
+        # one Markov transition in productivity
+        i_kp = a_to_k_index[i_a]
+        i_zp = sample_next_z(rng, z_trans, i_z)
+
+        # Robbins-Monro step size decays with visit count
+        visits[i_k, i_z, i_a] += 1
+        lr = 1.0 / visits[i_k, i_z, i_a] ** 0.6
+
+        # Bellman TD update
+        target = rewards[i_k, i_z, i_a] + BETA * q[i_kp, i_zp].max()
+        q[i_k, i_z, i_a] += lr * (target - q[i_k, i_z, i_a])
+
+    return q
+```
+
+The DQN appendix replaces the table with a two-layer MLP $`Q_\theta(k, z, \cdot)`$. A replay buffer stores recent transitions. The loss is a Huber penalty against a slow-moving target network.
+
+```
+   online network Q_theta, target network Q_target, replay buffer
+                              |
+                              v
+          +----------- training loop (DQN) -------------------------+
+          |                                                          |
+          |  s  -->  [ epsilon-greedy action ]  -->  a               |
+          |  (s, a, r, s')  -->  [ replay buffer ]                   |
+          |  minibatch  -->  [ Huber TD loss ]  -->  Q_theta         |
+          |  (periodic)  -->  [ target copy ]  -->  Q_target         |
+          |                                                          |
+          +----------- steps remain: repeat ------------------------+
+                              |
+                        budget exhausted
+                              v
+                      Q_theta(k, z, .), greedy policy g(k, z)
+```
+
+```python
+# DQN inner loop: epsilon-greedy exploration with replay.
+for step in range(1, DQN_STEPS + 1):
+    eps = max(0.05, 1.0 - step / (DQN_STEPS * 0.6))
+
+    # epsilon-greedy action (feasible actions only)
+    if rng.random() < eps:
+        i_a = rng.choice(feasible_action_indices)
+    else:
+        qv = online(state_tensor).numpy()
+        i_a = int(np.where(feasible, qv, -1e9).argmax())
+
+    # step environment, store transition
+    buffer.store(state, i_a, reward, next_state, done)
+
+    # gradient step on Huber loss against target network
+    if buffer.ready():
+        optimizer.zero_grad()
+        loss_fn(online(s_b).gather(1, a_b), targets).backward()
+        optimizer.step()
+
+    # periodic target-network copy
+    if step % DQN_TARGET_EVERY == 0:
+        target.load_state_dict(online.state_dict())
 ```
 
 ## Results
 
-The greedy policy out of the Q-table tracks the closed-form saving rule across capital and productivity states. Both numerical methods reproduce the same proportional response to a productivity shock.
-
-<img src="figures/policy-comparison.png" alt="Q-learning saving policy compared with VFI and the closed-form rule" width="80%">
+The *greedy policy* out of the Q-table tracks the closed-form saving rule across capital and productivity states. Both numerical methods reproduce the same proportional response to a productivity shock.
 
 Policy error against the closed form falls as the agent visits more states. The curve flattens once each region of the grid has enough samples to anchor the maximizer.
 
-<img src="figures/learning-curve.png" alt="Policy RMSE versus number of Q-learning steps" width="80%">
+<img src="figures/policy-learning.png" alt="Q-learning saving policy compared with closed form and VFI, alongside policy RMSE convergence" width="90%">
 
 The learned value surface is monotone in capital and increasing in productivity. White contours mark the closed-form saving rule. The iso-policy curves rise with $`z`$.
 
 <img src="figures/value-surface.png" alt="Q-learning value surface with closed-form policy contours" width="80%">
 
-The table compares the solvers on the same calibration. Q-learning uses no transition matrix. It matches the VFI policy and value to a few hundredths in capital units. The policy MAE column is computed on interior capital states only: the three lowest and three highest capital grid rows are excluded, since the closed-form rule can push next-period capital outside the discrete action grid at the boundary. All three solvers use the identical mask, so the comparison stays apples-to-apples; a full-grid MAE would be somewhat larger for every solver. The evaluation-count column counts deterministic sweep evaluations for value iteration and stochastic sampled transitions for Q-learning and DQN.
+The table compares the solvers on the same calibration. Q-learning uses no transition matrix. It matches the VFI policy to a few hundredths in capital units. The policy MAE column covers interior capital states only. The three lowest and three highest capital grid rows are excluded because the closed-form rule can push next-period capital outside the discrete action grid at the boundary. All three solvers use the identical mask.
 
-**Algorithm comparison**
+### Algorithm comparison
 
-| algorithm                         | transition matrix   |   policy MAE (interior) |   value sup-norm vs VFI |   state-action evaluations | evaluation type      |   runtime sec |
-|:----------------------------------|:--------------------|------------------------:|------------------------:|---------------------------:|:---------------------|--------------:|
-| value iteration                   | yes                 |                  0.0038 |                  0      |                    2175747 | deterministic sweeps |         0.008 |
-| tabular Q-learning (4 seeds avg.) | no                  |                  0.0154 |                  0.6721 |                    6000000 | stochastic samples   |       160.228 |
-| DQN                               | no                  |                  0.0299 |                nan      |                     250000 | stochastic samples   |       450.346 |
-
-VFI converges in 361 sweeps. Q-learning hits an interior-grid policy MAE of 0.0154 after 6,000,000 sampled transitions across 4 seeds. DQN reaches 0.0299 after 250,000 steps. The MAE figures exclude the three lowest and three highest capital grid rows, where the closed-form rule can leave the discrete action grid; the same boundary mask is applied to every solver.
+| Algorithm | Transition matrix | Policy MAE (interior) | Value sup-norm vs VFI |
+|:---|:---|---:|---:|
+| Value iteration | yes | 0.0038 | 0.0000 |
+| Tabular Q-learning (4 seeds avg.) | no | 0.0154 | 0.6721 |
+| DQN | no | 0.0299 | nan |
 
 ## Takeaway
 
-When the transition is unknown, the planner can still recover the saving rule. Sampled transitions are enough.
+When the transition is unknown, the planner can still recover the saving rule. Sampled transitions are enough. The quantitative surprise in Watkins and Dayan (1992) was that *convergence* holds with probability one under conditions no stricter than standard stochastic-approximation requirements on step sizes. Q-learning went on to anchor deep reinforcement learning. The DQN of Mnih et al. (2015) is tabular Q-learning with a neural function approximator, a replay buffer, and a target network added for stability.
 
-Q-learning trades a model for data. The closed-form Brock-Mirman policy keeps both the model-based and the model-free solvers honest.
+## See also
+
+- [Value function iteration for optimal growth](../optimal-growth/README.md)
+- [Aiyagari saving and capital-market clearing](../aiyagari/README.md)
+- [Deep Q-network (Atari)](../../reinforcement-learning/dqn-atari/README.md)
 
 ## References
 
 - [Brock, W. A. and Mirman, L. J. (1972). Optimal Economic Growth and Uncertainty: The Discounted Case. *Journal of Economic Theory*, 4(3), 479-513.](https://doi.org/10.1016/0022-0531(72)90135-4)
+- [Watkins, C. J. C. H. (1989). *Learning from Delayed Rewards*. PhD thesis, King's College, University of Cambridge.](https://www.cs.rhul.ac.uk/~chrisw/new_thesis.pdf)
 - [Watkins, C. J. C. H. and Dayan, P. (1992). Q-Learning. *Machine Learning*, 8(3), 279-292.](https://doi.org/10.1007/BF00992698)
 - [Sutton, R. S. and Barto, A. G. (2018). *Reinforcement Learning: An Introduction*, 2nd ed. MIT Press.](http://incompleteideas.net/book/the-book-2nd.html)
 - [Mnih, V., Kavukcuoglu, K., Silver, D., et al. (2015). Human-Level Control through Deep Reinforcement Learning. *Nature*, 518, 529-533.](https://doi.org/10.1038/nature14236)

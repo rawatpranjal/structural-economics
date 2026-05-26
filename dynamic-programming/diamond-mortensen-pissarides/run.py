@@ -88,6 +88,7 @@ def solve_nonlinear_tightness(
 
     job_value = np.full(n_z, vacancy_cost / (beta * matching_efficiency), dtype=float)
     error = np.inf
+    error_history: list[float] = []
 
     for iteration in range(1, max_iter + 1):
         expected_job_value = transition @ job_value
@@ -103,6 +104,7 @@ def solve_nonlinear_tightness(
             + beta * (1.0 - separation_rate) * expected_job_value
         )
         error = float(np.max(np.abs(new_job_value - job_value)))
+        error_history.append(error)
         job_value = new_job_value
         if error < tol:
             break
@@ -123,6 +125,7 @@ def solve_nonlinear_tightness(
         "transition": transition,
         "iterations": iteration,
         "error": error,
+        "error_history": np.array(error_history),
         "converged": error < tol,
     }
 
@@ -424,6 +427,30 @@ def main() -> None:
     ax3.set_title("A Beveridge Curve From Matching Frictions")
     ax3.legend()
     save_figure(fig3, "figures/beveridge-curve.png", dpi=150)
+
+    # Convergence panel: sup-norm error vs. iteration for coarse and fine solvers.
+    fig4, ax4 = plt.subplots(figsize=(7, 4))
+    ax4.semilogy(
+        np.arange(1, len(nonlinear["error_history"]) + 1),
+        nonlinear["error_history"],
+        color="black",
+        linewidth=1.8,
+        label=f"Coarse grid $N_z={n_z_coarse}$ ({nonlinear['iterations']} iters)",
+    )
+    ax4.semilogy(
+        np.arange(1, len(nonlinear_fine["error_history"]) + 1),
+        nonlinear_fine["error_history"],
+        color="tab:blue",
+        linestyle="--",
+        linewidth=1.4,
+        label=f"Fine grid $N_z={n_z_fine}$ ({nonlinear_fine['iterations']} iters)",
+    )
+    ax4.axhline(1e-11, color="0.55", linestyle=":", linewidth=1.0, label="Tolerance 1e-11")
+    ax4.set_xlabel("Iteration")
+    ax4.set_ylabel("Sup-norm error $\\|J_{new} - J\\|_\\infty$")
+    ax4.set_title("Fixed-Point Iteration Converges Geometrically")
+    ax4.legend()
+    save_figure(fig4, "figures/convergence.png", dpi=150)
 
     # Thumbnail
     save_thumbnail("figures/productivity-tightness.png", "figures/thumb.png")

@@ -54,7 +54,7 @@ def production(k, A, alpha):
 # Continuous-time HJB solver (upwind finite differences)
 # =============================================================================
 
-def solve_hjb_growth(params, verbose=True):
+def solve_hjb_growth(params, verbose=True, track_snapshots=False):
     """Solve the continuous-time neoclassical growth HJB via implicit upwind FD.
 
     Uses an implicit time-stepping scheme with upwind finite differences
@@ -67,11 +67,16 @@ def solve_hjb_growth(params, verbose=True):
     is solved via sparse LU. The implicit scheme is unconditionally stable,
     allowing a large pseudo-time step (Delta = 1000) for fast convergence.
 
+    Args:
+        params: model parameters dict
+        verbose: print progress
+        track_snapshots: if True, record V at iterations 1, 2, 5, 10 and final
+
     Returns:
         v: value function on the capital grid
         c: consumption policy
         kdot: savings/investment policy (dk/dt = f(k) - delta*k - c)
-        info: dict with convergence information
+        info: dict with convergence information (includes 'snapshots' if requested)
     """
     rho = params["rho"]
     sigma = params["sigma"]
@@ -95,9 +100,13 @@ def solve_hjb_growth(params, verbose=True):
     dVb = np.zeros(N)
 
     convergence = []
+    snapshots = {}
+    snapshot_iters = {1, 2, 5, 10}
 
     for n in range(1, max_iter + 1):
         V = v.copy()
+        if track_snapshots and n in snapshot_iters:
+            snapshots[n] = V.copy()
 
         # Forward difference
         dVf[:N-1] = (V[1:N] - V[:N-1]) / dk
@@ -195,11 +204,15 @@ def solve_hjb_growth(params, verbose=True):
     c = np.maximum(dV_upwind, 1e-15) ** (-1.0 / sigma)
     kdot = f_k - delta * k - c
 
+    if track_snapshots:
+        snapshots["final"] = v.copy()
+
     info = {
         "iterations": n,
         "converged": change < tol,
         "error": change,
         "convergence": convergence,
+        "snapshots": snapshots,
     }
 
     return v, c, kdot, info
@@ -276,10 +289,10 @@ def main():
     }
 
     # =========================================================================
-    # Solve continuous-time HJB
+    # Solve continuous-time HJB (with snapshots for convergence panel)
     # =========================================================================
     print("\n--- Continuous-Time HJB (Upwind Finite Differences) ---")
-    v_ct, c_ct, kdot_ct, info_ct = solve_hjb_growth(params)
+    v_ct, c_ct, kdot_ct, info_ct = solve_hjb_growth(params, track_snapshots=True)
 
     # =========================================================================
     # Transition dynamics from different initial conditions
@@ -298,65 +311,93 @@ def main():
     # =========================================================================
     setup_style()
 
-    # --- Figure 1: Value Function ---
-    fig1, ax1 = plt.subplots()
-    ax1.plot(k_grid, v_ct, color="#1f77b4", linewidth=2.1,
-             label="Upwind HJB")
-    ax1.axvline(k_ss, color="k", linestyle=":", linewidth=0.8, alpha=0.6,
-                label=f"$k_{{ss}} = {k_ss:.2f}$")
-    ax1.set_xlabel("Capital $k$")
-    ax1.set_ylabel("$V(k)$")
-    ax1.set_title("Value of Capital")
-    ax1.legend()
-    save_figure(fig1, "figures/value-function.png", dpi=150)
-
-    # --- Figure 2: Consumption Policy ---
-    fig2, ax2 = plt.subplots()
+    # --- Figure 1: 2x2 — value function | consumption policy | HJB convergence | snapshots ---
     net_output = production(k_grid, A, alpha) - delta * k_grid
-    ax2.plot(k_grid, c_ct, color="#1f77b4", linewidth=2.1,
-             label="Upwind HJB")
-    ax2.plot(k_grid, net_output, color="#6b6b6b", linestyle=":", linewidth=1.5,
-             label=r"Net output $f(k)-\delta k$")
-    ax2.axvline(k_ss, color="k", linestyle=":", linewidth=0.8, alpha=0.6)
-    ax2.plot(k_ss, c_ss, "ko", markersize=8, zorder=5,
-             label=f"Steady state ($k_{{ss}}={k_ss:.2f}$, $c_{{ss}}={c_ss:.2f}$)")
-    ax2.set_xlabel("Capital $k$")
-    ax2.set_ylabel("Consumption $c(k)$")
-    ax2.set_title("Consumption Policy")
-    ax2.legend()
-    save_figure(fig2, "figures/consumption-policy.png", dpi=150)
+    convergence_hist = info_ct["convergence"]
+    snapshots = info_ct["snapshots"]
 
-    # --- Figure 3: Savings / Investment Policy ---
-    fig3, ax3 = plt.subplots()
-    ax3.plot(k_grid, kdot_ct, color="#1f77b4", linewidth=2.1,
-             label=r"Drift $\dot{k}$")
-    ax3.axhline(0, color="k", linestyle="--", linewidth=0.8)
-    ax3.axvline(k_ss, color="k", linestyle=":", linewidth=0.8, alpha=0.6,
-                label=f"$k_{{ss}} = {k_ss:.2f}$")
-    ax3.fill_between(k_grid, kdot_ct, 0, where=(kdot_ct > 0),
-                     alpha=0.15, color="green", label="Capital accumulation")
-    ax3.fill_between(k_grid, kdot_ct, 0, where=(kdot_ct < 0),
-                     alpha=0.15, color="red", label="Capital decumulation")
-    ax3.set_xlabel("Capital $k$")
-    ax3.set_ylabel(r"$\dot{k}$")
-    ax3.set_title("Capital Drift")
-    ax3.legend(fontsize=9)
-    save_figure(fig3, "figures/savings-policy.png", dpi=150)
+    fig1, axes1 = plt.subplots(2, 2, figsize=(11.5, 8.6))
+    (ax_v, ax_c), (ax_conv, ax_snap) = axes1
 
-    # --- Figure 4: Transition Dynamics ---
-    fig4, ax4 = plt.subplots()
+    # top-left: value function
+    ax_v.plot(k_grid, v_ct, color="#1f77b4", linewidth=2.1)
+    ax_v.axvline(k_ss, color="k", linestyle=":", linewidth=0.8, alpha=0.6,
+                 label=f"$k_{{ss}} = {k_ss:.2f}$")
+    ax_v.set_xlabel("Capital $k$")
+    ax_v.set_ylabel("$V(k)$")
+    ax_v.set_title("Value Function")
+    ax_v.legend(fontsize=9)
+
+    # top-right: consumption policy
+    ax_c.plot(k_grid, c_ct, color="#1f77b4", linewidth=2.1, label="Optimal $c(k)$")
+    ax_c.plot(k_grid, net_output, color="#6b6b6b", linestyle=":", linewidth=1.5,
+              label=r"Net output $f(k)-\delta k$")
+    ax_c.axvline(k_ss, color="k", linestyle=":", linewidth=0.8, alpha=0.6)
+    ax_c.plot(k_ss, c_ss, "ko", markersize=7, zorder=5,
+              label=f"Steady state $c_{{ss}}={c_ss:.2f}$")
+    ax_c.set_xlabel("Capital $k$")
+    ax_c.set_ylabel("Consumption $c(k)$")
+    ax_c.set_title("Consumption Policy")
+    ax_c.legend(fontsize=9)
+
+    # bottom-left: HJB sup-norm convergence
+    ax_conv.semilogy(range(1, len(convergence_hist) + 1), convergence_hist,
+                     color="#1f77b4", linewidth=2.0)
+    ax_conv.axhline(params["tol"], color="k", linestyle="--", linewidth=0.8,
+                    label=f"Tolerance {params['tol']:.0e}")
+    ax_conv.set_xlabel("Iteration")
+    ax_conv.set_ylabel("Sup-norm change $\\|V_{n+1} - V_n\\|_\\infty$")
+    ax_conv.set_title("HJB Convergence")
+    ax_conv.legend(fontsize=9)
+
+    # bottom-right: value function snapshots
+    snap_colors = ["#d62728", "#ff7f0e", "#2ca02c", "#9467bd", "#1f77b4"]
+    snap_labels = {1: "iter 1", 2: "iter 2", 5: "iter 5", 10: "iter 10", "final": "converged"}
+    for i, (key, label) in enumerate(snap_labels.items()):
+        if key in snapshots:
+            ax_snap.plot(k_grid, snapshots[key], color=snap_colors[i],
+                         linewidth=1.6, label=label)
+    ax_snap.set_xlabel("Capital $k$")
+    ax_snap.set_ylabel("$V(k)$")
+    ax_snap.set_title("Value Function Snapshots")
+    ax_snap.legend(fontsize=9)
+
+    fig1.tight_layout()
+    save_figure(fig1, "figures/policy-convergence.png", dpi=150)
+
+    # --- Figure 2: 1x2 — capital drift | transition paths ---
+    fig2, (ax_drift, ax_trans) = plt.subplots(1, 2, figsize=(12.5, 4.8))
+
+    # left: capital drift
+    ax_drift.plot(k_grid, kdot_ct, color="#1f77b4", linewidth=2.1,
+                  label=r"Drift $\dot{k}$")
+    ax_drift.axhline(0, color="k", linestyle="--", linewidth=0.8)
+    ax_drift.axvline(k_ss, color="k", linestyle=":", linewidth=0.8, alpha=0.6,
+                     label=f"$k_{{ss}} = {k_ss:.2f}$")
+    ax_drift.fill_between(k_grid, kdot_ct, 0, where=(kdot_ct > 0),
+                          alpha=0.15, color="green", label="Accumulation")
+    ax_drift.fill_between(k_grid, kdot_ct, 0, where=(kdot_ct < 0),
+                          alpha=0.15, color="red", label="Decumulation")
+    ax_drift.set_xlabel("Capital $k$")
+    ax_drift.set_ylabel(r"$\dot{k}$")
+    ax_drift.set_title("Capital Drift")
+    ax_drift.legend(fontsize=9)
+
+    # right: transition paths
     colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"]
     for i, k0 in enumerate(k0_values):
         t_arr, k_arr = paths[k0]
         label_str = f"$k_0 = {k0:.2f}$ ({k0/k_ss:.0%} of $k_{{ss}}$)"
-        ax4.plot(t_arr, k_arr, color=colors[i], linewidth=2, label=label_str)
-    ax4.axhline(k_ss, color="k", linestyle="--", linewidth=1, alpha=0.7,
-                label=f"$k_{{ss}} = {k_ss:.2f}$")
-    ax4.set_xlabel("Time $t$")
-    ax4.set_ylabel("Capital $k(t)$")
-    ax4.set_title("Transition Paths")
-    ax4.legend(fontsize=9)
-    save_figure(fig4, "figures/transition-dynamics.png", dpi=150)
+        ax_trans.plot(t_arr, k_arr, color=colors[i], linewidth=2, label=label_str)
+    ax_trans.axhline(k_ss, color="k", linestyle="--", linewidth=1, alpha=0.7,
+                     label=f"$k_{{ss}} = {k_ss:.2f}$")
+    ax_trans.set_xlabel("Time $t$")
+    ax_trans.set_ylabel("Capital $k(t)$")
+    ax_trans.set_title("Transition Paths")
+    ax_trans.legend(fontsize=9)
+
+    fig2.tight_layout()
+    save_figure(fig2, "figures/transition-dynamics.png", dpi=150)
 
     # --- Table: Steady-State Values ---
     # Compute numerical steady state from the savings policy
@@ -403,8 +444,8 @@ def main():
     Path("tables").mkdir(parents=True, exist_ok=True)
     df.to_csv("tables/steady-state.csv", index=False)
 
-    save_thumbnail("figures/value-function.png", "figures/thumb.png")
-    print(f"Done: 4 figures, 1 table")
+    save_thumbnail("figures/policy-convergence.png", "figures/thumb.png")
+    print(f"Done: 2 figures, 1 table")
 
 
 if __name__ == "__main__":

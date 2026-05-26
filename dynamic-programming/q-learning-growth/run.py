@@ -363,37 +363,38 @@ def try_dqn_policy(
     }
 
 
-def policy_comparison_figure(
+def policy_learning_figure(
     k_grid: np.ndarray,
     z_grid: np.ndarray,
     vfi_kp: np.ndarray,
     ql_kp: np.ndarray,
     dqn_kp: np.ndarray | None,
+    log_steps: np.ndarray,
+    log_policy_rmse: np.ndarray,
 ) -> plt.Figure:
-    fig, axes = plt.subplots(1, 2, figsize=(11, 4.5), sharey=True)
+    """1x2: left = policy comparison at median z, right = RMSE convergence."""
+    fig, axes = plt.subplots(1, 2, figsize=(11, 4.5))
     cf_kp = closed_form_policy(k_grid[:, None], z_grid[None, :])
-    for ax, idx, label in zip(axes, [0, len(z_grid) - 1], ["low", "high"]):
-        ax.plot(k_grid, cf_kp[:, idx], color="black", lw=2.4, label="closed form")
-        ax.plot(k_grid, vfi_kp[:, idx], color="tab:blue", lw=1.8, ls="--", label="VFI")
-        ax.plot(k_grid, ql_kp[:, idx], color="tab:orange", lw=1.6, label="Q-learning")
-        if dqn_kp is not None:
-            ax.plot(k_grid, dqn_kp[:, idx], color="tab:green", lw=1.4, ls=":", label="DQN")
-        ax.set_xlabel("capital $k$")
-        ax.set_title(f"productivity {label} ($z$ = {z_grid[idx]:.2f})")
-        ax.legend(loc="lower right", frameon=False)
-    axes[0].set_ylabel("next-period capital $k'$")
-    fig.tight_layout()
-    return fig
+    mid = len(z_grid) // 2
 
+    ax = axes[0]
+    ax.plot(k_grid, cf_kp[:, mid], color="black", lw=2.4, label="closed form")
+    ax.plot(k_grid, vfi_kp[:, mid], color="tab:blue", lw=1.8, ls="--", label="VFI")
+    ax.plot(k_grid, ql_kp[:, mid], color="tab:orange", lw=1.6, label="Q-learning")
+    if dqn_kp is not None:
+        ax.plot(k_grid, dqn_kp[:, mid], color="tab:green", lw=1.4, ls=":", label="DQN")
+    ax.set_xlabel("capital $k$")
+    ax.set_ylabel("next-period capital $k'$")
+    ax.set_title(f"saving policy ($z$ = {z_grid[mid]:.2f})")
+    ax.legend(loc="lower right", frameon=False)
 
-def learning_curve_figure(
-    log_steps: np.ndarray, log_policy_rmse: np.ndarray
-) -> plt.Figure:
-    fig, ax = plt.subplots(figsize=(7.5, 4.5))
+    ax = axes[1]
     ax.plot(log_steps / 1000, log_policy_rmse, color="tab:orange", lw=1.8)
     ax.set_xlabel("learning steps (thousands)")
     ax.set_ylabel("policy RMSE vs closed form")
+    ax.set_title("convergence of Q-learning policy")
     ax.set_yscale("log")
+
     fig.tight_layout()
     return fig
 
@@ -401,9 +402,15 @@ def learning_curve_figure(
 def value_surface_figure(
     k_grid: np.ndarray,
     z_grid: np.ndarray,
+    vfi_kp: np.ndarray,
+    ql_kp: np.ndarray,
     v_q: np.ndarray,
 ) -> plt.Figure:
-    fig, ax = plt.subplots(figsize=(7.5, 4.5))
+    """1x2: left = Q-learning value heatmap with closed-form contours,
+    right = policy comparison across all productivity states."""
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4.8))
+
+    ax = axes[0]
     extent = [z_grid.min(), z_grid.max(), k_grid.min(), k_grid.max()]
     im = ax.imshow(v_q, origin="lower", aspect="auto", extent=extent, cmap="viridis")
     cbar = fig.colorbar(im, ax=ax)
@@ -415,6 +422,22 @@ def value_surface_figure(
     ax.clabel(cs, fmt="%.2f", fontsize=8)
     ax.set_xlabel("productivity $z$")
     ax.set_ylabel("capital $k$")
+    ax.set_title("value surface and closed-form policy contours")
+
+    ax = axes[1]
+    z_indices = [0, len(z_grid) // 2, len(z_grid) - 1]
+    z_labels = ["low", "median", "high"]
+    colors = ["tab:blue", "tab:orange", "tab:red"]
+    for idx, label, color in zip(z_indices, z_labels, colors):
+        ax.plot(k_grid, cf_policy[:, idx], color=color, lw=2.0,
+                label=f"closed form ({label} z)")
+        ax.plot(k_grid, ql_kp[:, idx], color=color, lw=1.4, ls="--")
+    ax.plot([], [], color="gray", lw=1.4, ls="--", label="Q-learning")
+    ax.set_xlabel("capital $k$")
+    ax.set_ylabel("next-period capital $k'$")
+    ax.set_title("policy across productivity states")
+    ax.legend(loc="lower right", frameon=False, fontsize=8)
+
     fig.tight_layout()
     return fig
 
@@ -510,18 +533,19 @@ def main() -> None:
     comparison_df = pd.DataFrame(rows)
 
     print("Building figures ...")
-    fig_policy = policy_comparison_figure(k_grid, z_grid, policy_kp_vfi, policy_kp_ql, dqn_kp)
-    fig_curve = learning_curve_figure(ql_info["log_steps"], ql_info["log_policy_rmse"])
-    fig_value = value_surface_figure(k_grid, z_grid, v_ql)
+    fig_learning = policy_learning_figure(
+        k_grid, z_grid, policy_kp_vfi, policy_kp_ql, dqn_kp,
+        ql_info["log_steps"], ql_info["log_policy_rmse"],
+    )
+    fig_value = value_surface_figure(k_grid, z_grid, policy_kp_vfi, policy_kp_ql, v_ql)
 
-    save_figure(fig_policy, "figures/policy-comparison.png", dpi=150)
-    save_figure(fig_curve, "figures/learning-curve.png", dpi=150)
+    save_figure(fig_learning, "figures/policy-learning.png", dpi=150)
     save_figure(fig_value, "figures/value-surface.png", dpi=150)
 
     Path("tables").mkdir(parents=True, exist_ok=True)
     comparison_df.to_csv("tables/algorithm-comparison.csv", index=False)
 
-    save_thumbnail("figures/policy-comparison.png", "figures/thumb.png")
+    save_thumbnail("figures/policy-learning.png", "figures/thumb.png")
     print("Generated figures and tables.")
 
 

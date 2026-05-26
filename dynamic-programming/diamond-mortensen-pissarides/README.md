@@ -2,110 +2,101 @@
 
 ## Overview
 
-Unemployed workers and posted vacancies meet through a matching technology. A formed match produces surplus, and Nash bargaining splits it.
+Before the DMP framework, search models treated unemployment as exogenous and could not explain why job vacancies and unemployment coexist. Mortensen and Pissarides (1994) made both endogenous by embedding a matching function and a free-entry condition in the same equilibrium. The question their model answers: how much do matching frictions amplify productivity shocks into unemployment and vacancy fluctuations?
 
-The equilibrium object is labor-market tightness. Free entry pins down tightness because firms post vacancies until expected job value covers vacancy cost.
+The equilibrium object is *labor-market tightness*. Free entry pins down tightness because firms post vacancies until expected job value covers vacancy cost. Nash bargaining then splits the match surplus, and stock dynamics follow.
 
-The code compares a log-linear rule with a finite-state free-entry fixed point. This asks whether the Shimer amplification puzzle comes from the solver or from surplus calibration.
+## Read before
+
+- [Shock discretization with Rouwenhorst](../shock-discretization/README.md)
+- [Job search (McCall)](../job-search-mccall/README.md)
+- [Consumption-savings under income risk](../consumption-savings/README.md)
 
 ## Equations
 
-**Matching technology.** Let $`u_t`$ be unemployment, $`v_t`$ vacancies, and
-$`\theta_t=v_t/u_t`$ tightness. Constant-returns matching gives
+Let $`u_t`$ be unemployment, $`v_t`$ vacancies, and $`\theta_t = v_t / u_t`$ tightness. Constant-returns matching gives
 
 ```math
-m(u_t,v_t)=\chi u_t^{1-\eta}v_t^\eta,\qquad
-f(\theta_t)=\chi\theta_t^{\eta},\qquad
-q(\theta_t)=\chi\theta_t^{\eta-1},
+m(u_t, v_t) = \chi u_t^{1-\eta} v_t^\eta.
 ```
 
-Here $`f`$ is the worker job-finding rate. The term $`q`$ is the firm
-vacancy-filling rate.
+The worker job-finding rate is $`f(\theta_t) = \chi \theta_t^\eta`$ and the firm vacancy-filling rate is $`q(\theta_t) = \chi \theta_t^{\eta-1}`$.
 
-**Productivity.** Aggregate productivity is a stationary AR(1) in logs,
+Aggregate productivity is a stationary AR(1) in logs with persistence $`\rho`$ and innovation standard deviation $`\sigma_\epsilon`$,
 
 ```math
-\hat z_{t+1}=\rho\hat z_t+\epsilon_{t+1},\quad
-\epsilon_{t+1}\sim\mathcal{N}(0,\sigma_\epsilon^2),\quad
-z_t=\bar z\exp(\hat z_t).
+\hat z_{t+1} = \rho \hat z_t + \epsilon_{t+1}, \quad \epsilon_{t+1} \sim \mathcal{N}(0, \sigma_\epsilon^2),
 ```
-
-**Wage rule.** Nash bargaining with worker weight $`\gamma`$ splits joint
-surplus and yields the equilibrium wage
 
 ```math
-w_t=\gamma(z_t+k\theta_t)+(1-\gamma)b,
+z_t = \bar z \exp(\hat z_t).
 ```
 
-Here $`b`$ is the flow value of unemployment. The parameter $`k`$ is the
-per-period cost of an open vacancy.
-
-**Job value and free entry.** A filled job has value
+*Nash bargaining* with worker weight $`\gamma`$ splits joint surplus. The equilibrium wage satisfies
 
 ```math
-J_t=z_t-w_t+\beta(1-\sigma) \mathbb{E}_t[J_{t+1}],
+w_t = \gamma(z_t + k \theta_t) + (1 - \gamma) b,
 ```
 
-where $`\sigma`$ is the exogenous separation rate. Free entry equates expected
-discounted job value with vacancy cost:
+where $`b`$ is the flow value of unemployment and $`k`$ is the per-period vacancy cost.
+
+A filled job has value $`J_t`$ given by the Bellman equation
 
 ```math
-k=\beta q(\theta_t) \mathbb{E}_t[J_{t+1}].
+J_t = z_t - w_t + \beta(1 - \sigma) \mathbb{E}_t[J_{t+1}],
 ```
 
-This condition pins down $`\theta_t`$.
-
-**Stock dynamics.** Once $`\theta_t`$ is known, unemployment follows
+where $`\sigma`$ is the exogenous separation rate. Free entry equates expected discounted job value with vacancy cost,
 
 ```math
-u_{t+1}=\sigma(1-u_t)+(1-f(\theta_t))u_t,\qquad
-v_t=\theta_t u_t.
+k = \beta q(\theta_t) \mathbb{E}_t[J_{t+1}].
 ```
 
-The deterministic steady state has $`u_{ss}=\sigma/(\sigma+f(\theta_{ss}))`$.
-
-**Local linearization.** Write
-$`\hat\theta_t=\log\theta_t-\log\theta_{ss}`$. Linearizing free entry at
-$`\theta_{ss}=1`$ gives $`\hat\theta_t=C\hat z_t`$, with
+This condition pins down $`\theta_t`$. Once $`\theta_t`$ is known, unemployment follows
 
 ```math
-C=\frac{\rho}{A-B\rho},\qquad
-A=\frac{\eta k}{(1-\gamma)\beta\chi},\qquad
-B=\beta A(1-\sigma)-\frac{\gamma k}{1-\gamma}.
+u_{t+1} = \sigma(1 - u_t) + (1 - f(\theta_t)) u_t, \qquad v_t = \theta_t u_t.
 ```
 
-At baseline, $`A=1.1098`$ and $`B=0.5262`$. A one-percent productivity
-innovation raises tightness by $`C=1.55`$ percent.
+The deterministic steady state has $`u_{ss} = \sigma / (\sigma + f(\theta_{ss}))`$.
+
+Write $`\hat\theta_t = \log\theta_t - \log\theta_{ss}`$. Linearizing free entry at $`\theta_{ss} = 1`$ gives $`\hat\theta_t = C \hat z_t`$, with
+
+```math
+C = \frac{\rho}{A - B\rho}, \qquad A = \frac{\eta k}{(1-\gamma)\beta\chi}, \qquad B = \beta A(1-\sigma) - \frac{\gamma k}{1-\gamma}.
+```
+
+At baseline, $`A = 1.1098`$ and $`B = 0.5262`$. A one-percent productivity innovation raises tightness by $`C = 1.55`$ percent.
 
 ## Worked Numerical Example
 
-Solve the deterministic steady state at $`z=\bar z=1`$ with $`\theta_{ss}=1`$ to recover the calibrated vacancy cost $`k`$ and steady-state unemployment $`u_{ss}`$. Use the baseline calibration $`\beta=0.996`$, $`\sigma=0.034`$, $`\chi=0.49`$, $`\eta=0.72`$, $`\gamma=0.72`$, $`b=0.40`$.
+Solve the deterministic steady state at $`z = \bar z = 1`$ with $`\theta_{ss} = 1`$ to recover the calibrated vacancy cost $`k`$ and steady-state unemployment $`u_{ss}`$. Use the baseline calibration $`\beta = 0.996`$, $`\sigma = 0.034`$, $`\chi = 0.49`$, $`\eta = 0.72`$, $`\gamma = 0.72`$, $`b = 0.40`$.
 
-At $`\theta_{ss}=1`$ the matching rates collapse to constants:
-
-```math
-f(\theta_{ss}) = \chi \cdot 1^{\eta} = 0.49, \qquad q(\theta_{ss}) = \chi \cdot 1^{\eta-1} = 0.49.
-```
-
-The Nash wage at $`z=\bar z`$ becomes a linear function of $`k`$:
+At $`\theta_{ss} = 1`$ the matching rates collapse to constants,
 
 ```math
-w_{ss} = \gamma(\bar z + k\theta_{ss}) + (1-\gamma) b = 0.72(1 + k) + 0.28(0.40) = 0.832 + 0.72 k.
+f(\theta_{ss}) = \chi \cdot 1^\eta = 0.49, \qquad q(\theta_{ss}) = \chi \cdot 1^{\eta-1} = 0.49.
 ```
 
-The deterministic job-value Bellman gives
+The Nash wage at $`z = \bar z`$ becomes a linear function of $`k`$,
 
 ```math
-J_{ss} = \frac{\bar z - w_{ss}}{1 - \beta(1-\sigma)} = \frac{0.168 - 0.72 k}{1 - 0.996(0.966)} = \frac{0.168 - 0.72 k}{0.037864}.
+w_{ss} = \gamma(\bar z + k\theta_{ss}) + (1-\gamma) b = 0.72(1 + k) + 0.28(0.40) = 0.832 + 0.72k.
 ```
 
-Free entry at the steady state reads $`k = \beta q(\theta_{ss}) J_{ss} = 0.48804 \, J_{ss}`$. Substitute the expression for $`J_{ss}`$:
+The deterministic job-value *Bellman* gives
 
 ```math
-k = \frac{0.48804 \, (0.168 - 0.72 k)}{0.037864}.
+J_{ss} = \frac{\bar z - w_{ss}}{1 - \beta(1-\sigma)} = \frac{0.168 - 0.72k}{1 - 0.996(0.966)} = \frac{0.168 - 0.72k}{0.037864}.
 ```
 
-Clear the denominator and collect terms in $`k`$:
+Free entry at the steady state reads $`k = \beta q(\theta_{ss}) J_{ss} = 0.48804 \, J_{ss}`$. Substituting the expression for $`J_{ss}`$,
+
+```math
+k = \frac{0.48804 \, (0.168 - 0.72k)}{0.037864}.
+```
+
+Clearing the denominator and collecting terms in $`k`$,
 
 ```math
 0.037864 \, k + 0.48804 \cdot 0.72 \, k = 0.48804 \cdot 0.168,
@@ -115,87 +106,76 @@ Clear the denominator and collect terms in $`k`$:
 0.389253 \, k = 0.081991 \implies \boxed{k = 0.2106}.
 ```
 
-Back out the wage and the surplus per match: $`w_{ss} = 0.832 + 0.72(0.2106) = 0.9837`$ and $`J_{ss} = 0.2106 / 0.48804 = 0.4316`$. Steady-state unemployment follows from the Beveridge law:
+Back out the wage and the surplus per match: $`w_{ss} = 0.832 + 0.72(0.2106) = 0.9837`$ and $`J_{ss} = 0.2106 / 0.48804 = 0.4316`$. Steady-state unemployment follows from the Beveridge law,
 
 ```math
 u_{ss} = \frac{\sigma}{\sigma + f(\theta_{ss})} = \frac{0.034}{0.034 + 0.49} = \boxed{0.0649}.
 ```
 
-These values match the entries in the Model Setup table. The calibration absorbs all surplus into the vacancy cost so that posting is just profitable at $`\theta_{ss}=1`$; the small denominator $`1-\beta(1-\sigma)=0.0379`$ explains why a tiny per-period surplus $`\bar z - w_{ss} = 0.0163`$ supports a job value of $`0.43`$.
+These values match the entries in the Model Setup table. The calibration absorbs all surplus into the vacancy cost so that posting is just profitable at $`\theta_{ss} = 1`$. The small denominator $`1 - \beta(1-\sigma) = 0.0379`$ explains why a tiny per-period surplus $`\bar z - w_{ss} = 0.0163`$ supports a job value of $`0.43`$.
 
 ## Model Setup
 
-| Object | Value | Role |
-|---|---:|---|
-| Discount factor $`\beta`$ | 0.996 | Monthly time preference |
-| Productivity persistence $`\rho`$ | 0.949 | AR(1) coefficient on $`\hat z_t`$ |
-| Innovation s.d. $`\sigma_\epsilon`$ | 0.0065 | Monthly productivity shock |
-| Mean productivity $`\bar z`$ | 1.00 | Normalization |
-| Separation rate $`\sigma`$ | 0.034 | Exogenous job destruction |
-| Matching efficiency $`\chi`$ | 0.49 | Level of $`m(u,v)`$ |
-| Matching elasticity $`\eta`$ | 0.72 | Vacancy elasticity in $`m`$ |
-| Worker bargaining weight $`\gamma`$ | 0.72 | Nash share |
-| Flow value of unemployment $`b`$ | 0.40 | Outside option |
-| Vacancy cost $`k`$ | 0.2106 | Calibrated for $`\theta_{ss}=1`$ |
-| Steady-state unemployment $`u_{ss}`$ | 0.0649 | $`\sigma/(\sigma+f(\theta_{ss}))`$ |
-| Steady-state wage $`w_{ss}`$ | 0.9837 | Nash wage at $`z=\bar z`$ |
-| Surplus $`\bar z-b`$ | 0.60 | Match surplus before vacancy costs |
-| Coarse grid $`N_z`$ | 41 | Rouwenhorst nodes (tutorial run) |
-| Fine-grid benchmark $`N_z`$ | 121 | Discretization audit |
-| Simulation length | 4500 months | Post-burn-in moments |
+| Parameter | Value | Parameter | Value |
+|---|---:|---|---:|
+| Discount factor $`\beta`$ | 0.996 | Productivity persistence $`\rho`$ | 0.949 |
+| Innovation s.d. $`\sigma_\epsilon`$ | 0.0065 | Mean productivity $`\bar z`$ | 1.00 |
+| Separation rate $`\sigma`$ | 0.034 | Matching efficiency $`\chi`$ | 0.49 |
+| Matching elasticity $`\eta`$ | 0.72 | Worker bargaining weight $`\gamma`$ | 0.72 |
+| Flow value of unemployment $`b`$ | 0.40 | Vacancy cost $`k`$ | 0.2106 |
+| Steady-state unemployment $`u_{ss}`$ | 0.0649 | Steady-state wage $`w_{ss}`$ | 0.9837 |
+| Surplus $`\bar z - b`$ | 0.60 | Coarse grid $`N_z`$ | 41 |
+| Fine-grid benchmark $`N_z`$ | 121 | Simulation length | 4500 months |
 
 ## Solution Method
 
-Two solvers compute the same tightness rule.
+Two solvers compute the same tightness rule. The log-linear rule linearizes free entry around the deterministic steady state and gives a closed-form elasticity $`C`$. The nonlinear *fixed-point* solver discretizes productivity on a Rouwenhorst grid and iterates the job-value Bellman with free entry substituted inside each sweep. Both are compared to quantify how much curvature the linearization misses.
 
-**Log-linear local rule.** The local rule linearizes free entry and the AR(1) around the deterministic steady state. It gives $`C=\rho/(A-B\rho)`$ and sets $`\theta_t=\exp(C\hat z_t)`$.
-
-**Nonlinear free-entry fixed point.** The nonlinear solver discretizes $`\hat z_t`$ on a Rouwenhorst grid with $`N_z=41`$ nodes. It substitutes free entry inside the job-value Bellman:
-
-```math
-J_i=(1-\gamma)(z_i-b)-\gamma k\theta_i+\beta(1-\sigma)\sum_j P_{ij}J_j,\qquad \theta_i=(\frac{\beta\chi}{k}\sum_j P_{ij}J_j)^{1/(1-\eta)}.
+```
+          guess theta_0 (log-linear: compute C analytically)
+                        |
+                        v
++-------- nonlinear fixed-point loop --------+
+|                                            |
+|  J  -->  [ expected job value ]  -->  theta_new  |
+|                                            |
+|  theta_new  -->  [ Bellman update ]  -->  J_new  |
+|                                            |
++---- |J_new - J| >= tol: repeat ------------+
+                        |
+                    converged
+                        v
+                  theta*(z), J*(z)
 ```
 
-The operator is a contraction. Its linear term $`\beta(1-\sigma)E[J']`$ alone has modulus $`\beta(1-\sigma)=0.9621`$, but the substituted free-entry term $`\theta(E[J'])`$ inside the Bellman adds a negative correction. The total derivative of the update with respect to $`E[J']`$ at the steady state gives an effective modulus of about $`0.293`$, well below the linear-term bound. The tight effective modulus is why the fixed point converges in a few dozen iterations rather than the several hundred the linear-term modulus would imply.
-
-```text
-Algorithm 1: Log-linear local rule
-Inputs    primitives (β, σ, χ, η, γ, b, z̄, ρ); shock series {ẑ_t}
-Outputs   elasticity C; tightness {θ_t}; unemployment {u_t}, vacancies {v_t}
-
-1. Calibrate k from θ_ss = 1 at z = z̄
-2. Compute  A = η k / [(1−γ) β χ],  B = β A (1−σ) − γ k / (1−γ)
-3. Set C = ρ / (A − B ρ)
-4. For each ẑ_t in the simulation:
-       θ_t  ← exp(C · ẑ_t)
-       f_t  ← χ θ_t^η
-       u[t+1] ← σ (1 − u_t) + (1 − f_t) u_t
-       v_t  ← θ_t · u_t
+```python
+# Nonlinear free-entry fixed point.
+# Substitutes free entry inside each Bellman sweep so the iteration
+# stays in J-space with contraction modulus ~0.29 (well below beta*(1-sigma)=0.96).
+def solve_nonlinear_tightness(beta, chi, eta, gamma, b, k, sigma, z_grid, transition, tol=1e-11):
+    # initialise: J = k / (beta * chi) -- value if free entry binds today
+    job_value = np.full(n_z, k / (beta * chi))
+    for _ in range(max_iter):
+        # E[J'|z] = P @ J  (one mat-vec multiply)
+        expected_job_value = transition @ job_value
+        # invert free entry: theta = (beta * chi * E[J'] / k)^(1/(1-eta))
+        theta = (beta * chi * np.maximum(expected_job_value, 0.0) / k) ** (1.0 / (1.0 - eta))
+        # J_new = (1-gamma)(z - b) - gamma*k*theta + beta*(1-sigma)*E[J']
+        new_job_value = (
+            (1.0 - gamma) * (z_grid - b)
+            - gamma * k * theta
+            + beta * (1.0 - sigma) * expected_job_value
+        )
+        if np.max(np.abs(new_job_value - job_value)) < tol:
+            return theta, new_job_value
+        job_value = new_job_value
 ```
 
-```text
-Algorithm 2: Nonlinear finite-state free-entry fixed point
-Inputs    primitives; Rouwenhorst grid {ẑ_i}[i=1..N_z];
-          transition matrix P; calibrated k; tolerance ε
-Outputs   job value J_i and tightness θ_i at each productivity state z_i
-
-Initialise   J_i ← k / (β χ)               # value if free entry binds today
-repeat n = 0, 1, 2, ...:
-    EJ_i  ← Σ_j P[ij] J_j                 # one mat-vec multiply
-    θ_i   ← (β χ EJ_i / k)^(1/(1−η))       # invert free entry
-    J_i^new ← (1−γ)(z_i − b) − γ k θ_i + β(1−σ) EJ_i
-    err   ← max_i |J_i^new − J_i|
-    J_i   ← J_i^new
-until err < ε
-```
-
-**Discretization audit.** The same nonlinear solver is rerun with $`N_z=121`$ nodes. The interpolated gap in $`\theta(z)`$ is **3.97e-04%**.
-
-At baseline, the log-linear elasticity is $`C=1.554`$. The $`N_z=41`$ fixed point converges in **26 iterations**. The maximum policy gap between the nonlinear and log-linear rules is **3.23%**.
+The linear term $`\beta(1-\sigma) = 0.962`$ alone would imply slow convergence. The substituted free-entry feedback adds a negative correction. The effective contraction modulus of the full operator at the steady state is about $`0.293`$, so the fixed point converges in a few dozen iterations.
 
 ## Results
 
-The nonlinear rule, fine-grid rule, and local rule are close over the simulated productivity range. Tightness moves about 1.72 times as much as productivity, far below Shimer's value near 19. The mismatch remains after switching solvers.
+The nonlinear rule, fine-grid rule, and local rule are close over the simulated productivity range. Tightness moves about 1.72 times as much as productivity, far below the data value near 19. Switching solvers does not close the gap.
 
 <img src="figures/productivity-tightness.png" alt="Tightness as a function of productivity: log-linear, nonlinear coarse, and nonlinear fine-grid benchmark, with simulated months overlaid." width="80%">
 
@@ -203,13 +183,17 @@ Given tightness, unemployment follows the stock law and vacancies equal $`\theta
 
 <img src="figures/unemployment-vacancies.png" alt="Simulated unemployment and vacancy paths under the nonlinear tightness rule." width="80%">
 
-The simulated pairs trace a Beveridge curve. Productivity shocks move the economy along that curve because separations and matching efficiency stay fixed.
+The simulated pairs trace a *Beveridge curve*. Productivity shocks move the economy along that curve because separations and matching efficiency stay fixed.
 
 <img src="figures/beveridge-curve.png" alt="Simulated unemployment and vacancy pairs trace a downward-sloping Beveridge curve around the steady state." width="80%">
 
+The fixed-point convergence is tracked across iterations.
+
+<img src="figures/convergence.png" alt="Fixed-point sup-norm error falling geometrically across iterations to tolerance." width="80%">
+
 The signs match the model logic. Tightness and vacancies are procyclical, unemployment is countercyclical, and both solvers give similar volatility.
 
-**Simulated business-cycle moments**
+### Simulated business-cycle moments
 
 | Variable                    |   Mean |   Std. log dev. |   Std./Std. z |   Corr. with z |
 |:----------------------------|-------:|----------------:|--------------:|---------------:|
@@ -219,32 +203,36 @@ The signs match the model logic. Tightness and vacancies are procyclical, unempl
 | Tightness theta             | 0.9959 |          0.0372 |          1.72 |          1     |
 | Tightness theta, log-linear | 0.9965 |          0.0336 |          1.55 |          1     |
 
-Raising $`b`$ shrinks surplus and raises elasticity $`C`$. Moving from $`b=0.40`$ to $`b=0.95`$ takes $`C`$ from 1.55 to 18.65. The surplus calibration drives amplification.
+Raising $`b`$ shrinks surplus and raises elasticity $`C`$. Moving from $`b = 0.40`$ to $`b = 0.95`$ takes $`C`$ from 1.55 to 18.65. The surplus calibration drives amplification.
 
-**Tightness elasticity by flow value of unemployment**
+### Tightness elasticity by flow value of unemployment
 
 |   Flow value b |   Surplus z-b |   Vacancy cost k |   Tightness elasticity C |
 |---------------:|--------------:|-----------------:|-------------------------:|
-|           0.4  |          0.6  |           0.2106 |                     1.55 |
-|           0.55 |          0.45 |           0.158  |                     2.07 |
+|           0.40 |          0.60 |           0.2106 |                     1.55 |
+|           0.55 |          0.45 |           0.1580 |                     2.07 |
 |           0.71 |          0.29 |           0.1018 |                     3.22 |
 |           0.85 |          0.15 |           0.0527 |                     6.22 |
 |           0.95 |          0.05 |           0.0176 |                    18.65 |
 
 The policy gap, interpolation gap, and iteration counts are persisted here so the convergence claims in the Solution Method section can be cross-checked against a committed artifact.
 
-**Nonlinear fixed-point solver diagnostics**
+### Nonlinear fixed-point solver diagnostics
 
-| Quantity                                    | Policy gap (%)   | Grid gap (%)   | Iterations   |
-|:--------------------------------------------|:-----------------|:---------------|:-------------|
-| Coarse-grid policy gap vs. log-linear       | 3.2287           |                |              |
-| Coarse-grid interpolation gap vs. fine grid |                  | 0.000397       |              |
-| Coarse-grid fixed-point iterations          |                  |                | 26           |
-| Fine-grid fixed-point iterations            |                  |                | 31           |
+| Quantity | Value | Quantity | Value |
+|---|:--|---|:--|
+| Coarse-grid policy gap vs. log-linear | 3.2287% | Coarse-grid grid gap vs. fine | 0.000397% |
+| Coarse-grid fixed-point iterations | 26 | Fine-grid fixed-point iterations | 31 |
 
 ## Takeaway
 
-DMP links productivity to vacancies and unemployment through free entry. The local rule and nonlinear fixed point give almost the same volatility. The Shimer puzzle therefore comes from the large baseline surplus, not from the numerical method. The sensitivity table shows how a smaller surplus raises tightness amplification.
+*Free entry* links productivity to vacancy creation, and matching frictions translate that into unemployment dynamics. The quantitative surprise from Shimer (2005) is that the baseline DMP calibration amplifies far too little: tightness moves roughly one-for-one with productivity rather than the twenty-to-one ratio in the data. The mismatch comes from Nash bargaining making wages too flexible, not from numerical error. Hagedorn and Manovskii (2008) showed that shrinking the surplus restores amplification, anchoring a decade of debate about what the right outside option is. The DMP framework itself went on to become the standard labor block in New Keynesian DSGE models and heterogeneous-agent frameworks with unemployment risk, recognized by the 2010 Nobel Prize in Economic Sciences.
+
+## See also
+
+- [Aiyagari saving and capital-market clearing](../aiyagari/README.md)
+- [Optimal growth model](../optimal-growth/README.md)
+- [Shock discretization with Rouwenhorst](../shock-discretization/README.md)
 
 ## References
 

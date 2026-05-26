@@ -2,11 +2,15 @@
 
 ## Overview
 
-An unemployed worker draws one wage offer each period. Accepting locks in that wage forever. Rejecting pays an unemployment benefit and returns the worker to search next period.
+Before McCall (1970), economists modeled wage search as static: a worker drew all offers simultaneously and picked the best. McCall asked what happens when offers arrive sequentially and the worker cannot recall rejected ones. The answer is a *reservation wage* that fully summarizes the optimal policy: accept any offer at or above it, reject all others, and return to search next period.
 
-The object is the reservation wage. The worker accepts offers at or above it and rejects offers below it.
+The object is the reservation wage as a function of the offer distribution, the discount factor, and the unemployment benefit. The computation needs only one continuation value per iteration because rejection returns the same scalar regardless of the current offer.
 
-The computation needs one continuation value. Rejection discards today's offer, so the Bellman equation compares acceptance against a scalar. That scalar gives a fixed point for the reservation wage.
+## Read before
+
+- [Optimal growth model](../optimal-growth/README.md)
+- [Consumption-savings under income risk](../consumption-savings/README.md)
+- [Root-finding methods](../../numerical-methods/root-finding/README.md)
 
 ## Equations
 
@@ -65,7 +69,7 @@ Conjecture $`w^{\ast} \in (5, 10)`$, so only $`W = 10`$ is accepted. Under that 
   = \tfrac{2}{3} w^{\ast} + \tfrac{10}{3}.
 ```
 
-Substitute into the fixed-point equation:
+Substitute into the *fixed-point* equation:
 
 ```math
 w^{\ast} = (0.1)(1) + (0.9)\!\left[\tfrac{2}{3} w^{\ast} + \tfrac{10}{3}\right]
@@ -80,82 +84,67 @@ Collect terms:
 
 Since $`5 < 7.75 < 10`$, the conjecture holds.
 
-The mean offer is $`\mathbb{E}[W] = 17/3 \approx 5.67`$; the reservation wage 7.75 sits above it. Acceptance probability is $`1/3`$, so expected unemployment duration is 3 periods. The right tail - the offer of 10 - makes waiting worthwhile even though two of the three offers are rejected.
+The mean offer is $`\mathbb{E}[W] = 17/3 \approx 5.67`$; the reservation wage 7.75 sits above it. Acceptance probability is $`1/3`$, so expected unemployment duration is 3 periods. The right tail (the offer of 10) makes waiting worthwhile even though two of the three offers are rejected.
 
 ## Model Setup
 
-| Object | Value | Role |
-|---|---:|---|
-| Discount factor $`\beta`$ | 0.95 | Weight on the next draw |
-| Flow benefit $`b`$ | 1.0 | Per-period payoff while unemployed |
-| Wage law | $`\log W\sim N(\mu,\sigma^2)`$ | Lognormal offer distribution |
-| Location $`\mu`$ | 0.0 | Mean of $`\log W`$; lognormal location parameter |
-| Scale $`\sigma`$ | 1.0 | Std. dev. of $`\log W`$; lognormal scale parameter |
-| Median offer | 1.0000 | $`e^{\mu}`$ for the lognormal |
-| Mean offer $`\mathbb{E}[W]`$ | 1.6487 | Reference level for the cutoff |
-| Wage grid | 50 equiprobable bins | Each bin represented by its conditional mean |
-| Continuous benchmark | exact lognormal moments | Check on the grid cutoff |
-| VFI tolerance | 1e-08 | Sup-norm stopping rule |
+| Parameter | Value | Parameter | Value |
+|---|---:|---|---:|
+| Discount factor $`\beta`$ | 0.95 | Location $`\mu`$ | 0.0 |
+| Flow benefit $`b`$ | 1.0 | Scale $`\sigma`$ | 1.0 |
+| Wage law | $`\log W\sim N(\mu,\sigma^2)`$ | Median offer $`e^{\mu}`$ | 1.0000 |
+| Wage grid (equiprobable bins) | 50 | Mean offer $`\mathbb{E}[W]`$ | 1.6487 |
+| VFI tolerance (sup-norm) | 1e-08 | Continuous benchmark | exact lognormal moments |
 
 ## Solution Method
 
-**Finite-grid VFI.** The Bellman operator $`T`$ acting on a candidate $`V`$ is
+The *Bellman operator* $`T`$ maps a candidate value function $`V`$ to a new one. Repeated application converges to the fixed point because the update is almost scalar. Each sweep computes one expectation against the offer distribution. The lognormal offer law is replaced by $`n_w=50`$ equiprobable bins, each represented by its conditional mean inside the bin.
 
-```math
-(TV)(w)=\max\left(\frac{w}{1-\beta}, b+\beta\mathbb{E}_{F}[V(W')]\right).
+```
+          wages, probs, beta, b
+                    |
+                    v
+    +---------- VFI loop ----------+
+    |  V_k --> [ Bellman op ] --> V_{k+1}  |
+    +-------- err >= tol: repeat ----------+
+                    |
+                 err < tol
+                    v
+              V*(w), reservation wage w*
 ```
 
-Repeated application converges to the fixed point. Here the update is simple because $`C`$ is one number. Each sweep computes one expectation and one max over the wage grid.
-
-The code replaces the lognormal offer law with $`n_w=50`$ equal-probability bins. Each support point is the conditional mean inside its bin. This keeps the mean offer exact.
-
-```text
-Algorithm  Finite-grid McCall VFI
-Inputs   wages w_1,...,w_n; probabilities p_1,...,p_n;
-           discount beta in (0,1); benefit b; tolerance epsilon
-Outputs  value V_i and reservation wage w*
-
-Initialise V_i <- w_i / (1 - beta)             # accept-everything guess
-repeat n = 0, 1, 2, ...:
-    C  <- b + beta * sum_i p_i V_i             # one expectation per sweep
-    V_i_new <- max{ w_i / (1 - beta), C }      # elementwise threshold update
-    err <- max_i | V_i_new - V_i |
-    V_i <- V_i_new
-stop when err < epsilon
-w* <- (1 - beta) * (b + beta * sum_i p_i V_i)  # invert C = w* / (1 - beta)
+```python
+# V(w) = max(w / (1 - beta), C); C = b + beta * E[V(W')]
+def solve_mccall(beta, b, wages, probs, tol=1e-8):
+    accept_values = wages / (1.0 - beta)   # A(w) = w / (1 - beta)
+    value = accept_values.copy()
+    for _ in range(1_000):
+        # C = b + beta * sum_i p_i V_i; one scalar per sweep
+        continuation_value = b + beta * np.dot(probs, value)
+        new_value = np.maximum(accept_values, continuation_value)
+        if np.max(np.abs(new_value - value)) < tol:
+            break
+        value = new_value
+    # invert C = w* / (1 - beta) to recover w*
+    reservation_wage = (1.0 - beta) * (b + beta * np.dot(probs, value))
+    return value, reservation_wage
 ```
 
-The continuous lognormal case gives a benchmark. The scalar fixed-point equation
-
-```math
-r = (1-\beta) b+\beta m(r),\qquad m(r)=\mathbb{E}_{F}[\max(W,r)],
-```
-
-where $`r`$ is the reservation wage, has a closed-form $`m(r)`$ from lognormal moments. The code solves the residual by Brent's method.
-
-At baseline, finite-grid VFI converges in **178 iterations**. The sup-norm error is **9.84e-09**. The grid cutoff is $`w^{\ast}_{\text{grid}}=4.7054`$. The continuous cutoff is $`w^{\ast}_{\text{cont}}=4.7055`$. Absolute grid error is **9.1e-05**.
+At baseline, VFI converges in 178 iterations to a sup-norm error of 9.84e-09. The grid cutoff is 4.7054. The continuous lognormal benchmark (solved by Brent's method on the scalar residual) gives 4.7055. Absolute grid error is 9.1e-05.
 
 ## Results
 
-The figure shows the reservation rule. The rising line is acceptance value. The dashed line is rejection value. They cross at the cutoff. The shaded region marks acceptable offers. The grid and continuous cutoffs nearly coincide. At baseline, continuous acceptance probability is **6.1%**. Expected unemployment duration is about **16.5 periods**.
+The threshold panel shows the accept and reject values crossing at the cutoff. The shaded region marks acceptable offers. The grid and continuous cutoffs nearly coincide. The density panel shows why the cutoff exceeds the mean: the lognormal right tail makes waiting valuable even though most offers are rejected. The convergence panel shows geometric decay of the sup-norm error. Acceptance probability falls steeply as patience rises, because a more patient worker holds out for rarer high offers.
 
-<img src="figures/accept-vs-reject.png" alt="Accept and reject values with finite-grid and continuous reservation wages." width="80%">
+![VFI result: threshold logic, offer density, convergence, and acceptance by patience](figures/vfi-result.png)
 
-The density plot explains why the cutoff exceeds the mean. The lognormal right tail makes waiting valuable. Most offers are rejected, but rare high offers compensate for waiting.
+Patience raises the reservation wage. As $`\beta`$ approaches one, the worker values future draws more and the cutoff moves into the right tail. The grid solution stays close to the continuous benchmark. The gap widens only at high $`\beta`$. Benefits raise the cutoff less than one-for-one. Higher $`b`$ makes rejection less costly, but search still has upside from the right tail.
 
-<img src="figures/cutoff-on-density.png" alt="Lognormal offer density with the reservation wage and acceptance region." width="80%">
+![Comparative statics: reservation wage by patience and by benefit](figures/comparative-statics.png)
 
-Patience raises the reservation wage. As $`\beta`$ approaches one, the worker values future draws more. The cutoff moves into the right tail. The grid solution stays close to the continuous benchmark. The gap widens only at high $`\beta`$.
+The table separates the benefit and patience margins. Both higher $`b`$ and higher $`\beta`$ raise the cutoff, lower acceptance rates, and lengthen expected duration. Grid error stays small at moderate $`\beta`$ and grows at high $`\beta`$ because the cutoff sits deeper in the tail.
 
-<img src="figures/wstar-vs-beta.png" alt="Reservation wage by discount factor with continuous benchmark." width="80%">
-
-Benefits raise the cutoff. Higher $`b`$ makes rejection less costly. With wage risk, the cutoff rises less than one-for-one because search still has upside.
-
-<img src="figures/wstar-vs-benefits.png" alt="Reservation wage by unemployment benefit with continuous benchmark." width="80%">
-
-The table separates benefit and patience margins. Both higher $`b`$ and higher $`\beta`$ raise the cutoff. They also lower acceptance rates and lengthen expected duration. Grid error stays small at moderate $`\beta`$. It grows at $`\beta=0.99`$ because the cutoff sits deeper in the tail.
-
-**Reservation wages, acceptance rates, and expected unemployment duration**
+### Reservation wage diagnostics
 
 |   Discount ($`\beta`$) |   b |   w* grid |   w* cont. |   grid gap |   Accept % (cont.) |   E[duration] |   VFI iter. |
 |-------:|----:|----------:|-----------:|-----------:|-------------------:|--------------:|------------:|
@@ -171,11 +160,17 @@ The table separates benefit and patience margins. Both higher $`b`$ and higher $
 
 ## Takeaway
 
-McCall search turns unemployment duration into a reservation wage. The worker accepts only offers that beat this price of waiting. A higher benefit or more patience raises the cutoff and extends unemployment duration. Computationally, the Bellman problem is nearly scalar because rejection has one continuation value. The scalar fixed point gives a clear check on finite-grid VFI.
+*Sequential search* turns unemployment duration into a reservation wage. Workers accept only offers that beat the price of waiting, so most spells end when a right-tail offer arrives. McCall's surprise was that the reservation wage exceeds the mean offer: a patient worker rationally rejects the majority of draws. The paper established that unemployment duration reflects optimal choice under uncertainty, not passivity. That insight anchored the subsequent equilibrium search literature, from Mortensen and Pissarides on matching to models of posted wages and directed search.
+
+## See also
+
+- [Huggett incomplete-markets model](../../heterogeneous-agents/huggett-incomplete-markets/README.md)
+- [Mortensen-Pissarides matching model](../../search-matching/mortensen-pissarides/README.md)
+- [Consumption-savings under income risk](../consumption-savings/README.md)
 
 ## References
 
-- McCall, J.J. (1970). "Economics of Information and Job Search." *Quarterly Journal of Economics*, 84(1), 113-126.
+- McCall, J.J. (1970). Economics of Information and Job Search. *Quarterly Journal of Economics*, 84(1), 113-126.
 - Ljungqvist, L. and Sargent, T. (2018). *Recursive Macroeconomic Theory*. MIT Press, 4th edition, Ch. 6.
 - Stokey, N., Lucas, R., and Prescott, E. (1989). *Recursive Methods in Economic Dynamics*. Harvard University Press.
 - Pissarides, C.A. (2000). *Equilibrium Unemployment Theory*. MIT Press, 2nd edition.
