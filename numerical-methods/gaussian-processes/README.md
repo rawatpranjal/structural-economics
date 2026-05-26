@@ -4,9 +4,16 @@
 
 A Gaussian process (GP) is a probability distribution over functions. Sampling from a GP returns a whole function, not a finite vector of parameters. Conditioning a GP prior on a finite set of noisy observations returns another GP, the posterior, with a closed-form mean function and a closed-form variance function. There is no MCMC inside the conditioning step; everything is linear algebra against the kernel matrix.
 
-This makes GPs the natural surrogate model in two settings. The first is regression with uncertainty quantification: fit a smooth function from sparse, noisy data, and report a credible band rather than a single point estimate. The second is sequential optimisation of an expensive function (Bayesian optimisation), where the GP posterior over the unknown objective guides which point to evaluate next. Both settings need three things: a kernel, a posterior, and a way to choose the kernel's hyperparameters from data.
+This makes GPs the natural surrogate model in two settings. The first is regression with uncertainty quantification: fit a smooth function from sparse, noisy data, and report a credible band rather than a single point estimate. The second is sequential optimisation of an expensive function (Bayesian optimisation), where the GP posterior over the unknown objective guides which point to evaluate next. Both settings need three things: a kernel, a posterior, and a way to choose the kernel hyperparameters from data.
 
-This prelim builds those three pieces on a one-dimensional toy target with Gaussian observation noise, compares the squared-exponential (RBF) kernel against the Matern-5/2 kernel, and tunes the length-scale by maximising the log marginal likelihood. The closed-form posterior, the kernel choice, and the marginal-likelihood tuning are the same three ingredients that the GP surrogate uses in [`numerical-methods/bayesian-optimization/`](../../numerical-methods/bayesian-optimization/) inside its acquisition loop.
+Before GPs, the dominant non-parametric approach was kernel smoothing, which produces point estimates with no probabilistic interpretation. GPs fill that gap: they provide a full posterior distribution over functions, including calibrated uncertainty bands that narrow where data are dense and widen where data are sparse.
+
+This tutorial builds those three pieces on a one-dimensional toy target with Gaussian observation noise, compares the squared-exponential (RBF) kernel against the Matern-5/2 kernel, and tunes the length scale by maximising the log marginal likelihood. The closed-form posterior, the kernel choice, and the marginal-likelihood tuning are the same three ingredients that the GP surrogate uses in [`numerical-methods/bayesian-optimization/`](../../numerical-methods/bayesian-optimization/) inside its acquisition loop.
+
+## Read before
+
+- [Numerical linear algebra: Cholesky factorisation](../cholesky/README.md)
+- [Maximum likelihood estimation](../maximum-likelihood/README.md)
 
 ## Equations
 
@@ -88,52 +95,41 @@ For the variance, exploit the symmetry $`k_{\ast} = c (1, 1)^{\top}`$ with $`c =
 \approx 0.358.
 ```
 
-The posterior at $`x_{\ast} = 1`$ is $`f(1) \mid y \sim N(2.118, 0.358)`$, with standard deviation $`\sigma_{\ast}(1) \approx 0.598`$. The mean lies between $`y_1 = 1`$ and $`y_2 = 3`$ but pulls toward the closer-in-likelihood neighbour weighted by kernel similarity; the posterior standard deviation 0.598 sits below the prior 1.0 because the test point is within one length-scale of both training points.
+The posterior at $`x_{\ast} = 1`$ is $`f(1) \mid y \sim N(2.118, 0.358)`$, with standard deviation $`\sigma_{\ast}(1) \approx 0.598`$. The mean lies between $`y_1 = 1`$ and $`y_2 = 3`$ but pulls toward the closer-in-likelihood neighbour weighted by kernel similarity. The posterior standard deviation 0.598 sits below the prior 1.0 because the test point is within one length scale of both training points.
 
 ## Model Setup
 
-| Object | Symbol | Role |
-|---|---|---|
-| Input | $`x`$ | Scalar in $`[0, 10]`$ |
-| True function | $`f(x) = x \sin x`$ | The simulated target |
-| Observation noise sd | $`\sigma_n`$ | Set to 0.5 |
-| Training size | $`n`$ | 15 random points |
-| Mean function | $`\mu`$ | Constant zero |
-| Kernel | $`k`$ | RBF or Matern-5/2 [from `bayesian-optimization/`] |
-| Length scale | $`\ell`$ | Tuned by marginal-likelihood maximisation [from `bayesian-optimization/`] |
-| Output scale | $`\sigma_f`$ | Tuned jointly [from `bayesian-optimization/`] |
-| Training covariance | $`K`$ | $`n \times n`$ matrix with $`K_{ij} = k(x_i, x_j)`$ [from `bayesian-optimization/`] |
-| Posterior mean | $`\mu_{\ast}`$ | Function of test input $`x_{\ast}`$ [from `bayesian-optimization/`] |
-| Posterior variance | $`\sigma_{\ast}^2`$ | Function of test input $`x_{\ast}`$ [from `bayesian-optimization/`] |
-| Log marginal likelihood | $`\log p(y \mid X, \theta)`$ | Objective for hyperparameter tuning |
-
-The annotations record which symbols are shared with the dense tutorial that adopts this prelim.
+| Parameter | Value | Parameter | Value |
+|---|---:|---|---:|
+| Input domain | $`[0, 10]`$ | True function $`f(x)`$ | $`x \sin x`$ |
+| Observation noise s.d. $`\sigma_n`$ | 0.5 | Training size $`n`$ | 15 |
+| Mean function $`\mu`$ | 0 | Kernel | RBF or Matern-5/2 |
+| Length scale $`\ell`$ | tuned by marginal likelihood | Output scale $`\sigma_f`$ | tuned jointly |
+| Training covariance $`K`$ | $`n \times n`$, $`K_{ij} = k(x_i, x_j)`$ | Log marginal likelihood | objective for tuning |
+| Posterior mean $`\mu_{\ast}`$ | function of $`x_{\ast}`$ | Posterior variance $`\sigma_{\ast}^2`$ | function of $`x_{\ast}`$ |
 
 ## Solution Method
 
-The procedure has three stages: build the kernel, tune the hyperparameters, and condition on data.
+The procedure has three stages: build the kernel matrix, tune the hyperparameters by maximising the log marginal likelihood over a log-parameter space using L-BFGS-B with random restarts, and condition on data using a single Cholesky factorisation to compute both the posterior mean and variance at all test points.
 
-```text
-Procedure: Gaussian process regression with marginal-likelihood tuning
-Inputs : training data (X, y); kernel family (RBF or Matern-5/2); noise scale.
-Outputs: optimised hyperparameters, posterior mean and variance, log ML.
-
-1. Build the kernel matrix K at the training inputs as a function of (ell, sigma_f).
-
-2. Factor K + sigma_n^2 I = L L'  by Cholesky (with small jitter for stability).
-
-3. Define the log-marginal-likelihood objective:
-     log_ml(ell, sigma_f) = -0.5 y' (K + sigma_n^2 I)^-1 y
-                            - sum over i of log L[i, i] - (n/2) log(2 pi).
-
-4. Maximise log_ml over (log ell, log sigma_f) via L-BFGS-B with several
-   random restarts. Use log-parameters because both must stay positive.
-
-5. With the optimised hyperparameters, compute the posterior mean and
-   variance at every test point in one Cholesky-based solve.
+```
+          training data (X, y), kernel family, noise sigma_n
+                              |
+                              v
+     +--------- hyperparameter tuning ----------+
+     |  (ell, sigma_f)  -->  [ log marginal likelihood + L-BFGS-B ]  -->  ell*, sigma_f*  |
+     +--------------------------------------------------+
+                              |
+                              v
+     +--------- GP fit ----------+
+     |  (X, y)  -->  [ kernel matrix + Cholesky ]  -->  L, alpha  |
+     +------------------------------------------+
+                              |
+                              v
+     test points X*  -->  [ GP predict ]  -->  mu*, sigma*
 ```
 
-Deep kernels, sparse / inducing-point GPs, scalable variational inference, and GP classification build on this base and are out of scope.
+Deep kernels, sparse or inducing-point GPs, scalable variational inference, and GP classification build on this base and are out of scope.
 
 ## Results
 
@@ -141,7 +137,7 @@ The first figure compares the RBF and Matern-5/2 posterior fits on $`f(x) = x \s
 
 <img src="figures/posterior-fit.png" alt="Posterior mean and 95 percent credible band under the RBF and Matern-5/2 kernels, with training points and the true function" width="95%">
 
-Both kernels recover the underlying $`x \sin x`$ shape inside the interpolation region (between the leftmost and rightmost training points). The credible band is narrowest where training points are dense and widest where they are sparse. The RBF kernel produces a smoother fit and a slightly narrower band overall, because its sample functions are infinitely differentiable; the Matern-5/2 fit is more responsive to local fluctuations because its sample functions are twice but not three times continuously differentiable.
+Both kernels recover the underlying $`x \sin x`$ shape inside the interpolation region (between the leftmost and rightmost training points). The credible band is narrowest where training points are dense and widest where they are sparse. The RBF kernel produces a smoother fit and a slightly narrower band overall, because its sample functions are infinitely differentiable. The Matern-5/2 fit is more responsive to local fluctuations because its sample functions are twice but not three times continuously differentiable.
 
 The second figure traces the log marginal likelihood as a function of the length scale, with the output scale held at its optimum for each kernel.
 
@@ -149,17 +145,26 @@ The second figure traces the log marginal likelihood as a function of the length
 
 Both curves have a clear single maximum around $`\ell \approx 1.5`$. Below $`\ell = 0.5`$ the kernel becomes wiggly, fitting noise; the quadratic in $`y`$ shrinks but the log determinant penalty grows. Above $`\ell = 5`$ the kernel is nearly constant, underfitting the data; the log determinant shrinks but the quadratic in $`y`$ explodes. The trade-off between the two terms is what gives marginal-likelihood-II its data-adaptive smoothness scale.
 
-The third figure illustrates what conditioning on data buys us, by drawing samples from the prior and the posterior.
+The third figure illustrates what conditioning on data buys us, by drawing samples from the prior and the posterior alongside the posterior mean band.
 
-<img src="figures/prior-vs-posterior-samples.png" alt="Three panels: samples from the RBF prior, samples from the posterior, and the posterior mean with a 2 standard deviation band" width="95%">
+<img src="figures/prior-vs-posterior-samples.png" alt="Four panels: samples from the RBF prior, samples from the posterior, the posterior mean with a 2 standard deviation band, and an empty panel" width="95%">
 
-The prior samples are wiggly and unconstrained; they only respect the RBF length scale, nothing else. The posterior samples thread the training points and follow the true function shape inside the interpolation region while spreading out near the boundaries. The posterior mean with its $`\pm 2  \sigma_{\ast}`$ band shows the same picture as a single expected curve plus uncertainty bounds. On a held-out grid, the RBF kernel achieves $`\mathrm{RMSE} = 0.59`$ against the Matern-5/2 kernel's $`0.73`$; the RBF advantage here reflects the infinite smoothness of the target $`x \sin x`$.
+The prior samples are wiggly and unconstrained; they only respect the RBF length scale, nothing else. The posterior samples thread the training points and follow the true function shape inside the interpolation region while spreading out near the boundaries. The posterior mean with its $`\pm 2  \sigma_{\ast}`$ band shows the same picture as a single expected curve plus uncertainty bounds.
+
+### Fit diagnostics
+
+| Kernel | Tuned $`\ell`$ | Tuned $`\sigma_f`$ | Log ML | RMSE |
+|:---|---:|---:|---:|---:|
+| RBF | 1.38 | 4.27 | -23.96 | 0.594 |
+| Matern-5/2 | 1.56 | 4.13 | -25.24 | 0.726 |
 
 ## Takeaway
 
-A Gaussian process gives a closed-form posterior over functions: a mean function and a variance function that come out of one Cholesky solve. The kernel encodes the smoothness assumption; marginal-likelihood maximisation chooses the smoothness scale from the data. The two pieces together are enough to do uncertainty-quantified regression in one dimension, and they are the surrogate model that drives Bayesian optimisation when sequential decision-making is added on top.
+*Marginal-likelihood tuning* is the GP's secret weapon: the data choose the smoothness scale automatically, without a held-out validation set. The squared-exponential kernel's quantitative advantage on $`x \sin x`$ reflects the exact match between the kernel's infinite-differentiability assumption and the target's smoothness. That match disappears on rougher functions, which is why practitioners routinely compare RBF against Matern alternatives. The GP posterior became the standard surrogate in Bayesian optimisation (Snoek, Larochelle, and Adams, 2012), and the same closed-form conditioning step now underpins modern emulation of climate and engineering simulators.
 
-The same construction shows up in [`numerical-methods/bayesian-optimization/`](../../numerical-methods/bayesian-optimization/), which uses the GP posterior to define the Expected-Improvement acquisition function and runs the resulting acquisition loop on an expensive objective.
+## See also
+
+- [Bayesian optimisation](../../numerical-methods/bayesian-optimization/README.md)
 
 ## References
 
@@ -167,4 +172,3 @@ The same construction shows up in [`numerical-methods/bayesian-optimization/`](.
 - Bishop, C. M. (2006). *Pattern Recognition and Machine Learning*. Springer, §6.4. Kernel-methods framing.
 - Kennedy, M. C. and O'Hagan, A. (2001). "Bayesian Calibration of Computer Models." *Journal of the Royal Statistical Society B*, 63(3), 425-464. GP as a surrogate or emulator for expensive evaluations.
 - Snoek, J., Larochelle, H., and Adams, R. P. (2012). "Practical Bayesian Optimization of Machine Learning Algorithms." *Advances in Neural Information Processing Systems*, 25. Bridge to the Bayesian-optimisation consumer tutorial.
-- **See also.** The Bayesian-optimisation tutorial in [`numerical-methods/bayesian-optimization/`](../../numerical-methods/bayesian-optimization/) plugs the GP posterior here into the Expected-Improvement acquisition function and runs the resulting sequential optimisation loop.

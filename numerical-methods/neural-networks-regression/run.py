@@ -269,24 +269,19 @@ def plot_fitted_surface(
     y_train: np.ndarray,
     path: str,
 ) -> None:
-    """Three-panel surface plot: true, NN fit, and residual."""
+    """Two-panel surface plot: true Cobb-Douglas surface and neural network fit."""
     K, L, Z_true = _make_grid()
     Z_nn = _eval_nn_grid(params_best, K, L)
-    residual = Z_nn - Z_true
 
-    fig, axes = plt.subplots(1, 3, figsize=(14, 5), subplot_kw={"projection": "3d"})
+    fig, axes = plt.subplots(1, 2, figsize=(10, 5), subplot_kw={"projection": "3d"})
     vmin = float(Z_true.min())
     vmax = float(Z_true.max())
 
     for ax, Z, title in [
         (axes[0], Z_true, "True surface"),
         (axes[1], Z_nn,   "Neural network fit"),
-        (axes[2], residual, "Residual (fit - true)"),
     ]:
-        if title.startswith("Residual"):
-            surf = ax.plot_surface(K, L, Z, cmap="RdBu_r", alpha=0.85)
-        else:
-            surf = ax.plot_surface(K, L, Z, cmap="viridis", vmin=vmin, vmax=vmax, alpha=0.85)
+        surf = ax.plot_surface(K, L, Z, cmap="viridis", vmin=vmin, vmax=vmax, alpha=0.85)
         ax.set_xlabel("k")
         ax.set_ylabel("l")
         ax.set_zlabel("y")

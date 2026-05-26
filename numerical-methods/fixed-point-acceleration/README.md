@@ -8,7 +8,9 @@ One concrete instance serves as the test bed. Observed market shares are inverte
 
 The lesson is about iteration speed and reliability. Vanilla iteration always converges under contraction but can be slow. Anderson is often dramatically faster. It can also extrapolate unstably without a residual safeguard. A small Cournot best-response example at the end applies the same methods to a static game, where the fixed point is a Nash equilibrium.
 
-## Preliminary readings
+Before Anderson (1965), practitioners using Picard iteration on high-dimensional integral equations had no principled way to borrow information across prior iterates. The gap was a method that could exploit residual history without requiring a Jacobian or a derivative.
+
+## Read before
 
 - [`game-theory/static-games/`](../../game-theory/static-games/)
 
@@ -180,61 +182,33 @@ A starting guess of $`\delta = 0`$ corresponds to equal shares everywhere; the m
 
 ## Solution Method
 
-All three methods solve the same fixed-point equation. They differ in how aggressively they extrapolate from past iterates.
+All three methods solve the same fixed-point equation. They differ in how aggressively they use past iterates to form the next step. The diagram below names each loop; all loops share the same stopping rule.
+
+```
+   delta_0, T              delta_0, T, alpha          delta_0, T, m
+        |                        |                          |
+        v                        v                          v
++-- Picard loop --+    +-- damped Picard loop --+    +-- Anderson loop --+
+| delta --> [ T ] |    | delta --> [ mix ] -->  |    | delta --> [ mix ] |
+|    --> delta_new|    |          delta_new      |    |    --> delta_new  |
++- err>=tol:rep  -+    +-- err>=tol: repeat ----+    +- err>=tol: rep  --+
+        |                        |                          |
+   converged                converged                  converged
+        v                        v                          v
+       x*                       x*                         x*
+```
 
 ### Method 1: Picard iteration
 
-Picard applies the fixed-point map directly at every step. The economic intuition is a tatonnement adjustment in log shares. Each step pushes $`\delta_j`$ up where the model under-predicts share $`j`$ and down where it over-predicts. Convergence is linear with rate equal to the contraction modulus. For plain logit the modulus is bounded by one and convergence is monotone. Doubling iterations halves the residual once contraction kicks in.
-
-```text
-Algorithm: Picard iteration
-Input : initial delta_0; tolerance eta
-Output: delta_T satisfying ||T(delta_T) - delta_T|| < eta
-  for t = 0, 1, ... :
-      delta[t+1] <- T(delta_t)
-      stop when ||delta[t+1] - delta_t||_inf < eta
-```
-
-Picard fails only if the map fails to be a contraction. For plain logit it always works. When the contraction modulus approaches one, convergence becomes prohibitively slow.
+Picard applies the fixed-point map directly at every step. Each application pushes $`\delta_j`$ toward the data by adding the log-share residual. Convergence is linear with rate equal to the contraction modulus of $`T`$. When the modulus approaches one, convergence becomes prohibitively slow.
 
 ### Method 2: Damped Picard
 
-Damped Picard mixes the current iterate with the Picard image using a damping factor $`\alpha \in (0, 1]`$. The economic intuition is partial adjustment. The iterate moves only part way toward the contraction step. Damping does not change the fixed point. It does change the effective contraction modulus, which can stabilise iteration when the map oscillates near the boundary of contractiveness. On a smooth contraction, damping slows asymptotic convergence.
-
-```text
-Algorithm: Damped Picard
-Input : initial delta_0; damping alpha; tolerance eta
-Output: delta_T
-  for t = 0, 1, ... :
-      delta[t+1] <- (1 - alpha) * delta_t + alpha * T(delta_t)
-      stop when ||delta[t+1] - delta_t||_inf < eta
-```
-
-Damped Picard does not introduce new failure modes. Choosing $`\alpha`$ too small wastes iterations on a contraction that does not need stabilising.
+Damped Picard mixes the current iterate with the Picard image by weight $`\alpha \in (0, 1]`$. The damping does not change the fixed point, but it can stabilise oscillating iterates by reducing the effective step size. On a smooth contraction, smaller $`\alpha`$ slows asymptotic convergence without adding stability benefit.
 
 ### Method 3: Anderson acceleration
 
-Anderson acceleration uses the last $`m + 1`$ residuals to extrapolate a better step than plain Picard. Geometrically, the method fits an affine model to the residual history. It then chooses the next iterate that would zero out the model's residual. On contractions, Anderson is locally faster than linear and often quadratically so. The cost per step is one least-squares solve in dimension $`m`$. The benefit is largest when the contraction modulus is close to one.
-
-```text
-Algorithm: Anderson acceleration with memory m
-Input : initial delta_0; memory m; tolerance eta; safeguard factor c
-Output: delta_T
-  store delta_0 and g_0 = T(delta_0)
-  for t = 1, 2, ... :
-      m_t <- min(m, t)
-      build difference matrices F and G from the last m_t residuals
-      solve gamma <- argmin_g ||(g_t - delta_t) - F g||
-      delta_candidate <- g_t - G gamma
-      if ||T(delta_candidate) - delta_candidate|| > c * ||g_t - delta_t||:
-          delta[t+1] <- 0.5 * delta_t + 0.5 * g_t        # damped fallback
-      else:
-          delta[t+1] <- delta_candidate
-      g[t+1] <- T(delta[t+1])
-      stop when ||g[t+1] - delta[t+1]||_inf < eta
-```
-
-Anderson can extrapolate unstably when the residual history is nearly collinear. It can also overshoot when the safeguard threshold is too loose. The safeguard reverts to damped Picard for one step. Anderson then resumes with a refreshed history. Without the safeguard, an extrapolated step can grow the residual instead of shrinking it.
+Anderson acceleration uses the last $`m + 1`$ residuals to extrapolate a better step than plain Picard. The method fits a least-squares combination of past residual differences and applies the corresponding correction to the most recent fixed-point image. A safeguard monitors the residual after each Anderson step and reverts to one damped-Picard step whenever the residual more than doubles, then resumes Anderson with a refreshed history.
 
 ## Results
 
@@ -242,7 +216,7 @@ At the trivial start $`\delta^0 = 0`$, every inside product is predicted to take
 
 <img src="figures/share-fit.png" alt="Observed inside shares and Picard predictions at three iterations" width="80%">
 
-Picard reaches tolerance in **146** iterations on this calibration. Damped Picard at $`\alpha = 0.5`$ exhausts the **200**-iteration budget without crossing the tolerance: the damping slows asymptotic convergence enough that its residual is still 2.51e-09, above the 1e-12 tolerance, when the loop stops. Anderson at $`m = 5`$ converges in **14** iterations, faster than Picard by roughly a factor of 10.4.
+Picard reaches tolerance in 146 iterations on this calibration. Damped Picard at $`\alpha = 0.5`$ exhausts the 200-iteration budget without crossing the tolerance. The damping slows asymptotic convergence enough that its residual is still 2.51e-09, above the 1e-12 tolerance, when the loop stops. Anderson at $`m = 5`$ converges in 14 iterations, faster than Picard by roughly a factor of ten.
 
 Both panels show the same story on log scale. Anderson sits below Picard for almost every iteration. The damped variant is parallel to Picard with a slight vertical offset and has not yet reached tolerance at the iteration cap.
 
@@ -258,7 +232,7 @@ The Cournot example replaces the Berry contraction with a best-response map. Van
 
 The table compares the three methods on the same calibration and the same starting point. Anderson cuts the iteration count to a small fraction of Picard. Picard and Anderson reach the sup-norm tolerance; damped Picard at this damping factor exhausts the iteration budget before the residual crosses the tolerance, so its status reports the max-iteration stop rather than convergence. The Status column reports the actual termination condition: a method reads as converged only when its final residual met the tolerance.
 
-**Method comparison on the baseline four-product calibration**
+Method comparison on the baseline four-product calibration
 
 | Method           | Setting                          |   Iterations |   Final residual |   Distance to closed form | Status                    |
 |:-----------------|:---------------------------------|-------------:|-----------------:|--------------------------:|:--------------------------|
@@ -268,7 +242,7 @@ The table compares the three methods on the same calibration and the same starti
 
 The stress test makes the contraction harder by shrinking the outside share. A small outside share pushes mean utilities out to large values, where the contraction modulus approaches one. Picard slows down sharply once the outside share falls below five percent. Anderson stays competitive across the range. This is the regime where acceleration matters most: an inner contraction solved many times inside an outer search pays the iteration savings many times over.
 
-**Iteration count and final residual as the outside share shrinks**
+Iteration count and final residual as the outside share shrinks
 
 |   Outside share |   Picard iterations |   Picard residual |   Anderson iterations |   Anderson residual |
 |----------------:|--------------------:|------------------:|----------------------:|--------------------:|
@@ -279,7 +253,7 @@ The stress test makes the contraction harder by shrinking the outside share. A s
 
 On the Cournot game vanilla Picard converges in 44 steps despite the oscillation. Damped Picard takes 22 steps with monotone improvement. The closed-form symmetric Nash quantity is $`q^{\ast} = 3.0000`$ for both firms.
 
-**Cournot best-response iteration to the symmetric Nash equilibrium**
+Cournot best-response iteration to the symmetric Nash equilibrium
 
 | Method         |   Quantity firm 1 |   Quantity firm 2 |   Iterations |   Final residual |
 |:---------------|------------------:|------------------:|-------------:|-----------------:|
@@ -295,6 +269,14 @@ Damped Picard trades asymptotic speed for stability. It is the right default whe
 Anderson acceleration is dramatically faster than Picard on contractions but needs a safeguard. The least-squares step can extrapolate unstably when the residual history is nearly collinear. A simple residual-monotonicity check that reverts to damped Picard when an Anderson step doubles the residual recovers stability with very little overhead.
 
 The methods are not specific to demand inversion. Any problem of the form $`x = T(x)`$ with a contractive $`T`$ admits the same three-method ladder: Picard, damped Picard, Anderson. What changes between problems is the map, not the iteration.
+
+Anderson (1965) appeared in the integral-equations literature and was largely unknown in economics until Walker and Ni (2011) showed it accelerated a wide class of fixed-point problems by a large multiple. The surprise was that a least-squares combination of just five residual differences could substitute for a full Jacobian. The legacy is visible in BLP demand estimation, where the inner share-inversion loop runs thousands of times inside an outer estimator, and every iteration saved there compounds.
+
+## See also
+
+- [Root finding for equilibrium rates](../root-finding/README.md)
+- [Aiyagari saving and capital-market clearing](../../dynamic-programming/aiyagari/README.md)
+- [Static games](../../game-theory/static-games/README.md)
 
 ## References
 

@@ -368,13 +368,16 @@ def main() -> None:
     fig2.tight_layout()
     save_figure(fig2, "figures/marginal-likelihood-curve.png", dpi=150)
 
-    # Figure 3: prior samples | posterior samples | posterior mean +/- 2sd (RBF only)
+    # Figure 3: 2x2 grid -- prior samples, posterior samples, posterior mean band, blank
     sample_colors = ["tab:purple", "tab:green", "tab:red"]
-    fig3, axes3 = plt.subplots(1, 3, figsize=(16, 5), sharey=False)
+    fig3, axes3 = plt.subplots(2, 2, figsize=(14, 10), sharey=False)
 
-    ax_prior, ax_post, ax_band = axes3
+    ax_prior = axes3[0, 0]
+    ax_post = axes3[0, 1]
+    ax_band = axes3[1, 0]
+    ax_blank = axes3[1, 1]
 
-    # Panel 1: prior samples
+    # Panel 1 (top-left): prior samples
     for i in range(n_samples):
         ax_prior.plot(X_test, prior_samples[i], color=sample_colors[i], linewidth=1.5,
                       alpha=0.85, label=f"Sample {i + 1}")
@@ -383,7 +386,7 @@ def main() -> None:
     ax_prior.set_title("Prior samples (RBF GP)")
     ax_prior.legend(fontsize=9)
 
-    # Panel 2: posterior samples
+    # Panel 2 (top-right): posterior samples
     for i in range(n_samples):
         ax_post.plot(X_test, post_samples[i], color=sample_colors[i], linewidth=1.5,
                      alpha=0.85, label=f"Sample {i + 1}")
@@ -393,7 +396,7 @@ def main() -> None:
     ax_post.set_title("Posterior samples (RBF GP)")
     ax_post.legend(fontsize=9)
 
-    # Panel 3: posterior mean + 2sd band (RBF)
+    # Panel 3 (bottom-left): posterior mean + 2sd band (RBF)
     r_rbf = results["RBF"]
     mu_rbf, sd_rbf = r_rbf["mu"], r_rbf["sd"]
     ax_band.plot(X_test, f_test, color="tab:gray", linestyle="--", linewidth=1.5, label="True f(x)")
@@ -408,8 +411,12 @@ def main() -> None:
     )
     ax_band.scatter(X_train, y_train, color="tab:orange", s=40, zorder=5, label="Training obs.")
     ax_band.set_xlabel("x")
+    ax_band.set_ylabel("f(x)")
     ax_band.set_title("Posterior mean and uncertainty band (RBF GP)")
     ax_band.legend(fontsize=9)
+
+    # Panel 4 (bottom-right): blank
+    ax_blank.set_visible(False)
 
     fig3.suptitle("Prior vs posterior: how conditioning collapses GP uncertainty", y=1.01)
     fig3.tight_layout()
