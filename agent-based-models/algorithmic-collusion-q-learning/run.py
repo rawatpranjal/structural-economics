@@ -267,52 +267,46 @@ def summarize_run(seed: int, bench: Benchmarks, params: Params) -> LearningRun:
 
 
 def plot_price_paths(run: LearningRun, bench: Benchmarks, params: Params) -> plt.Figure:
-    """Greedy learned price paths for the fixed run."""
-    fig, ax = plt.subplots(figsize=(10, 5.2))
+    """Greedy price paths (left) and impulse response (right) in a 1x2 layout."""
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5.2))
+
+    # Left: greedy price paths after training
     time = np.arange(params.eval_periods)
     avg_price = run.greedy_prices.mean(axis=1)
-    ax.plot(time, run.greedy_prices[:, 0], color="C3", linewidth=1.4, alpha=0.75, label="firm 1")
-    ax.plot(time, run.greedy_prices[:, 1], color="C0", linewidth=1.4, alpha=0.75, label="firm 2")
-    ax.plot(time, avg_price, color="black", linewidth=2.4, label="average")
-    ax.axhline(bench.bertrand_price, color="black", linestyle=":", linewidth=1.2, label="Bertrand-Nash")
-    ax.axhline(bench.monopoly_price, color="black", linestyle="--", linewidth=1.2, label="Joint monopoly")
-    ax.set_xlabel("Greedy play period after training")
-    ax.set_ylabel("Price")
-    ax.set_title(f"Fixed seed {run.seed}: learned prices above Bertrand")
-    ax.legend(loc="lower right", ncol=2)
-    fig.tight_layout()
-    return fig
+    axes[0].plot(time, run.greedy_prices[:, 0], color="C3", linewidth=1.4, alpha=0.75, label="firm 1")
+    axes[0].plot(time, run.greedy_prices[:, 1], color="C0", linewidth=1.4, alpha=0.75, label="firm 2")
+    axes[0].plot(time, avg_price, color="black", linewidth=2.4, label="average")
+    axes[0].axhline(bench.bertrand_price, color="black", linestyle=":", linewidth=1.2, label="Bertrand-Nash")
+    axes[0].axhline(bench.monopoly_price, color="black", linestyle="--", linewidth=1.2, label="Joint monopoly")
+    axes[0].set_xlabel("Greedy play period after training")
+    axes[0].set_ylabel("Price")
+    axes[0].set_title(f"Fixed seed {run.seed}: learned prices above Bertrand")
+    axes[0].legend(loc="lower right", ncol=2)
 
-
-def plot_impulse_response(run: LearningRun, bench: Benchmarks) -> plt.Figure:
-    """Impulse response to a forced one-period undercut."""
-    fig, ax = plt.subplots(figsize=(10, 5.2))
+    # Right: impulse response to a single forced undercut
     horizon = run.impulse_prices.shape[0]
-    time = np.arange(horizon)
-    avg_price = run.impulse_prices.mean(axis=1)
+    imp_time = np.arange(horizon)
+    avg_imp = run.impulse_prices.mean(axis=1)
+    axes[1].plot(imp_time, run.impulse_prices[:, 0], color="C3", linewidth=2.0, label="firm 1")
+    axes[1].plot(imp_time, run.impulse_prices[:, 1], color="C0", linewidth=2.0, label="firm 2")
+    axes[1].plot(imp_time, avg_imp, color="black", linewidth=2.5, label="average")
+    axes[1].axhline(bench.bertrand_price, color="black", linestyle=":", linewidth=1.2, label="Bertrand-Nash")
+    axes[1].axhline(bench.monopoly_price, color="black", linestyle="--", linewidth=1.2, label="Joint monopoly")
+    axes[1].axvline(0, color="0.4", linestyle="-.", linewidth=1.0, label="undercut shock")
+    axes[1].set_xlabel("Periods after price-deviation shock")
+    axes[1].set_ylabel("Price")
+    axes[1].set_title("Impulse response to one forced low-price action")
+    axes[1].legend(loc="lower right", ncol=2)
 
-    ax.plot(time, run.impulse_prices[:, 0], color="C3", linewidth=2.0, label="firm 1 price")
-    ax.plot(time, run.impulse_prices[:, 1], color="C0", linewidth=2.0, label="firm 2 price")
-    ax.plot(time, avg_price, color="black", linewidth=2.5, label="average price")
-    ax.axhline(bench.bertrand_price, color="black", linestyle=":", linewidth=1.2, label="Bertrand-Nash")
-    ax.axhline(bench.monopoly_price, color="black", linestyle="--", linewidth=1.2, label="Joint monopoly")
-    ax.axvline(0, color="0.4", linestyle="-.", linewidth=1.0, label="one-period undercut")
-    ax.set_xlabel("Periods after price-deviation shock")
-    ax.set_ylabel("Price")
-    ax.set_title("Impulse response to one forced low-price action")
-    ax.legend(loc="lower right", ncol=2)
     fig.tight_layout()
     return fig
 
 
-def plot_learning_diagnostics(run: LearningRun, bench: Benchmarks) -> plt.Figure:
-    """Single-run learned price and payoff diagnostics."""
-    competitive_profit = bench.profit_table[bench.bertrand_index, bench.bertrand_index].mean()
-    monopoly_index = int(np.argmin(np.abs(bench.grid - bench.monopoly_price)))
-    monopoly_profit = bench.profit_table[monopoly_index, monopoly_index].mean()
-    profit_ratio = (run.learned_profit - competitive_profit) / (monopoly_profit - competitive_profit)
-
+def plot_learning_diagnostics(run: LearningRun, bench: Benchmarks, params: Params) -> plt.Figure:
+    """Learned price between benchmarks (left) and exploration-rate convergence (right)."""
     fig, axes = plt.subplots(1, 2, figsize=(13, 5))
+
+    # Left: learned price bar chart between static benchmarks
     price_labels = ["Bertrand", f"learned\nseed {run.seed}", "monopoly"]
     price_values = [bench.bertrand_price, run.learned_price, bench.monopoly_price]
     axes[0].bar(np.arange(3), price_values, color=["0.35", "C0", "0.65"], alpha=0.9)
@@ -321,17 +315,14 @@ def plot_learning_diagnostics(run: LearningRun, bench: Benchmarks) -> plt.Figure
     axes[0].set_ylabel("Average price")
     axes[0].set_title("Learned price between static benchmarks")
 
-    width = 0.36
-    x = np.array([0])
-    axes[1].bar(x - width / 2, [run.collusion_index], width, color="C2", label="Price collusion index")
-    axes[1].bar(x + width / 2, [profit_ratio], width, color="C4", label="Profit ratio")
+    # Right: exploration rate decay (convergence to greedy behavior)
+    t_grid = np.linspace(0, params.steps, 500)
+    epsilon = np.exp(-params.beta * t_grid)
+    axes[1].plot(t_grid / 1_000, epsilon, color="C1", linewidth=2.0)
     axes[1].axhline(0.0, color="black", linestyle=":", linewidth=1.0)
-    axes[1].axhline(1.0, color="black", linestyle="--", linewidth=1.0)
-    axes[1].set_xticks(x)
-    axes[1].set_xticklabels([f"seed {run.seed}"])
-    axes[1].set_ylabel("Ratio between Bertrand and monopoly")
-    axes[1].set_title("Single-run normalized diagnostics")
-    axes[1].legend(loc="upper left")
+    axes[1].set_xlabel("Training steps (thousands)")
+    axes[1].set_ylabel("Exploration rate $\\epsilon_t$")
+    axes[1].set_title("Exploration decay: convergence to greedy play")
 
     fig.tight_layout()
     return fig
@@ -383,10 +374,7 @@ def main() -> None:
     fig_price_paths = plot_price_paths(run, bench, params)
     save_figure(fig_price_paths, "figures/price-paths.png", dpi=150)
 
-    fig_impulse = plot_impulse_response(run, bench)
-    save_figure(fig_impulse, "figures/impulse-response.png", dpi=150)
-
-    fig_diagnostics = plot_learning_diagnostics(run, bench)
+    fig_diagnostics = plot_learning_diagnostics(run, bench, params)
     save_figure(fig_diagnostics, "figures/learning-diagnostics.png", dpi=150)
 
     Path("tables").mkdir(parents=True, exist_ok=True)

@@ -2,11 +2,17 @@
 
 ## Overview
 
-A double auction lets buyers and sellers post prices while the market is open. Buyers know private values. Sellers know private costs. A trade clears when the best bid is at least as high as the best ask.
+In a double auction, buyers post bids and sellers post asks while the market is open. A trade clears when the best bid is at least as high as the best ask. Before Gode and Sunder (1993), the prevailing view was that market efficiency required intelligent, optimizing traders. Gode and Sunder showed that the institution itself can do most of the allocative work.
 
-The Gode-Sunder result is that the institution can do much of the work. Here, zero-intelligence constrained traders draw random quotes, but buyers never bid above value and sellers never ask below cost. That simple budget discipline is enough to recover most of the competitive surplus.
+*Zero-intelligence constrained* traders draw random quotes, but buyers never bid above their private value and sellers never ask below their private cost. That simple budget discipline is enough to recover most of the competitive surplus in a standard double-auction market.
 
-The tutorial then adds a small ZIP-style adaptive rule. Adaptation pulls quotes toward recent transaction prices while preserving the same no-loss constraints. The comparison shows the margin on which intelligence helps: prices become less dispersed, while efficiency rises only a little because ZIC already allocates well.
+The tutorial then adds a ZIP-style adaptive rule. Adaptation pulls quotes toward recent transaction prices while preserving the no-loss constraints. The comparison isolates the margin on which intelligence helps: prices become less dispersed, while efficiency rises only a little because ZIC already allocates well.
+
+## Read before
+
+- [Brock-Hommes asset pricing](../brock-hommes-asset-pricing/README.md)
+- [Schelling segregation](../schelling-segregation/README.md)
+- [Algorithmic collusion with Q-learning](../algorithmic-collusion-q-learning/README.md)
 
 ## Equations
 
@@ -129,65 +135,37 @@ The arithmetic shows the Gode-Sunder mechanism in one line: no-loss draws restri
 
 ## Model Setup
 
-| Symbol | Value | Role |
-|---|---:|---|
-| $`N_B`$ | 10 | Baseline buyers |
-| $`N_S`$ | 10 | Baseline sellers |
-| $`v_i`$ | 105, 100, ..., 60 | Stepped buyer values |
-| $`c_j`$ | 30, 36, ..., 84 | Stepped seller costs |
-| $`b_i(t)`$ | $`[0,v_i]`$ | Feasible buyer bid |
-| $`a_j(t)`$ | $`[c_j,125]`$ | Feasible seller ask |
-| $`\bar p`$ | 125 | Maximum ask support |
-| $`Q^{\ast}`$ | 7 | Efficient quantity |
-| $`S^{\ast}`$ | 294.00 | Maximum competitive surplus |
-| $`P^{\ast}`$ | [70.00, 72.00] | Competitive price band |
-| $`\mathrm{AE}`$ | 99.3% | Realized surplus share in the baseline ZIC run |
-| $`\sigma_p`$ | 12.01 | Baseline transaction-price dispersion |
-| $`\lambda`$ | 0.35 | ZIP target learning rate |
-| $`\kappa`$ | 1.25 | ZIP target spread around the last accepted price |
-| ZIP quote noise | 0.90 | Small feasible perturbation around the adaptive target |
+| Parameter | Value | Parameter | Value |
+|---|---:|---|---:|
+| Baseline buyers $`N_B`$ | 10 | Baseline sellers $`N_S`$ | 10 |
+| Buyer values $`v_i`$ | 105, 100, ..., 60 | Seller costs $`c_j`$ | 30, 36, ..., 84 |
+| Maximum ask support $`\bar p`$ | 125 | Efficient quantity $`Q^{\ast}`$ | 7 |
+| Maximum competitive surplus $`S^{\ast}`$ | 294.00 | Competitive price band $`P^{\ast}`$ | [70.00, 72.00] |
+| Realized AE (baseline ZIC) | 99.3% | Price dispersion $`\sigma_p`$ (baseline) | 12.01 |
+| ZIP learning rate $`\lambda`$ | 0.35 | ZIP spread $`\kappa`$ | 1.25 |
+| ZIP quote noise | 0.90 | | |
 
 ## Solution Method
 
-The computation is a direct simulation plus an analytical benchmark. The benchmark sorts values and costs; the market simulation only sees quotes and the no-loss constraints.
+*Auction simulation* runs directly: each event draws one side at random, posts a constrained quote, and checks whether the best bid crosses the best ask. The competitive benchmark sorts values and costs analytically and never touches the auction. The market-type sweep repeats the auction across four induced-value schedules. The agent-mix sweep replaces ZIC quote rules with ZIP-style targets and reruns the same clearing logic.
 
-```text
-Algorithm 1: ZIC continuous double auction
-Inputs: values v_i, costs c_j, price cap pbar, event limit T
-Outputs: transaction log, realized surplus, price path
-
-Initialize active buyers B_0 and active sellers A_0.
-For event t = 1, 2, ..., T:
-  1. Stop if B[t-1] or A[t-1] is empty.
-  2. Draw one active side with probability proportional to active traders.
-  3. If buyer i arrives, draw b_i(t) from U[0, v_i].
-  4. If seller j arrives, draw a_j(t) from U[c_j, pbar].
-  5. Keep the highest live bid and lowest live ask in the books.
-  6. If max B_t >= min A_t, trade at their midpoint.
-  7. Record v_i - c_j, remove the matched buyer and seller,
-     and delete their stale quotes.
-
-Algorithm 2: competitive benchmark
-Inputs: values v_i, costs c_j
-Outputs: Q*, S*, P*, AE denominator
-
-Sort v_i from high to low and c_j from low to high.
-Set Q* to the number of positive sorted gaps v_(q) - c_(q).
-Set S* to the sum of those positive gaps.
-Set P* from the last included unit and the first excluded unit.
-
-Algorithm 3: market-type sweep
-For each market m in {10 x 10, 15 x 10, 10 x 15, 5 x 5}:
-  1. Use deterministic stepped values and costs for m.
-  2. Run Algorithm 1 with ZIC traders.
-  3. Report trades, mean price, sigma_p, P*, and AE.
-
-Algorithm 4: ZIP-style adaptive comparison
-For each mix in {all ZIC, one ZIP pair, all ZIP}:
-  1. Initialize adaptive targets near the competitive band.
-  2. Draw ZIP quotes around z_i^B(t) or z_j^S(t), clipped to be feasible.
-  3. After each trade, update active ZIP targets toward p_t +/- kappa.
-  4. Report mean price, sigma_p, AE, and the share of prices inside P*.
+```
+          N buyers, N sellers, valuation distributions, T events
+                              |
+                              v
+    +---------- auction simulation ----------+
+    |                                        |
+    |   active traders --> [ quote draw ]    |
+    |                                        |
+    |   bid book, ask book --> [ crossing ]  |
+    |                                        |
+    |   trade --> [ ZIP target update ]      |
+    |                                        |
+    +------ event < T and traders remain ----+
+                              |
+                           done
+                              v
+                  transaction log, AE, price path
 ```
 
 ## Results
@@ -200,7 +178,7 @@ In the baseline ZIC run, random constrained orders clear 8 trades. Realized allo
 
 <img src="figures/transaction-schedule.png" alt="Accepted prices and matched surplus on the stepped demand and supply schedule." width="80%">
 
-**Baseline Transaction Log**
+Baseline Transaction Log
 
 |   Trade |   Event |   Buyer value |   Seller cost |   Accepted bid |   Accepted ask |   Price |   Surplus |
 |--------:|--------:|--------------:|--------------:|---------------:|---------------:|--------:|----------:|
@@ -217,7 +195,7 @@ Changing market thickness and imbalance mostly changes price paths, not the basi
 
 <img src="figures/market-type-comparison.png" alt="Allocative efficiency and price dispersion across market types." width="80%">
 
-**Market-Type Summary**
+Market-Type Summary
 
 | Market type          |   Buyers |   Sellers |   Efficient quantity |   Competitive price low |   Competitive price high |   Trades |   Mean price |   Price SD | Allocative efficiency   |
 |:---------------------|---------:|----------:|---------------------:|------------------------:|-------------------------:|---------:|-------------:|-----------:|:------------------------|
@@ -230,7 +208,7 @@ The ZIP-style comparison changes the quote rule, not the budget rule. With one a
 
 <img src="figures/agent-mix-comparison.png" alt="Price stability and allocative efficiency by strategy mix." width="80%">
 
-**Agent-Mix Summary**
+Agent-Mix Summary
 
 | Strategy mix                     |   ZIP buyers |   ZIP sellers |   Trades |   Mean price |   Price SD | Allocative efficiency   | Price inside competitive band   |
 |:---------------------------------|-------------:|--------------:|---------:|-------------:|-----------:|:------------------------|:--------------------------------|
@@ -240,12 +218,18 @@ The ZIP-style comparison changes the quote rule, not the budget rule. With one a
 
 ## Takeaway
 
-The market institution does most of the allocative work. ZIC traders are not smart, but they are budget disciplined: buyers never overbid value and sellers never undercut cost. That is enough for the double auction to recover high surplus in this stepped induced-value market.
+*Market institutions allocate.* The Gode-Sunder result was surprising because economists expected rationality to be the primary source of efficiency. Instead, the double-auction mechanism itself enforces most of the surplus extraction once traders respect their own budget constraints. That finding reoriented the field toward mechanism design and away from rationality as the first-order explanation.
 
-Adaptivity helps on a different margin. ZIP-style quote targets reduce price dispersion and pull transaction prices toward the competitive band. They do not transform the allocation, because constrained random trading was already close to efficient.
+Adaptivity helps on a different margin. ZIP-style quote targets reduce price dispersion and pull transaction prices toward the competitive band. They do not transform the allocation, because constrained random trading was already close to efficient. The legacy is a benchmark: any claim that smarter agents improve market outcomes must clear the bar that budget-constrained random traders already set.
+
+## See also
+
+- [Brock-Hommes asset pricing with heterogeneous beliefs](../brock-hommes-asset-pricing/README.md)
+- [Algorithmic collusion with Q-learning](../algorithmic-collusion-q-learning/README.md)
+- [Schelling segregation model](../schelling-segregation/README.md)
 
 ## References
 
-- [Gode, D. K. and Sunder, S. (1993). Allocative Efficiency of Markets with Zero-Intelligence Traders: Market as a Partial Substitute for Individual Rationality. *Journal of Political Economy*, 101(1), 119-137.](https://doi.org/10.1086/261868)
-- [Smith, V. L. (1962). An Experimental Study of Competitive Market Behavior. *Journal of Political Economy*, 70(2), 111-137.](https://doi.org/10.1086/258609)
-- [Cliff, D. and Bruten, J. (1997). Minimal-intelligence agents for bargaining behaviors in market-based environments. Technical report, Hewlett-Packard Laboratories.](https://www.hpl.hp.com/techreports/97/HPL-97-91.html)
+- Gode, D. K. and Sunder, S. (1993). Allocative Efficiency of Markets with Zero-Intelligence Traders: Market as a Partial Substitute for Individual Rationality. *Journal of Political Economy*, 101(1), 119-137.
+- Smith, V. L. (1962). An Experimental Study of Competitive Market Behavior. *Journal of Political Economy*, 70(2), 111-137.
+- Cliff, D. and Bruten, J. (1997). Minimal-intelligence agents for bargaining behaviors in market-based environments. Technical report, Hewlett-Packard Laboratories.

@@ -2,17 +2,25 @@
 
 ## Overview
 
-Algorithmic pricing turns a repeated oligopoly problem into a learning problem. Two firms choose prices again and again. They do not solve the dynamic game. They only observe the profit from the price they chose and update a table of action values.
+In Aiyagari (1994) and in most macro models, firms solve a well-specified optimization problem. Calvano, Calzolari, Denicolo, and Pastorello (2020) document a different possibility: pricing algorithms that never solve the game can still learn to coordinate above the Bertrand benchmark. The gap in the literature was the absence of a tractable model that connects machine learning to oligopoly theory. Tabular Q-learning fills that gap because it requires no game-theoretic reasoning, only repeated observations of own profit.
 
-The economic question is whether this feedback can move prices above the static Bertrand-Nash benchmark. In a one-shot differentiated-products Bertrand game, each firm sets a price that is a best response to the rival's price. Joint monopoly gives the upper benchmark because one owner would internalize substitution between the two products.
+Two firms choose prices again and again. They do not solve the dynamic game. They only observe the profit from the price they chose and update a table of action values.
 
-This tutorial is deliberately smaller than the Calvano, Calzolari, Denicolo, and Pastorello experiment and the Courthoud replication code. It keeps the same model class and moves the main hyperparameters toward the Courthoud replication defaults: logit demand, a finite price grid, Courthoud's exponential exploration rule, and independent tabular Q-learning. The page follows one compact calibrated run with seed 202. It is not a robustness exercise.
+The economic question is whether this feedback can move prices above the static *Bertrand-Nash* benchmark. In a one-shot differentiated-products Bertrand game, each firm sets a price that is a best response to the rival's price. Joint monopoly gives the upper benchmark because one owner would internalize substitution between the two products.
+
+This tutorial is deliberately smaller than the Calvano et al. experiment and the Courthoud replication code. It keeps the same model class and moves the main hyperparameters toward the Courthoud replication defaults: logit demand, a finite price grid, Courthoud's exponential exploration rule, and independent tabular Q-learning. The page follows one compact calibrated run with seed 202. It is not a robustness exercise.
+
+## Read before
+
+- [Stochastic optimal growth by Q-learning](../../dynamic-programming/q-learning-growth/README.md)
+- [Optimal growth model](../../dynamic-programming/optimal-growth/README.md)
+- [Shock discretization with Rouwenhorst](../../dynamic-programming/shock-discretization/README.md)
 
 ## Equations
 
 There are two firms, indexed by $`i = 1,2`$. Firm $`i`$ chooses price $`p_i`$ and has
 constant marginal cost $`c`$. Product quality is $`a`$, the outside-option value is
-$`a_0`$, and $`\mu`$ controls product differentiation. The inside utility index is
+$`a_0`$, and $`\mu`$ controls product differentiation. The *inside utility index* is
 
 ```math
 u_i = \frac{\lbrace a - p_i\rbrace}{\lbrace\mu\rbrace}, \qquad u_0 = \frac{\lbrace a_0\rbrace}{\lbrace\mu\rbrace}.
@@ -84,7 +92,7 @@ The reported collusion index is
 
 ## Worked Numerical Example
 
-Run one Q-update on a 2-action toy slice of the calibrated model to see how the collusive incentive enters before the algorithm has learned anything. Use the README parameters $`a = 2`$, $`a_0 = 0`$, $`\mu = 0.25`$, $`c = 1`$, $`\alpha = 0.15`$, $`\delta = 0.95`$. Restrict each firm to two prices, the Bertrand benchmark and the monopoly benchmark, $`\mathcal{P} = \{1.473, 1.925\}`$. The state is the previous price-index pair, so there are four states; initialise $`Q_i(s, a) = 0`$ everywhere.
+Run one Q-update on a 2-action toy slice of the calibrated model to see how the collusive incentive enters before the algorithm has learned anything. The object being updated is the *Q-table*, one entry per state-action pair. Use the README parameters $`a = 2`$, $`a_0 = 0`$, $`\mu = 0.25`$, $`c = 1`$, $`\alpha = 0.15`$, $`\delta = 0.95`$. Restrict each firm to two prices, the Bertrand benchmark and the monopoly benchmark, $`\mathcal{P} = \{1.473, 1.925\}`$. The state is the previous price-index pair, so there are four states; initialise $`Q_i(s, a) = 0`$ everywhere.
 
 Suppose the previous state is $`s_t = (1.473, 1.473)`$ (both at Bertrand) and the firms now play $`a_{1,t} = 1.925`$ (firm 1 deviates upward to the monopoly price) and $`a_{2,t} = 1.473`$ (firm 2 stays at Bertrand). Inside utilities are $`u_1 = (2 - 1.925)/0.25 = 0.300`$ and $`u_2 = (2 - 1.473)/0.25 = 2.108`$, with outside utility $`u_0 = 0`$. Exponentiating gives $`e^{u_1} = 1.350`$, $`e^{u_2} = 8.230`$, $`e^{u_0} = 1`$, so the logit denominator is $`D = 1 + 1.350 + 8.230 = 10.580`$.
 
@@ -108,93 +116,90 @@ Firm 1 earns less this period than firm 2 because undercutting still pays in a s
 
 ## Model Setup
 
-The grid is centered on the static economic benchmarks. First solve the Bertrand-Nash and joint-monopoly first-order conditions. Then form 13 evenly spaced prices spanning from the Bertrand to the monopoly benchmark with both endpoints included, and add one padding point below and above. The padding point below Bertrand is the one-period undercut in the impulse-response diagnostic.
+The grid is centered on the static economic benchmarks. First solve the Bertrand-Nash and joint-monopoly first-order conditions. Then form 13 evenly spaced prices spanning from the Bertrand to the monopoly benchmark with both endpoints included, and add one *padding point* below and above. The padding point below Bertrand is the one-period undercut in the impulse-response diagnostic.
 
-| Object | Value | Role |
-|---|---:|---|
-| Firms $`n`$ | 2 | Symmetric sellers |
-| Product value $`a`$ | 2.00 | Inside-good quality |
-| Outside value $`a_0`$ | 0.00 | Outside option utility |
-| Differentiation $`\mu`$ | 0.25 | Smaller values make products closer substitutes |
-| Marginal cost $`c`$ | 1.00 | Constant production cost |
-| Bertrand price | 1.473 | Static competitive benchmark |
-| Monopoly price | 1.925 | Joint-profit benchmark |
-| Price grid size | 15 | Discrete action count per firm |
-| Training seed | 202 | Fixed calibrated run |
-| Training steps | 250,000 | Q-learning updates |
-| Discount factor $`\delta`$ | 0.95 | Value of future profit |
-| Learning rate $`\alpha`$ | 0.15 | Q-table update weight |
-| Exploration decay $`\beta`$ | 4e-06 | $`\Pr(\text{explore at }t)=\exp(-\beta t)`$ |
+| Object | Value | Role | Details |
+|---|---:|---|---|
+| Firms $`n`$ | 2 | Symmetric sellers | Independent learners |
+| Product value $`a`$ | 2.00 | Inside-good quality | Logit numerator |
+| Outside value $`a_0`$ | 0.00 | Outside option utility | Denominator term |
+| Differentiation $`\mu`$ | 0.25 | Substitutability | Smaller = closer substitutes |
+| Marginal cost $`c`$ | 1.00 | Constant cost | Symmetric firms |
+| Bertrand price | 1.473 | Static competitive benchmark | Lower grid anchor |
+| Monopoly price | 1.925 | Joint-profit benchmark | Upper grid anchor |
+| Price grid size | 15 | Discrete action count | Includes two padding points |
+| Training steps | 250,000 | Q-learning updates | Fixed compact budget |
+| Discount factor $`\delta`$ | 0.95 | Future profit weight | Standard value |
+| Learning rate $`\alpha`$ | 0.15 | Q-table update weight | Courthoud default |
+| Exploration decay $`\beta`$ | 4e-06 | $`\Pr(\text{explore})=\exp(-\beta t)`$ | Exponential schedule |
+| Training seed | 202 | Fixed calibrated run | One illustrative path |
 
 These are replication-style hyperparameters, but the computational budget is intentionally compact. The page reports one fixed run rather than a multi-seed robustness table.
 
 ## Solution Method
 
-The algorithm is independent Q-learning. Each firm treats the rival and the market state as part of the environment. There is no explicit collusion constraint and no direct communication.
+The algorithm is *independent Q-learning*. Each firm treats the rival and the market state as part of the environment. There is no explicit collusion constraint and no direct communication.
 
-```text
-Algorithm: independent Q-learning in a repeated pricing game
-Input: price grid A={0,...,k-1}, profit table pi_i(a_1,a_2),
-       alpha, beta, delta, training length T
-Output: greedy pricing rules for both firms
-
-1. Set the initial state to the lowest price-grid point for both firms.
-2. Initialize Q_i(previous prices, own price) with optimistic
-   discounted average one-period profits.
-3. For t = 0 to T-1:
-   3a. Set epsilon_t = exp(-beta t).
-   3b. Each firm observes the previous price-index pair s_t.
-   3c. For each firm i:
-       with probability epsilon_t, draw a[i,t] = Uniform({0,...,k-1});
-       otherwise set a[i,t] to the first argmax_a Q_i(s_t,a).
-   3d. Current prices are the grid values indexed by (a[1,t], a[2,t]).
-   3e. Current profits are pi_i(a[1,t],a[2,t]).
-   3f. Set s[t+1] = (a[1,t], a[2,t]).
-   3g. For each firm i, update
-       Q_i(s_t,a[i,t]) <- (1-alpha) Q_i(s_t,a[i,t])
-       + alpha [ pi_i(a[1,t],a[2,t])
-       + delta max_a Q_i(s[t+1],a) ].
-4. Freeze Q and roll out greedy play to measure learned prices.
-5. For the impulse response, start from the learned greedy state,
-   set a[1,0] to the low-grid action once, let firm 2 choose greedily,
-   then roll out greedy actions from s_1 = (a[1,0], a[2,0]).
+```
+          N firms, Q tables (optimistic init), price grid, T episodes
+                              |
+                              v
+    +---------- multi-agent Q-learning loop ----------+
+    |  (s, a_1, a_2) --> [ env step ] --> (r, s')     |
+    |  (r, s') --> [ Q update each firm ] --> Q        |
+    +-------- episodes remain: repeat ----------------+
+                              |
+                        budget exhausted
+                              v
+                    Q*(s, a), greedy pricing rules
 ```
 
-The impulse response is intentionally mechanical. It asks what the frozen policy does after a single undercut. The figure is a diagnostic for this one learned policy, not proof of robust punishment.
+The exploration rate decays exponentially as $`\epsilon_t = \exp(-\beta t)`$, so early training explores the full price grid and late training exploits the learned Q-values. The impulse response applies the frozen policy after a single forced undercut.
 
 ## Results
 
-Greedy play after training is above the Bertrand price in the fixed seed 202 run. The learned path does not reach the monopoly benchmark. It sits in the middle of the benchmark interval, which is enough for the teaching point: independent profit feedback can support supra-Bertrand prices in a repeated pricing environment.
+*Greedy play* after training is above the Bertrand price in the fixed seed 202 run. The learned path does not reach the monopoly benchmark. It sits in the middle of the benchmark interval, which is enough for the teaching point: independent profit feedback can support supra-Bertrand prices in a repeated pricing environment.
 
-<img src="figures/price-paths.png" alt="Learned greedy price paths after Q-learning" width="80%">
+Prose above refers to the left panel. The right panel shows the impulse response: after a one-period forced undercut at period 0, the greedy policy returns to near its pre-shock level within two periods.
 
-In the fixed seed 202 run, the learned average price is 1.708. The collusion index is 0.52, so the greedy policy sits about halfway between the Bertrand and monopoly benchmarks. After the one-period price-deviation shock, the lowest post-shock average price is 1.492; the path returns to 95 percent of its pre-shock level after 2 periods. Read this as an impulse response to a price-deviation shock. The single run shows how the frozen policy reacts after one forced undercut, but it does not establish robust price-war discipline.
+<img src="figures/price-paths.png" alt="Learned greedy price paths and impulse response to a one-period price-deviation shock" width="90%">
 
-<img src="figures/impulse-response.png" alt="Impulse response to a one-period price-deviation shock" width="80%">
+In the fixed seed 202 run, the learned average price is 1.708. The collusion index is 0.52, so the greedy policy sits about halfway between the Bertrand and monopoly benchmarks. After the one-period price-deviation shock, the lowest post-shock average price is 1.492; the path returns to 95 percent of its pre-shock level after 2 periods. The single run shows how the frozen policy reacts after one forced undercut, but it does not establish robust price-war discipline.
 
-The diagnostics put the price and profit results on the same scale. Zero is the Bertrand benchmark and one is the joint-monopoly benchmark. The price index is positive in this run, while the profit ratio is a little higher because moderate price increases raise margins in this small logit market.
+The left panel below puts the learned price between the static benchmarks. The right panel shows the exploration rate, which decays to near zero by step 250,000 and confirms that the greedy policy is effectively frozen at the end of training.
 
-<img src="figures/learning-diagnostics.png" alt="Single-run learned price and profit ratios" width="80%">
+<img src="figures/learning-diagnostics.png" alt="Learned price between benchmarks and exploration-rate convergence" width="90%">
 
 The Bertrand and monopoly prices are solved from the continuous-price first-order conditions before the finite action grid is built.
 
-**Static benchmark summary**
+### Static benchmark summary
 
-|   Bertrand price |   Monopoly price |   Competitive profit |   Monopoly profit |   Grid size |   Training steps |
-|-----------------:|-----------------:|---------------------:|------------------:|------------:|-----------------:|
-|          1.47293 |          1.92498 |             0.222927 |           0.33749 |          15 |           250000 |
+| Statistic | Value | Statistic | Value |
+|---|---:|---|---:|
+| Bertrand price | 1.47293 | Monopoly price | 1.92498 |
+| Competitive profit | 0.222927 | Monopoly profit | 0.33749 |
+| Price grid size | 15 | Training steps | 250,000 |
 
 A recovery horizon of -1 means the average price did not return to 95 percent of the pre-shock price within the plotted impulse-response window.
 
-**Single-run Q-learning outcomes**
+### Single-run Q-learning outcomes
 
-|   Seed |   Learned average price |   Learned profit |   Collusion index |   Pre-shock average price |   Minimum post-shock average price |   Recovery horizon |
-|-------:|------------------------:|-----------------:|------------------:|--------------------------:|-----------------------------------:|-------------------:|
-|    202 |                 1.70837 |         0.305172 |          0.520833 |                   1.70837 |                            1.49176 |                  2 |
+| Statistic | Value | Statistic | Value |
+|---|---:|---|---:|
+| Seed | 202 | Collusion index | 0.521 |
+| Learned average price | 1.708 | Learned profit | 0.305 |
+| Pre-shock average price | 1.708 | Min post-shock price | 1.492 |
+| Recovery horizon (periods) | 2 | | |
 
 ## Takeaway
 
-The small experiment delivers the main teaching result: Q-learning pricing agents can learn prices above the static Bertrand benchmark without solving the repeated game. The impulse response is more qualified. It shows the reaction of one frozen learned policy to one forced undercut. That distinction matters: supra-Bertrand learning appears clearly here; robust collusive discipline would require a larger and more careful replication.
+*Algorithmic coordination* emerges without communication or strategic reasoning. Q-learning pricing agents learn supra-Bertrand prices purely from repeated profit signals, which is the central surprise in Calvano et al. (2020). The impulse response is more qualified. It shows the reaction of one frozen learned policy to one forced undercut. That distinction matters: supra-Bertrand learning appears clearly here; robust collusive discipline would require a larger and more careful replication. The framework anchors a growing literature on AI regulation and algorithmic antitrust, where the question is not whether algorithms collude intentionally but whether profit feedback alone is sufficient.
+
+## See also
+
+- [Stochastic optimal growth by Q-learning](../../dynamic-programming/q-learning-growth/README.md)
+- [Aiyagari saving and capital-market clearing](../../dynamic-programming/aiyagari/README.md)
+- [Deep Q-network (Atari)](../../reinforcement-learning/dqn-atari/README.md)
 
 ## References
 
