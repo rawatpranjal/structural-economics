@@ -196,10 +196,26 @@ def main() -> None:
     setup_style()
 
     # ------------------------------------------------------------------
-    # Figure 1: profit surface with both peaks
+    # Figure 1: profit surface (left) + basin map (right) as 1x2 grid
     # ------------------------------------------------------------------
-    fig1, ax1 = plt.subplots(figsize=(8, 5))
     p_grid = np.linspace(p_lo, p_hi, 600)
+
+    starts_dense = np.linspace(p_lo, p_hi, 200)
+    finals_dense = []
+    for p0 in starts_dense:
+        res = minimize(neg_profit, x0=np.array([p0]),
+                       method='L-BFGS-B', bounds=[(p_lo, p_hi)])
+        finals_dense.append(float(res.x[0]))
+    finals_dense = np.array(finals_dense)
+    basin_color = np.where(finals_dense < (p_low_peak + p_high_peak) / 2, "tab:orange", "tab:red")
+    pct_high = float(np.mean(basin_color == "tab:red") * 100.0)
+    pct_low = 100.0 - pct_high
+    low_mask = basin_color == "tab:orange"
+    boundary_lo = float(starts_dense[low_mask].min()) if low_mask.any() else float("nan")
+    boundary_hi = float(starts_dense[low_mask].max()) if low_mask.any() else float("nan")
+
+    fig1, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 5))
+
     ax1.plot(p_grid, profit(p_grid), color="tab:blue", linewidth=2, label=r"$\pi(p)$")
     ax1.axvline(p_kink, color="tab:gray", linestyle=":", linewidth=1.0,
                 label=fr"Low-segment exit $p_L^{{\max}} = {p_kink:.2f}$")
@@ -211,20 +227,7 @@ def main() -> None:
     ax1.set_ylabel(r"Profit $\pi(p)$")
     ax1.set_title("Two-segment monopoly profit and its two local peaks")
     ax1.legend(loc="upper right", fontsize=9)
-    save_figure(fig1, "figures/profit-surface.png", dpi=150)
 
-    # ------------------------------------------------------------------
-    # Figure 2: optimizer paths from many starts (basin map)
-    # ------------------------------------------------------------------
-    fig2, ax2 = plt.subplots(figsize=(8, 5))
-    starts_dense = np.linspace(p_lo, p_hi, 200)
-    finals_dense = []
-    for p0 in starts_dense:
-        res = minimize(neg_profit, x0=np.array([p0]),
-                       method='L-BFGS-B', bounds=[(p_lo, p_hi)])
-        finals_dense.append(float(res.x[0]))
-    finals_dense = np.array(finals_dense)
-    basin_color = np.where(finals_dense < (p_low_peak + p_high_peak) / 2, "tab:orange", "tab:red")
     for color, label in (("tab:orange", "Low-price basin"), ("tab:red", "High-price basin")):
         mask = basin_color == color
         ax2.scatter(starts_dense[mask], finals_dense[mask], c=color, s=18, alpha=0.7,
@@ -238,12 +241,9 @@ def main() -> None:
     ax2.set_ylabel("L-BFGS-B converged price $p_{\\mathrm{final}}$")
     ax2.set_title("Basin of attraction map for L-BFGS-B")
     ax2.legend(loc="center right", fontsize=9)
-    pct_high = float(np.mean(basin_color == "tab:red") * 100.0)
-    pct_low = 100.0 - pct_high
-    low_mask = basin_color == "tab:orange"
-    boundary_lo = float(starts_dense[low_mask].min()) if low_mask.any() else float("nan")
-    boundary_hi = float(starts_dense[low_mask].max()) if low_mask.any() else float("nan")
-    save_figure(fig2, "figures/basin-map.png", dpi=150)
+
+    fig1.tight_layout()
+    save_figure(fig1, "figures/profit-and-basin.png", dpi=150)
 
     # ------------------------------------------------------------------
     # Figure 3: best-of-N curve for multi-start
@@ -386,8 +386,8 @@ def main() -> None:
     })
     basin_print.to_csv("tables/basin_summary.csv", index=False)
 
-    save_thumbnail("figures/profit-surface.png", "figures/thumb.png")
-    print(f"Generated: figures/ (4 figures + thumb) + tables/ (3 tables)")
+    save_thumbnail("figures/profit-and-basin.png", "figures/thumb.png")
+    print(f"Generated: figures/ (3 figures + thumb) + tables/ (3 tables)")
 
 
 if __name__ == "__main__":

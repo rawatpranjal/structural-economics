@@ -299,21 +299,49 @@ def main() -> None:
     # -------------------------------------------------------------------------
     setup_style()
 
-    # Figure 1: profit surface with the two peaks
-    fig1, ax1 = plt.subplots(figsize=(8, 5))
+    # Figure 1: profit surface (left) + convergence comparison (right) as 1x2
     p_grid = np.linspace(p_lo, p_hi, 600)
-    ax1.plot(p_grid, profit(p_grid), color="tab:blue", linewidth=2, label=r"$\pi(p)$")
-    ax1.axvline(p_kink, color="tab:gray", linestyle=":", linewidth=1.0,
-                label=fr"Low-segment exit $p_L^{{\max}} = {p_kink:.2f}$")
-    ax1.plot(p_low_peak, profit_low_peak, "o", color="tab:orange", markersize=10,
-             label=fr"Low peak $p_L^{{\ast}} = {p_low_peak:.3f}$, $\pi = {profit_low_peak:.3f}$")
-    ax1.plot(p_high_peak, profit_high_peak, "*", color="tab:red", markersize=18,
-             label=fr"High peak $p_H^{{\ast}} = {p_high_peak:.3f}$, $\pi = {profit_high_peak:.3f}$ (global)")
-    ax1.set_xlabel("Price $p$")
-    ax1.set_ylabel(r"Profit $\pi(p)$")
-    ax1.set_title("Two-segment monopoly profit and its two local peaks")
-    ax1.legend(loc="upper right", fontsize=9)
-    save_figure(fig1, "figures/profit-surface.png", dpi=150)
+    fig1, (ax1a, ax1b) = plt.subplots(1, 2, figsize=(14, 5))
+
+    # Left panel: profit surface
+    ax1a.plot(p_grid, profit(p_grid), color="tab:blue", linewidth=2, label=r"$\pi(p)$")
+    ax1a.axvline(p_kink, color="tab:gray", linestyle=":", linewidth=1.0,
+                 label=fr"Low-segment exit $p_L^{{\max}} = {p_kink:.2f}$")
+    ax1a.plot(p_low_peak, profit_low_peak, "o", color="tab:orange", markersize=10,
+              label=fr"Low peak $p_L^{{\ast}} = {p_low_peak:.3f}$, $\pi = {profit_low_peak:.3f}$")
+    ax1a.plot(p_high_peak, profit_high_peak, "*", color="tab:red", markersize=18,
+              label=fr"High peak $p_H^{{\ast}} = {p_high_peak:.3f}$, $\pi = {profit_high_peak:.3f}$ (global)")
+    ax1a.set_xlabel("Price $p$")
+    ax1a.set_ylabel(r"Profit $\pi(p)$")
+    ax1a.set_title("Two-segment monopoly profit")
+    ax1a.legend(loc="upper right", fontsize=8)
+
+    # Right panel: convergence comparison
+
+    ax1b.plot(np.arange(1, len(bo_curve) + 1), bo_curve, "o-", color="tab:purple",
+              linewidth=2, markersize=4, label=f"Bayesian optimization (EI), best at eval {eval_to_global_ei}")
+    ax1b.plot(np.arange(1, len(multi_curve) + 1), multi_curve, color="tab:blue",
+              linewidth=1.5, alpha=0.8,
+              label=f"Multi-start L-BFGS-B, global at eval {eval_to_global_ms}")
+    ax1b.plot(np.arange(1, len(rs_curve) + 1), rs_curve, color="tab:green",
+              linewidth=1.5, alpha=0.8,
+              label=f"Random search, global at eval {eval_to_global_rs}")
+    ax1b.plot(np.arange(1, len(sa_curve) + 1), sa_curve, color="tab:orange",
+              linewidth=1.2, alpha=0.85,
+              label=f"Simulated annealing, global at eval {eval_to_global_sa}")
+    ax1b.axhline(profit_global, color="tab:red", linestyle="--", linewidth=1.5,
+                 label=fr"Global $\pi^{{\ast}} = {profit_global:.3f}$")
+    ax1b.axhline(profit_low_peak, color="tab:gray", linestyle=":", linewidth=1.0,
+                 label=fr"Local-only $\pi = {profit_low_peak:.3f}$")
+    ax1b.set_xscale("log")
+    ax1b.set_xlabel("Number of objective evaluations (log scale)")
+    ax1b.set_ylabel("Best profit found so far")
+    ax1b.set_title("Best-so-far profit by evaluation count")
+    ax1b.legend(loc="lower right", fontsize=7)
+
+    fig1.suptitle("Two-segment monopoly profit and convergence comparison", y=1.01)
+    fig1.tight_layout()
+    save_figure(fig1, "figures/overview-and-convergence.png", dpi=150)
 
     # Figure 2: BO iteration snapshots (GP posterior + EI)
     fig2, axes2 = plt.subplots(2, 2, figsize=(12, 8), sharex=True)
@@ -342,31 +370,6 @@ def main() -> None:
     fig2.suptitle("Gaussian-process posterior and next acquisition pick across BO iterations", y=1.00)
     fig2.tight_layout()
     save_figure(fig2, "figures/bo-iterations.png", dpi=150)
-
-    # Figure 3: convergence comparison vs other global methods
-    fig3, ax3 = plt.subplots(figsize=(9, 5.5))
-    ax3.plot(np.arange(1, len(bo_curve) + 1), bo_curve, "o-", color="tab:purple",
-             linewidth=2, markersize=4, label=f"Bayesian optimization (EI), best at eval {eval_to_global_ei}")
-    ax3.plot(np.arange(1, len(multi_curve) + 1), multi_curve, color="tab:blue",
-             linewidth=1.5, alpha=0.8,
-             label=f"Multi-start L-BFGS-B, global at eval {eval_to_global_ms}")
-    ax3.plot(np.arange(1, len(rs_curve) + 1), rs_curve, color="tab:green",
-             linewidth=1.5, alpha=0.8,
-             label=f"Random search, global at eval {eval_to_global_rs}")
-    ax3.plot(np.arange(1, len(sa_curve) + 1), sa_curve, color="tab:orange",
-             linewidth=1.2, alpha=0.85,
-             label=f"Simulated annealing, global at eval {eval_to_global_sa}")
-    ax3.axhline(profit_global, color="tab:red", linestyle="--", linewidth=1.5,
-                label=fr"Global $\pi^{{\ast}} = {profit_global:.3f}$")
-    ax3.axhline(profit_low_peak, color="tab:gray", linestyle=":", linewidth=1.0,
-                label=fr"Local-only $\pi = {profit_low_peak:.3f}$")
-    ax3.set_xscale("log")
-    ax3.set_xlabel("Number of objective evaluations (log scale)")
-    ax3.set_ylabel("Best profit found so far")
-    ax3.set_title("Best-so-far profit by evaluation count, BO versus three baselines")
-    ax3.legend(loc="lower right", fontsize=8)
-    fig3.tight_layout()
-    save_figure(fig3, "figures/convergence-comparison.png", dpi=150)
 
     # -------------------------------------------------------------------------
     # Tables
@@ -429,7 +432,7 @@ def main() -> None:
     Path("tables/bo_iteration_log.csv").parent.mkdir(parents=True, exist_ok=True)
     bo_print.to_csv("tables/bo_iteration_log.csv", index=False)
 
-    save_thumbnail("figures/profit-surface.png", "figures/thumb.png")
+    save_thumbnail("figures/overview-and-convergence.png", "figures/thumb.png")
     print(f"Figures and tables written. BO budget: {n_total}, SA: {len(sa_curve)}, RS: {n_random}, MS: {len(multi_curve)}")
     print(f"SA/BO ratio: {sa_ratio:.1f}x, RS/BO: {rs_ratio:.1f}x, MS/BO: {ms_ratio:.1f}x")
 

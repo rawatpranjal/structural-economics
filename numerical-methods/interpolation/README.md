@@ -6,7 +6,12 @@ Value function iteration stores the value function at a finite grid and reads it
 
 This tutorial fits each one to two targets. The first target is the closed-form cake-eating value function, which is smooth and monotone. The second is a stylized consumption policy with a borrowing-constraint kink. The level is continuous but the slope drops sharply at the constraint boundary.
 
-Cubic splines fit the smooth target best but ring at kinks; linear interpolation and PCHIP avoid the ringing at the cost of curvature accuracy.
+Spline theory originates with Schoenberg (1946), who proved that the natural cubic spline minimizes integrated squared curvature among all interpolants through the same nodes. That optimality is exactly what causes ringing near kinks: the spline is forced to be smooth where the true function is not. Piecewise linear interpolation and PCHIP avoid the ringing at the cost of curvature accuracy.
+
+## Read before
+
+- [Root finding for equilibrium rates](../root-finding/README.md)
+- [Optimal growth model](../../dynamic-programming/optimal-growth/README.md)
 
 ## Equations
 
@@ -91,68 +96,37 @@ The comparison isolates what curvature costs. The straight-line segment connecti
 \boxed{\hat{f}_{\text{lin}}(2) = 5 \quad \text{vs} \quad \hat{f}_{\text{quad}}(2) = 4 \quad \text{(true value)}}.
 ```
 
-In this tutorial, cubic spline and PCHIP are richer than the three-node quadratic - they use many nodes and fit piecewise cubics - but they share the same principle: adding curvature information lets the interpolant track $`f(x)`$ more faithfully between nodes. The sup-norm comparison in Results quantifies how much that extra curvature is worth on the smooth cake-eating target and where it stops helping on the kinked policy.
+In this tutorial, cubic spline and PCHIP are richer than the three-node quadratic -- they use many nodes and fit piecewise cubics -- but they share the same principle: adding curvature information lets the interpolant track $`f(x)`$ more faithfully between nodes. The sup-norm comparison in Results quantifies how much that extra curvature is worth on the smooth cake-eating target and where it stops helping on the kinked policy.
 
 ## Model Setup
 
-| Symbol | Value | Role |
-|--------|-------|------|
-| $`\beta`$ | 0.9 | Discount factor in the cake-eating target |
-| Smooth domain $`[W_\min, W_\max]`$ | $`[0.05,  1.0]`$ | Wealth range for the smooth target |
-| Kinked domain $`[a_\min, a_\max]`$ | $`[0.05,  5.0]`$ | Asset range for the kinked target |
-| $`a_{\text{kink}}`$ | 0.5 | Borrowing-constraint kink in the policy |
-| $`r`$ | 0.04 | Interest rate in the consumption policy |
-| $`y`$ | 0.5 | Endowment (income) in the consumption policy |
-| $`\mathrm{MPC}`$ | 0.1 | Marginal propensity to consume above the kink |
-| Display node count $`N`$ | 10 | Nodes per fit in the target-vs-fit figure |
-| Convergence sweep | [np.int64(5), np.int64(10), np.int64(20), np.int64(40), np.int64(80)] | Node counts for the smooth-target sup-norm sweep |
+| Parameter | Value | Parameter | Value |
+|---|---:|---|---:|
+| Discount factor $`\beta`$ | 0.9 | Interest rate $`r`$ | 0.04 |
+| Smooth domain $`[W_\min, W_\max]`$ | $`[0.05, 1.0]`$ | Kinked domain $`[a_\min, a_\max]`$ | $`[0.05, 5.0]`$ |
+| Kink location $`a_{\text{kink}}`$ | 0.5 | Endowment $`y`$ | 0.5 |
+| $`\mathrm{MPC}`$ above kink | 0.1 | Display node count $`N`$ | 10 |
+| Convergence sweep nodes | 5, 10, 20, 40, 80 | Query density | 2000 pts |
 
 ## Solution Method
 
-Each method takes nodes $`(x_i, y_i)`$ and returns a function on $`[x_0, x_N]`$.
+Each method takes the same node set $`(x_i, y_i)`$ and returns a callable on $`[x_0, x_N]`$. Linear interpolation uses `lib.interpolate.linear_interp`; cubic spline uses `scipy.interpolate.CubicSpline` with `bc_type='natural'`; PCHIP uses `scipy.interpolate.PchipInterpolator`. The three differ in what continuity they enforce and whether they preserve shape.
 
-**Piecewise linear.** Connect adjacent nodes with straight segments. The convex-combination formula evaluates the segment containing the query point.
-
-```text
-Algorithm: Piecewise linear
-Input : nodes (x_i, y_i); query x in [x_i, x[i+1]]
-Output: y_hat
-  h_i   <- x[i+1] - x_i
-  w     <- (x - x_i) / h_i
-  y_hat <- (1 - w) y_i + w y[i+1]
 ```
-
-**Natural cubic spline.** Fit a piecewise cubic with $`C^2`$ continuity and zero second derivatives at the endpoints.
-
-```text
-Algorithm: Natural cubic spline
-Input : nodes (x_i, y_i)
-Output: spline S(x)
-  build tridiagonal system in y''_1, ..., y''[N-1]
-  with natural BC y''_0 = y''_N = 0
-  solve once for the second-derivative values
-  on [x_i, x[i+1]], evaluate the cubic from
-    y_i, y[i+1], y''_i, y''[i+1]
+  (x,y) nodes       (x,y) nodes        (x,y) nodes
+       |                  |                   |
+       v                  v                   v
+ +-----------+     +------------+     +--------------+
+ |  [ lerp ] |     |  [ spline ]|     |  [ PCHIP ]   |
+ +-----------+     +------------+     +--------------+
+       |                  |                   |
+      y(x*)             y(x*)               y(x*)
+   C^0, shape OK      C^2, may ring       C^1, shape OK
 ```
-
-**PCHIP (shape-preserving).** Fit a piecewise cubic Hermite polynomial whose endpoint slopes are chosen by the Fritsch-Carlson rule so the result preserves monotonicity.
-
-```text
-Algorithm: PCHIP
-Input : nodes (x_i, y_i)
-Output: H(x)
-  m_i <- (y[i+1] - y_i) / (x[i+1] - x_i)   # secant slopes
-  pick endpoint slopes d_i by Fritsch-Carlson rule
-    so that monotonicity of {y_i} is preserved
-  on [x_i, x[i+1]], evaluate Hermite cubic from
-    y_i, y[i+1], d_i, d[i+1]
-```
-
-The linear branch reuses `lib.interpolate.linear_interp`. The cubic and PCHIP branches use `scipy.interpolate.CubicSpline` (`bc_type='natural'`) and `scipy.interpolate.PchipInterpolator`.
 
 ## Results
 
-At 10 nodes the three methods agree closely on the smooth value function.
+At ten nodes the three methods agree closely on the smooth value function.
 
 On the kinked policy the cubic spline rings near $`a_{\text{kink}}`$: $`C^2`$ smoothness forces it to oscillate around the slope discontinuity.
 
@@ -162,41 +136,48 @@ Piecewise linear and PCHIP track the kink without overshoot, at the cost of a co
 
 On the smooth target all three errors concentrate near $`W = 0`$, where curvature is largest. PCHIP is uniformly smallest, ahead of the cubic spline at this node count.
 
-On the kinked target the cubic-spline error oscillates above and below zero around $`a_{\text{kink}}`$ (sup-error **4.57e-02**).
+On the kinked target the cubic-spline error oscillates above and below zero around $`a_{\text{kink}}`$.
 
-PCHIP eliminates the ringing at the same node count (sup-error **2.90e-02**).
+PCHIP eliminates the ringing at the same node count.
 
-Piecewise linear under-shoots in the same interval (sup-error **7.63e-02**) but stays monotone.
+Piecewise linear under-shoots in the same interval but stays monotone.
 
-<img src="figures/error-curves.png" alt="Pointwise error of each method on the smooth and kinked targets at $`N=10`$ nodes" width="80%">
+<img src="figures/error-curves.png" alt="Pointwise error of each method on the smooth and kinked targets at N=10 nodes" width="80%">
 
-The log-log sup-norm slopes on the smooth target are **-1.5** for piecewise linear, **-1.7** for the cubic spline, and **-2.0** for PCHIP.
-
-All three fall short of their textbook asymptotic rates. The cake-eating value function $`V(W)`$ has a logarithmic singularity as $`W \to 0`$, so curvature blows up near the left edge of the domain. That near-singular region keeps every method below its smooth-function rate at these node counts; the cubic spline does not reach the $`-4`$ slope a fully smooth target would give.
+The log-log sup-norm slopes on the smooth target fall short of their textbook asymptotic rates. The cake-eating value function $`V(W)`$ has a logarithmic singularity as $`W \to 0`$, so curvature blows up near the left edge of the domain. That near-singular region keeps every method below its smooth-function rate at these node counts; the cubic spline does not reach the slope a fully smooth target would give.
 
 On a kinked target the smoothness advantage disappears entirely, and PCHIP becomes the right default because it preserves shape.
 
 <img src="figures/convergence-vs-nodes.png" alt="Sup-norm error vs node count on the smooth cake-eating target, log-log axes" width="80%">
 
-At a fixed budget of 10 nodes the table summarises sup-norm and L2 errors for each method on both targets. PCHIP (shape-preserving) is the lowest-error choice on the smooth target; PCHIP (shape-preserving) is the lowest-error choice on the kinked one.
+At a fixed budget of ten nodes the table below summarises sup-norm and L2 errors for each method on both targets. PCHIP is the lowest-error choice on both the smooth and the kinked target.
 
-**Sup-norm and L2 errors at $`N = 10`$ nodes for each method on the smooth and kinked targets**
+Sup-norm and L2 errors at N = 10 nodes for each method on the smooth and kinked targets.
 
-| Method                   |   Smooth sup-error |   Smooth L2 error |   Kinked sup-error |   Kinked L2 error |
-|:-------------------------|-------------------:|------------------:|-------------------:|------------------:|
-| Piecewise linear         |              1.58  |             0.395 |             0.0763 |           0.0147  |
-| Cubic spline (natural)   |              1.09  |             0.258 |             0.0457 |           0.00993 |
-| PCHIP (shape-preserving) |              0.781 |             0.171 |             0.029  |           0.00649 |
+| Method | Smooth sup-error | Smooth L2 error | Kinked sup-error | Kinked L2 error |
+|:---|---:|---:|---:|---:|
+| Piecewise linear | 1.58e+00 | 3.95e-01 | 7.63e-02 | 1.47e-02 |
+| Cubic spline (natural) | 1.09e+00 | 2.58e-01 | 4.57e-02 | 9.93e-03 |
+| PCHIP (shape-preserving) | 7.81e-01 | 1.71e-01 | 2.90e-02 | 6.49e-03 |
+
+### Error diagnostics
+
+The table rows confirm that PCHIP dominates on the smooth target and eliminates ringing on the kinked one. The cubic spline kinked sup-error is roughly twice the PCHIP value at this node count.
 
 ## Takeaway
 
-Piecewise linear is the safe default for value functions with borrowing constraints. It preserves shape, never overshoots, and requires no setup. Natural cubic spline is accurate on smooth functions but rings near kinks and can violate monotonicity. PCHIP gives the steepest log-log convergence slope on the smooth target here, ahead of the cubic spline, and is the right default for monotone-but-non-smooth policies. It beats linear on accuracy and cubic on shape preservation at the same node count.
+*Schoenberg's optimality result* is a double-edged sword: the natural cubic spline minimizes integrated curvature, but that same pressure forces oscillations wherever the true function has a slope discontinuity. Piecewise linear interpolation is the safe default for value functions with borrowing constraints -- it preserves shape, never overshoots, and requires no setup. PCHIP gives steeper convergence on smooth targets and eliminates ringing on kinked ones, making it the right upgrade once a tutorial adds off-grid evaluation. The three methods together span the classic accuracy-vs-shape tradeoff that practitioners navigate every time they store a policy function on a grid.
 
-`lib.interpolate.linear_interp` is what the existing tutorials use today. Promoting cubic and PCHIP wrappers to `lib/interpolate.py` is worth doing once a second tutorial needs them.
+## See also
+
+- [Aiyagari saving and capital-market clearing](../../dynamic-programming/aiyagari/README.md)
+- [Consumption savings under income risk](../../dynamic-programming/consumption-savings/README.md)
+- [Root finding for equilibrium rates](../root-finding/README.md)
 
 ## References
 
+- Schoenberg, I. J. (1946). Contributions to the problem of approximation of equidistant data by analytic functions. *Quarterly of Applied Mathematics*, 4(2), 45-99. Establishes that the natural cubic spline minimizes integrated squared curvature.
+- Fritsch, F. N. and Carlson, R. E. (1980). Monotone Piecewise Cubic Interpolation. *SIAM Journal on Numerical Analysis*, 17(2), 238-246.
 - Mukoyama, T. (2021). *Basic Numerical Methods*. ECON 606 lecture slides, Georgetown University.
-- Fritsch, F. N. and Carlson, R. E. (1980). *Monotone Piecewise Cubic Interpolation*. SIAM Journal on Numerical Analysis 17(2), 238-246.
 - Press, W. H., Teukolsky, S. A., Vetterling, W. T., and Flannery, B. P. (2007). *Numerical Recipes*. Cambridge University Press, 3rd edition, Ch. 3.
 - Judd, K. L. (1998). *Numerical Methods in Economics*. MIT Press, Ch. 6.
