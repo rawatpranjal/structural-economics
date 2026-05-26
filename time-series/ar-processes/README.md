@@ -88,21 +88,13 @@ The series does not move one-for-one with each shock. A negative innovation at $
 AR(1) population moments are closed form; no iteration is needed. Estimation uses OLS on the lagged design matrix, which is equivalent to Yule-Walker for an AR(1).
 
 ```
-            data  y_1, ..., y_T
-                       |
-                       v
-+------- OLS / Yule-Walker estimation -------+
-|                                            |
-|  regress y_t on y_{t-1}, ..., y_{t-p}     |
-|                                            |
-|  phi_hat = (X'X)^{-1} X'y                 |
-|                                            |
-|  sigma_hat^2 = ||y - X phi_hat||^2 / T     |
-|                                            |
-+--------------------------------------------+
-                       |
-                       v
-         phi_hat_1, ..., phi_hat_p,  sigma_hat^2
+        data  y_1, ..., y_T
+                  |
+                  v
+   [ OLS / Yule-Walker ]
+                  |
+                  v
+       φ̂_1, ..., φ̂_p,  σ̂²
 ```
 
 ```python
