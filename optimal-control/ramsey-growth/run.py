@@ -139,8 +139,9 @@ def main() -> None:
 
     setup_style()
 
-    # Figure 1: phase diagram and selected saddle paths.
-    fig1, ax1 = plt.subplots(figsize=(8, 6))
+    # Figure 1: phase diagram (left) + convergence speed (right) -- 1x2.
+    fig1, (ax1, ax3) = plt.subplots(1, 2, figsize=(14, 5))
+
     k_range = np.linspace(0.1, 2.35 * k_star, 350)
     c_kdot_zero = np.maximum(f(k_range) - delta * k_range, 0.0)
 
@@ -162,13 +163,38 @@ def main() -> None:
     ax1.plot(k_star, c_star, "k*", markersize=12, zorder=5, label="steady state")
     ax1.set_xlabel("Capital $k$")
     ax1.set_ylabel("Consumption $c$")
-    ax1.set_title("Shooting Selects the Ramsey Stable Path")
+    ax1.set_title("Phase Diagram: Selected Saddle Paths")
     ax1.set_xlim(0.0, 2.25 * k_star)
     ax1.set_ylim(0.0, 1.08 * max(np.max(all_c), c_star))
     ax1.legend(fontsize=9, loc="upper left")
-    save_figure(fig1, "figures/phase-diagram.png", dpi=150)
 
-    # Figure 2: transition paths.
+    for sol, color, label in zip(solutions, colors, k0_labels, strict=True):
+        dev = np.abs(sol.y[0] - k_star) / k_star
+        valid = dev > 1e-10
+        ax3.semilogy(t_eval[valid], dev[valid], color=color, linewidth=1.8, label=label)
+
+    anchor_t = 50.0
+    anchor_idx = int(np.searchsorted(t_eval, anchor_t))
+    t_theory = np.linspace(anchor_t, 120.0, 250)
+    theory_line = ref_dev[anchor_idx] * np.exp(lambda_stable * (t_theory - t_eval[anchor_idx]))
+    ax3.semilogy(
+        t_theory,
+        theory_line,
+        "k--",
+        linewidth=1.5,
+        alpha=0.7,
+        label=f"stable eigenvalue $\\lambda_s={lambda_stable:.3f}$",
+    )
+    ax3.set_xlabel("Time $t$")
+    ax3.set_ylabel("$|k(t)-k^{*}|/k^{*}$")
+    ax3.set_title("Convergence to Steady State")
+    ax3.set_xlim(0, 120)
+    ax3.legend(fontsize=9)
+
+    fig1.tight_layout()
+    save_figure(fig1, "figures/phase-convergence.png", dpi=150)
+
+    # Figure 2: transition paths -- 1x2.
     fig2, (ax2a, ax2b) = plt.subplots(1, 2, figsize=(12, 5))
     for sol, color, label in zip(solutions, colors, k0_labels, strict=True):
         ax2a.plot(t_eval, sol.y[0], color=color, linewidth=1.8, label=label)
@@ -189,32 +215,6 @@ def main() -> None:
     ax2b.legend(fontsize=9)
     fig2.tight_layout()
     save_figure(fig2, "figures/time-paths.png", dpi=150)
-
-    # Figure 3: convergence speed.
-    fig3, ax3 = plt.subplots()
-    for sol, color, label in zip(solutions, colors, k0_labels, strict=True):
-        dev = np.abs(sol.y[0] - k_star) / k_star
-        valid = dev > 1e-10
-        ax3.semilogy(t_eval[valid], dev[valid], color=color, linewidth=1.8, label=label)
-
-    anchor_t = 50.0
-    anchor_idx = int(np.searchsorted(t_eval, anchor_t))
-    t_theory = np.linspace(anchor_t, 120.0, 250)
-    theory_line = ref_dev[anchor_idx] * np.exp(lambda_stable * (t_theory - t_eval[anchor_idx]))
-    ax3.semilogy(
-        t_theory,
-        theory_line,
-        "k--",
-        linewidth=1.5,
-        alpha=0.7,
-        label=f"stable eigenvalue $\\lambda_s={lambda_stable:.3f}$",
-    )
-    ax3.set_xlabel("Time $t$")
-    ax3.set_ylabel("$|k(t)-k^{*}|/k^{*}$")
-    ax3.set_title("Local Convergence to the Steady State")
-    ax3.set_xlim(0, 120)
-    ax3.legend(fontsize=9)
-    save_figure(fig3, "figures/convergence-speed.png", dpi=150)
 
     terminal_residuals = [abs(sol.y[0, -1] - k_star) / k_star for sol in solutions]
     table_data = {
@@ -238,8 +238,8 @@ def main() -> None:
     Path("tables").mkdir(parents=True, exist_ok=True)
     df.to_csv("tables/shooting-results.csv", index=False)
 
-    save_thumbnail("figures/phase-diagram.png", "figures/thumb.png")
-    print(f"Done: 3 figures, 1 table")
+    save_thumbnail("figures/phase-convergence.png", "figures/thumb.png")
+    print(f"Done: 2 figures, 1 table")
 
 
 if __name__ == "__main__":

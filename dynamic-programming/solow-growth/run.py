@@ -150,17 +150,39 @@ def main() -> None:
     investment = savings_rate * output_per_effective_worker(k_grid, alpha)
     break_even = effective_depreciation * k_grid
 
-    fig1, ax1 = plt.subplots(figsize=(8, 5))
-    ax1.plot(k_grid, investment, linewidth=2.2, label=r"Investment $s k^\alpha$")
-    ax1.plot(k_grid, break_even, linewidth=2.2, label=r"Break-even $\Delta k$")
-    ax1.axvline(k_star, color="black", linestyle="--", linewidth=1.3,
-                label=fr"$k^{{\ast}} = {k_star:.2f}$")
-    ax1.scatter([k0], [savings_rate * k0**alpha], color="tab:blue", zorder=4,
-                label=fr"Start: $k_0 = {k0:.2f}$")
-    ax1.set_xlabel(r"Capital per effective worker $k$")
-    ax1.set_ylabel("Investment per effective worker")
-    ax1.set_title("Solow diagram in effective-labor units")
-    ax1.legend()
+    fig1, (ax1a, ax1b) = plt.subplots(1, 2, figsize=(13, 5))
+
+    # Left: Solow diagram — investment vs break-even
+    ax1a.plot(k_grid, investment, linewidth=2.2, label=r"Investment $s k^\alpha$")
+    ax1a.plot(k_grid, break_even, linewidth=2.2, label=r"Break-even $\Delta k$")
+    ax1a.axvline(k_star, color="black", linestyle="--", linewidth=1.3,
+                 label=fr"$k^{{\ast}} = {k_star:.2f}$")
+    ax1a.scatter([k0], [savings_rate * k0**alpha], color="tab:blue", zorder=4,
+                 label=fr"Start: $k_0 = {k0:.2f}$")
+    ax1a.set_xlabel(r"Capital per effective worker $k$")
+    ax1a.set_ylabel("Investment per effective worker")
+    ax1a.set_title("Solow diagram in effective-labor units")
+    ax1a.legend()
+
+    # Right: net investment (dk/dt analog) showing direction of motion
+    net_investment = investment - break_even  # sk^alpha - Delta*k
+    ax1b.plot(k_grid, net_investment, linewidth=2.2, color="tab:purple",
+              label=r"Net investment $sk^\alpha - \Delta k$")
+    ax1b.axhline(0, color="black", linestyle="--", linewidth=1.2, alpha=0.7)
+    ax1b.axvline(k_star, color="black", linestyle=":", linewidth=1.2,
+                 label=fr"$k^{{\ast}} = {k_star:.2f}$")
+    ax1b.fill_between(k_grid, net_investment, 0,
+                      where=(net_investment > 0), alpha=0.15, color="tab:blue",
+                      label=r"$k$ rising ($k < k^{\ast}$)")
+    ax1b.fill_between(k_grid, net_investment, 0,
+                      where=(net_investment < 0), alpha=0.15, color="tab:red",
+                      label=r"$k$ falling ($k > k^{\ast}$)")
+    ax1b.set_xlabel(r"Capital per effective worker $k$")
+    ax1b.set_ylabel(r"Net investment $sk^\alpha - \Delta k$")
+    ax1b.set_title("Direction of capital motion")
+    ax1b.legend()
+
+    fig1.tight_layout()
     save_figure(fig1, "figures/solow-diagram.png", dpi=150)
 
     # ------------------------------------------------------------------
@@ -169,17 +191,35 @@ def main() -> None:
     periods_array = path["period"].to_numpy()
     k_linear = k_star + (k0 - k_star) * local_lambda ** periods_array
 
-    fig2, ax2 = plt.subplots(figsize=(8, 5))
-    ax2.plot(periods_array, path["k"] / k_star, linewidth=2.1, label=r"$k_t / k^{\ast}$")
-    ax2.plot(periods_array, path["y"] / y_star, linewidth=2.1, label=r"$y_t / y^{\ast}$")
-    ax2.plot(periods_array, path["c"] / c_star, linewidth=2.1, label=r"$c_t / c^{\ast}$")
-    ax2.plot(periods_array, k_linear / k_star, color="black", linestyle=":", linewidth=1.5,
-             label=r"Linearization $k^{\ast} + (k_0-k^{\ast})\lambda^t$")
-    ax2.axhline(1.0, color="black", linestyle="--", linewidth=1.0, alpha=0.6)
-    ax2.set_xlabel(r"Period $t$")
-    ax2.set_ylabel(r"Ratio to steady-state value")
-    ax2.set_title("Transition toward the balanced-growth path")
-    ax2.legend()
+    fig2, (ax2a, ax2b) = plt.subplots(1, 2, figsize=(13, 5))
+
+    # Left: normalized transition paths with linearization overlay
+    ax2a.plot(periods_array, path["k"] / k_star, linewidth=2.1, label=r"$k_t / k^{\ast}$")
+    ax2a.plot(periods_array, path["y"] / y_star, linewidth=2.1, label=r"$y_t / y^{\ast}$")
+    ax2a.plot(periods_array, path["c"] / c_star, linewidth=2.1, label=r"$c_t / c^{\ast}$")
+    ax2a.plot(periods_array, k_linear / k_star, color="black", linestyle=":", linewidth=1.5,
+              label=r"Linearization $k^{\ast} + (k_0-k^{\ast})\lambda^t$")
+    ax2a.axhline(1.0, color="black", linestyle="--", linewidth=1.0, alpha=0.6)
+    ax2a.set_xlabel(r"Period $t$")
+    ax2a.set_ylabel(r"Ratio to steady-state value")
+    ax2a.set_title("Transition toward the balanced-growth path")
+    ax2a.legend()
+
+    # Right: log-gap convergence panel
+    gap = np.abs(path["k"].to_numpy() - k_star)
+    gap_linear = np.abs(k_linear - k_star)
+    # avoid log(0) for periods where gap rounds to zero
+    gap = np.where(gap < 1e-15, 1e-15, gap)
+    gap_linear = np.where(gap_linear < 1e-15, 1e-15, gap_linear)
+    ax2b.semilogy(periods_array, gap, linewidth=2.1, label=r"$|k_t - k^{\ast}|$")
+    ax2b.semilogy(periods_array, gap_linear, color="black", linestyle=":", linewidth=1.5,
+                  label=r"Linearization gap $|k_0-k^{\ast}|\lambda^t$")
+    ax2b.set_xlabel(r"Period $t$")
+    ax2b.set_ylabel(r"$|k_t - k^{\ast}|$ (log scale)")
+    ax2b.set_title("Log-gap convergence to steady state")
+    ax2b.legend()
+
+    fig2.tight_layout()
     save_figure(fig2, "figures/transition-effective-units.png", dpi=150)
 
     # ------------------------------------------------------------------

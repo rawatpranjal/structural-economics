@@ -27,6 +27,7 @@ class LucasSolution:
     iterations: int
     error: float
     converged: bool
+    error_history: np.ndarray  # sup-norm residual at each iteration
 
 
 def crra_marginal_utility(c: np.ndarray, gamma: float) -> np.ndarray:
@@ -63,6 +64,7 @@ def solve_price_function(
     f = np.zeros_like(x_grid)
     error = np.inf
     iteration = 0
+    error_history: list[float] = []
 
     for iteration in range(1, max_iter + 1):
         continuation = np.interp(
@@ -74,6 +76,7 @@ def solve_price_function(
         ).reshape(x_next.shape)
         f_new = beta * np.sum((continuation + dividend_term) * weights[None, :], axis=1)
         error = float(np.max(np.abs(f_new - f)))
+        error_history.append(error)
         f = f_new
         if error < tol:
             break
@@ -89,6 +92,7 @@ def solve_price_function(
         iterations=iteration,
         error=error,
         converged=error < tol,
+        error_history=np.array(error_history),
     )
 
 
@@ -295,7 +299,7 @@ def main() -> None:
     fig2.tight_layout()
     save_figure(fig2, "figures/simulation-paths.png", dpi=150)
 
-    fig3, ax3 = plt.subplots(figsize=(7.2, 4.8))
+    fig3, (ax3, ax3_conv) = plt.subplots(1, 2, figsize=(13.0, 4.8))
     colors = ["#2ca02c", "#111111", "#1f77b4", "#9467bd"]
     for gamma_value, color in zip(gamma_values, colors):
         gamma_solution = solutions_by_gamma[gamma_value]
@@ -328,6 +332,27 @@ def main() -> None:
     ax3.set_ylabel("Price-dividend ratio $p(y)/y$")
     ax3.set_title("Risk aversion and state-contingent valuation")
     ax3.legend(loc="upper left")
+
+    # Convergence panel: log-scale sup-norm residual per iteration (gamma=2 baseline)
+    ax3_conv.semilogy(
+        np.arange(1, len(solution.error_history) + 1),
+        solution.error_history,
+        color="#1f77b4",
+        linewidth=1.8,
+        label=f"$\\gamma={gamma:g}$",
+    )
+    ax3_conv.axhline(
+        tol,
+        color="#d62728",
+        linewidth=1.2,
+        linestyle="--",
+        label=f"Tolerance $10^{{{-9}}}$",
+    )
+    ax3_conv.set_xlabel("Iteration")
+    ax3_conv.set_ylabel("Sup-norm residual $\\|f_{n+1} - f_n\\|_\\infty$")
+    ax3_conv.set_title("Fixed-point convergence")
+    ax3_conv.legend(loc="upper right")
+
     fig3.tight_layout()
     save_figure(fig3, "figures/comparative-statics-gamma.png", dpi=150)
 

@@ -76,6 +76,7 @@ def main() -> None:
     # log(A k^alpha - k') + beta * V(k'), where V is interpolated linearly
     # off the state grid.
     v = u_np(f_np(k_grid_np))  # initial guess: consume all output today
+    error_history = []          # sup-norm residual at each iteration
 
     for iteration in range(1, 1001):
         v_new = np.zeros(n_grid)
@@ -93,6 +94,7 @@ def main() -> None:
             policy_kprime[ik] = kp_grid[best]
 
         error = np.max(np.abs(v_new - v))
+        error_history.append(error)
         if iteration % 10 == 0:
             print(f"  VFI iteration {iteration:3d}, error = {error:.2e}")
         v = v_new
@@ -159,61 +161,63 @@ def main() -> None:
     # Figures
     # =========================================================================
     setup_style()
-
-    # Figure 1: value function vs closed form
-    fig1, ax1 = plt.subplots()
-    ax1.plot(k_grid, v_star, color="tab:blue", linewidth=2, label="Numerical (VFI)")
-    ax1.plot(k_grid, v_analytical, color="tab:red", linestyle="--", linewidth=1.5, label="Closed form")
-    ax1.axvline(kss, color="gray", linestyle=":", linewidth=1, alpha=0.7,
-                label=f"$k_{{ss}} = {kss:.2f}$")
-    ax1.set_xlabel("Capital $k$")
-    ax1.set_ylabel("$V(k)$")
-    ax1.set_title("Value Function vs Closed Form")
-    ax1.legend()
-    save_figure(fig1, "figures/value-function.png", dpi=150)
-
-    # Figure 2: capital policy vs closed form
-    fig2, ax2 = plt.subplots()
-    ax2.plot(k_grid, policy_kprime_jnp, color="tab:blue", linewidth=2, label="Numerical $g(k)$")
-    ax2.plot(k_grid, policy_kprime_analytical, color="tab:red", linestyle="--", linewidth=1.5,
-             label=r"Closed form $\alpha\beta A k^{\alpha}$")
-    ax2.plot(k_grid, k_grid, color="black", linestyle=":", linewidth=0.8, alpha=0.5,
-             label="$45^{\\circ}$ line")
-    ax2.axvline(kss, color="gray", linestyle=":", linewidth=1, alpha=0.7,
-                label=f"$k_{{ss}}={kss:.2f}$")
-    ax2.set_xlabel("Capital $k$")
-    ax2.set_ylabel("Next-period capital $k'$")
-    ax2.set_title("Capital Policy")
-    ax2.legend()
-    save_figure(fig2, "figures/policy-function.png", dpi=150)
-
-    # Figure 3: transition paths
-    fig3, (ax3a, ax3b) = plt.subplots(1, 2, figsize=(12, 5))
     periods = jnp.arange(T_sim)
 
-    ax3a.plot(periods, capital_path, "o-", color="tab:blue", markersize=3, linewidth=1.5,
-              label="Numerical")
-    ax3a.plot(periods, capital_path_exact, color="tab:red", linestyle="--", linewidth=1.5,
-              label="Closed form")
-    ax3a.axhline(kss, color="gray", linestyle=":", linewidth=1, alpha=0.7,
-                 label=f"$k_{{ss}}={kss:.2f}$")
-    ax3a.set_xlabel("Period $t$")
-    ax3a.set_ylabel("Capital $k_t$")
-    ax3a.set_title("Capital transition")
-    ax3a.legend()
+    # Figure 1 (1x2): value function and capital policy, both vs closed form
+    fig1, (ax1a, ax1b) = plt.subplots(1, 2, figsize=(12, 5))
 
-    ax3b.plot(periods[:-1], consumption_path[:-1], "o-", color="tab:blue", markersize=3,
-              linewidth=1.5, label="Numerical")
-    ax3b.plot(periods[:-1], consumption_path_exact[:-1], color="tab:red", linestyle="--",
-              linewidth=1.5, label="Closed form")
-    ax3b.axhline(css, color="gray", linestyle=":", linewidth=1, alpha=0.7,
-                 label=f"$c_{{ss}}={css:.2f}$")
-    ax3b.set_xlabel("Period $t$")
-    ax3b.set_ylabel("Consumption $c_t$")
-    ax3b.set_title("Consumption transition")
-    ax3b.legend()
-    fig3.tight_layout()
-    save_figure(fig3, "figures/simulation.png", dpi=150)
+    ax1a.plot(k_grid, v_star, color="tab:blue", linewidth=2, label="Numerical (VFI)")
+    ax1a.plot(k_grid, v_analytical, color="tab:red", linestyle="--", linewidth=1.5,
+              label="Closed form")
+    ax1a.axvline(kss, color="gray", linestyle=":", linewidth=1, alpha=0.7,
+                 label=f"$k_{{ss}} = {kss:.2f}$")
+    ax1a.set_xlabel("Capital $k$")
+    ax1a.set_ylabel("$V(k)$")
+    ax1a.set_title("Value function")
+    ax1a.legend()
+
+    ax1b.plot(k_grid, policy_kprime_jnp, color="tab:blue", linewidth=2,
+              label="Numerical $g(k)$")
+    ax1b.plot(k_grid, policy_kprime_analytical, color="tab:red", linestyle="--",
+              linewidth=1.5, label=r"Closed form $\alpha\beta A k^{\alpha}$")
+    ax1b.plot(k_grid, k_grid, color="black", linestyle=":", linewidth=0.8, alpha=0.5,
+              label="$45^{\\circ}$ line")
+    ax1b.axvline(kss, color="gray", linestyle=":", linewidth=1, alpha=0.7,
+                 label=f"$k_{{ss}}={kss:.2f}$")
+    ax1b.set_xlabel("Capital $k$")
+    ax1b.set_ylabel("Next-period capital $k'$")
+    ax1b.set_title("Capital policy")
+    ax1b.legend()
+
+    fig1.tight_layout()
+    save_figure(fig1, "figures/vf-policy.png", dpi=150)
+
+    # Figure 2 (1x2): capital transition and VFI convergence
+    fig2, (ax2a, ax2b) = plt.subplots(1, 2, figsize=(12, 5))
+
+    ax2a.plot(periods, capital_path, "o-", color="tab:blue", markersize=3, linewidth=1.5,
+              label="Numerical")
+    ax2a.plot(periods, capital_path_exact, color="tab:red", linestyle="--", linewidth=1.5,
+              label="Closed form")
+    ax2a.axhline(kss, color="gray", linestyle=":", linewidth=1, alpha=0.7,
+                 label=f"$k_{{ss}}={kss:.2f}$")
+    ax2a.set_xlabel("Period $t$")
+    ax2a.set_ylabel("Capital $k_t$")
+    ax2a.set_title("Capital transition from $0.1 k_{ss}$")
+    ax2a.legend()
+
+    # VFI sup-norm convergence on log scale
+    ax2b.semilogy(np.arange(1, len(error_history) + 1), error_history,
+                  color="tab:blue", linewidth=1.5)
+    ax2b.axhline(tol, color="gray", linestyle="--", linewidth=1,
+                 label=f"Tolerance {tol:.0e}")
+    ax2b.set_xlabel("VFI iteration")
+    ax2b.set_ylabel("Sup-norm residual")
+    ax2b.set_title("VFI convergence")
+    ax2b.legend()
+
+    fig2.tight_layout()
+    save_figure(fig2, "figures/simulation-convergence.png", dpi=150)
 
     # =========================================================================
     # Tables
@@ -267,7 +271,7 @@ def main() -> None:
         Path(__file__).resolve().parent / "tables" / "convergence-log.csv", index=False
     )
 
-    save_thumbnail("figures/value-function.png", "figures/thumb.png")
+    save_thumbnail("figures/vf-policy.png", "figures/thumb.png")
     print(f"\nGenerated figures and tables.")
 
 

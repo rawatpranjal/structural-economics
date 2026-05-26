@@ -31,12 +31,14 @@ def hp_filter(y, lam=1600):
 
 
 def solve_vfi(k_grid, l_grid, z_vals, P, beta, delta, alpha, phi,
-              tol=1e-5, max_iter=2000, label=""):
+              tol=1e-5, max_iter=2000, label="", track_errors=False):
     """Run VFI over the joint (l, k') choice for the two-state RBC model.
 
     Returns the value function, capital and labor policy index arrays, and
     a small diagnostics dict. The whole flow-utility tensor is precomputed
     once; each iteration is a vectorized argmax over (l, k').
+    When track_errors=True, the diagnostics dict also contains an
+    'error_history' list of per-iteration sup-norm residuals.
     """
     n_k = k_grid.size
     n_z = z_vals.size
@@ -71,6 +73,7 @@ def solve_vfi(k_grid, l_grid, z_vals, P, beta, delta, alpha, phi,
 
     policy_k = np.zeros((n_k, n_z), dtype=int)
     policy_l = np.zeros((n_k, n_z), dtype=int)
+    error_history = []
 
     for iteration in range(1, max_iter + 1):
         EV = V @ P.T
@@ -81,13 +84,20 @@ def solve_vfi(k_grid, l_grid, z_vals, P, beta, delta, alpha, phi,
         policy_k = best_flat % n_k
         V_new = np.max(total_flat, axis=2)
         error = np.max(np.abs(V_new - V))
+        if track_errors:
+            error_history.append(float(error))
         V = V_new
         if iteration % 100 == 0 and label:
             print(f"  [{label}] iter {iteration:4d}, error = {error:.2e}")
         if error < tol:
             break
 
-    info = {"iterations": iteration, "converged": error < tol, "error": float(error)}
+    info = {
+        "iterations": iteration,
+        "converged": error < tol,
+        "error": float(error),
+        "error_history": error_history if track_errors else None,
+    }
     return V, policy_k, policy_l, info
 
 
@@ -138,7 +148,7 @@ def main():
     print("\nSolving coarse grid (50x50)...")
     V, policy_k_idx, policy_l_idx, info = solve_vfi(
         k_grid, l_grid, z_vals, P, beta, delta, alpha, phi,
-        tol=tol, label="coarse",
+        tol=tol, label="coarse", track_errors=True,
     )
     print(f"  converged in {info['iterations']} iterations, "
           f"sup-norm = {info['error']:.2e}")
@@ -246,19 +256,30 @@ def main():
     # =========================================================================
     setup_style()
 
-    # Figure 1: Value function with fine-grid benchmark
-    fig1, ax1 = plt.subplots()
-    ax1.plot(k_grid, V[:, 0], "b-", linewidth=2, label=f"$z_L = {z_vals[0]:.2f}$ (low)")
-    ax1.plot(k_grid, V[:, 1], "r-", linewidth=2, label=f"$z_H = {z_vals[1]:.2f}$ (high)")
-    ax1.plot(k_grid_fine, V_fine[:, 0], "b:", linewidth=1.0, alpha=0.7,
-             label="fine grid benchmark")
-    ax1.plot(k_grid_fine, V_fine[:, 1], "r:", linewidth=1.0, alpha=0.7)
-    ax1.axvline(k_ss, color="k", linestyle=":", linewidth=1.0, alpha=0.5,
-                label="$k_{ss}$ at $z=1$")
-    ax1.set_xlabel("Capital $k$")
-    ax1.set_ylabel("$V(k, z)$")
-    ax1.set_title("Value Function")
-    ax1.legend(loc="lower right", fontsize=9)
+    # Figure 1: Value function (left) + VFI convergence panel (right)
+    fig1, (ax1a, ax1b) = plt.subplots(1, 2, figsize=(12, 5))
+
+    ax1a.plot(k_grid, V[:, 0], "b-", linewidth=2, label=f"$z_L = {z_vals[0]:.2f}$ (low)")
+    ax1a.plot(k_grid, V[:, 1], "r-", linewidth=2, label=f"$z_H = {z_vals[1]:.2f}$ (high)")
+    ax1a.plot(k_grid_fine, V_fine[:, 0], "b:", linewidth=1.0, alpha=0.7,
+              label="fine grid benchmark")
+    ax1a.plot(k_grid_fine, V_fine[:, 1], "r:", linewidth=1.0, alpha=0.7)
+    ax1a.axvline(k_ss, color="k", linestyle=":", linewidth=1.0, alpha=0.5,
+                 label="$k_{ss}$ at $z=1$")
+    ax1a.set_xlabel("Capital $k$")
+    ax1a.set_ylabel("$V(k, z)$")
+    ax1a.set_title("Value Function")
+    ax1a.legend(loc="lower right", fontsize=9)
+
+    error_hist = info["error_history"]
+    ax1b.semilogy(np.arange(1, len(error_hist) + 1), error_hist, "k-", linewidth=1.2)
+    ax1b.axhline(tol, color="r", linestyle="--", linewidth=0.9, label=f"tol = {tol:.0e}")
+    ax1b.set_xlabel("VFI iteration")
+    ax1b.set_ylabel("Sup-norm error (log scale)")
+    ax1b.set_title("VFI Convergence")
+    ax1b.legend(fontsize=9)
+
+    fig1.tight_layout()
     save_figure(fig1, "figures/value-function.png", dpi=150)
 
     # Figure 2: Capital and labor policies (two subplots) with benchmarks
