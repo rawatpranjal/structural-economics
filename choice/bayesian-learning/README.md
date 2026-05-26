@@ -108,28 +108,18 @@ Two red signals lift the posterior from $`0.5`$ to $`0.8448`$ and push action va
 What's new relative to one-shot decision theory is the *backward induction* that prices the option to wait. The Bayes filter compresses the signal history into one posterior. Backward induction uses that posterior as the state variable.
 
 ```
-                 prior p_0, likelihoods f_H f_L, payoffs pi_H pi_L, horizon T
-                                         |
-                                         v
-+--------------------------- outer loop (backward induction) -------------------+
-|                                                                               |
-|   set terminal value V_T(p) = max[A(p), 0]  for all p on belief grid         |
-|                                                                               |
-|   +------------- inner step: one period back (t = T-1, ..., 0) -------------+|
-|   |  for each p_i:                                                           ||
-|   |    compute p_R' and p_B' via Bayes update                               ||
-|   |    C_t(p_i) = Pr(R|p_i) * V_{t+1}(p_R') + Pr(B|p_i) * V_{t+1}(p_B')   ||
-|   |    V_t(p_i) = max[ A(p_i), C_t(p_i) ]                                  ||
-|   +--------------------------------------------------------------------------+|
-|                                                                               |
-|   record invest / continue / reject regions from V_t                         |
-|                                                                               |
-+---------------- repeat until t = 0 ------------------------------------------+
-                                         |
-                                   converged (t = 0)
-                                         |
-                                         v
-                         V_0(p), stopping boundary, regions
+       prior p_0, likelihoods, payoffs, horizon T
+                          |
+                          v
+   +------- backward induction over t = T, ..., 0 -------+
+   |                                                     |
+   |          [ one-step Bellman update ]                |
+   |                                                     |
+   +----------- t > 0: step back to t - 1 ---------------+
+                          |
+                        t = 0
+                          v
+              V_0(p), stopping boundary, regions
 ```
 
 ```python
