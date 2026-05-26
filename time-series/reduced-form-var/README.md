@@ -2,11 +2,17 @@
 
 ## Overview
 
-A macroeconomist wants to describe the joint dynamics of a small number of variables, like output and inflation, without writing down a structural model. A reduced-form vector autoregression treats each variable as a linear function of its own and the others' recent lags, plus a serially uncorrelated forecast error. The coefficient matrices are estimated equation by equation by ordinary least squares.
+Before Sims (1980), applied macroeconomists imposed large blocks of zero restrictions on multi-equation models to achieve identification. The gap was that those restrictions were theory-driven and untestable, so the models could not be used to summarize what the data said on its own terms. Sims proposed treating every variable as potentially affected by all lags of all other variables, with no a-priori exclusions, and fitting by OLS.
+
+The object is a *reduced-form vector autoregression*. Each variable is a linear function of its own lags and the lags of all other variables in the system, plus a serially uncorrelated forecast error. The coefficient matrices are estimated equation by equation by ordinary least squares.
 
 The forecast errors are correlated across variables. Naming a shock to one variable requires an extra assumption about which errors are allowed to react contemporaneously to which others. The recursive choice is the simplest: pick an ordering and let the lower-triangular Cholesky factor of the error covariance map orthogonal structural shocks to reduced-form errors. A different ordering gives different impulse responses, so the ordering is an identifying assumption, not a property of the data.
 
 This tutorial estimates a bivariate VAR(2) on a simulated output-gap-and-inflation panel, identifies shocks under two orderings, and shows how the estimated impulse responses approach the true ones as the sample grows. The same reduced-form setup feeds the Bayesian shrinkage version in [`time-series/minnesota-svar/`](../../time-series/minnesota-svar/) and the autoregressive backbone of the factor forecast in [`time-series/stock-watson/`](../../time-series/stock-watson/).
+
+## Read before
+
+- [Autoregressive Processes](../ar-processes/README.md)
 
 ## Equations
 
@@ -117,59 +123,42 @@ The recursive ordering forces the impact response of $`y_1`$ to the second struc
 
 ## Model Setup
 
-| Object | Symbol | Role |
-|---|---|---|
-| Time index | $`t`$ | Discrete date, $`t = 1, \ldots, T`$ |
-| Endogenous vector | $`y_t`$ | Output gap and inflation, $`k = 2`$ |
-| VAR lag order | $`p`$ | Lags carried by each equation, set to $`p = 2`$ |
-| Lag coefficient matrices | $`A_1, A_2`$ | $`k \times k`$ slopes [from `minnesota-svar/`] |
-| Intercept | $`c`$ | $`k`$-vector intercept [from `minnesota-svar/`] |
-| Reduced-form residual | $`u_t`$ | Multivariate forecast error [from `minnesota-svar/`] |
-| Residual covariance | $`\Sigma_u`$ | $`k \times k`$ cross-equation covariance [from `minnesota-svar/`] |
-| Companion matrix | $`F`$ | $`kp \times kp`$ first-order rewrite [prelim introduces] |
-| Selector matrix | $`J`$ | Extracts the $`k`$-vector top block [prelim introduces] |
-| Cholesky factor | $`P`$ | Lower-triangular with $`\Sigma_u = P P'`$ [from `minnesota-svar/`] |
-| Structural shock | $`\varepsilon_t`$ | Orthonormal innovations, $`\varepsilon_t = P^{-1} u_t`$ [from `minnesota-svar/`] |
-| Impulse response | $`\Phi_j`$ | $`k \times k`$ response matrix at horizon $`j`$ [from `minnesota-svar/`] |
-| Sample size | $`T`$ | 400 observations after a 200-period burn-in |
-| Horizon | $`H`$ | 20 quarters for IRF plots |
-| Monte Carlo trials | $`K`$ | 200 trials per sample size for the RMSE sweep |
-
-The annotations record which symbols are shared with the dense tutorial that builds on this prelim. Reusing names keeps the cross-references in `minnesota-svar/` rename-free.
+| Parameter | Value | Parameter | Value |
+|---|---:|---|---:|
+| Endogenous variables $`k`$ | 2 | VAR lag order $`p`$ | 2 |
+| Sample size $`T`$ | 400 | Burn-in | 200 |
+| IRF horizon $`H`$ | 20 | Monte Carlo trials $`K`$ | 200 |
+| MC sample sizes | 100 to 1600 | Ordering A | output gap first |
+| Ordering B | inflation first | | |
 
 ## Solution Method
 
 The procedure has three stages. The first two are mechanical. The third encodes the identifying restriction.
 
-```text
-Procedure: Reduced-form VAR with recursive Cholesky identification
-Inputs : series y for periods 1 to T; lag order p; horizon H;
-         ordering pi over the k variables.
-Outputs: estimated intercept c, lag matrices A_1 ... A_p, residual
-         covariance Sigma_u, impulse responses Phi_0 ... Phi_H.
-
-1. Stack the design matrix.
-   X has one row per period t from p+1 to T. Each row contains a 1,
-   then the k-vector y at period t-1, then y at t-2, and so on up to
-   y at t-p. Y has the same number of rows; row t is y at period t.
-
-2. Estimate the reduced form by OLS.
-   beta_hat = inverse(X' X) (X' Y)               # one regression per equation
-   residuals = Y - X beta_hat
-   Sigma_u_hat = residuals' residuals / (T - p - kp - 1)
-
-3. Identify recursively.
-   Permute rows and columns of Sigma_u_hat by the ordering pi.
-   P_perm = lower Cholesky of the permuted covariance.
-   Un-permute rows and columns to express P in original variable order.
-
-4. Propagate impulse responses.
-   Build the companion matrix F from the estimated lag matrices.
-   For j = 0, 1, ..., H:  Phi_j = J Fj J' P, where Fj is the j-th
-   power of F and J selects the top k rows.
+```
+         data  y_1, ..., y_T,  lag order p,  horizon H
+                           |
+                           v
++------------ VAR estimation (OLS) -------------+
+|                                               |
+|   y  -->  [ design matrix X ]  -->  B_hat     |
+|   B_hat  -->  [ residuals ]  -->  Sigma_hat   |
+|                                               |
++------------ Cholesky identification ----------+
+|                                               |
+|   Sigma_hat  -->  [ permute, factor ]  -->  P |
+|                                               |
++------------ IRF propagation ------------------+
+|                                               |
+|   B_hat, P  -->  [ companion F ]  -->  Phi_j  |
+|                                               |
++-----------------------------------------------+
+                           |
+                           v
+                  B_hat, Sigma_hat, P, Phi_0 ... Phi_H
 ```
 
-Sign restrictions, narrative restrictions, and external-instrument identification keep the reduced-form layer unchanged and replace step 3 with an alternative map from $`\Sigma_u`$ to a structural impact matrix. They are named here but not derived; the prelim's job is the reduced form plus the simplest identification scheme.
+Sign restrictions, narrative restrictions, and external-instrument identification keep the reduced-form layer unchanged and replace the Cholesky block with an alternative map from $`\Sigma_u`$ to a structural impact matrix. They are named here but not derived; the prelim's job is the reduced form plus the simplest identification scheme.
 
 ## Results
 
@@ -177,32 +166,45 @@ The headline run uses a bivariate VAR(2) on $`T = 400`$ simulated observations. 
 
 The four panels show the impulse responses under each of the two possible orderings. Each panel reports four lines: the true response and the OLS estimate under the ordering that puts the output gap first, and the true response and the OLS estimate under the ordering that puts inflation first.
 
-<img src="figures/irf-by-ordering.png" alt="Impulse responses to recursively identified shocks under two Cholesky orderings, with true and estimated paths" width="90%">
+![Impulse responses to recursively identified shocks under two Cholesky orderings, with true and estimated paths](figures/irf-by-ordering.png)
 
 The top-right and bottom-left panels make the identifying restriction visible. With the output gap ordered first, an inflation shock has zero impact on the output gap. With inflation ordered first, an output-gap shock has zero impact on inflation. Both restrictions are imposed by the lower-triangular Cholesky factor, not estimated from the data. The dashed estimated lines sit close to the solid true lines under both orderings, but the two true lines themselves are different objects. The choice of ordering changes which shock is interpretable on impact.
 
 The scatter shows the OLS residuals together with the covariance structure and the two Cholesky axes.
 
-<img src="figures/residual-cholesky.png" alt="OLS residual scatter with 95 percent covariance ellipses and the Cholesky shock axes for two orderings" width="80%">
+![OLS residual scatter with 95 percent covariance ellipses and the Cholesky shock axes for two orderings](figures/residual-cholesky.png)
 
-The estimated $`95\%`$ covariance ellipse (solid blue) tracks the true ellipse (dashed orange) closely at $`T = 400`$. The green arrows are the columns of the Cholesky factor under the ordering that puts the output gap first; the purple arrows are the columns of the factor under the reverse ordering. Each set of arrows describes a different decomposition of the same residual cloud into orthogonal shocks. In each set, one arrow lies on a coordinate axis: that arrow is the impact response to the shock to the second-ordered variable, and its zero on the first-ordered variable's axis is the recursive zero-impact restriction. The other arrow points freely into the residual cloud; it is the impact response to the first-ordered shock and tilts away from a coordinate axis whenever the two residuals are correlated.
+The estimated 95% covariance ellipse tracks the true ellipse closely at $`T = 400`$. The green arrows are the columns of the Cholesky factor under the ordering that puts the output gap first; the purple arrows are the columns of the factor under the reverse ordering. Each set of arrows describes a different decomposition of the same residual cloud into orthogonal shocks. In each set, one arrow lies on a coordinate axis: that arrow is the impact response to the shock to the second-ordered variable, and its zero on the first-ordered variable's axis is the recursive zero-impact restriction. The other arrow points freely into the residual cloud; it is the impact response to the first-ordered shock and tilts away from a coordinate axis whenever the two residuals are correlated.
 
 The Monte Carlo sweep estimates the same VAR at five sample sizes between $`100`$ and $`1600`$ observations and reports the mean and one-standard-deviation band of the impulse-response RMSE across $`200`$ trials per sample size.
 
-<img src="figures/irf-rmse-by-n.png" alt="Mean and one-standard-deviation band of IRF RMSE as a function of sample size, log-log axes with a sqrt-N reference line" width="80%">
+![Mean and one-standard-deviation band of IRF RMSE as a function of sample size, log-log axes with a sqrt-N reference line](figures/irf-rmse-by-n.png)
 
-The mean error falls from $`0.061`$ at $`T = 100`$ to $`0.015`$ at $`T = 1600`$. The slope on log-log axes matches the dotted reference line of slope $`-1/2`$, which is the rate predicted by standard OLS asymptotics. Larger samples shrink the band as well as the mean.
+The mean error falls from roughly $`0.06`$ at small samples to around $`0.015`$ at large samples. The slope on log-log axes matches the dotted reference line of slope $`-1/2`$, which is the rate predicted by standard OLS asymptotics. Larger samples shrink the band as well as the mean.
+
+### Estimation diagnostics
+
+| Quantity | Ordering A | Quantity | Ordering B |
+|:---|---:|:---|---:|
+| Spectral radius (true) | 0.83 | Spectral radius (est.) | 0.81 |
+| IRF RMSE at $`T=100`$ | ~0.06 | IRF RMSE at $`T=1600`$ | ~0.015 |
+| Zero on impact, ordering A | inflation on output gap | Zero on impact, ordering B | output gap on inflation |
 
 ## Takeaway
 
-The reduced-form VAR is a small projection: each variable on its own lags and the others' lags, fitted by OLS. The recursive identification step is separate. It selects an ordering, factors the residual covariance, and treats the lower-triangular factor as the impact map from orthogonal shocks to forecast errors. Different orderings produce different impulse responses for the same reduced form, so the ordering is part of the assumptions, not part of the data.
+*Recursive identification* is what turns a reduced-form VAR into something interpretable. The projection step is mechanical: each variable on its own lags and the others' lags, fitted by OLS. The identification step is not mechanical. It selects an ordering, factors the residual covariance, and treats the lower-triangular factor as the impact map from orthogonal shocks to forecast errors. Different orderings produce different impulse responses for the same reduced form. The ordering is part of the assumptions, not part of the data.
 
-This same reduced form is used downstream under additional structure. Bayesian shrinkage replaces equation-by-equation OLS with the Minnesota-prior posterior in [`time-series/minnesota-svar/`](../../time-series/minnesota-svar/). Sign restrictions, narrative restrictions, and external instruments replace the lower-triangular factor with weaker identifying assumptions, leaving the reduced form alone.
+Sims (1980) showed that the data's own dynamics could discipline multi-equation macroeconomic models without imposing cross-equation exclusions. That was the surprise. The legacy is the reduced-form VAR as the standard diagnostic tool in applied macro: it shows what the data say about joint dynamics before a structural model is imposed.
+
+## See also
+
+- [Minnesota-Prior SVARs](../minnesota-svar/README.md)
+- [Stock-Watson Factor Forecasts](../stock-watson/README.md)
+- [Autoregressive Processes](../ar-processes/README.md)
 
 ## References
 
 - Sims, C. A. (1980). "Macroeconomics and Reality." *Econometrica*, 48(1), 1-48. Founding paper on reduced-form VARs and recursive identification.
 - Hamilton, J. D. (1994). *Time Series Analysis*. Princeton University Press, Chapter 11. Textbook treatment of OLS VAR estimation, companion form, and recursive impulse responses.
 - Stock, J. H. and Watson, M. W. (2001). "Vector Autoregressions." *Journal of Economic Perspectives*, 15(4), 101-115. Practitioner overview distinguishing reduced-form, recursive, and structural VARs.
-- Lütkepohl, H. (2005). *New Introduction to Multiple Time Series Analysis*. Springer, Chapters 9-10. Reference for SVAR identification beyond the recursive case.
-- **See also.** The Bayesian shrinkage version of the same reduced form is in [`time-series/minnesota-svar/`](../../time-series/minnesota-svar/), which keeps the Minnesota prior and the policy-shock interpretation and points back here for the OLS estimator and the Cholesky derivation. The factor-augmented forecast in [`time-series/stock-watson/`](../../time-series/stock-watson/) uses the same lag-stacking and OLS mechanics in its forecasting equation. The univariate predecessor is in [`time-series/ar-processes/`](../../time-series/ar-processes/), where the AR(1) impulse response is the scalar special case of $`\Phi_j`$ here.
+- Lutkepohl, H. (2005). *New Introduction to Multiple Time Series Analysis*. Springer, Chapters 9-10. Reference for SVAR identification beyond the recursive case.

@@ -317,40 +317,30 @@ def save_city_gif(result: SimulationResult, path: str, max_frames: int = 32) -> 
     )
 
 
-def plot_city(grid: np.ndarray, title: str) -> plt.Figure:
-    """Plot one city grid with the two groups and vacancies."""
-    color_array = np.zeros((*grid.shape, 3), dtype=float)
-    for value, color in COLORS.items():
-        color_array[grid == value] = np.array(color) / 255.0
 
-    fig, ax = plt.subplots(figsize=(6, 6))
-    ax.imshow(color_array, interpolation="nearest")
-    ax.set_title(title)
-    ax.set_xticks([])
-    ax.set_yticks([])
-    for spine in ax.spines.values():
-        spine.set_visible(False)
-    return fig
+def plot_dynamics_panel(
+    path_results: list[SimulationResult],
+    summary: pd.DataFrame,
+    final_grid: np.ndarray,
+    final_tau: float,
+    final_s: float,
+) -> plt.Figure:
+    """2x2 panel: segregation paths, phase transition, move counts, final city."""
+    fig, axes = plt.subplots(2, 2, figsize=(12.0, 9.0))
+    ax_paths, ax_phase, ax_moves, ax_city = axes.flat
 
-
-def plot_paths(path_results: list[SimulationResult]) -> plt.Figure:
-    """Plot segregation-index paths for selected thresholds."""
-    fig, ax = plt.subplots(figsize=(8, 5))
+    # Top-left: segregation paths
     for result in path_results:
         steps = np.arange(len(result.segregation))
-        ax.plot(steps, result.segregation, marker="o", markersize=3, label=f"$\\tau={result.tau:.3f}$")
-    ax.set_xlabel("Iteration")
-    ax.set_ylabel("Segregation index $S(t)$")
-    ax.set_title("Local Movement Raises Same-Group Exposure")
-    ax.set_ylim(0.45, 0.92)
-    ax.legend()
-    return fig
+        ax_paths.plot(steps, result.segregation, marker="o", markersize=3, label=f"$\\tau={result.tau:.3f}$")
+    ax_paths.set_xlabel("Iteration")
+    ax_paths.set_ylabel("Segregation index $S(t)$")
+    ax_paths.set_title("Local Movement Raises Same-Group Exposure")
+    ax_paths.set_ylim(0.45, 0.92)
+    ax_paths.legend(fontsize=8)
 
-
-def plot_phase_transition(summary: pd.DataFrame) -> plt.Figure:
-    """Plot final segregation against the tolerance threshold."""
-    fig, ax = plt.subplots(figsize=(8, 5))
-    ax.errorbar(
+    # Top-right: phase transition
+    ax_phase.errorbar(
         summary["tau"],
         summary["mean_final_S"],
         yerr=summary["sd_final_S"],
@@ -358,25 +348,34 @@ def plot_phase_transition(summary: pd.DataFrame) -> plt.Figure:
         linewidth=2.0,
         capsize=3,
     )
-    ax.axvline(1.0 / 3.0, color="black", linestyle="--", linewidth=1.6, label="$1/3$")
-    ax.set_xlabel("Minimum same-group neighbor share $\\tau$")
-    ax.set_ylabel("Final segregation index")
-    ax.set_title("A Small Change in Tolerance Can Change the Aggregate Pattern")
-    ax.set_ylim(0.52, 0.91)
-    ax.legend()
-    return fig
+    ax_phase.axvline(1.0 / 3.0, color="black", linestyle="--", linewidth=1.6, label="$1/3$")
+    ax_phase.set_xlabel("Minimum same-group neighbor share $\\tau$")
+    ax_phase.set_ylabel("Final segregation index")
+    ax_phase.set_title("A Small Change in Tolerance Changes the Aggregate Pattern")
+    ax_phase.set_ylim(0.52, 0.91)
+    ax_phase.legend(fontsize=8)
 
-
-def plot_move_counts(path_results: list[SimulationResult]) -> plt.Figure:
-    """Plot how much relocation each threshold induces."""
-    fig, ax = plt.subplots(figsize=(8, 5))
+    # Bottom-left: move counts
     for result in path_results:
         steps = np.arange(1, len(result.moved) + 1)
-        ax.plot(steps, result.moved, marker="o", markersize=3, label=f"$\\tau={result.tau:.3f}$")
-    ax.set_xlabel("Iteration")
-    ax.set_ylabel("Agents moved")
-    ax.set_title("Relocation Is Endogenous to the Existing Pattern")
-    ax.legend()
+        ax_moves.plot(steps, result.moved, marker="o", markersize=3, label=f"$\\tau={result.tau:.3f}$")
+    ax_moves.set_xlabel("Iteration")
+    ax_moves.set_ylabel("Agents moved")
+    ax_moves.set_title("Relocation Is Endogenous to the Existing Pattern")
+    ax_moves.legend(fontsize=8)
+
+    # Bottom-right: final city grid
+    color_array = np.zeros((*final_grid.shape, 3), dtype=float)
+    for value, color in COLORS.items():
+        color_array[final_grid == value] = np.array(color) / 255.0
+    ax_city.imshow(color_array, interpolation="nearest")
+    ax_city.set_title(f"Final city at $\\tau={final_tau:.2f}$, $S={final_s:.3f}$")
+    ax_city.set_xticks([])
+    ax_city.set_yticks([])
+    for spine in ax_city.spines.values():
+        spine.set_visible(False)
+
+    fig.tight_layout()
     return fig
 
 
@@ -458,21 +457,18 @@ def main() -> None:
     print(f"  tau~1/3 mean final S={transition_row['mean_final_S']:.3f}")
     print(f"  tau=0.500 mean final S={high_row['mean_final_S']:.3f}")
 
-    fig_paths = plot_paths(selected_paths)
-    save_figure(fig_paths, "figures/segregation-paths.png", dpi=150)
-
-    fig_phase = plot_phase_transition(summary)
-    save_figure(fig_phase, "figures/phase-transition.png", dpi=150)
-
-    fig_moves = plot_move_counts(selected_paths)
-    save_figure(fig_moves, "figures/move-counts.png", dpi=150)
-
-    fig_city = plot_city(gif_result.final_grid, f"Final city at tau={gif_tau:.2f}, S={gif_result.final_segregation:.3f}")
-    save_figure(fig_city, "figures/final-city-tau-035.png", dpi=150)
+    fig_dynamics = plot_dynamics_panel(
+        path_results=selected_paths,
+        summary=summary,
+        final_grid=gif_result.final_grid,
+        final_tau=gif_tau,
+        final_s=gif_result.final_segregation,
+    )
+    save_figure(fig_dynamics, "figures/schelling-dynamics.png", dpi=150)
 
     table.to_csv("tables/threshold-sweep.csv", index=False)
 
-    save_thumbnail("figures/segregation-paths.png", "figures/thumb.png")
+    save_thumbnail("figures/schelling-dynamics.png", "figures/thumb.png")
 
 
 if __name__ == "__main__":

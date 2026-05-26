@@ -40,8 +40,8 @@ def estimate_smm(params: Params, true_beta: float) -> tuple[pd.DataFrame, pd.Dat
             "excess kurtosis": fitted["excess kurtosis"],
         })
 
-    objective = pd.DataFrame(rows)
-    beta_hat = float(objective.loc[objective["objective"].idxmin(), "intensity beta"])
+    objective_df = pd.DataFrame(rows)
+    beta_hat = float(objective_df.loc[objective_df["objective"].idxmin(), "intensity beta"])
     fitted = average_moments(beta_hat, params, smm_shocks)
     fit_table = pd.DataFrame([
         {"quantity": "intensity beta", "target": true_beta, "fit": beta_hat, "difference": beta_hat - true_beta},
@@ -49,55 +49,86 @@ def estimate_smm(params: Params, true_beta: float) -> tuple[pd.DataFrame, pd.Dat
         {"quantity": "abs return autocorrelation", "target": target["abs return autocorrelation"], "fit": fitted["abs return autocorrelation"], "difference": fitted["abs return autocorrelation"] - target["abs return autocorrelation"]},
         {"quantity": "excess kurtosis", "target": target["excess kurtosis"], "fit": fitted["excess kurtosis"], "difference": fitted["excess kurtosis"] - target["excess kurtosis"]},
     ])
-    return objective, fit_table
+    return objective_df, fit_table
 
 
 def plot_price_paths(runs: list[Run], params: Params) -> plt.Figure:
-    """Price deviations from the rational-expectations fundamental."""
-    fig, axes = plt.subplots(3, 1, figsize=(10, 8.5), sharex=True, sharey=True)
+    """2x2: three price-deviation panels and trend-follower share evolution."""
+    fig, axes = plt.subplots(2, 2, figsize=(12, 8))
     time = np.arange(params.periods)
     labels = ["Low intensity", "Medium intensity", "High intensity"]
-    for ax, run, label in zip(axes, runs, labels):
-        ax.plot(time, run.x, color="C0")
-        ax.axhline(0.0, color="black", linestyle=":", linewidth=1.1, label="RE fundamental")
-        ax.fill_between(time, -0.05, 0.05, color="grey", alpha=0.12, label="near fundamental")
-        ax.set_ylabel("$x_t = p_t - p^{\\ast}$")
-        ax.set_title(f"{label}: $\\beta = {run.beta:.0f}$")
-        ax.legend(loc="upper right")
-    axes[-1].set_xlabel("Period $t$")
-    fig.suptitle("Brock-Hommes price deviations from the dividend fundamental")
-    fig.tight_layout()
-    return fig
+    colors = ["C0", "C1", "C3"]
 
+    # Top-left: low intensity price deviations
+    ax = axes[0, 0]
+    ax.plot(time, runs[0].x, color=colors[0])
+    ax.axhline(0.0, color="black", linestyle=":", linewidth=1.1)
+    ax.set_ylabel("$x_t = p_t - p^{\\ast}$")
+    ax.set_title(f"{labels[0]}: $\\beta = {runs[0].beta:.0f}$")
 
-def plot_strategy_shares(runs: list[Run], params: Params) -> plt.Figure:
-    """Trend-follower shares under low, medium, and high intensity."""
-    fig, ax = plt.subplots(figsize=(10, 5.2))
-    time = np.arange(params.periods)
-    for run, color in zip(runs, ["C0", "C1", "C3"]):
-        ax.plot(time, run.shares[:, 1], color=color, label=rf"$\beta = {run.beta:.0f}$")
-    ax.axhline(0.5, color="black", linestyle=":", linewidth=1.1)
+    # Top-right: medium intensity price deviations
+    ax = axes[0, 1]
+    ax.plot(time, runs[1].x, color=colors[1])
+    ax.axhline(0.0, color="black", linestyle=":", linewidth=1.1)
+    ax.set_ylabel("$x_t = p_t - p^{\\ast}$")
+    ax.set_title(f"{labels[1]}: $\\beta = {runs[1].beta:.0f}$")
+
+    # Bottom-left: high intensity price deviations
+    ax = axes[1, 0]
+    ax.plot(time, runs[2].x, color=colors[2])
+    ax.axhline(0.0, color="black", linestyle=":", linewidth=1.1)
+    ax.set_ylabel("$x_t = p_t - p^{\\ast}$")
+    ax.set_xlabel("Period $t$")
+    ax.set_title(f"{labels[2]}: $\\beta = {runs[2].beta:.0f}$")
+
+    # Bottom-right: trend-follower share evolution for all three intensities
+    ax = axes[1, 1]
+    for run, color, label in zip(runs, colors, labels):
+        ax.plot(time, run.shares[:, 1], color=color, label=f"$\\beta = {run.beta:.0f}$")
+    ax.axhline(0.5, color="black", linestyle=":", linewidth=1.1, label="equal shares")
     ax.set_ylim(-0.02, 1.02)
     ax.set_xlabel("Period $t$")
     ax.set_ylabel("Trend-follower share")
-    ax.set_title("Logit switching responds to lagged realized forecasting profits")
-    ax.legend(loc="upper right")
+    ax.set_title("Logit switching responds to lagged forecast profits")
+    ax.legend(loc="upper right", fontsize=8)
+
+    fig.suptitle("Brock-Hommes: price deviations and strategy shares")
     fig.tight_layout()
     return fig
 
 
 def plot_moment_fit(objective: pd.DataFrame, fit_table: pd.DataFrame) -> plt.Figure:
-    """SMM objective over candidate intensity values."""
+    """1x2: SMM objective surface and target-vs-fit moment bar chart."""
     true_beta = float(fit_table.loc[fit_table["quantity"] == "intensity beta", "target"].iloc[0])
     beta_hat = float(fit_table.loc[fit_table["quantity"] == "intensity beta", "fit"].iloc[0])
-    fig, ax = plt.subplots(figsize=(9, 5))
+
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+    # Left: SMM objective over candidate intensities
+    ax = axes[0]
     ax.plot(objective["intensity beta"], objective["objective"], color="C0", marker="o", markersize=4)
     ax.axvline(true_beta, color="black", linestyle=":", linewidth=1.2, label=f"true $\\beta = {true_beta:.0f}$")
     ax.axvline(beta_hat, color="C3", linestyle="--", linewidth=1.2, label=f"SMM $\\hat\\beta = {beta_hat:.0f}$")
     ax.set_xlabel("Candidate intensity of choice $\\beta$")
     ax.set_ylabel("Weighted moment distance")
-    ax.set_title("SMM objective for the strategy-switching intensity")
+    ax.set_title("SMM objective surface")
     ax.legend(loc="upper right")
+
+    # Right: target vs fitted moments at the selected intensity
+    moment_rows = fit_table[fit_table["quantity"] != "intensity beta"].copy()
+    short_labels = ["Volatility", "Abs autocorr", "Excess kurtosis"]
+    x_pos = np.arange(len(short_labels))
+    width = 0.35
+    ax = axes[1]
+    ax.bar(x_pos - width / 2, moment_rows["target"].values, width, label="Target", color="C0")
+    ax.bar(x_pos + width / 2, moment_rows["fit"].values, width, label=f"Fit ($\\hat\\beta={beta_hat:.0f}$)", color="C3")
+    ax.set_xticks(x_pos)
+    ax.set_xticklabels(short_labels)
+    ax.set_ylabel("Moment value")
+    ax.set_title("Target vs fitted moments")
+    ax.legend(loc="upper right")
+
+    fig.suptitle("SMM estimation of the strategy-switching intensity")
     fig.tight_layout()
     return fig
 
@@ -120,9 +151,6 @@ def main() -> None:
 
     fig_paths = plot_price_paths(runs, params)
     save_figure(fig_paths, "figures/price-paths.png", dpi=150)
-
-    fig_shares = plot_strategy_shares(runs, params)
-    save_figure(fig_shares, "figures/strategy-shares.png", dpi=150)
 
     fig_fit = plot_moment_fit(objective, fit_table)
     save_figure(fig_fit, "figures/moment-fit.png", dpi=150)
