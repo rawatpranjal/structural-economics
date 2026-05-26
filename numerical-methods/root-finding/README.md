@@ -130,24 +130,16 @@ Each of the four methods solves $`Z(r) = 0`$ with a different input requirement.
 The *bisection loop* is the foundational case. It maintains the bracket invariant at every step.
 
 ```
-                    f, [a, b]  with  f(a)·f(b) < 0
-                                     |
-                                     v
-              +------- bisection loop --------+
-              |                              |
-              |   c = (a + b) / 2            |
-              |   evaluate f(c)              |
-              |                              |
-              |   if f(c)·f(a) > 0:          |
-              |       a = c                  |
-              |   else:                      |
-              |       b = c                  |
-              |                              |
-              +-- |b - a| > ε → repeat ------+
-                                     |
-                                converged
-                                     v
-                                    x*
+              f, bracket [a, b] with f(a)·f(b) < 0
+                                |
+                                v
+              +-- [ bisection step ] --+
+              |                        |
+              +-- |b - a| > ε: repeat -+
+                                |
+                            converged
+                                v
+                                x*
 ```
 
 Real Python for all four methods. Each comment names the step it implements.
