@@ -78,3 +78,8 @@ plan.md
 
 # Tool caches
 .serena/
+
+# Internal project memory/roadmap and audits (never public)
+roadmap.md
+spec.md
+docs/audits/
