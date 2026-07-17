@@ -4,9 +4,15 @@
 
 A central bank moves the policy rate after reading a large flow of economic text. Inflation, labor, credit, output, and financial-stress language all contain signals. Each individual indicator is noisy.
 
-The economic object is the policy shock: the part of the rate change not predicted by the information set available at the meeting. A better forecast changes the measured shock series.
+The economic object is the *policy shock*: the part of the rate change not predicted by the information set available at the meeting. A better forecast changes the measured shock series.
 
-The example simulates many correlated policy-concept indicators. A few signals are strong, but many weak signals also matter. That distinction is useful because a sparse selected model is not the same statement as a sparse economy.
+The example simulates many correlated policy-concept indicators. A few signals are strong, but many weak signals also matter. That distinction matters because a sparse selected model is not the same statement as a sparse economy. Ridge and Lasso were introduced to handle exactly this regime: many correlated predictors where OLS is unstable or infeasible. Neither paper considered the shock-measurement application, and the gap between statistical sparsity and economic sparsity had not been worked through explicitly at the time.
+
+## Read before
+
+- [Variance and bias under correlated regressors](../../supervised-learning/bias-variance/README.md)
+- [Cross-validation and blocked time-series splits](../../supervised-learning/cross-validation/README.md)
+- [OLS in matrix form](../../supervised-learning/ols-matrix/README.md)
 
 ## Equations
 
@@ -89,28 +95,29 @@ Apply the threshold $`\lambda/2 = 0.2`$ coefficient by coefficient:
 \hat\beta^4_{\mathrm{lasso}} = \mathrm{sign}(-0.3)\cdot\max(0.3 - 0.2,\ 0) = -0.1.
 ```
 
-Collecting both estimators,
+Collecting the ridge result:
 
 ```math
-\boxed{\hat\beta_{\mathrm{ridge}} = (0.357,\ 0.714,\ 0.0714,\ -0.214), \qquad \hat\beta_{\mathrm{lasso}} = (0.3,\ 0.8,\ 0,\ -0.1).}
+\hat\beta_{\mathrm{ridge}} = (0.357,\ 0.714,\ 0.0714,\ -0.214).
+```
+
+Collecting the lasso result:
+
+```math
+\hat\beta_{\mathrm{lasso}} = (0.3,\ 0.8,\ 0,\ -0.1).
 ```
 
 Lasso zeros the third coefficient because $`|0.1| < \lambda/2 = 0.2`$; ridge merely shrinks it to $`0.071`$. Both estimators shrink coefficient 2 (the strongest signal) the least in absolute terms, but lasso shrinks it less than ridge because lasso's penalty is linear rather than quadratic. This is the bias-variance tradeoff made concrete: ridge trades bias uniformly across all coefficients, while lasso concentrates bias on small signals and grants near-unbiased recovery to large ones.
 
 ## Model Setup
 
-| Object | Value | Role |
-|---|---:|---|
-| Policy meetings | 260 | Synthetic rate-setting observations |
-| Policy-concept groups | 5 | Inflation, labor, credit, output, and financial stress |
-| Indicators per group | 24 | Noisy text-like signals per concept |
-| Total indicators | 120 | Wide predictor block used by ridge and lasso |
-| Training meetings | 125 | First block used to tune penalties |
-| Validation meetings | 55 | Middle block used to choose $`\lambda`$ |
-| Test meetings | 79 | Final block used for reported forecast losses |
-| True shock sd | 0.20 | Innovation in the policy rule |
-| Ridge $`\lambda`$ | 0.0381 | Validation-selected shrinkage |
-| Lasso $`\lambda`$ | 0.0079 | Validation-selected sparsity |
+| Object | Value | Object | Value |
+|---|---:|---|---:|
+| Policy meetings | 260 | Training meetings | 125 |
+| Policy-concept groups | 5 | Validation meetings | 55 |
+| Indicators per group | 24 | Test meetings | 79 |
+| Total indicators | 120 | True shock sd | 0.20 |
+| Ridge $`\lambda`$ | 0.0381 | Lasso $`\lambda`$ | 0.0079 |
 
 ## Solution Method
 
@@ -118,19 +125,31 @@ The forecast exercise uses time blocks rather than random folds. The validation 
 
 Ridge has a closed-form penalized least-squares solution after centering and scaling the regressors. Lasso uses cyclic coordinate descent. The intercept is never penalized.
 
-```text
-Procedure: policy-shock measurement with shrinkage forecasts
-Inputs: rate changes Delta r_t, lagged rate r[t-1], indicators x_t
-Output: forecasts f_t and measured shocks e_t = Delta r_t - f_t
-
-1. Split meetings into training, validation, and test blocks.
-2. Fit the lag-only benchmark on the training-plus-validation block.
-3. For each ridge penalty lambda:
-       fit ridge on the training block and record validation RMSE.
-4. For each lasso penalty lambda:
-       fit lasso on the training block and record validation RMSE.
-5. Refit ridge and lasso on training-plus-validation data using selected lambdas.
-6. On the test block, compare forecast RMSE and residual-shock correlation.
+```
+   (X, y), lambda              (X, y), lambda
+        |                           |
+        v                           v
+  +-- Ridge --+               +-- Lasso --+
+  | [ closed  ]|               | [ coord   ]|
+  | [ form    ]|               | [ descent ]|
+  +------------+               +-----------+
+        |                           |
+   beta_ridge                  beta_lasso
+        \                           /
+         \                         /
+          v                       v
+     +-- time-blocked validation --+
+     |  [ split: train / valid /  ]|
+     |  [        test             ]|
+     +-----------------------------+
+                    |
+             lambda selection
+                    |
+                    v
+          test-block forecasts
+                    |
+                    v
+          policy shocks = actual - forecast
 ```
 
 ## Results
@@ -151,9 +170,7 @@ The validation curves show the tuning tradeoff. Low penalties fit many noisy coe
 
 <img src="figures/validation-curves.png" alt="Blocked-validation curves over ridge and lasso penalty strengths" width="80%">
 
-The forecast table reports test-block loss and residual-shock recovery. Relative RMSE divides each model's RMSE by the lag-only benchmark.
-
-**Forecast and shock-measurement comparison**
+### Forecast diagnostics
 
 | Model    | Penalty   |   Test RMSE |   Relative RMSE |   Corr. with true systematic policy |   Shock correlation |   Selected indicators |
 |:---------|:----------|------------:|----------------:|------------------------------------:|--------------------:|----------------------:|
@@ -163,8 +180,6 @@ The forecast table reports test-block loss and residual-shock recovery. Relative
 | Lasso    | 0.0079    |      0.2476 |          0.4134 |                              0.9781 |              0.8826 |                    56 |
 
 The selection table separates statistical selection from economic sparsity. The true rule contains many small nonzero indicators, so missed dense signal matters even when the selected model forecasts well. Note that the false-inclusion count is always zero by DGP construction: every one of the 120 indicators has a nonzero true coefficient, so any indicator lasso selects is true by construction. The zero reflects the DGP, not lasso precision, and should not be read as a measurement of lasso selectivity.
-
-**Coefficient and selection summary**
 
 | Statistic                                |   Value |
 |:-----------------------------------------|--------:|
@@ -178,4 +193,15 @@ The selection table separates statistical selection from economic sparsity. The 
 
 ## Takeaway
 
-Ridge is useful when many weak correlated predictors contain real information. Lasso is useful when the researcher wants selection and compression. In this run, lasso misses about 51.0% of the weak dense signal while still producing a compact forecasting rule. Sparsity is therefore a modeling restriction, not an economic conclusion by itself.
+Ridge is useful when many weak correlated predictors contain real information. Lasso is useful when the researcher wants selection and compression. In this run, lasso misses a substantial share of weak dense signal while still producing a compact forecasting rule. *Sparsity* is therefore a modeling restriction, not an economic conclusion by itself. The quantitative surprise in the original papers was how well penalized methods recover dense signal relative to OLS in wide-data regimes. The framework became the foundation for high-dimensional forecasting in macroeconomics and text-as-data applications.
+
+## See also
+
+- [LASSO and model selection in forecasting](../../supervised-learning/lasso-selection/README.md)
+- [Principal components regression](../../supervised-learning/pcr/README.md)
+- [Text indicators and factor models](../../time-series/text-factor-models/README.md)
+
+## References
+
+- Hoerl, A. E. and Kennard, R. W. (1970). Ridge Regression: Biased Estimation for Nonorthogonal Problems. *Technometrics*, 12(1), 55-67.
+- Tibshirani, R. (1996). Regression Shrinkage and Selection via the Lasso. *Journal of the Royal Statistical Society, Series B*, 58(1), 267-288.

@@ -2,11 +2,17 @@
 
 ## Overview
 
-Macroeconomic models are often judged by business-cycle moments. The researcher starts with quarterly output growth, inflation, unemployment, and a policy rate.
+Macroeconomic models are often judged by business-cycle moments. Researchers pull quarterly output growth, inflation, unemployment, and a policy rate from FRED (Federal Reserve Economic Data), detrend each series, and report the resulting volatilities, correlations, and persistence estimates. The gap in the literature before FRED was data fragmentation: series were housed in incompatible formats across different agencies, making replication costly. A standardized retrieval layer changed that.
 
-The object here is a small FRED-style panel. It is simulated so the page can run without an API key or a changing data release.
+The object here is a small *FRED-style panel*. It is simulated so the page runs without an API key or a changing data release.
 
 The computational need is detrending. HP filtering puts each series into a cycle. Sample moments then summarize volatility, comovement, persistence, and an Okun slope.
+
+## Read before
+
+- [HP filter and trend-cycle decomposition](../hp-filter/README.md)
+- [Simulating stationary vector processes](../var-simulation/README.md)
+- [Okun's law in business-cycle models](../okun-phillips/README.md)
 
 ## Equations
 
@@ -33,7 +39,7 @@ Here $`\odot`$ is element-by-element multiplication. The correlation matrix $`C`
 sets the contemporaneous macro relationships in the example. The parameter
 $`\rho_j`$ controls how slowly each series adjusts after an innovation.
 
-For each observed series $`y_{j,t}`$, the HP filter chooses a trend $`\tau_{j,t}`$
+For each observed series $`y_{j,t}`$, the *HP filter* chooses a trend $`\tau_{j,t}`$
 by solving
 
 ```math
@@ -111,24 +117,19 @@ The large $`\lambda`$ forces the trend close to the straight line through the en
 
 ## Model Setup
 
-**Quarterly sample**
+| Parameter | Value | Parameter | Value |
+|---|---:|---|---:|
+| Sample length $`T`$ | 200 | Benchmark length $`T_B`$ | 5000 |
+| HP smoothing $`\lambda`$ | 1600 | Series count | 4 |
 
-| Object | Value | Role |
-|---|---:|---|
-| $`T`$ | 200 | Main sample, 50 years of quarters |
-| $`T_B`$ | 5000 | Long simulation used only as a benchmark |
-| $`\lambda`$ | 1600 | HP smoothing parameter for quarterly data |
-
-**Series-level primitives**
-
-| Series | Mean | Std. dev. | Persistence | Economic role |
+| Series | Mean | Std. dev. | Persistence | Role |
 |---|---:|---:|---:|---|
 | GDP growth | 2.5 | 3.0 | 0.30 | Output-growth cycle |
 | CPI inflation | 2.0 | 1.5 | 0.70 | Price-pressure cycle |
 | Unemployment | 5.5 | 1.5 | 0.85 | Labor-market slack |
-| Fed funds | 4.0 | 3.0 | 0.80 | Short-rate policy indicator |
+| Fed funds | 4.0 | 3.0 | 0.80 | Short-rate indicator |
 
-**Innovation correlation matrix $`C`$**
+Innovation correlation matrix $`C`$:
 
 | | GDP | CPI | Unemployment | Fed funds |
 |---|---:|---:|---:|---:|
@@ -139,29 +140,31 @@ The large $`\lambda`$ forces the trend close to the straight line through the en
 
 ## Solution Method
 
-The HP filter solves one sparse linear system for each series. It chooses a trend that tracks the data and smooths trend growth.
+The *HP filter* solves one sparse linear system per series, choosing a trend that tracks the data while penalizing curvature in trend growth. The residual is the cycle, and cycle statistics give the moment table. A long simulation on the same process provides a benchmark for sampling variation in the 50-year panel.
 
-The residual from that trend is the cycle. The moment table then reports standard deviations, GDP correlations, autocorrelations, and the Okun slope.
-
-The long simulation repeats the same calculation on many quarters. It gives a benchmark for sampling variation in the 50-year panel.
-
-```text
-Algorithm: HP-filtered business-cycle moments
-Inputs: quarterly panel y_t, HP parameter lambda, benchmark horizon T_B
-Outputs: cycles c_t, moment table M, Okun slope beta_O
-
-1. Simulate the four-variable macro vector y_t from the calibrated process.
-2. For each series j:
-      solve (I + lambda K'K) tau_j = y_j
-      set c_j = y_j - tau_j
-3. Compute volatility, relative volatility, GDP correlation, and lag-1
-   autocorrelation from the cycles c_j.
-4. Regress the unemployment cycle on the GDP-growth cycle to estimate beta_O.
-5. Repeat steps 1-4 with T_B quarters and use those moments only as a
-   long-sample benchmark for the finite 50-year run.
 ```
-
-Signs matter by series. A positive GDP-growth cycle means output growth is above trend. A positive unemployment cycle means slack is above trend.
+             quarterly panel y_t, lambda, T_B
+                             |
+                             v
+    +---------- data pipeline ----------+
+    |                                   |
+    |   y_t --> [ HP filter ] --> c_t   |
+    |                                   |
+    +-----------------------------------+
+                             |
+                             v
+    +------- moment table ----------+
+    |                               |
+    |   c_t --> [ volatility ]      |
+    |   c_t --> [ GDP correlation ] |
+    |   c_t --> [ autocorrelation ] |
+    |   c_t --> [ Okun regression ] |
+    |                               |
+    +-------------------------------+
+                             |
+                             v
+                   moment table M, Okun slope
+```
 
 ## Results
 
@@ -183,8 +186,6 @@ The correlation matrix checks the full cycle panel. The signs match the calibrat
 
 The table reports the finite sample and benchmark moments. Benchmark columns use the same process, so they show sampling variation rather than validation with real data.
 
-**Business-cycle moments from HP-filtered quarterly cycles**
-
 | Variable      |   Volatility (%) |   Rel. volatility |   Corr. with GDP |   Long-sample corr. |   Autocorr. |   Long-sample autocorr. |
 |:--------------|-----------------:|------------------:|-----------------:|--------------------:|------------:|------------------------:|
 | GDP growth    |            2.896 |             1     |            1     |               1     |       0.282 |                   0.223 |
@@ -192,17 +193,29 @@ The table reports the finite sample and benchmark moments. Benchmark columns use
 | Unemployment  |            0.975 |             0.337 |           -0.423 |              -0.45  |       0.649 |                   0.638 |
 | Fed funds     |            2.007 |             0.693 |            0.187 |               0.222 |       0.599 |                   0.622 |
 
+### Business-cycle moment diagnostics
+
+| Moment | Sample | Long-sample benchmark |
+|:---|---:|---:|
+| Okun slope $`\beta_O`$ | -0.14 | -0.13 |
+| GDP-unemployment correlation | -0.42 | -0.45 |
+| Most persistent cycle | Unemployment | Unemployment |
+
 ## Takeaway
 
-Business-cycle moments are constructed before they are matched.
+*Precautionary data practice* starts before the model: standardized retrieval lets moments replicate across teams and vintages. FRED made that routine in macroeconomics the same way version control made code reproducible.
 
-In this run, GDP growth and unemployment move against each other. The Okun slope is -0.142. Unemployment is the most persistent cycle.
+In this calibration, GDP growth and unemployment move against each other. Unemployment carries the longest cyclical memory. Sampling and filtering keep the 50-year panel from matching the long benchmark exactly. Stock and Watson (1999) showed that this gap is a property of the data, not a sign of misspecification, and it became a standing target for heterogeneous-agent business-cycle models.
 
-Sampling and filtering keep the 50-year sample from matching the long simulation exactly.
+## See also
+
+- [HP filter and trend-cycle decomposition](../hp-filter/README.md)
+- [Simulating stationary vector processes](../var-simulation/README.md)
+- [Aiyagari saving and capital-market clearing](../../dynamic-programming/aiyagari/README.md)
 
 ## References
 
-- Federal Reserve Bank of St. Louis. FRED, Federal Reserve Economic Data.
+- Federal Reserve Bank of St. Louis. FRED, Federal Reserve Economic Data. https://fred.stlouisfed.org
 - Hodrick, R. and Prescott, E. (1997). "Postwar U.S. Business Cycles: An Empirical Investigation." *Journal of Money, Credit and Banking*, 29(1), 1-16.
 - Stock, J. and Watson, M. (1999). "Business Cycle Fluctuations in U.S. Macroeconomic Time Series." *Handbook of Macroeconomics*, Vol. 1A, Ch. 1.
 - Okun, A. (1962). "Potential GNP: Its Measurement and Significance." *Proceedings of the Business and Economic Statistics Section*, ASA.

@@ -287,18 +287,29 @@ def main():
     Path("figures").mkdir(parents=True, exist_ok=True)
     Path("tables").mkdir(parents=True, exist_ok=True)
 
-    # --- Figure 1: True factor vs estimated factor ---
-    fig1, ax1 = plt.subplots(figsize=(10, 5))
+    # --- Figure 1: True factor vs estimated factor (1x2) ---
+    fig1, (ax1a, ax1b) = plt.subplots(1, 2, figsize=(12, 5))
     t_axis = np.arange(T)
     # Scale estimated factor to match true factor's scale for visual comparison
     scale = F_true[:, 0].std() / F_hat_aligned.std()
     F_hat_scaled = F_hat_aligned * scale
-    ax1.plot(t_axis, F_true[:, 0], "b-", linewidth=1.5, label="True factor $F_t$", alpha=0.8)
-    ax1.plot(t_axis, F_hat_scaled, "r--", linewidth=1.5, label="Estimated $\\hat{F}_t$ (PCA)", alpha=0.8)
-    ax1.set_xlabel("Time period")
-    ax1.set_ylabel("Factor value")
-    ax1.set_title("Common macro state: true factor and PCA estimate")
-    ax1.legend()
+    ax1a.plot(t_axis, F_true[:, 0], "b-", linewidth=1.5, label="True factor $F_t$", alpha=0.8)
+    ax1a.plot(t_axis, F_hat_scaled, "r--", linewidth=1.5, label="Estimated $\\hat{F}_t$ (PCA)", alpha=0.8)
+    ax1a.set_xlabel("Time period")
+    ax1a.set_ylabel("Factor value")
+    ax1a.set_title("Factor time series")
+    ax1a.legend()
+
+    # Right panel: scatter of true vs estimated factor (sign and scale aligned)
+    ax1b.scatter(F_true[:, 0], F_hat_scaled, s=12, alpha=0.5, color="#2166ac")
+    lims = [min(F_true[:, 0].min(), F_hat_scaled.min()),
+            max(F_true[:, 0].max(), F_hat_scaled.max())]
+    ax1b.plot(lims, lims, "k--", linewidth=1, alpha=0.6, label="45-degree line")
+    ax1b.set_xlabel("True factor $F_t$")
+    ax1b.set_ylabel("PCA estimate $\\hat{F}_t$ (scaled)")
+    ax1b.set_title(f"Factor recovery (corr = {factor_corr:.4f})")
+    ax1b.legend(fontsize=9)
+    fig1.tight_layout()
     save_figure(fig1, "figures/factor-comparison.png", dpi=150)
 
     # --- Figure 2: Scree plot ---
@@ -322,18 +333,29 @@ def main():
     fig2.tight_layout()
     save_figure(fig2, "figures/scree-plot.png", dpi=150)
 
-    # --- Figure 3: Factor loadings ---
-    fig3, ax3 = plt.subplots(figsize=(10, 5))
+    # --- Figure 3: Factor loadings (1x2) ---
+    fig3, (ax3a, ax3b) = plt.subplots(1, 2, figsize=(12, 5))
     sort_idx = np.argsort(true_exposure)
-    ax3.scatter(range(N), true_exposure[sort_idx], s=25, alpha=0.6,
-                color="#2166ac", label="True exposure $corr(X_i,F)$", zorder=3)
-    ax3.scatter(range(N), estimated_exposure[sort_idx], s=25, alpha=0.6,
-                color="#b2182b", marker="x",
-                label="PCA exposure $corr(X_i,\\hat F)$", zorder=3)
-    ax3.set_xlabel("Series (sorted by true exposure)")
-    ax3.set_ylabel("Standardized exposure")
-    ax3.set_title("Which series load on the common state?")
-    ax3.legend()
+    ax3a.scatter(range(N), true_exposure[sort_idx], s=25, alpha=0.6,
+                 color="#2166ac", label="True exposure $corr(X_i,F)$", zorder=3)
+    ax3a.scatter(range(N), estimated_exposure[sort_idx], s=25, alpha=0.6,
+                 color="#b2182b", marker="x",
+                 label="PCA exposure $corr(X_i,\\hat F)$", zorder=3)
+    ax3a.set_xlabel("Series (sorted by true exposure)")
+    ax3a.set_ylabel("Standardized exposure")
+    ax3a.set_title("Exposures sorted by true loading")
+    ax3a.legend()
+
+    # Right panel: true vs estimated exposure scatter
+    ax3b.scatter(true_exposure, estimated_exposure, s=20, alpha=0.5, color="#2166ac")
+    elims = [min(true_exposure.min(), estimated_exposure.min()) - 0.02,
+             max(true_exposure.max(), estimated_exposure.max()) + 0.02]
+    ax3b.plot(elims, elims, "k--", linewidth=1, alpha=0.6, label="45-degree line")
+    ax3b.set_xlabel("True exposure $corr(X_i, F)$")
+    ax3b.set_ylabel("PCA exposure $corr(X_i, \\hat F)$")
+    ax3b.set_title(f"Exposure recovery (corr = {exposure_corr:.4f})")
+    ax3b.legend(fontsize=9)
+    fig3.tight_layout()
     save_figure(fig3, "figures/factor-loadings.png", dpi=150)
 
     # --- Figure 4: Forecast comparison ---
